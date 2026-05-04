@@ -177,6 +177,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Hate Incidents",   href: "/hate-incident-log",         icon: "ShieldAlert",    module: "safeguarding"  },
       { label: "IRO Correspondence",href: "/iro-correspondence",       icon: "Mail",           module: "young-people"  },
       { label: "Personal Passport",href: "/personal-passport",         icon: "Sparkles",       module: "young-people"  },
+      { label: "Disclosures",      href: "/disclosure-log",            icon: "ShieldAlert",    module: "safeguarding"  },
+      { label: "Dietary Requirements",href: "/dietary-requirements",   icon: "Utensils",       module: "young-people"  },
+      { label: "Religious Observance",href: "/religious-observance-log",icon: "Heart",         module: "young-people"  },
+      { label: "Anniversaries",    href: "/placement-anniversaries",   icon: "Cake",           module: "young-people"  },
       { label: "Life Story",        href: "/life-story",                icon: "BookHeart",      module: "young-people"  },
       { label: "Chronology",       href: "/intelligence/chronology",   icon: "ScrollText",     module: "young-people"  },
       { label: "Documents",        href: "/documents",                 icon: "FileText",       module: "documents"     },
@@ -349,6 +353,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Lessons Learned",  href: "/lessons-learned-register",   icon: "Lightbulb",     module: "ri"         },
       { label: "Improvement Board",href: "/service-improvement-board", icon: "Target",        module: "ri"         },
       { label: "Resolution Meetings",href: "/complaint-resolution-meetings",icon: "MessageCircle",module: "ri"      },
+      { label: "Board Reports",   href: "/board-reporting",            icon: "ScrollText",    module: "ri"         },
     ],
   },
 
@@ -626,4 +631,9 @@ export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   { label: "Resolution Meeting",icon: "MessageCircle",href: "/complaint-resolution-meetings",     group: "Compliance", module: "ri"           },
   { label: "Training Update", icon: "GraduationCap",href: "/mandatory-training-matrix",            group: "Team",       module: "training"     },
   { label: "Success Factor",  icon: "Star",      href: "/placement-success-factors",              group: "Compliance", module: "ri"           },
+  { label: "Disclosure Record",icon: "ShieldAlert",href: "/disclosure-log",                        group: "Care",       module: "safeguarding" },
+  { label: "Dietary Plan",    icon: "Utensils",  href: "/dietary-requirements",                  group: "Care",       module: "young-people" },
+  { label: "Observance Update",icon: "Heart",    href: "/religious-observance-log",               group: "Care",       module: "young-people" },
+  { label: "Board Report",    icon: "ScrollText",href: "/board-reporting",                        group: "Compliance", module: "ri"           },
+  { label: "Anniversary",     icon: "Cake",      href: "/placement-anniversaries",                group: "Care",       module: "young-people" },
 ];
