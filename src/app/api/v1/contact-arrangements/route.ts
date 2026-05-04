@@ -1,0 +1,31 @@
+import { NextRequest, NextResponse } from "next/server";
+import { intelligenceDb } from "@/lib/intelligence/store";
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const homeId   = searchParams.get("home_id");
+  const childId  = searchParams.get("child_id");
+
+  let records;
+  if (childId) {
+    records = intelligenceDb.contactArrangements.findByChild(childId);
+  } else if (homeId) {
+    records = intelligenceDb.contactArrangements.findAll(homeId);
+  } else {
+    return NextResponse.json({ error: "home_id or child_id required" }, { status: 400 });
+  }
+
+  // Enrich with contact person details
+  const enriched = records.map((arr) => ({
+    ...arr,
+    contact_person: intelligenceDb.contactPersons.findById(arr.contact_person_id),
+  }));
+
+  return NextResponse.json({ data: enriched, meta: { total: enriched.length } });
+}
+
+export async function POST(req: NextRequest) {
+  const body   = await req.json();
+  const record = intelligenceDb.contactArrangements.create(body);
+  return NextResponse.json({ data: record }, { status: 201 });
+}

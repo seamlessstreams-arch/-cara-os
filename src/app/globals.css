@@ -1,26 +1,153 @@
+/* ── Avenir Next LT Pro — local font declarations ─────────────────────────── */
+/* Place licensed font files in /public/fonts/ to activate.                    */
+/* Falls back gracefully to Avenir Next → Avenir → Inter when absent.          */
+
+@font-face {
+  font-family: "Avenir Next LT Pro";
+  src: url("/fonts/AvenirNextLTPro-Regular.woff2") format("woff2"),
+       url("/fonts/AvenirNextLTPro-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Avenir Next LT Pro";
+  src: url("/fonts/AvenirNextLTPro-Medium.woff2") format("woff2"),
+       url("/fonts/AvenirNextLTPro-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Avenir Next LT Pro";
+  src: url("/fonts/AvenirNextLTPro-Demi.woff2") format("woff2"),
+       url("/fonts/AvenirNextLTPro-Demi.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Avenir Next LT Pro";
+  src: url("/fonts/AvenirNextLTPro-Bold.woff2") format("woff2"),
+       url("/fonts/AvenirNextLTPro-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Tailwind v4 import ───────────────────────────────────────────────────── */
 @import "tailwindcss";
 
+/* ── Design tokens ────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Font stack — Avenir with graceful fallback chain */
+  --font-sans: "Avenir Next LT Pro", "Avenir Next", Avenir, ui-sans-serif,
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Colour palette */
+  --background: #f7f8fa;
+  --foreground: #111827;
+
+  /* Sidebar */
+  --sidebar-bg:           #ffffff;
+  --sidebar-border:       #e5e7eb;
+  --sidebar-active-bg:    #eef2ff;
+  --sidebar-active-text:  #1e3a8a;
+  --sidebar-text:         #374151;
+  --sidebar-muted:        #6b7280;
+  --sidebar-hover-bg:     #f9fafb;
+
+  /* Status colours */
+  --status-complete:        #16a34a;
+  --status-in-progress:     #2563eb;
+  --status-overdue:         #dc2626;
+  --status-needs-review:    #d97706;
+  --status-oversight:       #7c3aed;
+  --status-aria:            #0891b2;
+  --status-escalated:       #db2777;
+  --status-low:             #16a34a;
+  --status-medium:          #d97706;
+  --status-high:            #dc2626;
+  --status-critical:        #9f1239;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ── Base styles ──────────────────────────────────────────────────────────── */
+html,
 body {
+  font-family: var(--font-sans);
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  font-family: var(--font-sans);
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ── Animation utilities ──────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+.animate-slide-in {
+  animation: slideInRight 0.2s ease-out;
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+.animate-slide-in-left {
+  animation: slideInLeft 0.2s ease-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1;   }
+  50%       { opacity: 0.4; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Aria drawer slide ────────────────────────────────────────────────────── */
+@keyframes drawerSlide {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.animate-drawer {
+  animation: drawerSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
