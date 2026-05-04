@@ -290,6 +290,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Pest Control",     href: "/building-pest-control",     icon: "Bug",            module: "buildings"     },
       { label: "Prevent Screening",href: "/child-prevent-radicalisation-screening",icon: "Shield",module: "safeguarding"  },
       { label: "Smoking / Vaping", href: "/child-smoking-vaping-tracker",icon: "Cigarette",     module: "young-people"  },
+      { label: "Money Management", href: "/child-money-management-budgeting",icon: "PoundSterling",module: "young-people"  },
       { label: "Bedroom Profile",  href: "/bedroom-personalisation",   icon: "Home",           module: "young-people"  },
       { label: "Living Skills Assessment",href: "/independent-living-skills-assessment",icon: "TrendingUp",module: "young-people"  },
       { label: "Life Story",        href: "/life-story",                icon: "BookHeart",      module: "young-people"  },
@@ -930,4 +931,5 @@ export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   { label: "Pest Treatment",  icon: "Bug",       href: "/building-pest-control",                  group: "Compliance", module: "buildings"    },
   { label: "Prevent Screen",  icon: "Shield",    href: "/child-prevent-radicalisation-screening", group: "Compliance", module: "safeguarding" },
   { label: "Smoking Note",    icon: "Cigarette", href: "/child-smoking-vaping-tracker",           group: "Care",       module: "young-people" },
+  { label: "Money Skill",     icon: "PoundSterling",href: "/child-money-management-budgeting",    group: "Care",       module: "young-people" },
 ];
