@@ -218,6 +218,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Feedback on Staff",href: "/child-feedback-on-staff",   icon: "MessageCircle",  module: "young-people"  },
       { label: "Media Consent",    href: "/media-publicity-consent",   icon: "Camera",         module: "young-people"  },
       { label: "Cultural Visits",  href: "/museum-cultural-visits-tracker",icon: "Sparkles",   module: "young-people"  },
+      { label: "Clothing Shopping",href: "/child-clothing-shopping-trips",icon: "Shirt",       module: "young-people"  },
+      { label: "Disruption Prevention",href: "/placement-disruption-prevention-plan",icon: "Shield",module: "young-people"  },
       { label: "Bedroom Profile",  href: "/bedroom-personalisation",   icon: "Home",           module: "young-people"  },
       { label: "Living Skills Assessment",href: "/independent-living-skills-assessment",icon: "TrendingUp",module: "young-people"  },
       { label: "Life Story",        href: "/life-story",                icon: "BookHeart",      module: "young-people"  },
@@ -281,6 +283,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Training Matrix", href: "/mandatory-training-matrix",  icon: "GraduationCap", module: "training"     },
       { label: "Recognition Log", href: "/staff-recognition-log",      icon: "Award",         module: "staff"        },
       { label: "Operational Meetings",href: "/operational-meetings",   icon: "Users",         module: "staff"        },
+      { label: "Agency Induction",href: "/agency-staff-induction",     icon: "UserCheck",     module: "staff"        },
       { label: "End-of-Shift Check",href: "/end-of-shift-checklist",   icon: "ClipboardCheck",module: "staff"        },
       { label: "On-Call Rota",    href: "/on-call-rota",                icon: "Phone",         module: "staff"        },
     ],
@@ -338,6 +341,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Maintenance Schedule",href: "/maintenance-schedule",    icon: "Wrench",         module: "maintenance"},
       { label: "Utility Bills",   href: "/utility-bills-tracker",      icon: "Zap",             module: "buildings" },
       { label: "Cleaning Rota",   href: "/cleaning-rota",              icon: "Sparkles",        module: "buildings" },
+      { label: "Food Budget",     href: "/food-budget-tracker",        icon: "Utensils",        module: "buildings" },
     ],
   },
 
@@ -419,6 +423,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Data Breach Log",   href: "/data-breach-log",           icon: "Lock",          module: "ri"         },
       { label: "Ofsted Engagement", href: "/ofsted-engagement-log",     icon: "Award",         module: "ri"         },
       { label: "Registration Log",  href: "/registration-changes-log",  icon: "FileText",      module: "ri"         },
+      { label: "Regulator Correspondence",href: "/regulatory-correspondence-tracker",icon: "Mail",module: "ri"      },
     ],
   },
 
@@ -766,4 +771,9 @@ export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   { label: "Cleaning Entry",  icon: "Sparkles",  href: "/cleaning-rota",                          group: "Team",       module: "buildings"    },
   { label: "Ofsted Contact",  icon: "Award",     href: "/ofsted-engagement-log",                  group: "Compliance", module: "ri"           },
   { label: "Registration Update",icon: "FileText",href: "/registration-changes-log",               group: "Compliance", module: "ri"           },
+  { label: "Regulator Letter",icon: "Mail",      href: "/regulatory-correspondence-tracker",       group: "Compliance", module: "ri"           },
+  { label: "Agency Induction",icon: "UserCheck", href: "/agency-staff-induction",                  group: "Team",       module: "staff"        },
+  { label: "Shopping Trip",   icon: "Shirt",     href: "/child-clothing-shopping-trips",           group: "Care",       module: "young-people" },
+  { label: "Food Week",       icon: "Utensils",  href: "/food-budget-tracker",                    group: "Team",       module: "buildings"    },
+  { label: "Disruption Plan", icon: "Shield",    href: "/placement-disruption-prevention-plan",   group: "Care",       module: "young-people" },
 ];
