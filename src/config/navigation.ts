@@ -291,6 +291,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Prevent Screening",href: "/child-prevent-radicalisation-screening",icon: "Shield",module: "safeguarding"  },
       { label: "Smoking / Vaping", href: "/child-smoking-vaping-tracker",icon: "Cigarette",     module: "young-people"  },
       { label: "Money Management", href: "/child-money-management-budgeting",icon: "PoundSterling",module: "young-people"  },
+      { label: "Cultural Mentor",  href: "/child-cultural-religious-mentor",icon: "Star",         module: "young-people"  },
       { label: "Bedroom Profile",  href: "/bedroom-personalisation",   icon: "Home",           module: "young-people"  },
       { label: "Living Skills Assessment",href: "/independent-living-skills-assessment",icon: "TrendingUp",module: "young-people"  },
       { label: "Life Story",        href: "/life-story",                icon: "BookHeart",      module: "young-people"  },
@@ -932,4 +933,5 @@ export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   { label: "Prevent Screen",  icon: "Shield",    href: "/child-prevent-radicalisation-screening", group: "Compliance", module: "safeguarding" },
   { label: "Smoking Note",    icon: "Cigarette", href: "/child-smoking-vaping-tracker",           group: "Care",       module: "young-people" },
   { label: "Money Skill",     icon: "PoundSterling",href: "/child-money-management-budgeting",    group: "Care",       module: "young-people" },
+  { label: "Mentor Update",   icon: "Star",      href: "/child-cultural-religious-mentor",        group: "Care",       module: "young-people" },
 ];
