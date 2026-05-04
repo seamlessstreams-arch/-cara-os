@@ -216,6 +216,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Menstrual Support",href: "/menstrual-health-tracker",  icon: "Heart",          module: "young-people"  },
       { label: "RSE Tracker",      href: "/rse-tracker",               icon: "BookOpen",       module: "young-people"  },
       { label: "Feedback on Staff",href: "/child-feedback-on-staff",   icon: "MessageCircle",  module: "young-people"  },
+      { label: "Media Consent",    href: "/media-publicity-consent",   icon: "Camera",         module: "young-people"  },
       { label: "Bedroom Profile",  href: "/bedroom-personalisation",   icon: "Home",           module: "young-people"  },
       { label: "Living Skills Assessment",href: "/independent-living-skills-assessment",icon: "TrendingUp",module: "young-people"  },
       { label: "Life Story",        href: "/life-story",                icon: "BookHeart",      module: "young-people"  },
@@ -332,6 +333,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Transport RAs",   href: "/transport-risk-assessments",icon: "Car",             module: "vehicles"  },
       { label: "Vehicle Pre-Use",  href: "/vehicle-pre-use-check",     icon: "Car",             module: "vehicles"  },
       { label: "Kitchen Hygiene",  href: "/kitchen-hygiene-monitoring",icon: "Utensils",        module: "buildings" },
+      { label: "Insurance",       href: "/insurance-tracker",          icon: "Shield",          module: "buildings" },
+      { label: "Maintenance Schedule",href: "/maintenance-schedule",    icon: "Wrench",         module: "maintenance"},
     ],
   },
 
@@ -409,6 +412,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Community Feedback",href: "/community-feedback",        icon: "MessageCircle", module: "ri"         },
       { label: "Management Walkround",href: "/management-walkround",    icon: "Eye",           module: "ri"         },
       { label: "Statutory Checks",  href: "/statutory-checks-summary",  icon: "ShieldCheck",   module: "ri"         },
+      { label: "Inspection Pack",   href: "/inspection-readiness-pack", icon: "FileCheck",     module: "ri"         },
+      { label: "Data Breach Log",   href: "/data-breach-log",           icon: "Lock",          module: "ri"         },
     ],
   },
 
@@ -746,4 +751,9 @@ export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   { label: "Staff Feedback",  icon: "MessageCircle",href: "/child-feedback-on-staff",              group: "Care",       module: "young-people" },
   { label: "Walkround",       icon: "Eye",      href: "/management-walkround",                    group: "Compliance", module: "ri"           },
   { label: "Statutory Check Update",icon: "ShieldCheck",href: "/statutory-checks-summary",          group: "Compliance", module: "ri"           },
+  { label: "Readiness Item",  icon: "FileCheck", href: "/inspection-readiness-pack",              group: "Compliance", module: "ri"           },
+  { label: "Data Breach Entry",icon: "Lock",     href: "/data-breach-log",                        group: "Compliance", module: "ri"           },
+  { label: "Insurance Renewal",icon: "Shield",   href: "/insurance-tracker",                     group: "Team",       module: "buildings"    },
+  { label: "Maintenance Job", icon: "Wrench",    href: "/maintenance-schedule",                  group: "Team",       module: "maintenance"  },
+  { label: "Media Consent",   icon: "Camera",    href: "/media-publicity-consent",                group: "Care",       module: "young-people" },
 ];
