@@ -43,11 +43,11 @@ function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
 }
 
 // ─── Command registry ───────────────────────────────────────────────────────
-// A focused subset of commands wired through the universal layer for Phase 1.
-// Domain-specific commands (management oversight, voice of child, HR Process
-// Guardian) keep their own deeper engines and are not duplicated here.
+// Every AriaCommandId is wired here. Domain-specific engines (management
+// oversight, voice of child, HR Process Guardian) keep their own deeper
+// analysis and are not duplicated — they write results back into aria_outputs.
 
-export const ARIA_COMMANDS: Partial<Record<AriaCommandId, AriaCommandSpec>> = {
+export const ARIA_COMMANDS: Record<AriaCommandId, AriaCommandSpec> = {
   improve_writing: {
     id: "improve_writing",
     label: "Improve writing",
@@ -1051,6 +1051,272 @@ export const ARIA_COMMANDS: Partial<Record<AriaCommandId, AriaCommandSpec>> = {
     riskLevel: "high",
     systemPromptFragment:
       "List missing safer-recruitment evidence on the source. Cover application form completeness, employment history, gaps explored, identity, right to work, enhanced DBS, barred list where applicable, references received and verified, interview notes, qualification check, health declaration, induction plan, manager sign-off. Do not declare a candidate as safe; only identify what is missing.",
+  },
+  safer_recruitment_checklist_review: {
+    id: "safer_recruitment_checklist_review",
+    label: "Review safer recruitment checklist",
+    description: "Review the full safer-recruitment checklist and summarise the gate position.",
+    modules: ["safer_recruitment"],
+    requiredPermission: "aria.recruitment",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Review the safer-recruitment checklist against Regulation 32/33 requirements. Summarise which checks are satisfied, which are outstanding, and whether a senior risk acceptance would be appropriate. Do not declare a candidate safe or unsafe; present the evidence position.",
+  },
+
+  // ── RI / QA ──────────────────────────────────────────────────────────────
+  responsible_individual_qa_summary: {
+    id: "responsible_individual_qa_summary",
+    label: "RI quality assurance summary",
+    description: "Draft a Responsible Individual quality-assurance summary across the home.",
+    modules: ["ri_dashboard", "quality_assurance"],
+    requiredPermission: "aria.analyse_risk",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Draft a Responsible Individual quality-assurance summary. Cover staffing, safeguarding, child voice, management oversight quality, incident themes, complaints, compliance position, and areas of concern. Stay grounded in the source. Recommend RI review on every output.",
+  },
+  regulation_44_summary: {
+    id: "regulation_44_summary",
+    label: "Draft Regulation 44 summary",
+    description: "Draft a Regulation 44 independent visitor report summary.",
+    modules: ["ri_dashboard", "quality_assurance", "regulation_44"],
+    requiredPermission: "aria.analyse_risk",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Draft a Regulation 44 independent visitor report summary. Cover the visit date, children spoken to, staff spoken to, environment, records reviewed, findings, recommendations, and the visitor's overall assessment. Stay grounded in the source. This is a draft for the RI to review and finalise.",
+  },
+  regulation_45_summary: {
+    id: "regulation_45_summary",
+    label: "Draft Regulation 45 summary",
+    description: "Draft a Regulation 45 quality-of-care review summary.",
+    modules: ["ri_dashboard", "quality_assurance", "regulation_45"],
+    requiredPermission: "aria.analyse_risk",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Draft a Regulation 45 quality-of-care review summary covering the six-monthly period. Aggregate Regulation 44 findings, incident trends, complaint themes, child voice, staffing stability, training compliance, and improvement trajectory. Stay grounded in the source. Recommend RI review on every output.",
+  },
+  monthly_quality_summary: {
+    id: "monthly_quality_summary",
+    label: "Draft monthly quality summary",
+    description: "Draft a monthly quality summary for the home.",
+    modules: ["ri_dashboard", "quality_assurance"],
+    requiredPermission: "aria.summarise",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Draft a monthly quality summary. Cover incidents, complaints, safeguarding, child voice, staffing, management oversight, training, and any themes or patterns. Stay grounded in the source. Present data, not opinions.",
+  },
+  identify_home_wide_themes: {
+    id: "identify_home_wide_themes",
+    label: "Identify home-wide themes",
+    description: "Surface recurring themes across the home's records.",
+    modules: ["ri_dashboard", "quality_assurance", "management_oversight"],
+    requiredPermission: "aria.summarise",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Surface recurring themes across the source records. Group by category (safeguarding, behaviour, staffing, recording quality, child voice, environment). For each theme: what the pattern is, how many records support it, and what it might mean for practice. Stay grounded in the source.",
+  },
+  identify_repeated_shortfalls: {
+    id: "identify_repeated_shortfalls",
+    label: "Identify repeated shortfalls",
+    description: "Flag shortfalls that recur across records or audits.",
+    modules: ["ri_dashboard", "quality_assurance", "audit"],
+    requiredPermission: "aria.analyse_risk",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Identify shortfalls that recur across the source. For each: what the shortfall is, how many times it appears, the records that evidence it, and what action has or has not been taken. Flag any shortfall that has been raised before and not resolved.",
+  },
+  create_service_improvement_plan: {
+    id: "create_service_improvement_plan",
+    label: "Create service improvement plan",
+    description: "Build a service improvement plan from the source findings.",
+    modules: ["ri_dashboard", "quality_assurance", "audit"],
+    requiredPermission: "aria.create_tasks",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Build a service improvement plan. Each action: quality area, finding, action, owner role, due-day count, priority, and what success looks like. Group by Quality Standard where possible. Stay grounded in the source.",
+  },
+  prepare_ofsted_readiness_summary: {
+    id: "prepare_ofsted_readiness_summary",
+    label: "Prepare Ofsted readiness summary",
+    description: "Draft a summary of the home's readiness position against the SCCIF.",
+    modules: ["ri_dashboard", "quality_assurance"],
+    requiredPermission: "aria.analyse_risk",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Draft an Ofsted readiness summary against the SCCIF judgement areas: overall experiences and progress of children, how well children are helped and protected, and the effectiveness of leaders and managers. For each area: strengths evidenced in the source, areas for development, and critical gaps. Recommend RM/RI review on every output.",
+  },
+  audit_evidence_summary: {
+    id: "audit_evidence_summary",
+    label: "Summarise audit evidence",
+    description: "Compile an evidence summary suitable for an auditor or inspector.",
+    modules: ["ri_dashboard", "quality_assurance", "audit"],
+    requiredPermission: "aria.summarise",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Compile an evidence summary suitable for an auditor or inspector. Cover what evidence exists, where it is held, key dates, and any gaps. Stay grounded in the source. Present evidence, not opinion.",
+  },
+
+  // ── Tasks (domain-specific creators) ──────────────────────────────────────
+  create_task_from_incident: {
+    id: "create_task_from_incident",
+    label: "Create task from incident",
+    description: "Create a structured task from an incident record.",
+    modules: ["incident"],
+    requiredPermission: "aria.create_tasks",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Create a structured task from the incident. Title, description, owner role, due-day count, priority. Mark safeguarding follow-ups as urgent. Link back to the incident record. Do not invent actions the incident does not raise.",
+  },
+  create_task_from_audit: {
+    id: "create_task_from_audit",
+    label: "Create task from audit",
+    description: "Create a structured task from an audit finding.",
+    modules: ["audit"],
+    requiredPermission: "aria.create_tasks",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Create a structured task from the audit finding. Title, description, quality area, owner role, due-day count, priority, and what done looks like. Link back to the audit finding.",
+  },
+  create_task_from_oversight: {
+    id: "create_task_from_oversight",
+    label: "Create task from oversight",
+    description: "Create a structured task from a management oversight comment.",
+    modules: ["management_oversight"],
+    requiredPermission: "aria.create_tasks",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Create a structured task from the oversight comment. Title, description, owner role, due-day count, priority. Link back to the oversight record. Do not invent actions the oversight does not raise.",
+  },
+  escalate_overdue_task: {
+    id: "escalate_overdue_task",
+    label: "Draft overdue task escalation",
+    description: "Draft an escalation note for an overdue task.",
+    modules: [],
+    requiredPermission: "aria.create_tasks",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Draft an escalation note for the overdue task. Cover: original task, who it was assigned to, original due date, days overdue, impact of the delay, and recommended next step. Be factual and professional.",
+  },
+
+  // ── Calendar ─────────────────────────────────────────────────────────────
+  prepare_meeting_agenda: {
+    id: "prepare_meeting_agenda",
+    label: "Prepare meeting agenda",
+    description: "Build a meeting agenda from the source context.",
+    modules: ["calendar", "supervision", "team_meeting"],
+    requiredPermission: "aria.generate_drafts",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "low",
+    systemPromptFragment:
+      "Build a meeting agenda. Items should be specific, with brief context notes for each item and a suggested time allocation. Include standing items relevant to children's homes (safeguarding updates, child voice, staffing, training, maintenance). Include AOB.",
+  },
+  draft_meeting_minutes: {
+    id: "draft_meeting_minutes",
+    label: "Draft meeting minutes",
+    description: "Convert meeting notes into structured minutes.",
+    modules: ["calendar", "supervision", "team_meeting"],
+    requiredPermission: "aria.generate_drafts",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "low",
+    systemPromptFragment:
+      "Turn the source notes into meeting minutes. Sections: meeting title, date, attendees, apologies, items discussed, decisions, actions with owner and due date, next meeting date. Stay grounded in the source.",
+  },
+  create_calendar_follow_up_tasks: {
+    id: "create_calendar_follow_up_tasks",
+    label: "Create follow-up tasks from meeting",
+    description: "Extract follow-up tasks from meeting notes or minutes.",
+    modules: ["calendar", "supervision", "team_meeting"],
+    requiredPermission: "aria.create_tasks",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Extract follow-up tasks from the meeting notes. Each task: title, description, owner (name or role from the source), due-day count, priority. Mark safeguarding-touching actions as urgent. Do not invent tasks the source does not raise.",
+  },
+  identify_upcoming_compliance_dates: {
+    id: "identify_upcoming_compliance_dates",
+    label: "Identify upcoming compliance dates",
+    description: "Surface upcoming regulatory and compliance deadlines.",
+    modules: ["calendar", "ri_dashboard", "quality_assurance"],
+    requiredPermission: "aria.summarise",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Surface upcoming compliance and regulatory deadlines from the source. Cover DBS renewals, training expiry, Regulation 44 visit due dates, Regulation 45 review periods, probation milestones, supervision due dates, and any home-specific compliance requirements. Order by date.",
+  },
+  equality_diversity_calendar_prompt: {
+    id: "equality_diversity_calendar_prompt",
+    label: "Equality and diversity calendar prompt",
+    description: "Suggest equality and diversity awareness activities for the upcoming period.",
+    modules: ["calendar", "team_meeting"],
+    requiredPermission: "aria.generate_drafts",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "low",
+    systemPromptFragment:
+      "Suggest equality and diversity awareness activities for the children's home for the upcoming period. Consider cultural celebrations, awareness days, and opportunities to support children's identity development. Be age-appropriate and relevant to residential childcare. Stay grounded in any context provided.",
+  },
+  trigger_related_document_update: {
+    id: "trigger_related_document_update",
+    label: "Trigger related document update",
+    description: "Identify documents that may need updating following a change.",
+    modules: ["documents"],
+    requiredPermission: "aria.summarise",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Identify documents, plans, or records that may need updating following the change described in the source. For each: document type, why it may need updating, and suggested action. Stay grounded in the source.",
   },
 };
 
