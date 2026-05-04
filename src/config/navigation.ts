@@ -181,6 +181,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Dietary Requirements",href: "/dietary-requirements",   icon: "Utensils",       module: "young-people"  },
       { label: "Religious Observance",href: "/religious-observance-log",icon: "Heart",         module: "young-people"  },
       { label: "Anniversaries",    href: "/placement-anniversaries",   icon: "Cake",           module: "young-people"  },
+      { label: "Bank Account",     href: "/child-bank-account",        icon: "Wallet",         module: "young-people"  },
+      { label: "Emergency Meds",   href: "/emergency-medication-protocols",icon: "AlertOctagon",module: "young-people"  },
+      { label: "LAC Review Prep",  href: "/lac-review-prep",           icon: "Calendar",       module: "young-people"  },
+      { label: "Family Tree",      href: "/family-tree-genogram",      icon: "Users",          module: "young-people"  },
       { label: "Life Story",        href: "/life-story",                icon: "BookHeart",      module: "young-people"  },
       { label: "Chronology",       href: "/intelligence/chronology",   icon: "ScrollText",     module: "young-people"  },
       { label: "Documents",        href: "/documents",                 icon: "FileText",       module: "documents"     },
@@ -354,6 +358,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Improvement Board",href: "/service-improvement-board", icon: "Target",        module: "ri"         },
       { label: "Resolution Meetings",href: "/complaint-resolution-meetings",icon: "MessageCircle",module: "ri"      },
       { label: "Board Reports",   href: "/board-reporting",            icon: "ScrollText",    module: "ri"         },
+      { label: "Handover Audits", href: "/handover-quality-audit",     icon: "ClipboardCheck",module: "ri"         },
     ],
   },
 
@@ -636,4 +641,9 @@ export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   { label: "Observance Update",icon: "Heart",    href: "/religious-observance-log",               group: "Care",       module: "young-people" },
   { label: "Board Report",    icon: "ScrollText",href: "/board-reporting",                        group: "Compliance", module: "ri"           },
   { label: "Anniversary",     icon: "Cake",      href: "/placement-anniversaries",                group: "Care",       module: "young-people" },
+  { label: "Bank Transaction", icon: "Wallet",   href: "/child-bank-account",                    group: "Care",       module: "young-people" },
+  { label: "Emergency Med Protocol",icon: "AlertOctagon",href: "/emergency-medication-protocols",  group: "Care",       module: "young-people" },
+  { label: "LAC Review Prep", icon: "Calendar",  href: "/lac-review-prep",                       group: "Care",       module: "young-people" },
+  { label: "Handover Audit",  icon: "ClipboardCheck",href: "/handover-quality-audit",              group: "Compliance", module: "ri"           },
+  { label: "Genogram Update", icon: "Users",     href: "/family-tree-genogram",                  group: "Care",       module: "young-people" },
 ];
