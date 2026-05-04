@@ -552,6 +552,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "HR Process Guardian", href: "/intelligence/hr/process-guardian",     icon: "Gavel",       module: "staff"        },
       { label: "HR Suspension Tool",  href: "/intelligence/hr/suspension-decision",  icon: "ShieldAlert", module: "staff"        },
       { label: "HR Letter Generator", href: "/intelligence/hr/letters",              icon: "Mail",        module: "staff"        },
+      { label: "Safer Recruitment Gate",href: "/intelligence/hr/safer-recruitment",  icon: "ShieldCheck", module: "recruitment"  },
       { label: "Key Work Builder",    href: "/intelligence/aria/keywork",            icon: "ListChecks",  module: "young-people" },
       { label: "L.I.V.E.R.S. Planner",href: "/intelligence/aria/livers",            icon: "Layers",      module: "young-people" },
       { label: "Child Resources",     href: "/intelligence/aria/resources",          icon: "Puzzle",      module: "young-people" },

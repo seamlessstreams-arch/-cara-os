@@ -46,10 +46,21 @@ Shipped in Phase 2.1:
   `src/lib/hr/letterTemplates.ts`, `/api/hr/letters`, and
   `/intelligence/hr/letters`.
 
+Shipped in Phase 2.2:
+
+- Safer Recruitment Gate — `src/lib/hr/saferRecruitmentGate.ts`,
+  `/api/hr/safer-recruitment` (GET + PATCH + POST), and
+  `/intelligence/hr/safer-recruitment`. Manager checklist with edit
+  controls per check, evidence requirement on each unmet item, gate
+  evaluation, manager sign-off button, and senior risk acceptance
+  entry (RI-only by permission). The gate flips
+  `approved_for_unsupervised` on `hr_staff_profiles` only when the
+  evaluation comes back approved. Senior risk acceptance requires a
+  written rationale of at least 30 characters.
+
 Still to ship in Phase 2:
 
 - HR Risk Command Centre dashboard
-- Safer Recruitment gate (with senior risk acceptance)
 - Investigation Builder (terms of reference, evidence, findings)
 - Safeguarding / LADO HR pathway
 - Probation pathway UI
