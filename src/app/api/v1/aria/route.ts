@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import {
+  ARIA_WRITING_STYLE_PROMPT,
+  applyAriaPostprocessor,
+} from "@/lib/aria/writingStyleRules";
 
 // Client is created lazily per request so process.env is always resolved at
 // runtime rather than at module-load time (important for Turbopack / Next.js 16).
@@ -1127,11 +1131,15 @@ export async function POST(req: NextRequest) {
     },
   ];
 
+  // Append the Aria writing-style rules to the system block so every mode in
+  // this route inherits the same UK English, child-centred, trauma-informed
+  // tone as the standalone Aria engines in src/lib/aria/*. The combined block
+  // is still cache-controlled, so prompt cache reads still apply.
   const systemBlock: Anthropic.TextBlockParam & {
     cache_control: { type: "ephemeral" };
   } = {
     type: "text",
-    text: ARIA_SYSTEM_PROMPT,
+    text: `${ARIA_SYSTEM_PROMPT}\n\n${ARIA_WRITING_STYLE_PROMPT}`,
     cache_control: { type: "ephemeral" },
   };
 
@@ -1219,15 +1227,29 @@ export async function POST(req: NextRequest) {
       messages: messagesPayload,
     });
 
-    const responseText =
+    const rawResponseText =
       message.content[0]?.type === "text" ? message.content[0].text : "";
 
     // For JSON-output modes, attempt to parse and return structured data
     let parsedResponse: unknown = null;
-    if (mode === "document_intel" || mode === "document_classify" || mode === "document_to_form" || mode === "compute_experience_snapshot" || mode === "pattern_scan" || mode === "compute_home_climate" || mode === "situation_review" || mode === "generate_oversight" || mode === "keywork_session_plan" || mode === "check_missing_evidence" || mode === "recommendations" || mode === "safeguarding_scan" || mode === "interactive_session_summary" || mode === "livers_analysis" || mode === "livers_intervention" || mode === "livers_escalation" || mode === "learning_workshop_plan" || mode === "learning_flashcards" || mode === "learning_quiz" || mode === "learning_guidance_note" || mode === "training_needs_analysis" || mode === "curriculum_builder" || mode === "learning_session_plan" || mode === "learning_worksheet" || mode === "learning_safety_plan" || mode === "learning_micro_learning" || mode === "return_home_interview" || mode === "voice_summary" || mode === "practice_bank") {
+    const JSON_OUTPUT_MODES = new Set([
+      "document_intel", "document_classify", "document_to_form",
+      "compute_experience_snapshot", "pattern_scan", "compute_home_climate",
+      "situation_review", "generate_oversight", "keywork_session_plan",
+      "check_missing_evidence", "recommendations", "safeguarding_scan",
+      "interactive_session_summary", "livers_analysis", "livers_intervention",
+      "livers_escalation", "learning_workshop_plan", "learning_flashcards",
+      "learning_quiz", "learning_guidance_note", "training_needs_analysis",
+      "curriculum_builder", "learning_session_plan", "learning_worksheet",
+      "learning_safety_plan", "learning_micro_learning", "return_home_interview",
+      "voice_summary", "practice_bank",
+    ]);
+    const isJsonMode = JSON_OUTPUT_MODES.has(mode);
+
+    if (isJsonMode) {
       try {
         // Strip any markdown code fences if present
-        const cleaned = responseText
+        const cleaned = rawResponseText
           .replace(/^```json\s*/i, "")
           .replace(/^```\s*/i, "")
           .replace(/\s*```$/i, "")
@@ -1238,6 +1260,15 @@ export async function POST(req: NextRequest) {
         parsedResponse = null;
       }
     }
+
+    // Apply the Aria writing-style post-processor to plain-prose responses.
+    // For JSON modes we leave the raw text alone so the parsed JSON we return
+    // alongside it stays consistent with the source text. The system prompt
+    // change above already nudges the model to follow the same style inside
+    // JSON narrative fields.
+    const responseText = isJsonMode
+      ? rawResponseText
+      : applyAriaPostprocessor(rawResponseText);
 
     return NextResponse.json({
       data: {
