@@ -546,6 +546,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Situation Review",    href: "/intelligence/aria/situation",          icon: "Eye",         module: "dashboard"    },
       { label: "Oversight Radar",     href: "/intelligence/aria/oversight-radar",    icon: "Radar",       module: "dashboard"    },
       { label: "Oversight Writer",    href: "/intelligence/aria/oversight",          icon: "ScrollText",  module: "dashboard"    },
+      { label: "Oversight Engine",    href: "/intelligence/aria/management-oversight",icon: "ShieldCheck",module: "dashboard"    },
       { label: "Key Work Builder",    href: "/intelligence/aria/keywork",            icon: "ListChecks",  module: "young-people" },
       { label: "L.I.V.E.R.S. Planner",href: "/intelligence/aria/livers",            icon: "Layers",      module: "young-people" },
       { label: "Child Resources",     href: "/intelligence/aria/resources",          icon: "Puzzle",      module: "young-people" },
