@@ -548,6 +548,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Oversight Writer",    href: "/intelligence/aria/oversight",          icon: "ScrollText",  module: "dashboard"    },
       { label: "Oversight Engine",    href: "/intelligence/aria/management-oversight",icon: "ShieldCheck",module: "dashboard"    },
       { label: "Voice of the Child",  href: "/intelligence/aria/voice-of-child",     icon: "Quote",       module: "young-people" },
+      { label: "Aria Compose",        href: "/intelligence/aria/compose",            icon: "Sparkles",    module: "dashboard"    },
       { label: "HR Process Guardian", href: "/intelligence/hr/process-guardian",     icon: "Gavel",       module: "staff"        },
       { label: "HR Suspension Tool",  href: "/intelligence/hr/suspension-decision",  icon: "ShieldAlert", module: "staff"        },
       { label: "HR Letter Generator", href: "/intelligence/hr/letters",              icon: "Mail",        module: "staff"        },
