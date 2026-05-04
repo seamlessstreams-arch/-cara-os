@@ -296,6 +296,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Asbestos Register",href: "/building-asbestos-register",icon: "Shield",         module: "buildings"     },
       { label: "Cycling",          href: "/child-bike-cycling-tracker",icon: "Bike",           module: "young-people"  },
       { label: "Religious Rites",  href: "/child-religious-rite-milestones",icon: "Sparkles",     module: "young-people"  },
+      { label: "Clubs & Societies",href: "/child-extracurricular-clubs",icon: "Users",          module: "young-people"  },
+      { label: "School Events",    href: "/child-school-engagement-events",icon: "Calendar",     module: "young-people"  },
       { label: "Bedroom Profile",  href: "/bedroom-personalisation",   icon: "Home",           module: "young-people"  },
       { label: "Living Skills Assessment",href: "/independent-living-skills-assessment",icon: "TrendingUp",module: "young-people"  },
       { label: "Life Story",        href: "/life-story",                icon: "BookHeart",      module: "young-people"  },
@@ -942,4 +944,6 @@ export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   { label: "Asbestos Note",   icon: "Shield",    href: "/building-asbestos-register",             group: "Compliance", module: "buildings"    },
   { label: "Cycling Update",  icon: "Bike",      href: "/child-bike-cycling-tracker",             group: "Care",       module: "young-people" },
   { label: "Rite Milestone",  icon: "Sparkles",  href: "/child-religious-rite-milestones",        group: "Care",       module: "young-people" },
+  { label: "Club Update",     icon: "Users",     href: "/child-extracurricular-clubs",            group: "Care",       module: "young-people" },
+  { label: "School Event",    icon: "Calendar",  href: "/child-school-engagement-events",         group: "Care",       module: "young-people" },
 ];
