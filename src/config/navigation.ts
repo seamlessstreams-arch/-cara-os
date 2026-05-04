@@ -213,6 +213,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Dental",           href: "/dental-records",            icon: "Smile",          module: "young-people"  },
       { label: "Opticians",        href: "/opticians-records",         icon: "Eye",            module: "young-people"  },
       { label: "Homework Support", href: "/homework-support-log",      icon: "GraduationCap",  module: "young-people"  },
+      { label: "Menstrual Support",href: "/menstrual-health-tracker",  icon: "Heart",          module: "young-people"  },
+      { label: "RSE Tracker",      href: "/rse-tracker",               icon: "BookOpen",       module: "young-people"  },
+      { label: "Feedback on Staff",href: "/child-feedback-on-staff",   icon: "MessageCircle",  module: "young-people"  },
       { label: "Bedroom Profile",  href: "/bedroom-personalisation",   icon: "Home",           module: "young-people"  },
       { label: "Living Skills Assessment",href: "/independent-living-skills-assessment",icon: "TrendingUp",module: "young-people"  },
       { label: "Life Story",        href: "/life-story",                icon: "BookHeart",      module: "young-people"  },
@@ -404,6 +407,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Med Storage Audit",href: "/medication-storage-audit",  icon: "Pill",          module: "medication" },
       { label: "Room Allocation",  href: "/room-allocation-rationale",  icon: "Bed",           module: "ri"         },
       { label: "Community Feedback",href: "/community-feedback",        icon: "MessageCircle", module: "ri"         },
+      { label: "Management Walkround",href: "/management-walkround",    icon: "Eye",           module: "ri"         },
+      { label: "Statutory Checks",  href: "/statutory-checks-summary",  icon: "ShieldCheck",   module: "ri"         },
     ],
   },
 
@@ -736,4 +741,9 @@ export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   { label: "Dental Visit",    icon: "Smile",     href: "/dental-records",                        group: "Care",       module: "young-people" },
   { label: "Optical Visit",   icon: "Eye",       href: "/opticians-records",                     group: "Care",       module: "young-people" },
   { label: "Homework Session",icon: "GraduationCap",href: "/homework-support-log",                  group: "Care",       module: "young-people" },
+  { label: "Menstrual Plan Update",icon: "Heart",href: "/menstrual-health-tracker",                group: "Care",       module: "young-people" },
+  { label: "RSE Session",     icon: "BookOpen", href: "/rse-tracker",                            group: "Care",       module: "young-people" },
+  { label: "Staff Feedback",  icon: "MessageCircle",href: "/child-feedback-on-staff",              group: "Care",       module: "young-people" },
+  { label: "Walkround",       icon: "Eye",      href: "/management-walkround",                    group: "Compliance", module: "ri"           },
+  { label: "Statutory Check Update",icon: "ShieldCheck",href: "/statutory-checks-summary",          group: "Compliance", module: "ri"           },
 ];
