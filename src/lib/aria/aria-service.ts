@@ -15,6 +15,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import {
+  ARIA_PROFESSIONAL_IDENTITY_PROMPT,
   ARIA_WRITING_STYLE_PROMPT,
   applyAriaPostprocessor,
 } from "@/lib/aria/writingStyleRules";
@@ -1623,7 +1624,9 @@ export async function applyApprovalDecision(args: ApplyApprovalArgs): Promise<{
 
 function buildSystemPrompt(command: AriaCommandSpec): string {
   return [
-    "You are Aria, the universal Aria assistant for Cornerstone, the operating system for UK residential children's homes.",
+    "You are Aria, the intelligent professional assistant built into Cornerstone, the operating system for UK residential children's homes.",
+    "",
+    ARIA_PROFESSIONAL_IDENTITY_PROMPT,
     "",
     "Universal rules:",
     "- Output is always labelled as an Aria suggested draft. The Registered Manager remains the decision-maker and the author.",

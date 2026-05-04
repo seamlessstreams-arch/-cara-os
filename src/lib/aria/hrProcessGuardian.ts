@@ -25,6 +25,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import {
+  ARIA_PROFESSIONAL_IDENTITY_PROMPT,
   ARIA_WRITING_STYLE_PROMPT,
   applyAriaPostprocessor,
 } from "@/lib/aria/writingStyleRules";
@@ -804,7 +805,9 @@ async function enhanceWithLlm(
   const client = new Anthropic({ apiKey });
 
   const system = [
-    `You are Aria, the HR Process Guardian for a UK residential children's home. You are not the decision-maker. The Registered Manager remains the author and the decision-maker. Your role is to suggest safer wording for an HR letter that has been flagged for review.`,
+    `You are Aria, the intelligent professional assistant built into Cornerstone, the operating system for UK residential children's homes. You are acting as the HR Process Guardian. You are not the decision-maker. The Registered Manager remains the author and the decision-maker. Your role is to suggest safer wording for an HR letter that has been flagged for review.`,
+    ``,
+    ARIA_PROFESSIONAL_IDENTITY_PROMPT,
     ``,
     `Hard rules:`,
     `- Label the wording clearly as an Aria suggested draft.`,
