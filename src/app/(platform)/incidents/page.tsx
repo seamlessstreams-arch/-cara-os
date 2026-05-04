@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
 import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaCompose } from "@/components/aria/aria-compose";
+import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
 import {
   AlertTriangle, Shield, Eye, Clock, CheckCircle2, FileText,
   Users, MapPin, Calendar, Plus, Search, Sparkles, Phone,
@@ -814,7 +816,7 @@ const EMPTY_FORM = {
 };
 
 function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
-  const { currentUser } = useAuthContext();
+  const { currentUser, currentRole } = useAuthContext();
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [notifRole, setNotifRole] = useState("");
   const [notifName, setNotifName] = useState("");
@@ -1022,31 +1024,47 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           />
         )}
 
-        <div>
-          <label className="text-xs font-semibold text-slate-600 block mb-1.5">
-            Description <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={form.description}
-            onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-            rows={5}
-            placeholder="Describe what happened — what was observed, who was involved, any context that is relevant…"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400 leading-relaxed"
-          />
-        </div>
+        <AriaCompose
+          value={form.description}
+          onChange={(text) => setForm((p) => ({ ...p, description: text }))}
+          actorUserId={currentUser?.id ?? "staff_darren"}
+          actorRole={appRoleToAriaRole(currentRole)}
+          homeId={currentUser?.home_id ?? "home_oak"}
+          childId={form.child_id || undefined}
+          sourceModule="incident"
+          sourceField="description"
+          defaultCommand="draft_incident_record"
+          commands={[
+            { id: "draft_incident_record", label: "Draft incident record", permission: "aria.generate_drafts" },
+            { id: "check_incident_chronology", label: "Check chronology", permission: "aria.analyse_risk" },
+            { id: "incident_risk_analysis", label: "Risk analysis", permission: "aria.analyse_risk" },
+            { id: "identify_missing_incident_information", label: "Missing information", permission: "aria.analyse_risk" },
+            { id: "improve_writing", label: "Improve writing", permission: "aria.rewrite" },
+          ]}
+          label="Description *"
+          placeholder="Describe what happened, what was observed, who was involved, any relevant context."
+          rows={5}
+        />
 
-        <div>
-          <label className="text-xs font-semibold text-slate-600 block mb-1.5">
-            Immediate Action Taken <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={form.immediate_action}
-            onChange={(e) => setForm((p) => ({ ...p, immediate_action: e.target.value }))}
-            rows={3}
-            placeholder="What steps were taken immediately — who was informed, what support was provided…"
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400 leading-relaxed"
-          />
-        </div>
+        <AriaCompose
+          value={form.immediate_action}
+          onChange={(text) => setForm((p) => ({ ...p, immediate_action: text }))}
+          actorUserId={currentUser?.id ?? "staff_darren"}
+          actorRole={appRoleToAriaRole(currentRole)}
+          homeId={currentUser?.home_id ?? "home_oak"}
+          childId={form.child_id || undefined}
+          sourceModule="incident"
+          sourceField="immediate_action"
+          defaultCommand="improve_writing"
+          commands={[
+            { id: "improve_writing", label: "Improve writing", permission: "aria.rewrite" },
+            { id: "professionalise_record", label: "Professionalise", permission: "aria.rewrite" },
+            { id: "extract_actions", label: "Extract follow-up actions", permission: "aria.summarise" },
+          ]}
+          label="Immediate Action Taken *"
+          placeholder="What steps were taken immediately, who was informed, what support was provided."
+          rows={3}
+        />
       </div>
 
       {/* Notifications */}

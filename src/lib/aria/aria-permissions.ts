@@ -214,3 +214,41 @@ export function checkAriaAccess(
 }
 
 export const ARIA_ALL_PERMISSIONS: ReadonlyArray<AriaPermission> = ALL;
+
+// ─── Adapter from AppRole to AriaRole ────────────────────────────────────────
+// The wider Cornerstone codebase uses an AppRole enum (defined in
+// src/lib/permissions.ts) that does not 1:1 match AriaRole. Live forms can
+// pass their currentRole straight through this adapter.
+
+export function appRoleToAriaRole(appRole: string | null | undefined): AriaRole {
+  switch (appRole) {
+    case "registered_manager":
+    case "admin": // legacy alias treated as registered_manager
+      return "registered_manager";
+    case "responsible_individual":
+      return "responsible_individual";
+    case "deputy_manager":
+      return "deputy_manager";
+    case "team_leader":
+      return "team_leader";
+    case "residential_care_worker":
+    case "bank_staff":
+      return "residential_support_worker";
+    case "hr_recruitment":
+      return "hr_admin";
+    case "auditor":
+      return "auditor";
+    case "super_admin":
+      // Super admin is not granted Aria automatically. Map to registered_manager
+      // so they can see Aria features when impersonating; production should
+      // prefer mapping super_admin to a more specific role.
+      return "registered_manager";
+    case "therapist":
+    case "finance_operations":
+    case "external_partner":
+      return "viewer";
+    default:
+      return "none";
+  }
+}
+

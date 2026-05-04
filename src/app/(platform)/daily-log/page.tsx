@@ -19,6 +19,8 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { AriaQuickActions } from "@/components/intelligence/aria-quick-actions";
+import { AriaCompose } from "@/components/aria/aria-compose";
+import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -102,6 +104,7 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
   const ypQuery = useYoungPeople();
   const currentYP = ypQuery.data?.data ?? [];
   const createMutation = useCreateDailyLog();
+  const { currentUser, currentRole } = useAuthContext();
 
   const [childId, setChildId] = useState(currentYP[0]?.id ?? "");
   const [entryType, setEntryType] = useState<DailyLogEntry["entry_type"]>("general");
@@ -162,16 +165,20 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
           </div>
 
           {/* Content */}
-          <div>
-            <label className="text-xs font-medium text-slate-500 mb-1 block">Notes</label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={5}
-              placeholder="Record what happened, how the young person was, any significant events or observations..."
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
-            />
-          </div>
+          <AriaCompose
+            value={content}
+            onChange={setContent}
+            actorUserId={currentUser?.id ?? "staff_darren"}
+            actorRole={appRoleToAriaRole(currentRole)}
+            homeId={currentUser?.home_id ?? "home_oak"}
+            childId={childId || undefined}
+            sourceModule="daily_log"
+            sourceField="content"
+            defaultCommand="professionalise_record"
+            label="Notes"
+            placeholder="Record what happened, how the young person was, any significant events or observations..."
+            rows={5}
+          />
 
           <div className="flex items-center gap-6">
             {/* Mood score */}
