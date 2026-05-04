@@ -220,6 +220,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Cultural Visits",  href: "/museum-cultural-visits-tracker",icon: "Sparkles",   module: "young-people"  },
       { label: "Clothing Shopping",href: "/child-clothing-shopping-trips",icon: "Shirt",       module: "young-people"  },
       { label: "Disruption Prevention",href: "/placement-disruption-prevention-plan",icon: "Shield",module: "young-people"  },
+      { label: "Incoming Mail",    href: "/child-correspondence-incoming",icon: "Mail",        module: "young-people"  },
+      { label: "Cards & Letters",  href: "/birthday-card-tracker",     icon: "Cake",           module: "young-people"  },
+      { label: "Hairdressing",     href: "/hairdressing-records",      icon: "Scissors",       module: "young-people"  },
       { label: "Bedroom Profile",  href: "/bedroom-personalisation",   icon: "Home",           module: "young-people"  },
       { label: "Living Skills Assessment",href: "/independent-living-skills-assessment",icon: "TrendingUp",module: "young-people"  },
       { label: "Life Story",        href: "/life-story",                icon: "BookHeart",      module: "young-people"  },
@@ -342,6 +345,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Utility Bills",   href: "/utility-bills-tracker",      icon: "Zap",             module: "buildings" },
       { label: "Cleaning Rota",   href: "/cleaning-rota",              icon: "Sparkles",        module: "buildings" },
       { label: "Food Budget",     href: "/food-budget-tracker",        icon: "Utensils",        module: "buildings" },
+      { label: "Fire Equipment",  href: "/fire-safety-equipment-checks",icon: "Flame",          module: "buildings" },
+      { label: "Evacuation Plan", href: "/emergency-evacuation-plan",  icon: "AlertOctagon",    module: "buildings" },
     ],
   },
 
@@ -776,4 +781,9 @@ export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   { label: "Shopping Trip",   icon: "Shirt",     href: "/child-clothing-shopping-trips",           group: "Care",       module: "young-people" },
   { label: "Food Week",       icon: "Utensils",  href: "/food-budget-tracker",                    group: "Team",       module: "buildings"    },
   { label: "Disruption Plan", icon: "Shield",    href: "/placement-disruption-prevention-plan",   group: "Care",       module: "young-people" },
+  { label: "Mail Received",   icon: "Mail",      href: "/child-correspondence-incoming",          group: "Care",       module: "young-people" },
+  { label: "Card Received",   icon: "Cake",      href: "/birthday-card-tracker",                  group: "Care",       module: "young-people" },
+  { label: "Fire Check",      icon: "Flame",     href: "/fire-safety-equipment-checks",            group: "Team",       module: "buildings"    },
+  { label: "Evacuation Update",icon: "AlertOctagon",href: "/emergency-evacuation-plan",             group: "Team",       module: "buildings"    },
+  { label: "Hair Appointment",icon: "Scissors",  href: "/hairdressing-records",                   group: "Care",       module: "young-people" },
 ];
