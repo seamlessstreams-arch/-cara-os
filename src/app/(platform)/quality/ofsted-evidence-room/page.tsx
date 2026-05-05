@@ -537,7 +537,25 @@ export default function OfstedEvidenceRoomPage() {
 
   useEffect(() => {
     if (apiData?.persisted && apiData.items.length > 0) {
-      // Live data will replace demo when Supabase connected
+      setEvidenceItems((apiData.items as Record<string, unknown>[]).map((row) => ({
+        id: row.id as string,
+        homeId: (row.home_id as string) ?? "",
+        childId: (row.child_id as string) ?? undefined,
+        staffId: (row.staff_id as string) ?? undefined,
+        sourceType: (row.source_record_type as string) ?? "",
+        sourceLabel: (row.source_record_type as SourceType) ?? "daily_log",
+        sourceId: (row.source_record_id as string) ?? undefined,
+        title: (row.title as string) ?? "",
+        summary: (row.description as string) ?? undefined,
+        evidenceCategory: (row.category as EvidenceCategory) ?? "overall_experiences",
+        judgementArea: (row.judgement_area as JudgementArea) ?? undefined,
+        regulationReference: undefined,
+        confidenceScore: (row.quality_indicator as number) ?? undefined,
+        evidenceDate: (row.evidence_date as string) ?? undefined,
+        createdBy: (row.created_at as string) ?? undefined,
+        createdAt: row.created_at as string,
+        updatedAt: row.created_at as string,
+      })));
     }
   }, [apiData]);
 

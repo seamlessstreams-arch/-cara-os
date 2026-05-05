@@ -239,19 +239,43 @@ export default function ChildProgressPage() {
 
   useEffect(() => {
     if (goalsData?.persisted && goalsData.data.length > 0) {
-      // Live data will replace demo when Supabase connected
+      setGoals((goalsData.data as Record<string, unknown>[]).map((row) => ({
+        id: row.id as string,
+        title: (row.title as string) ?? "",
+        area: (row.goal_area as ProgressArea) ?? "education",
+        status: "on_track" as GoalStatus,
+        targetDate: (row.target_date as string) ?? "",
+        description: (row.description as string) ?? "",
+        progress: 0,
+      })));
     }
   }, [goalsData]);
 
   useEffect(() => {
     if (entriesData?.persisted && entriesData.data.length > 0) {
-      // Live data will replace demo when Supabase connected
+      setProgressEntries((entriesData.data as Record<string, unknown>[]).map((row) => ({
+        id: row.id as string,
+        date: (row.entry_date as string) ?? "",
+        area: (row.area as ProgressArea) ?? "education",
+        description: (row.what_happened as string) ?? "",
+        impactNote: (row.impact_on_child as string) ?? "",
+        staffMember: "",
+      })));
     }
   }, [entriesData]);
 
   useEffect(() => {
     if (snapshotsData?.persisted && snapshotsData.data.length > 0) {
-      // Live data will replace demo when Supabase connected
+      const row = snapshotsData.data[0] as Record<string, unknown>;
+      setOutcomes([
+        { domain: "Education", score: (row.education_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
+        { domain: "Health", score: (row.health_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
+        { domain: "Emotional Wellbeing", score: (row.emotional_wellbeing_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
+        { domain: "Safety", score: (row.safety_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
+        { domain: "Relationships", score: (row.relationships_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
+        { domain: "Independence", score: (row.independence_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
+        { domain: "Engagement", score: (row.engagement_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
+      ]);
     }
   }, [snapshotsData]);
 

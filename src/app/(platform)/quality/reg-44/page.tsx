@@ -332,7 +332,23 @@ export default function Reg44Page() {
 
   useEffect(() => {
     if (apiData?.persisted && apiData.visits.length > 0) {
-      // Live data will replace demo when Supabase connected
+      setVisits((apiData.visits as Record<string, unknown>[]).map((row) => ({
+        id: row.id as string,
+        homeId: row.home_id as string,
+        visitDate: row.visit_date as string,
+        visitorName: row.visitor_name as string,
+        reportStatus: row.status as Reg44ReportStatus,
+        summary: (row.findings as string) ?? undefined,
+        strengths: undefined,
+        concerns: undefined,
+        childrenViewsSummary: undefined,
+        staffViewsSummary: undefined,
+        managerResponse: undefined,
+        riResponse: undefined,
+        createdBy: (row.created_by as string) ?? undefined,
+        createdAt: row.created_at as string,
+        updatedAt: row.created_at as string,
+      })));
     }
   }, [apiData]);
   const [tab, setTab] = useState("visits");

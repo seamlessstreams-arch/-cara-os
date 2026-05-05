@@ -163,7 +163,19 @@ export default function IncidentLearningReviewPage() {
 
   useEffect(() => {
     if (apiData?.persisted && apiData.reviews.length > 0) {
-      // Live data will replace demo when Supabase connected
+      setIncidents((apiData.reviews as Record<string, unknown>[]).map((row) => ({
+        id: row.id as string,
+        date: (row.created_at as string) ?? "",
+        title: (row.incident_id as string) ?? "",
+        child: (row.child_id as string) ?? "",
+        category: "",
+        severity: "medium" as const,
+        summary: (row.trigger_analysis as string) ?? "",
+        staffInvolved: [],
+        reviewStatus: (row.review_status as ReviewStatus) ?? "required",
+        managerNotes: (row.learning_summary as string) ?? "",
+        learningSummary: (row.learning_summary as string) ?? "",
+      })));
     }
   }, [apiData]);
   const [managerNotes, setManagerNotes] = useState<Record<string, string>>({});

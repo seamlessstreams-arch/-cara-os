@@ -217,7 +217,30 @@ export default function Reg45Page() {
 
   useEffect(() => {
     if (apiData?.persisted && apiData.reviews.length > 0) {
-      // Live data will replace demo when Supabase connected
+      setReviews((apiData.reviews as Record<string, unknown>[]).map((row) => ({
+        id: row.id as string,
+        homeId: row.home_id as string,
+        periodStart: row.period_start as string,
+        periodEnd: row.period_end as string,
+        status: row.status as Reg45Status,
+        qualityOfCareSummary: (row.content as string) ?? undefined,
+        childrenExperiencesSummary: undefined,
+        outcomesSummary: undefined,
+        safeguardingSummary: undefined,
+        leadershipSummary: undefined,
+        strengths: (row.findings as string) ?? undefined,
+        weaknesses: undefined,
+        improvementActions: (row.recommendations as string) ?? undefined,
+        childrenViews: undefined,
+        parentsViews: undefined,
+        placingAuthorityViews: undefined,
+        staffViews: undefined,
+        generatedBy: (row.created_by as string) ?? undefined,
+        approvedBy: (row.approved_by as string) ?? undefined,
+        approvedAt: (row.approved_at as string) ?? undefined,
+        createdAt: row.created_at as string,
+        updatedAt: row.created_at as string,
+      })));
     }
   }, [apiData]);
   const [showEvidence, setShowEvidence] = useState(false);

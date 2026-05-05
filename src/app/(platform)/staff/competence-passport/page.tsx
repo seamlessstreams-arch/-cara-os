@@ -318,7 +318,35 @@ export default function StaffCompetencePassportPage() {
 
   useEffect(() => {
     if (apiData?.persisted && apiData.records.length > 0) {
-      // Live data will replace demo when Supabase connected
+      setStaffRecords((apiData.records as Record<string, unknown>[]).map((row) => ({
+        id: row.id as string,
+        name: (row.staff_id as string) ?? "",
+        role: "",
+        startDate: "",
+        passport: [
+          { label: "Safer Recruitment", status: row.safer_recruitment_complete ? "valid" as ComplianceStatus : "not_started" as ComplianceStatus, detail: row.safer_recruitment_complete ? "Complete" : "Incomplete" },
+          { label: "DBS Check", status: (row.dbs_status as ComplianceStatus) ?? "not_started", detail: (row.dbs_status as string) ?? "", expiryDate: (row.dbs_date as string) ?? undefined },
+          { label: "Induction", status: row.induction_complete ? "valid" as ComplianceStatus : "not_started" as ComplianceStatus, detail: row.induction_complete ? "Complete" : "Incomplete" },
+          { label: "Mandatory Training", status: row.mandatory_training_complete ? "valid" as ComplianceStatus : "not_started" as ComplianceStatus, detail: row.mandatory_training_complete ? "Complete" : "Incomplete" },
+          { label: "Safeguarding Training", status: row.safeguarding_training_date ? "valid" as ComplianceStatus : "not_started" as ComplianceStatus, detail: (row.safeguarding_training_date as string) ?? "" },
+          { label: "Medication Competency", status: row.medication_competency ? "valid" as ComplianceStatus : "not_started" as ComplianceStatus, detail: row.medication_competency ? "Passed" : "Not assessed" },
+          { label: "Supervision", status: row.last_supervision_date ? "valid" as ComplianceStatus : "not_started" as ComplianceStatus, detail: row.last_supervision_date ? `Last: ${row.last_supervision_date}` : "None recorded" },
+        ],
+        competencyFlags: [
+          { label: "Can Lead Shift", granted: (row.can_lead_shift as boolean) ?? false },
+          { label: "Can Administer Medication", granted: (row.can_administer_medication as boolean) ?? false },
+          { label: "Can Lone Work", granted: (row.can_lone_work as boolean) ?? false },
+        ],
+        warnings: (row.performance_concerns as string)
+          ? [{ id: "w1", severity: "medium" as const, title: "Performance Concern", description: row.performance_concerns as string, date: "" }]
+          : [],
+        restrictions: (row.restrictions as string)
+          ? [{ id: "r1", restriction: row.restrictions as string, reason: "", appliedDate: "", appliedBy: "" }]
+          : [],
+        compliments: (row.compliments as string)
+          ? [{ id: "c1", text: row.compliments as string, from: "", date: "" }]
+          : [],
+      })));
     }
   }, [apiData]);
 

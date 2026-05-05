@@ -218,7 +218,27 @@ export default function ProviderOversightPage() {
 
   useEffect(() => {
     if (apiData?.persisted && apiData.summaries.length > 0) {
-      // Live data will replace demo when Supabase connected
+      setHomes((apiData.summaries as Record<string, unknown>[]).map((row) => ({
+        id: row.id as string,
+        name: (row.home_id as string) ?? "",
+        manager: (row.created_by as string) ?? "",
+        totalChildren: (row.occupancy as number) ?? 0,
+        capacity: 0,
+        totalStaff: (row.staffing_level as number) ?? 0,
+        inspectionReadiness: 0,
+        openRisks: (row.incident_count as number) ?? 0,
+        seriousIncidents: 0,
+        reg44Status: (row.reg44_status as HomeData["reg44Status"]) ?? "due_soon",
+        reg45Status: (row.reg45_status as HomeData["reg45Status"]) ?? "due_soon",
+        supervisionCompliance: 0,
+        trainingCompliance: 0,
+        recruitmentCompliance: 0,
+        overdueActions: 0,
+        complaints: (row.complaint_count as number) ?? 0,
+        missingEpisodes: 0,
+        ariaRiskFlags: [],
+        lastReviewed: (row.summary_date as string) ?? "",
+      })));
     }
   }, [apiData]);
 
