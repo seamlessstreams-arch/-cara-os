@@ -8,16 +8,21 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import {
   AlertTriangle, User, Shield, Calendar, GraduationCap,
-  ChevronRight, Clock, ClipboardList, Search, Heart,
+  ChevronRight, ChevronDown, Clock, ClipboardList, Search, Heart,
   Pill, MapPin, Flame, BookOpen, UserX, Users,
+  Target, TrendingUp, TrendingDown, Minus, ExternalLink,
+  FileText, ShieldAlert,
 } from "lucide-react";
 import { useYoungPeople, type YPEnriched } from "@/hooks/use-young-people";
 import { useChildExperienceLatest } from "@/hooks/use-intelligence";
 import { useCarePlans } from "@/hooks/use-care-plans";
+import { useOutcomes } from "@/hooks/use-outcomes";
+import { useKeyWorkingSessions } from "@/hooks/use-key-working";
 import { useAuthContext } from "@/contexts/auth-context";
 import type { CarePlan } from "@/types/extended";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 
@@ -153,15 +158,233 @@ function lacDaysLabel(dateStr: string | null | undefined): string | null {
   return `LAC in ${days}d`;
 }
 
+// ── Expanded card sub-components ─────────────────────────────────────────────
+
+function CarePlanExpanded({ carePlan, childId }: { carePlan: CarePlan | null | undefined; childId: string }) {
+  const router = useRouter();
+
+  if (!carePlan) {
+    return (
+      <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-3 text-center">
+        <ClipboardList className="h-5 w-5 text-slate-300 mx-auto mb-1.5" />
+        <p className="text-xs font-medium text-slate-500 mb-1">No care plan yet</p>
+        <button
+          onClick={(e) => { e.stopPropagation(); router.push(`/care-plans?child_id=${childId}`); }}
+          className="text-[11px] font-medium text-blue-600 hover:text-blue-700 hover:underline"
+        >
+          Create care plan
+        </button>
+      </div>
+    );
+  }
+
+  const rag = carePlanRag(carePlan);
+  const onTrack = carePlan.goals.filter((g) => g.status === "on_track").length;
+  const attention = carePlan.goals.filter((g) => g.status === "attention_needed").length;
+  const achieved = carePlan.goals.filter((g) => g.status === "achieved").length;
+  const total = carePlan.goals.length;
+  const lacLabel = lacDaysLabel(carePlan.next_lac_review);
+
+  return (
+    <div className={cn(
+      "rounded-xl border px-4 py-3 space-y-2",
+      rag === "red" ? "bg-red-50/50 border-red-200" :
+      rag === "amber" ? "bg-amber-50/50 border-amber-200" :
+      "bg-emerald-50/50 border-emerald-100",
+    )}>
+      <div className="flex items-center gap-2">
+        <ClipboardList className={cn("h-4 w-4 shrink-0",
+          rag === "red" ? "text-red-500" : rag === "amber" ? "text-amber-500" : "text-emerald-500",
+        )} />
+        <span className="text-xs font-semibold text-slate-700">Care Plan Status</span>
+        <Badge variant={rag === "red" ? "destructive" : rag === "amber" ? "warning" : "success"} className="text-[9px] ml-auto rounded-full">
+          {rag === "red" ? "Attention Needed" : rag === "amber" ? "In Progress" : "On Track"}
+        </Badge>
+      </div>
+      <div className="grid grid-cols-4 gap-2 text-center">
+        <div className="rounded-lg bg-white/60 p-1.5">
+          <div className="text-sm font-bold text-slate-700">{total}</div>
+          <div className="text-[9px] text-slate-500">Goals</div>
+        </div>
+        <div className="rounded-lg bg-white/60 p-1.5">
+          <div className="text-sm font-bold text-emerald-600">{onTrack}</div>
+          <div className="text-[9px] text-slate-500">On Track</div>
+        </div>
+        <div className="rounded-lg bg-white/60 p-1.5">
+          <div className="text-sm font-bold text-red-600">{attention}</div>
+          <div className="text-[9px] text-slate-500">Attention</div>
+        </div>
+        <div className="rounded-lg bg-white/60 p-1.5">
+          <div className="text-sm font-bold text-blue-600">{achieved}</div>
+          <div className="text-[9px] text-slate-500">Achieved</div>
+        </div>
+      </div>
+      {/* Domain RAG dots with labels */}
+      <div className="flex flex-wrap gap-1.5">
+        {DOMAINS.map(([domain, label]) => {
+          const dg = carePlan.goals.filter((g) => g.domain === domain);
+          if (dg.length === 0) return null;
+          const dr = dg.some((g) => g.status === "attention_needed") ? "red"
+            : dg.every((g) => g.status === "achieved" || g.status === "closed") ? "green"
+            : "amber";
+          return (
+            <span key={domain} className={cn(
+              "inline-flex items-center gap-1 text-[9px] font-medium rounded-full px-2 py-0.5 border",
+              dr === "red" ? "bg-red-100 text-red-700 border-red-200" :
+              dr === "amber" ? "bg-amber-100 text-amber-700 border-amber-200" :
+              "bg-emerald-100 text-emerald-700 border-emerald-200",
+            )}>
+              <div className={cn("w-1.5 h-1.5 rounded-full shrink-0",
+                dr === "red" ? "bg-red-500" : dr === "amber" ? "bg-amber-400" : "bg-emerald-500",
+              )} />
+              {label}
+            </span>
+          );
+        })}
+      </div>
+      {lacLabel && (
+        <div className="text-[10px] text-slate-500">
+          <Calendar className="h-3 w-3 inline mr-1" />
+          {lacLabel}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OutcomesSummary({ childId }: { childId: string }) {
+  const { data, isLoading } = useOutcomes({ childId });
+
+  if (isLoading) {
+    return <div className="h-16 rounded-xl bg-slate-100 animate-pulse" />;
+  }
+
+  const childStats = data?.per_child?.find((c) => c.child_id === childId);
+  const meta = data?.meta;
+
+  if (!childStats && !meta) {
+    return (
+      <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-4 py-3 text-center">
+        <Target className="h-5 w-5 text-slate-300 mx-auto mb-1.5" />
+        <p className="text-xs text-slate-400">No outcome targets set</p>
+      </div>
+    );
+  }
+
+  const activeTargets = childStats?.active_targets ?? meta?.active_targets ?? 0;
+  const improving = childStats?.improving ?? meta?.improving ?? 0;
+  const stable = childStats?.stable ?? meta?.stable ?? 0;
+  const declining = childStats?.declining ?? meta?.declining ?? 0;
+  const avgRating = childStats?.avg_rating ?? meta?.avg_rating ?? 0;
+
+  return (
+    <div className="rounded-xl border border-purple-100 bg-purple-50/30 px-4 py-3 space-y-2">
+      <div className="flex items-center gap-2">
+        <Target className="h-4 w-4 text-purple-500 shrink-0" />
+        <span className="text-xs font-semibold text-slate-700">Outcomes</span>
+        {avgRating > 0 && (
+          <span className="text-[10px] text-slate-500 ml-auto">
+            Avg rating: <strong className="text-purple-700">{avgRating.toFixed(1)}</strong>
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-4 gap-2 text-center">
+        <div className="rounded-lg bg-white/60 p-1.5">
+          <div className="text-sm font-bold text-purple-600">{activeTargets}</div>
+          <div className="text-[9px] text-slate-500">Active</div>
+        </div>
+        <div className="rounded-lg bg-white/60 p-1.5">
+          <div className="text-sm font-bold text-emerald-600 flex items-center justify-center gap-0.5">
+            <TrendingUp className="h-3 w-3" />{improving}
+          </div>
+          <div className="text-[9px] text-slate-500">Improving</div>
+        </div>
+        <div className="rounded-lg bg-white/60 p-1.5">
+          <div className="text-sm font-bold text-slate-600 flex items-center justify-center gap-0.5">
+            <Minus className="h-3 w-3" />{stable}
+          </div>
+          <div className="text-[9px] text-slate-500">Stable</div>
+        </div>
+        <div className="rounded-lg bg-white/60 p-1.5">
+          <div className="text-sm font-bold text-red-600 flex items-center justify-center gap-0.5">
+            <TrendingDown className="h-3 w-3" />{declining}
+          </div>
+          <div className="text-[9px] text-slate-500">Declining</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function KeyWorkingLastSession({ childId }: { childId: string }) {
+  const { data, isLoading } = useKeyWorkingSessions({ childId });
+
+  if (isLoading) {
+    return <div className="h-8 rounded-lg bg-slate-100 animate-pulse" />;
+  }
+
+  const sessions = data?.data ?? [];
+  const sorted = [...sessions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const last = sorted[0];
+
+  if (!last) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-slate-400 rounded-lg border border-dashed border-slate-200 px-3 py-2">
+        <BookOpen className="h-3.5 w-3.5 shrink-0" />
+        <span>No key working sessions recorded</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 text-xs text-slate-600 rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2">
+      <BookOpen className="h-3.5 w-3.5 shrink-0 text-teal-500" />
+      <span>
+        Last key working: <strong>{formatRelative(last.date)}</strong>
+        <span className="text-slate-400 ml-1">({last.type.replace(/_/g, " ")} &middot; {last.duration}min)</span>
+      </span>
+      <span className="ml-auto text-[10px] text-slate-400">{sessions.length} total</span>
+    </div>
+  );
+}
+
+function QuickLinks({ childId }: { childId: string }) {
+  const router = useRouter();
+  const links = [
+    { label: "Care Plan", href: `/care-plans?child_id=${childId}`, icon: ClipboardList, color: "text-emerald-600" },
+    { label: "Key Working", href: `/key-working?child_id=${childId}`, icon: BookOpen, color: "text-teal-600" },
+    { label: "Risk Assessments", href: `/risk-assessments?child_id=${childId}`, icon: ShieldAlert, color: "text-red-600" },
+    { label: "Education", href: `/education?child_id=${childId}`, icon: GraduationCap, color: "text-blue-600" },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {links.map((link) => (
+        <button
+          key={link.label}
+          onClick={(e) => { e.stopPropagation(); router.push(link.href); }}
+          className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-all group/link"
+        >
+          <link.icon className={cn("h-3.5 w-3.5 shrink-0", link.color)} />
+          <span>{link.label}</span>
+          <ExternalLink className="h-3 w-3 ml-auto text-slate-300 group-hover/link:text-blue-400 transition-colors" />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ── YP Card ───────────────────────────────────────────────────────────────────
 
 interface YPCardProps {
   yp: YPEnriched;
-  onClick: () => void;
+  onNavigate: () => void;
   carePlan?: CarePlan | null;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
 }
 
-function YPCard({ yp, onClick, carePlan }: YPCardProps) {
+function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCardProps) {
   const displayName = yp.preferred_name ?? yp.first_name;
   const hasRisk = yp.risk_flags.length > 0;
 
@@ -169,9 +392,10 @@ function YPCard({ yp, onClick, carePlan }: YPCardProps) {
     <Card
       className={cn(
         "hover:shadow-lg transition-all cursor-pointer group",
-        hasRisk && "ring-1 ring-amber-200"
+        hasRisk && "ring-1 ring-amber-200",
+        isExpanded && "lg:col-span-3 ring-2 ring-blue-200 shadow-lg",
       )}
-      onClick={onClick}
+      onClick={onToggleExpand}
     >
       <CardContent className="p-6">
         {/* Header */}
@@ -282,8 +506,8 @@ function YPCard({ yp, onClick, carePlan }: YPCardProps) {
           </div>
         )}
 
-        {/* Care plan strip */}
-        {carePlan && (() => {
+        {/* Care plan strip (collapsed view) */}
+        {!isExpanded && carePlan && (() => {
           const rag      = carePlanRag(carePlan);
           const attention = carePlan.goals.filter((g) => g.status === "attention_needed").length;
           const lacLabel  = lacDaysLabel(carePlan.next_lac_review);
@@ -353,11 +577,61 @@ function YPCard({ yp, onClick, carePlan }: YPCardProps) {
           </div>
         )}
 
-        {/* View more cue */}
-        <div className="mt-3 flex items-center gap-1 text-[10px] text-slate-400 group-hover:text-slate-600 transition-colors">
-          <ChevronRight className="h-3 w-3" />
-          View full profile
-        </div>
+        {/* ── Expanded sections ──────────────────────────────────────────── */}
+        {isExpanded && (
+          <div className="mt-4 pt-4 border-t border-slate-200 space-y-4" onClick={(e) => e.stopPropagation()}>
+            {/* Care plan detailed status */}
+            <CarePlanExpanded carePlan={carePlan} childId={yp.id} />
+
+            {/* Outcomes summary */}
+            <OutcomesSummary childId={yp.id} />
+
+            {/* Key working last session */}
+            <KeyWorkingLastSession childId={yp.id} />
+
+            {/* Quick links */}
+            <div>
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Quick Links</p>
+              <QuickLinks childId={yp.id} />
+            </div>
+
+            {/* Smart Link Panel */}
+            <SmartLinkPanel
+              sourceType="young_person"
+              sourceId={yp.id}
+              childId={yp.id}
+            />
+
+            {/* View full profile button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); onNavigate(); }}
+              className="w-full flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              View full profile
+              <ExternalLink className="h-3 w-3" />
+            </button>
+          </div>
+        )}
+
+        {/* View more cue (collapsed) */}
+        {!isExpanded && (
+          <div className="mt-3 flex items-center gap-1 text-[10px] text-slate-400 group-hover:text-slate-600 transition-colors">
+            <ChevronRight className="h-3 w-3" />
+            Click to expand
+          </div>
+        )}
+
+        {/* Collapse cue (expanded) */}
+        {isExpanded && (
+          <div
+            className="mt-3 flex items-center justify-center gap-1 text-[10px] text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+            onClick={onToggleExpand}
+          >
+            <ChevronDown className="h-3 w-3 rotate-180" />
+            Collapse
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -388,6 +662,7 @@ export default function YoungPeoplePage() {
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState<RiskFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const router = useRouter();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
@@ -657,8 +932,10 @@ export default function YoungPeoplePage() {
               <YPCard
                 key={yp.id}
                 yp={yp}
-                onClick={() => router.push(`/young-people/${yp.id}`)}
+                onNavigate={() => router.push(`/young-people/${yp.id}`)}
                 carePlan={carePlanByChild[yp.id] ?? null}
+                isExpanded={expandedId === yp.id}
+                onToggleExpand={() => setExpandedId(expandedId === yp.id ? null : yp.id)}
               />
             ))
           )}

@@ -28,6 +28,10 @@ import type {
   ShiftSwapRequest,
   Reg44VisitReport, Reg44Recommendation,
   KeyWorkingSession,
+  LACReview,
+  RiskAssessment,
+  EducationRecord,
+  BehaviourSupportPlan,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -104,6 +108,14 @@ const store = {
   reg44VisitReports: [] as Reg44VisitReport[],
   // Key Working Sessions
   keyWorkingSessions: [] as KeyWorkingSession[],
+  // Education Records
+  educationRecords: [] as EducationRecord[],
+  // Risk Assessments
+  riskAssessments: [] as RiskAssessment[],
+  // LAC Reviews
+  lacReviews: [] as LACReview[],
+  // Behaviour Support Plans
+  behaviourSupportPlans: [] as BehaviourSupportPlan[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -1910,6 +1922,313 @@ store.reg44VisitReports = [
   },
 ] as Reg44VisitReport[];
 
+// Seed education records
+store.educationRecords = [
+  {
+    id: "edu_001", child_id: "yp_alex", record_type: "attendance", title: "Full day attendance",
+    date: daysFromNow(-1), school: "Derby Alternative Provision",
+    details: "Alex attended all lessons. Positive feedback from English teacher — engaged well in creative writing task.",
+    outcome: undefined, follow_up_date: undefined, staff_id: "staff_edward", status: "open",
+    home_id: "home_oak", created_at: daysFromNow(-1) + "T16:00:00Z",
+  },
+  {
+    id: "edu_002", child_id: "yp_alex", record_type: "exclusion", title: "Fixed-term exclusion — 1 day",
+    date: daysFromNow(-3), school: "Derby Alternative Provision",
+    details: "Alex excluded for one day following verbal altercation with teaching assistant. Refused to leave classroom when asked. School applied fixed-term exclusion under behaviour policy.",
+    outcome: "Reintegration meeting booked with inclusion lead. Key worker to attend.",
+    follow_up_date: daysFromNow(-1), staff_id: "staff_edward", status: "monitoring",
+    home_id: "home_oak", created_at: daysFromNow(-3) + "T14:00:00Z",
+  },
+  {
+    id: "edu_003", child_id: "yp_jordan", record_type: "attendance", title: "Full day attendance",
+    date: daysFromNow(-2), school: "Highfields Academy",
+    details: "Jordan attended full day. Completed maths assessment — scored 72%. Teacher notes improvement in concentration.",
+    outcome: undefined, follow_up_date: undefined, staff_id: "staff_anna", status: "open",
+    home_id: "home_oak", created_at: daysFromNow(-2) + "T16:00:00Z",
+  },
+  {
+    id: "edu_004", child_id: "yp_casey", record_type: "attendance", title: "Late arrival — transport issue",
+    date: daysFromNow(-2), school: "Allestree Woodlands",
+    details: "Casey arrived 25 minutes late due to vehicle breakdown on the school run. School notified in advance.",
+    outcome: undefined, follow_up_date: undefined, staff_id: "staff_chervelle", status: "open",
+    home_id: "home_oak", created_at: daysFromNow(-2) + "T09:30:00Z",
+  },
+  {
+    id: "edu_005", child_id: "yp_jordan", record_type: "pep_meeting", title: "PEP Review — Spring Term",
+    date: daysFromNow(-7), school: "Highfields Academy",
+    details: "Personal Education Plan review held with Virtual School Head, designated teacher, and key worker. Jordan making expected progress in English and exceeding in PE. Maths remains below expected — additional 1:1 tutoring agreed.",
+    outcome: "1:1 maths tutoring to start next week. Reading challenge participation agreed. Next PEP review: Summer term.",
+    follow_up_date: daysFromNow(56), staff_id: "staff_anna", status: "monitoring",
+    home_id: "home_oak", created_at: daysFromNow(-7) + "T14:30:00Z",
+  },
+  {
+    id: "edu_006", child_id: "yp_casey", record_type: "achievement", title: "English mock result — Grade 5",
+    date: daysFromNow(-5), school: "Allestree Woodlands",
+    details: "Casey achieved Grade 5 in English Language mock exam. Significant improvement from Grade 3 in autumn term. Teacher impressed with essay structure development.",
+    outcome: "Positive feedback shared with Casey. Achievement celebrated at house meeting.",
+    follow_up_date: undefined, staff_id: "staff_chervelle", status: "resolved",
+    home_id: "home_oak", created_at: daysFromNow(-5) + "T15:30:00Z",
+  },
+  {
+    id: "edu_007", child_id: "yp_alex", record_type: "pep_meeting", title: "Emergency PEP — post-exclusion",
+    date: daysFromNow(-10), school: "Derby Alternative Provision",
+    details: "Emergency PEP called following second exclusion this term. Discussed triggers, reintegration support, and whether provision remains suitable. Virtual School Head recommended additional behaviour support and possible assessment for EHCP.",
+    outcome: "EHCP assessment referral to be made. Behaviour support plan updated. Reduced timetable for 2 weeks. Key worker to do daily school check-ins.",
+    follow_up_date: daysFromNow(14), staff_id: "staff_darren", status: "monitoring",
+    home_id: "home_oak", created_at: daysFromNow(-10) + "T10:00:00Z",
+  },
+  {
+    id: "edu_008", child_id: "yp_casey", record_type: "achievement", title: "Selected for school debate team",
+    date: daysFromNow(-1), school: "Allestree Woodlands",
+    details: "Casey selected to represent Year 11 in inter-school debate competition. Topic: social media impact. Casey enthusiastic and has begun research.",
+    outcome: "Competition date: 3 weeks. Staff to support with practice sessions at home.",
+    follow_up_date: daysFromNow(21), staff_id: "staff_chervelle", status: "open",
+    home_id: "home_oak", created_at: daysFromNow(-1) + "T16:30:00Z",
+  },
+  {
+    id: "edu_009", child_id: "yp_alex", record_type: "concern", title: "Persistent absence pattern",
+    date: daysFromNow(-15), school: "Derby Alternative Provision",
+    details: "School flagged that Alex's attendance has dropped to 76% this term. Three unauthorised absences in last two weeks — Alex refusing to attend on mornings after difficult evenings. Pattern emerging.",
+    outcome: "Attendance meeting with school booked. Morning routine review with Alex. Consider transport support.",
+    follow_up_date: daysFromNow(-10), staff_id: "staff_edward", status: "monitoring",
+    home_id: "home_oak", created_at: daysFromNow(-15) + "T10:00:00Z",
+  },
+  {
+    id: "edu_010", child_id: "yp_jordan", record_type: "achievement", title: "PE Award — Student of the Week",
+    date: daysFromNow(-4), school: "Highfields Academy",
+    details: "Jordan received Student of the Week award for PE. Teacher praised leadership during team sports and positive attitude. Jordan visibly proud — brought certificate home.",
+    outcome: "Certificate displayed in Jordan's room. Achievement shared at team meeting. Positive feedback to social worker.",
+    follow_up_date: undefined, staff_id: "staff_anna", status: "resolved",
+    home_id: "home_oak", created_at: daysFromNow(-4) + "T16:00:00Z",
+  },
+];
+
+// ── Risk Assessments seed data ────────────────────────────────────────────────
+store.riskAssessments = [
+  {
+    id: "ra_001", child_id: "yp_alex", domain: "aggression", current_level: "high", previous_level: "very_high",
+    trend: "decreasing", status: "current", assessed_by: "staff_darren", assessed_date: daysFromNow(-14),
+    review_date: daysFromNow(16), triggers: ["Perceived unfairness", "Feeling ignored", "Tiredness"],
+    indicators: ["Voice raising", "Pacing", "Clenched fists"],
+    mitigations: [
+      { strategy: "1:1 de-escalation using grounding techniques", responsible: "All staff", effectiveness: "effective" },
+      { strategy: "Structured daily routine with visual schedule", responsible: "Key worker", effectiveness: "effective" },
+    ],
+    contingency_plan: "If physical aggression occurs, remove other YP from area. Use Team Teach holds only as last resort. Debrief within 24 hours.",
+    child_views: "I know I get angry but I'm getting better at walking away. The breathing thing helps.",
+    history_notes: "Significant improvement since Sept. Was very_high on arrival. Anger management sessions with CAMHS contributing to progress.",
+    linked_incidents: ["inc_001"], home_id: "home_oak", created_at: daysFromNow(-60),
+  },
+  {
+    id: "ra_002", child_id: "yp_jordan", domain: "absconding", current_level: "medium", previous_level: "high",
+    trend: "decreasing", status: "current", assessed_by: "staff_anna", assessed_date: daysFromNow(-7),
+    review_date: daysFromNow(23), triggers: ["Cancelled contact with mum", "Arguments with peers", "Boredom"],
+    indicators: ["Withdrawing to bedroom", "Asking about bus routes", "Packing bag"],
+    mitigations: [
+      { strategy: "Proactive check-ins after contact sessions", responsible: "Key worker", effectiveness: "effective" },
+      { strategy: "Evening activity programme to reduce boredom triggers", responsible: "Shift team", effectiveness: "partially_effective" },
+    ],
+    contingency_plan: "If missing, follow home missing protocol. Notify police after 1hr. Check known locations. Contact social worker.",
+    child_views: "I don't run away anymore really. Sometimes I just need space and I go for a walk.",
+    history_notes: "Missing episodes reduced from weekly to monthly. Last episode 3 weeks ago, returned voluntarily after 2 hours.",
+    linked_incidents: [], home_id: "home_oak", created_at: daysFromNow(-45),
+  },
+  {
+    id: "ra_003", child_id: "yp_casey", domain: "self_harm", current_level: "medium", previous_level: "medium",
+    trend: "stable", status: "current", assessed_by: "staff_chervelle", assessed_date: daysFromNow(-10),
+    review_date: daysFromNow(20), triggers: ["Identity-related distress", "Social media conflict", "Anniversaries"],
+    indicators: ["Wearing long sleeves in warm weather", "Withdrawal from group activities", "Changes in eating"],
+    mitigations: [
+      { strategy: "Weekly therapeutic key work sessions", responsible: "Key worker", effectiveness: "effective" },
+      { strategy: "Access to sensory toolkit in bedroom", responsible: "All staff", effectiveness: "partially_effective" },
+      { strategy: "CAMHS sessions fortnightly", responsible: "CAMHS therapist", effectiveness: "effective" },
+    ],
+    contingency_plan: "If self-harm discovered, provide first aid, record on body map, notify manager and social worker. Do not remove items without discussion.",
+    child_views: "Writing helps me more than anything. When I feel like hurting myself I try to write instead.",
+    history_notes: "No new incidents in 6 weeks. Creative writing has become a positive coping strategy. CAMHS reports good engagement.",
+    linked_incidents: [], home_id: "home_oak", created_at: daysFromNow(-90),
+  },
+  {
+    id: "ra_004", child_id: "yp_alex", domain: "exploitation", current_level: "low", previous_level: "medium",
+    trend: "decreasing", status: "current", assessed_by: "staff_darren", assessed_date: daysFromNow(-21),
+    review_date: daysFromNow(9), triggers: ["Contact with older peers outside home", "Access to social media"],
+    indicators: ["New possessions", "Secretive phone use", "Late returns"],
+    mitigations: [
+      { strategy: "Online safety sessions and phone monitoring agreement", responsible: "Key worker", effectiveness: "effective" },
+      { strategy: "Contextual safeguarding mapping updated monthly", responsible: "RM", effectiveness: "effective" },
+    ],
+    contingency_plan: "If exploitation suspected, refer to MACE panel. Complete NRM referral if trafficking indicators present.",
+    child_views: "I understand why you check my phone now. I know some people aren't really friends.",
+    history_notes: "Previously county lines concerns. Multi-agency work through MACE has been effective. Alex now recognises grooming behaviours.",
+    linked_incidents: [], home_id: "home_oak", created_at: daysFromNow(-120),
+  },
+];
+
+// ── LAC Reviews seed data ─────────────────────────────────────────────────────
+store.lacReviews = [
+  {
+    id: "lac_001", child_id: "yp_alex", date: daysFromNow(-30), review_type: "subsequent",
+    iro: "Sarah Mitchell", venue: "Oak House — Quiet Room",
+    attendees: [
+      { name: "Sarah Mitchell", role: "IRO" }, { name: "Darren Laville", role: "Registered Manager" },
+      { name: "Lisa Chen", role: "Social Worker" }, { name: "Alex", role: "Young Person" },
+    ],
+    child_participation: "attended",
+    child_views: "I like it here. I want to stay. I'm doing better at school and I want to go to college next year.",
+    key_discussions: ["Education progress and college plans", "Contact with birth family", "Anger management progress", "Pathway planning"],
+    recommendations: ["Continue placement at Oak House", "Support college application", "Maintain CAMHS sessions"],
+    outcome: "placement_continues",
+    actions_agreed: [
+      { action: "Support Alex with college application", owner: "Key worker", due_date: daysFromNow(30), completed: false },
+      { action: "Arrange meeting with leaving care PA", owner: "Social worker", due_date: daysFromNow(14), completed: true },
+      { action: "Update pathway plan", owner: "Social worker", due_date: daysFromNow(21), completed: false },
+    ],
+    next_review_date: daysFromNow(150), placement_stability: "stable", care_plan_updated: true,
+    notes: "Positive review. Alex engaged well and contributed to all discussions. IRO pleased with progress.",
+    recorded_by: "staff_darren", home_id: "home_oak", created_at: daysFromNow(-30),
+  },
+  {
+    id: "lac_002", child_id: "yp_jordan", date: daysFromNow(-45), review_type: "subsequent",
+    iro: "David Wright", venue: "Oak House — Office",
+    attendees: [
+      { name: "David Wright", role: "IRO" }, { name: "Darren Laville", role: "Registered Manager" },
+      { name: "Mark Evans", role: "Social Worker" }, { name: "Anna Kovacs", role: "Key Worker" },
+    ],
+    child_participation: "views_submitted",
+    child_views: "I don't want to come to the meeting but I wrote down what I think. I want more contact with mum and I want to stay here.",
+    key_discussions: ["Contact arrangements with mother", "Missing episodes", "Leaving care preparation", "Housing options"],
+    recommendations: ["Increase supervised contact to fortnightly", "Continue missing from care work", "Begin supported accommodation visits"],
+    outcome: "care_plan_amended",
+    actions_agreed: [
+      { action: "Arrange fortnightly supervised contact", owner: "Social worker", due_date: daysFromNow(-30), completed: true },
+      { action: "Visit two supported accommodation options", owner: "Key worker", due_date: daysFromNow(7), completed: false },
+      { action: "Complete leaving care assessment", owner: "PA", due_date: daysFromNow(30), completed: false },
+    ],
+    next_review_date: daysFromNow(135), placement_stability: "some_concerns", care_plan_updated: true,
+    notes: "Jordan chose not to attend but submitted written views. IRO noted improved engagement compared to previous review.",
+    recorded_by: "staff_darren", home_id: "home_oak", created_at: daysFromNow(-45),
+  },
+  {
+    id: "lac_003", child_id: "yp_casey", date: daysFromNow(-60), review_type: "first_review",
+    iro: "Sarah Mitchell", venue: "Oak House — Living Room",
+    attendees: [
+      { name: "Sarah Mitchell", role: "IRO" }, { name: "Darren Laville", role: "Registered Manager" },
+      { name: "Priya Sharma", role: "Social Worker" }, { name: "Casey", role: "Young Person" },
+      { name: "Chervelle Duporte", role: "Key Worker" },
+    ],
+    child_participation: "attended",
+    child_views: "I feel safe here. The staff listen to me. I want to keep going to the same school. I like my key worker.",
+    key_discussions: ["Settling in at Oak House", "School attendance", "Identity and wellbeing", "CAMHS referral", "Life story work"],
+    recommendations: ["Maintain current school placement", "Prioritise CAMHS referral", "Begin life story work when ready", "Explore cultural identity support"],
+    outcome: "placement_continues",
+    actions_agreed: [
+      { action: "Fast-track CAMHS referral", owner: "Social worker", due_date: daysFromNow(-45), completed: true },
+      { action: "Source cultural identity resources", owner: "Key worker", due_date: daysFromNow(-30), completed: true },
+      { action: "Begin life story work", owner: "Key worker", due_date: daysFromNow(14), completed: false },
+    ],
+    next_review_date: daysFromNow(120), placement_stability: "stable", care_plan_updated: true,
+    notes: "Very positive first review. Casey settling well. Strong relationship with key worker. IRO impressed with home's identity-affirming approach.",
+    recorded_by: "staff_darren", home_id: "home_oak", created_at: daysFromNow(-60),
+  },
+];
+
+// ── Behaviour Support Plans seed data ─────────────────────────────────────────
+store.behaviourSupportPlans = [
+  {
+    id: "bsp_001", child_id: "yp_alex", created_date: daysFromNow(-90), created_by: "staff_darren",
+    review_date: daysFromNow(0), last_reviewed: daysFromNow(-30), status: "active",
+    diagnosis: ["ADHD", "Attachment disorder"],
+    primary_behaviours: [
+      { behaviour: "Verbal aggression towards peers", frequency: "weekly", severity: "medium", trend: "improving" },
+      { behaviour: "Property damage when frustrated", frequency: "occasional", severity: "high", trend: "improving" },
+    ],
+    known_triggers: [
+      { trigger: "Perceived unfairness or injustice", category: "emotional", likelihood: "high" },
+      { trigger: "Transitions between activities", category: "routine_change", likelihood: "medium" },
+      { trigger: "Tiredness or hunger", category: "sensory", likelihood: "medium" },
+    ],
+    early_warnings: ["Voice gets louder", "Pacing around room", "Refusing to make eye contact", "Verbal put-downs of others"],
+    de_escalation: [
+      { stage: "green", strategies: ["Verbal praise for positive choices", "Structured routine with visual schedule"], staff_approach: "Warm, predictable interactions. Give choices where possible." },
+      { stage: "amber", strategies: ["Offer 1:1 time in quiet space", "Redirect to physical activity", "Use agreed calm-down signal"], staff_approach: "Lower voice, reduce demands, acknowledge feelings." },
+      { stage: "red", strategies: ["Clear room of other YP", "Maintain safe distance", "Team Teach holds ONLY if imminent risk"], staff_approach: "Minimal language, calm presence, wait for de-escalation." },
+    ],
+    positive_strategies: [
+      { strategy: "Daily check-in with key worker", frequency: "Daily", effectiveness: "highly_effective" },
+      { strategy: "Grounding exercises (5-4-3-2-1)", frequency: "As needed", effectiveness: "effective" },
+    ],
+    rewards: [
+      { reward: "Extra gaming time", earned_by: "Full day without verbal aggression", frequency: "Daily" },
+      { reward: "Takeaway Friday", earned_by: "Positive week at school", frequency: "Weekly" },
+    ],
+    boundaries: [
+      { boundary: "No physical aggression towards others", consequence: "Loss of evening privilege + debrief", rationale: "Safety of all residents" },
+      { boundary: "Property must be respected", consequence: "Contribute to repair/replacement", rationale: "Teaches responsibility and accountability" },
+    ],
+    safety_plan: [
+      { scenario: "Physical aggression towards peer", response: "Separate YP, Team Teach if necessary, debrief both parties within 24hrs", staff_required: 2 },
+    ],
+    communication_needs: "Alex responds best to calm, direct communication. Avoid sarcasm. Give processing time before expecting a response.",
+    sensory_considerations: "Can be overstimulated by loud environments. Benefits from quiet space access.",
+    child_views: "I know I need help with my temper. The breathing thing works. I want to stop breaking things.",
+    parent_views: "N/A — no parental contact",
+    professional_input: [
+      { name: "Dr Sarah Khan", role: "CAMHS Psychologist", recommendation: "Continue anger management programme. Consider EMDR for trauma processing.", date: daysFromNow(-45) },
+    ],
+    staff_guidance: ["Always offer choice rather than demand", "Avoid confrontation in front of peers", "Debrief privately after incidents"],
+    restrictive_interventions: [
+      { intervention: "Team Teach standing hold", last_resort: true, authorised_by: "Darren Laville (RM)", conditions: "Only when imminent risk of serious harm to self or others" },
+    ],
+    review_history: [
+      { date: daysFromNow(-30), reviewed_by: "staff_darren", changes: "Reduced frequency of verbal aggression from daily to weekly", outcome: "Plan continues with updated strategies" },
+    ],
+    home_id: "home_oak", created_at: daysFromNow(-90),
+  },
+  {
+    id: "bsp_002", child_id: "yp_jordan", created_date: daysFromNow(-60), created_by: "staff_anna",
+    review_date: daysFromNow(30), last_reviewed: daysFromNow(-15), status: "active",
+    diagnosis: [],
+    primary_behaviours: [
+      { behaviour: "Absconding from home", frequency: "occasional", severity: "high", trend: "improving" },
+      { behaviour: "Refusal to engage with routines", frequency: "weekly", severity: "low", trend: "stable" },
+    ],
+    known_triggers: [
+      { trigger: "Cancelled contact with mum", category: "emotional", likelihood: "high" },
+      { trigger: "Peer conflict", category: "social", likelihood: "medium" },
+    ],
+    early_warnings: ["Withdraws to bedroom", "Stops eating with group", "Asks about bus times"],
+    de_escalation: [
+      { stage: "green", strategies: ["Maintain predictable routine", "Proactive check-ins after contact"], staff_approach: "Gentle, non-intrusive. Respect need for space." },
+      { stage: "amber", strategies: ["Offer walk with staff member", "1:1 conversation about feelings"], staff_approach: "Acknowledge emotions without pressure." },
+      { stage: "red", strategies: ["Do not physically prevent leaving unless immediate danger", "Follow at safe distance", "Contact police if >1hr"], staff_approach: "Stay calm, state you care, give phone number." },
+    ],
+    positive_strategies: [
+      { strategy: "Evening activity choices board", frequency: "Daily", effectiveness: "effective" },
+      { strategy: "Walking group twice weekly", frequency: "Twice weekly", effectiveness: "highly_effective" },
+    ],
+    rewards: [
+      { reward: "Weekend cinema trip", earned_by: "No absconding for 2 weeks", frequency: "Fortnightly" },
+    ],
+    boundaries: [
+      { boundary: "Must tell staff before leaving the building", consequence: "Wellbeing conversation + risk assessment review", rationale: "Staff need to know where YP is for safeguarding" },
+    ],
+    safety_plan: [
+      { scenario: "Jordan leaves without telling staff", response: "Follow missing protocol. Check known locations. Police after 1hr.", staff_required: 1 },
+    ],
+    communication_needs: "Jordan responds to low-key conversations. Avoids direct questions — use side-by-side activities (walking, cooking) to facilitate discussion.",
+    sensory_considerations: "No specific sensory needs identified.",
+    child_views: "I don't run away, I just need to get out sometimes. I always come back.",
+    parent_views: "Mum wants more contact. Supports placement.",
+    professional_input: [],
+    staff_guidance: ["Don't interrogate when Jordan returns — welcome back warmly", "Offer food and drink on return", "Debrief next day, not immediately"],
+    restrictive_interventions: [],
+    review_history: [
+      { date: daysFromNow(-15), reviewed_by: "staff_anna", changes: "Walking group added as proactive strategy", outcome: "Missing episodes reduced" },
+    ],
+    home_id: "home_oak", created_at: daysFromNow(-60),
+  },
+];
+
 // ── CRUD helpers ──────────────────────────────────────────────────────────────
 
 export function getStore() { return store; }
@@ -2772,6 +3091,80 @@ export const db = {
       if (idx === -1) return null;
       store.keyWorkingSessions[idx] = { ...store.keyWorkingSessions[idx], ...data };
       return store.keyWorkingSessions[idx];
+    },
+  },
+
+  // ── Education Records ────────────────────────────────────────────────────
+  educationRecords: {
+    findAll: () => store.educationRecords,
+    findByChild: (childId: string) => store.educationRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.educationRecords.find((r) => r.id === id),
+    create: (data: Partial<EducationRecord>): EducationRecord => {
+      const record = {
+        ...data,
+        id: generateId("edu"),
+        home_id: data.home_id ?? "home_oak",
+        created_at: new Date().toISOString(),
+      } as EducationRecord;
+      store.educationRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<EducationRecord>): EducationRecord | null => {
+      const idx = store.educationRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.educationRecords[idx] = { ...store.educationRecords[idx], ...data };
+      return store.educationRecords[idx];
+    },
+  },
+
+  riskAssessments: {
+    findAll: () => store.riskAssessments,
+    findByChild: (childId: string) => store.riskAssessments.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.riskAssessments.find((r) => r.id === id),
+    create: (data: Partial<RiskAssessment>): RiskAssessment => {
+      const record = { ...data, id: generateId("ra"), home_id: data.home_id ?? "home_oak", created_at: new Date().toISOString() } as RiskAssessment;
+      store.riskAssessments.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RiskAssessment>): RiskAssessment | null => {
+      const idx = store.riskAssessments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.riskAssessments[idx] = { ...store.riskAssessments[idx], ...data };
+      return store.riskAssessments[idx];
+    },
+  },
+
+  lacReviews: {
+    findAll: () => store.lacReviews,
+    findByChild: (childId: string) => store.lacReviews.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.lacReviews.find((r) => r.id === id),
+    create: (data: Partial<LACReview>): LACReview => {
+      const record = { ...data, id: generateId("lac"), home_id: data.home_id ?? "home_oak", created_at: new Date().toISOString() } as LACReview;
+      store.lacReviews.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<LACReview>): LACReview | null => {
+      const idx = store.lacReviews.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.lacReviews[idx] = { ...store.lacReviews[idx], ...data };
+      return store.lacReviews[idx];
+    },
+  },
+
+  behaviourSupportPlans: {
+    findAll: () => store.behaviourSupportPlans,
+    findByChild: (childId: string) => store.behaviourSupportPlans.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.behaviourSupportPlans.find((r) => r.id === id),
+    create: (data: Partial<BehaviourSupportPlan>): BehaviourSupportPlan => {
+      const record = { ...data, id: generateId("bsp"), home_id: data.home_id ?? "home_oak", created_at: new Date().toISOString() } as BehaviourSupportPlan;
+      store.behaviourSupportPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<BehaviourSupportPlan>): BehaviourSupportPlan | null => {
+      const idx = store.behaviourSupportPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.behaviourSupportPlans[idx] = { ...store.behaviourSupportPlans[idx], ...data };
+      return store.behaviourSupportPlans[idx];
     },
   },
 };

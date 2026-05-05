@@ -3,6 +3,40 @@
 // New entities: buildings, vehicles, H&S, missing episodes, chronology, etc.
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ── Risk Assessment ─────────────────────────────────────────────────────────
+
+export type RiskDomain = "self_harm" | "absconding" | "aggression" | "exploitation" | "substance_use" | "online_safety" | "fire_setting" | "sexual_behaviour" | "self_neglect" | "emotional_harm";
+export type RiskLevel = "low" | "medium" | "high" | "very_high";
+export type RiskTrend = "increasing" | "stable" | "decreasing";
+
+export interface RiskMitigation {
+  strategy: string;
+  responsible: string;
+  effectiveness: "effective" | "partially_effective" | "not_effective" | "not_yet_assessed";
+}
+
+export interface RiskAssessment {
+  id: string;
+  child_id: string;
+  domain: RiskDomain;
+  current_level: RiskLevel;
+  previous_level: RiskLevel;
+  trend: RiskTrend;
+  status: "current" | "under_review" | "superseded" | "draft";
+  assessed_by: string;
+  assessed_date: string;
+  review_date: string;
+  triggers: string[];
+  indicators: string[];
+  mitigations: RiskMitigation[];
+  contingency_plan: string;
+  child_views: string;
+  history_notes: string;
+  linked_incidents: string[];
+  home_id: string;
+  created_at: string;
+}
+
 // ── Shift Swap Request ───────────────────────────────────────────────────────
 
 export interface ShiftSwapRequest {
@@ -2124,6 +2158,147 @@ export interface OutcomeReview {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// LAC REVIEWS — Looked-After Children statutory review meetings
+// ══════════════════════════════════════════════════════════════════════════════
+
+export type LACReviewType = "initial" | "first_review" | "subsequent" | "emergency" | "disruption";
+export type LACReviewOutcome = "placement_continues" | "placement_change" | "care_plan_amended" | "actions_agreed" | "return_home";
+export type LACChildParticipation = "attended" | "views_submitted" | "advocate_attended" | "did_not_participate";
+export type LACPlacementStability = "stable" | "some_concerns" | "at_risk";
+
+export interface LACReviewAttendee {
+  name: string;
+  role: string;
+}
+
+export interface LACReviewAction {
+  action: string;
+  owner: string;
+  due_date: string;
+  completed: boolean;
+}
+
+export interface LACReview {
+  id: string;
+  child_id: string;
+  date: string;
+  review_type: LACReviewType;
+  iro: string;
+  venue: string;
+  attendees: LACReviewAttendee[];
+  child_participation: LACChildParticipation;
+  child_views: string;
+  key_discussions: string[];
+  recommendations: string[];
+  outcome: LACReviewOutcome;
+  actions_agreed: LACReviewAction[];
+  next_review_date: string;
+  placement_stability: LACPlacementStability;
+  care_plan_updated: boolean;
+  notes: string;
+  recorded_by: string;
+  home_id: string;
+  created_at: string;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BEHAVIOUR SUPPORT PLANS — formal structured plans for challenging behaviour
+// ══════════════════════════════════════════════════════════════════════════════
+
+export interface BSPPrimaryBehaviour {
+  behaviour: string;
+  frequency: "daily" | "weekly" | "occasional" | "rare";
+  severity: "low" | "medium" | "high";
+  trend: "improving" | "stable" | "worsening";
+}
+
+export interface BSPKnownTrigger {
+  trigger: string;
+  category: "environmental" | "emotional" | "social" | "sensory" | "routine_change" | "demand" | "transition";
+  likelihood: "high" | "medium" | "low";
+}
+
+export interface BSPDeEscalationStage {
+  stage: "green" | "amber" | "red";
+  strategies: string[];
+  staff_approach: string;
+}
+
+export interface BSPPositiveStrategy {
+  strategy: string;
+  frequency: string;
+  effectiveness: "highly_effective" | "effective" | "partially_effective" | "not_effective";
+}
+
+export interface BSPReward {
+  reward: string;
+  earned_by: string;
+  frequency: string;
+}
+
+export interface BSPBoundary {
+  boundary: string;
+  consequence: string;
+  rationale: string;
+}
+
+export interface BSPSafetyPlanItem {
+  scenario: string;
+  response: string;
+  staff_required: number;
+}
+
+export interface BSPProfessionalInput {
+  name: string;
+  role: string;
+  recommendation: string;
+  date: string;
+}
+
+export interface BSPRestrictiveIntervention {
+  intervention: string;
+  last_resort: boolean;
+  authorised_by: string;
+  conditions: string;
+}
+
+export interface BSPReviewHistoryEntry {
+  date: string;
+  reviewed_by: string;
+  changes: string;
+  outcome: string;
+}
+
+export interface BehaviourSupportPlan {
+  id: string;
+  child_id: string;
+  created_date: string;
+  created_by: string;
+  review_date: string;
+  last_reviewed: string | null;
+  status: "active" | "under_review" | "draft" | "archived" | "suspended";
+  diagnosis: string[];
+  primary_behaviours: BSPPrimaryBehaviour[];
+  known_triggers: BSPKnownTrigger[];
+  early_warnings: string[];
+  de_escalation: BSPDeEscalationStage[];
+  positive_strategies: BSPPositiveStrategy[];
+  rewards: BSPReward[];
+  boundaries: BSPBoundary[];
+  safety_plan: BSPSafetyPlanItem[];
+  communication_needs: string;
+  sensory_considerations: string;
+  child_views: string;
+  parent_views: string;
+  professional_input: BSPProfessionalInput[];
+  staff_guidance: string[];
+  restrictive_interventions: BSPRestrictiveIntervention[];
+  review_history: BSPReviewHistoryEntry[];
+  home_id: string;
+  created_at: string;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // KEY WORKING SESSIONS — informal key-working interaction records
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -2148,4 +2323,22 @@ export interface KeyWorkingSession {
   confidential: boolean;
   home_id: string;
   created_at: string;
+}
+
+// ── Education Records ────────────────────────────────────────────────────────
+
+export interface EducationRecord {
+  id: string;
+  child_id: string;
+  record_type: "attendance" | "exclusion" | "pep_meeting" | "achievement" | "concern" | "placement_change";
+  title: string;
+  date: string;
+  school?: string;
+  details?: string;
+  outcome?: string;
+  follow_up_date?: string;
+  staff_id: string;
+  status: "open" | "resolved" | "monitoring";
+  home_id?: string;
+  created_at?: string;
 }

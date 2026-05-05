@@ -2,22 +2,9 @@
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "./use-api";
+import type { EducationRecord } from "@/types/extended";
 
-export interface EducationRecord {
-  id: string;
-  child_id: string;
-  record_type: "attendance" | "exclusion" | "pep_meeting" | "achievement" | "concern" | "placement_change";
-  title: string;
-  date: string;
-  school?: string;
-  details?: string;
-  outcome?: string;
-  follow_up_date?: string;
-  staff_id: string;
-  status: "open" | "resolved" | "monitoring";
-  home_id?: string;
-  created_at?: string;
-}
+export type { EducationRecord };
 
 type ListResponse = { data: EducationRecord[]; meta: { total: number; exclusions_term: number; attendance_pct: number } };
 type SingleResponse = { data: EducationRecord };

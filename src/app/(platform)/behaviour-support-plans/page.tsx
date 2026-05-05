@@ -31,102 +31,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useCreateBehaviourSupportPlan } from "@/hooks/use-behaviour-support";
+import { useBehaviourSupportPlans, useCreateBSP } from "@/hooks/use-behaviour-support-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-
-// -- Types --------------------------------------------------------------------
-
-interface PrimaryBehaviour {
-  behaviour: string;
-  frequency: "daily" | "weekly" | "occasional" | "rare";
-  severity: "low" | "medium" | "high";
-  trend: "improving" | "stable" | "worsening";
-}
-
-interface KnownTrigger {
-  trigger: string;
-  category: "environmental" | "emotional" | "social" | "sensory" | "routine_change" | "demand" | "transition";
-  likelihood: "high" | "medium" | "low";
-}
-
-interface DeEscalationStage {
-  stage: "green" | "amber" | "red";
-  strategies: string[];
-  staffApproach: string;
-}
-
-interface PositiveStrategy {
-  strategy: string;
-  frequency: string;
-  effectiveness: "highly_effective" | "effective" | "partially_effective" | "not_effective";
-}
-
-interface Reward {
-  reward: string;
-  earnedBy: string;
-  frequency: string;
-}
-
-interface Boundary {
-  boundary: string;
-  consequence: string;
-  rationale: string;
-}
-
-interface SafetyPlanItem {
-  scenario: string;
-  response: string;
-  staffRequired: number;
-}
-
-interface ProfessionalInput {
-  name: string;
-  role: string;
-  recommendation: string;
-  date: string;
-}
-
-interface RestrictiveIntervention {
-  intervention: string;
-  lastResort: boolean;
-  authorisedBy: string;
-  conditions: string;
-}
-
-interface ReviewHistoryEntry {
-  date: string;
-  reviewedBy: string;
-  changes: string;
-  outcome: string;
-}
-
-interface BehaviourSupportPlan {
-  id: string;
-  youngPersonId: string;
-  createdDate: string;
-  createdBy: string;
-  reviewDate: string;
-  lastReviewed: string | null;
-  status: "active" | "under_review" | "draft" | "archived" | "suspended";
-  diagnosis: string[];
-  primaryBehaviours: PrimaryBehaviour[];
-  knownTriggers: KnownTrigger[];
-  earlyWarnings: string[];
-  deEscalation: DeEscalationStage[];
-  positiveStrategies: PositiveStrategy[];
-  rewards: Reward[];
-  boundaries: Boundary[];
-  safetyPlan: SafetyPlanItem[];
-  communicationNeeds: string;
-  sensoryConsiderations: string;
-  childViews: string;
-  parentViews: string;
-  professionalInput: ProfessionalInput[];
-  staffGuidance: string[];
-  restrictiveInterventions: RestrictiveIntervention[];
-  reviewHistory: ReviewHistoryEntry[];
-}
+import type { BehaviourSupportPlan, BSPPrimaryBehaviour, BSPKnownTrigger, BSPDeEscalationStage, BSPPositiveStrategy, BSPReward, BSPBoundary, BSPSafetyPlanItem, BSPProfessionalInput, BSPRestrictiveIntervention, BSPReviewHistoryEntry } from "@/types/extended";
 
 // -- Helpers ------------------------------------------------------------------
 
@@ -181,341 +89,23 @@ const trendArrow = (t: string) =>
 const trendColour = (t: string) =>
   t === "improving" ? "text-green-600" : t === "stable" ? "text-gray-500" : "text-red-600";
 
-// -- Seed Data ----------------------------------------------------------------
-
-const SEED: BehaviourSupportPlan[] = [
-  // Alex
-  {
-    id: "bsp_001",
-    youngPersonId: "yp_alex",
-    createdDate: d(-120),
-    createdBy: "staff_darren",
-    reviewDate: d(10),
-    lastReviewed: d(-30),
-    status: "active",
-    diagnosis: ["ADHD", "Attachment Disorder"],
-    primaryBehaviours: [
-      { behaviour: "Verbal aggression towards staff", frequency: "weekly", severity: "medium", trend: "improving" },
-      { behaviour: "Property damage (throwing objects, kicking furniture)", frequency: "occasional", severity: "high", trend: "stable" },
-      { behaviour: "Refusal and avoidance of demands", frequency: "daily", severity: "low", trend: "improving" },
-    ],
-    knownTriggers: [
-      { trigger: "Academic or routine demands", category: "demand", likelihood: "high" },
-      { trigger: "Transitions between activities", category: "transition", likelihood: "high" },
-      { trigger: "Tiredness or poor sleep", category: "emotional", likelihood: "medium" },
-      { trigger: "Perceived rejection by peers or staff", category: "emotional", likelihood: "medium" },
-      { trigger: "Boredom or unstructured time", category: "environmental", likelihood: "low" },
-    ],
-    earlyWarnings: [
-      "Pacing around the room, unable to sit still",
-      "Voice getting louder, tone becoming confrontational",
-      "Refusing eye contact and turning away from staff",
-      "Muttering under breath or swearing quietly",
-    ],
-    deEscalation: [
-      {
-        stage: "green",
-        strategies: [
-          "Offer choices rather than direct demands",
-          "Use humour and light conversation to maintain connection",
-          "Ensure routine is predictable with visual schedule",
-          "Praise effort rather than outcome",
-        ],
-        staffApproach: "Warm, relaxed, and conversational. Build rapport through shared interests (gaming, football). Avoid power struggles.",
-      },
-      {
-        stage: "amber",
-        strategies: [
-          "Acknowledge feelings before addressing behaviour",
-          "Offer a break or walk outside",
-          "Reduce demands temporarily",
-          "Give processing time -- do not crowd or rush",
-        ],
-        staffApproach: "Calm, low voice. Use PACE approach. Validate emotions. Do not escalate language or raise voice. Give physical space.",
-      },
-      {
-        stage: "red",
-        strategies: [
-          "Remove other young people from the area",
-          "Maintain safe distance, stay visible but not threatening",
-          "Use minimal language -- short, calm instructions",
-          "Call for additional staff support if needed",
-        ],
-        staffApproach: "Safety-first. Do not attempt to reason or negotiate. Wait for de-escalation. Only intervene physically as absolute last resort per positive handling plan.",
-      },
-    ],
-    positiveStrategies: [
-      { strategy: "1:1 key work sessions focused on emotional literacy", frequency: "Twice weekly", effectiveness: "highly_effective" },
-      { strategy: "Xbox time as earned reward with clear expectations", frequency: "Daily", effectiveness: "effective" },
-      { strategy: "Physical activity (gym, football) to regulate energy", frequency: "3x weekly", effectiveness: "highly_effective" },
-      { strategy: "Visual routine board in bedroom", frequency: "Daily", effectiveness: "effective" },
-    ],
-    rewards: [
-      { reward: "Extra 30 mins Xbox time", earnedBy: "Following morning routine independently", frequency: "Daily" },
-      { reward: "Weekly takeaway choice", earnedBy: "No property damage for full week", frequency: "Weekly" },
-      { reward: "Activity trip with key worker", earnedBy: "Consistent engagement with education for 2 weeks", frequency: "Fortnightly" },
-    ],
-    boundaries: [
-      { boundary: "No physical aggression towards people", consequence: "Immediate de-escalation protocol; restorative conversation within 24 hours", rationale: "Safety of all residents and staff is non-negotiable" },
-      { boundary: "Screen time ends at agreed time", consequence: "Gentle reminder, then natural consequence (reduced time next day)", rationale: "Consistent routine supports emotional regulation (ADHD management)" },
-      { boundary: "Respectful language -- no targeted name-calling", consequence: "Brief acknowledgement, then revisit in calm moment", rationale: "Building relationship skills and mutual respect" },
-    ],
-    safetyPlan: [
-      { scenario: "Alex becomes physically aggressive and poses risk to others", response: "Remove others from area. Two staff maintain safe distance. Use de-escalation language. If immediate risk of harm, follow positive handling plan (team-teach standing hold). Debrief within 24 hours.", staffRequired: 2 },
-      { scenario: "Alex attempts to leave the building in a distressed state at night", response: "One staff follows at safe distance. Second staff calls manager. Do not physically block unless immediate danger. Use verbal engagement. If Alex leaves grounds, follow missing from care protocol.", staffRequired: 2 },
-    ],
-    communicationNeeds: "Alex responds best to direct, honest communication. Avoids sarcasm. Needs processing time (10-15 seconds) before responding. Visual supports helpful for routine. Key worker relationship is the primary communication channel.",
-    sensoryConsiderations: "Can become overstimulated by loud environments. Prefers quieter spaces when dysregulated. Background music at low volume can help regulation. Dislikes being touched unexpectedly.",
-    childViews: "Alex says: 'I know I kick off sometimes but I'm trying to get better. Don't shout at me -- it makes it worse. If I need space, let me go to my room. I like it when staff actually listen to me and don't just tell me off.'",
-    parentViews: "No current parental contact. Social worker represents parental views. SW supports the plan and agrees the approach is proportionate.",
-    professionalInput: [
-      { name: "Dr. Sarah Ahmed", role: "CAMHS Psychiatrist", recommendation: "Continue current ADHD medication. Behaviour plan should incorporate sensory breaks and reduced demand during medication transition periods.", date: d(-45) },
-      { name: "Karen Holding", role: "Social Worker", recommendation: "Supports current plan. Recommends continued focus on positive reinforcement over punitive measures. Agrees with restrictive intervention threshold.", date: d(-30) },
-      { name: "James Brooks", role: "Education SENCO", recommendation: "Alex is making progress with modified curriculum. Recommends aligning home and school behaviour strategies for consistency.", date: d(-20) },
-    ],
-    staffGuidance: [
-      "Always offer choices -- never issue ultimatums",
-      "Use PACE approach: Playful, Accepting, Curious, Empathic",
-      "Give processing time after instructions -- count to 10 silently",
-      "Praise specifically -- 'I noticed you handled that calmly' not just 'good job'",
-      "If escalation occurs, do NOT raise your voice -- it will escalate further",
-    ],
-    restrictiveInterventions: [
-      { intervention: "Team-teach standing hold", lastResort: true, authorisedBy: "staff_darren", conditions: "Only when there is immediate risk of serious harm to Alex or others. Maximum 5 minutes. Two staff minimum. Debrief required within 24 hours. Record in restraint log immediately." },
-    ],
-    reviewHistory: [
-      { date: d(-30), reviewedBy: "staff_darren", changes: "Updated de-escalation strategies following successful use of PACE approach. Reduced severity rating for verbal aggression from high to medium. Added new positive strategy (visual routine board).", outcome: "Plan continues -- positive trajectory. Review again in 6 weeks." },
-    ],
-  },
-  // Jordan
-  {
-    id: "bsp_002",
-    youngPersonId: "yp_jordan",
-    createdDate: d(-90),
-    createdBy: "staff_ryan",
-    reviewDate: d(20),
-    lastReviewed: d(-15),
-    status: "active",
-    diagnosis: ["ASD Level 1", "Anxiety"],
-    primaryBehaviours: [
-      { behaviour: "Meltdowns (sensory or emotional overload)", frequency: "weekly", severity: "medium", trend: "stable" },
-      { behaviour: "Absconding attempts when overwhelmed", frequency: "occasional", severity: "high", trend: "improving" },
-      { behaviour: "Self-harm (scratching, head-banging during crisis)", frequency: "rare", severity: "high", trend: "improving" },
-    ],
-    knownTriggers: [
-      { trigger: "Sensory overload (noise, crowds, bright lights)", category: "sensory", likelihood: "high" },
-      { trigger: "Unexpected changes to routine or plans", category: "routine_change", likelihood: "high" },
-      { trigger: "Social demands (group activities, unfamiliar people)", category: "social", likelihood: "medium" },
-      { trigger: "Food textures or unfamiliar meals", category: "sensory", likelihood: "medium" },
-    ],
-    earlyWarnings: [
-      "Covering ears or squinting (sensory distress)",
-      "Repetitive questioning -- 'What's happening next?'",
-      "Withdrawal to bedroom without explanation",
-      "Rocking or hand-flapping increasing in frequency",
-      "Stomach complaints (anxiety somatisation)",
-    ],
-    deEscalation: [
-      {
-        stage: "green",
-        strategies: [
-          "Maintain predictable routine with visual timetable",
-          "Offer sensory tools (weighted blanket, fidget items)",
-          "Pre-warn of any changes at least 30 minutes ahead",
-          "Allow Jordan to eat familiar/safe foods without pressure",
-        ],
-        staffApproach: "Calm, predictable, and patient. Use clear, literal language -- avoid idioms or ambiguous phrasing. Respect Jordan's need for personal space.",
-      },
-      {
-        stage: "amber",
-        strategies: [
-          "Guide to quiet, low-stimulation space",
-          "Offer noise-cancelling headphones",
-          "Reduce verbal demands -- use visual prompts",
-          "Allow sensory self-regulation (rocking is calming, not concerning)",
-        ],
-        staffApproach: "Minimal language. Soft, even tone. Do not touch without permission. Offer presence without pressure. Use a calm countdown if transition is needed.",
-      },
-      {
-        stage: "red",
-        strategies: [
-          "Ensure Jordan is in a safe space with no harmful objects",
-          "One staff member stays nearby but gives physical space",
-          "Do not attempt to stop stimming behaviours -- they are regulatory",
-          "If self-harm risk, calmly remove harmful objects without restraint",
-        ],
-        staffApproach: "Safety-first. One familiar staff member only -- too many people will escalate. Do not physically restrain unless immediate risk of serious injury. Wait for the meltdown to pass -- it will. Recovery takes 30-60 minutes.",
-      },
-    ],
-    positiveStrategies: [
-      { strategy: "Structured sensory diet throughout the day", frequency: "Daily", effectiveness: "highly_effective" },
-      { strategy: "Social stories for new or changing situations", frequency: "As needed", effectiveness: "effective" },
-      { strategy: "1:1 outdoor time (nature walks are calming)", frequency: "3x weekly", effectiveness: "highly_effective" },
-    ],
-    rewards: [
-      { reward: "Lego building time (preferred activity)", earnedBy: "Engaging with daily routine without meltdown", frequency: "Daily" },
-      { reward: "Special interest time (trains/maps)", earnedBy: "Trying one new food item at mealtime", frequency: "Weekly" },
-      { reward: "Trip to the science museum", earnedBy: "Two consecutive weeks of attending school fully", frequency: "Fortnightly" },
-      { reward: "Extra quiet time in room with audiobook", earnedBy: "Using calm-down strategies independently", frequency: "As earned" },
-    ],
-    boundaries: [
-      { boundary: "Cannot leave the building without staff knowledge", consequence: "Gentle conversation about safety; additional check-ins", rationale: "Absconding risk -- Jordan may not recognise danger when overwhelmed" },
-      { boundary: "Mealtimes are together but food choices are flexible", consequence: "Safe foods always available; no forced eating", rationale: "Sensory food issues are neurological, not defiance" },
-    ],
-    safetyPlan: [
-      { scenario: "Jordan attempts to abscond from the building", response: "One staff follows at safe distance. Use calm, familiar voice. Offer to walk together instead. If Jordan leaves grounds, second staff initiates missing from care protocol. Do not physically block unless imminent traffic/danger risk.", staffRequired: 2 },
-      { scenario: "Jordan engages in self-harm during meltdown", response: "Remove harmful objects calmly. Do not restrain. Offer weighted blanket. Stay present but give space. If injury occurs, administer first aid. Complete body map. Inform CAMHS if significant. Record in daily log.", staffRequired: 1 },
-    ],
-    communicationNeeds: "Jordan processes language literally -- avoid metaphors, sarcasm, and ambiguity. Use visual supports and social stories. Allow extra processing time. Written instructions work better than verbal for multi-step tasks. Jordan may not make eye contact -- this is not defiance.",
-    sensoryConsiderations: "Hypersensitive to noise (especially sudden or loud), bright/fluorescent lighting, certain food textures (mushy/slimy), and unexpected touch. Weighted blanket, fidget spinner, and noise-cancelling headphones are essential regulation tools. Room is set up as a low-stimulation environment.",
-    childViews: "Jordan says: 'I don't mean to run away. Sometimes everything gets too loud and I just need to be somewhere quiet. The headphones help a lot. I like it when staff tell me what's happening next so I don't get surprised.'",
-    parentViews: "Mother is supportive of the plan. She has shared strategies that work at home including use of the weighted blanket and allowing Jordan to retreat to a quiet space. Father has limited involvement.",
-    professionalInput: [
-      { name: "Dr. Priya Nair", role: "CAMHS Clinical Psychologist", recommendation: "ASD-informed approach is essential. Meltdowns are not tantrums -- they are neurological overwhelm. Avoid punitive responses. Sensory diet is key to regulation.", date: d(-40) },
-      { name: "Lisa Thompson", role: "Occupational Therapist", recommendation: "Sensory profile assessment completed. Recommends proprioceptive input activities (heavy work, climbing) and a dedicated calm space with low lighting.", date: d(-25) },
-    ],
-    staffGuidance: [
-      "Jordan's behaviours are autism-related, not intentional defiance",
-      "Never force eye contact or physical interaction",
-      "Pre-warn of ALL changes -- even small ones like a different staff member collecting from school",
-      "Stimming (rocking, flapping) is self-regulation -- do not ask Jordan to stop",
-      "If Jordan is overwhelmed, reduce language to short, clear phrases",
-    ],
-    restrictiveInterventions: [
-      { intervention: "Guided escort away from danger (e.g. road)", lastResort: true, authorisedBy: "staff_ryan", conditions: "Only when Jordan is at imminent risk of physical harm (traffic, water). Gentle guiding by elbow -- no restrictive holds. Jordan must be informed of what you are doing and why." },
-      { intervention: "Removal of harmful objects during self-harm episode", lastResort: false, authorisedBy: "staff_ryan", conditions: "Not considered restrictive but documented. Remove items calmly without physical contact with Jordan wherever possible. Replace with sensory alternatives (stress ball, fabric)." },
-    ],
-    reviewHistory: [
-      { date: d(-15), reviewedBy: "staff_ryan", changes: "Added OT recommendations to sensory section. Updated absconding trend from stable to improving following 6 weeks with no incidents.", outcome: "Plan continues. Positive progress noted." },
-    ],
-  },
-  // Casey
-  {
-    id: "bsp_003",
-    youngPersonId: "yp_casey",
-    createdDate: d(-180),
-    createdBy: "staff_darren",
-    reviewDate: d(-10),
-    lastReviewed: d(-60),
-    status: "under_review",
-    diagnosis: ["PTSD", "Reactive Attachment Disorder (RAD)"],
-    primaryBehaviours: [
-      { behaviour: "Emotional dysregulation (intense distress, crying, panic)", frequency: "daily", severity: "high", trend: "worsening" },
-      { behaviour: "Aggressive outbursts (throwing items, slamming doors)", frequency: "weekly", severity: "medium", trend: "stable" },
-      { behaviour: "Dissociation (appearing 'zoned out', unresponsive)", frequency: "occasional", severity: "medium", trend: "stable" },
-      { behaviour: "Night terrors (screaming, thrashing during sleep)", frequency: "weekly", severity: "medium", trend: "stable" },
-    ],
-    knownTriggers: [
-      { trigger: "Raised voices or shouting (even between others)", category: "environmental", likelihood: "high" },
-      { trigger: "Unexpected physical touch", category: "sensory", likelihood: "high" },
-      { trigger: "Specific anniversary dates related to trauma", category: "emotional", likelihood: "high" },
-      { trigger: "Men in positions of authority (initial response)", category: "social", likelihood: "medium" },
-      { trigger: "Bedtime and darkness", category: "routine_change", likelihood: "medium" },
-      { trigger: "Feeling trapped or confined (locked doors, small rooms)", category: "environmental", likelihood: "high" },
-    ],
-    earlyWarnings: [
-      "Eyes glazing over or becoming 'distant'",
-      "Picking at skin on hands or arms",
-      "Asking repetitive questions about safety ('Am I safe here?')",
-      "Becoming very clingy with preferred staff member",
-      "Refusal to eat or sudden loss of appetite",
-      "Retreating under furniture or into small spaces",
-    ],
-    deEscalation: [
-      {
-        stage: "green",
-        strategies: [
-          "Maintain consistent, predictable daily routine",
-          "Use warm, gentle tone -- never raise voice in Casey's presence",
-          "Provide choices to build sense of control",
-          "Trauma-informed check-ins: 'How are you feeling right now?'",
-        ],
-        staffApproach: "Nurturing, warm, and consistent. Build trust through reliability. Keep promises -- broken promises are deeply triggering. Use the language of safety: 'You are safe here. I am here.'",
-      },
-      {
-        stage: "amber",
-        strategies: [
-          "Grounding exercise: name 5 things you can see, 4 you can hear...",
-          "Offer Casey's comfort object (specific blanket)",
-          "Key worker to be contacted if not on shift",
-          "Reduce all environmental stimulation (dim lights, quiet)",
-        ],
-        staffApproach: "Gentle, slow movements. Announce what you are doing before you do it. Do not touch without asking. Get down to Casey's level. Maintain a calm, steady voice. Reassure repeatedly that Casey is safe.",
-      },
-      {
-        stage: "red",
-        strategies: [
-          "Ensure Casey is in a safe space -- remove anything throwable",
-          "One trusted staff member stays present, others withdraw",
-          "If dissociation occurs, use gentle grounding (cold cloth on wrists)",
-          "Do not attempt to process the trauma in the moment",
-        ],
-        staffApproach: "Casey may not recognise you during a flashback. Use her name gently. Remind her where she is: 'Casey, you are at Oak House. You are safe. It is [current year].' Do not restrain under any circumstances -- it will retraumatise. Wait for the crisis to pass.",
-      },
-    ],
-    positiveStrategies: [
-      { strategy: "Art therapy sessions (painting, drawing)", frequency: "3x weekly", effectiveness: "highly_effective" },
-      { strategy: "Therapeutic life-story work with key worker", frequency: "Weekly", effectiveness: "effective" },
-      { strategy: "Bedtime routine with calming music and low lighting", frequency: "Daily", effectiveness: "partially_effective" },
-      { strategy: "Animal-assisted therapy (visits from therapy dog)", frequency: "Weekly", effectiveness: "highly_effective" },
-    ],
-    rewards: [
-      { reward: "Art supplies (new sketchbook, pens)", earnedBy: "Attending school for a full week", frequency: "Weekly" },
-      { reward: "1:1 baking session with key worker", earnedBy: "Using a coping strategy independently", frequency: "As earned" },
-      { reward: "Extra time with therapy dog", earnedBy: "Engaging in life-story session", frequency: "Weekly" },
-    ],
-    boundaries: [
-      { boundary: "No throwing objects at people", consequence: "Immediate de-escalation; restorative conversation when calm", rationale: "Safety -- but approach with empathy, understanding the behaviour communicates distress" },
-      { boundary: "Night-time routine to be followed even when distressed", consequence: "Flexible timing but structure maintained; staff stays nearby", rationale: "Consistency reduces trauma-related hypervigilance at bedtime" },
-      { boundary: "Casey must inform staff before leaving communal areas", consequence: "Gentle reminder; additional check-ins for 30 minutes", rationale: "Safety awareness while respecting need for autonomy" },
-    ],
-    safetyPlan: [
-      { scenario: "Casey experiences a severe dissociative episode", response: "Do not move or touch Casey. Speak gently using her name and current location. Dim lights if possible. Use cold cloth on wrists for grounding if Casey is responsive to sensory input. If episode lasts more than 20 minutes, call CAMHS crisis line. Record fully in daily log.", staffRequired: 1 },
-      { scenario: "Casey becomes aggressive during a flashback", response: "Maintain safe distance. Remove other YP from the area. Do NOT restrain -- it will worsen the flashback. Use calm, repetitive reassurance. Wait for the episode to pass. Once calm, offer water and comfort object. Debrief with key worker within 24 hours.", staffRequired: 2 },
-    ],
-    communicationNeeds: "Casey communicates best through art and writing. Verbal processing can be difficult during heightened emotional states. Give time and do not fill silences. Use open-ended questions rather than direct questioning. Never ask 'Why did you do that?' -- ask 'What was happening for you?'",
-    sensoryConsiderations: "Hypervigilant to sound -- startles easily. Dislikes sudden changes in lighting. Finds comfort in soft textures (blankets, plush items). Weighted blanket at night helps with sleep. Scented items (lavender) can be grounding but should be offered, not imposed.",
-    childViews: "Casey says: 'Sometimes I feel really scared and I don't know why. I don't want to hurt anyone -- I just feel like everything is too much. Chervelle makes me feel safe. I like drawing because I can show how I feel without talking.'",
-    parentViews: "Mother has sporadic contact. Agrees with the plan in principle but engagement is inconsistent. Father has no contact (perpetrator of trauma). IRO represents Casey's welfare interests alongside SW.",
-    professionalInput: [
-      { name: "Dr. Helen Cartwright", role: "Clinical Psychologist (Trauma Specialist)", recommendation: "Casey requires a trauma-informed environment above all else. The current worsening of emotional dysregulation is likely linked to approaching anniversary dates. Recommend increasing therapy sessions to twice weekly for the next 8 weeks.", date: d(-20) },
-      { name: "Fiona Brennan", role: "Social Worker", recommendation: "Concerned about the worsening trend. Requests an urgent review of this BSP with updated strategies. Considers whether additional therapeutic input is needed.", date: d(-12) },
-      { name: "Sarah Mitchell", role: "Independent Reviewing Officer", recommendation: "Reviewed at last LAC review. Satisfied with trauma-informed approach but wants to see updated BSP reflecting current presentation. Next LAC review in 6 weeks.", date: d(-35) },
-    ],
-    staffGuidance: [
-      "Casey's behaviour is a trauma response -- she is not being deliberately difficult",
-      "NEVER raise your voice near Casey, even if speaking to someone else",
-      "Do not touch Casey without asking first, even casually",
-      "If Casey dissociates, do NOT shake her or shout -- ground gently",
-      "Male staff should build trust slowly -- Casey's trauma involves a male authority figure",
-      "Broken promises are deeply harmful -- only commit to what you can guarantee",
-    ],
-    restrictiveInterventions: [
-      { intervention: "No restrictive interventions authorised", lastResort: true, authorisedBy: "staff_darren", conditions: "Casey's trauma history means any physical restraint would be retraumatising and is contraindicated. If Casey poses a risk to herself or others, use environmental management (remove objects, clear the room) rather than physical intervention. In an extreme emergency, call 999." },
-    ],
-    reviewHistory: [
-      { date: d(-60), reviewedBy: "staff_darren", changes: "Standard 3-month review. No significant changes. Casey settling well.", outcome: "Plan continues unchanged." },
-    ],
-  },
-];
-
 // -- Export Columns -----------------------------------------------------------
 
 const EXPORT_COLS: ExportColumn<BehaviourSupportPlan>[] = [
-  { header: "Young Person", accessor: (r: BehaviourSupportPlan) => getYPName(r.youngPersonId) },
+  { header: "Young Person", accessor: (r: BehaviourSupportPlan) => getYPName(r.child_id) },
   { header: "Status", accessor: (r: BehaviourSupportPlan) => r.status.replace(/_/g, " ") },
   { header: "Diagnoses", accessor: (r: BehaviourSupportPlan) => r.diagnosis.join(", ") },
-  { header: "Created", accessor: (r: BehaviourSupportPlan) => r.createdDate },
-  { header: "Created By", accessor: (r: BehaviourSupportPlan) => getStaffName(r.createdBy) },
-  { header: "Review Due", accessor: (r: BehaviourSupportPlan) => r.reviewDate },
-  { header: "Last Reviewed", accessor: (r: BehaviourSupportPlan) => r.lastReviewed ?? "N/A" },
-  { header: "Primary Behaviours", accessor: (r: BehaviourSupportPlan) => r.primaryBehaviours.map((b) => `${b.behaviour} (${b.frequency}, ${b.severity}, ${b.trend})`).join("; ") },
-  { header: "Known Triggers", accessor: (r: BehaviourSupportPlan) => r.knownTriggers.map((t) => `${t.trigger} (${t.category})`).join("; ") },
-  { header: "Early Warnings", accessor: (r: BehaviourSupportPlan) => r.earlyWarnings.join("; ") },
-  { header: "Communication Needs", accessor: (r: BehaviourSupportPlan) => r.communicationNeeds },
-  { header: "Child Views", accessor: (r: BehaviourSupportPlan) => r.childViews },
-  { header: "Staff Guidance", accessor: (r: BehaviourSupportPlan) => r.staffGuidance.join("; ") },
-  { header: "Sensory Considerations", accessor: (r: BehaviourSupportPlan) => r.sensoryConsiderations },
+  { header: "Created", accessor: (r: BehaviourSupportPlan) => r.created_date },
+  { header: "Created By", accessor: (r: BehaviourSupportPlan) => getStaffName(r.created_by) },
+  { header: "Review Due", accessor: (r: BehaviourSupportPlan) => r.review_date },
+  { header: "Last Reviewed", accessor: (r: BehaviourSupportPlan) => r.last_reviewed ?? "N/A" },
+  { header: "Primary Behaviours", accessor: (r: BehaviourSupportPlan) => r.primary_behaviours.map((b) => `${b.behaviour} (${b.frequency}, ${b.severity}, ${b.trend})`).join("; ") },
+  { header: "Known Triggers", accessor: (r: BehaviourSupportPlan) => r.known_triggers.map((t) => `${t.trigger} (${t.category})`).join("; ") },
+  { header: "Early Warnings", accessor: (r: BehaviourSupportPlan) => r.early_warnings.join("; ") },
+  { header: "Communication Needs", accessor: (r: BehaviourSupportPlan) => r.communication_needs },
+  { header: "Child Views", accessor: (r: BehaviourSupportPlan) => r.child_views },
+  { header: "Staff Guidance", accessor: (r: BehaviourSupportPlan) => r.staff_guidance.join("; ") },
+  { header: "Sensory Considerations", accessor: (r: BehaviourSupportPlan) => r.sensory_considerations },
 ];
 
 // =============================================================================
@@ -523,8 +113,9 @@ const EXPORT_COLS: ExportColumn<BehaviourSupportPlan>[] = [
 // =============================================================================
 
 export default function BehaviourSupportPlansPage() {
-  const createBSP = useCreateBehaviourSupportPlan();
-  const [plans] = useState<BehaviourSupportPlan[]>(SEED);
+  const { data: bspData, isLoading } = useBehaviourSupportPlans();
+  const createBSP = useCreateBSP();
+  const plans = bspData?.data ?? [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -535,7 +126,7 @@ export default function BehaviourSupportPlansPage() {
   const today = new Date().toISOString().slice(0, 10);
 
   const children = useMemo(() => {
-    const ids = [...new Set(plans.map((p) => p.youngPersonId))];
+    const ids = [...new Set(plans.map((p) => p.child_id))];
     return ids.map((id) => ({ id, name: getYPName(id) }));
   }, [plans]);
 
@@ -545,29 +136,29 @@ export default function BehaviourSupportPlansPage() {
       const s = search.toLowerCase();
       list = list.filter(
         (p) =>
-          getYPName(p.youngPersonId).toLowerCase().includes(s) ||
+          getYPName(p.child_id).toLowerCase().includes(s) ||
           p.diagnosis.some((dx) => dx.toLowerCase().includes(s)) ||
-          p.primaryBehaviours.some((b) => b.behaviour.toLowerCase().includes(s)) ||
-          p.knownTriggers.some((t) => t.trigger.toLowerCase().includes(s))
+          p.primary_behaviours.some((b) => b.behaviour.toLowerCase().includes(s)) ||
+          p.known_triggers.some((t) => t.trigger.toLowerCase().includes(s))
       );
     }
     if (statusFilter !== "all") list = list.filter((p) => p.status === statusFilter);
-    if (childFilter !== "all") list = list.filter((p) => p.youngPersonId === childFilter);
+    if (childFilter !== "all") list = list.filter((p) => p.child_id === childFilter);
     return list;
   }, [plans, search, statusFilter, childFilter]);
 
   const stats = useMemo(() => {
     const active = plans.filter((p) => p.status === "active").length;
-    const dueReview = plans.filter((p) => p.reviewDate <= today).length;
-    const allBehaviours = plans.flatMap((p) => p.primaryBehaviours);
+    const dueReview = plans.filter((p) => p.review_date <= today).length;
+    const allBehaviours = plans.flatMap((p) => p.primary_behaviours);
     const improving = allBehaviours.filter((b) => b.trend === "improving").length;
     const improvingPct = allBehaviours.length > 0 ? Math.round((improving / allBehaviours.length) * 100) : 0;
     // Incidents this week -- mock count based on worsening/stable behaviours
-    const incidentsThisWeek = plans.flatMap((p) => p.primaryBehaviours).filter((b) => b.frequency === "daily" || b.frequency === "weekly").length;
+    const incidentsThisWeek = plans.flatMap((p) => p.primary_behaviours).filter((b) => b.frequency === "daily" || b.frequency === "weekly").length;
     return { active, dueReview, improvingPct, incidentsThisWeek };
   }, [plans, today]);
 
-  const overdueReviews = plans.filter((p) => p.reviewDate <= today);
+  const overdueReviews = plans.filter((p) => p.review_date <= today);
   const underReviewPlans = plans.filter((p) => p.status === "under_review");
 
   return (
@@ -584,6 +175,9 @@ export default function BehaviourSupportPlansPage() {
         </div>
       }
     >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+      ) : (
       <div id="print-area" className="space-y-6">
         {/* -- Summary Strip ------------------------------------------------- */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -609,7 +203,7 @@ export default function BehaviourSupportPlansPage() {
             <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
             <div className="text-sm text-red-800">
               <strong>Overdue Review:</strong>{" "}
-              {overdueReviews.map((p) => getYPName(p.youngPersonId)).join(", ")} &mdash;
+              {overdueReviews.map((p) => getYPName(p.child_id)).join(", ")} &mdash;
               BSP review is overdue. Please schedule an urgent review with the care team.
             </div>
           </div>
@@ -619,7 +213,7 @@ export default function BehaviourSupportPlansPage() {
             <Clock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
             <div className="text-sm text-amber-800">
               <strong>Under Review:</strong>{" "}
-              {underReviewPlans.map((p) => getYPName(p.youngPersonId)).join(", ")} &mdash;
+              {underReviewPlans.map((p) => getYPName(p.child_id)).join(", ")} &mdash;
               BSP is currently under review following professional recommendations.
             </div>
           </div>
@@ -665,11 +259,11 @@ export default function BehaviourSupportPlansPage() {
         {/* -- Per-Child Overview Cards --------------------------------------- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {children.map((c) => {
-            const cp = plans.find((p) => p.youngPersonId === c.id);
+            const cp = plans.find((p) => p.child_id === c.id);
             if (!cp) return null;
-            const behaviourCount = cp.primaryBehaviours.length;
-            const improvingCount = cp.primaryBehaviours.filter((b) => b.trend === "improving").length;
-            const worseningCount = cp.primaryBehaviours.filter((b) => b.trend === "worsening").length;
+            const behaviourCount = cp.primary_behaviours.length;
+            const improvingCount = cp.primary_behaviours.filter((b) => b.trend === "improving").length;
+            const worseningCount = cp.primary_behaviours.filter((b) => b.trend === "worsening").length;
             return (
               <Card
                 key={c.id}
@@ -696,7 +290,7 @@ export default function BehaviourSupportPlansPage() {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Review due: <span className={cn(cp.reviewDate <= today ? "text-red-600 font-medium" : "")}>{cp.reviewDate}</span>
+                    Review due: <span className={cn(cp.review_date <= today ? "text-red-600 font-medium" : "")}>{cp.review_date}</span>
                   </p>
                 </CardContent>
               </Card>
@@ -711,7 +305,7 @@ export default function BehaviourSupportPlansPage() {
           )}
           {filtered.map((plan) => {
             const isExpanded = !!expanded[plan.id];
-            const reviewOverdue = plan.reviewDate <= today;
+            const reviewOverdue = plan.review_date <= today;
 
             return (
               <div key={plan.id} className={cn("rounded-xl border bg-white overflow-hidden", reviewOverdue && "border-l-4 border-l-red-400")}>
@@ -720,13 +314,13 @@ export default function BehaviourSupportPlansPage() {
                   className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 transition-colors"
                   onClick={() => toggle(plan.id)}
                   aria-expanded={isExpanded}
-                  aria-label={`Expand behaviour support plan for ${getYPName(plan.youngPersonId)}`}
+                  aria-label={`Expand behaviour support plan for ${getYPName(plan.child_id)}`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Shield className="h-5 w-5 text-blue-600 shrink-0" />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium">{getYPName(plan.youngPersonId)}</p>
+                        <p className="font-medium">{getYPName(plan.child_id)}</p>
                         <Badge className={cn("text-xs", STATUS_COLOURS[plan.status])}>
                           {plan.status.replace(/_/g, " ")}
                         </Badge>
@@ -735,11 +329,11 @@ export default function BehaviourSupportPlansPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
-                        <span>Created: {plan.createdDate}</span>
-                        <span>By {getStaffName(plan.createdBy)}</span>
-                        <span>Review: {plan.reviewDate}</span>
+                        <span>Created: {plan.created_date}</span>
+                        <span>By {getStaffName(plan.created_by)}</span>
+                        <span>Review: {plan.review_date}</span>
                         <span className="flex items-center gap-1">
-                          {plan.primaryBehaviours.map((b, i) => (
+                          {plan.primary_behaviours.map((b, i) => (
                             <span key={i} className={cn("inline-flex items-center gap-0.5", trendColour(b.trend))}>
                               {trendArrow(b.trend)}
                             </span>
@@ -777,7 +371,7 @@ export default function BehaviourSupportPlansPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {plan.primaryBehaviours.map((b, i) => (
+                            {plan.primary_behaviours.map((b, i) => (
                               <tr key={i} className="border-t">
                                 <td className="p-2">{b.behaviour}</td>
                                 <td className="p-2">
@@ -802,7 +396,7 @@ export default function BehaviourSupportPlansPage() {
                     <div>
                       <p className="text-sm font-medium mb-2">De-Escalation (Traffic Light Model)</p>
                       <div className="space-y-2">
-                        {plan.deEscalation.map((stage) => {
+                        {plan.de_escalation.map((stage) => {
                           const stageConfig = {
                             green: { bg: "bg-green-50 border-green-200", title: "Green Zone -- Calm / Regulated", titleColour: "text-green-800", icon: <CheckCircle2 className="h-4 w-4 text-green-600" /> },
                             amber: { bg: "bg-amber-50 border-amber-200", title: "Amber Zone -- Early Signs / Escalating", titleColour: "text-amber-800", icon: <AlertTriangle className="h-4 w-4 text-amber-600" /> },
@@ -823,7 +417,7 @@ export default function BehaviourSupportPlansPage() {
                                 ))}
                               </ul>
                               <p className="text-xs text-muted-foreground">
-                                <strong>Staff approach:</strong> {stage.staffApproach}
+                                <strong>Staff approach:</strong> {stage.staff_approach}
                               </p>
                             </div>
                           );
@@ -835,7 +429,7 @@ export default function BehaviourSupportPlansPage() {
                     <div>
                       <p className="text-sm font-medium mb-2">Known Triggers</p>
                       <div className="space-y-1">
-                        {plan.knownTriggers.map((t, i) => (
+                        {plan.known_triggers.map((t, i) => (
                           <div key={i} className="flex items-center gap-2 text-sm bg-white rounded-lg border p-2">
                             <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0" />
                             <span className="flex-1">{t.trigger}</span>
@@ -850,7 +444,7 @@ export default function BehaviourSupportPlansPage() {
                     <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                       <p className="text-xs font-semibold text-amber-800 mb-2">Early Warning Signs</p>
                       <ol className="space-y-1 list-decimal list-inside">
-                        {plan.earlyWarnings.map((w, i) => (
+                        {plan.early_warnings.map((w, i) => (
                           <li key={i} className="text-sm text-amber-900">{w}</li>
                         ))}
                       </ol>
@@ -869,7 +463,7 @@ export default function BehaviourSupportPlansPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {plan.positiveStrategies.map((s, i) => (
+                            {plan.positive_strategies.map((s, i) => (
                               <tr key={i} className="border-t">
                                 <td className="p-2">{s.strategy}</td>
                                 <td className="p-2 text-muted-foreground">{s.frequency}</td>
@@ -894,7 +488,7 @@ export default function BehaviourSupportPlansPage() {
                           {plan.rewards.map((r, i) => (
                             <div key={i} className="text-sm">
                               <p className="font-medium">{r.reward}</p>
-                              <p className="text-xs text-green-700">Earned by: {r.earnedBy} &middot; {r.frequency}</p>
+                              <p className="text-xs text-green-700">Earned by: {r.earned_by} &middot; {r.frequency}</p>
                             </div>
                           ))}
                         </div>
@@ -921,11 +515,11 @@ export default function BehaviourSupportPlansPage() {
                         <p className="text-xs font-semibold text-red-800">Safety Plan</p>
                       </div>
                       <div className="space-y-3">
-                        {plan.safetyPlan.map((sp, i) => (
+                        {plan.safety_plan.map((sp, i) => (
                           <div key={i} className="text-sm">
                             <p className="font-medium text-red-900">{sp.scenario}</p>
                             <p className="text-red-800 mt-1">{sp.response}</p>
-                            <p className="text-xs text-red-600 mt-0.5">Staff required: {sp.staffRequired}</p>
+                            <p className="text-xs text-red-600 mt-0.5">Staff required: {sp.staff_required}</p>
                           </div>
                         ))}
                       </div>
@@ -938,15 +532,15 @@ export default function BehaviourSupportPlansPage() {
                         <p className="text-xs font-semibold text-slate-200">Restrictive Interventions</p>
                       </div>
                       <div className="space-y-2">
-                        {plan.restrictiveInterventions.map((ri, i) => (
+                        {plan.restrictive_interventions.map((ri, i) => (
                           <div key={i} className="text-sm">
                             <div className="flex items-center gap-2 mb-1">
                               <p className="font-medium">{ri.intervention}</p>
-                              {ri.lastResort && (
+                              {ri.last_resort && (
                                 <Badge className="text-xs bg-red-500/20 text-red-300 border border-red-500/30">LAST RESORT</Badge>
                               )}
                             </div>
-                            <p className="text-slate-300 text-xs">Authorised by: {getStaffName(ri.authorisedBy)}</p>
+                            <p className="text-slate-300 text-xs">Authorised by: {getStaffName(ri.authorised_by)}</p>
                             <p className="text-slate-300 text-xs mt-0.5">{ri.conditions}</p>
                           </div>
                         ))}
@@ -961,12 +555,12 @@ export default function BehaviourSupportPlansPage() {
                           <Heart className="h-4 w-4 text-pink-600" />
                           <p className="text-xs font-semibold text-pink-800">Child&apos;s Views</p>
                         </div>
-                        <p className="text-sm text-pink-900">{plan.childViews}</p>
+                        <p className="text-sm text-pink-900">{plan.child_views}</p>
                       </div>
                       {/* Parent Views */}
                       <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                         <p className="text-xs font-semibold text-blue-800 mb-1">Parent / Carer Views</p>
-                        <p className="text-sm text-blue-900">{plan.parentViews}</p>
+                        <p className="text-sm text-blue-900">{plan.parent_views}</p>
                       </div>
                     </div>
 
@@ -984,7 +578,7 @@ export default function BehaviourSupportPlansPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {plan.professionalInput.map((pi, i) => (
+                            {plan.professional_input.map((pi, i) => (
                               <tr key={i} className="border-t">
                                 <td className="p-2 font-medium">{pi.name}</td>
                                 <td className="p-2 text-muted-foreground">{pi.role}</td>
@@ -1004,7 +598,7 @@ export default function BehaviourSupportPlansPage() {
                         <p className="text-xs font-semibold text-blue-800">Staff Guidance -- Essential Reading</p>
                       </div>
                       <ul className="space-y-1">
-                        {plan.staffGuidance.map((g, i) => (
+                        {plan.staff_guidance.map((g, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 mt-0.5 shrink-0" />
                             <span>{g}</span>
@@ -1017,11 +611,11 @@ export default function BehaviourSupportPlansPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="rounded-lg border bg-white p-3">
                         <p className="text-xs font-medium text-muted-foreground mb-1">Communication Needs</p>
-                        <p className="text-sm">{plan.communicationNeeds}</p>
+                        <p className="text-sm">{plan.communication_needs}</p>
                       </div>
                       <div className="rounded-lg border bg-white p-3">
                         <p className="text-xs font-medium text-muted-foreground mb-1">Sensory Considerations</p>
-                        <p className="text-sm">{plan.sensoryConsiderations}</p>
+                        <p className="text-sm">{plan.sensory_considerations}</p>
                       </div>
                     </div>
 
@@ -1029,11 +623,11 @@ export default function BehaviourSupportPlansPage() {
                     <div>
                       <p className="text-sm font-medium mb-2">Review History</p>
                       <div className="space-y-2">
-                        {plan.reviewHistory.map((rh, i) => (
+                        {plan.review_history.map((rh, i) => (
                           <div key={i} className="rounded-lg border bg-white p-3 text-sm">
                             <div className="flex items-center gap-3 text-xs text-muted-foreground mb-1">
                               <span>{rh.date}</span>
-                              <span>Reviewed by {getStaffName(rh.reviewedBy)}</span>
+                              <span>Reviewed by {getStaffName(rh.reviewed_by)}</span>
                             </div>
                             <p className="mb-1">{rh.changes}</p>
                             <p className="text-xs text-muted-foreground"><strong>Outcome:</strong> {rh.outcome}</p>
@@ -1042,7 +636,7 @@ export default function BehaviourSupportPlansPage() {
                       </div>
                     </div>
 
-                    <SmartLinkPanel sourceType="behaviour_support" sourceId={plan.id} childId={plan.youngPersonId} compact />
+                    <SmartLinkPanel sourceType="behaviour_support" sourceId={plan.id} childId={plan.child_id} compact />
                   </div>
                 )}
               </div>
@@ -1061,6 +655,7 @@ export default function BehaviourSupportPlansPage() {
           staff are trained in the approaches outlined and that plans are accessible to the full team.
         </div>
       </div>
+      )}
 
       {/* -- New BSP Dialog -------------------------------------------------- */}
       <Dialog open={showNew} onOpenChange={setShowNew}>
@@ -1165,7 +760,7 @@ export default function BehaviourSupportPlansPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button disabled={createBSP.isPending} onClick={() => { createBSP.mutate({ title: "New Behaviour Support Plan", status: "draft", created_date: new Date().toISOString().slice(0, 10), review_date: new Date(Date.now() + 42 * 86400000).toISOString().slice(0, 10), triggers: [], de_escalation_strategies: [], positive_strategies: [], staff_id: "staff_darren" }, { onSuccess: () => toast.success("BSP created"), onError: () => toast.error("Failed to create BSP") }); setShowNew(false); }}>{createBSP.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Create BSP"}</Button>
+            <Button disabled={createBSP.isPending} onClick={() => { createBSP.mutate({ child_id: "yp_alex", status: "draft", created_date: d(0), created_by: "staff_darren", review_date: d(42), diagnosis: [], primary_behaviours: [], known_triggers: [], early_warnings: [], de_escalation: [], positive_strategies: [], rewards: [], boundaries: [], safety_plan: [], communication_needs: "", sensory_considerations: "", child_views: "", parent_views: "", professional_input: [], staff_guidance: [], restrictive_interventions: [], review_history: [], home_id: "home_oak" }, { onSuccess: () => { toast.success("BSP created"); setShowNew(false); }, onError: () => toast.error("Failed to create BSP") }); }}>{createBSP.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Create BSP"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
