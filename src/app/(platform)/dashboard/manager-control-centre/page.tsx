@@ -1,0 +1,744 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { PageShell } from "@/components/ui/page-shell";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { EmptyState } from "@/components/ui/empty-state";
+import {
+  AlertTriangle, ShieldAlert, Clock, ClipboardCheck,
+  Users, GraduationCap, MessageSquareWarning, Brain,
+  ChevronDown, ChevronUp, Download, FileText, Eye,
+  ClipboardList, Sparkles, CheckCircle2, ArrowUpRight,
+  Filter, Calendar, AlertCircle, UserCheck, Pill,
+  FileSearch, BookOpen, Scale, Activity, Siren,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type {
+  AttentionCategory,
+  Urgency,
+  AttentionStatus,
+} from "@/types/intelligence.layer";
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CORNERSTONE — MANAGER CONTROL CENTRE
+   Registered Manager's single-pane-of-glass for oversight and compliance.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── helpers ───────────────────────────────────────────────────────────────── */
+
+const d = (n: number) => {
+  const dt = new Date();
+  dt.setDate(dt.getDate() + n);
+  return dt.toISOString().slice(0, 10);
+};
+
+const formatDate = (iso: string) => {
+  const dt = new Date(iso);
+  return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+};
+
+const isOverdue = (iso?: string) => {
+  if (!iso) return false;
+  return new Date(iso) < new Date();
+};
+
+/* ── urgency config ────────────────────────────────────────────────────────── */
+
+const URGENCY_STYLES: Record<Urgency, { badge: string; border: string; label: string }> = {
+  critical: {
+    badge: "bg-red-600 text-white border-transparent",
+    border: "border-l-red-600",
+    label: "Critical",
+  },
+  high: {
+    badge: "bg-amber-500 text-white border-transparent",
+    border: "border-l-amber-500",
+    label: "High",
+  },
+  medium: {
+    badge: "bg-blue-100 text-blue-800 border-transparent",
+    border: "border-l-blue-400",
+    label: "Medium",
+  },
+  low: {
+    badge: "bg-slate-100 text-slate-700 border-transparent",
+    border: "border-l-slate-300",
+    label: "Low",
+  },
+};
+
+/* ── category config ───────────────────────────────────────────────────────── */
+
+const CATEGORY_META: Record<AttentionCategory, { label: string; badge: string; icon: React.ElementType }> = {
+  log_approval:          { label: "Log Approval",          badge: "bg-violet-100 text-violet-800", icon: ClipboardCheck },
+  incident_oversight:    { label: "Incident Oversight",    badge: "bg-orange-100 text-orange-800", icon: AlertCircle },
+  serious_incident:      { label: "Serious Incident",      badge: "bg-red-100 text-red-800",       icon: Siren },
+  missing_from_care:     { label: "Missing from Care",     badge: "bg-red-100 text-red-800",       icon: AlertTriangle },
+  risk_assessment_review:{ label: "Risk Assessment",       badge: "bg-amber-100 text-amber-800",   icon: ShieldAlert },
+  placement_plan_update: { label: "Placement Plan",        badge: "bg-sky-100 text-sky-800",       icon: FileText },
+  key_work_overdue:      { label: "Key Work Overdue",      badge: "bg-emerald-100 text-emerald-800", icon: UserCheck },
+  wishes_feelings_missing:{ label: "Wishes & Feelings",    badge: "bg-pink-100 text-pink-800",     icon: MessageSquareWarning },
+  medication_check:      { label: "Medication Check",      badge: "bg-teal-100 text-teal-800",     icon: Pill },
+  supervision_overdue:   { label: "Supervision Overdue",   badge: "bg-indigo-100 text-indigo-800", icon: Users },
+  training_gap:          { label: "Training Gap",          badge: "bg-yellow-100 text-yellow-800", icon: GraduationCap },
+  recruitment_gap:       { label: "Recruitment Gap",       badge: "bg-rose-100 text-rose-800",     icon: FileSearch },
+  complaint_open:        { label: "Complaint Open",        badge: "bg-fuchsia-100 text-fuchsia-800", icon: MessageSquareWarning },
+  reg44_action_overdue:  { label: "Reg 44 Action",         badge: "bg-cyan-100 text-cyan-800",     icon: Scale },
+  reg45_evidence_gap:    { label: "Reg 45 Evidence",       badge: "bg-lime-100 text-lime-800",     icon: BookOpen },
+  task_overdue:          { label: "Task Overdue",          badge: "bg-stone-100 text-stone-800",   icon: Clock },
+  staff_debrief:         { label: "Staff Debrief",         badge: "bg-blue-100 text-blue-800",     icon: Users },
+  document_sign_off:     { label: "Document Sign-off",     badge: "bg-zinc-100 text-zinc-800",     icon: ClipboardList },
+  aria_pattern:          { label: "ARIA Pattern",          badge: "bg-purple-100 text-purple-800", icon: Brain },
+};
+
+const STATUS_LABELS: Record<AttentionStatus, string> = {
+  open: "Open",
+  in_progress: "In Progress",
+  reviewed: "Reviewed",
+  escalated: "Escalated",
+  closed: "Closed",
+};
+
+/* ── demo attention item type (extends ManagerAttentionItem for UI) ─────── */
+
+interface AttentionItem {
+  id: string;
+  title: string;
+  category: AttentionCategory;
+  urgency: Urgency;
+  status: AttentionStatus;
+  reason: string;
+  suggestedAction: string;
+  dueDate?: string;
+  childName?: string;
+  staffName?: string;
+  createdAt: string;
+}
+
+/* ── demo data ─────────────────────────────────────────────────────────────── */
+
+const DEMO_ITEMS: AttentionItem[] = [
+  {
+    id: "att_001",
+    title: "Serious incident report requires manager oversight",
+    category: "serious_incident",
+    urgency: "critical",
+    status: "open",
+    reason: "A serious incident was recorded on " + d(-1) + " involving Child A. No manager oversight has been added within the required 24-hour window. Ofsted notification may be required under Reg 40.",
+    suggestedAction: "Review the incident record, add your oversight analysis, and determine whether Ofsted notification is required. Consider whether a staff debrief and learning review are needed.",
+    dueDate: d(0),
+    childName: "Child A",
+    createdAt: d(-1),
+  },
+  {
+    id: "att_002",
+    title: "Missing from care episode — return interview overdue",
+    category: "missing_from_care",
+    urgency: "critical",
+    status: "open",
+    reason: "Child B returned from a missing episode 48 hours ago. The independent return interview has not been completed. This is a statutory requirement and the placing authority must be informed.",
+    suggestedAction: "Arrange the independent return interview urgently. Ensure the placing authority and police are informed of the return. Update the missing from care log with return details.",
+    dueDate: d(-1),
+    childName: "Child B",
+    createdAt: d(-2),
+  },
+  {
+    id: "att_003",
+    title: "Incident log awaiting manager review",
+    category: "incident_oversight",
+    urgency: "high",
+    status: "open",
+    reason: "Three incident records from the past 5 days have no manager oversight recorded. Regulation 40 requires the registered person to ensure proper oversight of all significant events.",
+    suggestedAction: "Review each incident, add oversight notes covering your analysis of triggers, response quality, and follow-up actions needed. Link to relevant risk assessments.",
+    dueDate: d(1),
+    childName: "Child C",
+    createdAt: d(-3),
+  },
+  {
+    id: "att_004",
+    title: "Medication audit discrepancy identified",
+    category: "medication_check",
+    urgency: "high",
+    status: "open",
+    reason: "The weekly medication count for Child A shows a discrepancy of 2 tablets of prescribed medication. This must be investigated and resolved immediately as per the home's medication policy.",
+    suggestedAction: "Conduct a full medication reconciliation. Check all MAR sheets against stock. Interview staff who administered medication during the relevant period. Record findings and any corrective action.",
+    dueDate: d(0),
+    childName: "Child A",
+    staffName: "Staff Member D",
+    createdAt: d(-1),
+  },
+  {
+    id: "att_005",
+    title: "Staff supervision overdue by 3 weeks",
+    category: "supervision_overdue",
+    urgency: "high",
+    status: "open",
+    reason: "Staff Member B has not had formal supervision for 7 weeks. The home's statement of purpose commits to supervision every 4 weeks. This is a common area of Ofsted scrutiny.",
+    suggestedAction: "Schedule supervision within the next 5 working days. Prepare agenda covering recent incidents, training needs, wellbeing, and professional development. Record on the supervision log.",
+    dueDate: d(5),
+    staffName: "Staff Member B",
+    createdAt: d(-7),
+  },
+  {
+    id: "att_006",
+    title: "Risk assessment review overdue — self-harm",
+    category: "risk_assessment_review",
+    urgency: "high",
+    status: "in_progress",
+    reason: "Child C's self-harm risk assessment was last reviewed 8 weeks ago. The review frequency is set to 4-weekly due to active risk. A recent incident may indicate escalation.",
+    suggestedAction: "Complete the risk assessment review incorporating recent incident data. Consider whether the risk level or management strategies need updating. Consult with CAMHS if appropriate.",
+    dueDate: d(-3),
+    childName: "Child C",
+    createdAt: d(-5),
+  },
+  {
+    id: "att_007",
+    title: "Placement plan update required",
+    category: "placement_plan_update",
+    urgency: "medium",
+    status: "open",
+    reason: "Child A's placement plan has not been updated following the last LAC review held 2 weeks ago. The agreed actions from the review need to be incorporated into the plan.",
+    suggestedAction: "Update the placement plan to reflect the LAC review outcomes. Ensure all agreed actions are captured with responsible persons and timescales. Share the updated plan with the placing authority.",
+    dueDate: d(3),
+    childName: "Child A",
+    createdAt: d(-10),
+  },
+  {
+    id: "att_008",
+    title: "Key work session overdue",
+    category: "key_work_overdue",
+    urgency: "medium",
+    status: "open",
+    reason: "Child B has not had a recorded key work session for 3 weeks. The care plan specifies weekly key work. This is an important mechanism for capturing the child's voice and monitoring wellbeing.",
+    suggestedAction: "Schedule a key work session this week. Focus on the child's current wishes and feelings, any concerns, and progress against care plan targets. Record the session promptly.",
+    dueDate: d(2),
+    childName: "Child B",
+    staffName: "Staff Member E",
+    createdAt: d(-4),
+  },
+  {
+    id: "att_009",
+    title: "Wishes and feelings not captured this month",
+    category: "wishes_feelings_missing",
+    urgency: "medium",
+    status: "open",
+    reason: "No wishes and feelings entry has been recorded for Child C in the current calendar month. The voice of the child is a central focus for Ofsted inspections under the social care common inspection framework.",
+    suggestedAction: "Ensure the key worker captures Child C's wishes and feelings through an appropriate method (direct conversation, activity, creative work). Record in the child's voice where possible.",
+    childName: "Child C",
+    createdAt: d(-6),
+  },
+  {
+    id: "att_010",
+    title: "Daily logs awaiting approval",
+    category: "log_approval",
+    urgency: "medium",
+    status: "open",
+    reason: "Five daily log entries from the past 7 days have not been reviewed and approved by management. Regular log review demonstrates active oversight and ensures recording quality.",
+    suggestedAction: "Review each pending log entry for accuracy, completeness, and tone. Approve entries that meet the standard. Return any that need amendment with clear guidance for the author.",
+    dueDate: d(1),
+    createdAt: d(-2),
+  },
+  {
+    id: "att_011",
+    title: "Reg 44 visit action overdue",
+    category: "reg44_action_overdue",
+    urgency: "medium",
+    status: "open",
+    reason: "An action from the last Reg 44 independent visitor's report (dated " + d(-30) + ") regarding fire evacuation drill frequency remains incomplete. The action was due " + d(-7) + ".",
+    suggestedAction: "Complete the outstanding action or provide a written update to the independent visitor explaining the delay and revised timescale. Record completion evidence in the Reg 44 action tracker.",
+    dueDate: d(-7),
+    createdAt: d(-14),
+  },
+  {
+    id: "att_012",
+    title: "Training gap — physical intervention refresher",
+    category: "training_gap",
+    urgency: "medium",
+    status: "open",
+    reason: "Staff Member C's physical intervention certification expired 2 weeks ago. They must not be involved in any physical intervention until the refresher is completed. This affects shift planning.",
+    suggestedAction: "Book the next available physical intervention refresher course. Update the rota to ensure Staff Member C is always paired with a certified colleague until recertification. Notify Staff Member C in writing.",
+    staffName: "Staff Member C",
+    createdAt: d(-14),
+  },
+  {
+    id: "att_013",
+    title: "Complaint from placing authority — response due",
+    category: "complaint_open",
+    urgency: "high",
+    status: "in_progress",
+    reason: "A formal complaint was received from the placing authority for Child B regarding communication about a recent incident. The complaints procedure requires an initial response within 5 working days.",
+    suggestedAction: "Draft a response to the complaint. Review the incident communication timeline. Identify any gaps in the notification process and outline corrective steps. Log on the complaints register.",
+    dueDate: d(2),
+    childName: "Child B",
+    createdAt: d(-3),
+  },
+  {
+    id: "att_014",
+    title: "ARIA has detected a pattern — escalating behaviour",
+    category: "aria_pattern",
+    urgency: "medium",
+    status: "open",
+    reason: "ARIA has identified a pattern of escalating behaviour incidents involving Child A over the past 14 days. The frequency has increased from 1 per week to 3 per week, with increasing severity. This may correlate with reduced family contact during the same period.",
+    suggestedAction: "Review the behaviour trend analysis. Consider whether the behaviour support plan needs updating. Explore the link to family contact patterns. Discuss with the team and consider a multi-agency strategy meeting.",
+    childName: "Child A",
+    createdAt: d(-1),
+  },
+  {
+    id: "att_015",
+    title: "Reg 45 report — evidence gap in quality of care",
+    category: "reg45_evidence_gap",
+    urgency: "low",
+    status: "open",
+    reason: "The upcoming Reg 45 half-yearly report has a gap in evidencing quality of care outcomes for the current period. Specifically, there are limited recorded examples of how the home has responded to children's individual needs.",
+    suggestedAction: "Gather evidence from key work records, daily logs, and activity records that demonstrate individualised care. Ask staff to provide specific examples for each child. Compile into the evidence folder.",
+    dueDate: d(14),
+    createdAt: d(-7),
+  },
+];
+
+/* ── stat card type ────────────────────────────────────────────────────────── */
+
+interface StatCard {
+  label: string;
+  value: number;
+  icon: React.ElementType;
+  colour: string;
+}
+
+/* ── category filter options ───────────────────────────────────────────────── */
+
+const CATEGORY_OPTIONS: { value: AttentionCategory; label: string }[] = [
+  { value: "log_approval", label: "Log Approval" },
+  { value: "incident_oversight", label: "Incident Oversight" },
+  { value: "serious_incident", label: "Serious Incident" },
+  { value: "missing_from_care", label: "Missing from Care" },
+  { value: "risk_assessment_review", label: "Risk Assessment" },
+  { value: "placement_plan_update", label: "Placement Plan" },
+  { value: "key_work_overdue", label: "Key Work Overdue" },
+  { value: "wishes_feelings_missing", label: "Wishes & Feelings" },
+  { value: "medication_check", label: "Medication Check" },
+  { value: "supervision_overdue", label: "Supervision Overdue" },
+  { value: "training_gap", label: "Training Gap" },
+  { value: "recruitment_gap", label: "Recruitment Gap" },
+  { value: "complaint_open", label: "Complaint" },
+  { value: "reg44_action_overdue", label: "Reg 44 Action" },
+  { value: "reg45_evidence_gap", label: "Reg 45 Evidence" },
+  { value: "task_overdue", label: "Task Overdue" },
+  { value: "staff_debrief", label: "Staff Debrief" },
+  { value: "document_sign_off", label: "Document Sign-off" },
+  { value: "aria_pattern", label: "ARIA Pattern" },
+];
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   PAGE COMPONENT
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+export default function ManagerControlCentrePage() {
+  const [items] = useState<AttentionItem[]>(DEMO_ITEMS);
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterUrgency, setFilterUrgency] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPeriod, setFilterPeriod] = useState("7d");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
+
+  /* ── period filter logic ─────────────────────────────────────────────────── */
+
+  const periodCutoff = useMemo(() => {
+    const now = new Date();
+    switch (filterPeriod) {
+      case "24h": { const dt = new Date(now); dt.setDate(dt.getDate() - 1); return dt; }
+      case "48h": { const dt = new Date(now); dt.setDate(dt.getDate() - 2); return dt; }
+      case "7d":  { const dt = new Date(now); dt.setDate(dt.getDate() - 7); return dt; }
+      case "14d": { const dt = new Date(now); dt.setDate(dt.getDate() - 14); return dt; }
+      case "30d": { const dt = new Date(now); dt.setDate(dt.getDate() - 30); return dt; }
+      case "all": return null;
+      default:    { const dt = new Date(now); dt.setDate(dt.getDate() - 7); return dt; }
+    }
+  }, [filterPeriod]);
+
+  /* ── filtered items ──────────────────────────────────────────────────────── */
+
+  const filtered = useMemo(() => {
+    return items.filter((item) => {
+      if (filterCategory !== "all" && item.category !== filterCategory) return false;
+      if (filterUrgency !== "all" && item.urgency !== filterUrgency) return false;
+      if (filterStatus !== "all" && item.status !== filterStatus) return false;
+      if (periodCutoff) {
+        const created = new Date(item.createdAt);
+        if (created < periodCutoff) return false;
+      }
+      return true;
+    }).sort((a, b) => {
+      const urgencyOrder: Urgency[] = ["critical", "high", "medium", "low"];
+      const aIdx = urgencyOrder.indexOf(a.urgency);
+      const bIdx = urgencyOrder.indexOf(b.urgency);
+      if (aIdx !== bIdx) return aIdx - bIdx;
+      if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+      if (a.dueDate && !b.dueDate) return -1;
+      if (!a.dueDate && b.dueDate) return 1;
+      return b.createdAt.localeCompare(a.createdAt);
+    });
+  }, [items, filterCategory, filterUrgency, filterStatus, periodCutoff]);
+
+  /* ── summary stats ───────────────────────────────────────────────────────── */
+
+  const stats = useMemo((): StatCard[] => {
+    const activeItems = items.filter((i) => i.status !== "closed" && i.status !== "reviewed");
+    const criticalCount = activeItems.filter((i) => i.urgency === "critical").length;
+    const highCount = activeItems.filter((i) => i.urgency === "high").length;
+    const incidentOversight = activeItems.filter(
+      (i) => i.category === "incident_oversight" || i.category === "serious_incident"
+    ).length;
+    const overdueCount = activeItems.filter((i) => i.dueDate && isOverdue(i.dueDate)).length;
+    const supervisionGaps = activeItems.filter((i) => i.category === "supervision_overdue").length;
+    const trainingGaps = activeItems.filter((i) => i.category === "training_gap").length;
+    const complaintsOpen = activeItems.filter((i) => i.category === "complaint_open").length;
+    const patternsDetected = activeItems.filter((i) => i.category === "aria_pattern").length;
+
+    return [
+      { label: "Critical Items",       value: criticalCount,     icon: AlertTriangle,        colour: "text-red-600" },
+      { label: "High Items",           value: highCount,         icon: AlertCircle,           colour: "text-amber-600" },
+      { label: "Incidents Needing Oversight", value: incidentOversight, icon: ShieldAlert,    colour: "text-orange-600" },
+      { label: "Overdue Tasks",         value: overdueCount,      icon: Clock,                colour: "text-rose-600" },
+      { label: "Supervision Gaps",      value: supervisionGaps,   icon: Users,                colour: "text-indigo-600" },
+      { label: "Training Gaps",         value: trainingGaps,      icon: GraduationCap,        colour: "text-yellow-600" },
+      { label: "Complaints Open",       value: complaintsOpen,    icon: MessageSquareWarning,  colour: "text-fuchsia-600" },
+      { label: "Patterns Detected",     value: patternsDetected,  icon: Brain,                colour: "text-purple-600" },
+    ];
+  }, [items]);
+
+  /* ── render ──────────────────────────────────────────────────────────────── */
+
+  return (
+    <PageShell
+      title="Manager Control Centre"
+      subtitle="What needs your attention today"
+      actions={
+        <Button variant="outline" size="sm" className="gap-1.5">
+          <Download className="h-4 w-4" />
+          Export Summary
+        </Button>
+      }
+    >
+      {/* ── summary stats bar ─────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardContent className="pt-4 pb-3 text-center">
+              <stat.icon className={cn("h-5 w-5 mx-auto mb-1", stat.colour)} />
+              <p className="text-2xl font-bold">{stat.value}</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">{stat.label}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* ── critical alert banner ─────────────────────────────────────────── */}
+      {stats[0].value > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
+          <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-semibold text-red-800">
+              {stats[0].value} critical {stats[0].value === 1 ? "item requires" : "items require"} immediate attention
+            </p>
+            <p className="text-red-700">
+              Critical items may have regulatory, safeguarding, or child safety implications. These should be addressed before the end of your shift.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── filter controls ───────────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <Select value={filterCategory} onValueChange={setFilterCategory}>
+          <SelectTrigger className="w-[180px]">
+            <Filter className="h-4 w-4 mr-1" />
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {CATEGORY_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={filterUrgency} onValueChange={setFilterUrgency}>
+          <SelectTrigger className="w-[160px]">
+            <AlertTriangle className="h-4 w-4 mr-1" />
+            <SelectValue placeholder="All Urgency" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Urgency</SelectItem>
+            <SelectItem value="critical">Critical</SelectItem>
+            <SelectItem value="high">High</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="low">Low</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-[160px]">
+            <Activity className="h-4 w-4 mr-1" />
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="open">Open</SelectItem>
+            <SelectItem value="in_progress">In Progress</SelectItem>
+            <SelectItem value="reviewed">Reviewed</SelectItem>
+            <SelectItem value="escalated">Escalated</SelectItem>
+            <SelectItem value="closed">Closed</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={filterPeriod} onValueChange={setFilterPeriod}>
+          <SelectTrigger className="w-[160px]">
+            <Calendar className="h-4 w-4 mr-1" />
+            <SelectValue placeholder="Period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="24h">Last 24 Hours</SelectItem>
+            <SelectItem value="48h">Last 48 Hours</SelectItem>
+            <SelectItem value="7d">Last 7 Days</SelectItem>
+            <SelectItem value="14d">Last 14 Days</SelectItem>
+            <SelectItem value="30d">Last 30 Days</SelectItem>
+            <SelectItem value="all">All Time</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <div className="ml-auto text-sm text-muted-foreground flex items-center gap-1">
+          <Activity className="h-4 w-4" />
+          {filtered.length} {filtered.length === 1 ? "item" : "items"}
+        </div>
+      </div>
+
+      {/* ── attention items list ───────────────────────────────────────────── */}
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={CheckCircle2}
+          title="Nothing needs your attention"
+          description="All items have been reviewed for the selected filters. Adjust the filters or check back later."
+          actions={[
+            {
+              label: "Show All Items",
+              onClick: () => {
+                setFilterCategory("all");
+                setFilterUrgency("all");
+                setFilterStatus("all");
+                setFilterPeriod("all");
+              },
+              variant: "outline",
+            },
+          ]}
+        />
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((item) => {
+            const open = expandedId === item.id;
+            const catMeta = CATEGORY_META[item.category];
+            const urgStyle = URGENCY_STYLES[item.urgency];
+            const CatIcon = catMeta.icon;
+            const overdue = isOverdue(item.dueDate);
+
+            return (
+              <Card
+                key={item.id}
+                className={cn(
+                  "border-l-4 transition-shadow",
+                  urgStyle.border,
+                  item.urgency === "critical" && "ring-1 ring-red-200",
+                  open && "shadow-md",
+                )}
+              >
+                {/* ── collapsed header row ──────────────────────────────────── */}
+                <div
+                  className="flex items-start justify-between p-4 cursor-pointer select-none"
+                  onClick={() => toggle(item.id)}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={open}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(item.id); } }}
+                >
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    {/* badges row */}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Badge className={cn("text-[11px]", urgStyle.badge)}>
+                        {urgStyle.label}
+                      </Badge>
+                      <Badge variant="outline" className={cn("text-[11px] gap-1", catMeta.badge)}>
+                        <CatIcon className="h-3 w-3" />
+                        {catMeta.label}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[11px]",
+                          item.status === "open" && "bg-emerald-50 text-emerald-700",
+                          item.status === "in_progress" && "bg-blue-50 text-blue-700",
+                          item.status === "reviewed" && "bg-slate-50 text-slate-600",
+                          item.status === "escalated" && "bg-red-50 text-red-700",
+                          item.status === "closed" && "bg-gray-50 text-gray-500",
+                        )}
+                      >
+                        {STATUS_LABELS[item.status]}
+                      </Badge>
+                      {overdue && (
+                        <Badge variant="outline" className="text-[11px] bg-red-50 text-red-700 border-red-200">
+                          <Clock className="h-3 w-3 mr-0.5" />
+                          Overdue
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* title */}
+                    <p className="text-sm font-semibold text-slate-900 leading-snug">
+                      {item.title}
+                    </p>
+
+                    {/* meta line */}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      {item.childName && (
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {item.childName}
+                        </span>
+                      )}
+                      {item.staffName && (
+                        <span className="flex items-center gap-1">
+                          <UserCheck className="h-3 w-3" />
+                          {item.staffName}
+                        </span>
+                      )}
+                      {item.dueDate && (
+                        <span className={cn("flex items-center gap-1", overdue && "text-red-600 font-medium")}>
+                          <Clock className="h-3 w-3" />
+                          Due {formatDate(item.dueDate)}
+                        </span>
+                      )}
+                      <span>
+                        Created {formatDate(item.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="ml-3 mt-1 shrink-0">
+                    {open ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
+
+                {/* ── expanded detail panel ──────────────────────────────────── */}
+                {open && (
+                  <div className="px-4 pb-4 pt-0 space-y-4 border-t border-slate-100">
+                    {/* reason */}
+                    <div className="pt-3">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                        Why this needs attention
+                      </p>
+                      <p className="text-sm text-slate-700 leading-relaxed">
+                        {item.reason}
+                      </p>
+                    </div>
+
+                    {/* suggested action */}
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                      <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1 flex items-center gap-1">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Suggested Action
+                      </p>
+                      <p className="text-sm text-blue-800 leading-relaxed">
+                        {item.suggestedAction}
+                      </p>
+                    </div>
+
+                    {/* context strip */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                      {item.childName && (
+                        <div className="bg-muted/40 rounded-lg p-2.5">
+                          <p className="font-medium text-slate-600 mb-0.5">Child</p>
+                          <p className="text-slate-800">{item.childName}</p>
+                        </div>
+                      )}
+                      {item.staffName && (
+                        <div className="bg-muted/40 rounded-lg p-2.5">
+                          <p className="font-medium text-slate-600 mb-0.5">Staff</p>
+                          <p className="text-slate-800">{item.staffName}</p>
+                        </div>
+                      )}
+                      <div className="bg-muted/40 rounded-lg p-2.5">
+                        <p className="font-medium text-slate-600 mb-0.5">Status</p>
+                        <p className="text-slate-800">{STATUS_LABELS[item.status]}</p>
+                      </div>
+                      <div className="bg-muted/40 rounded-lg p-2.5">
+                        <p className="font-medium text-slate-600 mb-0.5">Created</p>
+                        <p className="text-slate-800">{formatDate(item.createdAt)}</p>
+                      </div>
+                      {item.dueDate && (
+                        <div className={cn("rounded-lg p-2.5", overdue ? "bg-red-50" : "bg-muted/40")}>
+                          <p className={cn("font-medium mb-0.5", overdue ? "text-red-600" : "text-slate-600")}>Due Date</p>
+                          <p className={cn(overdue ? "text-red-800 font-semibold" : "text-slate-800")}>{formatDate(item.dueDate)}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* action buttons */}
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                      <Button variant="outline" size="sm" className="gap-1.5">
+                        <FileText className="h-3.5 w-3.5" />
+                        Open Record
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1.5">
+                        <Eye className="h-3.5 w-3.5" />
+                        Add Oversight
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1.5">
+                        <ClipboardList className="h-3.5 w-3.5" />
+                        Assign Task
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Request ARIA Draft
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Mark Reviewed
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1.5 border-red-200 text-red-700 hover:bg-red-50">
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                        Escalate to RI
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── regulatory note ────────────────────────────────────────────────── */}
+      <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
+        <p className="font-semibold mb-1">Regulatory Framework</p>
+        <p>
+          Children&apos;s Homes (England) Regulations 2015 — Reg 13 (leadership and management),
+          Reg 40 (notifications), Reg 44 (independent person visits), Reg 45 (review of quality of care).
+          The Manager Control Centre surfaces items requiring oversight by the Registered Manager as required
+          under the social care common inspection framework. Quality Standards 1–6 are monitored through
+          category-specific attention items. Items marked as ARIA patterns are generated by the platform&apos;s
+          intelligence layer and require human review before any action is taken.
+        </p>
+      </div>
+    </PageShell>
+  );
+}
