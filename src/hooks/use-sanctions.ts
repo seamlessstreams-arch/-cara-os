@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "./use-api";
 
 export interface SanctionRecord {
@@ -32,6 +32,9 @@ export function useSanctions(params?: { childId?: string; type?: string }) {
   return useQuery({
     queryKey: ["sanctions", params],
     queryFn: () => api.get<ListResponse>(`/sanctions?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 

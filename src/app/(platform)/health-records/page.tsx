@@ -443,6 +443,8 @@ export default function HealthRecordsPage() {
               <button
                 onClick={() => setExpandedId(isOpen ? null : entry.id)}
                 className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/50 transition-colors"
+                aria-expanded={isOpen}
+                aria-label={`Expand health record: ${entry.title} for ${getYPName(entry.child_id)}`}
               >
                 <div className={cn("rounded-full p-1.5 shrink-0", tc.colour)}>
                   <Icon className="h-4 w-4" />
@@ -515,18 +517,18 @@ export default function HealthRecordsPage() {
           <DialogHeader><DialogTitle>Add Health Record</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">Child *</label>
+              <label htmlFor="hr-child" className="text-sm font-medium mb-1 block">Child *</label>
               <Select value={nChild} onValueChange={setNChild}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="hr-child"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>
                   {childIds.map(c => <SelectItem key={c} value={c}>{getYPName(c)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Record Type *</label>
+              <label htmlFor="hr-type" className="text-sm font-medium mb-1 block">Record Type *</label>
               <Select value={nType} onValueChange={v => setNType(v as RecordType)}>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <SelectTrigger id="hr-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(TYPE_CONFIG) as [RecordType, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -535,20 +537,20 @@ export default function HealthRecordsPage() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Title *</label>
-              <Input placeholder="e.g. Annual dental check" value={nTitle} onChange={e => setNTitle(e.target.value)} />
+              <label htmlFor="hr-title" className="text-sm font-medium mb-1 block">Title *</label>
+              <Input id="hr-title" placeholder="e.g. Annual dental check" value={nTitle} onChange={e => setNTitle(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Details *</label>
-              <Textarea placeholder="Full health record details..." value={nDetails} onChange={e => setNDetails(e.target.value)} rows={4} />
+              <label htmlFor="hr-details" className="text-sm font-medium mb-1 block">Details *</label>
+              <Textarea id="hr-details" placeholder="Full health record details..." value={nDetails} onChange={e => setNDetails(e.target.value)} rows={4} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Professional</label>
-              <Input placeholder="Doctor / nurse name" value={nProfessional} onChange={e => setNProfessional(e.target.value)} />
+              <label htmlFor="hr-professional" className="text-sm font-medium mb-1 block">Professional</label>
+              <Input id="hr-professional" placeholder="Doctor / nurse name" value={nProfessional} onChange={e => setNProfessional(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Outcome</label>
-              <Textarea placeholder="Outcome and next steps..." value={nOutcome} onChange={e => setNOutcome(e.target.value)} rows={2} />
+              <label htmlFor="hr-outcome" className="text-sm font-medium mb-1 block">Outcome</label>
+              <Textarea id="hr-outcome" placeholder="Outcome and next steps..." value={nOutcome} onChange={e => setNOutcome(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>

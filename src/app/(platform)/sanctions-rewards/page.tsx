@@ -447,6 +447,8 @@ export default function SanctionsRewardsPage() {
               <button
                 onClick={() => setExpandedId(isOpen ? null : entry.id)}
                 className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/50 transition-colors"
+                aria-expanded={isOpen}
+                aria-label={`Expand ${entry.direction} details: ${entry.title} for ${getYPName(entry.child_id)}`}
               >
                 <div className={cn("rounded-full p-1.5 shrink-0",
                   isReward ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
@@ -535,18 +537,18 @@ export default function SanctionsRewardsPage() {
           <DialogHeader><DialogTitle>Add Sanction or Reward</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">Child *</label>
+              <label htmlFor="sr-child" className="text-sm font-medium mb-1 block">Child *</label>
               <Select value={nChild} onValueChange={setNChild}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="sr-child"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>
                   {childIds.map(c => <SelectItem key={c} value={c}>{getYPName(c)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Type *</label>
+              <label htmlFor="sr-direction" className="text-sm font-medium mb-1 block">Type *</label>
               <Select value={nDir} onValueChange={v => { setNDir(v as EntryDirection); setNRewardType(""); setNSanctionType(""); }}>
-                <SelectTrigger><SelectValue placeholder="Reward or Sanction" /></SelectTrigger>
+                <SelectTrigger id="sr-direction"><SelectValue placeholder="Reward or Sanction" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="reward">Reward</SelectItem>
                   <SelectItem value="sanction">Sanction</SelectItem>
@@ -555,9 +557,9 @@ export default function SanctionsRewardsPage() {
             </div>
             {nDir === "reward" && (
               <div>
-                <label className="text-sm font-medium mb-1 block">Reward Type</label>
+                <label htmlFor="sr-reward-type" className="text-sm font-medium mb-1 block">Reward Type</label>
                 <Select value={nRewardType} onValueChange={v => setNRewardType(v as RewardType)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="sr-reward-type"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(REWARD_LABELS) as [RewardType, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -568,9 +570,9 @@ export default function SanctionsRewardsPage() {
             )}
             {nDir === "sanction" && (
               <div>
-                <label className="text-sm font-medium mb-1 block">Sanction Type</label>
+                <label htmlFor="sr-sanction-type" className="text-sm font-medium mb-1 block">Sanction Type</label>
                 <Select value={nSanctionType} onValueChange={v => setNSanctionType(v as SanctionType)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger id="sr-sanction-type"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(SANCTION_LABELS) as [SanctionType, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -580,24 +582,24 @@ export default function SanctionsRewardsPage() {
               </div>
             )}
             <div>
-              <label className="text-sm font-medium mb-1 block">Title *</label>
-              <Input placeholder="Brief title" value={nTitle} onChange={e => setNTitle(e.target.value)} />
+              <label htmlFor="sr-title" className="text-sm font-medium mb-1 block">Title *</label>
+              <Input id="sr-title" placeholder="Brief title" value={nTitle} onChange={e => setNTitle(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Description *</label>
-              <Textarea placeholder="What happened..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
+              <label htmlFor="sr-desc" className="text-sm font-medium mb-1 block">Description *</label>
+              <Textarea id="sr-desc" placeholder="What happened..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Context</label>
-              <Textarea placeholder="What led to this..." value={nContext} onChange={e => setNContext(e.target.value)} rows={2} />
+              <label htmlFor="sr-context" className="text-sm font-medium mb-1 block">Context</label>
+              <Textarea id="sr-context" placeholder="What led to this..." value={nContext} onChange={e => setNContext(e.target.value)} rows={2} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Child&apos;s Response</label>
-              <Textarea placeholder="How did the child react..." value={nChildResp} onChange={e => setNChildResp(e.target.value)} rows={2} />
+              <label htmlFor="sr-child-response" className="text-sm font-medium mb-1 block">Child&apos;s Response</label>
+              <Textarea id="sr-child-response" placeholder="How did the child react..." value={nChildResp} onChange={e => setNChildResp(e.target.value)} rows={2} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Outcome</label>
-              <Textarea placeholder="Result and next steps..." value={nOutcome} onChange={e => setNOutcome(e.target.value)} rows={2} />
+              <label htmlFor="sr-outcome" className="text-sm font-medium mb-1 block">Outcome</label>
+              <Textarea id="sr-outcome" placeholder="Result and next steps..." value={nOutcome} onChange={e => setNOutcome(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>

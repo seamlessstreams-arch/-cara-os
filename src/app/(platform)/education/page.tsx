@@ -420,6 +420,8 @@ export default function EducationPage() {
               <button
                 onClick={() => setExpandedId(isOpen ? null : entry.id)}
                 className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/50 transition-colors"
+                aria-expanded={isOpen}
+                aria-label={`Expand education entry: ${entry.title} for ${getYPName(entry.child_id)}`}
               >
                 <div className={cn("rounded-full p-1.5 shrink-0", tc.colour)}>
                   <Icon className="h-4 w-4" />
@@ -491,18 +493,18 @@ export default function EducationPage() {
           <DialogHeader><DialogTitle>Add Education Entry</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1 block">Child *</label>
+              <label htmlFor="edu-child" className="text-sm font-medium mb-1 block">Child *</label>
               <Select value={nChild} onValueChange={setNChild}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="edu-child"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>
                   {childIds.map(c => <SelectItem key={c} value={c}>{getYPName(c)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Entry Type *</label>
+              <label htmlFor="edu-type" className="text-sm font-medium mb-1 block">Entry Type *</label>
               <Select value={nType} onValueChange={v => setNType(v as EntryType)}>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <SelectTrigger id="edu-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(TYPE_CONFIG) as [EntryType, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
@@ -512,9 +514,9 @@ export default function EducationPage() {
             </div>
             {nType === "attendance" && (
               <div>
-                <label className="text-sm font-medium mb-1 block">Attendance Status</label>
+                <label htmlFor="edu-attendance" className="text-sm font-medium mb-1 block">Attendance Status</label>
                 <Select value={nAttendance} onValueChange={v => setNAttendance(v as AttendanceStatus)}>
-                  <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+                  <SelectTrigger id="edu-attendance"><SelectValue placeholder="Status" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(ATTENDANCE_LABELS) as [AttendanceStatus, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -524,16 +526,16 @@ export default function EducationPage() {
               </div>
             )}
             <div>
-              <label className="text-sm font-medium mb-1 block">Title *</label>
-              <Input placeholder="Brief title" value={nTitle} onChange={e => setNTitle(e.target.value)} />
+              <label htmlFor="edu-title" className="text-sm font-medium mb-1 block">Title *</label>
+              <Input id="edu-title" placeholder="Brief title" value={nTitle} onChange={e => setNTitle(e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Description *</label>
-              <Textarea placeholder="Full details..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
+              <label htmlFor="edu-desc" className="text-sm font-medium mb-1 block">Description *</label>
+              <Textarea id="edu-desc" placeholder="Full details..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Outcome / Actions</label>
-              <Textarea placeholder="Any outcomes or follow-up actions..." value={nOutcome} onChange={e => setNOutcome(e.target.value)} rows={2} />
+              <label htmlFor="edu-outcome" className="text-sm font-medium mb-1 block">Outcome / Actions</label>
+              <Textarea id="edu-outcome" placeholder="Any outcomes or follow-up actions..." value={nOutcome} onChange={e => setNOutcome(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>

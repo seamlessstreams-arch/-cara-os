@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "./use-api";
 
 export interface EducationRecord {
@@ -29,6 +29,9 @@ export function useEducationRecords(params?: { childId?: string; type?: string }
   return useQuery({
     queryKey: ["education-records", params],
     queryFn: () => api.get<ListResponse>(`/education-records?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -282,7 +282,7 @@ export default function AdmissionsPage() {
             return (
               <Card key={r.id} className={cn("border-l-4", r.status === "accepted" || r.status === "placed" ? "border-l-green-500" : r.status === "declined" ? "border-l-red-500" : r.status === "withdrawn" ? "border-l-gray-400" : "border-l-blue-400")}>
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between cursor-pointer" onClick={() => toggle(r.id)}>
+                  <div className="flex items-start justify-between cursor-pointer" role="button" tabIndex={0} aria-expanded={open} aria-label={`Expand referral details for ${r.childName}`} onClick={() => toggle(r.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(r.id); } }}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <Badge className={cn("text-xs", statusM.color)}>{statusM.label}</Badge>
@@ -386,17 +386,17 @@ export default function AdmissionsPage() {
           <DialogHeader><DialogTitle>New Referral</DialogTitle></DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); createReferral.mutate({ child_name: "New Referral", status: "new", referral_date: new Date().toISOString().slice(0, 10), staff_id: "staff_darren" }, { onSuccess: () => toast.success("Referral logged"), onError: () => toast.error("Failed to log referral") }); setShowNew(false); }} className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Child&apos;s Name / Reference</label>
-              <Input placeholder="Child name or anonymised reference" />
+              <label htmlFor="ref-name" className="text-sm font-medium">Child&apos;s Name / Reference</label>
+              <Input id="ref-name" placeholder="Child name or anonymised reference" />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-sm font-medium">Date of Birth</label>
-                <Input type="date" />
+                <label htmlFor="ref-dob" className="text-sm font-medium">Date of Birth</label>
+                <Input id="ref-dob" type="date" />
               </div>
               <div>
-                <label className="text-sm font-medium">Gender</label>
-                <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <label htmlFor="ref-gender" className="text-sm font-medium">Gender</label>
+                <Select><SelectTrigger id="ref-gender"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="male">Male</SelectItem>
                     <SelectItem value="female">Female</SelectItem>
@@ -407,26 +407,26 @@ export default function AdmissionsPage() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Referred By</label>
-              <Input placeholder="Name and role of referring professional" />
+              <label htmlFor="ref-referred-by" className="text-sm font-medium">Referred By</label>
+              <Input id="ref-referred-by" placeholder="Name and role of referring professional" />
             </div>
             <div>
-              <label className="text-sm font-medium">Local Authority</label>
-              <Input placeholder="Placing local authority" />
+              <label htmlFor="ref-la" className="text-sm font-medium">Local Authority</label>
+              <Input id="ref-la" placeholder="Placing local authority" />
             </div>
             <div>
-              <label className="text-sm font-medium">Source</label>
-              <Select><SelectTrigger><SelectValue placeholder="Referral source" /></SelectTrigger>
+              <label htmlFor="ref-source" className="text-sm font-medium">Source</label>
+              <Select><SelectTrigger id="ref-source"><SelectValue placeholder="Referral source" /></SelectTrigger>
                 <SelectContent>{Object.entries(SOURCE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Presenting Needs</label>
-              <Textarea placeholder="Key needs (one per line)" rows={3} />
+              <label htmlFor="ref-needs" className="text-sm font-medium">Presenting Needs</label>
+              <Textarea id="ref-needs" placeholder="Key needs (one per line)" rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium">Risk Factors</label>
-              <Textarea placeholder="Known risk factors (one per line)" rows={2} />
+              <label htmlFor="ref-risks" className="text-sm font-medium">Risk Factors</label>
+              <Textarea id="ref-risks" placeholder="Known risk factors (one per line)" rows={2} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>

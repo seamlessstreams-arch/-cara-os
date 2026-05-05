@@ -719,6 +719,8 @@ export default function BehaviourSupportPlansPage() {
                 <button
                   className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 transition-colors"
                   onClick={() => toggle(plan.id)}
+                  aria-expanded={isExpanded}
+                  aria-label={`Expand behaviour support plan for ${getYPName(plan.youngPersonId)}`}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Shield className="h-5 w-5 text-blue-600 shrink-0" />

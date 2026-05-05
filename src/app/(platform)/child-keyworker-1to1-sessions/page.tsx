@@ -518,7 +518,7 @@ export default function ChildKeyworker1to1SessionsPage() {
             const open = expanded === r.id;
             return (
               <Card key={r.id} className="border-rose-100">
-                <button className="w-full text-left" onClick={() => toggle(r.id)}>
+                <button className="w-full text-left" onClick={() => toggle(r.id)} aria-expanded={open} aria-label={`Expand session details for ${getYPName(r.youngPerson)}`}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -624,9 +624,9 @@ export default function ChildKeyworker1to1SessionsPage() {
           <DialogHeader><DialogTitle>New 1:1 Session</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Young Person</Label>
+              <Label htmlFor="session-child">Young Person</Label>
               <Select value={nChild} onValueChange={setNChild}>
-                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectTrigger id="session-child"><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>
                   {[...new Set(data.map(r => r.youngPerson))].map(id => (
                     <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>
@@ -635,25 +635,25 @@ export default function ChildKeyworker1to1SessionsPage() {
               </Select>
             </div>
             <div>
-              <Label>Format</Label>
+              <Label htmlFor="session-format">Format</Label>
               <Select value={nFormat} onValueChange={setNFormat}>
-                <SelectTrigger><SelectValue placeholder="Select format" /></SelectTrigger>
+                <SelectTrigger id="session-format"><SelectValue placeholder="Select format" /></SelectTrigger>
                 <SelectContent>
                   {FORMATS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Themes Covered</Label>
-              <Input placeholder="Comma-separated themes" value={nThemes} onChange={e => setNThemes(e.target.value)} />
+              <Label htmlFor="session-themes">Themes Covered</Label>
+              <Input id="session-themes" placeholder="Comma-separated themes" value={nThemes} onChange={e => setNThemes(e.target.value)} />
             </div>
             <div>
-              <Label>What child brought up</Label>
-              <Textarea placeholder="Record what the child raised..." value={nChildBroughtUp} onChange={e => setNChildBroughtUp(e.target.value)} rows={3} />
+              <Label htmlFor="session-child-brought-up">What child brought up</Label>
+              <Textarea id="session-child-brought-up" placeholder="Record what the child raised..." value={nChildBroughtUp} onChange={e => setNChildBroughtUp(e.target.value)} rows={3} />
             </div>
             <div>
-              <Label>What staff brought up</Label>
-              <Textarea placeholder="Record what staff raised..." value={nStaffBroughtUp} onChange={e => setNStaffBroughtUp(e.target.value)} rows={3} />
+              <Label htmlFor="session-staff-brought-up">What staff brought up</Label>
+              <Textarea id="session-staff-brought-up" placeholder="Record what staff raised..." value={nStaffBroughtUp} onChange={e => setNStaffBroughtUp(e.target.value)} rows={3} />
             </div>
           </div>
           <DialogFooter>

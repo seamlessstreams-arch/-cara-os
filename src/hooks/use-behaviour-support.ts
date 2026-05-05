@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "./use-api";
 
 export interface BehaviourSupportPlan {
@@ -32,6 +32,9 @@ export function useBehaviourSupportPlans(params?: { childId?: string; status?: s
   return useQuery({
     queryKey: ["behaviour-support-plans", params],
     queryFn: () => api.get<ListResponse>(`/behaviour-support-plans?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 

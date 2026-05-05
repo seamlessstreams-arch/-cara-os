@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "./use-api";
 
 export interface Referral {
@@ -31,6 +31,9 @@ export function useAdmissions(params?: { status?: string }) {
   return useQuery({
     queryKey: ["admissions", params],
     queryFn: () => api.get<ListResponse>(`/admissions?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 

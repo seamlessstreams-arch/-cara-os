@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "./use-api";
 
 export interface KeyworkSession {
@@ -35,6 +35,9 @@ export function useKeyworkSessions(params?: { childId?: string }) {
   return useQuery({
     queryKey: ["keywork-sessions", params],
     queryFn: () => api.get<ListResponse>(`/keywork-sessions?${qs.toString()}`),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 
