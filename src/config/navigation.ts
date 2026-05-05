@@ -542,6 +542,7 @@ export const NAV_GROUPS: NavGroup[] = [
     module: "dashboard",
     children: [
       { label: "Intelligence Hub",    href: "/intelligence",                         icon: "Brain",       module: "dashboard"    },
+      { label: "Review Queue",       href: "/aria/review",                          icon: "ClipboardCheck", module: "dashboard" },
       { label: "Pattern Alerts",     href: "/patterns",                             icon: "Radar",       module: "dashboard"    },
       { label: "Situation Review",    href: "/intelligence/aria/situation",          icon: "Eye",         module: "dashboard"    },
       { label: "Oversight Radar",     href: "/intelligence/aria/oversight-radar",    icon: "Radar",       module: "dashboard"    },

@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar } from "@/components/ui/avatar";
 import { PriorityCard } from "@/components/ui/priority-card";
 import { IntelligenceBriefWidget } from "@/components/intelligence/intelligence-brief-widget";
+import { AriaDashboardPanel } from "@/components/dashboard/aria-dashboard-panel";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { YoungPeopleStrip } from "@/components/dashboard/young-people-strip";
 import { QuickActionsDial } from "@/components/dashboard/quick-actions-dial";
@@ -1116,7 +1117,12 @@ export default function DashboardPage() {
             {(config.showMedicationCard || config.showIntelligenceBrief) && (
               <div className="space-y-4">
                 {config.showMedicationCard && <MedicationStatusCard />}
-                {config.showIntelligenceBrief && <IntelligenceBriefWidget />}
+                {config.showIntelligenceBrief && (
+                  <>
+                    <AriaDashboardPanel />
+                    <IntelligenceBriefWidget />
+                  </>
+                )}
               </div>
             )}
 

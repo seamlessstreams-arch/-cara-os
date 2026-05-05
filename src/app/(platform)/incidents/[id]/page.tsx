@@ -309,6 +309,28 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
           </div>
         )}
 
+        {/* ── ARIA Intelligence Strip ──────────────────────────────────────── */}
+        {canOversight && (
+          <div className="rounded-2xl border border-violet-200 bg-violet-50/50 px-4 py-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm text-violet-800">
+              <Sparkles className="h-4 w-4 shrink-0 text-violet-500" />
+              <span><strong>ARIA Intelligence</strong> — generate suggestions and oversight drafts for this incident</span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href={`/aria/review?related_record_id=${incident.id}`}>
+                <Button size="sm" variant="outline" className="text-violet-700 border-violet-300 hover:bg-violet-100 gap-1.5">
+                  <ClipboardCheck className="h-3.5 w-3.5" />Review with ARIA
+                </Button>
+              </Link>
+              <Link href={`/intelligence/aria/management-oversight?incidentId=${incident.id}&severity=${incident.severity}&type=${incident.type}`}>
+                <Button size="sm" className="bg-violet-600 hover:bg-violet-700 gap-1.5">
+                  <Brain className="h-3.5 w-3.5" />Draft with ARIA
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* ── Oversight panel ───────────────────────────────────────────────── */}
         {showOversight && (
           <OversightPanel incidentId={incident.id} onSaved={handleSaved} />
