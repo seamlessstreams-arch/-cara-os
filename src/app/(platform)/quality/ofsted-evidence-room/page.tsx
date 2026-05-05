@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { useEvidenceItems } from "@/hooks/use-intelligence-layer";
+import { useEvidenceItems, useCreateEvidence } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -529,8 +529,9 @@ const PERIOD_OPTIONS = [
    ══════════════════════════════════════════════════════════════════════════════ */
 
 export default function OfstedEvidenceRoomPage() {
-  /* ── API hook (soft-wire for live data) ─────────────────────────────────── */
+  /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useEvidenceItems();
+  const createEvidence = useCreateEvidence();
 
   const [evidenceItems, setEvidenceItems] = useState<(InspectionEvidenceItem & { sourceLabel: SourceType })[]>(DEMO_EVIDENCE);
   const [gaps, setGaps] = useState<EvidenceGap[]>(DEMO_GAPS);
@@ -650,9 +651,19 @@ export default function OfstedEvidenceRoomPage() {
       title="Ofsted Evidence Room"
       subtitle="Organised evidence for inspection readiness"
       actions={
-        <Button size="sm" className="gap-1.5">
+        <Button
+          size="sm"
+          className="gap-1.5"
+          disabled={createEvidence.isPending}
+          onClick={() => createEvidence.mutate({
+            homeId: "oak-house",
+            title: "New Evidence Item",
+            category: "general",
+            sourceType: "manual",
+          })}
+        >
           <Plus className="h-3.5 w-3.5" />
-          Add Evidence
+          {createEvidence.isPending ? "Adding..." : "Add Evidence"}
         </Button>
       }
     >

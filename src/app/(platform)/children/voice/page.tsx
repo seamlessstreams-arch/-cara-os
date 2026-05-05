@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useVoiceEntries } from "@/hooks/use-intelligence-layer";
+import { useVoiceEntries, useCreateVoiceEntry } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -245,8 +245,16 @@ export default function VoiceOfTheChildPage() {
   const [themes, setThemes] = useState<ThemeCount[]>(DEMO_THEMES);
   const [outcomes, setOutcomes] = useState<OutcomeFromVoice[]>(DEMO_OUTCOMES);
 
-  /* ── API hook (soft-wire for live data) ─────────────────────────────────── */
+  const [newCategory, setNewCategory] = useState<VoiceCategory>("wishes_and_feelings");
+  const [newDate, setNewDate] = useState("2026-05-05");
+  const [newChildWords, setNewChildWords] = useState("");
+  const [newSummary, setNewSummary] = useState("");
+  const [newActionTaken, setNewActionTaken] = useState("");
+  const [newStaffResponse, setNewStaffResponse] = useState("");
+
+  /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useVoiceEntries();
+  const createEntry = useCreateVoiceEntry();
 
   useEffect(() => {
     if (apiData?.persisted && apiData.entries.length > 0) {
@@ -311,7 +319,7 @@ export default function VoiceOfTheChildPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Category</label>
-                  <Select>
+                  <Select value={newCategory} onValueChange={(v) => setNewCategory(v as VoiceCategory)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -329,7 +337,8 @@ export default function VoiceOfTheChildPage() {
                   <input
                     type="date"
                     className="w-full p-2 text-sm border rounded-md"
-                    defaultValue="2026-05-05"
+                    value={newDate}
+                    onChange={(e) => setNewDate(e.target.value)}
                   />
                 </div>
               </div>
@@ -338,6 +347,8 @@ export default function VoiceOfTheChildPage() {
                 <textarea
                   className="w-full min-h-[80px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
                   placeholder="Record exactly what the child said, in their own words..."
+                  value={newChildWords}
+                  onChange={(e) => setNewChildWords(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -345,6 +356,8 @@ export default function VoiceOfTheChildPage() {
                 <textarea
                   className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
                   placeholder="Brief summary for records..."
+                  value={newSummary}
+                  onChange={(e) => setNewSummary(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -352,6 +365,8 @@ export default function VoiceOfTheChildPage() {
                 <textarea
                   className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
                   placeholder="What was done in response..."
+                  value={newActionTaken}
+                  onChange={(e) => setNewActionTaken(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -359,14 +374,40 @@ export default function VoiceOfTheChildPage() {
                 <textarea
                   className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
                   placeholder="Your response to the child..."
+                  value={newStaffResponse}
+                  onChange={(e) => setNewStaffResponse(e.target.value)}
                 />
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" size="sm" onClick={() => setShowAddForm(false)}>
                   Cancel
                 </Button>
-                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                  Save Entry
+                <Button
+                  size="sm"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={!newChildWords.trim() || createEntry.isPending}
+                  onClick={() => {
+                    createEntry.mutate({
+                      childId: selectedChild,
+                      homeId: "oak-house",
+                      category: newCategory,
+                      entryDate: newDate,
+                      childWords: newChildWords,
+                      summary: newSummary,
+                      actionTaken: newActionTaken,
+                      staffResponse: newStaffResponse,
+                    }, {
+                      onSuccess: () => {
+                        setNewChildWords("");
+                        setNewSummary("");
+                        setNewActionTaken("");
+                        setNewStaffResponse("");
+                        setShowAddForm(false);
+                      },
+                    });
+                  }}
+                >
+                  {createEntry.isPending ? "Saving..." : "Save Entry"}
                 </Button>
               </div>
             </CardContent>

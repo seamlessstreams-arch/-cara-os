@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useProviderSummaries } from "@/hooks/use-intelligence-layer";
+import { useProviderSummaries, useCreateProviderSummary } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -213,8 +213,9 @@ export default function ProviderOversightPage() {
   const [homes, setHomes] = useState<HomeData[]>(DEMO_HOMES);
   const [oversightLog, setOversightLog] = useState<OversightEntry[]>(DEMO_OVERSIGHT_LOG);
 
-  /* ── API hook (soft-wire for live data) ─────────────────────────────────── */
+  /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useProviderSummaries();
+  const createSummary = useCreateProviderSummary();
 
   useEffect(() => {
     if (apiData?.persisted && apiData.summaries.length > 0) {
@@ -529,9 +530,21 @@ export default function ProviderOversightPage() {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!oversightComment.trim() || createSummary.isPending}
+                onClick={() => {
+                  createSummary.mutate({
+                    homeId: selectedHome === "all" ? "oak-house" : selectedHome,
+                    notes: oversightComment,
+                  }, {
+                    onSuccess: () => setOversightComment(""),
+                  });
+                }}
+              >
                 <MessageSquare className="h-4 w-4 mr-1" />
-                Add Oversight Comment
+                {createSummary.isPending ? "Saving..." : "Add Oversight Comment"}
               </Button>
               <Button variant="outline" size="sm">
                 <AlertTriangle className="h-4 w-4 mr-1" />

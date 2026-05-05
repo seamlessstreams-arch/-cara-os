@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useProgressGoals, useProgressEntries, useProgressSnapshots } from "@/hooks/use-intelligence-layer";
+import { useProgressGoals, useProgressEntries, useProgressSnapshots, useCreateProgressRecord } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -236,6 +236,7 @@ export default function ChildProgressPage() {
   const { data: goalsData } = useProgressGoals(selectedChild);
   const { data: entriesData } = useProgressEntries(selectedChild);
   const { data: snapshotsData } = useProgressSnapshots(selectedChild);
+  const createRecord = useCreateProgressRecord();
 
   useEffect(() => {
     if (goalsData?.persisted && goalsData.data.length > 0) {
@@ -315,11 +316,32 @@ export default function ChildProgressPage() {
             </Select>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={createRecord.isPending}
+              onClick={() => createRecord.mutate({
+                childId: selectedChild,
+                homeId: "oak-house",
+                recordType: "goal",
+                title: "New Goal",
+                goalArea: "general",
+              })}
+            >
               <Plus className="h-4 w-4 mr-1" />
-              Add Goal
+              {createRecord.isPending ? "Creating..." : "Add Goal"}
             </Button>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={createRecord.isPending}
+              onClick={() => createRecord.mutate({
+                childId: selectedChild,
+                homeId: "oak-house",
+                recordType: "entry",
+                title: "New Progress Entry",
+              })}
+            >
               <Plus className="h-4 w-4 mr-1" />
               Add Progress Entry
             </Button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReg44Visits } from "@/hooks/use-intelligence-layer";
+import { useReg44Visits, useCreateReg44Visit } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -327,8 +327,9 @@ export default function Reg44Page() {
   const [actions, setActions] = useState<Reg44Action[]>(DEMO_ACTIONS);
   const [expandedVisit, setExpandedVisit] = useState<string | null>(null);
 
-  /* ── API hook (soft-wire for live data) ─────────────────────────────────── */
+  /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useReg44Visits();
+  const createVisit = useCreateReg44Visit();
 
   useEffect(() => {
     if (apiData?.persisted && apiData.visits.length > 0) {
@@ -383,9 +384,19 @@ export default function Reg44Page() {
             <Plus className="h-3.5 w-3.5" />
             Add Action
           </Button>
-          <Button size="sm" className="gap-1.5">
+          <Button
+            size="sm"
+            className="gap-1.5"
+            disabled={createVisit.isPending}
+            onClick={() => createVisit.mutate({
+              homeId: "oak-house",
+              visitDate: new Date().toISOString().split("T")[0],
+              visitorName: "Independent Visitor",
+              visitType: "announced",
+            })}
+          >
             <Plus className="h-3.5 w-3.5" />
-            Add Visit
+            {createVisit.isPending ? "Creating..." : "Add Visit"}
           </Button>
         </div>
       }

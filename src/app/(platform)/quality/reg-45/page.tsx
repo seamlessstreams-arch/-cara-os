@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReg45Reviews } from "@/hooks/use-intelligence-layer";
+import { useReg45Reviews, useUpdateReg45Review } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -212,8 +212,9 @@ export default function Reg45Page() {
   const [selectedReviewId, setSelectedReviewId] = useState<string>("r1");
   const [evidence, setEvidence] = useState<EvidenceItem[]>(DEMO_EVIDENCE);
 
-  /* ── API hook (soft-wire for live data) ─────────────────────────────────── */
+  /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useReg45Reviews();
+  const updateReview = useUpdateReg45Review();
 
   useEffect(() => {
     if (apiData?.persisted && apiData.reviews.length > 0) {
@@ -293,21 +294,38 @@ export default function Reg45Page() {
       actions={
         <div className="flex items-center gap-2">
           {isDraft && selectedReview.status === "draft" && (
-            <Button size="sm" variant="outline" className="gap-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              disabled={updateReview.isPending}
+              onClick={() => updateReview.mutate({ id: selectedReview.id, homeId: "oak-house", status: "submitted" })}
+            >
               <Send className="h-3.5 w-3.5" />
-              Submit for Approval
+              {updateReview.isPending ? "Submitting..." : "Submit for Approval"}
             </Button>
           )}
           {selectedReview.status === "submitted" && (
-            <Button size="sm" className="gap-1.5 bg-green-600 hover:bg-green-700">
+            <Button
+              size="sm"
+              className="gap-1.5 bg-green-600 hover:bg-green-700"
+              disabled={updateReview.isPending}
+              onClick={() => updateReview.mutate({ id: selectedReview.id, homeId: "oak-house", status: "approved", approvedBy: "RI" })}
+            >
               <ThumbsUp className="h-3.5 w-3.5" />
-              Approve (RI)
+              {updateReview.isPending ? "Approving..." : "Approve (RI)"}
             </Button>
           )}
           {selectedReview.status === "approved" && (
-            <Button size="sm" variant="outline" className="gap-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              disabled={updateReview.isPending}
+              onClick={() => updateReview.mutate({ id: selectedReview.id, homeId: "oak-house", status: "published" })}
+            >
               <Globe className="h-3.5 w-3.5" />
-              Publish
+              {updateReview.isPending ? "Publishing..." : "Publish"}
             </Button>
           )}
         </div>

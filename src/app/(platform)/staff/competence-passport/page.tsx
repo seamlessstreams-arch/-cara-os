@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useCompetenceRecords } from "@/hooks/use-intelligence-layer";
+import { useCompetenceRecords, useCreateCompetenceRecord } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -313,8 +313,9 @@ export default function StaffCompetencePassportPage() {
   const [selectedStaff, setSelectedStaff] = useState("staff-a");
   const [staffRecords, setStaffRecords] = useState<StaffRecord[]>(DEMO_STAFF);
 
-  /* ── API hook (soft-wire for live data) ─────────────────────────────────── */
+  /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useCompetenceRecords();
+  const updateCompetence = useCreateCompetenceRecord();
 
   useEffect(() => {
     if (apiData?.persisted && apiData.records.length > 0) {
@@ -585,9 +586,18 @@ export default function StaffCompetencePassportPage() {
                 <Shield className="h-4 w-4 mr-1" />
                 Restrict Duty
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={updateCompetence.isPending}
+                onClick={() => updateCompetence.mutate({
+                  staffId: selectedStaff,
+                  homeId: "oak-house",
+                  mandatoryTrainingComplete: true,
+                })}
+              >
                 <Star className="h-4 w-4 mr-1" />
-                Approve Competency
+                {updateCompetence.isPending ? "Saving..." : "Approve Competency"}
               </Button>
             </div>
           </CardContent>
