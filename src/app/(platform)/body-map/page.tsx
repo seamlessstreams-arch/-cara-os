@@ -26,53 +26,16 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useBodyMap, useCreateBodyMapEntry, useUpdateBodyMapEntry } from "@/hooks/use-body-map";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type { BodyRegion, MarkType, MarkColour, BodyMapStatus, BodyMapEntry } from "@/types/extended";
 import {
   Search, Filter, ArrowUpDown, X, Plus,
   AlertTriangle, Shield, CheckCircle2, Clock, User,
   Calendar, Eye, ChevronDown, ChevronUp, Loader2,
   PersonStanding, CircleDot, FileText, Link2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type BodyRegion =
-  | "head_front" | "head_back" | "head_left" | "head_right"
-  | "face" | "neck"
-  | "chest" | "abdomen" | "upper_back" | "lower_back"
-  | "left_shoulder" | "right_shoulder"
-  | "left_upper_arm" | "right_upper_arm"
-  | "left_forearm" | "right_forearm"
-  | "left_hand" | "right_hand"
-  | "left_hip" | "right_hip"
-  | "left_thigh" | "right_thigh"
-  | "left_knee" | "right_knee"
-  | "left_shin" | "right_shin"
-  | "left_foot" | "right_foot";
-
-type MarkType = "bruise" | "scratch" | "cut" | "burn" | "swelling" | "redness" | "bite_mark" | "pressure_mark" | "old_scar" | "other";
-type MarkColour = "red" | "purple" | "blue" | "yellow" | "green" | "brown" | "black" | "mixed" | "not_applicable";
-type RecordStatus = "draft" | "completed" | "reviewed" | "linked_to_incident";
-
-interface BodyMapEntry {
-  id: string;
-  child_id: string;
-  date: string;
-  time: string;
-  recorded_by: string;
-  body_region: BodyRegion;
-  mark_type: MarkType;
-  mark_colour: MarkColour;
-  size_cm: string;
-  description: string;
-  child_explanation: string;
-  staff_observation: string;
-  status: RecordStatus;
-  linked_incident_id: string | null;
-  photos_attached: boolean;
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-  created_at: string;
-}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -110,117 +73,23 @@ const COLOUR_LABELS: Record<MarkColour, string> = {
   not_applicable: "N/A",
 };
 
-const STATUS_CONFIG: Record<RecordStatus, { label: string; colour: string }> = {
+const STATUS_CONFIG: Record<BodyMapStatus, { label: string; colour: string }> = {
   draft:              { label: "Draft",              colour: "bg-yellow-100 text-yellow-700" },
   completed:          { label: "Completed",          colour: "bg-blue-100 text-blue-700"     },
   reviewed:           { label: "Reviewed",           colour: "bg-green-100 text-green-700"   },
   linked_to_incident: { label: "Linked to Incident", colour: "bg-purple-100 text-purple-700" },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED_ENTRIES: BodyMapEntry[] = [
-  {
-    id: "bm_001", child_id: "yp_alex", date: d(-35), time: "21:45",
-    recorded_by: "staff_edward", body_region: "left_forearm",
-    mark_type: "bruise", mark_colour: "purple", size_cm: "3x2",
-    description: "Oval bruise on inner left forearm, approximately 3cm x 2cm. Purple/blue colouring indicating fresh injury.",
-    child_explanation: "Alex stated: 'I banged it when I was struggling. It doesn't hurt much.'",
-    staff_observation: "Mark is consistent with brief contact during physical intervention. No grip marks visible. Alex calm during examination.",
-    status: "linked_to_incident", linked_incident_id: "inc_005",
-    photos_attached: true, reviewed_by: "staff_darren", reviewed_at: d(-34) + "T09:15:00Z",
-    created_at: d(-35) + "T21:45:00Z",
-  },
-  {
-    id: "bm_002", child_id: "yp_alex", date: d(-22), time: "15:10",
-    recorded_by: "staff_chervelle", body_region: "right_upper_arm",
-    mark_type: "redness", mark_colour: "red", size_cm: "5x3",
-    description: "Area of redness on outer right upper arm. No swelling. Fading at edges.",
-    child_explanation: "Alex stated: 'I don't know how that got there. Maybe from leaning on the door frame.'",
-    staff_observation: "Redness consistent with brief pressure contact. No bruising. Alex showed no pain or discomfort.",
-    status: "linked_to_incident", linked_incident_id: "inc_006",
-    photos_attached: true, reviewed_by: null, reviewed_at: null,
-    created_at: d(-22) + "T15:10:00Z",
-  },
-  {
-    id: "bm_003", child_id: "yp_alex", date: d(-10), time: "19:00",
-    recorded_by: "staff_ryan", body_region: "left_forearm",
-    mark_type: "bruise", mark_colour: "blue", size_cm: "4x3",
-    description: "Bruise on left forearm, mid-section. Blue colouration with some swelling. Not caused by hold — occurred during struggle with object prior to intervention.",
-    child_explanation: "Alex stated: 'I hit my arm on the desk. It hurts a bit.'",
-    staff_observation: "Bruise location and shape consistent with striking the edge of the desk during the incident. Not consistent with hold technique used. Paramedic confirmed minor soft tissue injury only.",
-    status: "linked_to_incident", linked_incident_id: "inc_007",
-    photos_attached: true, reviewed_by: null, reviewed_at: null,
-    created_at: d(-10) + "T19:00:00Z",
-  },
-  {
-    id: "bm_004", child_id: "yp_jordan", date: d(-8), time: "17:30",
-    recorded_by: "staff_anna", body_region: "left_knee",
-    mark_type: "scratch", mark_colour: "red", size_cm: "6x1",
-    description: "Superficial scratch on left knee, approximately 6cm long. Clean edges, no bleeding at time of recording.",
-    child_explanation: "Jordan stated: 'I fell off my bike at school. The teacher saw it happen.'",
-    staff_observation: "Mark is consistent with a fall on rough ground. Jordan showed no distress. School contacted and confirmed incident occurred during PE. No safeguarding concerns identified.",
-    status: "reviewed", linked_incident_id: null,
-    photos_attached: false, reviewed_by: "staff_darren", reviewed_at: d(-7) + "T10:00:00Z",
-    created_at: d(-8) + "T17:30:00Z",
-  },
-  {
-    id: "bm_005", child_id: "yp_casey", date: d(-5), time: "08:45",
-    recorded_by: "staff_diane", body_region: "right_shin",
-    mark_type: "bruise", mark_colour: "yellow", size_cm: "2x2",
-    description: "Small yellow-green bruise on right shin. Appears to be several days old based on colouring.",
-    child_explanation: "Casey stated: 'I kicked the table leg by accident a few days ago. I forgot to mention it.'",
-    staff_observation: "Yellow colouring suggests bruise is 5-7 days old. Location and size consistent with accidental impact. Casey relaxed during check. No concerns.",
-    status: "completed", linked_incident_id: null,
-    photos_attached: false, reviewed_by: null, reviewed_at: null,
-    created_at: d(-5) + "T08:45:00Z",
-  },
-  {
-    id: "bm_006", child_id: "yp_alex", date: d(-3), time: "20:00",
-    recorded_by: "staff_edward", body_region: "left_hand",
-    mark_type: "scratch", mark_colour: "red", size_cm: "3x0.5",
-    description: "Thin scratch across the back of the left hand. Superficial, no bleeding.",
-    child_explanation: "Alex stated: 'The cat at the park scratched me.'",
-    staff_observation: "Mark appears consistent with an animal scratch. Clean, superficial. Alex was on community time earlier and mentioned interacting with a neighbourhood cat. No safeguarding concern.",
-    status: "completed", linked_incident_id: null,
-    photos_attached: false, reviewed_by: null, reviewed_at: null,
-    created_at: d(-3) + "T20:00:00Z",
-  },
-  {
-    id: "bm_007", child_id: "yp_jordan", date: d(-1), time: "16:15",
-    recorded_by: "staff_anna", body_region: "right_forearm",
-    mark_type: "old_scar", mark_colour: "not_applicable", size_cm: "2x0.5",
-    description: "Pre-existing scar on right forearm noted during routine check. Not previously recorded on file. Light, well-healed scar.",
-    child_explanation: "Jordan stated: 'I've had that since I was little. I fell on glass at my old house.'",
-    staff_observation: "Scar is well-healed and appears several years old. Consistent with child's explanation. Recorded for completeness and baseline mapping. No action required.",
-    status: "reviewed", linked_incident_id: null,
-    photos_attached: false, reviewed_by: "staff_darren", reviewed_at: d(0) + "T09:00:00Z",
-    created_at: d(-1) + "T16:15:00Z",
-  },
-  {
-    id: "bm_008", child_id: "yp_casey", date: d(0), time: "07:30",
-    recorded_by: "staff_anna", body_region: "neck",
-    mark_type: "redness", mark_colour: "red", size_cm: "1x1",
-    description: "Small area of redness on the left side of the neck. No swelling, no tenderness reported.",
-    child_explanation: "Casey stated: 'I think my necklace rubbed on it overnight.'",
-    staff_observation: "Casey was wearing a new chain necklace yesterday evening. Area is consistent with friction from jewellery. Monitoring today. If persists, will reassess.",
-    status: "draft", linked_incident_id: null,
-    photos_attached: false, reviewed_by: null, reviewed_at: null,
-    created_at: d(0) + "T07:30:00Z",
-  },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function BodyMapPage() {
   const { currentUser } = useAuthContext();
 
-  /* ── state ──────────────────────────────────────────────────────────────── */
-  const [entries, setEntries] = useState<BodyMapEntry[]>(SEED_ENTRIES);
+  /* ── data ───────────────────────────────────────────────────────────────── */
+  const { data: result, isLoading } = useBodyMap();
+  const createEntry = useCreateBodyMapEntry();
+  const updateEntry = useUpdateBodyMapEntry();
+  const entries = result?.data ?? [];
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -330,8 +199,7 @@ export default function BodyMapPage() {
   /* ── create entry ───────────────────────────────────────────────────────── */
   const handleCreate = () => {
     if (!nChild || !nRegion || !nType || !nColour || !nDesc) return;
-    const entry: BodyMapEntry = {
-      id: `bm_${Date.now()}`,
+    createEntry.mutate({
       child_id: nChild,
       date: todayStr(),
       time: new Date().toTimeString().slice(0, 5),
@@ -348,9 +216,8 @@ export default function BodyMapPage() {
       photos_attached: false,
       reviewed_by: null,
       reviewed_at: null,
-      created_at: new Date().toISOString(),
-    };
-    setEntries(prev => [entry, ...prev]);
+    });
+    toast.success("Body map record saved");
     setShowNew(false);
     setNChild(""); setNRegion(""); setNType(""); setNColour("");
     setNSize(""); setNDesc(""); setNChildExp(""); setNStaffObs(""); setNLinkedInc("");
@@ -358,14 +225,12 @@ export default function BodyMapPage() {
 
   /* ── mark as reviewed ───────────────────────────────────────────────────── */
   const handleReview = (id: string) => {
-    setEntries(prev => prev.map(e =>
-      e.id === id ? {
-        ...e,
-        status: "reviewed" as RecordStatus,
-        reviewed_by: currentUser?.id || "staff_darren",
-        reviewed_at: new Date().toISOString(),
-      } : e
-    ));
+    updateEntry.mutate({
+      id,
+      status: "reviewed",
+      reviewed_by: currentUser?.id || "staff_darren",
+      reviewed_at: new Date().toISOString(),
+    });
   };
 
   /* ── unique children ────────────────────────────────────────────────────── */
@@ -389,6 +254,14 @@ export default function BodyMapPage() {
         </div>
       }
     >
+      {/* ── Loading ────────────────────────────────────────────────────────── */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {!isLoading && (<>
       {/* ── Stats Strip ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
@@ -507,7 +380,7 @@ export default function BodyMapPage() {
           <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {(Object.entries(STATUS_CONFIG) as [RecordStatus, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(STATUS_CONFIG) as [BodyMapStatus, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -638,6 +511,14 @@ export default function BodyMapPage() {
                     )}
                   </div>
 
+                  {/* smart links */}
+                  <SmartLinkPanel
+                    sourceType="body_map"
+                    sourceId={entry.id}
+                    childId={entry.child_id}
+                    compact
+                  />
+
                   {/* actions */}
                   {(entry.status === "draft" || entry.status === "completed") && (
                     <div className="flex gap-2 pt-1">
@@ -672,6 +553,7 @@ export default function BodyMapPage() {
           </div>
         </div>
       </div>
+      </>)}
 
       {/* ══ New Entry Dialog ══════════════════════════════════════════════════ */}
       <Dialog open={showNew} onOpenChange={setShowNew}>

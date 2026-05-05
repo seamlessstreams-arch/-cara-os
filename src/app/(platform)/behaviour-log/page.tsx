@@ -25,156 +25,35 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useBehaviourLog, useCreateBehaviourEntry } from "@/hooks/use-behaviour-log";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type { BehaviourEntry, BehaviourDirection, BehaviourIntensity } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Plus, Activity,
   CheckCircle2, AlertTriangle, User, Calendar,
   ChevronDown, ChevronUp, Shield, Smile, Frown,
-  TrendingUp, Zap, Heart,
+  TrendingUp, Zap, Heart, Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type BehaviourDirection = "positive" | "concern";
-type Intensity = "low" | "moderate" | "high" | "critical";
-
-interface BehaviourEntry {
-  id: string;
-  child_id: string;
-  date: string;
-  time: string;
-  direction: BehaviourDirection;
-  intensity: Intensity;
-  title: string;
-  antecedent: string;
-  behaviour: string;
-  consequence: string;
-  trigger: string;
-  strategy_used: string;
-  outcome: string;
-  recorded_by: string;
-  created_at: string;
-}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const INTENSITY_CONFIG: Record<Intensity, { label: string; colour: string }> = {
+const INTENSITY_CONFIG: Record<BehaviourIntensity, { label: string; colour: string }> = {
   low:      { label: "Low",      colour: "bg-green-100 text-green-700" },
   moderate: { label: "Moderate", colour: "bg-amber-100 text-amber-700" },
   high:     { label: "High",     colour: "bg-orange-100 text-orange-700" },
   critical: { label: "Critical", colour: "bg-red-100 text-red-700" },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: BehaviourEntry[] = [
-  {
-    id: "bh_001", child_id: "yp_alex", date: d(-1), time: "18:30",
-    direction: "concern", intensity: "high",
-    title: "Verbal aggression towards staff during screen-time limit",
-    antecedent: "Alex was asked to come off the Xbox as it was approaching bedtime routine. Had been playing for 2 hours.",
-    behaviour: "Alex became verbally aggressive — swearing, name-calling, raised voice. Refused to comply. Stood up and kicked the sofa cushion.",
-    consequence: "Staff remained calm and used low-arousal approach. Gave Alex 5 minutes to process. Alex eventually turned off Xbox but continued to mutter. Xbox time reduced by 30 minutes the following day.",
-    trigger: "Transition from preferred activity. Difficulty accepting boundaries around screen time.",
-    strategy_used: "Low-arousal approach, gave processing time, clear calm instruction, natural consequence applied later.",
-    outcome: "Alex calmed after 15 minutes. Went to room voluntarily. Apologised independently the following morning.",
-    recorded_by: "staff_edward", created_at: d(-1) + "T18:30:00Z",
-  },
-  {
-    id: "bh_002", child_id: "yp_alex", date: d(0), time: "10:00",
-    direction: "positive", intensity: "low",
-    title: "Independent apology to staff member",
-    antecedent: "Previous evening Alex had been verbally aggressive to staff. No staff prompting.",
-    behaviour: "Alex approached the staff member independently and apologised sincerely. Asked if they could 'start fresh today.'",
-    consequence: "Staff acknowledged and praised the apology. Verbal praise given. Alex's mood improved significantly for the rest of the morning.",
-    trigger: "Internal reflection overnight. Growing ability to repair relationships.",
-    strategy_used: "N/A — positive behaviour. Reinforced with verbal praise and acknowledgement.",
-    outcome: "Excellent example of emotional growth and repair skills. Noted in key work session.",
-    recorded_by: "staff_edward", created_at: d(0) + "T10:00:00Z",
-  },
-  {
-    id: "bh_003", child_id: "yp_jordan", date: d(-2), time: "07:45",
-    direction: "positive", intensity: "low",
-    title: "Completed morning routine independently — 3rd consecutive day",
-    antecedent: "Normal school morning. No prompting from staff.",
-    behaviour: "Jordan completed full morning routine (wash, dress, breakfast, school bag ready) without any staff prompting. Ready 10 minutes early.",
-    consequence: "3 tokens added to reward chart. Verbal praise. Jordan approaching 20-token goal.",
-    trigger: "Growing confidence and motivation from token reward system.",
-    strategy_used: "Token economy system, positive reinforcement, consistent routine structure.",
-    outcome: "Continued independent morning routine. Jordan visibly proud.",
-    recorded_by: "staff_anna", created_at: d(-2) + "T07:45:00Z",
-  },
-  {
-    id: "bh_004", child_id: "yp_casey", date: d(-3), time: "20:45",
-    direction: "concern", intensity: "moderate",
-    title: "Refused evening routine — multiple reminders ignored",
-    antecedent: "Casey had a difficult day at school. Tired and irritable by evening. Asked to complete evening routine (shower, teeth, uniform prep).",
-    behaviour: "Casey refused to engage with evening routine despite 4 reminders over 45 minutes. Sat on sofa scrolling phone. Responded with 'I don't care' and 'leave me alone.'",
-    consequence: "Bedtime brought forward by 20 minutes. Casey completed partial routine (teeth only). Staff made hot chocolate as comfort gesture. Approach for tomorrow discussed.",
-    trigger: "Emotional exhaustion from school. Difficulty transitioning when tired.",
-    strategy_used: "Multiple calm reminders, empathic acknowledgement of tiredness, flexible approach to partial completion, comfort offering.",
-    outcome: "Casey eventually settled. Partial routine completed. No escalation.",
-    recorded_by: "staff_diane", created_at: d(-3) + "T20:45:00Z",
-  },
-  {
-    id: "bh_005", child_id: "yp_casey", date: d(-1), time: "17:00",
-    direction: "positive", intensity: "low",
-    title: "Helped visiting young person feel welcome",
-    antecedent: "A young person was visiting for an assessment day. Casey noticed them looking uncomfortable in the lounge.",
-    behaviour: "Casey voluntarily approached the visitor, introduced themselves, and offered to show them around the house. Spent 20 minutes chatting and explaining house routines.",
-    consequence: "Verbal praise from multiple staff. Noted in daily log. Casey's empathy and social skills celebrated at house meeting.",
-    trigger: "Empathy — Casey remembered their own experience of arriving. Prosocial instinct.",
-    strategy_used: "N/A — spontaneous positive behaviour. Reinforced with praise and recognition.",
-    outcome: "Visiting young person visibly relaxed. Casey appeared proud and happy.",
-    recorded_by: "staff_chervelle", created_at: d(-1) + "T17:00:00Z",
-  },
-  {
-    id: "bh_006", child_id: "yp_alex", date: d(-5), time: "21:00",
-    direction: "concern", intensity: "high",
-    title: "Threw cushion in lounge — damaged lamp shade",
-    antecedent: "Alex had just finished a difficult phone call with a family member. Was visibly upset.",
-    behaviour: "Alex threw a cushion across the lounge which struck a lamp. Lamp shade dented but not broken. Alex was crying and shouting.",
-    consequence: "Staff de-escalated. Alex supported to the calm room. After 30 minutes, restorative conversation held. Alex helped repair the lamp shade. No further consequence — emotional context considered.",
-    trigger: "Distressing family phone call. Emotional overwhelm. Limited coping strategies in the moment.",
-    strategy_used: "Calm presence, space given, restorative conversation, involvement in repair.",
-    outcome: "Alex calmed. Agreed to use calm room when overwhelmed. No further incidents that evening.",
-    recorded_by: "staff_ryan", created_at: d(-5) + "T21:00:00Z",
-  },
-  {
-    id: "bh_007", child_id: "yp_jordan", date: d(-4), time: "16:00",
-    direction: "positive", intensity: "low",
-    title: "PE Student of the Week — leadership praised",
-    antecedent: "Jordan participated in inter-house football at school.",
-    behaviour: "Jordan demonstrated excellent teamwork and leadership, encouraging other students and accepting the referee's decisions calmly.",
-    consequence: "Student of the Week award. Certificate brought home. Achievement shared at house meeting. Jordan chose to display certificate in their room.",
-    trigger: "Growing confidence in PE. Positive relationship with PE teacher.",
-    strategy_used: "Recognition and celebration of achievement. Linking success to effort.",
-    outcome: "Jordan's confidence boosted. Positive behaviour reinforced across home and school.",
-    recorded_by: "staff_anna", created_at: d(-4) + "T16:00:00Z",
-  },
-  {
-    id: "bh_008", child_id: "yp_alex", date: d(-3), time: "08:30",
-    direction: "concern", intensity: "moderate",
-    title: "Morning refusal to attend school",
-    antecedent: "Previous evening had been difficult (thrown cushion incident). Alex woke in low mood.",
-    behaviour: "Alex refused to get out of bed for school. When staff attempted encouragement, Alex pulled duvet over head and said 'I'm not going and you can't make me.'",
-    consequence: "Staff gave Alex 15 minutes, then returned with breakfast in room. Offered reduced timetable option. Alex eventually agreed to attend afternoon session only. School notified.",
-    trigger: "Emotional hangover from previous evening. Low mood and fatigue.",
-    strategy_used: "Patience, breakfast as comfort, flexible approach (afternoon attendance), school liaison.",
-    outcome: "Alex attended school for the afternoon. Teacher reported reasonable engagement.",
-    recorded_by: "staff_edward", created_at: d(-3) + "T08:30:00Z",
-  },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function BehaviourLogPage() {
   const { currentUser } = useAuthContext();
 
-  const [entries, setEntries] = useState<BehaviourEntry[]>(SEED);
+  const { data: result, isLoading } = useBehaviourLog();
+  const entries = result?.data ?? [];
+  const createEntry = useCreateBehaviourEntry();
+
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [intensityFilter, setIntensityFilter] = useState("all");
@@ -186,7 +65,7 @@ export default function BehaviourLogPage() {
   // new form
   const [nChild, setNChild] = useState("");
   const [nDir, setNDir] = useState<BehaviourDirection | "">("");
-  const [nIntensity, setNIntensity] = useState<Intensity>("moderate");
+  const [nIntensity, setNIntensity] = useState<BehaviourIntensity>("moderate");
   const [nTitle, setNTitle] = useState("");
   const [nAntecedent, setNAntecedent] = useState("");
   const [nBehaviour, setNBehaviour] = useState("");
@@ -219,7 +98,7 @@ export default function BehaviourLogPage() {
         case "oldest": return a.created_at.localeCompare(b.created_at);
         case "child":  return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "intensity": {
-          const io: Record<Intensity, number> = { critical: 0, high: 1, moderate: 2, low: 3 };
+          const io: Record<BehaviourIntensity, number> = { critical: 0, high: 1, moderate: 2, low: 3 };
           return io[a.intensity] - io[b.intensity];
         }
         default: return 0;
@@ -273,8 +152,7 @@ export default function BehaviourLogPage() {
   /* ── create ─────────────────────────────────────────────────────────────── */
   const handleCreate = () => {
     if (!nChild || !nDir || !nTitle || !nBehaviour) return;
-    const entry: BehaviourEntry = {
-      id: `bh_${Date.now()}`,
+    createEntry.mutate({
       child_id: nChild,
       date: todayStr(),
       time: new Date().toTimeString().slice(0, 5),
@@ -288,14 +166,23 @@ export default function BehaviourLogPage() {
       strategy_used: nStrategy,
       outcome: nOutcome,
       recorded_by: currentUser?.id || "staff_darren",
-      created_at: new Date().toISOString(),
-    };
-    setEntries(prev => [entry, ...prev]);
+    });
+    toast.success("Behaviour entry recorded");
     setShowNew(false);
     setNChild(""); setNDir(""); setNIntensity("moderate"); setNTitle("");
     setNAntecedent(""); setNBehaviour(""); setNConsequence("");
     setNTrigger(""); setNStrategy(""); setNOutcome("");
   };
+
+  if (isLoading) {
+    return (
+      <PageShell title="Behaviour Log" subtitle="ABC observations — antecedent, behaviour, consequence">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -388,7 +275,7 @@ export default function BehaviourLogPage() {
           <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Intensity" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Levels</SelectItem>
-            {(Object.entries(INTENSITY_CONFIG) as [Intensity, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(INTENSITY_CONFIG) as [BehaviourIntensity, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -494,6 +381,7 @@ export default function BehaviourLogPage() {
                     <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />{getStaffName(entry.recorded_by)}</span>
                     <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{formatDate(entry.date)} at {entry.time}</span>
                   </div>
+                  <SmartLinkPanel sourceType="behaviour_log" sourceId={entry.id} childId={entry.child_id} compact />
                 </div>
               )}
             </div>
@@ -545,10 +433,10 @@ export default function BehaviourLogPage() {
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Intensity</label>
-              <Select value={nIntensity} onValueChange={v => setNIntensity(v as Intensity)}>
+              <Select value={nIntensity} onValueChange={v => setNIntensity(v as BehaviourIntensity)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(INTENSITY_CONFIG) as [Intensity, { label: string }][]).map(([k, v]) => (
+                  {(Object.entries(INTENSITY_CONFIG) as [BehaviourIntensity, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
                   ))}
                 </SelectContent>

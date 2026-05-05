@@ -4,8 +4,9 @@ import { useState, useMemo } from "react";
 import {
   CalendarX, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, Clock, TrendingDown,
-  ChevronDown, ChevronUp, GraduationCap,
+  ChevronDown, ChevronUp, GraduationCap, Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -22,20 +23,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { useAbsenceTracking, useCreateAbsence } from "@/hooks/use-absence-tracking";
+import type { AbsenceType, AbsenceSetting, AbsenceRecord } from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ── types ───────────────────────────────────────────────────────────── */
-const ABSENCE_TYPES = [
+/* ── local label / colour maps ──────────────────────────────────────── */
+const ABSENCE_TYPES: AbsenceType[] = [
   "authorised", "unauthorised", "medical", "exclusion",
   "part_time_timetable", "late_arrival", "internal_truancy",
-] as const;
-type AbsenceType = typeof ABSENCE_TYPES[number];
+];
 const ABSENCE_LABELS: Record<AbsenceType, string> = {
   authorised: "Authorised", unauthorised: "Unauthorised",
   medical: "Medical", exclusion: "Exclusion",
@@ -49,100 +45,18 @@ const ABSENCE_COLORS: Record<AbsenceType, string> = {
   internal_truancy: "bg-red-100 text-red-800",
 };
 
-const SETTINGS = ["school", "college", "pru", "tuition", "activity", "appointment"] as const;
-type Setting = typeof SETTINGS[number];
-const SETTING_LABELS: Record<Setting, string> = {
+const SETTINGS: AbsenceSetting[] = ["school", "college", "pru", "tuition", "activity", "appointment"];
+const SETTING_LABELS: Record<AbsenceSetting, string> = {
   school: "School", college: "College", pru: "PRU",
   tuition: "Home Tuition", activity: "Activity", appointment: "Appointment",
 };
 
-interface AbsenceRecord {
-  id: string;
-  youngPersonId: string;
-  date: string;
-  type: AbsenceType;
-  setting: Setting;
-  settingName: string;
-  sessions: number; // 1 = half day, 2 = full day
-  reason: string;
-  actionTaken: string;
-  schoolNotified: boolean;
-  swNotified: boolean;
-  recordedBy: string;
-  followUp: string | null;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: AbsenceRecord[] = [
-  {
-    id: "abs_1", youngPersonId: "yp_alex", date: d(-2), type: "unauthorised",
-    setting: "school", settingName: "Riverside Academy",
-    sessions: 2, reason: "Alex refused to attend. Said they were feeling anxious about a test. Stayed in room despite encouragement.",
-    actionTaken: "Spent 30 minutes with Alex discussing worries. Contacted school to explain absence. Agreed to discuss test anxiety with key worker.",
-    schoolNotified: true, swNotified: false, recordedBy: "staff_anna",
-    followUp: "Key work session to address test anxiety. CAMHS referral to be considered if pattern continues.",
-  },
-  {
-    id: "abs_2", youngPersonId: "yp_alex", date: d(-5), type: "late_arrival",
-    setting: "school", settingName: "Riverside Academy",
-    sessions: 1, reason: "Overslept — stayed up late on phone. Arrived at school 45 minutes late.",
-    actionTaken: "Morning routine review. Phone collection time brought forward to 21:00.",
-    schoolNotified: true, swNotified: false, recordedBy: "staff_edward",
-    followUp: "Monitor phone routine for 2 weeks.",
-  },
-  {
-    id: "abs_3", youngPersonId: "yp_alex", date: d(-8), type: "unauthorised",
-    setting: "school", settingName: "Riverside Academy",
-    sessions: 2, reason: "Left home for school but did not arrive. Located at local park by staff at 10:30am.",
-    actionTaken: "Collected from park. Discussed reasons — Alex said they were being bullied in a specific class. School safeguarding lead notified.",
-    schoolNotified: true, swNotified: true, recordedBy: "staff_darren",
-    followUp: "Meeting with school re: bullying concern. Change of class being explored.",
-  },
-  {
-    id: "abs_4", youngPersonId: "yp_jordan", date: d(-3), type: "medical",
-    setting: "school", settingName: "Greenfield Secondary",
-    sessions: 2, reason: "Dental appointment — emergency filling needed. Appointment took most of the day.",
-    actionTaken: "Accompanied Jordan to dentist. Work sent home by school.",
-    schoolNotified: true, swNotified: false, recordedBy: "staff_chervelle",
-    followUp: null,
-  },
-  {
-    id: "abs_5", youngPersonId: "yp_jordan", date: d(-10), type: "authorised",
-    setting: "school", settingName: "Greenfield Secondary",
-    sessions: 1, reason: "LAC review meeting — afternoon session missed.",
-    actionTaken: "School aware — planned absence for statutory meeting.",
-    schoolNotified: true, swNotified: false, recordedBy: "staff_anna",
-    followUp: null,
-  },
-  {
-    id: "abs_6", youngPersonId: "yp_casey", date: d(-1), type: "medical",
-    setting: "college", settingName: "City College",
-    sessions: 2, reason: "CAMHS appointment in the morning, felt drained afterwards and did not attend afternoon session.",
-    actionTaken: "Supported Casey after CAMHS session. College tutor emailed.",
-    schoolNotified: true, swNotified: false, recordedBy: "staff_mirela",
-    followUp: "Discuss with CAMHS about scheduling appointments at end of day to minimise education impact.",
-  },
-  {
-    id: "abs_7", youngPersonId: "yp_casey", date: d(-6), type: "authorised",
-    setting: "college", settingName: "City College",
-    sessions: 2, reason: "College inset day — no students required.",
-    actionTaken: "N/A — planned closure.",
-    schoolNotified: false, swNotified: false, recordedBy: "staff_diane",
-    followUp: null,
-  },
-  {
-    id: "abs_8", youngPersonId: "yp_alex", date: d(-12), type: "exclusion",
-    setting: "school", settingName: "Riverside Academy",
-    sessions: 4, reason: "Fixed-term exclusion (2 days) — verbal altercation with a teacher following being challenged about late homework.",
-    actionTaken: "RM attended reintegration meeting. Alex completed work at home during exclusion. Incident discussed in key work. SW informed.",
-    schoolNotified: true, swNotified: true, recordedBy: "staff_darren",
-    followUp: "Reintegration meeting held. Behaviour support plan updated. Additional in-class support agreed.",
-  },
-];
-
 /* ── component ───────────────────────────────────────────────────────── */
 export default function AbsenceTrackingPage() {
-  const [records] = useState<AbsenceRecord[]>(SEED);
+  const { data: result, isLoading } = useAbsenceTracking();
+  const createAbsence = useCreateAbsence();
+  const records = result?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");
@@ -157,18 +71,18 @@ export default function AbsenceTrackingPage() {
       list = list.filter(
         (r) =>
           r.reason.toLowerCase().includes(q) ||
-          r.settingName.toLowerCase().includes(q) ||
-          r.actionTaken.toLowerCase().includes(q)
+          r.setting_name.toLowerCase().includes(q) ||
+          r.action_taken.toLowerCase().includes(q)
       );
     }
-    if (filterYP !== "all") list = list.filter((r) => r.youngPersonId === filterYP);
-    if (filterType !== "all") list = list.filter((r) => r.type === filterType);
+    if (filterYP !== "all") list = list.filter((r) => r.child_id === filterYP);
+    if (filterType !== "all") list = list.filter((r) => r.absence_type === filterType);
 
     list.sort((a, b) => {
       switch (sortBy) {
         case "date": return b.date.localeCompare(a.date);
-        case "yp": return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
-        case "type": return a.type.localeCompare(b.type);
+        case "yp": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "type": return a.absence_type.localeCompare(b.absence_type);
         case "sessions": return b.sessions - a.sessions;
         default: return 0;
       }
@@ -177,34 +91,44 @@ export default function AbsenceTrackingPage() {
   }, [records, search, filterYP, filterType, sortBy]);
 
   /* per-child stats */
-  const ypIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const ypIds = [...new Set(records.map((r) => r.child_id))];
   const ypStats = ypIds.map((id) => {
-    const yps = records.filter((r) => r.youngPersonId === id);
+    const yps = records.filter((r) => r.child_id === id);
     const totalSessions = yps.reduce((s, r) => s + r.sessions, 0);
-    const unauthorised = yps.filter((r) => r.type === "unauthorised" || r.type === "internal_truancy").reduce((s, r) => s + r.sessions, 0);
+    const unauthorised = yps.filter((r) => r.absence_type === "unauthorised" || r.absence_type === "internal_truancy").reduce((s, r) => s + r.sessions, 0);
     return { id, name: getYPName(id), total: totalSessions, unauthorised };
   });
 
   const totalAbsences = records.length;
   const totalSessionsLost = records.reduce((s, r) => s + r.sessions, 0);
-  const unauthorisedCount = records.filter((r) => r.type === "unauthorised" || r.type === "internal_truancy").length;
-  const exclusions = records.filter((r) => r.type === "exclusion").length;
+  const unauthorisedCount = records.filter((r) => r.absence_type === "unauthorised" || r.absence_type === "internal_truancy").length;
+  const exclusions = records.filter((r) => r.absence_type === "exclusion").length;
 
   const exportCols: ExportColumn<AbsenceRecord>[] = [
     { header: "ID", accessor: (r: AbsenceRecord) => r.id },
-    { header: "Young Person", accessor: (r: AbsenceRecord) => getYPName(r.youngPersonId) },
+    { header: "Young Person", accessor: (r: AbsenceRecord) => getYPName(r.child_id) },
     { header: "Date", accessor: (r: AbsenceRecord) => r.date },
-    { header: "Type", accessor: (r: AbsenceRecord) => ABSENCE_LABELS[r.type] },
+    { header: "Type", accessor: (r: AbsenceRecord) => ABSENCE_LABELS[r.absence_type] },
     { header: "Setting", accessor: (r: AbsenceRecord) => SETTING_LABELS[r.setting] },
-    { header: "Setting Name", accessor: (r: AbsenceRecord) => r.settingName },
+    { header: "Setting Name", accessor: (r: AbsenceRecord) => r.setting_name },
     { header: "Sessions Lost", accessor: (r: AbsenceRecord) => r.sessions },
     { header: "Reason", accessor: (r: AbsenceRecord) => r.reason },
-    { header: "Action Taken", accessor: (r: AbsenceRecord) => r.actionTaken },
-    { header: "School Notified", accessor: (r: AbsenceRecord) => r.schoolNotified ? "Yes" : "No" },
-    { header: "SW Notified", accessor: (r: AbsenceRecord) => r.swNotified ? "Yes" : "No" },
-    { header: "Recorded By", accessor: (r: AbsenceRecord) => getStaffName(r.recordedBy) },
-    { header: "Follow-Up", accessor: (r: AbsenceRecord) => r.followUp ?? "" },
+    { header: "Action Taken", accessor: (r: AbsenceRecord) => r.action_taken },
+    { header: "School Notified", accessor: (r: AbsenceRecord) => r.school_notified ? "Yes" : "No" },
+    { header: "SW Notified", accessor: (r: AbsenceRecord) => r.sw_notified ? "Yes" : "No" },
+    { header: "Recorded By", accessor: (r: AbsenceRecord) => getStaffName(r.recorded_by) },
+    { header: "Follow-Up", accessor: (r: AbsenceRecord) => r.follow_up ?? "" },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Absence Tracking" subtitle="Monitor school and education attendance for all young people">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -335,19 +259,19 @@ export default function AbsenceTrackingPage() {
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <CalendarX className={cn("h-5 w-5 shrink-0",
-                      rec.type === "unauthorised" || rec.type === "exclusion" ? "text-red-600" :
-                      rec.type === "medical" ? "text-yellow-600" : "text-blue-600"
+                      rec.absence_type === "unauthorised" || rec.absence_type === "exclusion" ? "text-red-600" :
+                      rec.absence_type === "medical" ? "text-yellow-600" : "text-blue-600"
                     )} />
                     <div className="min-w-0">
-                      <p className="font-medium">{getYPName(rec.youngPersonId)} — {rec.date}</p>
+                      <p className="font-medium">{getYPName(rec.child_id)} — {rec.date}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {rec.settingName} · {rec.sessions === 1 ? "½ day" : rec.sessions === 2 ? "Full day" : `${rec.sessions / 2} days`}
+                        {rec.setting_name} · {rec.sessions === 1 ? "½ day" : rec.sessions === 2 ? "Full day" : `${rec.sessions / 2} days`}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className={cn("text-xs", ABSENCE_COLORS[rec.type])}>
-                      {ABSENCE_LABELS[rec.type]}
+                    <Badge className={cn("text-xs", ABSENCE_COLORS[rec.absence_type])}>
+                      {ABSENCE_LABELS[rec.absence_type]}
                     </Badge>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -359,11 +283,11 @@ export default function AbsenceTrackingPage() {
                       <div><span className="text-muted-foreground">Setting:</span> <span className="font-medium">{SETTING_LABELS[rec.setting]}</span></div>
                       <div><span className="text-muted-foreground">Sessions:</span> <span className="font-medium">{rec.sessions}</span></div>
                       <div className="flex items-center gap-1">
-                        <CheckCircle2 className={cn("h-3 w-3", rec.schoolNotified ? "text-green-600" : "text-slate-300")} />
+                        <CheckCircle2 className={cn("h-3 w-3", rec.school_notified ? "text-green-600" : "text-slate-300")} />
                         <span className="text-sm">School Notified</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <CheckCircle2 className={cn("h-3 w-3", rec.swNotified ? "text-green-600" : "text-slate-300")} />
+                        <CheckCircle2 className={cn("h-3 w-3", rec.sw_notified ? "text-green-600" : "text-slate-300")} />
                         <span className="text-sm">SW Notified</span>
                       </div>
                     </div>
@@ -375,19 +299,26 @@ export default function AbsenceTrackingPage() {
 
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                       <p className="text-xs font-medium text-blue-700 mb-1">Action Taken</p>
-                      <p className="text-sm">{rec.actionTaken}</p>
+                      <p className="text-sm">{rec.action_taken}</p>
                     </div>
 
-                    {rec.followUp && (
+                    {rec.follow_up && (
                       <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                         <p className="text-xs font-medium text-amber-700 mb-1">Follow-Up Required</p>
-                        <p className="text-sm">{rec.followUp}</p>
+                        <p className="text-sm">{rec.follow_up}</p>
                       </div>
                     )}
 
                     <div className="text-sm text-muted-foreground">
-                      Recorded by {getStaffName(rec.recordedBy)}
+                      Recorded by {getStaffName(rec.recorded_by)}
                     </div>
+
+                    <SmartLinkPanel
+                      sourceType="absence_tracking"
+                      sourceId={rec.id}
+                      childId={rec.child_id}
+                      compact
+                    />
                   </div>
                 )}
               </div>

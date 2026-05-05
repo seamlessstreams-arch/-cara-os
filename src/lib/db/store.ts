@@ -44,6 +44,12 @@ import type {
   RestraintRecord,
   NotifiableEvent,
   NightLogEntry,
+  BehaviourEntry,
+  AccidentRecord,
+  AbsenceRecord,
+  PositiveHandlingPlan,
+  MedicationError,
+  BodyMapEntry,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -146,6 +152,12 @@ const store = {
   restraints: [] as RestraintRecord[],
   notifiableEvents: [] as NotifiableEvent[],
   nightLogs: [] as NightLogEntry[],
+  behaviourLog: [] as BehaviourEntry[],
+  accidentBook: [] as AccidentRecord[],
+  absenceTracking: [] as AbsenceRecord[],
+  positiveHandling: [] as PositiveHandlingPlan[],
+  medicationErrors: [] as MedicationError[],
+  bodyMap: [] as BodyMapEntry[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -3393,6 +3405,107 @@ export const db = {
       if (idx === -1) return null;
       store.nightLogs[idx] = { ...store.nightLogs[idx], ...data };
       return store.nightLogs[idx];
+    },
+  },
+
+  behaviourLog: {
+    findAll: () => store.behaviourLog,
+    findByChild: (childId: string) => store.behaviourLog.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.behaviourLog.find((r) => r.id === id),
+    create: (data: Partial<BehaviourEntry>): BehaviourEntry => {
+      const record = { ...data, id: generateId("bh"), created_at: new Date().toISOString() } as BehaviourEntry;
+      store.behaviourLog.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<BehaviourEntry>): BehaviourEntry | null => {
+      const idx = store.behaviourLog.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.behaviourLog[idx] = { ...store.behaviourLog[idx], ...data };
+      return store.behaviourLog[idx];
+    },
+  },
+
+  accidentBook: {
+    findAll: () => store.accidentBook,
+    findById: (id: string) => store.accidentBook.find((r) => r.id === id),
+    create: (data: Partial<AccidentRecord>): AccidentRecord => {
+      const record = { ...data, id: generateId("acc"), created_at: new Date().toISOString() } as AccidentRecord;
+      store.accidentBook.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<AccidentRecord>): AccidentRecord | null => {
+      const idx = store.accidentBook.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.accidentBook[idx] = { ...store.accidentBook[idx], ...data };
+      return store.accidentBook[idx];
+    },
+  },
+
+  absenceTracking: {
+    findAll: () => store.absenceTracking,
+    findByChild: (childId: string) => store.absenceTracking.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.absenceTracking.find((r) => r.id === id),
+    create: (data: Partial<AbsenceRecord>): AbsenceRecord => {
+      const record = { ...data, id: generateId("abs"), created_at: new Date().toISOString() } as AbsenceRecord;
+      store.absenceTracking.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<AbsenceRecord>): AbsenceRecord | null => {
+      const idx = store.absenceTracking.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.absenceTracking[idx] = { ...store.absenceTracking[idx], ...data };
+      return store.absenceTracking[idx];
+    },
+  },
+
+  positiveHandling: {
+    findAll: () => store.positiveHandling,
+    findByChild: (childId: string) => store.positiveHandling.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.positiveHandling.find((r) => r.id === id),
+    create: (data: Partial<PositiveHandlingPlan>): PositiveHandlingPlan => {
+      const record = { ...data, id: generateId("php"), created_at: new Date().toISOString() } as PositiveHandlingPlan;
+      store.positiveHandling.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<PositiveHandlingPlan>): PositiveHandlingPlan | null => {
+      const idx = store.positiveHandling.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.positiveHandling[idx] = { ...store.positiveHandling[idx], ...data };
+      return store.positiveHandling[idx];
+    },
+  },
+
+  medicationErrors: {
+    findAll: () => store.medicationErrors,
+    findByChild: (childId: string) => store.medicationErrors.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.medicationErrors.find((r) => r.id === id),
+    create: (data: Partial<MedicationError>): MedicationError => {
+      const record = { ...data, id: generateId("me"), created_at: new Date().toISOString() } as MedicationError;
+      store.medicationErrors.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MedicationError>): MedicationError | null => {
+      const idx = store.medicationErrors.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.medicationErrors[idx] = { ...store.medicationErrors[idx], ...data };
+      return store.medicationErrors[idx];
+    },
+  },
+
+  bodyMap: {
+    findAll: () => store.bodyMap,
+    findByChild: (childId: string) => store.bodyMap.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.bodyMap.find((r) => r.id === id),
+    create: (data: Partial<BodyMapEntry>): BodyMapEntry => {
+      const record = { ...data, id: generateId("bm"), created_at: new Date().toISOString() } as BodyMapEntry;
+      store.bodyMap.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<BodyMapEntry>): BodyMapEntry | null => {
+      const idx = store.bodyMap.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.bodyMap[idx] = { ...store.bodyMap[idx], ...data };
+      return store.bodyMap[idx];
     },
   },
 };

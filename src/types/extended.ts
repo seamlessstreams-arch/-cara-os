@@ -2700,3 +2700,216 @@ export interface NightLogEntry {
   summary: string;
   concerns: string | null;
 }
+
+/* ── Behaviour Log ──────────────────────────────────────────────────── */
+
+export type BehaviourDirection = "positive" | "concern";
+export type BehaviourIntensity = "low" | "moderate" | "high" | "critical";
+
+export interface BehaviourEntry {
+  id: string;
+  child_id: string;
+  date: string;
+  time: string;
+  direction: BehaviourDirection;
+  intensity: BehaviourIntensity;
+  title: string;
+  antecedent: string;
+  behaviour: string;
+  consequence: string;
+  trigger: string;
+  strategy_used: string;
+  outcome: string;
+  recorded_by: string;
+  created_at: string;
+}
+
+/* ── Accident Book ──────────────────────────────────────────────────── */
+
+export type AccidentPersonType = "child" | "staff" | "visitor" | "contractor";
+export type AccidentSeverity = "minor" | "moderate" | "major" | "riddor_reportable";
+export type AccidentCategory =
+  | "slip_trip_fall" | "collision" | "burn_scald" | "cut_laceration"
+  | "bite" | "self_harm_injury" | "sport_play" | "assault"
+  | "medication_related" | "other";
+export type AccidentStatus = "open" | "first_aid_given" | "medical_treatment" | "hospital" | "investigated" | "closed";
+
+export interface AccidentRecord {
+  id: string;
+  date: string;
+  time: string;
+  reported_by: string;
+  person_type: AccidentPersonType;
+  person_id: string | null;
+  person_name: string;
+  category: AccidentCategory;
+  severity: AccidentSeverity;
+  status: AccidentStatus;
+  location: string;
+  description: string;
+  injury_details: string;
+  first_aid_given: boolean;
+  first_aid_by: string | null;
+  first_aid_details: string;
+  medical_attention: boolean;
+  hospital_attendance: boolean;
+  hospital_name: string | null;
+  parent_carer_notified: boolean;
+  parent_notified_time: string | null;
+  social_worker_notified: boolean;
+  riddor_reported: boolean;
+  riddor_ref: string | null;
+  witnesses: string[];
+  root_cause: string;
+  preventive_measures: string;
+  follow_up_date: string | null;
+  photographs_taken: boolean;
+  body_map_completed: boolean;
+  signed_off_by: string | null;
+  created_at: string;
+}
+
+/* ── Absence Tracking ───────────────────────────────────────────────── */
+
+export type AbsenceType = "authorised" | "unauthorised" | "medical" | "exclusion" | "part_time_timetable" | "late_arrival" | "internal_truancy";
+export type AbsenceSetting = "school" | "college" | "pru" | "tuition" | "activity" | "appointment";
+
+export interface AbsenceRecord {
+  id: string;
+  child_id: string;
+  date: string;
+  absence_type: AbsenceType;
+  setting: AbsenceSetting;
+  setting_name: string;
+  sessions: number;
+  reason: string;
+  action_taken: string;
+  school_notified: boolean;
+  sw_notified: boolean;
+  recorded_by: string;
+  follow_up: string | null;
+  created_at: string;
+}
+
+/* ── Positive Handling Plans ────────────────────────────────────────── */
+
+export interface PHPDeEscalation {
+  technique: string;
+  effectiveness: "usually_effective" | "sometimes_effective" | "rarely_effective";
+}
+
+export interface PHPPhysicalResponse {
+  scenario: string;
+  approved_techniques: string[];
+  contraindicated: string[];
+  max_duration: string;
+  medical_considerations: string;
+}
+
+export interface PositiveHandlingPlan {
+  id: string;
+  child_id: string;
+  version: string;
+  created_date: string;
+  last_reviewed: string;
+  next_review: string;
+  reviewed_by: string;
+  triggers: string[];
+  early_warning: string[];
+  de_escalation: PHPDeEscalation[];
+  physical_responses: PHPPhysicalResponse[];
+  post_incident_support: string[];
+  child_preferences: string;
+  medical_factors: string;
+  staff_authorised: string[];
+  consent_obtained: boolean;
+  sw_consulted: boolean;
+  parent_notified: boolean;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Medication Errors ──────────────────────────────────────────────── */
+
+export type MedErrorType =
+  | "wrong_dose" | "wrong_medication" | "wrong_time" | "wrong_person"
+  | "omission" | "wrong_route" | "expired_medication"
+  | "documentation_error" | "near_miss" | "adverse_reaction";
+export type MedErrorSeverity = "no_harm" | "low" | "moderate" | "severe" | "death";
+export type MedErrorStatus = "reported" | "under_investigation" | "action_required" | "closed" | "escalated";
+export type MedRemedialStatus = "pending" | "in_progress" | "completed";
+
+export interface MedRemedialAction {
+  action: string;
+  owner: string;
+  due_date: string;
+  status: MedRemedialStatus;
+}
+
+export interface MedicationError {
+  id: string;
+  child_id: string;
+  date_occurred: string;
+  time_occurred: string;
+  reported_by: string;
+  reported_date: string;
+  error_type: MedErrorType;
+  severity: MedErrorSeverity;
+  medication: string;
+  prescribed_dose: string;
+  actual_dose: string;
+  what_happened: string;
+  immediate_action: string;
+  person_informed: string[];
+  duty_of_candour: boolean;
+  duty_of_candour_completed: string | null;
+  root_cause: string;
+  contributing_factors: string[];
+  remedial_actions: MedRemedialAction[];
+  lessons_learned: string;
+  status: MedErrorStatus;
+  review_date: string | null;
+  outcome: string;
+  created_at: string;
+}
+
+/* ── Body Map ───────────────────────────────────────────────────────── */
+
+export type BodyRegion =
+  | "head_front" | "head_back" | "head_left" | "head_right"
+  | "face" | "neck"
+  | "chest" | "abdomen" | "upper_back" | "lower_back"
+  | "left_shoulder" | "right_shoulder"
+  | "left_upper_arm" | "right_upper_arm"
+  | "left_forearm" | "right_forearm"
+  | "left_hand" | "right_hand"
+  | "left_hip" | "right_hip"
+  | "left_thigh" | "right_thigh"
+  | "left_knee" | "right_knee"
+  | "left_shin" | "right_shin"
+  | "left_foot" | "right_foot";
+
+export type MarkType = "bruise" | "scratch" | "cut" | "burn" | "swelling" | "redness" | "bite_mark" | "pressure_mark" | "old_scar" | "other";
+export type MarkColour = "red" | "purple" | "blue" | "yellow" | "green" | "brown" | "black" | "mixed" | "not_applicable";
+export type BodyMapStatus = "draft" | "completed" | "reviewed" | "linked_to_incident";
+
+export interface BodyMapEntry {
+  id: string;
+  child_id: string;
+  date: string;
+  time: string;
+  recorded_by: string;
+  body_region: BodyRegion;
+  mark_type: MarkType;
+  mark_colour: MarkColour;
+  size_cm: string;
+  description: string;
+  child_explanation: string;
+  staff_observation: string;
+  status: BodyMapStatus;
+  linked_incident_id: string | null;
+  photos_attached: boolean;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
