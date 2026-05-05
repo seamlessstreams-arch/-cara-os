@@ -18,7 +18,16 @@ import {
   FileSearch, BookOpen, Scale, Activity, Siren,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAttentionItems, useUpdateAttentionItem } from "@/hooks/use-intelligence-layer";
+import {
+  useAttentionItems,
+  useUpdateAttentionItem,
+  useLearningReviews,
+  useReg44Visits,
+  useReg45Reviews,
+  useCompetenceRecords,
+  useVoiceEntries,
+  useEvidenceItems,
+} from "@/hooks/use-intelligence-layer";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
 import type {
   AttentionCategory,
@@ -342,6 +351,13 @@ const CATEGORY_OPTIONS: { value: AttentionCategory; label: string }[] = [
 
 export default function ManagerControlCentrePage() {
   const { data: apiData } = useAttentionItems();
+  const { data: learningData } = useLearningReviews();
+  const { data: reg44Data } = useReg44Visits();
+  const { data: reg45Data } = useReg45Reviews();
+  const { data: competenceData } = useCompetenceRecords();
+  const { data: voiceData } = useVoiceEntries();
+  const { data: evidenceData } = useEvidenceItems();
+
   const [items, setItems] = useState<AttentionItem[]>(DEMO_ITEMS);
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterUrgency, setFilterUrgency] = useState("all");
@@ -436,6 +452,55 @@ export default function ManagerControlCentrePage() {
     ];
   }, [items]);
 
+  /* ── cross-module aggregate stats ───────────────────────────────────────── */
+
+  const moduleStats = useMemo(() => {
+    const learningReviews = (learningData?.reviews as Record<string, unknown>[]) ?? [];
+    const pendingReviews = learningReviews.filter((r) => r.review_status === "required" || r.status === "required").length;
+
+    const reg44Visits = (reg44Data?.visits as Record<string, unknown>[]) ?? [];
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const reg44ThisMonth = reg44Visits.some((v) => ((v.visit_date as string) ?? "").startsWith(currentMonth));
+
+    const reg45Reviews = (reg45Data?.reviews as Record<string, unknown>[]) ?? [];
+    const draftReg45 = reg45Reviews.filter((r) => r.status === "draft" || r.status === "in_progress").length;
+
+    const competence = (competenceData?.records as Record<string, unknown>[]) ?? [];
+    const mandatoryIncomplete = competence.filter((r) => !r.mandatory_training_complete).length;
+
+    const voiceEntries = (voiceData?.entries as Record<string, unknown>[]) ?? [];
+    const voiceLast30 = voiceEntries.filter((e) => {
+      const d = (e.entry_date as string) ?? (e.created_at as string) ?? "";
+      return d >= new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
+    }).length;
+
+    const evidence = (evidenceData?.items as Record<string, unknown>[]) ?? [];
+    const evidenceCount = evidence.length;
+
+    const totalAttentionOpen = items.filter((i) => i.status === "open" || i.status === "in_progress").length;
+
+    // Inspection readiness: simple heuristic score out of 100
+    const readinessFactors = [
+      reg44ThisMonth ? 20 : 0,
+      draftReg45 === 0 ? 20 : 10,
+      mandatoryIncomplete === 0 ? 20 : Math.max(0, 20 - mandatoryIncomplete * 4),
+      voiceLast30 >= 3 ? 20 : Math.round((voiceLast30 / 3) * 20),
+      evidenceCount >= 10 ? 20 : Math.round((evidenceCount / 10) * 20),
+    ];
+    const inspectionReadiness = readinessFactors.reduce((a, b) => a + b, 0);
+
+    return {
+      totalAttentionOpen,
+      pendingReviews,
+      reg44ThisMonth,
+      draftReg45,
+      mandatoryIncomplete,
+      voiceLast30,
+      evidenceCount,
+      inspectionReadiness,
+    };
+  }, [items, learningData, reg44Data, reg45Data, competenceData, voiceData, evidenceData]);
+
   /* ── render ──────────────────────────────────────────────────────────────── */
 
   return (
@@ -460,6 +525,59 @@ export default function ManagerControlCentrePage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* ── cross-module intelligence ─────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+        <Card className="border-blue-100">
+          <CardContent className="pt-4 pb-3 text-center">
+            <ClipboardCheck className={cn("h-5 w-5 mx-auto mb-1", moduleStats.inspectionReadiness >= 80 ? "text-green-600" : moduleStats.inspectionReadiness >= 50 ? "text-amber-600" : "text-red-600")} />
+            <p className="text-2xl font-bold">{moduleStats.inspectionReadiness}%</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">Inspection Readiness</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 text-center">
+            <Activity className="h-5 w-5 mx-auto mb-1 text-blue-600" />
+            <p className="text-2xl font-bold">{moduleStats.totalAttentionOpen}</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">Open Items</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 text-center">
+            <Siren className="h-5 w-5 mx-auto mb-1 text-orange-600" />
+            <p className="text-2xl font-bold">{moduleStats.pendingReviews}</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">Incident Reviews Due</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 text-center">
+            <CheckCircle2 className={cn("h-5 w-5 mx-auto mb-1", moduleStats.reg44ThisMonth ? "text-green-600" : "text-red-600")} />
+            <p className="text-2xl font-bold">{moduleStats.reg44ThisMonth ? "Done" : "Due"}</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">Reg 44 This Month</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 text-center">
+            <FileSearch className="h-5 w-5 mx-auto mb-1 text-indigo-600" />
+            <p className="text-2xl font-bold">{moduleStats.draftReg45}</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">Reg 45 Drafts</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 text-center">
+            <Scale className="h-5 w-5 mx-auto mb-1 text-teal-600" />
+            <p className="text-2xl font-bold">{moduleStats.voiceLast30}</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">Voice Entries (30d)</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 text-center">
+            <BookOpen className="h-5 w-5 mx-auto mb-1 text-emerald-600" />
+            <p className="text-2xl font-bold">{moduleStats.evidenceCount}</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">Evidence Items</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* ── critical alert banner ─────────────────────────────────────────── */}
