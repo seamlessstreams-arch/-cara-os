@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
+import { useCreateEducationRecord } from "@/hooks/use-education";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
@@ -142,6 +143,7 @@ const SEED: EducationEntry[] = [
 
 export default function EducationPage() {
   const { currentUser } = useAuthContext();
+  const createRecord = useCreateEducationRecord();
 
   const [entries, setEntries] = useState<EducationEntry[]>(SEED);
   const [search, setSearch] = useState("");
@@ -256,6 +258,7 @@ export default function EducationPage() {
       created_at: new Date().toISOString(),
     };
     setEntries(prev => [entry, ...prev]);
+    createRecord.mutate({ child_id: nChild, record_type: nType as "attendance" | "exclusion" | "pep_meeting" | "achievement" | "concern" | "placement_change", title: nTitle, date: todayStr(), details: nDesc, staff_id: currentUser?.id || "staff_darren", status: "open" });
     setShowNew(false);
     setNChild(""); setNType(""); setNTitle(""); setNDesc(""); setNAttendance(""); setNOutcome("");
   };

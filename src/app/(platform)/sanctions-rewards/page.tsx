@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
+import { useCreateSanction } from "@/hooks/use-sanctions";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
@@ -182,6 +183,7 @@ const SEED: SanctionRewardEntry[] = [
 
 export default function SanctionsRewardsPage() {
   const { currentUser } = useAuthContext();
+  const createSanction = useCreateSanction();
 
   const [entries, setEntries] = useState<SanctionRewardEntry[]>(SEED);
   const [search, setSearch] = useState("");
@@ -297,6 +299,7 @@ export default function SanctionsRewardsPage() {
       created_at: new Date().toISOString(),
     };
     setEntries(prev => [entry, ...prev]);
+    createSanction.mutate({ child_id: nChild, record_type: nDir as "sanction" | "reward" | "consequence" | "restorative", title: nTitle, date: todayStr(), description: nDesc, child_response: nChildResp, outcome: nOutcome, proportionate: true, child_informed: true, staff_id: currentUser?.id || "staff_darren", status: "active" });
     setShowNew(false);
     setNChild(""); setNDir(""); setNRewardType(""); setNSanctionType("");
     setNTitle(""); setNDesc(""); setNContext(""); setNChildResp(""); setNOutcome("");

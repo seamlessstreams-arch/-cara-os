@@ -30,6 +30,7 @@ import {
   CheckCircle2, Clock, Heart, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCreateBehaviourSupportPlan } from "@/hooks/use-behaviour-support";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 
 // -- Types --------------------------------------------------------------------
@@ -520,6 +521,7 @@ const EXPORT_COLS: ExportColumn<BehaviourSupportPlan>[] = [
 // =============================================================================
 
 export default function BehaviourSupportPlansPage() {
+  const createBSP = useCreateBehaviourSupportPlan();
   const [plans] = useState<BehaviourSupportPlan[]>(SEED);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
@@ -1157,7 +1159,7 @@ export default function BehaviourSupportPlansPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={() => setShowNew(false)}>Create BSP</Button>
+            <Button onClick={() => { createBSP.mutate({ title: "New Behaviour Support Plan", status: "draft", created_date: new Date().toISOString().slice(0, 10), review_date: new Date(Date.now() + 42 * 86400000).toISOString().slice(0, 10), triggers: [], de_escalation_strategies: [], positive_strategies: [], staff_id: "staff_darren" }); setShowNew(false); }}>Create BSP</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

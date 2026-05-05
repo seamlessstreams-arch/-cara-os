@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
+import { useCreateHealthRecord } from "@/hooks/use-health-records";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
@@ -168,6 +169,7 @@ const SEED: HealthRecord[] = [
 
 export default function HealthRecordsPage() {
   const { currentUser } = useAuthContext();
+  const createRecord = useCreateHealthRecord();
 
   const [entries, setEntries] = useState<HealthRecord[]>(SEED);
   const [search, setSearch] = useState("");
@@ -273,6 +275,7 @@ export default function HealthRecordsPage() {
       created_at: new Date().toISOString(),
     };
     setEntries(prev => [entry, ...prev]);
+    createRecord.mutate({ child_id: nChild, record_type: nType as "appointment" | "assessment" | "immunisation" | "allergy" | "action_plan" | "medication_change", title: nTitle, date: todayStr(), provider: nProfessional, notes: nDetails, staff_id: currentUser?.id || "staff_darren", status: "scheduled" });
     setShowNew(false);
     setNChild(""); setNType(""); setNTitle(""); setNDetails(""); setNProfessional(""); setNOutcome("");
   };

@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
+import { useCreateReferral, useUpdateReferral } from "@/hooks/use-admissions";
 import { getStaffName } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -161,6 +162,8 @@ const EXPORT_COLS: ExportColumn<Referral>[] = [
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function AdmissionsPage() {
+  const createReferral = useCreateReferral();
+  const updateReferral = useUpdateReferral();
   const [referrals, setReferrals] = useState<Referral[]>(SEED);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -344,13 +347,13 @@ export default function AdmissionsPage() {
 
                       {!["declined", "withdrawn", "placed"].includes(r.status) && (
                         <div className="flex gap-2">
-                          {r.status === "new" && <Button size="sm" variant="outline" onClick={() => setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "under_assessment" } : x))}>Begin Assessment</Button>}
-                          {r.status === "under_assessment" && <Button size="sm" variant="outline" onClick={() => setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "impact_assessment" } : x))}>Impact Assessment</Button>}
-                          {r.status === "impact_assessment" && <Button size="sm" variant="outline" onClick={() => setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "panel_decision" } : x))}>Send to Panel</Button>}
+                          {r.status === "new" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "under_assessment" } : x)); updateReferral.mutate({ id: r.id, status: "under_assessment" }); }}>Begin Assessment</Button>}
+                          {r.status === "under_assessment" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "impact_assessment" } : x)); updateReferral.mutate({ id: r.id, status: "impact_assessment" }); }}>Impact Assessment</Button>}
+                          {r.status === "impact_assessment" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "panel_decision" } : x)); updateReferral.mutate({ id: r.id, status: "panel_decision" }); }}>Send to Panel</Button>}
                           {r.status === "panel_decision" && (
                             <>
-                              <Button size="sm" variant="default" onClick={() => setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "accepted", decisionDate: d(0) } : x))}>Accept</Button>
-                              <Button size="sm" variant="outline" className="text-red-600" onClick={() => setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "declined", decisionDate: d(0) } : x))}>Decline</Button>
+                              <Button size="sm" variant="default" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "accepted", decisionDate: d(0) } : x)); updateReferral.mutate({ id: r.id, status: "accepted" }); }}>Accept</Button>
+                              <Button size="sm" variant="outline" className="text-red-600" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "declined", decisionDate: d(0) } : x)); updateReferral.mutate({ id: r.id, status: "declined" }); }}>Decline</Button>
                             </>
                           )}
                         </div>
@@ -378,7 +381,7 @@ export default function AdmissionsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Referral</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={(e) => { e.preventDefault(); createReferral.mutate({ child_name: "New Referral", status: "new", referral_date: new Date().toISOString().slice(0, 10), staff_id: "staff_darren" }); setShowNew(false); }} className="space-y-3">
             <div>
               <label className="text-sm font-medium">Child&apos;s Name / Reference</label>
               <Input placeholder="Child name or anonymised reference" />
