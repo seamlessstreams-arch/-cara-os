@@ -30,8 +30,9 @@ import {
   Search, ArrowUpDown, X, Plus, GraduationCap, BookOpen,
   CheckCircle2, AlertTriangle, Clock, User, Calendar,
   ChevronDown, ChevronUp, School, TrendingUp, TrendingDown,
-  XCircle, Shield, Award, FileText, Target,
+  XCircle, Shield, Award, FileText, Target, Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -259,7 +260,7 @@ export default function EducationPage() {
       created_at: new Date().toISOString(),
     };
     setEntries(prev => [entry, ...prev]);
-    createRecord.mutate({ child_id: nChild, record_type: nType as "attendance" | "exclusion" | "pep_meeting" | "achievement" | "concern" | "placement_change", title: nTitle, date: todayStr(), details: nDesc, staff_id: currentUser?.id || "staff_darren", status: "open" });
+    createRecord.mutate({ child_id: nChild, record_type: nType as "attendance" | "exclusion" | "pep_meeting" | "achievement" | "concern" | "placement_change", title: nTitle, date: todayStr(), details: nDesc, staff_id: currentUser?.id || "staff_darren", status: "open" }, { onSuccess: () => toast.success("Education entry saved"), onError: () => toast.error("Failed to save entry") });
     setShowNew(false);
     setNChild(""); setNType(""); setNTitle(""); setNDesc(""); setNAttendance(""); setNOutcome("");
   };
@@ -537,7 +538,7 @@ export default function EducationPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!nChild || !nType || !nTitle || !nDesc}>Save Entry</Button>
+            <Button onClick={handleCreate} disabled={!nChild || !nType || !nTitle || !nDesc || createRecord.isPending}>{createRecord.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</> : "Save Entry"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

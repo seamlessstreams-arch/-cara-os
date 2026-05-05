@@ -19,8 +19,9 @@ import { getStaffName } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   UserPlus, Calendar, Clock, AlertTriangle, CheckCircle2,
-  XCircle, FileText, Shield, MapPin
+  XCircle, FileText, Shield, MapPin, Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type ReferralStatus = "new" | "under_assessment" | "impact_assessment" | "panel_decision" | "accepted" | "declined" | "withdrawn" | "placed";
@@ -348,13 +349,13 @@ export default function AdmissionsPage() {
 
                       {!["declined", "withdrawn", "placed"].includes(r.status) && (
                         <div className="flex gap-2">
-                          {r.status === "new" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "under_assessment" } : x)); updateReferral.mutate({ id: r.id, status: "under_assessment" }); }}>Begin Assessment</Button>}
-                          {r.status === "under_assessment" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "impact_assessment" } : x)); updateReferral.mutate({ id: r.id, status: "impact_assessment" }); }}>Impact Assessment</Button>}
-                          {r.status === "impact_assessment" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "panel_decision" } : x)); updateReferral.mutate({ id: r.id, status: "panel_decision" }); }}>Send to Panel</Button>}
+                          {r.status === "new" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "under_assessment" } : x)); updateReferral.mutate({ id: r.id, status: "under_assessment" }, { onSuccess: () => toast.success("Assessment started") }); }}>Begin Assessment</Button>}
+                          {r.status === "under_assessment" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "impact_assessment" } : x)); updateReferral.mutate({ id: r.id, status: "impact_assessment" }, { onSuccess: () => toast.success("Impact assessment started") }); }}>Impact Assessment</Button>}
+                          {r.status === "impact_assessment" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "panel_decision" } : x)); updateReferral.mutate({ id: r.id, status: "panel_decision" }, { onSuccess: () => toast.success("Sent to panel") }); }}>Send to Panel</Button>}
                           {r.status === "panel_decision" && (
                             <>
-                              <Button size="sm" variant="default" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "accepted", decisionDate: d(0) } : x)); updateReferral.mutate({ id: r.id, status: "accepted" }); }}>Accept</Button>
-                              <Button size="sm" variant="outline" className="text-red-600" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "declined", decisionDate: d(0) } : x)); updateReferral.mutate({ id: r.id, status: "declined" }); }}>Decline</Button>
+                              <Button size="sm" variant="default" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "accepted", decisionDate: d(0) } : x)); updateReferral.mutate({ id: r.id, status: "accepted" }, { onSuccess: () => toast.success("Referral accepted") }); }}>Accept</Button>
+                              <Button size="sm" variant="outline" className="text-red-600" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "declined", decisionDate: d(0) } : x)); updateReferral.mutate({ id: r.id, status: "declined" }, { onSuccess: () => toast.success("Referral declined") }); }}>Decline</Button>
                             </>
                           )}
                         </div>
@@ -383,7 +384,7 @@ export default function AdmissionsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Referral</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); createReferral.mutate({ child_name: "New Referral", status: "new", referral_date: new Date().toISOString().slice(0, 10), staff_id: "staff_darren" }); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={(e) => { e.preventDefault(); createReferral.mutate({ child_name: "New Referral", status: "new", referral_date: new Date().toISOString().slice(0, 10), staff_id: "staff_darren" }, { onSuccess: () => toast.success("Referral logged"), onError: () => toast.error("Failed to log referral") }); setShowNew(false); }} className="space-y-3">
             <div>
               <label className="text-sm font-medium">Child&apos;s Name / Reference</label>
               <Input placeholder="Child name or anonymised reference" />
@@ -429,7 +430,7 @@ export default function AdmissionsPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Log Referral</Button>
+              <Button type="submit" disabled={createReferral.isPending}>{createReferral.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</> : "Log Referral"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

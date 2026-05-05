@@ -31,8 +31,9 @@ import {
   Search, ArrowUpDown, X, Plus, Stethoscope,
   CheckCircle2, AlertTriangle, Clock, User, Calendar,
   ChevronDown, ChevronUp, Shield, Heart, Brain, Eye,
-  Pill, Syringe, FileText, Activity,
+  Pill, Syringe, FileText, Activity, Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -276,7 +277,7 @@ export default function HealthRecordsPage() {
       created_at: new Date().toISOString(),
     };
     setEntries(prev => [entry, ...prev]);
-    createRecord.mutate({ child_id: nChild, record_type: nType as "appointment" | "assessment" | "immunisation" | "allergy" | "action_plan" | "medication_change", title: nTitle, date: todayStr(), provider: nProfessional, notes: nDetails, staff_id: currentUser?.id || "staff_darren", status: "scheduled" });
+    createRecord.mutate({ child_id: nChild, record_type: nType as "appointment" | "assessment" | "immunisation" | "allergy" | "action_plan" | "medication_change", title: nTitle, date: todayStr(), provider: nProfessional, notes: nDetails, staff_id: currentUser?.id || "staff_darren", status: "scheduled" }, { onSuccess: () => toast.success("Health record saved"), onError: () => toast.error("Failed to save record") });
     setShowNew(false);
     setNChild(""); setNType(""); setNTitle(""); setNDetails(""); setNProfessional(""); setNOutcome("");
   };
@@ -552,7 +553,7 @@ export default function HealthRecordsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!nChild || !nType || !nTitle || !nDetails}>Save Record</Button>
+            <Button onClick={handleCreate} disabled={!nChild || !nType || !nTitle || !nDetails || createRecord.isPending}>{createRecord.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</> : "Save Record"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

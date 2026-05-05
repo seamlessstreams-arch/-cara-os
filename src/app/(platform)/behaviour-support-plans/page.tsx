@@ -27,8 +27,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown,
   ChevronDown, ChevronUp, AlertTriangle,
-  CheckCircle2, Clock, Heart, Shield,
+  CheckCircle2, Clock, Heart, Shield, Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCreateBehaviourSupportPlan } from "@/hooks/use-behaviour-support";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -1162,7 +1163,7 @@ export default function BehaviourSupportPlansPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={() => { createBSP.mutate({ title: "New Behaviour Support Plan", status: "draft", created_date: new Date().toISOString().slice(0, 10), review_date: new Date(Date.now() + 42 * 86400000).toISOString().slice(0, 10), triggers: [], de_escalation_strategies: [], positive_strategies: [], staff_id: "staff_darren" }); setShowNew(false); }}>Create BSP</Button>
+            <Button disabled={createBSP.isPending} onClick={() => { createBSP.mutate({ title: "New Behaviour Support Plan", status: "draft", created_date: new Date().toISOString().slice(0, 10), review_date: new Date(Date.now() + 42 * 86400000).toISOString().slice(0, 10), triggers: [], de_escalation_strategies: [], positive_strategies: [], staff_id: "staff_darren" }, { onSuccess: () => toast.success("BSP created"), onError: () => toast.error("Failed to create BSP") }); setShowNew(false); }}>{createBSP.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Creating...</> : "Create BSP"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

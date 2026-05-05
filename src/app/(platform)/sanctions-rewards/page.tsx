@@ -31,8 +31,9 @@ import {
   Search, ArrowUpDown, X, Plus, Star, ThumbsDown,
   CheckCircle2, AlertTriangle, User, Calendar,
   ChevronDown, ChevronUp, Shield, Award, Heart,
-  Smile, Frown, TrendingUp, Sparkles,
+  Smile, Frown, TrendingUp, Sparkles, Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -300,7 +301,7 @@ export default function SanctionsRewardsPage() {
       created_at: new Date().toISOString(),
     };
     setEntries(prev => [entry, ...prev]);
-    createSanction.mutate({ child_id: nChild, record_type: nDir as "sanction" | "reward" | "consequence" | "restorative", title: nTitle, date: todayStr(), description: nDesc, child_response: nChildResp, outcome: nOutcome, proportionate: true, child_informed: true, staff_id: currentUser?.id || "staff_darren", status: "active" });
+    createSanction.mutate({ child_id: nChild, record_type: nDir as "sanction" | "reward" | "consequence" | "restorative", title: nTitle, date: todayStr(), description: nDesc, child_response: nChildResp, outcome: nOutcome, proportionate: true, child_informed: true, staff_id: currentUser?.id || "staff_darren", status: "active" }, { onSuccess: () => toast.success("Entry saved"), onError: () => toast.error("Failed to save entry") });
     setShowNew(false);
     setNChild(""); setNDir(""); setNRewardType(""); setNSanctionType("");
     setNTitle(""); setNDesc(""); setNContext(""); setNChildResp(""); setNOutcome("");
@@ -601,7 +602,7 @@ export default function SanctionsRewardsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!nChild || !nDir || !nTitle || !nDesc}>Save Entry</Button>
+            <Button onClick={handleCreate} disabled={!nChild || !nDir || !nTitle || !nDesc || createSanction.isPending}>{createSanction.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</> : "Save Entry"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

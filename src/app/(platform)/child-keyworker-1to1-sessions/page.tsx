@@ -12,7 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Users, Clock, MessageCircle, ChevronUp, ChevronDown, ArrowUpDown, Search, Heart, CheckCircle, Plus } from "lucide-react";
+import { Users, Clock, MessageCircle, ChevronUp, ChevronDown, ArrowUpDown, Search, Heart, CheckCircle, Plus, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCreateKeyworkSession } from "@/hooks/use-keywork-sessions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -693,10 +694,10 @@ export default function ChildKeyworker1to1SessionsPage() {
                 child_satisfaction: 4,
                 follow_up_date: d(7),
                 flags_raised: [],
-              });
+              }, { onSuccess: () => toast.success("Session saved"), onError: () => toast.error("Failed to save session") });
               setShowNew(false);
               setNChild(""); setNFormat(""); setNThemes(""); setNChildBroughtUp(""); setNStaffBroughtUp("");
-            }}>Save Session</Button>
+            }}>{createSession.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</> : "Save Session"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
