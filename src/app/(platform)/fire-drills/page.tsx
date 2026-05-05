@@ -29,35 +29,16 @@ import {
   Search, ArrowUpDown, X, Plus, Flame,
   CheckCircle2, AlertTriangle, Clock, User, Calendar,
   ChevronDown, ChevronUp, Shield, Timer, Users,
-  XCircle,
+  XCircle, Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type DrillType = "fire_drill" | "evacuation" | "lockdown" | "bomb_threat" | "flood" | "equipment_check";
-type DrillResult = "satisfactory" | "issues_identified" | "failed" | "not_completed";
-
-interface FireDrill {
-  id: string;
-  date: string;
-  time: string;
-  type: DrillType;
-  evacuation_time_seconds: number | null;
-  result: DrillResult;
-  all_present: boolean;
-  children_present: string[];
-  staff_present: string[];
-  issues: string;
-  actions_taken: string;
-  next_drill_due: string;
-  conducted_by: string;
-  notes: string;
-  created_at: string;
-}
+import { toast } from "sonner";
+import { useFireDrills, useCreateFireDrill } from "@/hooks/use-fire-drills";
+import { FireDrillType, FireDrillResult, FireDrill } from "@/types/extended";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<DrillType, { label: string; colour: string }> = {
+const TYPE_CONFIG: Record<FireDrillType, { label: string; colour: string }> = {
   fire_drill:      { label: "Fire Drill",       colour: "bg-red-100 text-red-700"    },
   evacuation:      { label: "Evacuation",        colour: "bg-orange-100 text-orange-700" },
   lockdown:        { label: "Lockdown",          colour: "bg-purple-100 text-purple-700" },
@@ -66,82 +47,21 @@ const TYPE_CONFIG: Record<DrillType, { label: string; colour: string }> = {
   equipment_check: { label: "Equipment Check",   colour: "bg-green-100 text-green-700" },
 };
 
-const RESULT_CONFIG: Record<DrillResult, { label: string; colour: string }> = {
+const RESULT_CONFIG: Record<FireDrillResult, { label: string; colour: string }> = {
   satisfactory:      { label: "Satisfactory",      colour: "bg-green-100 text-green-700" },
   issues_identified: { label: "Issues Identified", colour: "bg-amber-100 text-amber-700" },
   failed:            { label: "Failed",            colour: "bg-red-100 text-red-700"     },
   not_completed:     { label: "Not Completed",     colour: "bg-gray-100 text-gray-600"   },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: FireDrill[] = [
-  {
-    id: "fd_001", date: d(-7), time: "10:30", type: "fire_drill",
-    evacuation_time_seconds: 135, result: "satisfactory", all_present: true,
-    children_present: ["yp_alex", "yp_casey"],
-    staff_present: ["staff_darren", "staff_edward", "staff_chervelle"],
-    issues: "None. All occupants evacuated within target time. Assembly point reached. Roll call completed.",
-    actions_taken: "Fire panel reset. Log completed. All clear given at 10:35.",
-    next_drill_due: d(83), conducted_by: "staff_darren",
-    notes: "Jordan was at school during drill. Will ensure Jordan is included in next drill. Alex initially resistant but complied after encouragement.",
-    created_at: d(-7) + "T10:30:00Z",
-  },
-  {
-    id: "fd_002", date: d(-37), time: "14:15", type: "fire_drill",
-    evacuation_time_seconds: 180, result: "issues_identified", all_present: true,
-    children_present: ["yp_alex", "yp_jordan", "yp_casey"],
-    staff_present: ["staff_ryan", "staff_anna", "staff_diane"],
-    issues: "Evacuation time exceeded 2.5-minute target. Alex delayed leaving bedroom — required staff escort. Fire exit on first floor slightly stiff to open.",
-    actions_taken: "Maintenance request logged for fire exit. Alex spoken to about importance of evacuation. Visual prompt card placed in Alex's room. Additional practice planned.",
-    next_drill_due: d(-7), conducted_by: "staff_ryan",
-    notes: "First drill for Jordan since placement — handled well. Casey evacuated quickly and independently.",
-    created_at: d(-37) + "T14:15:00Z",
-  },
-  {
-    id: "fd_003", date: d(-67), time: "19:00", type: "fire_drill",
-    evacuation_time_seconds: 110, result: "satisfactory", all_present: true,
-    children_present: ["yp_alex", "yp_jordan", "yp_casey"],
-    staff_present: ["staff_edward", "staff_anna", "staff_lackson"],
-    issues: "None. Evening drill — all children were in communal areas. Quick evacuation.",
-    actions_taken: "All clear given. Debrief with children — praised quick response.",
-    next_drill_due: d(-37), conducted_by: "staff_edward",
-    notes: "Evening drill to test different time of day. All three children responded well.",
-    created_at: d(-67) + "T19:00:00Z",
-  },
-  {
-    id: "fd_004", date: d(-14), time: "09:00", type: "equipment_check",
-    evacuation_time_seconds: null, result: "satisfactory", all_present: false,
-    children_present: [], staff_present: ["staff_darren"],
-    issues: "All fire extinguishers in date. Smoke detectors tested — all working. Emergency lighting functional. Fire blanket in kitchen present and accessible.",
-    actions_taken: "Equipment check log completed. All items satisfactory.",
-    next_drill_due: d(76), conducted_by: "staff_darren",
-    notes: "Monthly fire safety equipment check. Next full service due in 4 months.",
-    created_at: d(-14) + "T09:00:00Z",
-  },
-  {
-    id: "fd_005", date: d(-90), time: "22:00", type: "fire_drill",
-    evacuation_time_seconds: 195, result: "issues_identified", all_present: true,
-    children_present: ["yp_alex", "yp_casey"],
-    staff_present: ["staff_edward", "staff_diane"],
-    issues: "Night-time drill. Evacuation time was 3 minutes 15 seconds — exceeded target. Casey was disoriented and distressed. Alex cooperated well. Emergency lighting adequate but dim in upstairs corridor.",
-    actions_taken: "Emergency lighting reviewed — additional unit to be installed in corridor. Casey supported post-drill. Night-time evacuation procedure reviewed with all staff.",
-    next_drill_due: d(-67), conducted_by: "staff_edward",
-    notes: "Night-time drill important for Schedule 5 compliance. Jordan not yet placed at this time.",
-    created_at: d(-90) + "T22:00:00Z",
-  },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function FireDrillsPage() {
   const { currentUser } = useAuthContext();
 
-  const [entries, setEntries] = useState<FireDrill[]>(SEED);
+  const { data: fdData, isLoading } = useFireDrills();
+  const createDrill = useCreateFireDrill();
+  const entries = fdData?.data ?? [];
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [resultFilter, setResultFilter] = useState("all");
@@ -149,17 +69,17 @@ export default function FireDrillsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
 
-  const [nType, setNType] = useState<DrillType | "">("");
+  const [nType, setNType] = useState<FireDrillType | "">("");
   const [nTime, setNTime] = useState("");
   const [nEvacTime, setNEvacTime] = useState("");
-  const [nResult, setNResult] = useState<DrillResult | "">("");
+  const [nResult, setNResult] = useState<FireDrillResult | "">("");
   const [nIssues, setNIssues] = useState("");
   const [nActions, setNActions] = useState("");
   const [nNotes, setNNotes] = useState("");
 
   const filtered = useMemo(() => {
     let list = [...entries];
-    if (typeFilter !== "all") list = list.filter(e => e.type === typeFilter);
+    if (typeFilter !== "all") list = list.filter(e => e.drill_type === typeFilter);
     if (resultFilter !== "all") list = list.filter(e => e.result === resultFilter);
     if (search) {
       const q = search.toLowerCase();
@@ -181,7 +101,7 @@ export default function FireDrillsPage() {
   }, [entries, search, typeFilter, resultFilter, sortBy]);
 
   const stats = useMemo(() => {
-    const drills = entries.filter(e => e.type === "fire_drill" || e.type === "evacuation");
+    const drills = entries.filter(e => e.drill_type === "fire_drill" || e.drill_type === "evacuation");
     const avgTime = drills.filter(e => e.evacuation_time_seconds).reduce((sum, e) => sum + (e.evacuation_time_seconds || 0), 0) / (drills.filter(e => e.evacuation_time_seconds).length || 1);
     const nextDue = entries.reduce((min, e) => e.next_drill_due < min ? e.next_drill_due : min, "9999");
     const overdue = nextDue < todayStr();
@@ -199,7 +119,7 @@ export default function FireDrillsPage() {
     { header: "ID", accessor: r => r.id },
     { header: "Date", accessor: r => r.date },
     { header: "Time", accessor: r => r.time },
-    { header: "Type", accessor: r => TYPE_CONFIG[r.type].label },
+    { header: "Type", accessor: r => TYPE_CONFIG[r.drill_type].label },
     { header: "Evacuation Time (s)", accessor: r => r.evacuation_time_seconds?.toString() || "N/A" },
     { header: "Result", accessor: r => RESULT_CONFIG[r.result].label },
     { header: "All Present", accessor: r => r.all_present ? "Yes" : "No" },
@@ -213,28 +133,41 @@ export default function FireDrillsPage() {
 
   const handleCreate = () => {
     if (!nType || !nResult) return;
-    const entry: FireDrill = {
-      id: `fd_${Date.now()}`,
+    createDrill.mutate({
       date: todayStr(),
       time: nTime || new Date().toTimeString().slice(0, 5),
-      type: nType as DrillType,
+      drill_type: nType as FireDrillType,
       evacuation_time_seconds: nEvacTime ? parseInt(nEvacTime) : null,
-      result: nResult as DrillResult,
+      result: nResult as FireDrillResult,
       all_present: true,
       children_present: ["yp_alex", "yp_jordan", "yp_casey"],
       staff_present: [currentUser?.id || "staff_darren"],
       issues: nIssues,
       actions_taken: nActions,
-      next_drill_due: d(90),
+      next_drill_due: "", // will be set properly later
       conducted_by: currentUser?.id || "staff_darren",
       notes: nNotes,
-      created_at: new Date().toISOString(),
-    };
-    setEntries(prev => [entry, ...prev]);
-    setShowNew(false);
-    setNType(""); setNTime(""); setNEvacTime(""); setNResult("");
-    setNIssues(""); setNActions(""); setNNotes("");
+    } as Partial<FireDrill>, {
+      onSuccess: () => {
+        toast.success("Drill recorded");
+        setShowNew(false);
+        setNType(""); setNTime(""); setNEvacTime(""); setNResult("");
+        setNIssues(""); setNActions(""); setNNotes("");
+      },
+      onError: () => toast.error("Failed to record drill"),
+    });
   };
+
+  if (isLoading) {
+    return (
+      <PageShell title="Fire Drills & Emergency Procedures" subtitle="Evacuation drills, equipment checks, and emergency readiness">
+        <div className="flex items-center justify-center py-24 text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          <span>Loading fire drills…</span>
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -287,7 +220,7 @@ export default function FireDrillsPage() {
           <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {(Object.entries(TYPE_CONFIG) as [DrillType, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(TYPE_CONFIG) as [FireDrillType, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -296,7 +229,7 @@ export default function FireDrillsPage() {
           <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Result" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Results</SelectItem>
-            {(Object.entries(RESULT_CONFIG) as [DrillResult, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(RESULT_CONFIG) as [FireDrillResult, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -326,7 +259,7 @@ export default function FireDrillsPage() {
 
         {filtered.map(entry => {
           const isOpen = expandedId === entry.id;
-          const tc = TYPE_CONFIG[entry.type];
+          const tc = TYPE_CONFIG[entry.drill_type];
           const rc = RESULT_CONFIG[entry.result];
 
           return (
@@ -380,6 +313,7 @@ export default function FireDrillsPage() {
                     <span><Users className="inline h-3.5 w-3.5 mr-0.5" />Staff: {entry.staff_present.map(s => getStaffName(s)).join(", ")}</span>
                     <span><Calendar className="inline h-3.5 w-3.5 mr-0.5" />Next due: {formatDate(entry.next_drill_due)}</span>
                   </div>
+                  {entry.children_present.length > 0 && <SmartLinkPanel sourceType="fire_drill" sourceId={entry.id} childId={entry.children_present[0]} compact />}
                 </div>
               )}
             </div>
@@ -410,10 +344,10 @@ export default function FireDrillsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium mb-1 block">Type *</label>
-                <Select value={nType} onValueChange={v => setNType(v as DrillType)}>
+                <Select value={nType} onValueChange={v => setNType(v as FireDrillType)}>
                   <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>
-                    {(Object.entries(TYPE_CONFIG) as [DrillType, { label: string }][]).map(([k, v]) => (
+                    {(Object.entries(TYPE_CONFIG) as [FireDrillType, { label: string }][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v.label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -431,10 +365,10 @@ export default function FireDrillsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Result *</label>
-                <Select value={nResult} onValueChange={v => setNResult(v as DrillResult)}>
+                <Select value={nResult} onValueChange={v => setNResult(v as FireDrillResult)}>
                   <SelectTrigger><SelectValue placeholder="Result" /></SelectTrigger>
                   <SelectContent>
-                    {(Object.entries(RESULT_CONFIG) as [DrillResult, { label: string }][]).map(([k, v]) => (
+                    {(Object.entries(RESULT_CONFIG) as [FireDrillResult, { label: string }][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v.label}</SelectItem>
                     ))}
                   </SelectContent>

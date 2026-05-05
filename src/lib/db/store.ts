@@ -38,6 +38,12 @@ import type {
   YPFeedbackEntry,
   SleepLogEntry,
   Compliment,
+  VisitorEntry,
+  FireDrill,
+  SignificantEvent,
+  RestraintRecord,
+  NotifiableEvent,
+  NightLogEntry,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -134,6 +140,12 @@ const store = {
   sleepLog: [] as SleepLogEntry[],
   // Compliments
   compliments: [] as Compliment[],
+  visitors: [] as VisitorEntry[],
+  fireDrills: [] as FireDrill[],
+  significantEvents: [] as SignificantEvent[],
+  restraints: [] as RestraintRecord[],
+  notifiableEvents: [] as NotifiableEvent[],
+  nightLogs: [] as NightLogEntry[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -3282,6 +3294,105 @@ export const db = {
       if (idx === -1) return null;
       store.compliments[idx] = { ...store.compliments[idx], ...data };
       return store.compliments[idx];
+    },
+  },
+
+  visitors: {
+    findAll: () => store.visitors,
+    findById: (id: string) => store.visitors.find((r) => r.id === id),
+    create: (data: Partial<VisitorEntry>): VisitorEntry => {
+      const record = { ...data, id: generateId("vis"), created_at: new Date().toISOString() } as VisitorEntry;
+      store.visitors.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<VisitorEntry>): VisitorEntry | null => {
+      const idx = store.visitors.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.visitors[idx] = { ...store.visitors[idx], ...data };
+      return store.visitors[idx];
+    },
+  },
+
+  fireDrills: {
+    findAll: () => store.fireDrills,
+    findById: (id: string) => store.fireDrills.find((r) => r.id === id),
+    create: (data: Partial<FireDrill>): FireDrill => {
+      const record = { ...data, id: generateId("fd"), created_at: new Date().toISOString() } as FireDrill;
+      store.fireDrills.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FireDrill>): FireDrill | null => {
+      const idx = store.fireDrills.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.fireDrills[idx] = { ...store.fireDrills[idx], ...data };
+      return store.fireDrills[idx];
+    },
+  },
+
+  significantEvents: {
+    findAll: () => store.significantEvents,
+    findByChild: (childId: string) => store.significantEvents.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.significantEvents.find((r) => r.id === id),
+    create: (data: Partial<SignificantEvent>): SignificantEvent => {
+      const record = { ...data, id: generateId("se"), created_at: new Date().toISOString() } as SignificantEvent;
+      store.significantEvents.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SignificantEvent>): SignificantEvent | null => {
+      const idx = store.significantEvents.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.significantEvents[idx] = { ...store.significantEvents[idx], ...data };
+      return store.significantEvents[idx];
+    },
+  },
+
+  restraints: {
+    findAll: () => store.restraints,
+    findByChild: (childId: string) => store.restraints.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.restraints.find((r) => r.id === id),
+    create: (data: Partial<RestraintRecord>): RestraintRecord => {
+      const record = { ...data, id: generateId("rst"), created_at: new Date().toISOString() } as RestraintRecord;
+      store.restraints.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RestraintRecord>): RestraintRecord | null => {
+      const idx = store.restraints.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.restraints[idx] = { ...store.restraints[idx], ...data };
+      return store.restraints[idx];
+    },
+  },
+
+  notifiableEvents: {
+    findAll: () => store.notifiableEvents,
+    findByChild: (childId: string) => store.notifiableEvents.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.notifiableEvents.find((r) => r.id === id),
+    create: (data: Partial<NotifiableEvent>): NotifiableEvent => {
+      const record = { ...data, id: generateId("ne") } as NotifiableEvent;
+      store.notifiableEvents.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<NotifiableEvent>): NotifiableEvent | null => {
+      const idx = store.notifiableEvents.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.notifiableEvents[idx] = { ...store.notifiableEvents[idx], ...data };
+      return store.notifiableEvents[idx];
+    },
+  },
+
+  nightLogs: {
+    findAll: () => store.nightLogs,
+    findById: (id: string) => store.nightLogs.find((r) => r.id === id),
+    create: (data: Partial<NightLogEntry>): NightLogEntry => {
+      const record = { ...data, id: generateId("nl") } as NightLogEntry;
+      store.nightLogs.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<NightLogEntry>): NightLogEntry | null => {
+      const idx = store.nightLogs.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.nightLogs[idx] = { ...store.nightLogs[idx], ...data };
+      return store.nightLogs[idx];
     },
   },
 };

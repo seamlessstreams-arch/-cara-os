@@ -26,88 +26,15 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { getStaffName } from "@/lib/seed-data";
 import {
   Users, Search, Filter, ArrowUpDown, X, Plus,
-  UserCheck, UserX, Clock, Calendar, LogIn, LogOut,
-  Shield, Briefcase, Wrench, Heart, Eye, Award,
-  ChevronDown, ChevronUp, AlertTriangle,
+  UserCheck, Clock, LogIn, LogOut,
+  Shield, Briefcase, Wrench, Heart, Eye,
+  ChevronDown, ChevronUp, Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useVisitors, useCreateVisitor } from "@/hooks/use-visitors";
+import type { VisitorCategory, VisitStatus, VisitorEntry } from "@/types/extended";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type VisitorCategory = "professional" | "family" | "tradesperson" | "inspector" | "volunteer" | "other";
-type VisitStatus = "signed_in" | "signed_out" | "expected";
-
-interface VisitorEntry {
-  id: string;
-  date: string;
-  visitor_name: string;
-  organisation: string | null;
-  category: VisitorCategory;
-  purpose: string;
-  dbs_checked: boolean;
-  id_verified: boolean;
-  sign_in_time: string;
-  sign_out_time: string | null;
-  status: VisitStatus;
-  host_staff_id: string;
-  children_seen: string[];     // child IDs
-  notes: string | null;
-  created_at: string;
-}
-
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const today = todayStr();
-
-const SEED_VISITORS: VisitorEntry[] = [
-  {
-    id: "vis_001", date: today, visitor_name: "Sarah Mitchell", organisation: "Local Authority", category: "professional",
-    purpose: "Statutory visit for Casey — LAC review preparation", dbs_checked: true, id_verified: true,
-    sign_in_time: "10:00", sign_out_time: "11:30", status: "signed_out", host_staff_id: "staff_darren",
-    children_seen: ["yp_casey"], notes: "Positive meeting. Casey engaged well. Review confirmed for 15 May.", created_at: `${today}T10:00:00Z`,
-  },
-  {
-    id: "vis_002", date: today, visitor_name: "Tom Hadley", organisation: "Hadley Electrical", category: "tradesperson",
-    purpose: "Annual PAT testing of electrical appliances", dbs_checked: false, id_verified: true,
-    sign_in_time: "09:00", sign_out_time: "12:45", status: "signed_out", host_staff_id: "staff_ryan",
-    children_seen: [], notes: "All 34 items tested — 2 failed and removed. Certificates filed.", created_at: `${today}T09:00:00Z`,
-  },
-  {
-    id: "vis_003", date: today, visitor_name: "Dr Anya Patel", organisation: "Oak Medical Centre", category: "professional",
-    purpose: "Routine health review — Alex", dbs_checked: true, id_verified: true,
-    sign_in_time: "14:00", sign_out_time: null, status: "signed_in", host_staff_id: "staff_anna",
-    children_seen: ["yp_alex"], notes: null, created_at: `${today}T14:00:00Z`,
-  },
-  {
-    id: "vis_004", date: daysFromNow(-1), visitor_name: "Margaret Lawson", organisation: null, category: "family",
-    purpose: "Scheduled contact visit — Jordan's grandmother", dbs_checked: false, id_verified: true,
-    sign_in_time: "14:00", sign_out_time: "16:00", status: "signed_out", host_staff_id: "staff_lackson",
-    children_seen: ["yp_jordan"], notes: "Warm visit. Jordan showed her school work. Grandmother brought cake for the house.", created_at: `${daysFromNow(-1)}T14:00:00Z`,
-  },
-  {
-    id: "vis_005", date: daysFromNow(-2), visitor_name: "Cllr Richard Hayes", organisation: "Regulation 44 Visitor", category: "inspector",
-    purpose: "Regulation 44 monthly visit", dbs_checked: true, id_verified: true,
-    sign_in_time: "10:00", sign_out_time: "13:00", status: "signed_out", host_staff_id: "staff_darren",
-    children_seen: ["yp_alex", "yp_casey", "yp_jordan"], notes: "Spoke with all three young people individually. Two recommendations made — see Reg 44 report.", created_at: `${daysFromNow(-2)}T10:00:00Z`,
-  },
-  {
-    id: "vis_006", date: daysFromNow(-3), visitor_name: "Lisa Chen", organisation: "CAMHS", category: "professional",
-    purpose: "Therapeutic session — Casey", dbs_checked: true, id_verified: true,
-    sign_in_time: "11:00", sign_out_time: "12:00", status: "signed_out", host_staff_id: "staff_anna",
-    children_seen: ["yp_casey"], notes: "Casey engaged well. Next session in 2 weeks.", created_at: `${daysFromNow(-3)}T11:00:00Z`,
-  },
-  {
-    id: "vis_007", date: daysFromNow(-5), visitor_name: "James Walker", organisation: "Walker Plumbing", category: "tradesperson",
-    purpose: "Boiler annual service", dbs_checked: false, id_verified: true,
-    sign_in_time: "09:30", sign_out_time: "11:00", status: "signed_out", host_staff_id: "staff_ryan",
-    children_seen: [], notes: "Boiler serviced. Gas safety certificate issued and filed.", created_at: `${daysFromNow(-5)}T09:30:00Z`,
-  },
-  {
-    id: "vis_008", date: daysFromNow(-7), visitor_name: "Karen Adams", organisation: null, category: "family",
-    purpose: "Contact visit — Alex's aunt", dbs_checked: false, id_verified: true,
-    sign_in_time: "15:00", sign_out_time: "17:00", status: "signed_out", host_staff_id: "staff_chervelle",
-    children_seen: ["yp_alex"], notes: "Alex pleased to see aunt. Played board games together.", created_at: `${daysFromNow(-7)}T15:00:00Z`,
-  },
-];
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -145,7 +72,7 @@ const VISITOR_EXPORT_COLS: ExportColumn<VisitorEntry>[] = [
 
 // ── Visitor Row ──────────────────────────────────────────────────────────────
 
-function VisitorRow({ entry, onSignOut }: { entry: VisitorEntry; onSignOut: () => void }) {
+function VisitorRow({ entry }: { entry: VisitorEntry }) {
   const [expanded, setExpanded] = useState(false);
   const cat = CATEGORY_CONFIG[entry.category];
   const st = STATUS_CONFIG[entry.status];
@@ -190,17 +117,6 @@ function VisitorRow({ entry, onSignOut }: { entry: VisitorEntry; onSignOut: () =
           {st.label}
         </Badge>
 
-        {entry.status === "signed_in" && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs h-7 bg-slate-50 border-slate-200 flex-shrink-0"
-            onClick={(e) => { e.stopPropagation(); onSignOut(); }}
-          >
-            <LogOut className="h-3 w-3 mr-1" /> Sign Out
-          </Button>
-        )}
-
         {expanded ? <ChevronUp className="h-3.5 w-3.5 text-slate-400" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400" />}
       </div>
 
@@ -216,6 +132,9 @@ function VisitorRow({ entry, onSignOut }: { entry: VisitorEntry; onSignOut: () =
               <span>YP seen: {entry.children_seen.length}</span>
             )}
           </div>
+          {entry.children_seen.length > 0 && (
+            <SmartLinkPanel sourceType="visitor" sourceId={entry.id} childId={entry.children_seen[0]} compact />
+          )}
         </div>
       )}
     </div>
@@ -231,7 +150,7 @@ function NewVisitorDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  onSubmit: (entry: VisitorEntry) => void;
+  onSubmit: (entry: Partial<VisitorEntry>) => void;
 }) {
   const { currentUser } = useAuthContext();
   const [name, setName] = useState("");
@@ -246,8 +165,7 @@ function NewVisitorDialog({
     if (!name.trim() || !purpose.trim()) return;
     const now = new Date();
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const entry: VisitorEntry = {
-      id: `vis_local_${Date.now()}`,
+    const entry: Partial<VisitorEntry> = {
       date: todayStr(),
       visitor_name: name.trim(),
       organisation: org.trim() || null,
@@ -264,7 +182,6 @@ function NewVisitorDialog({
       created_at: now.toISOString(),
     };
     onSubmit(entry);
-    onClose();
     setName(""); setOrg(""); setPurpose(""); setNotes(""); setDbsChecked(false);
   }
 
@@ -338,7 +255,9 @@ function NewVisitorDialog({
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function VisitorLogPage() {
-  const [visitors, setVisitors] = useState<VisitorEntry[]>(SEED_VISITORS);
+  const { data: visData, isLoading } = useVisitors();
+  const createVisitor = useCreateVisitor();
+  const visitors = visData?.data ?? [];
   const [showNew, setShowNew] = useState(false);
 
   const [dateFilter, setDateFilter] = useState("all");
@@ -386,14 +305,6 @@ export default function VisitorLogPage() {
 
   const hasFilters = search || dateFilter !== "all" || categoryFilter !== "all" || statusFilter !== "all";
 
-  const handleSignOut = (id: string) => {
-    const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    setVisitors((prev) =>
-      prev.map((v) => v.id === id ? { ...v, sign_out_time: time, status: "signed_out" as VisitStatus } : v)
-    );
-  };
-
   return (
     <PageShell
       title="Visitor Log"
@@ -409,125 +320,140 @@ export default function VisitorLogPage() {
         </div>
       }
     >
-      {/* ── Summary stats ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-        {[
-          { label: "Total Visitors", value: stats.total,         color: "text-slate-700",   bg: "bg-slate-50",   border: "border-slate-200"   },
-          { label: "On Site Now",    value: stats.onSite,        color: stats.onSite > 0 ? "text-emerald-600" : "text-slate-500", bg: stats.onSite > 0 ? "bg-emerald-50" : "bg-slate-50", border: stats.onSite > 0 ? "border-emerald-200" : "border-slate-200" },
-          { label: "Today",          value: stats.today,         color: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-200"    },
-          { label: "Professionals",  value: stats.professionals, color: "text-indigo-600",  bg: "bg-indigo-50",  border: "border-indigo-200"  },
-          { label: "DBS Verified",   value: stats.dbsChecked,    color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
-        ].map((s) => (
-          <div key={s.label} className={cn("rounded-lg border p-3 text-center", s.bg, s.border)}>
-            <div className={cn("text-xl font-bold", s.color)}>{s.value}</div>
-            <div className="text-[10px] text-slate-500 font-medium mt-0.5">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* On-site alert */}
-      {stats.onSite > 0 && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 mb-6 flex items-start gap-3">
-          <LogIn className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-sm font-semibold text-emerald-800">
-              {stats.onSite} visitor{stats.onSite !== 1 ? "s" : ""} currently on site
-            </p>
-            <p className="text-xs text-emerald-700 mt-0.5">
-              Ensure all visitors are signed out before leaving the premises.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── Filters ───────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <div className="relative flex-1 min-w-[180px] max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-          <Input placeholder="Search visitors…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-8 text-xs" />
-        </div>
-        <Filter className="h-3.5 w-3.5 text-slate-400" />
-        <Select value={dateFilter} onValueChange={setDateFilter}>
-          <SelectTrigger className="h-8 w-[110px] text-xs"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All dates</SelectItem>
-            <SelectItem value="today">Today</SelectItem>
-            <SelectItem value="week">This week</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as VisitorCategory | "all")}>
-          <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
-            {(Object.keys(CATEGORY_CONFIG) as VisitorCategory[]).map((c) => (
-              <SelectItem key={c} value={c}>{CATEGORY_CONFIG[c].label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as VisitStatus | "all")}>
-          <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            {(Object.keys(STATUS_CONFIG) as VisitStatus[]).map((s) => (
-              <SelectItem key={s} value={s}>{STATUS_CONFIG[s].label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="flex items-center gap-1">
-          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="h-8 w-[100px] text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date">Date</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="category">Category</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        {hasFilters && (
-          <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500" onClick={() => { setSearch(""); setDateFilter("all"); setCategoryFilter("all"); setStatusFilter("all"); }}>
-            <X className="h-3 w-3 mr-1" /> Clear
-          </Button>
-        )}
-      </div>
-
-      {/* ── Visitor List ──────────────────────────────────────────────────── */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-16 text-slate-400">
-          <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p className="text-sm font-medium">No visitors found</p>
-          <p className="text-xs mt-1">{hasFilters ? "Try adjusting your filters" : "No visitors recorded yet"}</p>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map((entry) => (
-            <VisitorRow key={entry.id} entry={entry} onSignOut={() => handleSignOut(entry.id)} />
-          ))}
-        </div>
+        <>
+          {/* ── Summary stats ─────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+            {[
+              { label: "Total Visitors", value: stats.total,         color: "text-slate-700",   bg: "bg-slate-50",   border: "border-slate-200"   },
+              { label: "On Site Now",    value: stats.onSite,        color: stats.onSite > 0 ? "text-emerald-600" : "text-slate-500", bg: stats.onSite > 0 ? "bg-emerald-50" : "bg-slate-50", border: stats.onSite > 0 ? "border-emerald-200" : "border-slate-200" },
+              { label: "Today",          value: stats.today,         color: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-200"    },
+              { label: "Professionals",  value: stats.professionals, color: "text-indigo-600",  bg: "bg-indigo-50",  border: "border-indigo-200"  },
+              { label: "DBS Verified",   value: stats.dbsChecked,    color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
+            ].map((s) => (
+              <div key={s.label} className={cn("rounded-lg border p-3 text-center", s.bg, s.border)}>
+                <div className={cn("text-xl font-bold", s.color)}>{s.value}</div>
+                <div className="text-[10px] text-slate-500 font-medium mt-0.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* On-site alert */}
+          {stats.onSite > 0 && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 mb-6 flex items-start gap-3">
+              <LogIn className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-800">
+                  {stats.onSite} visitor{stats.onSite !== 1 ? "s" : ""} currently on site
+                </p>
+                <p className="text-xs text-emerald-700 mt-0.5">
+                  Ensure all visitors are signed out before leaving the premises.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Filters ───────────────────────────────────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <div className="relative flex-1 min-w-[180px] max-w-xs">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <Input placeholder="Search visitors…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-8 text-xs" />
+            </div>
+            <Filter className="h-3.5 w-3.5 text-slate-400" />
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="h-8 w-[110px] text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All dates</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">This week</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as VisitorCategory | "all")}>
+              <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {(Object.keys(CATEGORY_CONFIG) as VisitorCategory[]).map((c) => (
+                  <SelectItem key={c} value={c}>{CATEGORY_CONFIG[c].label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as VisitStatus | "all")}>
+              <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                {(Object.keys(STATUS_CONFIG) as VisitStatus[]).map((s) => (
+                  <SelectItem key={s} value={s}>{STATUS_CONFIG[s].label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-1">
+              <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="h-8 w-[100px] text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date">Date</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="category">Category</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {hasFilters && (
+              <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500" onClick={() => { setSearch(""); setDateFilter("all"); setCategoryFilter("all"); setStatusFilter("all"); }}>
+                <X className="h-3 w-3 mr-1" /> Clear
+              </Button>
+            )}
+          </div>
+
+          {/* ── Visitor List ──────────────────────────────────────────────────── */}
+          {filtered.length === 0 ? (
+            <div className="text-center py-16 text-slate-400">
+              <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
+              <p className="text-sm font-medium">No visitors found</p>
+              <p className="text-xs mt-1">{hasFilters ? "Try adjusting your filters" : "No visitors recorded yet"}</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filtered.map((entry) => (
+                <VisitorRow key={entry.id} entry={entry} />
+              ))}
+            </div>
+          )}
+
+          <div className="text-center text-[10px] text-slate-400 mt-6">
+            Showing {filtered.length} of {visitors.length} visitor{visitors.length !== 1 ? "s" : ""}
+          </div>
+
+          {/* ── Regulatory Note ───────────────────────────────────────────────── */}
+          <div className="mt-8 rounded-lg bg-slate-50 border border-slate-200 p-4">
+            <div className="flex items-start gap-3">
+              <Users className="h-5 w-5 text-indigo-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-xs font-semibold text-slate-700 mb-1">Regulatory Context</h4>
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  The Children&apos;s Homes Regulations 2015 (Reg 37, Schedule 3) require a record of all persons
+                  visiting the home, including their name, purpose of visit, and arrival/departure times. Professional
+                  visitors should have their DBS status and ID verified. This log is inspectable by Ofsted and the
+                  Regulation 44 visitor. Maintaining an accurate visitor log is a safeguarding requirement — it ensures
+                  the home can account for who was on site at any time.
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
-      <div className="text-center text-[10px] text-slate-400 mt-6">
-        Showing {filtered.length} of {visitors.length} visitor{visitors.length !== 1 ? "s" : ""}
-      </div>
-
-      {/* ── Regulatory Note ───────────────────────────────────────────────── */}
-      <div className="mt-8 rounded-lg bg-slate-50 border border-slate-200 p-4">
-        <div className="flex items-start gap-3">
-          <Users className="h-5 w-5 text-indigo-500 mt-0.5 flex-shrink-0" />
-          <div>
-            <h4 className="text-xs font-semibold text-slate-700 mb-1">Regulatory Context</h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              The Children&apos;s Homes Regulations 2015 (Reg 37, Schedule 3) require a record of all persons
-              visiting the home, including their name, purpose of visit, and arrival/departure times. Professional
-              visitors should have their DBS status and ID verified. This log is inspectable by Ofsted and the
-              Regulation 44 visitor. Maintaining an accurate visitor log is a safeguarding requirement — it ensures
-              the home can account for who was on site at any time.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <NewVisitorDialog open={showNew} onClose={() => setShowNew(false)} onSubmit={(entry) => setVisitors((prev) => [entry, ...prev])} />
+      <NewVisitorDialog
+        open={showNew}
+        onClose={() => setShowNew(false)}
+        onSubmit={(entry) => createVisitor.mutate(entry as Partial<VisitorEntry>, {
+          onSuccess: () => { toast.success("Visitor signed in"); setShowNew(false); },
+          onError: () => toast.error("Failed to sign in visitor"),
+        })}
+      />
     </PageShell>
   );
 }

@@ -2494,3 +2494,209 @@ export interface Compliment {
   added_to_reg45: boolean;
   recorded_by: string;
 }
+
+/* ── Visitor Log ─────────────────────────────────────────────────────── */
+
+export type VisitorCategory = "professional" | "family" | "tradesperson" | "inspector" | "volunteer" | "other";
+export type VisitStatus = "signed_in" | "signed_out" | "expected";
+
+export interface VisitorEntry {
+  id: string;
+  date: string;
+  visitor_name: string;
+  organisation: string | null;
+  category: VisitorCategory;
+  purpose: string;
+  dbs_checked: boolean;
+  id_verified: boolean;
+  sign_in_time: string;
+  sign_out_time: string | null;
+  status: VisitStatus;
+  host_staff_id: string;
+  children_seen: string[];
+  notes: string | null;
+  created_at: string;
+}
+
+/* ── Fire Drills ─────────────────────────────────────────────────────── */
+
+export type FireDrillType = "fire_drill" | "evacuation" | "lockdown" | "bomb_threat" | "flood" | "equipment_check";
+export type FireDrillResult = "satisfactory" | "issues_identified" | "failed" | "not_completed";
+
+export interface FireDrill {
+  id: string;
+  date: string;
+  time: string;
+  drill_type: FireDrillType;
+  evacuation_time_seconds: number | null;
+  result: FireDrillResult;
+  all_present: boolean;
+  children_present: string[];
+  staff_present: string[];
+  issues: string;
+  actions_taken: string;
+  next_drill_due: string;
+  conducted_by: string;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Significant Events ──────────────────────────────────────────────── */
+
+export type SigEventCategory = "positive_achievement" | "placement_change" | "health_event" | "safeguarding" | "legal_court" | "family_event" | "education_milestone" | "behavioural" | "disclosure" | "other";
+export type SigEventSeverity = "positive" | "routine" | "concerning" | "serious" | "critical";
+export type SigEventNotifyStatus = "not_required" | "notified" | "pending" | "escalated";
+
+export interface SignificantEvent {
+  id: string;
+  child_id: string;
+  date: string;
+  time: string;
+  category: SigEventCategory;
+  severity: SigEventSeverity;
+  title: string;
+  description: string;
+  immediate_action: string;
+  staff_present: string[];
+  witnessed_by: string[];
+  child_response: string;
+  outcome: string;
+  notifications: { party: string; status: SigEventNotifyStatus; date: string }[];
+  follow_up_required: boolean;
+  follow_up_actions: string;
+  follow_up_date: string;
+  linked_documents: string[];
+  recorded_by: string;
+  created_at: string;
+}
+
+/* ── Restraint Log ───────────────────────────────────────────────────── */
+
+export type RestraintType = "standing" | "seated" | "ground" | "escort" | "other";
+export type RestraintReason = "harm_to_self" | "harm_to_others" | "significant_damage" | "absconding_danger";
+export type RestraintReviewStatus = "pending_rm" | "pending_ri" | "reviewed" | "referred_lado";
+
+export interface RestraintStaffEntry {
+  staff_id: string;
+  role: string;
+  technique: string;
+}
+
+export interface RestraintInjury {
+  person: string;
+  injury: string;
+  treatment: string;
+}
+
+export interface RestraintRecord {
+  id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  duration: number;
+  child_id: string;
+  staff_involved: RestraintStaffEntry[];
+  reason: RestraintReason;
+  restraint_type: RestraintType;
+  antecedent: string;
+  behaviour: string;
+  de_escalation_attempts: string[];
+  justification: string;
+  description: string;
+  injuries: RestraintInjury[];
+  child_debriefed: boolean;
+  child_debrief_notes: string;
+  staff_debriefed: boolean;
+  witnessed_by: string[];
+  review_status: RestraintReviewStatus;
+  review_notes: string;
+  reviewed_by: string;
+  linked_incident_id: string;
+  notifications_sent: { party: string; date: string }[];
+  body_map_completed: boolean;
+  medical_check_completed: boolean;
+  recorded_by: string;
+  created_at: string;
+}
+
+/* ── Notifiable Events ───────────────────────────────────────────────── */
+
+export type NotifiableEventType = "death" | "serious_illness" | "serious_injury" | "serious_incident" | "child_protection" | "police_involvement" | "absconding" | "allegation_against_staff" | "restraint" | "exclusion_from_school" | "fire" | "outbreak" | "significant_complaint" | "ofsted_referral";
+export type NotifiableStatus = "pending" | "notified_within_24h" | "notified_late" | "not_required";
+
+export interface NotifiableNotification {
+  body: string;
+  notified_date: string | null;
+  method: string;
+  reference: string | null;
+}
+
+export interface NotifiableEvent {
+  id: string;
+  date: string;
+  event_type: NotifiableEventType;
+  child_id: string | null;
+  summary: string;
+  detail: string;
+  immediate_action: string;
+  reported_by: string;
+  ofsted_status: NotifiableStatus;
+  ofsted: NotifiableNotification;
+  local_authority: NotifiableNotification;
+  placing: NotifiableNotification;
+  follow_up: string;
+  lesson_learned: string;
+}
+
+/* ── Night Log ───────────────────────────────────────────────────────── */
+
+export type NightCheckStatus = "asleep" | "awake_settled" | "awake_unsettled" | "not_in_room" | "refused_entry";
+export type NightIncidentType = "disturbance" | "self_harm_concern" | "missing" | "medication" | "property" | "visitor" | "other";
+
+export interface NightCheck {
+  time: string;
+  child_id: string;
+  status: NightCheckStatus;
+  notes: string;
+}
+
+export interface NightIncident {
+  time: string;
+  child_id: string | null;
+  incident_type: NightIncidentType;
+  description: string;
+  action_taken: string;
+  escalated: boolean;
+  escalated_to: string | null;
+}
+
+export interface NightMedication {
+  time: string;
+  child_id: string;
+  medication: string;
+  dose: string;
+  notes: string;
+}
+
+export interface NightSecurityCheck {
+  time: string;
+  item: string;
+  status: "secure" | "issue";
+}
+
+export interface NightLogEntry {
+  id: string;
+  date: string;
+  waking_night_staff: string[];
+  sleep_in_staff: string | null;
+  shift_start: string;
+  shift_end: string;
+  handover_from_day: string;
+  handover_to_morning: string;
+  checks: NightCheck[];
+  incidents: NightIncident[];
+  medication_given: NightMedication[];
+  security_checks: NightSecurityCheck[];
+  summary: string;
+  concerns: string | null;
+}
