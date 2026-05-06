@@ -98,6 +98,12 @@ import type {
   KeyworkerSessionRecord,
   LaundrySelfCareRecord,
   ChildLedMeetingRecord,
+  MentalHealthCheckIn,
+  ChildPhoneRecord,
+  MobilityDisabilityPlan,
+  PhotoIdRecord,
+  ChildPhotoEntry,
+  PhysioOtPlan,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -254,6 +260,12 @@ const store = {
   keyworkerSessions: [] as KeyworkerSessionRecord[],
   laundrySelfCareRecords: [] as LaundrySelfCareRecord[],
   childLedMeetings: [] as ChildLedMeetingRecord[],
+  mentalHealthCheckIns: [] as MentalHealthCheckIn[],
+  childPhoneRecords: [] as ChildPhoneRecord[],
+  mobilityDisabilityPlans: [] as MobilityDisabilityPlan[],
+  photoIdRecords: [] as PhotoIdRecord[],
+  childPhotoEntries: [] as ChildPhotoEntry[],
+  physioOtPlans: [] as PhysioOtPlan[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -4412,6 +4424,108 @@ export const db = {
       if (idx === -1) return null;
       store.childLedMeetings[idx] = { ...store.childLedMeetings[idx], ...data };
       return store.childLedMeetings[idx];
+    },
+  },
+
+  mentalHealthCheckIns: {
+    findAll: () => store.mentalHealthCheckIns,
+    findById: (id: string) => store.mentalHealthCheckIns.find((r) => r.id === id),
+    findByChild: (childId: string) => store.mentalHealthCheckIns.filter((r) => r.child_id === childId),
+    create: (data: Partial<MentalHealthCheckIn>): MentalHealthCheckIn => {
+      const record = { ...data, id: generateId("mhc"), created_at: new Date().toISOString() } as MentalHealthCheckIn;
+      store.mentalHealthCheckIns.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MentalHealthCheckIn>): MentalHealthCheckIn | null => {
+      const idx = store.mentalHealthCheckIns.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.mentalHealthCheckIns[idx] = { ...store.mentalHealthCheckIns[idx], ...data };
+      return store.mentalHealthCheckIns[idx];
+    },
+  },
+
+  childPhoneRecords: {
+    findAll: () => store.childPhoneRecords,
+    findById: (id: string) => store.childPhoneRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.childPhoneRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<ChildPhoneRecord>): ChildPhoneRecord => {
+      const record = { ...data, id: generateId("cpr"), created_at: new Date().toISOString() } as ChildPhoneRecord;
+      store.childPhoneRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ChildPhoneRecord>): ChildPhoneRecord | null => {
+      const idx = store.childPhoneRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.childPhoneRecords[idx] = { ...store.childPhoneRecords[idx], ...data };
+      return store.childPhoneRecords[idx];
+    },
+  },
+
+  mobilityDisabilityPlans: {
+    findAll: () => store.mobilityDisabilityPlans,
+    findById: (id: string) => store.mobilityDisabilityPlans.find((r) => r.id === id),
+    findByChild: (childId: string) => store.mobilityDisabilityPlans.filter((r) => r.child_id === childId),
+    create: (data: Partial<MobilityDisabilityPlan>): MobilityDisabilityPlan => {
+      const record = { ...data, id: generateId("mdp"), created_at: new Date().toISOString() } as MobilityDisabilityPlan;
+      store.mobilityDisabilityPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MobilityDisabilityPlan>): MobilityDisabilityPlan | null => {
+      const idx = store.mobilityDisabilityPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.mobilityDisabilityPlans[idx] = { ...store.mobilityDisabilityPlans[idx], ...data };
+      return store.mobilityDisabilityPlans[idx];
+    },
+  },
+
+  photoIdRecords: {
+    findAll: () => store.photoIdRecords,
+    findById: (id: string) => store.photoIdRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.photoIdRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<PhotoIdRecord>): PhotoIdRecord => {
+      const record = { ...data, id: generateId("pid"), created_at: new Date().toISOString() } as PhotoIdRecord;
+      store.photoIdRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<PhotoIdRecord>): PhotoIdRecord | null => {
+      const idx = store.photoIdRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.photoIdRecords[idx] = { ...store.photoIdRecords[idx], ...data };
+      return store.photoIdRecords[idx];
+    },
+  },
+
+  childPhotoEntries: {
+    findAll: () => store.childPhotoEntries,
+    findById: (id: string) => store.childPhotoEntries.find((r) => r.id === id),
+    findByChild: (childId: string) => store.childPhotoEntries.filter((r) => r.child_id === childId),
+    create: (data: Partial<ChildPhotoEntry>): ChildPhotoEntry => {
+      const record = { ...data, id: generateId("cpe"), created_at: new Date().toISOString() } as ChildPhotoEntry;
+      store.childPhotoEntries.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ChildPhotoEntry>): ChildPhotoEntry | null => {
+      const idx = store.childPhotoEntries.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.childPhotoEntries[idx] = { ...store.childPhotoEntries[idx], ...data };
+      return store.childPhotoEntries[idx];
+    },
+  },
+
+  physioOtPlans: {
+    findAll: () => store.physioOtPlans,
+    findById: (id: string) => store.physioOtPlans.find((r) => r.id === id),
+    findByChild: (childId: string) => store.physioOtPlans.filter((r) => r.child_id === childId),
+    create: (data: Partial<PhysioOtPlan>): PhysioOtPlan => {
+      const record = { ...data, id: generateId("pot"), created_at: new Date().toISOString() } as PhysioOtPlan;
+      store.physioOtPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<PhysioOtPlan>): PhysioOtPlan | null => {
+      const idx = store.physioOtPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.physioOtPlans[idx] = { ...store.physioOtPlans[idx], ...data };
+      return store.physioOtPlans[idx];
     },
   },
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -24,214 +24,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// ── types ───────────────────────────────────────────────────────────────────
-interface MobilityPlan {
-  id: string;
-  youngPerson: string;
-  planDate: string;
-  primaryCondition: string;
-  diagnosisYear?: string;
-  mobilityStatus:
-    | "Independently mobile"
-    | "Mobile with aid"
-    | "Wheelchair part-time"
-    | "Wheelchair full-time"
-    | "Bed-rest periods"
-    | "Variable / fluctuating";
-  mobilityAids: string[];
-  energyEnvelope?:
-    | "Pacing actively used"
-    | "Some pacing"
-    | "No pacing yet"
-    | "Not applicable";
-  painManagement: string[];
-  accessibleRoomsAtHome: string[];
-  homeAdaptations: string[];
-  transportArrangements: string[];
-  schoolAccessibilityPlan: boolean;
-  examAccessArrangements: string[];
-  externalSupport: { agency: string; role: string; frequency: string }[];
-  identityFramingNotes: string;
-  badgesEntitlements: string[];
-  childVoice: string;
-  staffObservation: string;
-  flagsForReview: string[];
-  reviewDate: string;
-  keyWorker: string;
-}
-
-// ── seed data ───────────────────────────────────────────────────────────────
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const data: MobilityPlan[] = [
-  {
-    id: "mp-001",
-    youngPerson: "yp_alex",
-    planDate: d(-21),
-    primaryCondition: "Boxing-related shoulder rehab + persistent post-trauma somatic pain",
-    diagnosisYear: "2025",
-    mobilityStatus: "Independently mobile",
-    mobilityAids: [
-      "Shoulder support brace (worn during PE and contact activity)",
-      "Hot/cold compression pack kept in bedroom",
-      "Resistance band kit (physio-prescribed) for daily mobility set",
-    ],
-    energyEnvelope: "Some pacing",
-    painManagement: [
-      "Paracetamol PRN (max 4 doses / 24h, on MAR)",
-      "Ibuprofen gel topical to right shoulder twice daily",
-      "Heat pack pre-bed — reduces overnight stiffness",
-      "Daily 10-min physio mobility set (key worker prompts, not enforced)",
-      "Pain diary on phone — Alex tracks 0-10 score morning and evening",
-    ],
-    accessibleRoomsAtHome: [
-      "All ground floor rooms",
-      "Bedroom (first floor — stairs manageable, slow descent in morning when stiff)",
-      "Garden gym shed — equipment height adjusted for left-arm-led routine",
-    ],
-    homeAdaptations: [
-      "Second handrail fitted to main staircase (right side descending)",
-      "Bedroom desk chair replaced with lumbar-supportive model",
-      "Reaching aid in bedroom for top wardrobe",
-      "Shower seat available (not yet used — offered, Alex declined)",
-    ],
-    transportArrangements: [
-      "Walks to school independently — 12 minute route",
-      "Lift offered on flare days, no questions asked policy",
-      "Bus pass funded — reserved for high-pain days",
-    ],
-    schoolAccessibilityPlan: true,
-    examAccessArrangements: [
-      "Rest breaks (5 min per 30 min)",
-      "Use of laptop for extended writing",
-      "Seat near aisle / exit",
-    ],
-    externalSupport: [
-      { agency: "Royal Derby Hospital Physiotherapy", role: "MSK physiotherapist (Mr Adeyemi)", frequency: "Fortnightly" },
-      { agency: "GP — Dr S. Patel", role: "Pain management review", frequency: "Every 8 weeks" },
-      { agency: "CAMHS Trauma pathway", role: "Trauma-informed somatic work", frequency: "Weekly" },
-    ],
-    identityFramingNotes:
-      "Alex does not identify as disabled and is unlikely to want disability framing in conversation. Plan exists to make sure the home accommodates Alex's pain — not to label Alex. Pain is real, sometimes trauma-linked, and managed through movement, rest and trust. Avoid medicalising language in front of Alex unless Alex uses it first.",
-    badgesEntitlements: [
-      "Not currently claiming DLA — under review with social worker",
-      "Free prescriptions (in care)",
-      "School exam access arrangements approved",
-    ],
-    childVoice:
-      "I'm not disabled. I just have a dodgy shoulder and sometimes my whole body remembers stuff. The brace helps. The shed helps more.",
-    staffObservation:
-      "Alex's pain is most visible in the mornings and after contact with birth family. Movement and the gym shed are protective — restricting access on flare days has historically increased distress. Pacing is improving but Alex still pushes through pain to avoid feeling 'weak'. Keep offering, don't enforce.",
-    flagsForReview: [
-      "Shoulder MRI follow-up due — chase consultant letter",
-      "Review whether DLA application is in Alex's interest (with social worker + advocate)",
-    ],
-    reviewDate: d(70),
-    keyWorker: "staff_edward",
-  },
-  {
-    id: "mp-002",
-    youngPerson: "yp_incoming_sam",
-    planDate: d(-3),
-    primaryCondition: "Hypermobile Ehlers-Danlos Syndrome (hEDS) + dysautonomia + chronic fatigue",
-    diagnosisYear: "2023",
-    mobilityStatus: "Variable / fluctuating",
-    mobilityAids: [
-      "Manual wheelchair (self-propelled, used 30-60% of days)",
-      "Folding mobility scooter for longer outings",
-      "Forearm crutches for short ambulant distances",
-      "Compression garments (calves and abdomen) for POTS",
-      "Soft cervical collar for flare days",
-      "Shower stool and grab rails",
-    ],
-    energyEnvelope: "Pacing actively used",
-    painManagement: [
-      "Amitriptyline 20mg nocte (prescribed)",
-      "Naproxen PRN with omeprazole cover",
-      "TENS machine — Sam manages independently",
-      "Heat pads, weighted blanket, magnesium spray",
-      "Joint-by-joint tracking on Bearable app — Sam shares weekly trend with key worker",
-      "Crash recovery protocol — written by Sam, agreed with team",
-    ],
-    accessibleRoomsAtHome: [
-      "Ground floor bedroom (provisional offer — building works completed)",
-      "Wet room with grab rails and shower seat",
-      "Kitchen — perching stool and lowered prep area",
-      "Lounge — recliner with leg-elevation function",
-    ],
-    homeAdaptations: [
-      "Ground floor bedroom converted from former office",
-      "Wet room installed (LA grant-funded)",
-      "Threshold ramps front and rear",
-      "Door widened to bedroom (now 900mm)",
-      "Stair lift NOT installed — Sam prefers ground floor as default",
-      "Kitchen tap replaced with lever type",
-    ],
-    transportArrangements: [
-      "Wheelchair-accessible vehicle in fleet (booked Mon/Wed/Fri default)",
-      "Taxi account with WAV-equipped local firm for unplanned needs",
-      "Train travel — Passenger Assist booked 24h ahead, Sam confident booking own",
-      "Blue badge held — parking arrangement at school confirmed",
-    ],
-    schoolAccessibilityPlan: true,
-    examAccessArrangements: [
-      "Separate room",
-      "Rest breaks (10 min per 60 min, stop-the-clock)",
-      "Laptop with voice-to-text",
-      "Permission to lie down during breaks",
-      "Snack and drink permitted (POTS)",
-    ],
-    externalSupport: [
-      { agency: "Sheffield Children's Hospital — EDS service", role: "Specialist consultant + clinical nurse specialist", frequency: "6-monthly" },
-      { agency: "Community Physiotherapy", role: "Hypermobility-trained physio (Ms Reilly)", frequency: "Weekly" },
-      { agency: "Community Occupational Therapy", role: "OT — home assessment and aids review", frequency: "Quarterly review" },
-      { agency: "Cardiology — POTS clinic", role: "Cardiologist", frequency: "Annual" },
-      { agency: "Pain Management Service (paediatric)", role: "Multi-disciplinary clinic", frequency: "Quarterly" },
-    ],
-    identityFramingNotes:
-      "Sam identifies proudly as a disabled young person and uses social model language. The barrier is the environment, not Sam's body. Avoid language like 'wheelchair-bound' or 'suffers from' — Sam uses a wheelchair, and Sam lives with EDS. Sam is the expert on Sam's body. Staff role is to remove environmental barriers and trust pacing decisions, not to override them. Do not push through fatigue — crashes have a recovery cost of days, not hours.",
-    badgesEntitlements: [
-      "DLA — higher rate mobility, middle rate care",
-      "Blue badge",
-      "Disabled persons railcard",
-      "CEA card (cinema carer free)",
-      "Access to Work-equivalent for Year 12 work experience pending",
-      "EHCP in place — Section F includes mobility, fatigue and pain",
-    ],
-    childVoice:
-      "The chair gives me my life back. People act like it's sad but it means I get to do things. What's actually sad is when buildings forget I exist. Please don't decide for me when I'm 'too tired' — let me decide.",
-    staffObservation:
-      "Plan drafted with Sam, OT and incoming social worker ahead of placement start. Sam articulate, self-advocating, knows own needs. The home is now structurally accessible following adaptations. Staff team will need hypermobility / fatigue / POTS awareness training before admission — booked with EDS UK. Pacing must be respected: 'no' to an activity is a clinical decision, not behaviour.",
-    flagsForReview: [
-      "Confirm staff training completed before placement start",
-      "Confirm WAV vehicle MOT and hoist service current",
-      "Set up direct line to EDS specialist nurse for crash periods",
-      "Review ground-floor bedroom soundproofing — Sam noise-sensitive on fatigue days",
-    ],
-    reviewDate: d(28),
-    keyWorker: "staff_anna",
-  },
-];
+import type {
+  MobilityDisabilityPlan,
+  MobilityStatus,
+} from "@/types/extended";
+import {
+  MOBILITY_STATUS_LABEL,
+  ENERGY_ENVELOPE_STATUS_LABEL,
+} from "@/types/extended";
+import { useMobilityDisabilityPlans } from "@/hooks/use-mobility-disability-plans";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
-function statusColour(s: MobilityPlan["mobilityStatus"]): string {
+function statusColour(s: MobilityStatus): string {
   switch (s) {
-    case "Independently mobile":
+    case "independently_mobile":
       return "bg-emerald-100 text-emerald-800";
-    case "Mobile with aid":
+    case "mobile_with_aid":
       return "bg-sky-100 text-sky-800";
-    case "Wheelchair part-time":
+    case "wheelchair_part_time":
       return "bg-teal-100 text-teal-800";
-    case "Wheelchair full-time":
+    case "wheelchair_full_time":
       return "bg-cyan-100 text-cyan-800";
-    case "Bed-rest periods":
+    case "bed_rest_periods":
       return "bg-purple-100 text-purple-800";
-    case "Variable / fluctuating":
+    case "variable_fluctuating":
       return "bg-amber-100 text-amber-800";
     default:
       return "bg-slate-100 text-slate-800";
@@ -239,65 +56,75 @@ function statusColour(s: MobilityPlan["mobilityStatus"]): string {
 }
 
 // ── export columns ──────────────────────────────────────────────────────────
-const exportCols: ExportColumn<MobilityPlan>[] = [
-  { header: "Young Person", accessor: (r: MobilityPlan) => getYPName(r.youngPerson) || r.youngPerson },
-  { header: "Plan Date", accessor: (r: MobilityPlan) => r.planDate },
-  { header: "Primary Condition", accessor: (r: MobilityPlan) => r.primaryCondition },
-  { header: "Diagnosed", accessor: (r: MobilityPlan) => r.diagnosisYear ?? "—" },
-  { header: "Mobility Status", accessor: (r: MobilityPlan) => r.mobilityStatus },
-  { header: "Mobility Aids", accessor: (r: MobilityPlan) => r.mobilityAids.join("; ") },
-  { header: "Energy Envelope", accessor: (r: MobilityPlan) => r.energyEnvelope ?? "—" },
-  { header: "Home Adaptations", accessor: (r: MobilityPlan) => r.homeAdaptations.join("; ") },
-  { header: "School Accessibility Plan", accessor: (r: MobilityPlan) => (r.schoolAccessibilityPlan ? "Yes" : "No") },
-  { header: "Badges & Entitlements", accessor: (r: MobilityPlan) => r.badgesEntitlements.join("; ") },
-  { header: "Key Worker", accessor: (r: MobilityPlan) => getStaffName(r.keyWorker) || r.keyWorker },
-  { header: "Review Date", accessor: (r: MobilityPlan) => r.reviewDate },
+const exportCols: ExportColumn<MobilityDisabilityPlan>[] = [
+  { header: "Young Person", accessor: (r: MobilityDisabilityPlan) => getYPName(r.child_id) || r.child_id },
+  { header: "Plan Date", accessor: (r: MobilityDisabilityPlan) => r.plan_date },
+  { header: "Primary Condition", accessor: (r: MobilityDisabilityPlan) => r.primary_condition },
+  { header: "Diagnosed", accessor: (r: MobilityDisabilityPlan) => r.diagnosis_year ?? "—" },
+  { header: "Mobility Status", accessor: (r: MobilityDisabilityPlan) => MOBILITY_STATUS_LABEL[r.mobility_status] },
+  { header: "Mobility Aids", accessor: (r: MobilityDisabilityPlan) => r.mobility_aids.join("; ") },
+  { header: "Energy Envelope", accessor: (r: MobilityDisabilityPlan) => r.energy_envelope ? ENERGY_ENVELOPE_STATUS_LABEL[r.energy_envelope] : "—" },
+  { header: "Home Adaptations", accessor: (r: MobilityDisabilityPlan) => r.home_adaptations.join("; ") },
+  { header: "School Accessibility Plan", accessor: (r: MobilityDisabilityPlan) => (r.school_accessibility_plan ? "Yes" : "No") },
+  { header: "Badges & Entitlements", accessor: (r: MobilityDisabilityPlan) => r.badges_entitlements.join("; ") },
+  { header: "Key Worker", accessor: (r: MobilityDisabilityPlan) => getStaffName(r.key_worker) || r.key_worker },
+  { header: "Review Date", accessor: (r: MobilityDisabilityPlan) => r.review_date },
 ];
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function ChildMobilityPhysicalDisabilityPlanPage() {
+  const { data: raw, isLoading } = useMobilityDisabilityPlans();
+  const items = raw?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("review");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let items = [...data];
+    let list = [...items];
     if (search.trim()) {
       const q = search.toLowerCase();
-      items = items.filter(
+      list = list.filter(
         (r) =>
-          (getYPName(r.youngPerson) || r.youngPerson).toLowerCase().includes(q) ||
-          r.primaryCondition.toLowerCase().includes(q) ||
-          r.mobilityAids.some((a) => a.toLowerCase().includes(q))
+          (getYPName(r.child_id) || r.child_id).toLowerCase().includes(q) ||
+          r.primary_condition.toLowerCase().includes(q) ||
+          r.mobility_aids.some((a) => a.toLowerCase().includes(q))
       );
     }
-    if (filterStatus !== "all") items = items.filter((r) => r.mobilityStatus === filterStatus);
+    if (filterStatus !== "all") list = list.filter((r) => r.mobility_status === filterStatus);
 
-    items.sort((a, b) => {
+    list.sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return (getYPName(a.youngPerson) || a.youngPerson).localeCompare(
-            getYPName(b.youngPerson) || b.youngPerson
+          return (getYPName(a.child_id) || a.child_id).localeCompare(
+            getYPName(b.child_id) || b.child_id
           );
         case "review":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         case "status":
-          return a.mobilityStatus.localeCompare(b.mobilityStatus);
+          return a.mobility_status.localeCompare(b.mobility_status);
         default:
           return 0;
       }
     });
-    return items;
-  }, [search, filterStatus, sortBy]);
+    return list;
+  }, [items, search, filterStatus, sortBy]);
+
+  if (isLoading) {
+    return <PageShell title="Mobility & Physical Disability Plans">Loading…</PageShell>;
+  }
 
   // ── stats ─────────────────────────────────────────────────────────────────
-  const activePlans = data.length;
-  const wheelchairUsers = data.filter(
-    (r) => r.mobilityStatus === "Wheelchair part-time" || r.mobilityStatus === "Wheelchair full-time"
+  const activePlans = items.length;
+  const wheelchairUsers = items.filter(
+    (r) => r.mobility_status === "wheelchair_part_time" || r.mobility_status === "wheelchair_full_time"
   ).length;
-  const homeAdaptationsMade = data.reduce((sum, r) => sum + r.homeAdaptations.length, 0);
-  const reviewsDue90 = data.filter((r) => r.reviewDate <= d(90)).length;
+  const homeAdaptationsMade = items.reduce((sum, r) => sum + r.home_adaptations.length, 0);
+  const in90 = new Date();
+  in90.setDate(in90.getDate() + 90);
+  const cutoff90 = in90.toISOString().slice(0, 10);
+  const reviewsDue90 = items.filter((r) => r.review_date <= cutoff90).length;
 
   return (
     <PageShell
@@ -305,7 +132,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
       subtitle="Per-child plans removing environmental barriers — social model framing, child-led, PT/OT linked"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="mobility-physical-disability-plans" />
+          <ExportButton data={items} columns={exportCols} filename="mobility-physical-disability-plans" />
           <PrintButton title="Mobility & Physical Disability Plans" />
         </div>
       }
@@ -356,12 +183,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Mobility Statuses</SelectItem>
-            <SelectItem value="Independently mobile">Independently mobile</SelectItem>
-            <SelectItem value="Mobile with aid">Mobile with aid</SelectItem>
-            <SelectItem value="Wheelchair part-time">Wheelchair part-time</SelectItem>
-            <SelectItem value="Wheelchair full-time">Wheelchair full-time</SelectItem>
-            <SelectItem value="Bed-rest periods">Bed-rest periods</SelectItem>
-            <SelectItem value="Variable / fluctuating">Variable / fluctuating</SelectItem>
+            {Object.entries(MOBILITY_STATUS_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -386,7 +208,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
         )}
         {filtered.map((plan) => {
           const isExpanded = expandedId === plan.id;
-          const ypLabel = getYPName(plan.youngPerson) || (plan.youngPerson === "yp_incoming_sam" ? "Sam (incoming placement template)" : plan.youngPerson);
+          const ypLabel = getYPName(plan.child_id) || (plan.child_id === "yp_incoming_sam" ? "Sam (incoming placement template)" : plan.child_id);
 
           return (
             <div key={plan.id} className="rounded-xl border bg-white overflow-hidden">
@@ -399,16 +221,16 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate">{ypLabel}</p>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      {plan.primaryCondition}
-                      {plan.diagnosisYear ? ` · since ${plan.diagnosisYear}` : ""}
+                      {plan.primary_condition}
+                      {plan.diagnosis_year ? ` · since ${plan.diagnosis_year}` : ""}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3 flex-wrap justify-end">
-                  <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium", statusColour(plan.mobilityStatus))}>
-                    {plan.mobilityStatus}
+                  <span className={cn("text-[11px] px-2 py-0.5 rounded-full font-medium", statusColour(plan.mobility_status))}>
+                    {MOBILITY_STATUS_LABEL[plan.mobility_status]}
                   </span>
-                  {plan.schoolAccessibilityPlan && (
+                  {plan.school_accessibility_plan && (
                     <span className="text-[11px] px-2 py-0.5 rounded-full font-medium bg-teal-100 text-teal-800">
                       School plan in place
                     </span>
@@ -425,7 +247,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                       <Activity className="h-3 w-3 inline mr-1" />Mobility Aids
                     </p>
                     <ul className="bg-white rounded-lg p-3 border text-sm space-y-1 list-disc list-inside">
-                      {plan.mobilityAids.map((a, i) => (
+                      {plan.mobility_aids.map((a, i) => (
                         <li key={i}>{a}</li>
                       ))}
                     </ul>
@@ -438,7 +260,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                         <Heart className="h-3 w-3 inline mr-1" />Energy Envelope (Pacing)
                       </p>
                       <div className="bg-white rounded-lg p-3 border text-sm">
-                        <p className="font-medium text-sky-800">{plan.energyEnvelope ?? "Not applicable"}</p>
+                        <p className="font-medium text-sky-800">{plan.energy_envelope ? ENERGY_ENVELOPE_STATUS_LABEL[plan.energy_envelope] : "Not applicable"}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Chronic illness aware. Pacing is a clinical decision — staff support, never override.
                         </p>
@@ -449,7 +271,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                         Pain Management
                       </p>
                       <ul className="bg-white rounded-lg p-3 border text-sm space-y-1 list-disc list-inside">
-                        {plan.painManagement.map((p, i) => (
+                        {plan.pain_management.map((p, i) => (
                           <li key={i}>{p}</li>
                         ))}
                       </ul>
@@ -463,7 +285,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                         <Home className="h-3 w-3 inline mr-1" />Accessible Rooms at Home
                       </p>
                       <ul className="bg-white rounded-lg p-3 border text-sm space-y-1 list-disc list-inside">
-                        {plan.accessibleRoomsAtHome.map((r, i) => (
+                        {plan.accessible_rooms_at_home.map((r, i) => (
                           <li key={i}>{r}</li>
                         ))}
                       </ul>
@@ -473,7 +295,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                         Home Adaptations Completed
                       </p>
                       <ul className="bg-white rounded-lg p-3 border text-sm space-y-1 list-disc list-inside">
-                        {plan.homeAdaptations.map((r, i) => (
+                        {plan.home_adaptations.map((r, i) => (
                           <li key={i}>{r}</li>
                         ))}
                       </ul>
@@ -488,15 +310,15 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                     <div className="bg-white rounded-lg p-3 border text-sm">
                       <p className="mb-2">
                         <span className="font-medium">Accessibility plan in place: </span>
-                        <span className={plan.schoolAccessibilityPlan ? "text-emerald-700" : "text-amber-700"}>
-                          {plan.schoolAccessibilityPlan ? "Yes" : "Not yet — action required"}
+                        <span className={plan.school_accessibility_plan ? "text-emerald-700" : "text-amber-700"}>
+                          {plan.school_accessibility_plan ? "Yes" : "Not yet — action required"}
                         </span>
                       </p>
-                      {plan.examAccessArrangements.length > 0 && (
+                      {plan.exam_access_arrangements.length > 0 && (
                         <>
                           <p className="text-xs font-medium text-muted-foreground mb-1">Exam access arrangements:</p>
                           <ul className="space-y-1 list-disc list-inside">
-                            {plan.examAccessArrangements.map((e, i) => (
+                            {plan.exam_access_arrangements.map((e, i) => (
                               <li key={i}>{e}</li>
                             ))}
                           </ul>
@@ -511,7 +333,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                       <Car className="h-3 w-3 inline mr-1" />Transport Arrangements
                     </p>
                     <ul className="bg-white rounded-lg p-3 border text-sm space-y-1 list-disc list-inside">
-                      {plan.transportArrangements.map((t, i) => (
+                      {plan.transport_arrangements.map((t, i) => (
                         <li key={i}>{t}</li>
                       ))}
                     </ul>
@@ -523,7 +345,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                       External Support (PT / OT / Consultant)
                     </p>
                     <div className="space-y-1.5">
-                      {plan.externalSupport.map((s, i) => (
+                      {plan.external_support.map((s, i) => (
                         <div key={i} className="bg-white rounded-lg p-2 border flex items-start gap-3 text-sm">
                           <span className="font-medium text-sky-800 shrink-0 w-44 truncate">{s.agency}</span>
                           <span className="flex-1">{s.role}</span>
@@ -541,7 +363,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                       Identity & Framing Notes
                     </p>
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-900">
-                      {plan.identityFramingNotes}
+                      {plan.identity_framing_notes}
                     </div>
                   </div>
 
@@ -551,7 +373,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                       Badges & Entitlements (DLA / PIP / Blue Badge / Other)
                     </p>
                     <ul className="bg-white rounded-lg p-3 border text-sm space-y-1 list-disc list-inside">
-                      {plan.badgesEntitlements.map((b, i) => (
+                      {plan.badges_entitlements.map((b, i) => (
                         <li key={i}>{b}</li>
                       ))}
                     </ul>
@@ -564,7 +386,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                         Child Voice
                       </p>
                       <div className="bg-white rounded-lg p-3 border text-sm italic text-slate-700">
-                        &ldquo;{plan.childVoice}&rdquo;
+                        &ldquo;{plan.child_voice}&rdquo;
                       </div>
                     </div>
                     <div>
@@ -572,28 +394,31 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
                         Staff Observation
                       </p>
                       <div className="bg-white rounded-lg p-3 border text-sm text-slate-700">
-                        {plan.staffObservation}
+                        {plan.staff_observation}
                       </div>
                     </div>
                   </div>
 
                   {/* flags + meta */}
-                  {plan.flagsForReview.length > 0 && (
+                  {plan.flags_for_review.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                         Flags for Review
                       </p>
                       <ul className="bg-white rounded-lg p-3 border text-sm space-y-1 list-disc list-inside">
-                        {plan.flagsForReview.map((f, i) => (
+                        {plan.flags_for_review.map((f, i) => (
                           <li key={i}>{f}</li>
                         ))}
                       </ul>
                     </div>
                   )}
 
+                  {/* smart link panel */}
+                  <SmartLinkPanel sourceType="mobility-disability-plan" sourceId={plan.id} childId={plan.child_id} compact />
+
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground border-t pt-3">
-                    <span>Plan dated {plan.planDate} · Key worker {getStaffName(plan.keyWorker) || plan.keyWorker}</span>
-                    <span>Next review {plan.reviewDate}</span>
+                    <span>Plan dated {plan.plan_date} · Key worker {getStaffName(plan.key_worker) || plan.key_worker}</span>
+                    <span>Next review {plan.review_date}</span>
                   </div>
                 </div>
               )}

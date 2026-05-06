@@ -16,17 +16,24 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import type {
+  MentalHealthCheckIn,
+  MoodRating,
+  CheckInSleepQuality,
+  CheckInAppetite,
+  CheckInEnergy,
+  CheckInConversationLength,
+} from "@/types/extended";
+import {
+  CHECK_IN_SLEEP_QUALITY_LABEL,
+  CHECK_IN_APPETITE_LABEL,
+  CHECK_IN_ENERGY_LABEL,
+  CHECK_IN_CONVERSATION_LENGTH_LABEL,
+} from "@/types/extended";
+import { useMentalHealthCheckIns } from "@/hooks/use-mental-health-check-ins";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ── types ───────────────────────────────────────────────────────────── */
-type MoodRating = 1 | 2 | 3 | 4 | 5;
-
+/* ── colour maps ──────────────────────────────────────────────────────── */
 const MOOD_CONFIG: Record<MoodRating, { color: string; bar: string; label: string }> = {
   1: { color: "text-red-600",    bar: "bg-red-400",    label: "Very low" },
   2: { color: "text-orange-600", bar: "bg-orange-400", label: "Low" },
@@ -35,238 +42,104 @@ const MOOD_CONFIG: Record<MoodRating, { color: string; bar: string; label: strin
   5: { color: "text-violet-600", bar: "bg-violet-500", label: "Great" },
 };
 
-const SLEEP = ["Poor", "Disrupted", "OK", "Good", "Great"] as const;
-type Sleep = typeof SLEEP[number];
-const SLEEP_COLORS: Record<Sleep, string> = {
-  "Poor":      "bg-red-100 text-red-800",
-  "Disrupted": "bg-orange-100 text-orange-800",
-  "OK":        "bg-amber-100 text-amber-800",
-  "Good":      "bg-sky-100 text-sky-800",
-  "Great":     "bg-violet-100 text-violet-800",
+const SLEEP_COLORS: Record<CheckInSleepQuality, string> = {
+  "poor":      "bg-red-100 text-red-800",
+  "disrupted": "bg-orange-100 text-orange-800",
+  "ok":        "bg-amber-100 text-amber-800",
+  "good":      "bg-sky-100 text-sky-800",
+  "great":     "bg-violet-100 text-violet-800",
 };
 
-const APPETITE = ["Skipped meals", "Picked", "Ate normally", "Hungry/ate well"] as const;
-type Appetite = typeof APPETITE[number];
-const APPETITE_COLORS: Record<Appetite, string> = {
-  "Skipped meals":   "bg-red-100 text-red-800",
-  "Picked":          "bg-amber-100 text-amber-800",
-  "Ate normally":    "bg-sky-100 text-sky-800",
-  "Hungry/ate well": "bg-violet-100 text-violet-800",
+const APPETITE_COLORS: Record<CheckInAppetite, string> = {
+  "skipped_meals":   "bg-red-100 text-red-800",
+  "picked":          "bg-amber-100 text-amber-800",
+  "ate_normally":    "bg-sky-100 text-sky-800",
+  "hungry_ate_well": "bg-violet-100 text-violet-800",
 };
 
-const ENERGY = ["Exhausted", "Low", "OK", "Good", "Buzzy"] as const;
-type Energy = typeof ENERGY[number];
-const ENERGY_COLORS: Record<Energy, string> = {
-  "Exhausted": "bg-red-100 text-red-800",
-  "Low":       "bg-orange-100 text-orange-800",
-  "OK":        "bg-amber-100 text-amber-800",
-  "Good":      "bg-sky-100 text-sky-800",
-  "Buzzy":     "bg-violet-100 text-violet-800",
+const ENERGY_COLORS: Record<CheckInEnergy, string> = {
+  "exhausted": "bg-red-100 text-red-800",
+  "low":       "bg-orange-100 text-orange-800",
+  "ok":        "bg-amber-100 text-amber-800",
+  "good":      "bg-sky-100 text-sky-800",
+  "buzzy":     "bg-violet-100 text-violet-800",
 };
-
-const CONVERSATION = ["Brief", "5 minutes", "10+ minutes", "Extended"] as const;
-type ConversationLength = typeof CONVERSATION[number];
-
-interface CheckInRecord {
-  id: string;
-  youngPerson: string;
-  date: string;
-  moodRating: 1 | 2 | 3 | 4 | 5;
-  moodEmoji: string;
-  whatsHeavy: string;
-  whatsGood: string;
-  whatWouldHelp: string;
-  sleepQuality: "Poor" | "Disrupted" | "OK" | "Good" | "Great";
-  appetite: "Skipped meals" | "Picked" | "Ate normally" | "Hungry/ate well";
-  energy: "Exhausted" | "Low" | "OK" | "Good" | "Buzzy";
-  conversationLength: "Brief" | "5 minutes" | "10+ minutes" | "Extended";
-  staffPresent: string;
-  followUpAction?: string;
-  flagsConcerns: string[];
-  weeklyTrendNote?: string;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: CheckInRecord[] = [
-  /* ── JORDAN — mostly good week, dip on contact day ──────────── */
-  {
-    id: "checkin_1", youngPerson: "yp_jordan", date: d(0),
-    moodRating: 5, moodEmoji: "😄",
-    whatsHeavy: "Nothing today really. Maths homework but it's fine.",
-    whatsGood: "Coach said I'm starting on Saturday. First time ever.",
-    whatWouldHelp: "Just keep reminding me about the kit list.",
-    sleepQuality: "Great", appetite: "Hungry/ate well", energy: "Buzzy",
-    conversationLength: "10+ minutes", staffPresent: "staff_anna",
-    flagsConcerns: [],
-    weeklyTrendNote: "Steady upward week — lighter affect throughout.",
-  },
-  {
-    id: "checkin_2", youngPerson: "yp_jordan", date: d(-1),
-    moodRating: 4, moodEmoji: "🙂",
-    whatsHeavy: "A bit tired. Late night doing FIFA with Alex.",
-    whatsGood: "Got picked for the squad list at training.",
-    whatWouldHelp: "Earlier bedtime tonight maybe.",
-    sleepQuality: "OK", appetite: "Ate normally", energy: "Good",
-    conversationLength: "5 minutes", staffPresent: "staff_edward",
-    flagsConcerns: [],
-  },
-  {
-    id: "checkin_3", youngPerson: "yp_jordan", date: d(-2),
-    moodRating: 3, moodEmoji: "😐",
-    whatsHeavy: "Mum cancelled contact again. Found out at lunch.",
-    whatsGood: "Anna sat with me after — didn't push, just sat.",
-    whatWouldHelp: "Knowing if she's actually coming next week.",
-    sleepQuality: "Disrupted", appetite: "Picked", energy: "Low",
-    conversationLength: "Extended", staffPresent: "staff_anna",
-    followUpAction: "Anna to chase social worker re: contact reliability and update Jordan by Friday.",
-    flagsConcerns: ["Contact disappointment", "Skipped pudding"],
-  },
-  {
-    id: "checkin_4", youngPerson: "yp_jordan", date: d(-3),
-    moodRating: 4, moodEmoji: "🙂",
-    whatsHeavy: "Bit nervous about contact tomorrow.",
-    whatsGood: "Cooked pasta with Edward. Turned out alright.",
-    whatWouldHelp: "Someone to drop me at the visit.",
-    sleepQuality: "Good", appetite: "Ate normally", energy: "OK",
-    conversationLength: "5 minutes", staffPresent: "staff_edward",
-    flagsConcerns: [],
-  },
-  /* ── ALEX — variable, building emotional vocabulary ──────────── */
-  {
-    id: "checkin_5", youngPerson: "yp_alex", date: d(0),
-    moodRating: 4, moodEmoji: "🙂",
-    whatsHeavy: "Bit worried about the maths test on Thursday. My head goes fuzzy.",
-    whatsGood: "Read three chapters of the dragon book before bed.",
-    whatWouldHelp: "Practising past papers with someone who's patient.",
-    sleepQuality: "Good", appetite: "Ate normally", energy: "Good",
-    conversationLength: "10+ minutes", staffPresent: "staff_anna",
-    followUpAction: "Anna to book maths revision slot Wednesday evening.",
-    flagsConcerns: [],
-    weeklyTrendNote: "Naming feelings more clearly — 'fuzzy', 'tight chest' — vocab is growing.",
-  },
-  {
-    id: "checkin_6", youngPerson: "yp_alex", date: d(-1),
-    moodRating: 2, moodEmoji: "😟",
-    whatsHeavy: "Tight chest feeling came back. Don't know why exactly.",
-    whatsGood: "Chervelle made me toast and didn't ask anything.",
-    whatWouldHelp: "Quiet room. No questions for a bit.",
-    sleepQuality: "Disrupted", appetite: "Skipped meals", energy: "Exhausted",
-    conversationLength: "Brief", staffPresent: "staff_chervelle",
-    followUpAction: "Quiet evening offered. Re-check at bedtime. Note for handover.",
-    flagsConcerns: ["Somatic anxiety", "Skipped breakfast"],
-  },
-  {
-    id: "checkin_7", youngPerson: "yp_alex", date: d(-2),
-    moodRating: 3, moodEmoji: "😐",
-    whatsHeavy: "School felt loud today.",
-    whatsGood: "Got an A on the spelling test.",
-    whatWouldHelp: "Headphones for the bus tomorrow maybe.",
-    sleepQuality: "OK", appetite: "Picked", energy: "OK",
-    conversationLength: "5 minutes", staffPresent: "staff_edward",
-    flagsConcerns: ["Sensory overwhelm"],
-  },
-  /* ── CASEY — mostly 4-5 with one 2 after nightmare ──────────── */
-  {
-    id: "checkin_8", youngPerson: "yp_casey", date: d(0),
-    moodRating: 5, moodEmoji: "😊",
-    whatsHeavy: "Nothing big. Just normal stuff.",
-    whatsGood: "Finished the mural in the lounge — Anna helped with the sky bit.",
-    whatWouldHelp: "Maybe more art supplies for the next one.",
-    sleepQuality: "Great", appetite: "Hungry/ate well", energy: "Good",
-    conversationLength: "10+ minutes", staffPresent: "staff_anna",
-    flagsConcerns: [],
-    weeklyTrendNote: "Settled week overall apart from Tuesday nightmare — positive baseline.",
-  },
-  {
-    id: "checkin_9", youngPerson: "yp_casey", date: d(-2),
-    moodRating: 2, moodEmoji: "😢",
-    whatsHeavy: "Bad nightmare last night. Woke up at 3 and couldn't get back.",
-    whatsGood: "Edward made hot chocolate when I came down.",
-    whatWouldHelp: "Night light on. Door open. Maybe early bed tonight.",
-    sleepQuality: "Poor", appetite: "Picked", energy: "Exhausted",
-    conversationLength: "Extended", staffPresent: "staff_edward",
-    followUpAction: "Night light installed. Edward to log sleep pattern for the week. Mention to therapist Friday.",
-    flagsConcerns: ["Recurring nightmare", "Sleep loss"],
-  },
-  {
-    id: "checkin_10", youngPerson: "yp_casey", date: d(-4),
-    moodRating: 4, moodEmoji: "🙂",
-    whatsHeavy: "Missing my nan. Anniversary coming up next month.",
-    whatsGood: "Wrote her a letter in the journal. Felt lighter after.",
-    whatWouldHelp: "Visit her grave on the anniversary if possible.",
-    sleepQuality: "Good", appetite: "Ate normally", energy: "Good",
-    conversationLength: "10+ minutes", staffPresent: "staff_chervelle",
-    followUpAction: "Chervelle to add anniversary date to care plan diary and discuss visit logistics.",
-    flagsConcerns: [],
-  },
-];
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function ChildMentalHealthDailyCheckPage() {
-  const [records] = useState<CheckInRecord[]>(SEED);
+  const { data: raw, isLoading } = useMentalHealthCheckIns();
+  const items = raw?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let list = [...records];
+    let list = [...items];
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          r.whatsHeavy.toLowerCase().includes(q) ||
-          r.whatsGood.toLowerCase().includes(q) ||
-          r.whatWouldHelp.toLowerCase().includes(q) ||
-          (r.followUpAction ?? "").toLowerCase().includes(q) ||
-          r.flagsConcerns.some((f) => f.toLowerCase().includes(q))
+          r.whats_heavy.toLowerCase().includes(q) ||
+          r.whats_good.toLowerCase().includes(q) ||
+          r.what_would_help.toLowerCase().includes(q) ||
+          (r.follow_up_action ?? "").toLowerCase().includes(q) ||
+          r.flags_concerns.some((f) => f.toLowerCase().includes(q))
       );
     }
-    if (filterYP !== "all") list = list.filter((r) => r.youngPerson === filterYP);
+    if (filterYP !== "all") list = list.filter((r) => r.child_id === filterYP);
 
     list.sort((a, b) => {
       switch (sortBy) {
         case "date":      return b.date.localeCompare(a.date);
-        case "yp":        return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
-        case "mood-high": return b.moodRating - a.moodRating;
-        case "mood-low":  return a.moodRating - b.moodRating;
+        case "yp":        return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "mood-high": return b.mood_rating - a.mood_rating;
+        case "mood-low":  return a.mood_rating - b.mood_rating;
         default:          return 0;
       }
     });
     return list;
-  }, [records, search, filterYP, sortBy]);
+  }, [items, search, filterYP, sortBy]);
 
   /* stats */
-  const sevenDaysAgo = d(-7);
-  const thisWeekRecords = records.filter((r) => r.date >= sevenDaysAgo);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sevenDaysAgoStr = sevenDaysAgo.toISOString().slice(0, 10);
+
+  const thisWeekRecords = items.filter((r) => r.date >= sevenDaysAgoStr);
   const checkInsThisWeek = thisWeekRecords.length;
-  const avgMood = records.length === 0 ? 0
-    : records.reduce((s, r) => s + r.moodRating, 0) / records.length;
-  const flagsThisWeek = thisWeekRecords.reduce((s, r) => s + r.flagsConcerns.length, 0);
-  const childLedConversations = records.filter(
-    (r) => r.conversationLength === "10+ minutes" || r.conversationLength === "Extended"
+  const avgMood = items.length === 0 ? 0
+    : items.reduce((s, r) => s + r.mood_rating, 0) / items.length;
+  const flagsThisWeek = thisWeekRecords.reduce((s, r) => s + r.flags_concerns.length, 0);
+  const childLedConversations = items.filter(
+    (r) => r.conversation_length === "ten_plus_minutes" || r.conversation_length === "extended"
   ).length;
 
-  const ypIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const ypIds = [...new Set(items.map(r => r.child_id))];
 
-  const exportCols: ExportColumn<CheckInRecord>[] = [
-    { header: "ID",                  accessor: (r: CheckInRecord) => r.id },
-    { header: "Young Person",        accessor: (r: CheckInRecord) => getYPName(r.youngPerson) },
-    { header: "Date",                accessor: (r: CheckInRecord) => r.date },
-    { header: "Mood Rating",         accessor: (r: CheckInRecord) => r.moodRating },
-    { header: "Mood Emoji",          accessor: (r: CheckInRecord) => r.moodEmoji },
-    { header: "What's Heavy",        accessor: (r: CheckInRecord) => r.whatsHeavy },
-    { header: "What's Good",         accessor: (r: CheckInRecord) => r.whatsGood },
-    { header: "What Would Help",     accessor: (r: CheckInRecord) => r.whatWouldHelp },
-    { header: "Sleep Quality",       accessor: (r: CheckInRecord) => r.sleepQuality },
-    { header: "Appetite",            accessor: (r: CheckInRecord) => r.appetite },
-    { header: "Energy",              accessor: (r: CheckInRecord) => r.energy },
-    { header: "Conversation Length", accessor: (r: CheckInRecord) => r.conversationLength },
-    { header: "Staff Present",       accessor: (r: CheckInRecord) => getStaffName(r.staffPresent) },
-    { header: "Follow-Up Action",    accessor: (r: CheckInRecord) => r.followUpAction ?? "" },
-    { header: "Flags / Concerns",    accessor: (r: CheckInRecord) => r.flagsConcerns.join("; ") },
-    { header: "Weekly Trend Note",   accessor: (r: CheckInRecord) => r.weeklyTrendNote ?? "" },
-  ];
+  const exportCols: ExportColumn<MentalHealthCheckIn>[] = useMemo(() => [
+    { header: "ID",                  accessor: (r: MentalHealthCheckIn) => r.id },
+    { header: "Young Person",        accessor: (r: MentalHealthCheckIn) => getYPName(r.child_id) },
+    { header: "Date",                accessor: (r: MentalHealthCheckIn) => r.date },
+    { header: "Mood Rating",         accessor: (r: MentalHealthCheckIn) => r.mood_rating },
+    { header: "Mood Emoji",          accessor: (r: MentalHealthCheckIn) => r.mood_emoji },
+    { header: "What's Heavy",        accessor: (r: MentalHealthCheckIn) => r.whats_heavy },
+    { header: "What's Good",         accessor: (r: MentalHealthCheckIn) => r.whats_good },
+    { header: "What Would Help",     accessor: (r: MentalHealthCheckIn) => r.what_would_help },
+    { header: "Sleep Quality",       accessor: (r: MentalHealthCheckIn) => CHECK_IN_SLEEP_QUALITY_LABEL[r.sleep_quality] },
+    { header: "Appetite",            accessor: (r: MentalHealthCheckIn) => CHECK_IN_APPETITE_LABEL[r.appetite] },
+    { header: "Energy",              accessor: (r: MentalHealthCheckIn) => CHECK_IN_ENERGY_LABEL[r.energy] },
+    { header: "Conversation Length", accessor: (r: MentalHealthCheckIn) => CHECK_IN_CONVERSATION_LENGTH_LABEL[r.conversation_length] },
+    { header: "Staff Present",       accessor: (r: MentalHealthCheckIn) => getStaffName(r.staff_present) },
+    { header: "Follow-Up Action",    accessor: (r: MentalHealthCheckIn) => r.follow_up_action ?? "" },
+    { header: "Flags / Concerns",    accessor: (r: MentalHealthCheckIn) => r.flags_concerns.join("; ") },
+    { header: "Weekly Trend Note",   accessor: (r: MentalHealthCheckIn) => r.weekly_trend_note ?? "" },
+  ], []);
+
+  if (isLoading) {
+    return <PageShell title="Daily Mental Health Check-Ins" subtitle="Loading…"><div /></PageShell>;
+  }
 
   return (
     <PageShell
@@ -355,7 +228,7 @@ export default function ChildMentalHealthDailyCheckPage() {
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;
-            const moodCfg = MOOD_CONFIG[rec.moodRating];
+            const moodCfg = MOOD_CONFIG[rec.mood_rating];
             return (
               <div key={rec.id} className="rounded-xl border bg-white overflow-hidden">
                 <button
@@ -367,32 +240,32 @@ export default function ChildMentalHealthDailyCheckPage() {
                       "h-10 w-10 rounded-full flex items-center justify-center text-xl shrink-0",
                       "bg-gradient-to-br from-sky-50 to-violet-50 border"
                     )}>
-                      <span aria-hidden>{rec.moodEmoji}</span>
+                      <span aria-hidden>{rec.mood_emoji}</span>
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium truncate">
-                        {getYPName(rec.youngPerson)} — {rec.date}
+                        {getYPName(rec.child_id)} — {rec.date}
                       </p>
                       <div className="flex flex-wrap items-center gap-1.5 mt-1">
                         <Badge className={cn("text-xs", moodCfg.color, "bg-white border")}>
-                          {rec.moodRating}/5 · {moodCfg.label}
+                          {rec.mood_rating}/5 · {moodCfg.label}
                         </Badge>
-                        <Badge className={cn("text-xs", SLEEP_COLORS[rec.sleepQuality])}>
-                          Sleep: {rec.sleepQuality}
+                        <Badge className={cn("text-xs", SLEEP_COLORS[rec.sleep_quality])}>
+                          Sleep: {CHECK_IN_SLEEP_QUALITY_LABEL[rec.sleep_quality]}
                         </Badge>
                         <Badge className={cn("text-xs", APPETITE_COLORS[rec.appetite])}>
-                          {rec.appetite}
+                          {CHECK_IN_APPETITE_LABEL[rec.appetite]}
                         </Badge>
                         <Badge className={cn("text-xs", ENERGY_COLORS[rec.energy])}>
-                          {rec.energy}
+                          {CHECK_IN_ENERGY_LABEL[rec.energy]}
                         </Badge>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {rec.flagsConcerns.length > 0 && (
+                    {rec.flags_concerns.length > 0 && (
                       <Badge className="bg-amber-100 text-amber-800 text-xs">
-                        {rec.flagsConcerns.length} flag{rec.flagsConcerns.length > 1 ? "s" : ""}
+                        {rec.flags_concerns.length} flag{rec.flags_concerns.length > 1 ? "s" : ""}
                       </Badge>
                     )}
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -407,7 +280,7 @@ export default function ChildMentalHealthDailyCheckPage() {
                       <div className="flex items-center gap-2">
                         {[1, 2, 3, 4, 5].map((n) => {
                           const cfg = MOOD_CONFIG[n as MoodRating];
-                          const active = n === rec.moodRating;
+                          const active = n === rec.mood_rating;
                           return (
                             <div key={n} className="flex-1">
                               <div className={cn(
@@ -432,14 +305,14 @@ export default function ChildMentalHealthDailyCheckPage() {
                           <Cloud className="h-3.5 w-3.5 text-slate-500" />
                           What&apos;s Heavy Today
                         </p>
-                        <p className="text-sm italic text-slate-800">&ldquo;{rec.whatsHeavy}&rdquo;</p>
+                        <p className="text-sm italic text-slate-800">&ldquo;{rec.whats_heavy}&rdquo;</p>
                       </div>
                       <div className="rounded-lg bg-white border border-violet-200 p-3">
                         <p className="text-xs font-medium text-violet-700 mb-1 flex items-center gap-1.5">
                           <Sun className="h-3.5 w-3.5 text-violet-600" />
                           What&apos;s Good Today
                         </p>
-                        <p className="text-sm italic text-violet-900">&ldquo;{rec.whatsGood}&rdquo;</p>
+                        <p className="text-sm italic text-violet-900">&ldquo;{rec.whats_good}&rdquo;</p>
                       </div>
                     </div>
 
@@ -448,55 +321,57 @@ export default function ChildMentalHealthDailyCheckPage() {
                         <Heart className="h-3.5 w-3.5 text-sky-600" />
                         What Would Help
                       </p>
-                      <p className="text-sm text-sky-900">{rec.whatWouldHelp}</p>
+                      <p className="text-sm text-sky-900">{rec.what_would_help}</p>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs text-muted-foreground">Conversation</p>
-                        <p className="font-medium">{rec.conversationLength}</p>
+                        <p className="font-medium">{CHECK_IN_CONVERSATION_LENGTH_LABEL[rec.conversation_length]}</p>
                       </div>
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs text-muted-foreground">Staff Present</p>
-                        <p className="font-medium">{getStaffName(rec.staffPresent)}</p>
+                        <p className="font-medium">{getStaffName(rec.staff_present)}</p>
                       </div>
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs text-muted-foreground">Sleep</p>
-                        <p className="font-medium">{rec.sleepQuality}</p>
+                        <p className="font-medium">{CHECK_IN_SLEEP_QUALITY_LABEL[rec.sleep_quality]}</p>
                       </div>
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs text-muted-foreground">Energy</p>
-                        <p className="font-medium">{rec.energy}</p>
+                        <p className="font-medium">{CHECK_IN_ENERGY_LABEL[rec.energy]}</p>
                       </div>
                     </div>
 
-                    {rec.followUpAction && (
+                    {rec.follow_up_action && (
                       <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                         <p className="text-xs font-medium text-amber-800 mb-1">Follow-Up Action</p>
-                        <p className="text-sm text-amber-900">{rec.followUpAction}</p>
+                        <p className="text-sm text-amber-900">{rec.follow_up_action}</p>
                       </div>
                     )}
 
-                    {rec.flagsConcerns.length > 0 && (
+                    {rec.flags_concerns.length > 0 && (
                       <div className="rounded-lg bg-white border border-amber-200 p-3">
                         <p className="text-xs font-medium text-amber-800 mb-2">Flags / Concerns</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {rec.flagsConcerns.map((f, i) => (
+                          {rec.flags_concerns.map((f, i) => (
                             <Badge key={i} className="bg-amber-100 text-amber-800 text-xs">{f}</Badge>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {rec.weeklyTrendNote && (
+                    {rec.weekly_trend_note && (
                       <div className="rounded-lg bg-violet-50 border border-violet-200 p-3">
                         <p className="text-xs font-medium text-violet-800 mb-1 flex items-center gap-1.5">
                           <TrendingUp className="h-3.5 w-3.5" />
                           Weekly Trend Note
                         </p>
-                        <p className="text-sm text-violet-900">{rec.weeklyTrendNote}</p>
+                        <p className="text-sm text-violet-900">{rec.weekly_trend_note}</p>
                       </div>
                     )}
+
+                    <SmartLinkPanel sourceType="mental-health-check-in" sourceId={rec.id} childId={rec.child_id} compact />
                   </div>
                 )}
               </div>

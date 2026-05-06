@@ -5445,3 +5445,343 @@ export interface ChildLedMeetingRecord {
   recorded_by: string;
   created_at: string;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BATCH 13
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Mental Health Daily Check-In ──────────────────────────────────────── */
+
+export type MoodRating = 1 | 2 | 3 | 4 | 5;
+
+export type CheckInSleepQuality = "poor" | "disrupted" | "ok" | "good" | "great";
+export const CHECK_IN_SLEEP_QUALITY_LABEL: Record<CheckInSleepQuality, string> = {
+  poor: "Poor",
+  disrupted: "Disrupted",
+  ok: "OK",
+  good: "Good",
+  great: "Great",
+};
+
+export type CheckInAppetite = "skipped_meals" | "picked" | "ate_normally" | "hungry_ate_well";
+export const CHECK_IN_APPETITE_LABEL: Record<CheckInAppetite, string> = {
+  skipped_meals: "Skipped meals",
+  picked: "Picked",
+  ate_normally: "Ate normally",
+  hungry_ate_well: "Hungry/ate well",
+};
+
+export type CheckInEnergy = "exhausted" | "low" | "ok" | "good" | "buzzy";
+export const CHECK_IN_ENERGY_LABEL: Record<CheckInEnergy, string> = {
+  exhausted: "Exhausted",
+  low: "Low",
+  ok: "OK",
+  good: "Good",
+  buzzy: "Buzzy",
+};
+
+export type CheckInConversationLength = "brief" | "five_minutes" | "ten_plus_minutes" | "extended";
+export const CHECK_IN_CONVERSATION_LENGTH_LABEL: Record<CheckInConversationLength, string> = {
+  brief: "Brief",
+  five_minutes: "5 minutes",
+  ten_plus_minutes: "10+ minutes",
+  extended: "Extended",
+};
+
+export interface MentalHealthCheckIn {
+  id: string;
+  child_id: string;
+  date: string;
+  mood_rating: MoodRating;
+  mood_emoji: string;
+  whats_heavy: string;
+  whats_good: string;
+  what_would_help: string;
+  sleep_quality: CheckInSleepQuality;
+  appetite: CheckInAppetite;
+  energy: CheckInEnergy;
+  conversation_length: CheckInConversationLength;
+  staff_present: string;
+  follow_up_action?: string;
+  flags_concerns: string[];
+  weekly_trend_note?: string;
+  created_at: string;
+}
+
+/* ── Child Mobile Phone Management ─────────────────────────────────────── */
+
+export type PhoneContractType = "payg" | "sim_only" | "contract" | "family_shared" | "no_phone";
+export const PHONE_CONTRACT_TYPE_LABEL: Record<PhoneContractType, string> = {
+  payg: "PAYG",
+  sim_only: "SIM-only",
+  contract: "Contract",
+  family_shared: "Family-shared",
+  no_phone: "No phone",
+};
+
+export type PhoneFundingSource = "pocket_money" | "home_pays" | "family_pays" | "mixed" | "free_with_leaving_care_grant";
+export const PHONE_FUNDING_SOURCE_LABEL: Record<PhoneFundingSource, string> = {
+  pocket_money: "Pocket money",
+  home_pays: "Home pays",
+  family_pays: "Family pays",
+  mixed: "Mixed",
+  free_with_leaving_care_grant: "Free with leaving care grant",
+};
+
+export type PhoneHandInProtocol = "bedtime" | "school_hours" | "both" | "never" | "other_agreed_pattern";
+export const PHONE_HAND_IN_PROTOCOL_LABEL: Record<PhoneHandInProtocol, string> = {
+  bedtime: "Bedtime",
+  school_hours: "School hours",
+  both: "Both",
+  never: "Never",
+  other_agreed_pattern: "Other agreed pattern",
+};
+
+export type PhoneAppCategory = "social" | "games" | "education" | "health" | "communication" | "utility" | "other";
+export const PHONE_APP_CATEGORY_LABEL: Record<PhoneAppCategory, string> = {
+  social: "Social",
+  games: "Games",
+  education: "Education",
+  health: "Health",
+  communication: "Communication",
+  utility: "Utility",
+  other: "Other",
+};
+
+export interface PhoneApp {
+  name: string;
+  category: PhoneAppCategory;
+  age_rating?: string;
+}
+
+export interface ChildPhoneRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  phone_model: string;
+  contract_type: PhoneContractType;
+  contract_holder?: string;
+  monthly_cost: number;
+  funding_source: PhoneFundingSource;
+  imei?: string;
+  parental_controls_active: boolean;
+  parental_controls_type?: string;
+  screen_time_weekly_avg: number;
+  screen_time_agreed_limit?: number;
+  apps_installed: PhoneApp[];
+  hand_in_protocol: PhoneHandInProtocol;
+  what_if_lost_plan: string;
+  passcode_with_staff: boolean;
+  child_voice: string;
+  staff_observation: string;
+  flags_concerns: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* ── Mobility & Physical Disability Plan ───────────────────────────────── */
+
+export type MobilityStatus = "independently_mobile" | "mobile_with_aid" | "wheelchair_part_time" | "wheelchair_full_time" | "bed_rest_periods" | "variable_fluctuating";
+export const MOBILITY_STATUS_LABEL: Record<MobilityStatus, string> = {
+  independently_mobile: "Independently mobile",
+  mobile_with_aid: "Mobile with aid",
+  wheelchair_part_time: "Wheelchair part-time",
+  wheelchair_full_time: "Wheelchair full-time",
+  bed_rest_periods: "Bed-rest periods",
+  variable_fluctuating: "Variable / fluctuating",
+};
+
+export type EnergyEnvelopeStatus = "pacing_actively_used" | "some_pacing" | "no_pacing_yet" | "not_applicable";
+export const ENERGY_ENVELOPE_STATUS_LABEL: Record<EnergyEnvelopeStatus, string> = {
+  pacing_actively_used: "Pacing actively used",
+  some_pacing: "Some pacing",
+  no_pacing_yet: "No pacing yet",
+  not_applicable: "Not applicable",
+};
+
+export interface ExternalMobilitySupport {
+  agency: string;
+  role: string;
+  frequency: string;
+}
+
+export interface MobilityDisabilityPlan {
+  id: string;
+  child_id: string;
+  plan_date: string;
+  primary_condition: string;
+  diagnosis_year?: string;
+  mobility_status: MobilityStatus;
+  mobility_aids: string[];
+  energy_envelope?: EnergyEnvelopeStatus;
+  pain_management: string[];
+  accessible_rooms_at_home: string[];
+  home_adaptations: string[];
+  transport_arrangements: string[];
+  school_accessibility_plan: boolean;
+  exam_access_arrangements: string[];
+  external_support: ExternalMobilitySupport[];
+  identity_framing_notes: string;
+  badges_entitlements: string[];
+  child_voice: string;
+  staff_observation: string;
+  flags_for_review: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* ── Photo ID Application Tracker ──────────────────────────────────────── */
+
+export type PhotoIdType = "british_passport" | "provisional_driving_licence" | "citizen_card" | "young_scot_card" | "photo_voter_id" | "pass_card" | "other";
+export const PHOTO_ID_TYPE_LABEL: Record<PhotoIdType, string> = {
+  british_passport: "British Passport",
+  provisional_driving_licence: "Provisional Driving Licence",
+  citizen_card: "Citizen Card (free for care leavers)",
+  young_scot_card: "Young Scot card",
+  photo_voter_id: "Photo Voter ID",
+  pass_card: "PASS card",
+  other: "Other",
+};
+
+export type PhotoIdStatus = "considering_planning" | "documents_being_gathered" | "application_drafted" | "application_submitted" | "awaiting_biometrics" | "issued" | "renewal_due" | "lost_replacement_applied" | "not_applicable";
+export const PHOTO_ID_STATUS_LABEL: Record<PhotoIdStatus, string> = {
+  considering_planning: "Considering / planning",
+  documents_being_gathered: "Documents being gathered",
+  application_drafted: "Application drafted",
+  application_submitted: "Application submitted",
+  awaiting_biometrics: "Awaiting biometrics",
+  issued: "Issued",
+  renewal_due: "Renewal due",
+  lost_replacement_applied: "Lost / replacement applied",
+  not_applicable: "Not applicable",
+};
+
+export interface PhotoIdRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  id_type: PhotoIdType;
+  status: PhotoIdStatus;
+  application_date?: string;
+  cost_paid?: number;
+  funding_source?: string;
+  document_number?: string;
+  issue_date?: string;
+  expiry_date?: string;
+  storage_location: string;
+  child_has_original: boolean;
+  copies_kept: string[];
+  evidence_provided_to_authority: string[];
+  unique_challenges_for_lac: string[];
+  child_voice: string;
+  staff_observation: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* ── Child Photography Portfolio ───────────────────────────────────────── */
+
+export type PhotoCategory = "birthday" | "achievement" | "activity" | "family_contact" | "holiday_trip" | "everyday_moment" | "cultural_event" | "school_milestone";
+export const PHOTO_CATEGORY_LABEL: Record<PhotoCategory, string> = {
+  birthday: "Birthday",
+  achievement: "Achievement",
+  activity: "Activity",
+  family_contact: "Family contact",
+  holiday_trip: "Holiday/Trip",
+  everyday_moment: "Everyday moment",
+  cultural_event: "Cultural event",
+  school_milestone: "School milestone",
+};
+
+export type PhotoConsentMethod = "verbal" | "written" | "visual_cards" | "through_advocate";
+export const PHOTO_CONSENT_METHOD_LABEL: Record<PhotoConsentMethod, string> = {
+  verbal: "Verbal",
+  written: "Written",
+  visual_cards: "Visual cards",
+  through_advocate: "Through advocate",
+};
+
+export interface ChildPhotoEntry {
+  id: string;
+  child_id: string;
+  date: string;
+  occasion: string;
+  photo_category: PhotoCategory;
+  description: string;
+  photographer: string;
+  child_posed: boolean;
+  child_choose_to_take: boolean;
+  group_photo: boolean;
+  others_in_photo: string[];
+  consent_given: boolean;
+  consent_method: PhotoConsentMethod;
+  photo_location: string;
+  copies: string[];
+  child_can_request_removal: boolean;
+  part_of_life_story_book: boolean;
+  part_of_bedroom_display: boolean;
+  part_of_gallery_wall: boolean;
+  child_comment: string;
+  special_significance: string;
+  created_at: string;
+}
+
+/* ── Physio & OT Plan ──────────────────────────────────────────────────── */
+
+export type PhysioOtTherapyType = "physiotherapy" | "occupational_therapy" | "both" | "hand_therapy" | "sensory_integration_ot" | "hydrotherapy" | "awaiting_referral";
+export const PHYSIO_OT_THERAPY_TYPE_LABEL: Record<PhysioOtTherapyType, string> = {
+  physiotherapy: "Physiotherapy",
+  occupational_therapy: "Occupational Therapy",
+  both: "Both",
+  hand_therapy: "Hand therapy",
+  sensory_integration_ot: "Sensory integration OT",
+  hydrotherapy: "Hydrotherapy",
+  awaiting_referral: "Awaiting referral",
+};
+
+export type PhysioOtGoalStatus = "achieved" | "on_track" | "slow_progress" | "not_started";
+export const PHYSIO_OT_GOAL_STATUS_LABEL: Record<PhysioOtGoalStatus, string> = {
+  achieved: "Achieved",
+  on_track: "On track",
+  slow_progress: "Slow progress",
+  not_started: "Not started",
+};
+
+export interface PhysioOtGoal {
+  goal: string;
+  status: PhysioOtGoalStatus;
+  target_date?: string;
+}
+
+export interface PhysioOtExercise {
+  name: string;
+  frequency: string;
+  who_supports: string;
+}
+
+export interface PhysioOtPlan {
+  id: string;
+  child_id: string;
+  therapy_type: PhysioOtTherapyType;
+  reason_for_referral: string;
+  therapist_name?: string;
+  therapist_service: string;
+  start_date?: string;
+  review_frequency?: string;
+  goals: PhysioOtGoal[];
+  exercises_programs: PhysioOtExercise[];
+  equipment: string[];
+  school_plan_in_place: boolean;
+  home_environment_adaptations: string[];
+  child_motivation: string;
+  staff_support_needed: string[];
+  child_voice: string;
+  staff_observation: string;
+  next_appointment?: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
