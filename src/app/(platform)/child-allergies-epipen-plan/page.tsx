@@ -46,6 +46,7 @@ const SEVERITY_COLOURS: Record<AllergySeverity, string> = {
   moderate: "bg-amber-100 text-amber-800 border-amber-200",
   severe: "bg-orange-100 text-orange-800 border-orange-200",
   anaphylactic: "bg-red-100 text-red-800 border-red-200",
+  life_threatening: "bg-red-100 text-red-800 border-red-200",
 };
 
 const SEVERITY_RING: Record<AllergySeverity, string> = {
@@ -53,6 +54,7 @@ const SEVERITY_RING: Record<AllergySeverity, string> = {
   moderate: "border-l-4 border-l-amber-400",
   severe: "border-l-4 border-l-orange-500",
   anaphylactic: "border-l-4 border-l-red-600",
+  life_threatening: "border-l-4 border-l-red-600",
 };
 
 const expiryStatus = (expiry: string) => {

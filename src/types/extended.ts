@@ -3532,12 +3532,13 @@ export interface ADHDPlan {
 
 // ── Child Allergies & Anaphylaxis (AAI / EpiPen) Plan ─────────────────
 
-export type AllergySeverity = "mild" | "moderate" | "severe" | "anaphylactic";
+export type AllergySeverity = "mild" | "moderate" | "severe" | "anaphylactic" | "life_threatening";
 export const ALLERGY_SEVERITY_LABEL: Record<AllergySeverity, string> = {
   mild: "Mild",
   moderate: "Moderate",
   severe: "Severe",
   anaphylactic: "Anaphylactic",
+  life_threatening: "Life Threatening",
 };
 
 export type AAIBrand = "epipen" | "jext" | "emerade" | "other";
@@ -9782,5 +9783,412 @@ export interface HealthAssessment {
   consent: string;
   child_view: string;
   notes: string;
+  created_at: string;
+}
+
+// ── Batch 26 ──────────────────────────────────────────────────────────────────
+
+/* ── Health Monitoring ───────────────────────────────────────────────────────── */
+
+export type HealthMonitoringType = "dental" | "optician" | "immunisation" | "gp_registration" | "annual_health" | "hearing" | "growth" | "sexual_health";
+
+export const HEALTH_MONITORING_TYPE_LABEL: Record<HealthMonitoringType, string> = {
+  dental: "Dental",
+  optician: "Optician",
+  immunisation: "Immunisation",
+  gp_registration: "GP Registration",
+  annual_health: "Annual Health Assessment",
+  hearing: "Hearing Test",
+  growth: "Growth / BMI",
+  sexual_health: "Sexual Health",
+};
+
+export type HealthMonitoringStatus = "completed" | "scheduled" | "overdue" | "declined" | "cancelled" | "not_due";
+
+export const HEALTH_MONITORING_STATUS_LABEL: Record<HealthMonitoringStatus, string> = {
+  completed: "Completed",
+  scheduled: "Scheduled",
+  overdue: "Overdue",
+  declined: "Declined",
+  cancelled: "Cancelled",
+  not_due: "Not Due",
+};
+
+export interface HealthMonitoringEntry {
+  id: string;
+  child_id: string;
+  type: HealthMonitoringType;
+  provider: string;
+  date: string;
+  next_due: string;
+  status: HealthMonitoringStatus;
+  attended_by: string | null;
+  outcome: string;
+  recommendations: string[];
+  follow_up: string;
+  consent_obtained: boolean;
+  consent_from: string;
+  child_views: string;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Health Passports ────────────────────────────────────────────────────────── */
+
+export interface PassportMedication {
+  name: string;
+  dose: string;
+  frequency: string;
+  prescribed_for: string;
+  prescribed_by: string;
+}
+
+export interface PassportAllergy {
+  allergen: string;
+  reaction: string;
+  severity: AllergySeverity;
+}
+
+export interface PassportCondition {
+  condition: string;
+  managed_by: string;
+  notes: string;
+}
+
+export interface PassportHealthContact {
+  role: string;
+  name: string;
+  phone: string;
+  address: string;
+}
+
+export interface HealthPassport {
+  id: string;
+  child_id: string;
+  last_updated: string;
+  updated_by: string;
+  nhs_number: string;
+  blood_type: string;
+  medications: PassportMedication[];
+  allergies: PassportAllergy[];
+  conditions: PassportCondition[];
+  immunisations_up_to_date: boolean;
+  immunisation_notes: string;
+  dietary_needs: string;
+  health_contacts: PassportHealthContact[];
+  mental_health: string;
+  sensory_needs: string | null;
+  emergency_info: string;
+  consent_status: string;
+  last_health_assessment: string;
+  next_health_assessment: string;
+  dental_check_date: string;
+  optical_check_date: string;
+  created_at: string;
+}
+
+/* ── Healthcare Plans ────────────────────────────────────────────────────────── */
+
+export type ConditionSeverity = "mild" | "moderate" | "severe";
+
+export interface HcpCondition {
+  condition: string;
+  diagnosed: string;
+  severity: ConditionSeverity;
+  current_management: string;
+}
+
+export interface HcpAllergy {
+  allergen: string;
+  reaction: string;
+  severity: AllergySeverity;
+  treatment: string;
+}
+
+export interface HcpMedication {
+  medication: string;
+  dose: string;
+  frequency: string;
+  purpose: string;
+  prescriber: string;
+}
+
+export interface HcpPractitioner {
+  name: string;
+  practice: string;
+  phone: string;
+  address: string;
+}
+
+export interface HcpSpecialist {
+  specialism: string;
+  name: string;
+  contact: string;
+}
+
+export interface HcpEmergencyProtocol {
+  scenario: string;
+  action: string;
+}
+
+export interface HcpHospitalAttendance {
+  date: string;
+  reason: string;
+  outcome: string;
+}
+
+export interface HcpScreening {
+  screening: string;
+  last_done: string;
+  due_next: string;
+}
+
+export interface HcpImmunisation {
+  vaccine: string;
+  given: string;
+  due_next: string | null;
+}
+
+export interface HealthcarePlan {
+  id: string;
+  child_id: string;
+  conditions: HcpCondition[];
+  allergies: HcpAllergy[];
+  regular_medications: HcpMedication[];
+  prn_medications: string[];
+  gp_details: HcpPractitioner;
+  dentist_details: HcpPractitioner;
+  optician_details: HcpPractitioner;
+  specialist_contacts: HcpSpecialist[];
+  emergency_protocols: HcpEmergencyProtocol[];
+  recent_hospital_attendances: HcpHospitalAttendance[];
+  screening_schedule: HcpScreening[];
+  immunisations: HcpImmunisation[];
+  reviewed_by: string;
+  reviewed_date: string;
+  next_review_date: string;
+  signed_off_by_gp: boolean;
+  child_informed_of_plan: boolean;
+  created_at: string;
+}
+
+/* ── Holiday / Trip Planning ─────────────────────────────────────────────────── */
+
+export type TripType = "day_trip" | "overnight" | "residential" | "holiday" | "educational_visit" | "activity_outing";
+
+export const TRIP_TYPE_LABEL: Record<TripType, string> = {
+  day_trip: "Day Trip",
+  overnight: "Overnight",
+  residential: "Residential",
+  holiday: "Holiday",
+  educational_visit: "Educational Visit",
+  activity_outing: "Activity Outing",
+};
+
+export type TripStatus = "planning" | "approved" | "ready" | "in_progress" | "completed" | "cancelled";
+
+export const TRIP_STATUS_LABEL: Record<TripStatus, string> = {
+  planning: "Planning",
+  approved: "Approved",
+  ready: "Ready",
+  in_progress: "In Progress",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+export type TripRiskLevel = "low" | "medium" | "high";
+
+export const TRIP_RISK_LEVEL_LABEL: Record<TripRiskLevel, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+};
+
+export type TripStaffRole = "lead" | "support" | "driver";
+
+export const TRIP_STAFF_ROLE_LABEL: Record<TripStaffRole, string> = {
+  lead: "Lead",
+  support: "Support",
+  driver: "Driver",
+};
+
+export interface TripYoungPerson {
+  child_id: string;
+  consent_obtained: boolean;
+  consent_from: string;
+  medical_info_shared: boolean;
+  behaviour_plan_shared: boolean;
+}
+
+export interface TripStaff {
+  staff_id: string;
+  role: TripStaffRole;
+  sleep_in: boolean;
+}
+
+export interface TripHazard {
+  hazard: string;
+  likelihood: number;
+  impact: number;
+  controls: string;
+}
+
+export interface TripRiskAssessment {
+  completed: boolean;
+  completed_by: string | null;
+  completed_date: string | null;
+  overall_risk: TripRiskLevel;
+  hazards: TripHazard[];
+}
+
+export interface TripItineraryItem {
+  time: string;
+  activity: string;
+  location: string;
+  notes: string;
+}
+
+export interface TripBudgetItem {
+  item: string;
+  estimated: number;
+  actual: number | null;
+}
+
+export interface TripSwApproval {
+  child_id: string;
+  approved: boolean;
+  approved_date: string | null;
+}
+
+export interface TripEvaluation {
+  rating: number;
+  highlights: string;
+  concerns: string;
+  would_repeat: boolean;
+  child_feedback: string;
+}
+
+export interface TripPlan {
+  id: string;
+  title: string;
+  trip_type: TripType;
+  destination: string;
+  start_date: string;
+  end_date: string;
+  departure_time: string;
+  return_time: string;
+  young_people: TripYoungPerson[];
+  staff_assigned: TripStaff[];
+  staff_ratio: string;
+  risk_assessment: TripRiskAssessment;
+  itinerary: TripItineraryItem[];
+  budget: TripBudgetItem[];
+  total_budget: number;
+  transport: string;
+  accommodation: string | null;
+  emergency_plan: string;
+  social_worker_approval: TripSwApproval[];
+  manager_approval: boolean;
+  manager_approved_by: string | null;
+  children_views: string;
+  post_trip_evaluation: TripEvaluation | null;
+  status: TripStatus;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Home Improvement Plan ───────────────────────────────────────────────────── */
+
+export type ObjectiveSource = "reg44" | "ofsted" | "reg45" | "self" | "maintenance" | "regulatory";
+
+export const OBJECTIVE_SOURCE_LABEL: Record<ObjectiveSource, string> = {
+  reg44: "Reg 44 Recommendation",
+  ofsted: "Ofsted Inspection",
+  reg45: "Reg 45 Recommendation",
+  self: "Self-identified (RM)",
+  maintenance: "Maintenance Inspection",
+  regulatory: "Regulatory Requirement",
+};
+
+export type ObjectivePriority = "high" | "medium" | "low";
+
+export const OBJECTIVE_PRIORITY_LABEL: Record<ObjectivePriority, string> = {
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+};
+
+export type ObjectiveStatus = "planned" | "in_progress" | "completed" | "overdue";
+
+export const OBJECTIVE_STATUS_LABEL: Record<ObjectiveStatus, string> = {
+  planned: "Planned",
+  in_progress: "In Progress",
+  completed: "Completed",
+  overdue: "Overdue",
+};
+
+export interface ObjectiveUpdate {
+  date: string;
+  note: string;
+  updated_by: string;
+}
+
+export interface ImprovementObjective {
+  id: string;
+  title: string;
+  source: ObjectiveSource;
+  priority: ObjectivePriority;
+  status: ObjectiveStatus;
+  owner: string;
+  target_date: string;
+  completed_date: string | null;
+  progress: number;
+  budget: number | null;
+  notes: string;
+  updates: ObjectiveUpdate[];
+  created_at: string;
+}
+
+/* ── Home Pets Care Log ──────────────────────────────────────────────────────── */
+
+export type PetSpecies = "dog" | "cat" | "rabbit" | "guinea_pig" | "fish" | "hamster" | "bird" | "other";
+
+export const PET_SPECIES_LABEL: Record<PetSpecies, string> = {
+  dog: "Dog",
+  cat: "Cat",
+  rabbit: "Rabbit",
+  guinea_pig: "Guinea Pig",
+  fish: "Fish",
+  hamster: "Hamster",
+  bird: "Bird",
+  other: "Other",
+};
+
+export interface PetRotaEntry {
+  task: string;
+  days: string;
+  lead: string;
+}
+
+export interface PetRecord {
+  id: string;
+  name: string;
+  species: PetSpecies;
+  breed: string | null;
+  dob: string | null;
+  arrived_at: string;
+  microchipped: boolean;
+  insurance: boolean;
+  vaccinations_up_to_date: boolean;
+  last_vet_visit: string | null;
+  next_vet_due: string | null;
+  child_allergies_cleared: string[];
+  children_involved_in_care: string[];
+  walking_feeding_rota: PetRotaEntry[];
+  behavioural_notes: string;
+  therapeutic_value: string;
+  risk_assessment_date: string;
+  flags: string[];
+  logged_by: string;
   created_at: string;
 }

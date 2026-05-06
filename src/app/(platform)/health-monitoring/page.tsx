@@ -18,73 +18,33 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle2, Clock, Stethoscope,
+  AlertTriangle, CheckCircle2, Clock, Stethoscope, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-
-/* ── types ─────────────────────────────────────────────────────────────────── */
-
-type AppointmentType = "dental" | "optician" | "immunisation" | "gp_registration" | "annual_health" | "hearing" | "growth" | "sexual_health";
-type Status = "completed" | "scheduled" | "overdue" | "declined" | "cancelled" | "not_due";
-
-interface HealthMonitoringEntry {
-  id: string;
-  youngPersonId: string;
-  type: AppointmentType;
-  provider: string;
-  date: string;
-  nextDue: string;
-  status: Status;
-  attendedBy: string | null;
-  outcome: string;
-  recommendations: string[];
-  followUp: string;
-  consentObtained: boolean;
-  consentFrom: string;
-  childViews: string;
-  notes: string;
-}
+import { useHealthMonitoring, useCreateHealthMonitoring } from "@/hooks/use-health-monitoring";
+import type { HealthMonitoringEntry, HealthMonitoringType, HealthMonitoringStatus } from "@/types/extended";
+import { HEALTH_MONITORING_TYPE_LABEL, HEALTH_MONITORING_STATUS_LABEL } from "@/types/extended";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { toast } from "sonner";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const TYPE_LABEL: Record<AppointmentType, string> = {
-  dental: "Dental", optician: "Optician", immunisation: "Immunisation", gp_registration: "GP Registration",
-  annual_health: "Annual Health Assessment", hearing: "Hearing Test", growth: "Growth / BMI", sexual_health: "Sexual Health",
-};
-const TYPE_CLR: Record<AppointmentType, string> = {
+const TYPE_CLR: Record<HealthMonitoringType, string> = {
   dental: "bg-blue-100 text-blue-800", optician: "bg-purple-100 text-purple-800",
   immunisation: "bg-green-100 text-green-800", gp_registration: "bg-teal-100 text-teal-800",
   annual_health: "bg-indigo-100 text-indigo-800", hearing: "bg-amber-100 text-amber-800",
   growth: "bg-pink-100 text-pink-800", sexual_health: "bg-slate-100 text-slate-800",
 };
-const STAT_LABEL: Record<Status, string> = { completed: "Completed", scheduled: "Scheduled", overdue: "Overdue", declined: "Declined", cancelled: "Cancelled", not_due: "Not Due" };
-const STAT_CLR: Record<Status, string> = { completed: "bg-green-100 text-green-800", scheduled: "bg-blue-100 text-blue-800", overdue: "bg-red-100 text-red-800", declined: "bg-amber-100 text-amber-800", cancelled: "bg-gray-100 text-gray-800", not_due: "bg-slate-100 text-slate-800" };
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: HealthMonitoringEntry[] = [
-  // Alex
-  { id: "hm1", youngPersonId: "yp_alex", type: "dental", provider: "Millbrook Dental Practice", date: d(-60), nextDue: d(120), status: "completed", attendedBy: "staff_anna", outcome: "No cavities. Good oral hygiene. One small filling due at next visit.", recommendations: ["Continue fluoride toothpaste", "Reduce sugary snacks"], followUp: "Filling booked for next appointment", consentObtained: true, consentFrom: "Karen Holding (SW)", childViews: "Alex doesn't like the dentist but was brave. Asked for a sticker.", notes: "" },
-  { id: "hm2", youngPersonId: "yp_alex", type: "optician", provider: "Specsavers Millbrook", date: d(-45), nextDue: d(320), status: "completed", attendedBy: "staff_anna", outcome: "Slight short-sightedness detected. Glasses prescribed for classroom use.", recommendations: ["Glasses for reading/whiteboard", "Re-test in 12 months"], followUp: "Glasses collected and labelled", consentObtained: true, consentFrom: "Karen Holding (SW)", childViews: "Alex chose blue frames. Quite pleased with them.", notes: "School notified about glasses." },
-  { id: "hm3", youngPersonId: "yp_alex", type: "immunisation", provider: "Millbrook GP Surgery", date: d(-30), nextDue: d(335), status: "completed", attendedBy: "staff_darren", outcome: "HPV vaccination dose 1 administered. No adverse reaction.", recommendations: ["Monitor for 48 hours", "Dose 2 due in 12 months"], followUp: "Dose 2 booked", consentObtained: true, consentFrom: "Karen Holding (SW)", childViews: "Alex was nervous but coped well.", notes: "" },
-  // Jordan
-  { id: "hm4", youngPersonId: "yp_jordan", type: "dental", provider: "Fairfield Dental Care", date: d(-90), nextDue: d(90), status: "completed", attendedBy: "staff_ryan", outcome: "Teeth healthy. Jordan tolerated the check-up well despite sensory sensitivity to dental tools. Shorter appointment arranged for next time.", recommendations: ["Sensory-friendly appointment (first of day)", "Electric toothbrush recommended"], followUp: "Next check-up booked with sensory accommodations", consentObtained: true, consentFrom: "Michael Osei (SW)", childViews: "Jordan found it uncomfortable but said it was better than last time.", notes: "Dentist aware of ASD." },
-  { id: "hm5", youngPersonId: "yp_jordan", type: "optician", provider: "Specsavers Fairfield", date: d(-180), nextDue: d(14), status: "scheduled", attendedBy: null, outcome: "", recommendations: [], followUp: "", consentObtained: true, consentFrom: "Michael Osei (SW)", childViews: "", notes: "Due for annual eye test." },
-  { id: "hm6", youngPersonId: "yp_jordan", type: "hearing", provider: "Fairfield Audiology", date: d(-120), nextDue: d(245), status: "completed", attendedBy: "staff_ryan", outcome: "Hearing within normal range. No concerns. Jordan's sensitivity to sound is sensory processing related, not auditory.", recommendations: ["No further audiology review needed", "Continue noise-cancelling headphones provision"], followUp: "None — discharged from audiology", consentObtained: true, consentFrom: "Michael Osei (SW)", childViews: "Jordan was relieved there's nothing wrong with his ears.", notes: "" },
-  // Casey
-  { id: "hm7", youngPersonId: "yp_casey", type: "dental", provider: "Southgate Community Dental", date: d(-200), nextDue: d(-20), status: "overdue", attendedBy: null, outcome: "", recommendations: [], followUp: "Appointment to be rebooked — Casey refused last appointment due to anxiety", consentObtained: true, consentFrom: "Fiona Brennan (SW)", childViews: "Casey is very anxious about dental visits. Previous negative experience.", notes: "Exploring sedation dentistry options. Discussed with Fiona." },
-  { id: "hm8", youngPersonId: "yp_casey", type: "annual_health", provider: "LAC Nurse — Dr Kapoor", date: d(-150), nextDue: d(215), status: "completed", attendedBy: "staff_darren", outcome: "Overall health good. BMI slightly low — monitoring required. Emotional wellbeing flagged as concern. CAMHS referral recommended.", recommendations: ["Monitor weight monthly", "Encourage balanced diet", "CAMHS referral for PTSD assessment"], followUp: "CAMHS referral submitted. Weight monitoring in progress.", consentObtained: true, consentFrom: "Fiona Brennan (SW)", childViews: "Casey engaged well with the nurse. Appreciated being asked for her views.", notes: "" },
-  { id: "hm9", youngPersonId: "yp_casey", type: "immunisation", provider: "Southgate GP", date: d(7), nextDue: d(7), status: "scheduled", attendedBy: null, outcome: "", recommendations: [], followUp: "", consentObtained: true, consentFrom: "Fiona Brennan (SW)", childViews: "Casey is nervous but willing.", notes: "Catch-up immunisations — missed due to placement moves." },
-  { id: "hm10", youngPersonId: "yp_casey", type: "growth", provider: "School Nurse", date: d(-30), nextDue: d(60), status: "completed", attendedBy: "staff_chervelle", outcome: "Height: 152cm. Weight: 38kg. BMI: 16.4 (underweight). Growth tracking shows steady height gain but weight has plateaued.", recommendations: ["High-calorie healthy snacks", "Meal plan review", "Reweigh in 3 months"], followUp: "Menu plan updated with nutritionist input", consentObtained: true, consentFrom: "Fiona Brennan (SW)", childViews: "Casey doesn't like being weighed. Handled sensitively.", notes: "Linked to menu planning and health records." },
-];
+const STAT_CLR: Record<HealthMonitoringStatus, string> = { completed: "bg-green-100 text-green-800", scheduled: "bg-blue-100 text-blue-800", overdue: "bg-red-100 text-red-800", declined: "bg-amber-100 text-amber-800", cancelled: "bg-gray-100 text-gray-800", not_due: "bg-slate-100 text-slate-800" };
 
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function HealthMonitoringPage() {
-  const [data] = useState<HealthMonitoringEntry[]>(SEED);
+  const { data: raw, isLoading } = useHealthMonitoring();
+  const createMut = useCreateHealthMonitoring();
+  const records = useMemo(() => raw?.data ?? [], [raw]);
+
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -92,43 +52,59 @@ export default function HealthMonitoringPage() {
   const [sortBy, setSortBy] = useState("overdue");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [draft, setDraft] = useState({
+    child_id: "",
+    type: "" as HealthMonitoringType | "",
+    provider: "",
+    date: "",
+    next_due: "",
+    outcome: "",
+  });
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
-  const today = d(0);
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const filtered = useMemo(() => {
-    let out = [...data];
-    if (search) { const s = search.toLowerCase(); out = out.filter(r => getYPName(r.youngPersonId).toLowerCase().includes(s) || r.provider.toLowerCase().includes(s)); }
-    if (childFilter !== "all") out = out.filter(r => r.youngPersonId === childFilter);
+    let out = [...records];
+    if (search) { const s = search.toLowerCase(); out = out.filter(r => getYPName(r.child_id).toLowerCase().includes(s) || r.provider.toLowerCase().includes(s)); }
+    if (childFilter !== "all") out = out.filter(r => r.child_id === childFilter);
     if (typeFilter !== "all") out = out.filter(r => r.type === typeFilter);
     if (statusFilter !== "all") out = out.filter(r => r.status === statusFilter);
     out.sort((a, b) => {
       switch (sortBy) {
         case "date": return b.date.localeCompare(a.date);
         case "type": return a.type.localeCompare(b.type);
-        default: { /* overdue first */ const od = (r: HealthMonitoringEntry) => r.status === "overdue" ? 0 : r.status === "scheduled" ? 1 : 2; return od(a) - od(b); }
+        default: { const od = (r: HealthMonitoringEntry) => r.status === "overdue" ? 0 : r.status === "scheduled" ? 1 : 2; return od(a) - od(b); }
       }
     });
     return out;
-  }, [data, search, childFilter, typeFilter, statusFilter, sortBy]);
+  }, [records, search, childFilter, typeFilter, statusFilter, sortBy]);
 
   const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
-  const overdue = data.filter(r => r.status === "overdue").length;
-  const scheduled = data.filter(r => r.status === "scheduled").length;
-  const completed = data.filter(r => r.status === "completed").length;
+  const overdue = records.filter(r => r.status === "overdue").length;
+  const scheduled = records.filter(r => r.status === "scheduled").length;
+  const completed = records.filter(r => r.status === "completed").length;
 
   const exportCols: ExportColumn<HealthMonitoringEntry>[] = useMemo(() => [
-    { header: "Young Person", accessor: (r: HealthMonitoringEntry) => getYPName(r.youngPersonId) },
-    { header: "Type", accessor: (r: HealthMonitoringEntry) => TYPE_LABEL[r.type] },
+    { header: "Young Person", accessor: (r: HealthMonitoringEntry) => getYPName(r.child_id) },
+    { header: "Type", accessor: (r: HealthMonitoringEntry) => HEALTH_MONITORING_TYPE_LABEL[r.type] },
     { header: "Provider", accessor: (r: HealthMonitoringEntry) => r.provider },
     { header: "Date", accessor: (r: HealthMonitoringEntry) => r.date },
-    { header: "Next Due", accessor: (r: HealthMonitoringEntry) => r.nextDue },
-    { header: "Status", accessor: (r: HealthMonitoringEntry) => STAT_LABEL[r.status] },
-    { header: "Attended By", accessor: (r: HealthMonitoringEntry) => r.attendedBy ? getStaffName(r.attendedBy) : "—" },
+    { header: "Next Due", accessor: (r: HealthMonitoringEntry) => r.next_due },
+    { header: "Status", accessor: (r: HealthMonitoringEntry) => HEALTH_MONITORING_STATUS_LABEL[r.status] },
+    { header: "Attended By", accessor: (r: HealthMonitoringEntry) => r.attended_by ? getStaffName(r.attended_by) : "—" },
     { header: "Outcome", accessor: (r: HealthMonitoringEntry) => r.outcome || "—" },
-    { header: "Consent From", accessor: (r: HealthMonitoringEntry) => r.consentFrom },
-    { header: "Follow-Up", accessor: (r: HealthMonitoringEntry) => r.followUp || "None" },
+    { header: "Consent From", accessor: (r: HealthMonitoringEntry) => r.consent_from },
+    { header: "Follow-Up", accessor: (r: HealthMonitoringEntry) => r.follow_up || "None" },
   ], []);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Health Monitoring" subtitle="Loading…">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -145,7 +121,7 @@ export default function HealthMonitoringPage() {
         {/* summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Records", value: data.length, icon: Stethoscope, colour: "text-blue-600" },
+            { label: "Total Records", value: records.length, icon: Stethoscope, colour: "text-blue-600" },
             { label: "Completed", value: completed, icon: CheckCircle2, colour: "text-green-600" },
             { label: "Scheduled", value: scheduled, icon: Clock, colour: "text-blue-600" },
             { label: "Overdue", value: overdue, icon: AlertTriangle, colour: "text-red-600" },
@@ -160,7 +136,7 @@ export default function HealthMonitoringPage() {
             <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
             <div>
               <p className="font-semibold text-red-900">{overdue} overdue appointment{overdue > 1 ? "s" : ""}</p>
-              <ul className="text-sm text-red-800 mt-1 list-disc list-inside">{data.filter(r => r.status === "overdue").map(r => <li key={r.id}>{getYPName(r.youngPersonId)} — {TYPE_LABEL[r.type]} (due {r.nextDue})</li>)}</ul>
+              <ul className="text-sm text-red-800 mt-1 list-disc list-inside">{records.filter(r => r.status === "overdue").map(r => <li key={r.id}>{getYPName(r.child_id)} — {HEALTH_MONITORING_TYPE_LABEL[r.type]} (due {r.next_due})</li>)}</ul>
             </div>
           </div>
         )}
@@ -173,17 +149,17 @@ export default function HealthMonitoringPage() {
               <table className="w-full text-sm border">
                 <thead className="bg-muted/50">
                   <tr><th className="text-left p-2 font-medium">Young Person</th>
-                  {(Object.entries(TYPE_LABEL) as [AppointmentType, string][]).map(([k, v]) => <th key={k} className="text-center p-2 font-medium text-xs">{v}</th>)}</tr>
+                  {(Object.entries(HEALTH_MONITORING_TYPE_LABEL) as [HealthMonitoringType, string][]).map(([k, v]) => <th key={k} className="text-center p-2 font-medium text-xs">{v}</th>)}</tr>
                 </thead>
                 <tbody>
                   {childIds.map(cid => (
                     <tr key={cid} className="border-t">
                       <td className="p-2 font-medium">{getYPName(cid)}</td>
-                      {(Object.keys(TYPE_LABEL) as AppointmentType[]).map(t => {
-                        const rec = data.filter(r => r.youngPersonId === cid && r.type === t).sort((a, b) => b.date.localeCompare(a.date))[0];
+                      {(Object.keys(HEALTH_MONITORING_TYPE_LABEL) as HealthMonitoringType[]).map(t => {
+                        const rec = records.filter(r => r.child_id === cid && r.type === t).sort((a, b) => b.date.localeCompare(a.date))[0];
                         return (
                           <td key={t} className="p-2 text-center">
-                            {rec ? <Badge className={cn("text-xs", STAT_CLR[rec.status])}>{STAT_LABEL[rec.status]}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
+                            {rec ? <Badge className={cn("text-xs", STAT_CLR[rec.status])}>{HEALTH_MONITORING_STATUS_LABEL[rec.status]}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
                           </td>
                         );
                       })}
@@ -200,8 +176,8 @@ export default function HealthMonitoringPage() {
           <div className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[180px]"><Label className="text-xs">Search</Label><div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input className="pl-8" placeholder="Name, provider…" value={search} onChange={e => setSearch(e.target.value)} /></div></div>
             <div className="w-36"><Label className="text-xs flex items-center gap-1"><Filter className="h-3 w-3" />Child</Label><Select value={childFilter} onValueChange={setChildFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem>{childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent></Select></div>
-            <div className="w-44"><Label className="text-xs">Type</Label><Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem>{(Object.entries(TYPE_LABEL) as [AppointmentType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div className="w-36"><Label className="text-xs">Status</Label><Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem>{(Object.entries(STAT_LABEL) as [Status, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div className="w-44"><Label className="text-xs">Type</Label><Select value={typeFilter} onValueChange={setTypeFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem>{(Object.entries(HEALTH_MONITORING_TYPE_LABEL) as [HealthMonitoringType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div className="w-36"><Label className="text-xs">Status</Label><Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem>{(Object.entries(HEALTH_MONITORING_STATUS_LABEL) as [HealthMonitoringStatus, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
             <div className="w-36"><Label className="text-xs flex items-center gap-1"><ArrowUpDown className="h-3 w-3" />Sort</Label><Select value={sortBy} onValueChange={setSortBy}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="overdue">Overdue First</SelectItem><SelectItem value="date">Date</SelectItem><SelectItem value="type">Type</SelectItem></SelectContent></Select></div>
           </div>
         </CardContent></Card>
@@ -216,9 +192,9 @@ export default function HealthMonitoringPage() {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-base">{getYPName(r.youngPersonId)}</CardTitle>
-                        <Badge className={cn("text-xs", TYPE_CLR[r.type])}>{TYPE_LABEL[r.type]}</Badge>
-                        <Badge className={cn("text-xs", STAT_CLR[r.status])}>{STAT_LABEL[r.status]}</Badge>
+                        <CardTitle className="text-base">{getYPName(r.child_id)}</CardTitle>
+                        <Badge className={cn("text-xs", TYPE_CLR[r.type])}>{HEALTH_MONITORING_TYPE_LABEL[r.type]}</Badge>
+                        <Badge className={cn("text-xs", STAT_CLR[r.status])}>{HEALTH_MONITORING_STATUS_LABEL[r.status]}</Badge>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">{r.date}</span>
@@ -230,7 +206,7 @@ export default function HealthMonitoringPage() {
                 </button>
                 {open && (
                   <CardContent className="space-y-3 pt-0">
-                    {r.attendedBy && <p className="text-sm"><strong>Attended by:</strong> {getStaffName(r.attendedBy)}</p>}
+                    {r.attended_by && <p className="text-sm"><strong>Attended by:</strong> {getStaffName(r.attended_by)}</p>}
                     {r.outcome && (
                       <div className="rounded-lg bg-green-50 border border-green-200 p-3">
                         <p className="text-xs font-semibold text-green-800 mb-1">Outcome</p>
@@ -243,16 +219,17 @@ export default function HealthMonitoringPage() {
                         <ul className="text-sm text-blue-900 list-disc list-inside">{r.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}</ul>
                       </div>
                     )}
-                    {r.followUp && <p className="text-sm"><strong>Follow-up:</strong> {r.followUp}</p>}
-                    {r.childViews && (
+                    {r.follow_up && <p className="text-sm"><strong>Follow-up:</strong> {r.follow_up}</p>}
+                    {r.child_views && (
                       <div className="rounded-lg bg-pink-50 border border-pink-200 p-3">
                         <p className="text-xs font-semibold text-pink-800 mb-1">Child&apos;s Views</p>
-                        <p className="text-sm text-pink-900">{r.childViews}</p>
+                        <p className="text-sm text-pink-900">{r.child_views}</p>
                       </div>
                     )}
                     <div className="text-xs text-muted-foreground">
-                      <span>Consent: {r.consentFrom}</span> · <span>Next due: <strong className={cn(r.nextDue < today && "text-red-600")}>{r.nextDue}</strong></span>
+                      <span>Consent: {r.consent_from}</span> · <span>Next due: <strong className={cn(r.next_due < today && "text-red-600")}>{r.next_due}</strong></span>
                     </div>
+                    <SmartLinkPanel sourceType="health-monitoring" sourceId={r.id} childId={r.child_id} compact />
                   </CardContent>
                 )}
               </Card>
@@ -272,15 +249,39 @@ export default function HealthMonitoringPage() {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add Health Record</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Young Person</Label><Select><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Type</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(TYPE_LABEL) as [AppointmentType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Provider</Label><Input placeholder="e.g. Millbrook Dental Practice" /></div>
-            <div className="grid grid-cols-2 gap-3"><div><Label>Date</Label><Input type="date" /></div><div><Label>Next Due</Label><Input type="date" /></div></div>
-            <div><Label>Outcome</Label><Textarea rows={2} placeholder="Appointment outcome…" /></div>
+            <div><Label>Young Person</Label><Select value={draft.child_id} onValueChange={v => setDraft(d => ({ ...d, child_id: v }))}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Type</Label><Select value={draft.type} onValueChange={v => setDraft(d => ({ ...d, type: v as HealthMonitoringType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(HEALTH_MONITORING_TYPE_LABEL) as [HealthMonitoringType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Provider</Label><Input placeholder="e.g. Millbrook Dental Practice" value={draft.provider} onChange={e => setDraft(d => ({ ...d, provider: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-3"><div><Label>Date</Label><Input type="date" value={draft.date} onChange={e => setDraft(d => ({ ...d, date: e.target.value }))} /></div><div><Label>Next Due</Label><Input type="date" value={draft.next_due} onChange={e => setDraft(d => ({ ...d, next_due: e.target.value }))} /></div></div>
+            <div><Label>Outcome</Label><Textarea rows={2} placeholder="Appointment outcome…" value={draft.outcome} onChange={e => setDraft(d => ({ ...d, outcome: e.target.value }))} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => setDialogOpen(false)}>Save Record</Button>
+            <Button onClick={() => {
+              if (!draft.child_id || !draft.type) return;
+              createMut.mutate({
+                child_id: draft.child_id,
+                type: draft.type as HealthMonitoringType,
+                provider: draft.provider,
+                date: draft.date,
+                next_due: draft.next_due,
+                outcome: draft.outcome,
+                status: "scheduled" as HealthMonitoringStatus,
+                recommendations: [],
+                follow_up: "",
+                consent_obtained: false,
+                consent_from: "",
+                child_views: "",
+                attended_by: null,
+                notes: "",
+              }, {
+                onSuccess: () => {
+                  toast.success("Health record added");
+                  setDialogOpen(false);
+                  setDraft({ child_id: "", type: "", provider: "", date: "", next_due: "", outcome: "" });
+                },
+              });
+            }}>Save Record</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
