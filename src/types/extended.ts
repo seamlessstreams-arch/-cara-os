@@ -8802,3 +8802,322 @@ export interface FamilyTimeSession {
   report_sent_date: string;
   created_at: string;
 }
+
+// ── Batch 23 ──
+
+// ── Family Tree / Genogram (child-level) ──
+
+export type FamilyContactStatus = "active" | "letterbox_only" | "no_contact" | "restricted" | "indirect";
+
+export const FAMILY_CONTACT_STATUS_LABEL: Record<FamilyContactStatus, string> = {
+  active: "Active",
+  letterbox_only: "Letterbox Only",
+  no_contact: "No Contact",
+  restricted: "Restricted",
+  indirect: "Indirect",
+};
+
+export type FamilyMemberStatus = "living" | "deceased" | "unknown";
+
+export const FAMILY_MEMBER_STATUS_LABEL: Record<FamilyMemberStatus, string> = {
+  living: "Living",
+  deceased: "Deceased",
+  unknown: "Unknown",
+};
+
+export interface GenogramImmediateFamily {
+  relation: string;
+  name: string;
+  status: FamilyMemberStatus;
+  contact_status: FamilyContactStatus;
+  safeguarding_notes: string;
+}
+
+export interface GenogramExtendedFamily {
+  relation: string;
+  name: string;
+  significance: string;
+  contact_status: string;
+}
+
+export interface GenogramImportantAdult {
+  name: string;
+  role: string;
+  significance: string;
+  ongoing: boolean;
+}
+
+export interface GenogramSignificantPlace {
+  place: string;
+  significance: string;
+}
+
+export interface GenogramSiblingRelationship {
+  sibling: string;
+  relationship: string;
+  current_situation: string;
+}
+
+export interface GenogramEntry {
+  id: string;
+  child_id: string;
+  generations_represented: string[];
+  immediate_family: GenogramImmediateFamily[];
+  extended_family: GenogramExtendedFamily[];
+  important_non_family_adults: GenogramImportantAdult[];
+  significant_places: GenogramSignificantPlace[];
+  past_sibling_relationships: GenogramSiblingRelationship[];
+  estranged_relationships: string[];
+  family_myths: string;
+  child_knows_the_story: string;
+  age_appropriate_summary: string;
+  contact_directory_link: string;
+  identity_impact: string;
+  protective_relationships: string[];
+  risk_relationships: string[];
+  child_input_provided: boolean;
+  child_age_when_created: number;
+  last_updated_date: string;
+  reviewed_by: string;
+  sensitive_content: boolean;
+  shareable_with: string[];
+  created_at: string;
+}
+
+// ── Fire Risk Assessment (home-level) ──
+
+export type FireRiskCategory = "fire_spread" | "means_of_escape" | "detection" | "suppression" | "human_factors" | "storage";
+
+export const FIRE_RISK_CATEGORY_LABEL: Record<FireRiskCategory, string> = {
+  fire_spread: "Fire Spread",
+  means_of_escape: "Means of Escape",
+  detection: "Detection",
+  suppression: "Suppression",
+  human_factors: "Human Factors",
+  storage: "Storage",
+};
+
+export type FireRiskLevel = "low" | "medium" | "high";
+
+export const FIRE_RISK_LEVEL_LABEL: Record<FireRiskLevel, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+};
+
+export type FireRiskStatus = "implemented" | "in_progress" | "outstanding";
+
+export const FIRE_RISK_STATUS_LABEL: Record<FireRiskStatus, string> = {
+  implemented: "Implemented",
+  in_progress: "In Progress",
+  outstanding: "Outstanding",
+};
+
+export interface FireRiskItem {
+  id: string;
+  area: string;
+  risk_category: FireRiskCategory;
+  hazard_identified: string;
+  current_controls: string[];
+  residual_risk_level: FireRiskLevel;
+  people_at_risk: string[];
+  additional_controls_required: string[];
+  responsible_owner: string;
+  target_completion_date: string;
+  status: FireRiskStatus;
+  last_review_date: string;
+  next_review_date: string;
+  assessed_by: string;
+  created_at: string;
+}
+
+// ── Fire Safety Equipment Checks (home-level) ──
+
+export type FireEquipmentType = "fire_extinguisher" | "smoke_detector" | "heat_detector" | "carbon_monoxide_detector" | "fire_alarm_panel" | "emergency_lighting" | "fire_door" | "fire_blanket" | "fire_exit_signage" | "sprinkler";
+
+export const FIRE_EQUIPMENT_TYPE_LABEL: Record<FireEquipmentType, string> = {
+  fire_extinguisher: "Fire Extinguisher",
+  smoke_detector: "Smoke Detector",
+  heat_detector: "Heat Detector",
+  carbon_monoxide_detector: "Carbon Monoxide Detector",
+  fire_alarm_panel: "Fire Alarm Panel",
+  emergency_lighting: "Emergency Lighting",
+  fire_door: "Fire Door",
+  fire_blanket: "Fire Blanket",
+  fire_exit_signage: "Fire Exit Signage",
+  sprinkler: "Sprinkler",
+};
+
+export type FireInspectionType = "weekly_visual" | "monthly_test" | "quarterly_service" | "annual_certified" | "five_year_hydraulic_test";
+
+export const FIRE_INSPECTION_TYPE_LABEL: Record<FireInspectionType, string> = {
+  weekly_visual: "Weekly Visual",
+  monthly_test: "Monthly Test",
+  quarterly_service: "Quarterly Service",
+  annual_certified: "Annual Certified",
+  five_year_hydraulic_test: "5-Year Hydraulic Test",
+};
+
+export type FireCheckResult = "pass" | "pass_with_notes" | "fail_repaired" | "fail_replaced";
+
+export const FIRE_CHECK_RESULT_LABEL: Record<FireCheckResult, string> = {
+  pass: "Pass",
+  pass_with_notes: "Pass with Notes",
+  fail_repaired: "Fail - Repaired",
+  fail_replaced: "Fail - Replaced",
+};
+
+export type FireComplianceStatus = "compliant" | "due_now" | "overdue" | "booked";
+
+export const FIRE_COMPLIANCE_STATUS_LABEL: Record<FireComplianceStatus, string> = {
+  compliant: "Compliant",
+  due_now: "Due Now",
+  overdue: "Overdue",
+  booked: "Booked",
+};
+
+export interface FireEquipmentCheck {
+  id: string;
+  equipment_type: FireEquipmentType;
+  location: string;
+  identifier_tag: string;
+  last_inspected_date: string;
+  inspection_type: FireInspectionType;
+  inspector: string;
+  external_contractor: string;
+  result: FireCheckResult;
+  defect_noted: string;
+  action_taken: string;
+  certificate_ref: string;
+  next_inspection_due: string;
+  compliance_status: FireComplianceStatus;
+  last_battery_change_date: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── First Aiders Roster (home-level) ──
+
+export type FirstAidCertType = "paediatric_first_aid" | "emergency_first_aid_at_work" | "first_aid_at_work" | "aed_defib" | "anaphylaxis_bsaci" | "mental_health_first_aid" | "specific_medical";
+
+export const FIRST_AID_CERT_TYPE_LABEL: Record<FirstAidCertType, string> = {
+  paediatric_first_aid: "Paediatric First Aid (12hr)",
+  emergency_first_aid_at_work: "Emergency First Aid at Work (1 day)",
+  first_aid_at_work: "First Aid at Work (3 day)",
+  aed_defib: "AED/Defib",
+  anaphylaxis_bsaci: "Anaphylaxis (BSACI)",
+  mental_health_first_aid: "Mental Health First Aid",
+  specific_medical: "Specific Medical (e.g., Insulin)",
+};
+
+export type FirstAidCertStatus = "in_date" | "expiring_soon" | "expired" | "renewal_booked";
+
+export const FIRST_AID_CERT_STATUS_LABEL: Record<FirstAidCertStatus, string> = {
+  in_date: "In Date",
+  expiring_soon: "Expiring Soon (60d)",
+  expired: "Expired",
+  renewal_booked: "Renewal Booked",
+};
+
+export interface FirstAidCertification {
+  type: FirstAidCertType;
+  issued_date: string;
+  expiry_date: string;
+  provider: string;
+  status: FirstAidCertStatus;
+  renewal_booked?: string;
+}
+
+export interface FirstAiderRecord {
+  id: string;
+  staff_id: string;
+  certifications: FirstAidCertification[];
+  primary_shift_pattern: string;
+  is_current_lead_first_aider: boolean;
+  home_roles_covered: string[];
+  notes?: string;
+  review_date: string;
+  created_at: string;
+}
+
+// ── Food Budget Tracker (home-level) ──
+
+export interface FoodBudgetSpendItem {
+  category: string;
+  amount: number;
+  supplier: string;
+  receipt_kept: boolean;
+}
+
+export interface FoodBudgetTreatItem {
+  date: string;
+  item: string;
+  cost: number;
+  reason: string;
+}
+
+export interface FoodBudgetWeekRecord {
+  id: string;
+  week_starting: string;
+  weekly_budget: number;
+  spend: FoodBudgetSpendItem[];
+  total_spent: number;
+  variance: number;
+  child_involvement_in_planning: string;
+  child_involvement_in_shopping: string;
+  cultural_ingredients_included: boolean;
+  sensory_friendly_options_included: boolean;
+  takeaways_or_treats: FoodBudgetTreatItem[];
+  cook_from_scratch_proportion: number;
+  waste_noted: string;
+  shopped_by: string;
+  cooked_by: string;
+  child_meal_requests_honoured: string[];
+  notes: string;
+  created_at: string;
+}
+
+// ── Food Hygiene (home-level) ──
+
+export type FoodHygieneCheckType = "fridge_temp" | "freezer_temp" | "cooking_temp" | "cleaning_record" | "allergen_check" | "delivery_check" | "date_label_check" | "deep_clean" | "pest_check" | "hand_hygiene_audit";
+
+export const FOOD_HYGIENE_CHECK_TYPE_LABEL: Record<FoodHygieneCheckType, string> = {
+  fridge_temp: "Fridge Temperature",
+  freezer_temp: "Freezer Temperature",
+  cooking_temp: "Cooking Temperature",
+  cleaning_record: "Cleaning Record",
+  allergen_check: "Allergen Check",
+  delivery_check: "Delivery Check",
+  date_label_check: "Date Label Check",
+  deep_clean: "Deep Clean",
+  pest_check: "Pest Inspection",
+  hand_hygiene_audit: "Hand Hygiene Audit",
+};
+
+export type FoodHygieneCompliance = "pass" | "fail" | "action_required" | "n_a";
+
+export const FOOD_HYGIENE_COMPLIANCE_LABEL: Record<FoodHygieneCompliance, string> = {
+  pass: "Pass",
+  fail: "Fail",
+  action_required: "Action Required",
+  n_a: "N/A",
+};
+
+export interface FoodHygieneRecord {
+  id: string;
+  date: string;
+  time: string;
+  checked_by: string;
+  check_type: FoodHygieneCheckType;
+  compliance: FoodHygieneCompliance;
+  temperature: number | null;
+  target_min: number | null;
+  target_max: number | null;
+  area: string;
+  details: string;
+  action_required: string;
+  action_completed: boolean;
+  action_completed_date: string | null;
+  next_due_date: string;
+  created_at: string;
+}

@@ -158,6 +158,12 @@ import type {
   ExploitationScreening,
   ExternalVisitor,
   FamilyTimeSession,
+  GenogramEntry,
+  FireRiskItem,
+  FireEquipmentCheck,
+  FirstAiderRecord,
+  FoodBudgetWeekRecord,
+  FoodHygieneRecord,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -374,6 +380,12 @@ const store = {
   exploitationScreenings: [] as ExploitationScreening[],
   externalVisitors: [] as ExternalVisitor[],
   familyTimeSessions: [] as FamilyTimeSession[],
+  genogramEntries: [] as GenogramEntry[],
+  fireRiskItems: [] as FireRiskItem[],
+  fireEquipmentChecks: [] as FireEquipmentCheck[],
+  firstAiderRecords: [] as FirstAiderRecord[],
+  foodBudgetWeekRecords: [] as FoodBudgetWeekRecord[],
+  foodHygieneRecords: [] as FoodHygieneRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -5535,6 +5547,103 @@ export const db = {
       if (idx === -1) return null;
       store.familyTimeSessions[idx] = { ...store.familyTimeSessions[idx], ...data };
       return store.familyTimeSessions[idx];
+    },
+  },
+
+  genogramEntries: {
+    findAll: () => store.genogramEntries,
+    findById: (id: string) => store.genogramEntries.find((r) => r.id === id),
+    findByChild: (childId: string) => store.genogramEntries.filter((r) => r.child_id === childId),
+    create: (data: Partial<GenogramEntry>): GenogramEntry => {
+      const record = { ...data, id: generateId("geno"), created_at: new Date().toISOString() } as GenogramEntry;
+      store.genogramEntries.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<GenogramEntry>): GenogramEntry | null => {
+      const idx = store.genogramEntries.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.genogramEntries[idx] = { ...store.genogramEntries[idx], ...data };
+      return store.genogramEntries[idx];
+    },
+  },
+
+  fireRiskItems: {
+    findAll: () => store.fireRiskItems,
+    findById: (id: string) => store.fireRiskItems.find((r) => r.id === id),
+    create: (data: Partial<FireRiskItem>): FireRiskItem => {
+      const record = { ...data, id: generateId("fri"), created_at: new Date().toISOString() } as FireRiskItem;
+      store.fireRiskItems.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FireRiskItem>): FireRiskItem | null => {
+      const idx = store.fireRiskItems.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.fireRiskItems[idx] = { ...store.fireRiskItems[idx], ...data };
+      return store.fireRiskItems[idx];
+    },
+  },
+
+  fireEquipmentChecks: {
+    findAll: () => store.fireEquipmentChecks,
+    findById: (id: string) => store.fireEquipmentChecks.find((r) => r.id === id),
+    create: (data: Partial<FireEquipmentCheck>): FireEquipmentCheck => {
+      const record = { ...data, id: generateId("fec"), created_at: new Date().toISOString() } as FireEquipmentCheck;
+      store.fireEquipmentChecks.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FireEquipmentCheck>): FireEquipmentCheck | null => {
+      const idx = store.fireEquipmentChecks.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.fireEquipmentChecks[idx] = { ...store.fireEquipmentChecks[idx], ...data };
+      return store.fireEquipmentChecks[idx];
+    },
+  },
+
+  firstAiderRecords: {
+    findAll: () => store.firstAiderRecords,
+    findById: (id: string) => store.firstAiderRecords.find((r) => r.id === id),
+    create: (data: Partial<FirstAiderRecord>): FirstAiderRecord => {
+      const record = { ...data, id: generateId("far"), created_at: new Date().toISOString() } as FirstAiderRecord;
+      store.firstAiderRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FirstAiderRecord>): FirstAiderRecord | null => {
+      const idx = store.firstAiderRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.firstAiderRecords[idx] = { ...store.firstAiderRecords[idx], ...data };
+      return store.firstAiderRecords[idx];
+    },
+  },
+
+  foodBudgetWeekRecords: {
+    findAll: () => store.foodBudgetWeekRecords,
+    findById: (id: string) => store.foodBudgetWeekRecords.find((r) => r.id === id),
+    create: (data: Partial<FoodBudgetWeekRecord>): FoodBudgetWeekRecord => {
+      const record = { ...data, id: generateId("fbw"), created_at: new Date().toISOString() } as FoodBudgetWeekRecord;
+      store.foodBudgetWeekRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FoodBudgetWeekRecord>): FoodBudgetWeekRecord | null => {
+      const idx = store.foodBudgetWeekRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.foodBudgetWeekRecords[idx] = { ...store.foodBudgetWeekRecords[idx], ...data };
+      return store.foodBudgetWeekRecords[idx];
+    },
+  },
+
+  foodHygieneRecords: {
+    findAll: () => store.foodHygieneRecords,
+    findById: (id: string) => store.foodHygieneRecords.find((r) => r.id === id),
+    create: (data: Partial<FoodHygieneRecord>): FoodHygieneRecord => {
+      const record = { ...data, id: generateId("fhr"), created_at: new Date().toISOString() } as FoodHygieneRecord;
+      store.foodHygieneRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FoodHygieneRecord>): FoodHygieneRecord | null => {
+      const idx = store.foodHygieneRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.foodHygieneRecords[idx] = { ...store.foodHygieneRecords[idx], ...data };
+      return store.foodHygieneRecords[idx];
     },
   },
 };
