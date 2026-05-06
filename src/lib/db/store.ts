@@ -56,6 +56,12 @@ import type {
   AfterCareRecord,
   AgencyInduction,
   AgencyStaffRecord,
+  AnnualDevelopmentReview,
+  AnnualHealthAssessment,
+  AnnualOutcome,
+  Appointment,
+  NeedsAssessment,
+  AttachmentProfile,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -170,6 +176,12 @@ const store = {
   afterCareRecords: [] as AfterCareRecord[],
   agencyInductions: [] as AgencyInduction[],
   agencyStaffLog: [] as AgencyStaffRecord[],
+  annualDevelopmentReviews: [] as AnnualDevelopmentReview[],
+  annualHealthAssessments: [] as AnnualHealthAssessment[],
+  annualOutcomes: [] as AnnualOutcome[],
+  appointments: [] as Appointment[],
+  needsAssessments: [] as NeedsAssessment[],
+  attachmentProfiles: [] as AttachmentProfile[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -3617,6 +3629,107 @@ export const db = {
       if (idx === -1) return null;
       store.agencyStaffLog[idx] = { ...store.agencyStaffLog[idx], ...data };
       return store.agencyStaffLog[idx];
+    },
+  },
+
+  annualDevelopmentReviews: {
+    findAll: () => store.annualDevelopmentReviews,
+    findById: (id: string) => store.annualDevelopmentReviews.find((r) => r.id === id),
+    create: (data: Partial<AnnualDevelopmentReview>): AnnualDevelopmentReview => {
+      const record = { ...data, id: generateId("adr"), created_at: new Date().toISOString() } as AnnualDevelopmentReview;
+      store.annualDevelopmentReviews.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<AnnualDevelopmentReview>): AnnualDevelopmentReview | null => {
+      const idx = store.annualDevelopmentReviews.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.annualDevelopmentReviews[idx] = { ...store.annualDevelopmentReviews[idx], ...data };
+      return store.annualDevelopmentReviews[idx];
+    },
+  },
+
+  annualHealthAssessments: {
+    findAll: () => store.annualHealthAssessments,
+    findById: (id: string) => store.annualHealthAssessments.find((r) => r.id === id),
+    findByChild: (childId: string) => store.annualHealthAssessments.filter((r) => r.child_id === childId),
+    create: (data: Partial<AnnualHealthAssessment>): AnnualHealthAssessment => {
+      const record = { ...data, id: generateId("aha"), created_at: new Date().toISOString() } as AnnualHealthAssessment;
+      store.annualHealthAssessments.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<AnnualHealthAssessment>): AnnualHealthAssessment | null => {
+      const idx = store.annualHealthAssessments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.annualHealthAssessments[idx] = { ...store.annualHealthAssessments[idx], ...data };
+      return store.annualHealthAssessments[idx];
+    },
+  },
+
+  annualOutcomes: {
+    findAll: () => store.annualOutcomes,
+    findById: (id: string) => store.annualOutcomes.find((r) => r.id === id),
+    findByChild: (childId: string) => store.annualOutcomes.filter((r) => r.child_id === childId),
+    create: (data: Partial<AnnualOutcome>): AnnualOutcome => {
+      const record = { ...data, id: generateId("ao"), created_at: new Date().toISOString() } as AnnualOutcome;
+      store.annualOutcomes.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<AnnualOutcome>): AnnualOutcome | null => {
+      const idx = store.annualOutcomes.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.annualOutcomes[idx] = { ...store.annualOutcomes[idx], ...data };
+      return store.annualOutcomes[idx];
+    },
+  },
+
+  appointments: {
+    findAll: () => store.appointments,
+    findById: (id: string) => store.appointments.find((r) => r.id === id),
+    findByChild: (childId: string) => store.appointments.filter((r) => r.child_id === childId),
+    create: (data: Partial<Appointment>): Appointment => {
+      const record = { ...data, id: generateId("apt"), created_at: new Date().toISOString() } as Appointment;
+      store.appointments.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<Appointment>): Appointment | null => {
+      const idx = store.appointments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.appointments[idx] = { ...store.appointments[idx], ...data };
+      return store.appointments[idx];
+    },
+  },
+
+  needsAssessments: {
+    findAll: () => store.needsAssessments,
+    findById: (id: string) => store.needsAssessments.find((r) => r.id === id),
+    findByChild: (childId: string) => store.needsAssessments.filter((r) => r.child_id === childId),
+    create: (data: Partial<NeedsAssessment>): NeedsAssessment => {
+      const record = { ...data, id: generateId("aon"), created_at: new Date().toISOString() } as NeedsAssessment;
+      store.needsAssessments.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<NeedsAssessment>): NeedsAssessment | null => {
+      const idx = store.needsAssessments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.needsAssessments[idx] = { ...store.needsAssessments[idx], ...data };
+      return store.needsAssessments[idx];
+    },
+  },
+
+  attachmentProfiles: {
+    findAll: () => store.attachmentProfiles,
+    findById: (id: string) => store.attachmentProfiles.find((r) => r.id === id),
+    findByChild: (childId: string) => store.attachmentProfiles.filter((r) => r.child_id === childId),
+    create: (data: Partial<AttachmentProfile>): AttachmentProfile => {
+      const record = { ...data, id: generateId("ap"), created_at: new Date().toISOString() } as AttachmentProfile;
+      store.attachmentProfiles.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<AttachmentProfile>): AttachmentProfile | null => {
+      const idx = store.attachmentProfiles.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.attachmentProfiles[idx] = { ...store.attachmentProfiles[idx], ...data };
+      return store.attachmentProfiles[idx];
     },
   },
 };

@@ -25,40 +25,16 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useAppointments, useCreateAppointment, useUpdateAppointment } from "@/hooks/use-appointments";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type { Appointment, AppointmentType, AppointmentStatus } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Plus, CalendarDays,
   CheckCircle2, AlertTriangle, Clock, User, Calendar,
   ChevronDown, ChevronUp, Stethoscope, Heart, Brain,
-  Eye, Shield, MapPin, XCircle, Phone,
+  Eye, Shield, MapPin, XCircle, Phone, Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type AppointmentType =
-  | "gp" | "dental" | "optician" | "camhs" | "hospital"
-  | "lac_review" | "pep_meeting" | "social_worker" | "court"
-  | "therapy" | "specialist" | "immunisation" | "other";
-
-type AppointmentStatus = "scheduled" | "attended" | "cancelled" | "missed" | "rescheduled";
-
-interface Appointment {
-  id: string;
-  child_id: string;
-  date: string;
-  time: string;
-  type: AppointmentType;
-  title: string;
-  location: string;
-  professional_name: string;
-  description: string;
-  status: AppointmentStatus;
-  outcome: string | null;
-  transport_arranged: boolean;
-  escort_staff: string | null;
-  follow_up_date: string | null;
-  recorded_by: string;
-  created_at: string;
-}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -86,101 +62,22 @@ const STATUS_CONFIG: Record<AppointmentStatus, { label: string; colour: string }
   rescheduled: { label: "Rescheduled", colour: "bg-amber-100 text-amber-700" },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const d = (n: number) => {
   const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
 };
-
-const SEED: Appointment[] = [
-  {
-    id: "apt_001", child_id: "yp_alex", date: d(2), time: "10:30",
-    type: "camhs", title: "CAMHS Assessment — Follow-up",
-    location: "Derby CAMHS Centre, London Road", professional_name: "Dr. Sarah Collins",
-    description: "Follow-up assessment after recent safeguarding disclosure. Focus on emotional wellbeing, anxiety levels, and coping strategies. Key worker to attend.",
-    status: "scheduled", outcome: null, transport_arranged: true, escort_staff: "staff_edward",
-    follow_up_date: null, recorded_by: "staff_darren", created_at: d(-5) + "T09:00:00Z",
-  },
-  {
-    id: "apt_002", child_id: "yp_jordan", date: d(5), time: "14:00",
-    type: "dental", title: "Routine dental check-up",
-    location: "Smile Dental Practice, Normanton Road", professional_name: "Mr. Ahmed",
-    description: "6-monthly routine dental check. Jordan not been to dentist since placement started — first appointment here.",
-    status: "scheduled", outcome: null, transport_arranged: true, escort_staff: "staff_anna",
-    follow_up_date: null, recorded_by: "staff_anna", created_at: d(-3) + "T10:00:00Z",
-  },
-  {
-    id: "apt_003", child_id: "yp_casey", date: d(-2), time: "09:00",
-    type: "gp", title: "GP — Medication review",
-    location: "Littleover Surgery", professional_name: "Dr. L. Chen",
-    description: "Review of current medication. Discussion about sleep difficulties and whether dosage adjustment needed.",
-    status: "attended", outcome: "Medication dosage unchanged. GP recommended sleep hygiene review. Follow-up in 3 months. No side effects reported.", transport_arranged: true, escort_staff: "staff_chervelle",
-    follow_up_date: d(90), recorded_by: "staff_chervelle", created_at: d(-10) + "T09:00:00Z",
-  },
-  {
-    id: "apt_004", child_id: "yp_alex", date: d(-5), time: "11:00",
-    type: "social_worker", title: "Statutory visit — Karen Holding",
-    location: "Oak House", professional_name: "Karen Holding",
-    description: "Statutory social worker visit. Discussed recent incidents, school situation, and Alex's feelings about upcoming court date. Alex engaged but became upset towards the end.",
-    status: "attended", outcome: "Alex shared concerns about court. SW agreed to arrange pre-court visit. Additional CAMHS referral discussed. Next visit in 4 weeks.", transport_arranged: false, escort_staff: null,
-    follow_up_date: d(23), recorded_by: "staff_edward", created_at: d(-14) + "T09:00:00Z",
-  },
-  {
-    id: "apt_005", child_id: "yp_casey", date: d(-7), time: "13:30",
-    type: "optician", title: "Eye test",
-    location: "Specsavers, Derby City Centre", professional_name: "Optometrist",
-    description: "Annual eye test. Casey has been complaining of headaches during reading.",
-    status: "attended", outcome: "Slight prescription change. New glasses ordered — will be ready in 7-10 days. Headaches likely linked to eye strain.", transport_arranged: true, escort_staff: "staff_diane",
-    follow_up_date: d(3), recorded_by: "staff_diane", created_at: d(-14) + "T10:00:00Z",
-  },
-  {
-    id: "apt_006", child_id: "yp_jordan", date: d(-3), time: "10:00",
-    type: "lac_review", title: "LAC Review — 6 month",
-    location: "County Hall, Nottingham (virtual option)", professional_name: "Ruth Chambers (IRO)",
-    description: "6-month Looked After Child review. Key worker, social worker, and IRO in attendance. Jordan participated for first part of meeting.",
-    status: "attended", outcome: "Placement confirmed as meeting needs. Education on track. Contact plan reviewed — additional phone contact with grandmother agreed. Health assessments up to date.", transport_arranged: false, escort_staff: null,
-    follow_up_date: d(180), recorded_by: "staff_anna", created_at: d(-30) + "T09:00:00Z",
-  },
-  {
-    id: "apt_007", child_id: "yp_alex", date: d(-10), time: "14:30",
-    type: "therapy", title: "Play therapy session",
-    location: "The Therapy Hub, Derby", professional_name: "Lisa Baines (Play Therapist)",
-    description: "Weekly play therapy session. Alex has been attending for 8 weeks. Therapist reports good engagement.",
-    status: "missed", outcome: "Alex refused to attend. Was distressed following school exclusion earlier that day. Therapist notified. Session rebooked.", transport_arranged: true, escort_staff: "staff_edward",
-    follow_up_date: d(-3), recorded_by: "staff_edward", created_at: d(-17) + "T09:00:00Z",
-  },
-  {
-    id: "apt_008", child_id: "yp_casey", date: d(7), time: "10:00",
-    type: "immunisation", title: "HPV vaccination — dose 2",
-    location: "School nurse, Allestree Woodlands", professional_name: "School Nurse",
-    description: "Second dose of HPV vaccination. Consent form already returned. Casey aware and agreeable.",
-    status: "scheduled", outcome: null, transport_arranged: false, escort_staff: null,
-    follow_up_date: null, recorded_by: "staff_chervelle", created_at: d(-2) + "T09:00:00Z",
-  },
-  {
-    id: "apt_009", child_id: "yp_alex", date: d(14), time: "10:00",
-    type: "court", title: "Family court hearing",
-    location: "Derby Family Court", professional_name: "Judge TBC",
-    description: "Family court hearing regarding Section 31 application. Alex does not attend but has been told about the hearing. Guardian ad litem report expected.",
-    status: "scheduled", outcome: null, transport_arranged: false, escort_staff: null,
-    follow_up_date: null, recorded_by: "staff_darren", created_at: d(-7) + "T09:00:00Z",
-  },
-  {
-    id: "apt_010", child_id: "yp_jordan", date: d(1), time: "15:00",
-    type: "gp", title: "Allergy management review",
-    location: "GP Surgery, Allestree", professional_name: "Dr. A. Khan",
-    description: "Review of Penicillin allergy documentation. Need updated allergy action plan for school and home file.",
-    status: "scheduled", outcome: null, transport_arranged: true, escort_staff: "staff_anna",
-    follow_up_date: null, recorded_by: "staff_anna", created_at: d(-4) + "T09:00:00Z",
-  },
-];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AppointmentsPage() {
   const { currentUser } = useAuthContext();
 
-  const [entries, setEntries] = useState<Appointment[]>(SEED);
+  const { data: res, isLoading } = useAppointments();
+  const entries = res?.data ?? [];
+  const createAppointment = useCreateAppointment();
+  const updateAppointment = useUpdateAppointment();
+
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -266,37 +163,57 @@ export default function AppointmentsPage() {
 
   /* ── mark attended ──────────────────────────────────────────────────────── */
   const markAttended = (id: string) => {
-    setEntries(prev => prev.map(e =>
-      e.id === id ? { ...e, status: "attended" as AppointmentStatus } : e
-    ));
+    updateAppointment.mutate(
+      { id, status: "attended" },
+      {
+        onSuccess: () => toast.success("Appointment marked as attended"),
+        onError: () => toast.error("Failed to update appointment"),
+      }
+    );
   };
 
   /* ── create ─────────────────────────────────────────────────────────────── */
   const handleCreate = () => {
     if (!nChild || !nType || !nTitle || !nDate || !nTime) return;
-    const apt: Appointment = {
-      id: `apt_${Date.now()}`,
-      child_id: nChild,
-      date: nDate,
-      time: nTime,
-      type: nType as AppointmentType,
-      title: nTitle,
-      location: nLocation,
-      professional_name: nProfessional,
-      description: nDesc,
-      status: "scheduled",
-      outcome: null,
-      transport_arranged: nTransport,
-      escort_staff: null,
-      follow_up_date: null,
-      recorded_by: currentUser?.id || "staff_darren",
-      created_at: new Date().toISOString(),
-    };
-    setEntries(prev => [apt, ...prev]);
-    setShowNew(false);
-    setNChild(""); setNType(""); setNTitle(""); setNDate(""); setNTime("");
-    setNLocation(""); setNProfessional(""); setNDesc(""); setNTransport(false);
+    createAppointment.mutate(
+      {
+        child_id: nChild,
+        date: nDate,
+        time: nTime,
+        type: nType as AppointmentType,
+        title: nTitle,
+        location: nLocation,
+        professional_name: nProfessional,
+        description: nDesc,
+        status: "scheduled",
+        outcome: null,
+        transport_arranged: nTransport,
+        escort_staff: null,
+        follow_up_date: null,
+        recorded_by: currentUser?.id || "staff_darren",
+        created_at: new Date().toISOString(),
+      },
+      {
+        onSuccess: () => {
+          toast.success("Appointment created");
+          setShowNew(false);
+          setNChild(""); setNType(""); setNTitle(""); setNDate(""); setNTime("");
+          setNLocation(""); setNProfessional(""); setNDesc(""); setNTransport(false);
+        },
+        onError: () => toast.error("Failed to create appointment"),
+      }
+    );
   };
+
+  if (isLoading) {
+    return (
+      <PageShell title="Appointments" subtitle="Medical, review, and professional appointments">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -490,6 +407,7 @@ export default function AppointmentsPage() {
                       </Button>
                     </div>
                   )}
+                  <SmartLinkPanel sourceType="appointment" sourceId={apt.id} childId={apt.child_id} />
                 </div>
               )}
             </div>
@@ -571,7 +489,9 @@ export default function AppointmentsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!nChild || !nType || !nTitle || !nDate || !nTime}>Save</Button>
+            <Button onClick={handleCreate} disabled={!nChild || !nType || !nTitle || !nDate || !nTime || createAppointment.isPending}>
+              {createAppointment.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</> : "Save"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

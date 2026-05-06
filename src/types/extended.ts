@@ -3130,3 +3130,207 @@ export interface AgencyStaffRecord {
   notes: string;
   created_at: string;
 }
+
+/* ── Annual Development Reviews ──────────────────────────────────────────── */
+
+export type ADRReviewStatus = "completed" | "scheduled" | "overdue" | "deferred";
+export type ADRPerformanceRating = "outstanding" | "good" | "requires_improvement" | "inadequate";
+
+export interface ADRObjective {
+  objective: string;
+  target: string;
+  progress: string;
+}
+
+export interface AnnualDevelopmentReview {
+  id: string;
+  staff_id: string;
+  reviewer_id: string;
+  review_date: string;
+  status: ADRReviewStatus;
+  period: string;
+  performance_rating: ADRPerformanceRating;
+  strengths: string[];
+  areas_for_development: string[];
+  objectives_set: ADRObjective[];
+  qualifications_progress: string;
+  training_completed: string[];
+  training_needed: string[];
+  career_aspirations: string;
+  wellbeing_summary: string;
+  manager_comments: string;
+  staff_comments: string;
+  next_review_date: string;
+  created_at: string;
+}
+
+/* ── Annual Health Assessment ────────────────────────────────────────────── */
+
+export interface AHAHealthDomain {
+  domain: string;
+  findings: string;
+  actions: string;
+  follow_up: string;
+}
+
+export interface AnnualHealthAssessment {
+  id: string;
+  child_id: string;
+  assessment_date: string;
+  assessment_due_date: string;
+  assessor: string;
+  location: string;
+  completed_within_deadline: boolean;
+  height: string;
+  weight: string;
+  bmi_centile: string;
+  growth_on_track: boolean;
+  domains: AHAHealthDomain[];
+  immunisations_up_to_date: boolean;
+  dental_check_up_to_date: boolean;
+  optical_check_up_to_date: boolean;
+  child_contribution: string;
+  report_shared: boolean;
+  report_shared_with: string[];
+  recommendations: string[];
+  next_assessment_date: string;
+  signed_off_by_la: boolean;
+  created_at: string;
+}
+
+/* ── Annual Outcomes Report ──────────────────────────────────────────────── */
+
+export type AnnualOutcomeDomain =
+  | "health" | "education" | "emotional_wellbeing" | "relationships"
+  | "independence" | "identity" | "safety";
+
+export interface AnnualOutcome {
+  id: string;
+  child_id: string;
+  reporting_year: string;
+  domain: AnnualOutcomeDomain;
+  target_set: string;
+  progress_rating: number;
+  evidence: string;
+  barriers_faced: string[];
+  support_provided: string[];
+  child_view: string;
+  next_year_target: string;
+  reviewed_by: string;
+  review_date: string;
+  created_at: string;
+}
+
+/* ── Appointments ────────────────────────────────────────────────────────── */
+
+export type AppointmentType =
+  | "gp" | "dental" | "optician" | "camhs" | "hospital"
+  | "lac_review" | "pep_meeting" | "social_worker" | "court"
+  | "therapy" | "specialist" | "immunisation" | "other";
+
+export type AppointmentStatus = "scheduled" | "attended" | "cancelled" | "missed" | "rescheduled";
+
+export interface Appointment {
+  id: string;
+  child_id: string;
+  date: string;
+  time: string;
+  type: AppointmentType;
+  title: string;
+  location: string;
+  professional_name: string;
+  description: string;
+  status: AppointmentStatus;
+  outcome: string | null;
+  transport_arranged: boolean;
+  escort_staff: string | null;
+  follow_up_date: string | null;
+  recorded_by: string;
+  created_at: string;
+}
+
+/* ── Assessment of Need ──────────────────────────────────────────────────── */
+
+export type NeedsDomain =
+  | "health" | "education" | "identity" | "family_social"
+  | "behavioural_emotional" | "self_care_practical" | "spiritual_cultural";
+
+export type NeedsComplexity = "low" | "moderate" | "complex" | "highly_complex";
+
+export interface NeedsDomainAssessment {
+  domain: NeedsDomain;
+  presenting_needs: string[];
+  strengths: string[];
+  priorities: string[];
+  immediate_actions: string[];
+}
+
+export interface NeedsAssessment {
+  id: string;
+  child_id: string;
+  assessment_date: string;
+  completed_by: string;
+  assessment_version: number;
+  arrival_date: string;
+  statutory_deadline: string;
+  completed_within_deadline: boolean;
+  domain_assessments: NeedsDomainAssessment[];
+  overall_need_complexity: NeedsComplexity;
+  child_input_method: string;
+  child_input: string;
+  family_input: string;
+  professionals_consulted: string[];
+  key_risks: string[];
+  key_protective_factors: string[];
+  recommended_interventions: string[];
+  accommodations_recommended: string[];
+  pedagogical_approach_identified: string;
+  review_schedule: string;
+  shared_with_la: boolean;
+  shared_date: string;
+  signed_off_by_rm: boolean;
+  created_at: string;
+}
+
+/* ── Attachment Profiles ─────────────────────────────────────────────────── */
+
+export type AttachmentStyle = "secure" | "anxious_ambivalent" | "anxious_avoidant" | "disorganised" | "emerging_secure";
+export type AttachmentProfileStatus = "active" | "under_review" | "archived";
+
+export interface AttachmentBehaviour {
+  context: string;
+  behaviour: string;
+  underlying_need: string;
+  recommended_response: string;
+}
+
+export interface AttachmentKeyRelationship {
+  person: string;
+  role: string;
+  quality: "strong" | "developing" | "strained" | "absent";
+  notes: string;
+}
+
+export interface AttachmentProfile {
+  id: string;
+  child_id: string;
+  status: AttachmentProfileStatus;
+  primary_style: AttachmentStyle;
+  secondary_patterns: string[];
+  assessed_by: string;
+  assessment_date: string;
+  review_date: string;
+  assessment_source: string;
+  early_history: string;
+  placement_history: string;
+  behaviours: AttachmentBehaviour[];
+  key_relationships: AttachmentKeyRelationship[];
+  therapeutic_approach: string[];
+  staff_guidance: string[];
+  protective_factors: string[];
+  risk_factors: string[];
+  child_views: string;
+  professional_input: string;
+  notes: string;
+  created_at: string;
+}
