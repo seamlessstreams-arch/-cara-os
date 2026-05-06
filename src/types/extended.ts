@@ -6161,3 +6161,439 @@ export interface SelfSoothingToolkit {
   key_worker: string;
   created_at: string;
 }
+
+// ── Batch 15 ──
+
+export type SkinConditionType =
+  | "atopic_eczema"
+  | "contact_dermatitis"
+  | "acne_mild"
+  | "acne_moderate"
+  | "acne_severe"
+  | "psoriasis"
+  | "vitiligo"
+  | "keratosis_pilaris"
+  | "scarring_managing"
+  | "hidradenitis_suppurativa"
+  | "mixed_multiple"
+  | "other";
+
+export const SKIN_CONDITION_TYPE_LABEL: Record<SkinConditionType, string> = {
+  atopic_eczema: "Atopic eczema",
+  contact_dermatitis: "Contact dermatitis",
+  acne_mild: "Acne — mild",
+  acne_moderate: "Acne — moderate",
+  acne_severe: "Acne — severe",
+  psoriasis: "Psoriasis",
+  vitiligo: "Vitiligo",
+  keratosis_pilaris: "Keratosis pilaris",
+  scarring_managing: "Scarring (managing)",
+  hidradenitis_suppurativa: "Hidradenitis suppurativa",
+  mixed_multiple: "Mixed / multiple",
+  other: "Other",
+};
+
+export type SkinSeverity = "settled" | "mild" | "moderate" | "severe" | "flaring";
+
+export const SKIN_SEVERITY_LABEL: Record<SkinSeverity, string> = {
+  settled: "Settled",
+  mild: "Mild",
+  moderate: "Moderate",
+  severe: "Severe",
+  flaring: "Flaring",
+};
+
+export type SteroidPotency = "mild" | "moderate" | "potent" | "very_potent";
+
+export const STEROID_POTENCY_LABEL: Record<SteroidPotency, string> = {
+  mild: "Mild",
+  moderate: "Moderate",
+  potent: "Potent",
+  very_potent: "Very potent",
+};
+
+export type DermReferralStatus = "awaiting" | "active" | "discharged";
+
+export const DERM_REFERRAL_STATUS_LABEL: Record<DermReferralStatus, string> = {
+  awaiting: "Awaiting",
+  active: "Active",
+  discharged: "Discharged",
+};
+
+export interface SkinTopicalSteroid {
+  name: string;
+  potency: SteroidPotency;
+  frequency: string;
+  body_area: string;
+}
+
+export interface SkinDermatologyReferral {
+  service: string;
+  status: DermReferralStatus;
+  consultant?: string;
+}
+
+export interface SkinConditionPlan {
+  id: string;
+  child_id: string;
+  plan_date: string;
+  condition: SkinConditionType;
+  body_areas_affected: string[];
+  severity_now: SkinSeverity;
+  triggers: string[];
+  daily_routine: string;
+  emollient_name?: string;
+  emollient_frequency?: string;
+  topical_steroid?: SkinTopicalSteroid;
+  systemic_treatment?: string;
+  dermatology_referral?: SkinDermatologyReferral;
+  school_considerations: string;
+  swimming_safe: boolean;
+  body_confidence_work: string;
+  sun_safety_plan: string;
+  products_avoided: string[];
+  child_voice: string;
+  staff_observation: string;
+  flags_concerns: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+export type SmokingStatus =
+  | "never_used"
+  | "tried_not_regular"
+  | "occasional_vape"
+  | "regular_vape"
+  | "occasional_cigarette"
+  | "regular_cigarette"
+  | "multiple_substances"
+  | "stopped"
+  | "in_stop_programme";
+
+export const SMOKING_STATUS_LABEL: Record<SmokingStatus, string> = {
+  never_used: "Never used",
+  tried_not_regular: "Tried — not regular",
+  occasional_vape: "Occasional vape",
+  regular_vape: "Regular vape",
+  occasional_cigarette: "Occasional cigarette",
+  regular_cigarette: "Regular cigarette",
+  multiple_substances: "Multiple substances",
+  stopped: "Stopped",
+  in_stop_programme: "In stop programme",
+};
+
+export type SmokingAttitude =
+  | "openly_dismissive"
+  | "mixed"
+  | "curious_about_quitting"
+  | "building_motivation"
+  | "actively_quitting"
+  | "quit_over_6_months";
+
+export const SMOKING_ATTITUDE_LABEL: Record<SmokingAttitude, string> = {
+  openly_dismissive: "Openly dismissive",
+  mixed: "Mixed",
+  curious_about_quitting: "Curious about quitting",
+  building_motivation: "Building motivation",
+  actively_quitting: "Actively quitting",
+  quit_over_6_months: "Quit > 6 months",
+};
+
+export type StopSmokingReferralStatus = "referred" | "engaged" | "discharged" | "declined";
+
+export const STOP_SMOKING_REFERRAL_STATUS_LABEL: Record<StopSmokingReferralStatus, string> = {
+  referred: "Referred",
+  engaged: "Engaged",
+  discharged: "Discharged",
+  declined: "Declined",
+};
+
+export interface StopSmokingReferral {
+  service: string;
+  clinician_name?: string;
+  status: StopSmokingReferralStatus;
+}
+
+export interface SmokingVapingRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  status: SmokingStatus;
+  substances_used: string[];
+  estimated_frequency?: string;
+  triggers_identified: string[];
+  brief_intervention_delivered: boolean;
+  brief_intervention_date?: string;
+  stop_smoking_referral?: StopSmokingReferral;
+  harm_reduction_strategies: string[];
+  home_policy_reinforcement: string;
+  external_support: string;
+  child_attitude: SmokingAttitude;
+  child_voice: string;
+  staff_observation: string;
+  flags_concerns: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+export type TherapyModality =
+  | "tf_cbt"
+  | "emdr"
+  | "play_therapy"
+  | "art_therapy"
+  | "narrative_therapy"
+  | "ddp"
+  | "theraplay"
+  | "cbt_general"
+  | "person_centred"
+  | "sand_tray"
+  | "mixed"
+  | "other";
+
+export const THERAPY_MODALITY_LABEL: Record<TherapyModality, string> = {
+  tf_cbt: "TF-CBT",
+  emdr: "EMDR",
+  play_therapy: "Play therapy",
+  art_therapy: "Art therapy",
+  narrative_therapy: "Narrative therapy",
+  ddp: "DDP",
+  theraplay: "Theraplay",
+  cbt_general: "CBT (general)",
+  person_centred: "Person-centred",
+  sand_tray: "Sand tray",
+  mixed: "Mixed",
+  other: "Other",
+};
+
+export type TherapySessionFormat =
+  | "one_to_one"
+  | "family_included"
+  | "group"
+  | "online"
+  | "outdoor_walk_and_talk";
+
+export const THERAPY_SESSION_FORMAT_LABEL: Record<TherapySessionFormat, string> = {
+  one_to_one: "1:1",
+  family_included: "Family-included",
+  group: "Group",
+  online: "Online",
+  outdoor_walk_and_talk: "Outdoor / walk and talk",
+};
+
+export type TherapyPresentation =
+  | "engaged"
+  | "withdrawn"
+  | "avoidant"
+  | "distressed"
+  | "mixed"
+  | "building_trust";
+
+export const THERAPY_PRESENTATION_LABEL: Record<TherapyPresentation, string> = {
+  engaged: "Engaged",
+  withdrawn: "Withdrawn",
+  avoidant: "Avoidant",
+  distressed: "Distressed",
+  mixed: "Mixed",
+  building_trust: "Building trust",
+};
+
+export interface TraumaTherapyLog {
+  id: string;
+  child_id: string;
+  session_date: string;
+  modality: TherapyModality;
+  therapist_name: string;
+  therapist_service: string;
+  session_format: TherapySessionFormat;
+  session_length_minutes: number;
+  attended: boolean;
+  reason_if_missed?: string;
+  general_theme_broad: string;
+  child_presentation: TherapyPresentation;
+  pre_session_mood_rating: number;
+  post_session_mood_rating: number;
+  regulation_strategies_used_after: string[];
+  between_session_support: string;
+  escalation_flags: string[];
+  child_voice_shared?: string;
+  staff_observation: string;
+  next_session?: string;
+  recorded_by: string;
+  created_at: string;
+}
+
+export type BodyConfidence = "building" | "mixed" | "stable" | "strong";
+
+export const BODY_CONFIDENCE_LABEL: Record<BodyConfidence, string> = {
+  building: "Building",
+  mixed: "Mixed",
+  stable: "Stable",
+  strong: "Strong",
+};
+
+export interface MeaningfulItem {
+  item: string;
+  meaning: string;
+}
+
+export interface StyleIdentityRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  style_descriptors: string[];
+  identity_elements: string[];
+  meaningful_items: MeaningfulItem[];
+  cultural_dress: string[];
+  gender_expression_notes?: string;
+  hair_style_current: string;
+  hair_journey: string[];
+  accessories_preferences: string[];
+  shopping_preferences: string[];
+  what_they_avoid: string[];
+  body_confidence: BodyConfidence;
+  challenges_noted: string;
+  child_voice: string;
+  staff_observation: string;
+  flags_for_review: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+export type TutoringFormat = "online" | "in_home" | "tutors_home" | "library" | "mixed";
+
+export const TUTORING_FORMAT_LABEL: Record<TutoringFormat, string> = {
+  online: "Online",
+  in_home: "In-home",
+  tutors_home: "Tutor's home",
+  library: "Library",
+  mixed: "Mixed",
+};
+
+export type TutoringFundingSource =
+  | "pupil_premium_plus"
+  | "virtual_school_grant"
+  | "leaving_care_fund"
+  | "home_budget"
+  | "family_contribution"
+  | "mixed"
+  | "free_charity";
+
+export const TUTORING_FUNDING_SOURCE_LABEL: Record<TutoringFundingSource, string> = {
+  pupil_premium_plus: "Pupil Premium Plus",
+  virtual_school_grant: "Virtual School grant",
+  leaving_care_fund: "Leaving Care fund",
+  home_budget: "Home budget",
+  family_contribution: "Family contribution",
+  mixed: "Mixed",
+  free_charity: "Free (charity)",
+};
+
+export type TutoringMotivation = "high" | "building" | "mixed" | "low";
+
+export const TUTORING_MOTIVATION_LABEL: Record<TutoringMotivation, string> = {
+  high: "High",
+  building: "Building",
+  mixed: "Mixed",
+  low: "Low",
+};
+
+export interface TutoringRecord {
+  id: string;
+  child_id: string;
+  subject: string;
+  exam_focus?: string;
+  tutor_name: string;
+  tutor_qualifications: string;
+  dbs_checked_date: string;
+  agency?: string;
+  start_date: string;
+  end_date?: string;
+  ongoing: boolean;
+  format: TutoringFormat;
+  hours_per_week: number;
+  hourly_rate: number;
+  cost_to_date: number;
+  funding_source: TutoringFundingSource;
+  baseline_grade?: string;
+  current_grade?: string;
+  target_grade?: string;
+  resources_provided: string[];
+  child_motivation: TutoringMotivation;
+  parent_sw_aware: boolean;
+  child_voice: string;
+  staff_observation: string;
+  next_session?: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+export type VisionStatus =
+  | "no_correction_needed"
+  | "prescription_glasses"
+  | "contact_lenses"
+  | "glasses_and_contacts"
+  | "awaiting_test"
+  | "specialist_referral_active";
+
+export const VISION_STATUS_LABEL: Record<VisionStatus, string> = {
+  no_correction_needed: "No correction needed",
+  prescription_glasses: "Prescription glasses",
+  contact_lenses: "Contact lenses",
+  glasses_and_contacts: "Glasses + contacts",
+  awaiting_test: "Awaiting test",
+  specialist_referral_active: "Specialist referral active",
+};
+
+export type GlassesWearConsistency = "always" | "mostly" | "inconsistent" | "resists";
+
+export const GLASSES_WEAR_CONSISTENCY_LABEL: Record<GlassesWearConsistency, string> = {
+  always: "Always",
+  mostly: "Mostly",
+  inconsistent: "Inconsistent",
+  resists: "Resists",
+};
+
+export interface VisionPrescription {
+  right: string;
+  left: string;
+}
+
+export interface GlassesFrames {
+  brand: string;
+  model: string;
+  purchase_date: string;
+}
+
+export interface VisionSpecialistReferral {
+  service: string;
+  date: string;
+  reason: string;
+}
+
+export interface VisionCareRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  status: VisionStatus;
+  last_sight_test_date?: string;
+  next_sight_test_due?: string;
+  optometrist?: string;
+  prescription?: VisionPrescription;
+  glasses_frames?: GlassesFrames;
+  spare_glasses_available: boolean;
+  contact_lens_type?: string;
+  symptoms_reported: string[];
+  specialist_referral?: VisionSpecialistReferral;
+  school_aware: boolean;
+  child_wears_consistently?: GlassesWearConsistency;
+  cleaning_routine: string;
+  child_voice: string;
+  staff_observation: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}

@@ -110,6 +110,12 @@ import type {
   RightsLiteracyRecord,
   SchoolEngagementEvent,
   SelfSoothingToolkit,
+  SkinConditionPlan,
+  SmokingVapingRecord,
+  TraumaTherapyLog,
+  StyleIdentityRecord,
+  TutoringRecord,
+  VisionCareRecord,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -278,6 +284,12 @@ const store = {
   rightsLiteracyRecords: [] as RightsLiteracyRecord[],
   schoolEngagementEvents: [] as SchoolEngagementEvent[],
   selfSoothingToolkits: [] as SelfSoothingToolkit[],
+  skinConditionPlans: [] as SkinConditionPlan[],
+  smokingVapingRecords: [] as SmokingVapingRecord[],
+  traumaTherapyLogs: [] as TraumaTherapyLog[],
+  styleIdentityRecords: [] as StyleIdentityRecord[],
+  tutoringRecords: [] as TutoringRecord[],
+  visionCareRecords: [] as VisionCareRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -4640,6 +4652,108 @@ export const db = {
       if (idx === -1) return null;
       store.selfSoothingToolkits[idx] = { ...store.selfSoothingToolkits[idx], ...data };
       return store.selfSoothingToolkits[idx];
+    },
+  },
+
+  skinConditionPlans: {
+    findAll: () => store.skinConditionPlans,
+    findById: (id: string) => store.skinConditionPlans.find((r) => r.id === id),
+    findByChild: (childId: string) => store.skinConditionPlans.filter((r) => r.child_id === childId),
+    create: (data: Partial<SkinConditionPlan>): SkinConditionPlan => {
+      const record = { ...data, id: generateId("scp"), created_at: new Date().toISOString() } as SkinConditionPlan;
+      store.skinConditionPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SkinConditionPlan>): SkinConditionPlan | null => {
+      const idx = store.skinConditionPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.skinConditionPlans[idx] = { ...store.skinConditionPlans[idx], ...data };
+      return store.skinConditionPlans[idx];
+    },
+  },
+
+  smokingVapingRecords: {
+    findAll: () => store.smokingVapingRecords,
+    findById: (id: string) => store.smokingVapingRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.smokingVapingRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<SmokingVapingRecord>): SmokingVapingRecord => {
+      const record = { ...data, id: generateId("svr"), created_at: new Date().toISOString() } as SmokingVapingRecord;
+      store.smokingVapingRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SmokingVapingRecord>): SmokingVapingRecord | null => {
+      const idx = store.smokingVapingRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.smokingVapingRecords[idx] = { ...store.smokingVapingRecords[idx], ...data };
+      return store.smokingVapingRecords[idx];
+    },
+  },
+
+  traumaTherapyLogs: {
+    findAll: () => store.traumaTherapyLogs,
+    findById: (id: string) => store.traumaTherapyLogs.find((r) => r.id === id),
+    findByChild: (childId: string) => store.traumaTherapyLogs.filter((r) => r.child_id === childId),
+    create: (data: Partial<TraumaTherapyLog>): TraumaTherapyLog => {
+      const record = { ...data, id: generateId("ttl"), created_at: new Date().toISOString() } as TraumaTherapyLog;
+      store.traumaTherapyLogs.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<TraumaTherapyLog>): TraumaTherapyLog | null => {
+      const idx = store.traumaTherapyLogs.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.traumaTherapyLogs[idx] = { ...store.traumaTherapyLogs[idx], ...data };
+      return store.traumaTherapyLogs[idx];
+    },
+  },
+
+  styleIdentityRecords: {
+    findAll: () => store.styleIdentityRecords,
+    findById: (id: string) => store.styleIdentityRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.styleIdentityRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<StyleIdentityRecord>): StyleIdentityRecord => {
+      const record = { ...data, id: generateId("sir"), created_at: new Date().toISOString() } as StyleIdentityRecord;
+      store.styleIdentityRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StyleIdentityRecord>): StyleIdentityRecord | null => {
+      const idx = store.styleIdentityRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.styleIdentityRecords[idx] = { ...store.styleIdentityRecords[idx], ...data };
+      return store.styleIdentityRecords[idx];
+    },
+  },
+
+  tutoringRecords: {
+    findAll: () => store.tutoringRecords,
+    findById: (id: string) => store.tutoringRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.tutoringRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<TutoringRecord>): TutoringRecord => {
+      const record = { ...data, id: generateId("tut"), created_at: new Date().toISOString() } as TutoringRecord;
+      store.tutoringRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<TutoringRecord>): TutoringRecord | null => {
+      const idx = store.tutoringRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.tutoringRecords[idx] = { ...store.tutoringRecords[idx], ...data };
+      return store.tutoringRecords[idx];
+    },
+  },
+
+  visionCareRecords: {
+    findAll: () => store.visionCareRecords,
+    findById: (id: string) => store.visionCareRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.visionCareRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<VisionCareRecord>): VisionCareRecord => {
+      const record = { ...data, id: generateId("vcr"), created_at: new Date().toISOString() } as VisionCareRecord;
+      store.visionCareRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<VisionCareRecord>): VisionCareRecord | null => {
+      const idx = store.visionCareRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.visionCareRecords[idx] = { ...store.visionCareRecords[idx], ...data };
+      return store.visionCareRecords[idx];
     },
   },
 };
