@@ -152,6 +152,12 @@ import type {
   EmergencyMedicationProtocol,
   EmergencyReferral,
   EmergencyPlan,
+  ProtocolDrill,
+  EmotionalVocabRecord,
+  EnvironmentalRisk,
+  ExploitationScreening,
+  ExternalVisitor,
+  FamilyTimeSession,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -362,6 +368,12 @@ const store = {
   emergencyMedicationProtocols: [] as EmergencyMedicationProtocol[],
   emergencyReferrals: [] as EmergencyReferral[],
   emergencyPlans: [] as EmergencyPlan[],
+  protocolDrills: [] as ProtocolDrill[],
+  emotionalVocabRecords: [] as EmotionalVocabRecord[],
+  environmentalRisks: [] as EnvironmentalRisk[],
+  exploitationScreenings: [] as ExploitationScreening[],
+  externalVisitors: [] as ExternalVisitor[],
+  familyTimeSessions: [] as FamilyTimeSession[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -5424,6 +5436,105 @@ export const db = {
       if (idx === -1) return null;
       store.emergencyPlans[idx] = { ...store.emergencyPlans[idx], ...data };
       return store.emergencyPlans[idx];
+    },
+  },
+
+  protocolDrills: {
+    findAll: () => store.protocolDrills,
+    findById: (id: string) => store.protocolDrills.find((r) => r.id === id),
+    create: (data: Partial<ProtocolDrill>): ProtocolDrill => {
+      const record = { ...data, id: generateId("pd"), created_at: new Date().toISOString() } as ProtocolDrill;
+      store.protocolDrills.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ProtocolDrill>): ProtocolDrill | null => {
+      const idx = store.protocolDrills.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.protocolDrills[idx] = { ...store.protocolDrills[idx], ...data };
+      return store.protocolDrills[idx];
+    },
+  },
+
+  emotionalVocabRecords: {
+    findAll: () => store.emotionalVocabRecords,
+    findById: (id: string) => store.emotionalVocabRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.emotionalVocabRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<EmotionalVocabRecord>): EmotionalVocabRecord => {
+      const record = { ...data, id: generateId("evc"), created_at: new Date().toISOString() } as EmotionalVocabRecord;
+      store.emotionalVocabRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<EmotionalVocabRecord>): EmotionalVocabRecord | null => {
+      const idx = store.emotionalVocabRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.emotionalVocabRecords[idx] = { ...store.emotionalVocabRecords[idx], ...data };
+      return store.emotionalVocabRecords[idx];
+    },
+  },
+
+  environmentalRisks: {
+    findAll: () => store.environmentalRisks,
+    findById: (id: string) => store.environmentalRisks.find((r) => r.id === id),
+    create: (data: Partial<EnvironmentalRisk>): EnvironmentalRisk => {
+      const record = { ...data, id: generateId("envr"), created_at: new Date().toISOString() } as EnvironmentalRisk;
+      store.environmentalRisks.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<EnvironmentalRisk>): EnvironmentalRisk | null => {
+      const idx = store.environmentalRisks.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.environmentalRisks[idx] = { ...store.environmentalRisks[idx], ...data };
+      return store.environmentalRisks[idx];
+    },
+  },
+
+  exploitationScreenings: {
+    findAll: () => store.exploitationScreenings,
+    findById: (id: string) => store.exploitationScreenings.find((r) => r.id === id),
+    findByChild: (childId: string) => store.exploitationScreenings.filter((r) => r.child_id === childId),
+    create: (data: Partial<ExploitationScreening>): ExploitationScreening => {
+      const record = { ...data, id: generateId("exs"), created_at: new Date().toISOString() } as ExploitationScreening;
+      store.exploitationScreenings.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ExploitationScreening>): ExploitationScreening | null => {
+      const idx = store.exploitationScreenings.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.exploitationScreenings[idx] = { ...store.exploitationScreenings[idx], ...data };
+      return store.exploitationScreenings[idx];
+    },
+  },
+
+  externalVisitors: {
+    findAll: () => store.externalVisitors,
+    findById: (id: string) => store.externalVisitors.find((r) => r.id === id),
+    create: (data: Partial<ExternalVisitor>): ExternalVisitor => {
+      const record = { ...data, id: generateId("vis"), created_at: new Date().toISOString() } as ExternalVisitor;
+      store.externalVisitors.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ExternalVisitor>): ExternalVisitor | null => {
+      const idx = store.externalVisitors.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.externalVisitors[idx] = { ...store.externalVisitors[idx], ...data };
+      return store.externalVisitors[idx];
+    },
+  },
+
+  familyTimeSessions: {
+    findAll: () => store.familyTimeSessions,
+    findById: (id: string) => store.familyTimeSessions.find((r) => r.id === id),
+    findByChild: (childId: string) => store.familyTimeSessions.filter((r) => r.child_id === childId),
+    create: (data: Partial<FamilyTimeSession>): FamilyTimeSession => {
+      const record = { ...data, id: generateId("fts"), created_at: new Date().toISOString() } as FamilyTimeSession;
+      store.familyTimeSessions.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FamilyTimeSession>): FamilyTimeSession | null => {
+      const idx = store.familyTimeSessions.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.familyTimeSessions[idx] = { ...store.familyTimeSessions[idx], ...data };
+      return store.familyTimeSessions[idx];
     },
   },
 };

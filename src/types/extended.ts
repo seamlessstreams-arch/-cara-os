@@ -8410,3 +8410,395 @@ export interface EmergencyPlan {
   status: EmergencyPlanStatus;
   created_at: string;
 }
+
+// ── Batch 22 ──
+
+// ── Emergency Protocol Drills (home-level) ──
+
+export type DrillScenarioType =
+  | "missing_child"
+  | "medical_emergency"
+  | "power_failure"
+  | "intruder_alert"
+  | "flooding"
+  | "evacuation"
+  | "medication_error_response";
+
+export const DRILL_SCENARIO_TYPE_LABEL: Record<DrillScenarioType, string> = {
+  missing_child: "Missing Child",
+  medical_emergency: "Medical Emergency",
+  power_failure: "Power Failure",
+  intruder_alert: "Intruder Alert",
+  flooding: "Flooding",
+  evacuation: "Evacuation",
+  medication_error_response: "Medication Error Response",
+};
+
+export type DrillOutcome = "satisfactory" | "needs_improvement" | "failed";
+
+export const DRILL_OUTCOME_LABEL: Record<DrillOutcome, string> = {
+  satisfactory: "Satisfactory",
+  needs_improvement: "Needs Improvement",
+  failed: "Failed",
+};
+
+export interface ProtocolDrill {
+  id: string;
+  date: string;
+  scenario_type: DrillScenarioType;
+  scenario_description: string;
+  lead_by: string;
+  participants: string[];
+  response_time_minutes: number;
+  protocol_followed: boolean;
+  deviations: string;
+  learning_points: string[];
+  actions_required: string[];
+  outcome: DrillOutcome;
+  next_drill_due: string;
+  linked_protocol: string;
+  created_at: string;
+}
+
+// ── Emotional Vocabulary Coaching (child-level) ──
+
+export type EmotionalFramework =
+  | "zones_of_regulation"
+  | "feelings_wheel_plutchik"
+  | "ruler"
+  | "how_are_you_feeling_today"
+  | "bespoke"
+  | "mixed";
+
+export const EMOTIONAL_FRAMEWORK_LABEL: Record<EmotionalFramework, string> = {
+  zones_of_regulation: "Zones of Regulation",
+  feelings_wheel_plutchik: "Feelings Wheel (Plutchik)",
+  ruler: "RULER",
+  how_are_you_feeling_today: "How Are You Feeling Today",
+  bespoke: "Bespoke",
+  mixed: "Mixed",
+};
+
+export interface EmotionalBreakthrough {
+  date: string;
+  description: string;
+}
+
+export interface EmotionalVocabRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  starting_position: string;
+  feelings_recognised: string[];
+  feelings_learning_now: string[];
+  confusions_common: string[];
+  tools_in_use: string[];
+  framework: EmotionalFramework;
+  breakthroughs: EmotionalBreakthrough[];
+  prefers_spoken: boolean;
+  prefers_written: boolean;
+  prefers_visual: boolean;
+  prefers_body_mapping: boolean;
+  staff_phrasing_tips: string[];
+  child_voice: string;
+  staff_observation: string;
+  next_step: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Environmental Risk (home-level) ──
+
+export type EnvRiskCategory =
+  | "building"
+  | "garden_grounds"
+  | "kitchen"
+  | "bathroom"
+  | "bedroom"
+  | "communal"
+  | "external_area"
+  | "vehicle"
+  | "equipment"
+  | "chemical_hazard";
+
+export const ENV_RISK_CATEGORY_LABEL: Record<EnvRiskCategory, string> = {
+  building: "Building",
+  garden_grounds: "Garden & Grounds",
+  kitchen: "Kitchen",
+  bathroom: "Bathroom",
+  bedroom: "Bedroom",
+  communal: "Communal Area",
+  external_area: "External Area",
+  vehicle: "Vehicle",
+  equipment: "Equipment",
+  chemical_hazard: "Chemical / COSHH",
+};
+
+export type EnvRiskLevel = "low" | "medium" | "high" | "critical";
+
+export const ENV_RISK_LEVEL_LABEL: Record<EnvRiskLevel, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  critical: "Critical",
+};
+
+export type EnvAssessmentStatus = "current" | "due_review" | "overdue" | "archived";
+
+export const ENV_ASSESSMENT_STATUS_LABEL: Record<EnvAssessmentStatus, string> = {
+  current: "Current",
+  due_review: "Due Review",
+  overdue: "Overdue",
+  archived: "Archived",
+};
+
+export interface EnvRiskControl {
+  measure: string;
+  implemented_by: string;
+  date_implemented: string;
+  effective: boolean;
+}
+
+export interface EnvironmentalRisk {
+  id: string;
+  category: EnvRiskCategory;
+  location: string;
+  hazard: string;
+  who_at_risk: string[];
+  risk_level: EnvRiskLevel;
+  residual_risk: EnvRiskLevel;
+  status: EnvAssessmentStatus;
+  assessed_by: string;
+  assessment_date: string;
+  review_date: string;
+  controls: EnvRiskControl[];
+  additional_actions: string[];
+  incident_history: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Exploitation Screening (child-level) ──
+
+export type ExploitationType =
+  | "cse"
+  | "cce"
+  | "county_lines"
+  | "radicalisation"
+  | "modern_slavery"
+  | "online_exploitation"
+  | "peer_on_peer";
+
+export const EXPLOITATION_TYPE_LABEL: Record<ExploitationType, string> = {
+  cse: "Child Sexual Exploitation",
+  cce: "Child Criminal Exploitation",
+  county_lines: "County Lines",
+  radicalisation: "Radicalisation / Prevent",
+  modern_slavery: "Modern Slavery / Trafficking",
+  online_exploitation: "Online Exploitation",
+  peer_on_peer: "Peer-on-Peer Abuse",
+};
+
+export type ExploitationRiskLevel = "low" | "medium" | "high" | "very_high";
+
+export const EXPLOITATION_RISK_LEVEL_LABEL: Record<ExploitationRiskLevel, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  very_high: "Very High",
+};
+
+export type ExploitationScreeningStatus =
+  | "initial_screening"
+  | "assessment_in_progress"
+  | "referred"
+  | "monitoring"
+  | "nrm_submitted"
+  | "closed"
+  | "de_escalated";
+
+export const EXPLOITATION_SCREENING_STATUS_LABEL: Record<ExploitationScreeningStatus, string> = {
+  initial_screening: "Initial Screening",
+  assessment_in_progress: "Assessment in Progress",
+  referred: "Referred",
+  monitoring: "Monitoring",
+  nrm_submitted: "NRM Submitted",
+  closed: "Closed",
+  de_escalated: "De-escalated",
+};
+
+export interface ExploitationRiskIndicator {
+  indicator: string;
+  present: boolean;
+  notes: string;
+}
+
+export interface ExploitationScreening {
+  id: string;
+  date: string;
+  review_date: string;
+  completed_by: string;
+  child_id: string;
+  exploitation_type: ExploitationType;
+  risk_level: ExploitationRiskLevel;
+  previous_risk_level: ExploitationRiskLevel | null;
+  status: ExploitationScreeningStatus;
+  risk_indicators: ExploitationRiskIndicator[];
+  protective_factors: string[];
+  vulnerabilities: string[];
+  contextual_factors: string;
+  associates_of_concern: string;
+  locations_concern: string;
+  online_risks: string;
+  safeguarding_actions: string[];
+  multi_agency_involved: string[];
+  nrm_referral: boolean;
+  nrm_ref: string | null;
+  nrm_outcome: string | null;
+  police_ref: string | null;
+  social_worker_notified: boolean;
+  safety_plan: string;
+  direct_work: string;
+  management_oversight: string;
+  next_review_date: string;
+  created_at: string;
+}
+
+// ── External Visitor Log (home-level) ──
+
+export type VisitorType =
+  | "professional"
+  | "volunteer"
+  | "contractor"
+  | "inspector"
+  | "family_of_staff"
+  | "tradesperson"
+  | "researcher"
+  | "friend_of_child";
+
+export const VISITOR_TYPE_LABEL: Record<VisitorType, string> = {
+  professional: "Professional",
+  volunteer: "Volunteer",
+  contractor: "Contractor",
+  inspector: "Inspector",
+  family_of_staff: "Family of Staff",
+  tradesperson: "Tradesperson",
+  researcher: "Researcher",
+  friend_of_child: "Friend of Child",
+};
+
+export type VisitPurposeCategory =
+  | "care_therapy"
+  | "maintenance"
+  | "inspection"
+  | "education"
+  | "family"
+  | "activity"
+  | "delivery"
+  | "health";
+
+export const VISIT_PURPOSE_CATEGORY_LABEL: Record<VisitPurposeCategory, string> = {
+  care_therapy: "Care/Therapy",
+  maintenance: "Maintenance",
+  inspection: "Inspection",
+  education: "Education",
+  family: "Family",
+  activity: "Activity",
+  delivery: "Delivery",
+  health: "Health",
+};
+
+export interface ExternalVisitor {
+  id: string;
+  date: string;
+  arrival_time: string;
+  departure_time: string;
+  visitor_name: string;
+  visitor_organisation: string;
+  visitor_role: string;
+  visitor_type: VisitorType;
+  purpose_of_visit: string;
+  purpose_category: VisitPurposeCategory;
+  authorised_by: string;
+  host_staff: string;
+  id_checked: boolean;
+  dbs_checked: boolean;
+  dbs_required: boolean;
+  signed_nda: boolean;
+  signed_safeguarding: boolean;
+  children_interacted_with: string[];
+  unsupervised_access: boolean;
+  areas_accessed: string[];
+  signed_in: boolean;
+  signed_out: boolean;
+  badge_issued: boolean;
+  feedback: string;
+  concerns_raised: string[];
+  notes: string;
+  created_at: string;
+}
+
+// ── Family Time Supervision (child-level) ──
+
+export type FamilyTimeLocation =
+  | "oak_house"
+  | "family_home"
+  | "contact_centre"
+  | "public_venue";
+
+export const FAMILY_TIME_LOCATION_LABEL: Record<FamilyTimeLocation, string> = {
+  oak_house: "Oak House",
+  family_home: "Family Home",
+  contact_centre: "Contact Centre",
+  public_venue: "Public Venue",
+};
+
+export type FamilyTimeSupervisionLevel = "supervised" | "supported" | "unsupervised";
+
+export const FAMILY_TIME_SUPERVISION_LEVEL_LABEL: Record<FamilyTimeSupervisionLevel, string> = {
+  supervised: "Supervised",
+  supported: "Supported",
+  unsupervised: "Unsupervised",
+};
+
+export type FamilyTimePresentation = "settled" | "anxious" | "excited" | "withdrawn" | "resistant";
+
+export const FAMILY_TIME_PRESENTATION_LABEL: Record<FamilyTimePresentation, string> = {
+  settled: "Settled",
+  anxious: "Anxious",
+  excited: "Excited",
+  withdrawn: "Withdrawn",
+  resistant: "Resistant",
+};
+
+export interface FamilyTimeSession {
+  id: string;
+  child_id: string;
+  date: string;
+  time: string;
+  duration_minutes: number;
+  location: FamilyTimeLocation;
+  family_member: string;
+  family_member_name: string;
+  supervised_by: string;
+  supervision_level: FamilyTimeSupervisionLevel;
+  child_presentation_before: FamilyTimePresentation;
+  child_presentation_during: string;
+  child_presentation_after: string;
+  interactions_observed: string;
+  warmth_affection_shown: string;
+  boundary_issues: string;
+  concerns_raised: string[];
+  positive_observations: string[];
+  child_voice_after: string;
+  parent_engagement: string;
+  gifts_exchanged: string;
+  food_shared_who: string;
+  was_it_safe: boolean;
+  incidents_during: string;
+  recommendations_for_next: string[];
+  report_sent_to_sw: boolean;
+  report_sent_date: string;
+  created_at: string;
+}
