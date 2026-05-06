@@ -9121,3 +9121,368 @@ export interface FoodHygieneRecord {
   next_due_date: string;
   created_at: string;
 }
+
+// ── Batch 24 ──
+
+// ── Friendship Mapping (child-level) ──
+
+export type FriendAgeCategory = "same_age" | "older_1_2" | "older_3_plus" | "younger" | "adult";
+
+export const FRIEND_AGE_CATEGORY_LABEL: Record<FriendAgeCategory, string> = {
+  same_age: "Same Age (Peer)",
+  older_1_2: "Older (1-2 yrs)",
+  older_3_plus: "Older (3+ yrs)",
+  younger: "Younger",
+  adult: "Adult",
+};
+
+export type FriendContext = "school" | "sport_club" | "care_system_peer" | "cultural_community" | "online" | "neighbourhood" | "family_network";
+
+export const FRIEND_CONTEXT_LABEL: Record<FriendContext, string> = {
+  school: "School",
+  sport_club: "Sport Club",
+  care_system_peer: "Care System Peer",
+  cultural_community: "Cultural Community",
+  online: "Online",
+  neighbourhood: "Neighbourhood",
+  family_network: "Family Network",
+};
+
+export type FriendshipQuality = "strong_positive" | "developing" | "casual" | "some_concerns" | "significant_concerns";
+
+export const FRIENDSHIP_QUALITY_LABEL: Record<FriendshipQuality, string> = {
+  strong_positive: "Strong/Positive",
+  developing: "Developing",
+  casual: "Casual",
+  some_concerns: "Some Concerns",
+  significant_concerns: "Significant Concerns",
+};
+
+export type FriendContactType = "in_person" | "online" | "both";
+
+export const FRIEND_CONTACT_TYPE_LABEL: Record<FriendContactType, string> = {
+  in_person: "In-Person",
+  online: "Online",
+  both: "Both",
+};
+
+export type IsolationRisk = "low" | "medium" | "high";
+
+export const ISOLATION_RISK_LABEL: Record<IsolationRisk, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+};
+
+export interface FriendEntry {
+  friend_initial: string;
+  age_category: FriendAgeCategory;
+  context: FriendContext;
+  duration_of_friendship: string;
+  quality_of_relationship: FriendshipQuality;
+  contextual_safeguarding_notes: string;
+  friends_parents_known: boolean;
+  contact_type: FriendContactType;
+  frequency: string;
+  support_needed: string;
+}
+
+export interface FriendshipMap {
+  id: string;
+  child_id: string;
+  map_date: string;
+  friends: FriendEntry[];
+  friendship_strengths: string[];
+  friendship_challenges: string[];
+  isolation_risk: IsolationRisk;
+  loneliness_factors: string;
+  support_to_build_friendships: string[];
+  reviewed_date: string;
+  reviewed_by: string;
+  created_at: string;
+}
+
+// ── Funeral Attendance Records (child-level) ──
+
+export type FuneralType = "burial" | "cremation" | "memorial_service" | "wake_celebration" | "religious_ceremony" | "direct_cremation" | "other";
+
+export const FUNERAL_TYPE_LABEL: Record<FuneralType, string> = {
+  burial: "Burial",
+  cremation: "Cremation",
+  memorial_service: "Memorial Service",
+  wake_celebration: "Wake/Celebration of Life",
+  religious_ceremony: "Religious Ceremony",
+  direct_cremation: "Direct Cremation (No Service)",
+  other: "Other",
+};
+
+export type FuneralAttendanceDecision = "attended" | "did_not_attend_chose" | "did_not_attend_not_invited" | "attended_remotely" | "pending";
+
+export const FUNERAL_ATTENDANCE_DECISION_LABEL: Record<FuneralAttendanceDecision, string> = {
+  attended: "Attended",
+  did_not_attend_chose: "Did Not Attend (Chose Not To)",
+  did_not_attend_not_invited: "Did Not Attend (Not Invited)",
+  attended_remotely: "Attended Remotely",
+  pending: "Pending",
+};
+
+export type FuneralDecisionMaker = "child_led" | "birth_family" | "social_worker" | "court_direction" | "joint_decision";
+
+export const FUNERAL_DECISION_MAKER_LABEL: Record<FuneralDecisionMaker, string> = {
+  child_led: "Child-Led",
+  birth_family: "Birth Family Decided",
+  social_worker: "Social Worker Decided",
+  court_direction: "Court Direction",
+  joint_decision: "Joint Decision",
+};
+
+export interface FuneralRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  deceased_name: string;
+  relationship_to_child: string;
+  child_was_informed_by: string;
+  date_of_death: string;
+  funeral_date: string;
+  funeral_type: FuneralType;
+  faith_tradition?: string;
+  attendance_decision: FuneralAttendanceDecision;
+  decision_maker: FuneralDecisionMaker;
+  pre_funeral_preparation: string[];
+  who_attended_with_child: string[];
+  travel_arrangements?: string;
+  social_worker_informed: boolean;
+  birth_family_contact?: string;
+  rituals_observed: string[];
+  child_role_at_funeral?: string;
+  post_funeral_support: string[];
+  child_voice: string;
+  staff_observation: string;
+  follow_up_date: string;
+  flags_concerns: string[];
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Garden Cultivation Tracker (home-level) ──
+
+export type GardenPlotLocation = "back_garden" | "side_bed" | "vegetable_patch" | "greenhouse" | "allotment_plot" | "pots_containers";
+
+export const GARDEN_PLOT_LOCATION_LABEL: Record<GardenPlotLocation, string> = {
+  back_garden: "Back Garden",
+  side_bed: "Side Bed",
+  vegetable_patch: "Vegetable Patch",
+  greenhouse: "Greenhouse",
+  allotment_plot: "Allotment Plot",
+  pots_containers: "Pots/Containers",
+};
+
+export type CropStatus = "growing" | "ready" | "harvested" | "failed";
+
+export const CROP_STATUS_LABEL: Record<CropStatus, string> = {
+  growing: "Growing",
+  ready: "Ready",
+  harvested: "Harvested",
+  failed: "Failed",
+};
+
+export interface GardenPlanting {
+  crop: string;
+  planted: string;
+  expected_harvest: string;
+  status: CropStatus;
+}
+
+export interface GardenPlotRecord {
+  id: string;
+  plot_name: string;
+  location: GardenPlotLocation;
+  size?: string;
+  lead_child?: string;
+  contributing_children: string[];
+  lead_staff: string;
+  current_planting: GardenPlanting[];
+  seasonal_plan: string[];
+  tools_accessible: string[];
+  child_chosen_crops: string[];
+  harvest_so_far: string[];
+  hours_this_month: number;
+  sensory_benefits: string[];
+  skills_learned: string[];
+  challenges_issues: string[];
+  child_voice: string;
+  staff_observation: string;
+  next_step: string;
+  review_date: string;
+  created_at: string;
+}
+
+// ── Gas & Electrical Safety Checks (home-level) ──
+
+export type SafetyCheckCategory = "annual_gas_safety" | "boiler_service" | "eicr" | "pat_testing" | "smoke_alarm_test" | "co_detector_test" | "emergency_lighting" | "rcd_test" | "solar_inverter_inspection" | "fixed_wire_inspection";
+
+export const SAFETY_CHECK_CATEGORY_LABEL: Record<SafetyCheckCategory, string> = {
+  annual_gas_safety: "Annual Gas Safety (CP12)",
+  boiler_service: "Boiler Service",
+  eicr: "EICR (5-Yearly)",
+  pat_testing: "PAT Testing (Annual)",
+  smoke_alarm_test: "Smoke Alarm Test",
+  co_detector_test: "CO Detector Test",
+  emergency_lighting: "Emergency Lighting",
+  rcd_test: "RCD Test",
+  solar_inverter_inspection: "Solar / Inverter Inspection",
+  fixed_wire_inspection: "Fixed Wire Inspection",
+};
+
+export type SafetyCheckScope = "whole_property" | "boiler_heating" | "kitchen" | "bedrooms" | "communal" | "external" | "specific_appliance";
+
+export const SAFETY_CHECK_SCOPE_LABEL: Record<SafetyCheckScope, string> = {
+  whole_property: "Whole Property",
+  boiler_heating: "Boiler/Heating",
+  kitchen: "Kitchen",
+  bedrooms: "Bedrooms",
+  communal: "Communal",
+  external: "External",
+  specific_appliance: "Specific Appliance",
+};
+
+export type SafetyCheckOutcome = "pass" | "pass_with_advisories" | "remedial_works_required" | "failed_urgent";
+
+export const SAFETY_CHECK_OUTCOME_LABEL: Record<SafetyCheckOutcome, string> = {
+  pass: "Pass",
+  pass_with_advisories: "Pass with Advisories",
+  remedial_works_required: "Remedial Works Required",
+  failed_urgent: "Failed — Urgent Action",
+};
+
+export type RemedialWorkStatus = "open" | "booked" | "completed";
+
+export const REMEDIAL_WORK_STATUS_LABEL: Record<RemedialWorkStatus, string> = {
+  open: "Open",
+  booked: "Booked",
+  completed: "Completed",
+};
+
+export interface RemedialWork {
+  description: string;
+  deadline: string;
+  status: RemedialWorkStatus;
+}
+
+export interface SafetyCheckRecord {
+  id: string;
+  category: SafetyCheckCategory;
+  scope_area: SafetyCheckScope;
+  specific_item?: string;
+  contractor: string;
+  contractor_accreditation: string;
+  certificate_number?: string;
+  inspection_date: string;
+  expiry_date: string;
+  outcome: SafetyCheckOutcome;
+  advisories: string[];
+  remedial_works: RemedialWork[];
+  cost_paid?: number;
+  certificate_location: string;
+  notified_to_regulator?: string;
+  recorded_by: string;
+  flags_concerns: string[];
+  notes?: string;
+  created_at: string;
+}
+
+// ── Gifts Register (home-level) ──
+
+export type GiftDirection = "received" | "given";
+
+export const GIFT_DIRECTION_LABEL: Record<GiftDirection, string> = {
+  received: "Received",
+  given: "Given",
+};
+
+export type GiftRecipientType = "child" | "staff" | "home";
+
+export const GIFT_RECIPIENT_TYPE_LABEL: Record<GiftRecipientType, string> = {
+  child: "Child",
+  staff: "Staff",
+  home: "Home",
+};
+
+export type GiftSource = "family" | "social_worker" | "advocate" | "charity" | "staff_personal" | "home_purchase" | "community" | "unknown" | "other";
+
+export const GIFT_SOURCE_LABEL: Record<GiftSource, string> = {
+  family: "Family",
+  social_worker: "Social Worker",
+  advocate: "Advocate",
+  charity: "Charity",
+  staff_personal: "Staff (Personal)",
+  home_purchase: "Home Purchase",
+  community: "Community",
+  unknown: "Unknown",
+  other: "Other",
+};
+
+export type GiftApprovalStatus = "approved" | "declined" | "pending" | "returned";
+
+export const GIFT_APPROVAL_STATUS_LABEL: Record<GiftApprovalStatus, string> = {
+  approved: "Approved",
+  declined: "Declined",
+  pending: "Pending",
+  returned: "Returned to Sender",
+};
+
+export interface GiftRecord {
+  id: string;
+  date: string;
+  direction: GiftDirection;
+  recipient_type: GiftRecipientType;
+  recipient_id: string | null;
+  recipient_name: string;
+  source: GiftSource;
+  source_name: string;
+  description: string;
+  estimated_value: number;
+  approval_status: GiftApprovalStatus;
+  approved_by: string | null;
+  reason: string;
+  safeguarding_concerns: boolean;
+  safeguarding_notes: string;
+  recorded_by: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Governance Meeting Minutes (home-level) ──
+
+export type GovernanceActionStatus = "completed" | "in_progress" | "overdue" | "pending";
+
+export const GOVERNANCE_ACTION_STATUS_LABEL: Record<GovernanceActionStatus, string> = {
+  completed: "Completed",
+  in_progress: "In Progress",
+  overdue: "Overdue",
+  pending: "Pending",
+};
+
+export interface GovernanceAction {
+  description: string;
+  owner: string;
+  deadline: string;
+  status: GovernanceActionStatus;
+}
+
+export interface GovernanceMeeting {
+  id: string;
+  date: string;
+  meeting_type: string;
+  chair: string;
+  attendees: string[];
+  agenda_items: string[];
+  key_decisions: string[];
+  actions: GovernanceAction[];
+  children_discussed: string[];
+  regulatory_topics: string[];
+  risk_items: string[];
+  next_meeting_date: string;
+  created_at: string;
+}

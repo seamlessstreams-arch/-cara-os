@@ -164,6 +164,12 @@ import type {
   FirstAiderRecord,
   FoodBudgetWeekRecord,
   FoodHygieneRecord,
+  FriendshipMap,
+  FuneralRecord,
+  GardenPlotRecord,
+  SafetyCheckRecord,
+  GiftRecord,
+  GovernanceMeeting,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -386,6 +392,12 @@ const store = {
   firstAiderRecords: [] as FirstAiderRecord[],
   foodBudgetWeekRecords: [] as FoodBudgetWeekRecord[],
   foodHygieneRecords: [] as FoodHygieneRecord[],
+  friendshipMaps: [] as FriendshipMap[],
+  funeralRecords: [] as FuneralRecord[],
+  gardenPlotRecords: [] as GardenPlotRecord[],
+  safetyCheckRecords: [] as SafetyCheckRecord[],
+  giftRecords: [] as GiftRecord[],
+  governanceMeetings: [] as GovernanceMeeting[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -5644,6 +5656,104 @@ export const db = {
       if (idx === -1) return null;
       store.foodHygieneRecords[idx] = { ...store.foodHygieneRecords[idx], ...data };
       return store.foodHygieneRecords[idx];
+    },
+  },
+
+  friendshipMaps: {
+    findAll: () => store.friendshipMaps,
+    findById: (id: string) => store.friendshipMaps.find((r) => r.id === id),
+    findByChild: (childId: string) => store.friendshipMaps.filter((r) => r.child_id === childId),
+    create: (data: Partial<FriendshipMap>): FriendshipMap => {
+      const record = { ...data, id: generateId("fm"), created_at: new Date().toISOString() } as FriendshipMap;
+      store.friendshipMaps.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FriendshipMap>): FriendshipMap | null => {
+      const idx = store.friendshipMaps.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.friendshipMaps[idx] = { ...store.friendshipMaps[idx], ...data };
+      return store.friendshipMaps[idx];
+    },
+  },
+
+  funeralRecords: {
+    findAll: () => store.funeralRecords,
+    findById: (id: string) => store.funeralRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.funeralRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<FuneralRecord>): FuneralRecord => {
+      const record = { ...data, id: generateId("fun"), created_at: new Date().toISOString() } as FuneralRecord;
+      store.funeralRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FuneralRecord>): FuneralRecord | null => {
+      const idx = store.funeralRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.funeralRecords[idx] = { ...store.funeralRecords[idx], ...data };
+      return store.funeralRecords[idx];
+    },
+  },
+
+  gardenPlotRecords: {
+    findAll: () => store.gardenPlotRecords,
+    findById: (id: string) => store.gardenPlotRecords.find((r) => r.id === id),
+    create: (data: Partial<GardenPlotRecord>): GardenPlotRecord => {
+      const record = { ...data, id: generateId("gpr"), created_at: new Date().toISOString() } as GardenPlotRecord;
+      store.gardenPlotRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<GardenPlotRecord>): GardenPlotRecord | null => {
+      const idx = store.gardenPlotRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.gardenPlotRecords[idx] = { ...store.gardenPlotRecords[idx], ...data };
+      return store.gardenPlotRecords[idx];
+    },
+  },
+
+  safetyCheckRecords: {
+    findAll: () => store.safetyCheckRecords,
+    findById: (id: string) => store.safetyCheckRecords.find((r) => r.id === id),
+    create: (data: Partial<SafetyCheckRecord>): SafetyCheckRecord => {
+      const record = { ...data, id: generateId("sck"), created_at: new Date().toISOString() } as SafetyCheckRecord;
+      store.safetyCheckRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SafetyCheckRecord>): SafetyCheckRecord | null => {
+      const idx = store.safetyCheckRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.safetyCheckRecords[idx] = { ...store.safetyCheckRecords[idx], ...data };
+      return store.safetyCheckRecords[idx];
+    },
+  },
+
+  giftRecords: {
+    findAll: () => store.giftRecords,
+    findById: (id: string) => store.giftRecords.find((r) => r.id === id),
+    create: (data: Partial<GiftRecord>): GiftRecord => {
+      const record = { ...data, id: generateId("gift"), created_at: new Date().toISOString() } as GiftRecord;
+      store.giftRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<GiftRecord>): GiftRecord | null => {
+      const idx = store.giftRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.giftRecords[idx] = { ...store.giftRecords[idx], ...data };
+      return store.giftRecords[idx];
+    },
+  },
+
+  governanceMeetings: {
+    findAll: () => store.governanceMeetings,
+    findById: (id: string) => store.governanceMeetings.find((r) => r.id === id),
+    create: (data: Partial<GovernanceMeeting>): GovernanceMeeting => {
+      const record = { ...data, id: generateId("gov"), created_at: new Date().toISOString() } as GovernanceMeeting;
+      store.governanceMeetings.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<GovernanceMeeting>): GovernanceMeeting | null => {
+      const idx = store.governanceMeetings.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.governanceMeetings[idx] = { ...store.governanceMeetings[idx], ...data };
+      return store.governanceMeetings[idx];
     },
   },
 };

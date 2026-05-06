@@ -25,210 +25,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type {
+  SafetyCheckRecord,
+  SafetyCheckCategory,
+  SafetyCheckScope,
+  SafetyCheckOutcome,
+  RemedialWorkStatus,
+  RemedialWork,
+} from "@/types/extended";
+import {
+  SAFETY_CHECK_CATEGORY_LABEL,
+  SAFETY_CHECK_SCOPE_LABEL,
+  SAFETY_CHECK_OUTCOME_LABEL,
+  REMEDIAL_WORK_STATUS_LABEL,
+} from "@/types/extended";
+import { useSafetyCheckRecords } from "@/hooks/use-safety-check-records";
 
-interface SafetyCheck {
-  id: string;
-  category:
-    | "Annual gas safety (CP12)"
-    | "Boiler service"
-    | "EICR (5-yearly)"
-    | "PAT testing (annual)"
-    | "Smoke alarm test"
-    | "CO detector test"
-    | "Emergency lighting"
-    | "RCD test"
-    | "Solar / inverter inspection"
-    | "Fixed wire inspection";
-  scopeArea: "Whole property" | "Boiler/heating" | "Kitchen" | "Bedrooms" | "Communal" | "External" | "Specific appliance";
-  specificItem?: string;
-  contractor: string;
-  contractorAccreditation: string;
-  certificateNumber?: string;
-  inspectionDate: string;
-  expiryDate: string;
-  outcome: "Pass" | "Pass with advisories" | "Remedial works required" | "Failed — urgent action";
-  advisories: string[];
-  remedialWorks: { description: string; deadline: string; status: "Open" | "Booked" | "Completed" }[];
-  costPaid?: number;
-  certificateLocation: string;
-  notifiedToRegulator?: string;
-  recordedBy: string;
-  flagsConcerns: string[];
-  notes?: string;
-}
+/* ── helpers ───────────────────────────────────────────────────────────── */
 
-const d = (n: number) => {
+const daysFromNow = (n: number) => {
   const dt = new Date();
   dt.setDate(dt.getDate() + n);
   return dt.toISOString().slice(0, 10);
 };
 
-const records: SafetyCheck[] = [
-  {
-    id: "ges_001",
-    category: "Annual gas safety (CP12)",
-    scopeArea: "Whole property",
-    contractor: "T. Murray Plumbing & Heating Ltd",
-    contractorAccreditation: "Gas Safe Register: 519284",
-    certificateNumber: "CP12-2026-04471",
-    inspectionDate: d(-25),
-    expiryDate: d(340),
-    outcome: "Pass",
-    advisories: [
-      "Boiler 11 years old — schedule replacement consideration in 2027 budget",
-      "Recommend annual servicing in same month each year for continuity",
-    ],
-    remedialWorks: [],
-    costPaid: 145,
-    certificateLocation: "Operations folder + scanned copy /buildings/gas/2026/CP12.pdf",
-    recordedBy: "staff_darren",
-    flagsConcerns: [],
-    notes: "All gas appliances safe. CO levels 0ppm at all test points.",
-  },
-  {
-    id: "ges_002",
-    category: "EICR (5-yearly)",
-    scopeArea: "Whole property",
-    contractor: "Bright Spark Electrical Ltd",
-    contractorAccreditation: "NICEIC Approved Contractor: 31987",
-    certificateNumber: "EICR-2024-AB1102",
-    inspectionDate: d(-450),
-    expiryDate: d(1380),
-    outcome: "Pass with advisories",
-    advisories: [
-      "Garage extension consumer unit older type — no immediate action, replace at next major works",
-      "External outdoor sockets need RCD upgrade at next servicing",
-    ],
-    remedialWorks: [
-      { description: "Replace 2x bedroom socket faceplates with cracked sockets", deadline: d(-380), status: "Completed" },
-      { description: "Add RCD on external sockets", deadline: d(60), status: "Booked" },
-    ],
-    costPaid: 380,
-    certificateLocation: "Operations folder + scanned copy /buildings/electrical/2024/EICR.pdf",
-    recordedBy: "staff_darren",
-    flagsConcerns: ["RCD upgrade booked — schedule a follow-up reminder for completion confirmation"],
-  },
-  {
-    id: "ges_003",
-    category: "PAT testing (annual)",
-    scopeArea: "Whole property",
-    contractor: "PAT Pro Services",
-    contractorAccreditation: "City & Guilds 2377-22 PAT competent",
-    certificateNumber: "PAT-2026-Q1-CSH",
-    inspectionDate: d(-12),
-    expiryDate: d(353),
-    outcome: "Pass with advisories",
-    advisories: [
-      "1 kettle (kitchen) failed test — disposed of and replaced",
-      "1 desk lamp (Casey's bedroom) frayed cable — disposed of, Casey chose new lamp",
-    ],
-    remedialWorks: [],
-    costPaid: 95,
-    certificateLocation: "Operations folder + register of PAT-stickered items",
-    recordedBy: "staff_darren",
-    flagsConcerns: [],
-    notes: "47 portable appliances tested. 2 disposed. Stickered register updated.",
-  },
-  {
-    id: "ges_004",
-    category: "Smoke alarm test",
-    scopeArea: "Whole property",
-    contractor: "In-house weekly test (push-button)",
-    contractorAccreditation: "Reg 25 / Manager-led",
-    inspectionDate: d(-3),
-    expiryDate: d(4),
-    outcome: "Pass",
-    advisories: [],
-    remedialWorks: [],
-    certificateLocation: "Fire log book — weekly entry",
-    recordedBy: "staff_anna",
-    flagsConcerns: [],
-    notes: "All 9 smoke alarms tested — all sounded. Logged in fire log book.",
-  },
-  {
-    id: "ges_005",
-    category: "CO detector test",
-    scopeArea: "Boiler/heating",
-    specificItem: "Kitchen + utility CO detector",
-    contractor: "In-house weekly test",
-    contractorAccreditation: "Reg 25 / Manager-led",
-    inspectionDate: d(-3),
-    expiryDate: d(4),
-    outcome: "Pass",
-    advisories: [],
-    remedialWorks: [],
-    certificateLocation: "Fire log book — weekly entry",
-    recordedBy: "staff_anna",
-    flagsConcerns: [],
-    notes: "Both CO detectors tested. Battery replaced on utility detector.",
-  },
-  {
-    id: "ges_006",
-    category: "Boiler service",
-    scopeArea: "Boiler/heating",
-    contractor: "T. Murray Plumbing & Heating Ltd",
-    contractorAccreditation: "Gas Safe Register: 519284",
-    certificateNumber: "BSV-2026-04471",
-    inspectionDate: d(-25),
-    expiryDate: d(340),
-    outcome: "Pass",
-    advisories: [
-      "Boiler in good order — service documented",
-      "Recommend power flush in next 2-3 years",
-    ],
-    remedialWorks: [],
-    costPaid: 95,
-    certificateLocation: "Operations folder",
-    recordedBy: "staff_darren",
-    flagsConcerns: [],
-    notes: "Combi boiler serviced concurrently with CP12.",
-  },
-  {
-    id: "ges_007",
-    category: "Emergency lighting",
-    scopeArea: "Whole property",
-    contractor: "Bright Spark Electrical Ltd",
-    contractorAccreditation: "NICEIC + BS 5266",
-    certificateNumber: "EM-2026-1101",
-    inspectionDate: d(-90),
-    expiryDate: d(275),
-    outcome: "Pass",
-    advisories: [
-      "All emergency lights operational — full 3-hour discharge tested",
-    ],
-    remedialWorks: [],
-    costPaid: 120,
-    certificateLocation: "Fire log + Operations folder",
-    recordedBy: "staff_darren",
-    flagsConcerns: [],
-  },
-];
-
-const exportCols: ExportColumn<SafetyCheck>[] = [
-  { header: "Category", accessor: (r: SafetyCheck) => r.category },
-  { header: "Scope", accessor: (r: SafetyCheck) => r.scopeArea },
-  { header: "Specific Item", accessor: (r: SafetyCheck) => r.specificItem ?? "—" },
-  { header: "Contractor", accessor: (r: SafetyCheck) => r.contractor },
-  { header: "Accreditation", accessor: (r: SafetyCheck) => r.contractorAccreditation },
-  { header: "Certificate Number", accessor: (r: SafetyCheck) => r.certificateNumber ?? "—" },
-  { header: "Inspection Date", accessor: (r: SafetyCheck) => r.inspectionDate },
-  { header: "Expiry Date", accessor: (r: SafetyCheck) => r.expiryDate },
-  { header: "Outcome", accessor: (r: SafetyCheck) => r.outcome },
-  { header: "Advisories", accessor: (r: SafetyCheck) => r.advisories.join("; ") },
-  { header: "Remedial Open", accessor: (r: SafetyCheck) => r.remedialWorks.filter((w) => w.status !== "Completed").map((w) => w.description).join("; ") },
-  { header: "Cost", accessor: (r: SafetyCheck) => (r.costPaid !== undefined ? `£${r.costPaid.toFixed(2)}` : "—") },
-  { header: "Certificate Location", accessor: (r: SafetyCheck) => r.certificateLocation },
-  { header: "Recorded By", accessor: (r: SafetyCheck) => getStaffName(r.recordedBy) },
-];
-
-const outcomeColour: Record<SafetyCheck["outcome"], string> = {
-  Pass: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "Pass with advisories": "bg-blue-100 text-blue-800 border-blue-200",
-  "Remedial works required": "bg-amber-100 text-amber-800 border-amber-200",
-  "Failed — urgent action": "bg-red-100 text-red-800 border-red-200",
+const outcomeColour: Record<SafetyCheckOutcome, string> = {
+  pass: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  pass_with_advisories: "bg-blue-100 text-blue-800 border-blue-200",
+  remedial_works_required: "bg-amber-100 text-amber-800 border-amber-200",
+  failed_urgent: "bg-red-100 text-red-800 border-red-200",
 };
 
+const remedialStatusColour: Record<RemedialWorkStatus, string> = {
+  completed: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  booked: "bg-sky-100 text-sky-800 border-sky-200",
+  open: "bg-amber-100 text-amber-800 border-amber-200",
+};
+
+/* ── export columns ────────────────────────────────────────────────────── */
+
+const exportCols: ExportColumn<SafetyCheckRecord>[] = [
+  { header: "Category", accessor: (r) => SAFETY_CHECK_CATEGORY_LABEL[r.category] },
+  { header: "Scope", accessor: (r) => SAFETY_CHECK_SCOPE_LABEL[r.scope_area] },
+  { header: "Specific Item", accessor: (r) => r.specific_item ?? "—" },
+  { header: "Contractor", accessor: (r) => r.contractor },
+  { header: "Accreditation", accessor: (r) => r.contractor_accreditation },
+  { header: "Certificate Number", accessor: (r) => r.certificate_number ?? "—" },
+  { header: "Inspection Date", accessor: (r) => r.inspection_date },
+  { header: "Expiry Date", accessor: (r) => r.expiry_date },
+  { header: "Outcome", accessor: (r) => SAFETY_CHECK_OUTCOME_LABEL[r.outcome] },
+  { header: "Advisories", accessor: (r) => r.advisories.join("; ") },
+  { header: "Remedial Open", accessor: (r) => r.remedial_works.filter((w) => w.status !== "completed").map((w) => w.description).join("; ") },
+  { header: "Cost", accessor: (r) => (r.cost_paid !== undefined ? `£${r.cost_paid.toFixed(2)}` : "—") },
+  { header: "Certificate Location", accessor: (r) => r.certificate_location },
+  { header: "Recorded By", accessor: (r) => getStaffName(r.recorded_by) },
+];
+
+/* ── component ─────────────────────────────────────────────────────────── */
+
 export default function GasElectricalSafetyChecksPage() {
+  const { data: res, isLoading } = useSafetyCheckRecords();
+  const records = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "expiry" | "category" | "outcome">("expiry");
@@ -236,29 +94,40 @@ export default function GasElectricalSafetyChecksPage() {
 
   const filtered = useMemo(() => {
     let r = records.filter((rec) => {
+      const label = SAFETY_CHECK_CATEGORY_LABEL[rec.category];
       const matchesSearch =
         !search ||
-        rec.category.toLowerCase().includes(search.toLowerCase()) ||
+        label.toLowerCase().includes(search.toLowerCase()) ||
         rec.contractor.toLowerCase().includes(search.toLowerCase());
       const matchesCat = categoryFilter === "all" || rec.category === categoryFilter;
       return matchesSearch && matchesCat;
     });
     r = [...r].sort((a, b) => {
-      if (sortBy === "date") return b.inspectionDate.localeCompare(a.inspectionDate);
+      if (sortBy === "date") return b.inspection_date.localeCompare(a.inspection_date);
       if (sortBy === "category") return a.category.localeCompare(b.category);
       if (sortBy === "outcome") return a.outcome.localeCompare(b.outcome);
-      return a.expiryDate.localeCompare(b.expiryDate);
+      return a.expiry_date.localeCompare(b.expiry_date);
     });
     return r;
-  }, [search, categoryFilter, sortBy]);
+  }, [search, categoryFilter, sortBy, records]);
 
   const stats = useMemo(() => {
-    const expiringSoon = records.filter((r) => r.expiryDate <= d(60)).length;
-    const remedialOpen = records.reduce((acc, r) => acc + r.remedialWorks.filter((w) => w.status !== "Completed").length, 0);
-    const passingPct = Math.round((records.filter((r) => r.outcome === "Pass" || r.outcome === "Pass with advisories").length / records.length) * 100);
-    const totalCost = records.reduce((acc, r) => acc + (r.costPaid ?? 0), 0);
+    const expiringSoon = records.filter((r) => r.expiry_date <= daysFromNow(60)).length;
+    const remedialOpen = records.reduce((acc, r) => acc + r.remedial_works.filter((w) => w.status !== "completed").length, 0);
+    const passingPct = records.length
+      ? Math.round((records.filter((r) => r.outcome === "pass" || r.outcome === "pass_with_advisories").length / records.length) * 100)
+      : 0;
+    const totalCost = records.reduce((acc, r) => acc + (r.cost_paid ?? 0), 0);
     return { expiringSoon, remedialOpen, passingPct, totalCost };
-  }, []);
+  }, [records]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Gas & Electrical Safety Checks" subtitle="Loading…">
+        <div />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -319,16 +188,16 @@ export default function GasElectricalSafetyChecksPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
-            <SelectItem value="Annual gas safety (CP12)">Gas safety (CP12)</SelectItem>
-            <SelectItem value="Boiler service">Boiler service</SelectItem>
-            <SelectItem value="EICR (5-yearly)">EICR</SelectItem>
-            <SelectItem value="PAT testing (annual)">PAT testing</SelectItem>
-            <SelectItem value="Smoke alarm test">Smoke alarm test</SelectItem>
-            <SelectItem value="CO detector test">CO detector test</SelectItem>
-            <SelectItem value="Emergency lighting">Emergency lighting</SelectItem>
-            <SelectItem value="RCD test">RCD test</SelectItem>
-            <SelectItem value="Solar / inverter inspection">Solar / inverter</SelectItem>
-            <SelectItem value="Fixed wire inspection">Fixed wire inspection</SelectItem>
+            <SelectItem value="annual_gas_safety">Gas safety (CP12)</SelectItem>
+            <SelectItem value="boiler_service">Boiler service</SelectItem>
+            <SelectItem value="eicr">EICR</SelectItem>
+            <SelectItem value="pat_testing">PAT testing</SelectItem>
+            <SelectItem value="smoke_alarm_test">Smoke alarm test</SelectItem>
+            <SelectItem value="co_detector_test">CO detector test</SelectItem>
+            <SelectItem value="emergency_lighting">Emergency lighting</SelectItem>
+            <SelectItem value="rcd_test">RCD test</SelectItem>
+            <SelectItem value="solar_inverter_inspection">Solar / inverter</SelectItem>
+            <SelectItem value="fixed_wire_inspection">Fixed wire inspection</SelectItem>
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
@@ -348,8 +217,8 @@ export default function GasElectricalSafetyChecksPage() {
       <div className="space-y-3">
         {filtered.map((r) => {
           const isOpen = expandedId === r.id;
-          const expiringSoon = r.expiryDate <= d(60) && r.expiryDate >= d(0);
-          const expired = r.expiryDate < d(0);
+          const expiringSoon = r.expiry_date <= daysFromNow(60) && r.expiry_date >= daysFromNow(0);
+          const expired = r.expiry_date < daysFromNow(0);
           return (
             <div key={r.id} className="rounded-lg border border-slate-200 bg-white overflow-hidden">
               <button
@@ -358,14 +227,14 @@ export default function GasElectricalSafetyChecksPage() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    {r.category.startsWith("Annual gas") || r.category === "Boiler service" ? (
+                    {r.category === "annual_gas_safety" || r.category === "boiler_service" ? (
                       <Flame className="h-4 w-4 text-orange-500" />
                     ) : (
                       <Zap className="h-4 w-4 text-yellow-500" />
                     )}
-                    <span className="font-semibold text-slate-900">{r.category}</span>
+                    <span className="font-semibold text-slate-900">{SAFETY_CHECK_CATEGORY_LABEL[r.category]}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", outcomeColour[r.outcome])}>
-                      {r.outcome}
+                      {SAFETY_CHECK_OUTCOME_LABEL[r.outcome]}
                     </span>
                     {expired ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-red-100 text-red-800 border-red-200">
@@ -373,12 +242,12 @@ export default function GasElectricalSafetyChecksPage() {
                       </span>
                     ) : expiringSoon ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-200">
-                        Expiring in {Math.ceil((new Date(r.expiryDate).getTime() - Date.now()) / 86400000)}d
+                        Expiring in {Math.ceil((new Date(r.expiry_date).getTime() - Date.now()) / 86400000)}d
                       </span>
                     ) : null}
                   </div>
                   <div className="text-sm text-slate-600">
-                    Inspected {r.inspectionDate} · expires {r.expiryDate} · {r.contractor}
+                    Inspected {r.inspection_date} · expires {r.expiry_date} · {r.contractor}
                   </div>
                 </div>
                 {isOpen ? <ChevronUp className="h-5 w-5 text-slate-400" /> : <ChevronDown className="h-5 w-5 text-slate-400" />}
@@ -389,13 +258,13 @@ export default function GasElectricalSafetyChecksPage() {
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Inspection</div>
                       <div className="grid grid-cols-2 gap-3 text-sm text-slate-700">
-                        <div><span className="text-slate-500">Scope:</span> {r.scopeArea}</div>
-                        {r.specificItem ? <div><span className="text-slate-500">Item:</span> {r.specificItem}</div> : null}
+                        <div><span className="text-slate-500">Scope:</span> {SAFETY_CHECK_SCOPE_LABEL[r.scope_area]}</div>
+                        {r.specific_item ? <div><span className="text-slate-500">Item:</span> {r.specific_item}</div> : null}
                         <div><span className="text-slate-500">Contractor:</span> {r.contractor}</div>
-                        <div><span className="text-slate-500">Accreditation:</span> {r.contractorAccreditation}</div>
-                        {r.certificateNumber ? <div><span className="text-slate-500">Certificate:</span> {r.certificateNumber}</div> : null}
-                        {r.costPaid !== undefined ? <div><span className="text-slate-500">Cost:</span> £{r.costPaid.toFixed(2)}</div> : null}
-                        <div className="col-span-2"><span className="text-slate-500">Certificate kept:</span> {r.certificateLocation}</div>
+                        <div><span className="text-slate-500">Accreditation:</span> {r.contractor_accreditation}</div>
+                        {r.certificate_number ? <div><span className="text-slate-500">Certificate:</span> {r.certificate_number}</div> : null}
+                        {r.cost_paid !== undefined ? <div><span className="text-slate-500">Cost:</span> £{r.cost_paid.toFixed(2)}</div> : null}
+                        <div className="col-span-2"><span className="text-slate-500">Certificate kept:</span> {r.certificate_location}</div>
                       </div>
                     </div>
                     {r.advisories.length ? (
@@ -408,18 +277,18 @@ export default function GasElectricalSafetyChecksPage() {
                         </ul>
                       </div>
                     ) : null}
-                    {r.remedialWorks.length ? (
+                    {r.remedial_works.length ? (
                       <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
                         <div className="text-xs font-semibold text-amber-800 uppercase mb-2">Remedial works</div>
                         <ul className="text-sm text-amber-900 space-y-1.5">
-                          {r.remedialWorks.map((w, i) => (
+                          {r.remedial_works.map((w, i) => (
                             <li key={i} className="flex justify-between gap-2">
                               <span className="flex-1">{w.description}</span>
                               <span className={cn(
                                 "text-xs px-2 py-0.5 rounded-full border shrink-0",
-                                w.status === "Completed" ? "bg-emerald-100 text-emerald-800 border-emerald-200" : w.status === "Booked" ? "bg-sky-100 text-sky-800 border-sky-200" : "bg-amber-100 text-amber-800 border-amber-200"
+                                remedialStatusColour[w.status]
                               )}>
-                                {w.status} · {w.deadline}
+                                {REMEDIAL_WORK_STATUS_LABEL[w.status]} · {w.deadline}
                               </span>
                             </li>
                           ))}
@@ -432,18 +301,18 @@ export default function GasElectricalSafetyChecksPage() {
                         <p className="text-sm text-slate-700">{r.notes}</p>
                       </div>
                     ) : null}
-                    {r.flagsConcerns.length ? (
+                    {r.flags_concerns.length ? (
                       <div className="rounded-md border border-red-200 bg-red-50 p-3 lg:col-span-2">
                         <div className="text-xs font-semibold text-red-800 uppercase mb-2">Flags / concerns</div>
                         <ul className="text-sm text-red-900 space-y-1">
-                          {r.flagsConcerns.map((f, i) => (
+                          {r.flags_concerns.map((f, i) => (
                             <li key={i} className="flex gap-2"><span>!</span><span>{f}</span></li>
                           ))}
                         </ul>
                       </div>
                     ) : null}
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2 text-xs text-slate-500">
-                      Recorded by {getStaffName(r.recordedBy)}
+                      Recorded by {getStaffName(r.recorded_by)}
                     </div>
                   </div>
                 </div>
