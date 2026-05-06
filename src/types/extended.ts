@@ -5111,3 +5111,337 @@ export interface HeritageLanguageRecord {
   key_worker: string;
   created_at: string;
 }
+
+// ── Immigration / UASC Support ──────────────────────────────────────────────
+
+export type ImmigrationStatus =
+  | "british_citizen"
+  | "settled_ilr"
+  | "pre_settled_status"
+  | "uasc_claim_pending"
+  | "refugee_status"
+  | "humanitarian_protection"
+  | "discretionary_leave"
+  | "uasc_leave_until_17_5"
+  | "appeal_pending"
+  | "refused_appeals_exhausted"
+  | "naturalisation_in_progress"
+  | "other";
+
+export const IMMIGRATION_STATUS_LABEL: Record<ImmigrationStatus, string> = {
+  british_citizen: "British Citizen",
+  settled_ilr: "Settled — ILR",
+  pre_settled_status: "Pre-Settled Status",
+  uasc_claim_pending: "UASC — Claim Pending",
+  refugee_status: "Refugee Status",
+  humanitarian_protection: "Humanitarian Protection",
+  discretionary_leave: "Discretionary Leave",
+  uasc_leave_until_17_5: "UASC Leave (until 17.5)",
+  appeal_pending: "Appeal Pending",
+  refused_appeals_exhausted: "Refused — Appeals Exhausted",
+  naturalisation_in_progress: "Naturalisation in Progress",
+  other: "Other",
+};
+
+export type EnglishLanguageLevel =
+  | "pre_a1" | "a1" | "a2" | "b1" | "b2" | "c1" | "fluent" | "native";
+
+export const ENGLISH_LANGUAGE_LEVEL_LABEL: Record<EnglishLanguageLevel, string> = {
+  pre_a1: "Pre-A1",
+  a1: "A1",
+  a2: "A2",
+  b1: "B1",
+  b2: "B2",
+  c1: "C1",
+  fluent: "Fluent",
+  native: "Native",
+};
+
+export interface AsylumClaimDetails {
+  submitted_date: string;
+  first_hearing_date?: string;
+  reasons_for_claim: string[];
+}
+
+export interface ImmigrationLegalRep {
+  name: string;
+  firm: string;
+  specialism: string;
+  laa_funded: boolean;
+}
+
+export interface HomeOfficeRef {
+  reference: string;
+  type: string;
+}
+
+export interface ImmigrationUascRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  immigration_status: ImmigrationStatus;
+  country_of_origin?: string;
+  arrival_uk?: string;
+  age_at_arrival?: number;
+  age_assessment_completed?: boolean;
+  age_assessment_date?: string;
+  age_assessment_outcome?: string;
+  asylum_claim?: AsylumClaimDetails;
+  legal_representative?: ImmigrationLegalRep;
+  home_office_references: HomeOfficeRef[];
+  documents_held: string[];
+  documents_awaiting: string[];
+  english_language_level: EnglishLanguageLevel;
+  esol_engaged: boolean;
+  family_tracing_active: boolean;
+  family_tracing_service?: string;
+  culture_community_links: string[];
+  trauma_informed_support: string[];
+  nrpf_considerations: string[];
+  pathway_plan_linked_to_immigration: boolean;
+  child_voice: string;
+  staff_observation: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Child Injuries Log ──────────────────────────────────────────────────────
+
+export type ChildInjuryType =
+  | "bruise" | "graze" | "cut" | "bump" | "burn" | "sprain" | "other";
+
+export const CHILD_INJURY_TYPE_LABEL: Record<ChildInjuryType, string> = {
+  bruise: "Bruise",
+  graze: "Graze",
+  cut: "Cut",
+  bump: "Bump",
+  burn: "Burn",
+  sprain: "Sprain",
+  other: "Other",
+};
+
+export type InjurySeverity = "minor" | "moderate" | "required_medical";
+
+export const INJURY_SEVERITY_LABEL: Record<InjurySeverity, string> = {
+  minor: "Minor",
+  moderate: "Moderate",
+  required_medical: "Required medical",
+};
+
+export interface ChildInjuryRecord {
+  id: string;
+  child_id: string;
+  date: string;
+  time: string;
+  body_location: string;
+  injury_type: ChildInjuryType;
+  severity: InjurySeverity;
+  how_it_happened: string;
+  child_account_consistent: boolean;
+  witnessed: boolean;
+  witnesses: string[];
+  first_aid_given: string;
+  photographed_to_body_map: boolean;
+  gp_required: boolean;
+  gp_attended: boolean;
+  parents_informed: boolean;
+  parents_informed_time: string;
+  social_worker_informed: boolean;
+  staff_on_duty: string[];
+  recorded_by: string;
+  safeguarding_flag: boolean;
+  notes: string;
+  created_at: string;
+}
+
+// ── Child Key Document Tracker ──────────────────────────────────────────────
+
+export type KeyDocStatus =
+  | "held" | "awaiting" | "expired" | "with_la" | "with_family" | "lost_replacing";
+
+export const KEY_DOC_STATUS_LABEL: Record<KeyDocStatus, string> = {
+  held: "Held",
+  awaiting: "Awaiting",
+  expired: "Expired",
+  with_la: "With LA",
+  with_family: "With family",
+  lost_replacing: "Lost — replacing",
+};
+
+export type KeyDocOriginalOrCopy = "original" | "certified_copy" | "photocopy";
+
+export const KEY_DOC_ORIGINAL_OR_COPY_LABEL: Record<KeyDocOriginalOrCopy, string> = {
+  original: "Original",
+  certified_copy: "Certified Copy",
+  photocopy: "Photocopy",
+};
+
+export interface KeyDocAccessLogEntry {
+  date: string;
+  accessor: string;
+  reason: string;
+}
+
+export interface ChildKeyDocument {
+  id: string;
+  child_id: string;
+  document_type: string;
+  document_reference: string;
+  original_or_copy: KeyDocOriginalOrCopy;
+  status: KeyDocStatus;
+  location: string;
+  key_holder: string;
+  expiry_date: string;
+  renewal_required: boolean;
+  child_aware: boolean;
+  child_can_request_sight: boolean;
+  part_of_transition_pack: boolean;
+  purpose_of_holding: string;
+  access_log: KeyDocAccessLogEntry[];
+  last_reviewed_date: string;
+  reviewed_by: string;
+  created_at: string;
+}
+
+// ── Keyworker 1:1 Sessions ──────────────────────────────────────────────────
+
+export type KeyworkerSessionFormat =
+  | "one_to_one_at_home"
+  | "one_to_one_walk"
+  | "one_to_one_cafe"
+  | "one_to_one_driving"
+  | "one_to_one_cooking_together"
+  | "one_to_one_boxing_sport"
+  | "brief_check_in"
+  | "crisis_check_in";
+
+export const KEYWORKER_SESSION_FORMAT_LABEL: Record<KeyworkerSessionFormat, string> = {
+  one_to_one_at_home: "1:1 at home",
+  one_to_one_walk: "1:1 walk",
+  one_to_one_cafe: "1:1 café",
+  one_to_one_driving: "1:1 driving",
+  one_to_one_cooking_together: "1:1 cooking together",
+  one_to_one_boxing_sport: "1:1 boxing/sport",
+  brief_check_in: "Brief check-in",
+  crisis_check_in: "Crisis check-in",
+};
+
+export interface KeyworkerSessionRecord {
+  id: string;
+  child_id: string;
+  staff_id: string;
+  session_date: string;
+  duration_minutes: number;
+  format: KeyworkerSessionFormat;
+  child_chose_format: boolean;
+  themes_covered: string[];
+  child_went_in_with: string;
+  child_walked_out_with: string;
+  what_child_brought_up: string;
+  what_staff_brought_up: string;
+  agreed_actions_staff: string[];
+  agreed_actions_child: string[];
+  child_satisfaction: number;
+  follow_up_date: string;
+  flags_raised: string[];
+  notes?: string;
+  created_at: string;
+}
+
+// ── Laundry Self-Care ───────────────────────────────────────────────────────
+
+export type LaundryStage =
+  | "stage_1_observed"
+  | "stage_2_did_with_staff"
+  | "stage_3_did_with_prompts"
+  | "stage_4_did_independently"
+  | "stage_5_manages_own_routine";
+
+export const LAUNDRY_STAGE_LABEL: Record<LaundryStage, string> = {
+  stage_1_observed: "Stage 1 — Observed",
+  stage_2_did_with_staff: "Stage 2 — Did with staff",
+  stage_3_did_with_prompts: "Stage 3 — Did with prompts",
+  stage_4_did_independently: "Stage 4 — Did independently",
+  stage_5_manages_own_routine: "Stage 5 — Manages own laundry routine",
+};
+
+export type LaundrySkillLevel = "not_yet" | "learning" | "confident" | "independent";
+
+export const LAUNDRY_SKILL_LEVEL_LABEL: Record<LaundrySkillLevel, string> = {
+  not_yet: "Not yet",
+  learning: "Learning",
+  confident: "Confident",
+  independent: "Independent",
+};
+
+export interface LaundrySkill {
+  name: string;
+  level: LaundrySkillLevel;
+}
+
+export interface LaundrySelfCareRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  overall_stage: LaundryStage;
+  skills: LaundrySkill[];
+  routine_frequency: string;
+  owns_basket: boolean;
+  knows_care_symbols: boolean;
+  iron_competent: boolean;
+  challenges_noted: string[];
+  child_voice: string;
+  staff_observation: string;
+  next_skill: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Child-Led Meeting Record ────────────────────────────────────────────────
+
+export type ChildLedMeetingType =
+  | "childrens_meeting_led"
+  | "house_decision_discussion"
+  | "specific_topic_raised_by_child"
+  | "friend_peer_chat_with_staff_support"
+  | "cohort_planning_input";
+
+export const CHILD_LED_MEETING_TYPE_LABEL: Record<ChildLedMeetingType, string> = {
+  childrens_meeting_led: "Children's meeting led",
+  house_decision_discussion: "House decision discussion",
+  specific_topic_raised_by_child: "Specific topic raised by child",
+  friend_peer_chat_with_staff_support: "Friend/peer chat with staff support",
+  cohort_planning_input: "Cohort planning input",
+};
+
+export interface ChildMeetingContributor {
+  contributor: string;
+  contribution: string;
+}
+
+export interface ChildLedMeetingRecord {
+  id: string;
+  date: string;
+  child_id: string;
+  meeting_purpose: string;
+  meeting_type: ChildLedMeetingType;
+  duration_minutes: number;
+  attendees: string[];
+  external_attendees: string[];
+  pre_meeting_preparation: string[];
+  agenda_proposed_by_child: string[];
+  child_role_in_chairing: string;
+  decisions_reached: string[];
+  staff_role: string;
+  child_outcome: string;
+  child_contributors: ChildMeetingContributor[];
+  challenges_navigated: string[];
+  proud_moments: string[];
+  visible_change: string;
+  child_reflection_after: string;
+  follow_up: string;
+  recorded_by: string;
+  created_at: string;
+}

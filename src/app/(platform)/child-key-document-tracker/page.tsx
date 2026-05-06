@@ -9,7 +9,7 @@
 // their own paperwork when they leave care).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,55 +24,22 @@ import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, AlertOctagon, ShieldCheck, CheckCircle2,
   FileText, Calendar, User, Eye, Lock, Package, BookOpen,
-  Clock, Users, FileWarning, Stamp,
+  Clock, Users, FileWarning, Stamp, Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type DocStatus = "Held" | "Awaiting" | "Expired" | "With LA" | "With family" | "Lost — replacing";
-type OriginalOrCopy = "Original" | "Certified Copy" | "Photocopy";
-
-interface AccessLogEntry {
-  date: string;
-  accessor: string;
-  reason: string;
-}
-
-interface KeyDoc {
-  id: string;
-  youngPerson: string;
-  documentType: string;
-  documentReference: string;
-  originalOrCopy: OriginalOrCopy;
-  status: DocStatus;
-  location: string;
-  keyHolder: string;
-  expiryDate: string;
-  renewalRequired: boolean;
-  childAware: boolean;
-  childCanRequestSight: boolean;
-  partOfTransitionPack: boolean;
-  purposeOfHolding: string;
-  accessLog: AccessLogEntry[];
-  lastReviewedDate: string;
-  reviewedBy: string;
-}
+import type { ChildKeyDocument, KeyDocStatus, KeyDocOriginalOrCopy } from "@/types/extended";
+import { KEY_DOC_STATUS_LABEL, KEY_DOC_ORIGINAL_OR_COPY_LABEL } from "@/types/extended";
+import { useChildKeyDocuments } from "@/hooks/use-child-key-documents";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<DocStatus, { colour: string }> = {
-  "Held":             { colour: "bg-green-100 text-green-700" },
-  "Awaiting":         { colour: "bg-amber-100 text-amber-700" },
-  "Expired":          { colour: "bg-red-100 text-red-700" },
-  "With LA":          { colour: "bg-blue-100 text-blue-700" },
-  "With family":      { colour: "bg-purple-100 text-purple-700" },
-  "Lost — replacing": { colour: "bg-red-100 text-red-700" },
-};
-
-// ── Date Helper ───────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
+const STATUS_CONFIG: Record<KeyDocStatus, { colour: string }> = {
+  "held":             { colour: "bg-green-100 text-green-700" },
+  "awaiting":         { colour: "bg-amber-100 text-amber-700" },
+  "expired":          { colour: "bg-red-100 text-red-700" },
+  "with_la":          { colour: "bg-blue-100 text-blue-700" },
+  "with_family":      { colour: "bg-purple-100 text-purple-700" },
+  "lost_replacing":   { colour: "bg-red-100 text-red-700" },
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -91,297 +58,31 @@ function daysUntil(iso: string): number {
   return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const SEED_DOCS: KeyDoc[] = [
-  // ── Alex (4 documents) ──
-  {
-    id: "kd_001",
-    youngPerson: "yp_alex",
-    documentType: "Birth Certificate",
-    documentReference: "BC-XXXX-A1",
-    originalOrCopy: "Certified Copy",
-    status: "Held",
-    location: "Locked legal file (office)",
-    keyHolder: "staff_darren",
-    expiryDate: "",
-    renewalRequired: false,
-    childAware: true,
-    childCanRequestSight: true,
-    partOfTransitionPack: true,
-    purposeOfHolding: "Identity verification, school applications, passport applications. Original held by birth family.",
-    accessLog: [
-      { date: d(-120), accessor: "staff_anna", reason: "School enrolment paperwork" },
-      { date: d(-40),  accessor: "staff_darren", reason: "Passport renewal application" },
-    ],
-    lastReviewedDate: d(-30),
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "kd_002",
-    youngPerson: "yp_alex",
-    documentType: "Passport",
-    documentReference: "PP-XXXX-A2",
-    originalOrCopy: "Original",
-    status: "Held",
-    location: "Office safe",
-    keyHolder: "staff_darren",
-    expiryDate: d(180),
-    renewalRequired: true,
-    childAware: true,
-    childCanRequestSight: true,
-    partOfTransitionPack: true,
-    purposeOfHolding: "Travel, ID verification. Renewal scheduled before residential trip planned for next summer.",
-    accessLog: [
-      { date: d(-200), accessor: "staff_darren", reason: "Annual review check" },
-      { date: d(-90),  accessor: "staff_anna", reason: "ID for college enrolment" },
-    ],
-    lastReviewedDate: d(-15),
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "kd_003",
-    youngPerson: "yp_alex",
-    documentType: "EHCP",
-    documentReference: "EHCP-XXXX-A3",
-    originalOrCopy: "Original",
-    status: "Held",
-    location: "Locked legal file (office)",
-    keyHolder: "staff_darren",
-    expiryDate: "",
-    renewalRequired: true,
-    childAware: true,
-    childCanRequestSight: true,
-    partOfTransitionPack: true,
-    purposeOfHolding: "Statutory plan for special educational needs. Annual review with LA SEN team.",
-    accessLog: [
-      { date: d(-60), accessor: "staff_anna", reason: "Annual EHCP review preparation" },
-      { date: d(-10), accessor: "staff_darren", reason: "Shared with school SENCo" },
-    ],
-    lastReviewedDate: d(-10),
-    reviewedBy: "staff_anna",
-  },
-  {
-    id: "kd_004",
-    youngPerson: "yp_alex",
-    documentType: "Care Order",
-    documentReference: "CO-XXXX-A4",
-    originalOrCopy: "Certified Copy",
-    status: "Held",
-    location: "Locked legal file (office)",
-    keyHolder: "staff_darren",
-    expiryDate: "",
-    renewalRequired: false,
-    childAware: true,
-    childCanRequestSight: true,
-    partOfTransitionPack: false,
-    purposeOfHolding: "Section 31 Care Order — evidences LA's parental responsibility. Original held by LA legal team.",
-    accessLog: [
-      { date: d(-150), accessor: "staff_darren", reason: "Initial admission paperwork" },
-    ],
-    lastReviewedDate: d(-30),
-    reviewedBy: "staff_darren",
-  },
-
-  // ── Jordan (4 documents) ──
-  {
-    id: "kd_005",
-    youngPerson: "yp_jordan",
-    documentType: "NHS Card",
-    documentReference: "NHS-XXXX-J1",
-    originalOrCopy: "Original",
-    status: "Held",
-    location: "Locked legal file (office)",
-    keyHolder: "staff_anna",
-    expiryDate: "",
-    renewalRequired: false,
-    childAware: true,
-    childCanRequestSight: true,
-    partOfTransitionPack: true,
-    purposeOfHolding: "GP registration, hospital appointments, prescription verification.",
-    accessLog: [
-      { date: d(-75), accessor: "staff_anna", reason: "GP registration on placement start" },
-      { date: d(-20), accessor: "staff_anna", reason: "Hospital appointment" },
-    ],
-    lastReviewedDate: d(-20),
-    reviewedBy: "staff_anna",
-  },
-  {
-    id: "kd_006",
-    youngPerson: "yp_jordan",
-    documentType: "Passport",
-    documentReference: "PP-XXXX-J2",
-    originalOrCopy: "Original",
-    status: "Expired",
-    location: "Office safe",
-    keyHolder: "staff_darren",
-    expiryDate: d(-45),
-    renewalRequired: true,
-    childAware: true,
-    childCanRequestSight: true,
-    partOfTransitionPack: false,
-    purposeOfHolding: "Travel and ID. EXPIRED — renewal application submitted, awaiting return.",
-    accessLog: [
-      { date: d(-50), accessor: "staff_darren", reason: "Identified expiry, renewal application started" },
-      { date: d(-15), accessor: "staff_darren", reason: "Posted renewal application to HMPO" },
-    ],
-    lastReviewedDate: d(-15),
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "kd_007",
-    youngPerson: "yp_jordan",
-    documentType: "Pathway Plan",
-    documentReference: "PWP-XXXX-J3",
-    originalOrCopy: "Original",
-    status: "Held",
-    location: "Locked legal file (office)",
-    keyHolder: "staff_darren",
-    expiryDate: "",
-    renewalRequired: true,
-    childAware: true,
-    childCanRequestSight: true,
-    partOfTransitionPack: true,
-    purposeOfHolding: "Statutory pathway plan (Care Leavers Act). Reviewed every 6 months by LA personal advisor.",
-    accessLog: [
-      { date: d(-90), accessor: "staff_darren", reason: "PA visit — review meeting" },
-      { date: d(-25), accessor: "staff_anna", reason: "Independent living skills planning" },
-    ],
-    lastReviewedDate: d(-25),
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "kd_008",
-    youngPerson: "yp_jordan",
-    documentType: "School Records",
-    documentReference: "SR-XXXX-J4",
-    originalOrCopy: "Photocopy",
-    status: "Held",
-    location: "Locked legal file (office)",
-    keyHolder: "staff_anna",
-    expiryDate: "",
-    renewalRequired: false,
-    childAware: true,
-    childCanRequestSight: true,
-    partOfTransitionPack: true,
-    purposeOfHolding: "Historical school reports, exam certificates, attendance records — needed for college and employment applications.",
-    accessLog: [
-      { date: d(-110), accessor: "staff_anna", reason: "College application — predicted grades" },
-    ],
-    lastReviewedDate: d(-40),
-    reviewedBy: "staff_anna",
-  },
-
-  // ── Casey (4 documents) ──
-  {
-    id: "kd_009",
-    youngPerson: "yp_casey",
-    documentType: "Birth Certificate",
-    documentReference: "BC-XXXX-C1",
-    originalOrCopy: "Certified Copy",
-    status: "Awaiting",
-    location: "—",
-    keyHolder: "staff_darren",
-    expiryDate: "",
-    renewalRequired: false,
-    childAware: true,
-    childCanRequestSight: false,
-    partOfTransitionPack: true,
-    purposeOfHolding: "Awaiting transfer from previous placement. Chasing weekly with social worker.",
-    accessLog: [
-      { date: d(-30), accessor: "staff_darren", reason: "Initial request to LA" },
-      { date: d(-7),  accessor: "staff_darren", reason: "Follow-up call with social worker" },
-    ],
-    lastReviewedDate: d(-7),
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "kd_010",
-    youngPerson: "yp_casey",
-    documentType: "Passport",
-    documentReference: "PP-XXXX-C2",
-    originalOrCopy: "Original",
-    status: "Held",
-    location: "Office safe",
-    keyHolder: "staff_darren",
-    expiryDate: d(60),
-    renewalRequired: true,
-    childAware: true,
-    childCanRequestSight: true,
-    partOfTransitionPack: true,
-    purposeOfHolding: "ID and travel. EXPIRING SOON — renewal application being prepared.",
-    accessLog: [
-      { date: d(-30), accessor: "staff_darren", reason: "Annual document review identified upcoming expiry" },
-    ],
-    lastReviewedDate: d(-30),
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "kd_011",
-    youngPerson: "yp_casey",
-    documentType: "Adoption Order",
-    documentReference: "AO-XXXX-C3",
-    originalOrCopy: "Certified Copy",
-    status: "With LA",
-    location: "With LA legal team",
-    keyHolder: "staff_darren",
-    expiryDate: "",
-    renewalRequired: false,
-    childAware: false,
-    childCanRequestSight: true,
-    partOfTransitionPack: false,
-    purposeOfHolding: "Adoption order from previous placement which broke down. Held by LA pending Life Story work — sensitive, age-appropriate disclosure being planned.",
-    accessLog: [
-      { date: d(-180), accessor: "staff_darren", reason: "Reviewed with social worker for Life Story planning" },
-    ],
-    lastReviewedDate: d(-45),
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "kd_012",
-    youngPerson: "yp_casey",
-    documentType: "Health Records",
-    documentReference: "HR-XXXX-C4",
-    originalOrCopy: "Photocopy",
-    status: "Lost — replacing",
-    location: "—",
-    keyHolder: "staff_anna",
-    expiryDate: "",
-    renewalRequired: false,
-    childAware: false,
-    childCanRequestSight: true,
-    partOfTransitionPack: true,
-    purposeOfHolding: "Comprehensive health history including immunisations and CAMHS records. Lost in transit between placements — replacement copies requested from GP and previous LAC nurse.",
-    accessLog: [
-      { date: d(-60), accessor: "staff_anna", reason: "Identified missing during admission audit" },
-      { date: d(-25), accessor: "staff_anna", reason: "Replacement requested from GP" },
-    ],
-    lastReviewedDate: d(-25),
-    reviewedBy: "staff_anna",
-  },
-];
-
-const YP_IDS = ["yp_alex", "yp_jordan", "yp_casey"] as const;
-
 // ══════════════════════════════════════════════════════════════════════════════
 // COMPONENT
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function ChildKeyDocumentTrackerPage() {
-  const [docs] = useState<KeyDoc[]>(SEED_DOCS);
+  const { data: queryData, isLoading } = useChildKeyDocuments();
+  const items = queryData?.data ?? [];
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<DocStatus | "all">("all");
+  const [filterStatus, setFilterStatus] = useState<KeyDocStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"yp" | "type" | "expiry" | "status">("yp");
+
+  // ── Derived YP IDs ──────────────────────────────────────────────────────────
+
+  const ypIds = useMemo(() => [...new Set(items.map(r => r.child_id))], [items]);
 
   // ── Filtering & Sorting ───────────────────────────────────────────────────
 
   const filtered = useMemo(() => {
-    let results = [...docs];
+    let results = [...items];
 
     if (filterYP !== "all") {
-      results = results.filter(r => r.youngPerson === filterYP);
+      results = results.filter(r => r.child_id === filterYP);
     }
     if (filterStatus !== "all") {
       results = results.filter(r => r.status === filterStatus);
@@ -389,74 +90,89 @@ export default function ChildKeyDocumentTrackerPage() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       results = results.filter(r =>
-        r.documentType.toLowerCase().includes(q) ||
-        r.documentReference.toLowerCase().includes(q) ||
-        getYPName(r.youngPerson).toLowerCase().includes(q) ||
-        r.purposeOfHolding.toLowerCase().includes(q) ||
+        r.document_type.toLowerCase().includes(q) ||
+        r.document_reference.toLowerCase().includes(q) ||
+        getYPName(r.child_id).toLowerCase().includes(q) ||
+        r.purpose_of_holding.toLowerCase().includes(q) ||
         r.location.toLowerCase().includes(q)
       );
     }
 
     if (sortBy === "yp") {
-      results.sort((a, b) => getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson)));
+      results.sort((a, b) => getYPName(a.child_id).localeCompare(getYPName(b.child_id)));
     } else if (sortBy === "type") {
-      results.sort((a, b) => a.documentType.localeCompare(b.documentType));
+      results.sort((a, b) => a.document_type.localeCompare(b.document_type));
     } else if (sortBy === "expiry") {
       results.sort((a, b) => {
-        if (!a.expiryDate && !b.expiryDate) return 0;
-        if (!a.expiryDate) return 1;
-        if (!b.expiryDate) return -1;
-        return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime();
+        if (!a.expiry_date && !b.expiry_date) return 0;
+        if (!a.expiry_date) return 1;
+        if (!b.expiry_date) return -1;
+        return new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime();
       });
     } else if (sortBy === "status") {
       results.sort((a, b) => a.status.localeCompare(b.status));
     }
 
     return results;
-  }, [docs, filterYP, filterStatus, searchQuery, sortBy]);
+  }, [items, filterYP, filterStatus, searchQuery, sortBy]);
 
   // ── Stats ─────────────────────────────────────────────────────────────────
 
   const stats = useMemo(() => {
-    const totalHeld = docs.filter(r => r.status === "Held").length;
-    const expiring12mo = docs.filter(r => {
-      if (!r.expiryDate) return false;
-      const days = daysUntil(r.expiryDate);
+    const totalHeld = items.filter(r => r.status === "held").length;
+    const expiring12mo = items.filter(r => {
+      if (!r.expiry_date) return false;
+      const days = daysUntil(r.expiry_date);
       return days <= 365 && days >= -365;
     }).length;
-    const awaitingOrLost = docs.filter(r => r.status === "Awaiting" || r.status === "Lost — replacing").length;
+    const awaitingOrLost = items.filter(r => r.status === "awaiting" || r.status === "lost_replacing").length;
 
-    // Children with full pack — every document for them is in "Held" status
-    const fullPack = YP_IDS.filter(ypId => {
-      const ypDocs = docs.filter(r => r.youngPerson === ypId);
+    // Children with full pack — every document for them is in "held" status
+    const fullPack = ypIds.filter(ypId => {
+      const ypDocs = items.filter(r => r.child_id === ypId);
       if (ypDocs.length === 0) return false;
-      return ypDocs.every(r => r.status === "Held");
+      return ypDocs.every(r => r.status === "held");
     }).length;
 
-    return { totalHeld, expiring12mo, awaitingOrLost, fullPack, totalChildren: YP_IDS.length };
-  }, [docs]);
+    return { totalHeld, expiring12mo, awaitingOrLost, fullPack, totalChildren: ypIds.length };
+  }, [items, ypIds]);
 
   // ── Export Columns ────────────────────────────────────────────────────────
 
-  const exportCols: ExportColumn<KeyDoc>[] = [
-    { header: "ID", accessor: (r: KeyDoc) => r.id },
-    { header: "Young Person", accessor: (r: KeyDoc) => getYPName(r.youngPerson) },
-    { header: "Document Type", accessor: (r: KeyDoc) => r.documentType },
-    { header: "Reference", accessor: (r: KeyDoc) => r.documentReference },
-    { header: "Original/Copy", accessor: (r: KeyDoc) => r.originalOrCopy },
-    { header: "Status", accessor: (r: KeyDoc) => r.status },
-    { header: "Location", accessor: (r: KeyDoc) => r.location },
-    { header: "Key Holder", accessor: (r: KeyDoc) => getStaffName(r.keyHolder) },
-    { header: "Expiry Date", accessor: (r: KeyDoc) => r.expiryDate || "N/A" },
-    { header: "Renewal Required", accessor: (r: KeyDoc) => r.renewalRequired ? "Yes" : "No" },
-    { header: "Child Aware", accessor: (r: KeyDoc) => r.childAware ? "Yes" : "No" },
-    { header: "Child Can Request Sight", accessor: (r: KeyDoc) => r.childCanRequestSight ? "Yes" : "No" },
-    { header: "Transition Pack", accessor: (r: KeyDoc) => r.partOfTransitionPack ? "Yes" : "No" },
-    { header: "Purpose of Holding", accessor: (r: KeyDoc) => r.purposeOfHolding },
-    { header: "Last Reviewed", accessor: (r: KeyDoc) => r.lastReviewedDate },
-    { header: "Reviewed By", accessor: (r: KeyDoc) => getStaffName(r.reviewedBy) },
-    { header: "Access Log Entries", accessor: (r: KeyDoc) => r.accessLog.length.toString() },
+  const exportCols: ExportColumn<ChildKeyDocument>[] = [
+    { header: "ID", accessor: (r: ChildKeyDocument) => r.id },
+    { header: "Young Person", accessor: (r: ChildKeyDocument) => getYPName(r.child_id) },
+    { header: "Document Type", accessor: (r: ChildKeyDocument) => r.document_type },
+    { header: "Reference", accessor: (r: ChildKeyDocument) => r.document_reference },
+    { header: "Original/Copy", accessor: (r: ChildKeyDocument) => KEY_DOC_ORIGINAL_OR_COPY_LABEL[r.original_or_copy] },
+    { header: "Status", accessor: (r: ChildKeyDocument) => KEY_DOC_STATUS_LABEL[r.status] },
+    { header: "Location", accessor: (r: ChildKeyDocument) => r.location },
+    { header: "Key Holder", accessor: (r: ChildKeyDocument) => getStaffName(r.key_holder) },
+    { header: "Expiry Date", accessor: (r: ChildKeyDocument) => r.expiry_date || "N/A" },
+    { header: "Renewal Required", accessor: (r: ChildKeyDocument) => r.renewal_required ? "Yes" : "No" },
+    { header: "Child Aware", accessor: (r: ChildKeyDocument) => r.child_aware ? "Yes" : "No" },
+    { header: "Child Can Request Sight", accessor: (r: ChildKeyDocument) => r.child_can_request_sight ? "Yes" : "No" },
+    { header: "Transition Pack", accessor: (r: ChildKeyDocument) => r.part_of_transition_pack ? "Yes" : "No" },
+    { header: "Purpose of Holding", accessor: (r: ChildKeyDocument) => r.purpose_of_holding },
+    { header: "Last Reviewed", accessor: (r: ChildKeyDocument) => r.last_reviewed_date },
+    { header: "Reviewed By", accessor: (r: ChildKeyDocument) => getStaffName(r.reviewed_by) },
+    { header: "Access Log Entries", accessor: (r: ChildKeyDocument) => r.access_log.length.toString() },
   ];
+
+  // ── Loading State ────────────────────────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Child Key Document Tracker"
+        subtitle="Critical legal, identity, health & education documents held for each young person — Reg 36 records and transition-to-adulthood preparation"
+      >
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </PageShell>
+    );
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -519,19 +235,19 @@ export default function ChildKeyDocumentTrackerPage() {
             <SelectTrigger className="w-[170px]"><SelectValue placeholder="Young Person" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Young People</SelectItem>
-              {YP_IDS.map(id => (
+              {ypIds.map(id => (
                 <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as DocStatus | "all")}>
+        <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as KeyDocStatus | "all")}>
           <SelectTrigger className="w-[170px]"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {(Object.keys(STATUS_CONFIG) as DocStatus[]).map(s => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
+            {(Object.entries(KEY_DOC_STATUS_LABEL) as [KeyDocStatus, string][]).map(([key, label]) => (
+              <SelectItem key={key} value={key}>{label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -562,7 +278,7 @@ export default function ChildKeyDocumentTrackerPage() {
         {filtered.map(doc => {
           const isOpen = expandedId === doc.id;
           const sc = STATUS_CONFIG[doc.status];
-          const days = doc.expiryDate ? daysUntil(doc.expiryDate) : null;
+          const days = doc.expiry_date ? daysUntil(doc.expiry_date) : null;
           const expiringSoon = days !== null && days <= 90 && days >= 0;
           const expired = days !== null && days < 0;
 
@@ -571,8 +287,8 @@ export default function ChildKeyDocumentTrackerPage() {
               key={doc.id}
               className={cn(
                 "rounded-lg border bg-card overflow-hidden",
-                (doc.status === "Expired" || doc.status === "Lost — replacing") && "border-red-200",
-                doc.status === "Awaiting" && "border-amber-200",
+                (doc.status === "expired" || doc.status === "lost_replacing") && "border-red-200",
+                doc.status === "awaiting" && "border-amber-200",
                 expiringSoon && "border-amber-200",
               )}
             >
@@ -585,17 +301,17 @@ export default function ChildKeyDocumentTrackerPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-sm">{doc.documentType}</span>
+                    <span className="font-medium text-sm">{doc.document_type}</span>
                     <Badge variant="outline" className="text-xs">
                       <User className="h-3 w-3 mr-0.5" />
-                      {getYPName(doc.youngPerson)}
+                      {getYPName(doc.child_id)}
                     </Badge>
-                    <Badge variant="outline" className={cn("text-xs", sc.colour)}>{doc.status}</Badge>
+                    <Badge variant="outline" className={cn("text-xs", sc.colour)}>{KEY_DOC_STATUS_LABEL[doc.status]}</Badge>
                     <Badge variant="outline" className="text-xs">
                       <Stamp className="h-3 w-3 mr-0.5" />
-                      {doc.originalOrCopy}
+                      {KEY_DOC_ORIGINAL_OR_COPY_LABEL[doc.original_or_copy]}
                     </Badge>
-                    {doc.partOfTransitionPack && (
+                    {doc.part_of_transition_pack && (
                       <Badge variant="outline" className="text-xs bg-indigo-50 text-indigo-700 border-indigo-200">
                         <Package className="h-3 w-3 mr-0.5" />
                         Transition Pack
@@ -603,14 +319,14 @@ export default function ChildKeyDocumentTrackerPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Ref: {doc.documentReference}
+                    Ref: {doc.document_reference}
                     {" · "}
                     {doc.location}
-                    {doc.expiryDate && (
+                    {doc.expiry_date && (
                       <>
                         {" · "}
                         <Calendar className="inline h-3 w-3 mr-0.5" />
-                        Expires: {formatDate(doc.expiryDate)}
+                        Expires: {formatDate(doc.expiry_date)}
                         {expired && <span className="text-red-600 font-semibold"> (expired {Math.abs(days!)}d ago)</span>}
                         {!expired && expiringSoon && <span className="text-amber-600 font-semibold"> ({days}d left)</span>}
                       </>
@@ -625,11 +341,11 @@ export default function ChildKeyDocumentTrackerPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Document Reference</p>
-                      <p className="text-sm font-mono">{doc.documentReference}</p>
+                      <p className="text-sm font-mono">{doc.document_reference}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Original / Copy</p>
-                      <p className="text-sm">{doc.originalOrCopy}</p>
+                      <p className="text-sm">{KEY_DOC_ORIGINAL_OR_COPY_LABEL[doc.original_or_copy]}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Location</p>
@@ -637,16 +353,16 @@ export default function ChildKeyDocumentTrackerPage() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Key Holder</p>
-                      <p className="text-sm">{getStaffName(doc.keyHolder)}</p>
+                      <p className="text-sm">{getStaffName(doc.key_holder)}</p>
                     </div>
-                    {doc.expiryDate && (
+                    {doc.expiry_date && (
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Expiry Date</p>
                         <p className={cn("text-sm",
                           expired && "text-red-600 font-semibold",
                           !expired && expiringSoon && "text-amber-600 font-semibold"
                         )}>
-                          {formatDate(doc.expiryDate)}
+                          {formatDate(doc.expiry_date)}
                           {expired && ` (expired ${Math.abs(days!)} days ago)`}
                           {!expired && expiringSoon && ` (${days} days remaining)`}
                         </p>
@@ -654,45 +370,45 @@ export default function ChildKeyDocumentTrackerPage() {
                     )}
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Renewal Required</p>
-                      <p className="text-sm">{doc.renewalRequired ? "Yes" : "No"}</p>
+                      <p className="text-sm">{doc.renewal_required ? "Yes" : "No"}</p>
                     </div>
                   </div>
 
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Purpose of Holding</p>
-                    <p className="text-sm">{doc.purposeOfHolding}</p>
+                    <p className="text-sm">{doc.purpose_of_holding}</p>
                   </div>
 
                   {/* Child involvement flags */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div className={cn("rounded-md border p-2 flex items-center gap-2 text-xs",
-                      doc.childAware ? "bg-green-50 border-green-200 text-green-800" : "bg-muted text-muted-foreground"
+                      doc.child_aware ? "bg-green-50 border-green-200 text-green-800" : "bg-muted text-muted-foreground"
                     )}>
-                      {doc.childAware ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                      Child aware: {doc.childAware ? "Yes" : "No"}
+                      {doc.child_aware ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      Child aware: {doc.child_aware ? "Yes" : "No"}
                     </div>
                     <div className={cn("rounded-md border p-2 flex items-center gap-2 text-xs",
-                      doc.childCanRequestSight ? "bg-green-50 border-green-200 text-green-800" : "bg-muted text-muted-foreground"
+                      doc.child_can_request_sight ? "bg-green-50 border-green-200 text-green-800" : "bg-muted text-muted-foreground"
                     )}>
                       <Eye className="h-3.5 w-3.5" />
-                      Can request sight: {doc.childCanRequestSight ? "Yes" : "No"}
+                      Can request sight: {doc.child_can_request_sight ? "Yes" : "No"}
                     </div>
                     <div className={cn("rounded-md border p-2 flex items-center gap-2 text-xs",
-                      doc.partOfTransitionPack ? "bg-indigo-50 border-indigo-200 text-indigo-800" : "bg-muted text-muted-foreground"
+                      doc.part_of_transition_pack ? "bg-indigo-50 border-indigo-200 text-indigo-800" : "bg-muted text-muted-foreground"
                     )}>
                       <Package className="h-3.5 w-3.5" />
-                      Transition pack: {doc.partOfTransitionPack ? "Yes" : "No"}
+                      Transition pack: {doc.part_of_transition_pack ? "Yes" : "No"}
                     </div>
                   </div>
 
                   {/* Access log */}
                   <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Access Log ({doc.accessLog.length} entries)</p>
-                    {doc.accessLog.length === 0 ? (
+                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Access Log ({doc.access_log.length} entries)</p>
+                    {doc.access_log.length === 0 ? (
                       <p className="text-xs text-muted-foreground italic">No recorded access events.</p>
                     ) : (
                       <div className="space-y-1">
-                        {doc.accessLog.map((entry, i) => (
+                        {doc.access_log.map((entry, i) => (
                           <div key={i} className="rounded-md border bg-background p-2 text-xs flex items-start gap-2">
                             <Clock className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
                             <div className="flex-1">
@@ -708,9 +424,11 @@ export default function ChildKeyDocumentTrackerPage() {
                   </div>
 
                   <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap pt-2 border-t">
-                    <span><Calendar className="inline h-3.5 w-3.5 mr-0.5" />Last reviewed: {formatDate(doc.lastReviewedDate)}</span>
-                    <span><User className="inline h-3.5 w-3.5 mr-0.5" />Reviewed by: {getStaffName(doc.reviewedBy)}</span>
+                    <span><Calendar className="inline h-3.5 w-3.5 mr-0.5" />Last reviewed: {formatDate(doc.last_reviewed_date)}</span>
+                    <span><User className="inline h-3.5 w-3.5 mr-0.5" />Reviewed by: {getStaffName(doc.reviewed_by)}</span>
                   </div>
+
+                  <SmartLinkPanel sourceType="key_document" sourceId={doc.id} childId={doc.child_id} compact />
                 </div>
               )}
             </div>
