@@ -22,196 +22,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { HairAppointment, SalonType } from "@/types/extended";
+import { SALON_TYPE_LABEL } from "@/types/extended";
+import { useHairAppointments } from "@/hooks/use-hair-appointments";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-interface HairAppointment {
-  id: string;
-  youngPerson: string;
-  date: string;
-  salonOrBarber: string;
-  salonType: "High street barber" | "Specialist Black hair barber" | "Mobile/home" | "Salon" | "Specialist (e.g. sensory-friendly)";
-  staffEscort: string;
-  styleRequested: string;
-  styleAchieved: string;
-  productsUsed: string[];
-  durationMinutes: number;
-  cost: number;
-  childSatisfaction: number;
-  staffObservation: string;
-  anxietyLevelObserved: string;
-  reasonableAdjustments: string[];
-  childChose: boolean;
-  culturalRelevance: string;
-  nextAppointmentDue: string;
-  notes: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const data: HairAppointment[] = [
-  {
-    id: "ha-001",
-    youngPerson: "yp_alex",
-    date: d(-7),
-    salonOrBarber: "The Cut Above (high street barber)",
-    salonType: "High street barber",
-    staffEscort: "staff_lackson",
-    styleRequested: "Short back and sides; medium top — same as last time",
-    styleAchieved: "Exactly as requested. Alex pleased.",
-    productsUsed: ["Standard clippers", "Basic styling product"],
-    durationMinutes: 25,
-    cost: 12,
-    childSatisfaction: 4,
-    staffObservation: "Routine. Alex relaxed throughout.",
-    anxietyLevelObserved: "Low — familiar barber relationship",
-    reasonableAdjustments: [],
-    childChose: true,
-    culturalRelevance: "Standard British high-street style — Alex's preference",
-    nextAppointmentDue: d(35),
-    notes: "Six-weekly routine.",
-  },
-  {
-    id: "ha-002",
-    youngPerson: "yp_jordan",
-    date: d(-14),
-    salonOrBarber: "King's Cut (specialist Black hair barber)",
-    salonType: "Specialist Black hair barber",
-    staffEscort: "staff_chervelle",
-    styleRequested: "Fade with line-up; pattern shaved on side",
-    styleAchieved: "Exactly as requested. Coach noticed at next match.",
-    productsUsed: ["Razor work", "Hair grease (cultural)", "Fade brush"],
-    durationMinutes: 60,
-    cost: 25,
-    childSatisfaction: 5,
-    staffObservation: "Jordan in element. Cultural barbershop is identity-affirming space.",
-    anxietyLevelObserved: "Very low — Jordan looks forward to these visits",
-    reasonableAdjustments: [],
-    childChose: true,
-    culturalRelevance: "Black-led barbershop. Jordan recognised in community. Cultural matching with Chervelle (escort) makes journey safe and authentic.",
-    nextAppointmentDue: d(14),
-    notes: "Monthly cultural barbershop visit. Significant identity space.",
-  },
-  {
-    id: "ha-003",
-    youngPerson: "yp_jordan",
-    date: d(-42),
-    salonOrBarber: "King's Cut",
-    salonType: "Specialist Black hair barber",
-    staffEscort: "staff_chervelle",
-    styleRequested: "Fade with line-up",
-    styleAchieved: "As requested",
-    productsUsed: ["Razor", "Hair grease"],
-    durationMinutes: 55,
-    cost: 25,
-    childSatisfaction: 5,
-    staffObservation: "Routine cultural appointment. Jordan engaged with other patrons.",
-    anxietyLevelObserved: "Low",
-    reasonableAdjustments: [],
-    childChose: true,
-    culturalRelevance: "Cultural community space",
-    nextAppointmentDue: d(-14),
-    notes: "",
-  },
-  {
-    id: "ha-004",
-    youngPerson: "yp_casey",
-    date: d(-30),
-    salonOrBarber: "Quiet Cuts (sensory-friendly mobile hairdresser)",
-    salonType: "Mobile/home",
-    staffEscort: "staff_anna",
-    styleRequested: "Trim only — minimal change. Specific length maintained.",
-    styleAchieved: "Exactly as requested. Length consistent with Casey's preference.",
-    productsUsed: ["Quiet scissors (no clippers)", "No products applied (sensory)"],
-    durationMinutes: 30,
-    cost: 35,
-    childSatisfaction: 5,
-    staffObservation: "Hairdresser came to home (sensory-friendly approach). Casey calm throughout — Anna present, Otter on lap.",
-    anxietyLevelObserved: "Low — adapted environment",
-    reasonableAdjustments: [
-      "Mobile hairdresser comes to home (avoids salon sensory overload)",
-      "Quiet scissors only — no clippers (sound aversion)",
-      "No hair products applied (scent sensitivity)",
-      "Specific cape (Casey's preferred fabric)",
-      "Anna present throughout",
-      "Otter (soft toy) on lap",
-      "Visual schedule shown beforehand",
-    ],
-    childChose: true,
-    culturalRelevance: "N/A — sensory-aware approach is the cultural lens here",
-    nextAppointmentDue: d(60),
-    notes: "Quarterly trim — adapted approach essential. £35 mobile premium worth every penny.",
-  },
-  {
-    id: "ha-005",
-    youngPerson: "yp_alex",
-    date: d(-49),
-    salonOrBarber: "The Cut Above",
-    salonType: "High street barber",
-    staffEscort: "staff_lackson",
-    styleRequested: "Same routine cut",
-    styleAchieved: "As requested",
-    productsUsed: ["Standard clippers"],
-    durationMinutes: 25,
-    cost: 12,
-    childSatisfaction: 4,
-    staffObservation: "Routine.",
-    anxietyLevelObserved: "Low",
-    reasonableAdjustments: [],
-    childChose: true,
-    culturalRelevance: "Standard preference",
-    nextAppointmentDue: d(-7),
-    notes: "",
-  },
-  {
-    id: "ha-006",
-    youngPerson: "yp_casey",
-    date: d(-120),
-    salonOrBarber: "Quiet Cuts (mobile)",
-    salonType: "Mobile/home",
-    staffEscort: "staff_anna",
-    styleRequested: "Trim — same as previous",
-    styleAchieved: "As requested",
-    productsUsed: ["Quiet scissors"],
-    durationMinutes: 35,
-    cost: 35,
-    childSatisfaction: 5,
-    staffObservation: "Routine quarterly trim — Casey's pattern works.",
-    anxietyLevelObserved: "Low",
-    reasonableAdjustments: [
-      "Mobile only",
-      "No clippers, no products",
-      "Anna and Otter present",
-    ],
-    childChose: true,
-    culturalRelevance: "N/A",
-    nextAppointmentDue: d(-30),
-    notes: "Quarterly cycle established.",
-  },
-];
-
-const salonColour: Record<string, string> = {
-  "High street barber": "bg-blue-100 text-blue-800",
-  "Specialist Black hair barber": "bg-amber-100 text-amber-800",
-  "Mobile/home": "bg-emerald-100 text-emerald-800",
-  "Salon": "bg-pink-100 text-pink-800",
-  "Specialist (e.g. sensory-friendly)": "bg-purple-100 text-purple-800",
+const salonColour: Record<SalonType, string> = {
+  high_street_barber: "bg-blue-100 text-blue-800",
+  specialist_black_hair: "bg-amber-100 text-amber-800",
+  mobile_home: "bg-emerald-100 text-emerald-800",
+  salon: "bg-pink-100 text-pink-800",
+  specialist_sensory: "bg-purple-100 text-purple-800",
 };
 
 const exportCols: ExportColumn<HairAppointment>[] = [
-  { header: "Young Person", accessor: (r: HairAppointment) => getYPName(r.youngPerson) },
+  { header: "Young Person", accessor: (r: HairAppointment) => getYPName(r.child_id) },
   { header: "Date", accessor: (r: HairAppointment) => r.date },
-  { header: "Salon/Barber", accessor: (r: HairAppointment) => r.salonOrBarber },
-  { header: "Type", accessor: (r: HairAppointment) => r.salonType },
-  { header: "Style", accessor: (r: HairAppointment) => r.styleAchieved },
+  { header: "Salon/Barber", accessor: (r: HairAppointment) => r.salon_or_barber },
+  { header: "Type", accessor: (r: HairAppointment) => SALON_TYPE_LABEL[r.salon_type] },
+  { header: "Style", accessor: (r: HairAppointment) => r.style_achieved },
   { header: "Cost £", accessor: (r: HairAppointment) => `£${r.cost}` },
-  { header: "Satisfaction", accessor: (r: HairAppointment) => `${r.childSatisfaction}/5` },
-  { header: "Adjustments", accessor: (r: HairAppointment) => r.reasonableAdjustments.length > 0 ? "Yes" : "Standard" },
+  { header: "Satisfaction", accessor: (r: HairAppointment) => `${r.child_satisfaction}/5` },
+  { header: "Adjustments", accessor: (r: HairAppointment) => r.reasonable_adjustments.length > 0 ? "Yes" : "Standard" },
 ];
 
 export default function HairdressingRecordsPage() {
+  const { data: res, isLoading } = useHairAppointments();
+  const data = res?.data ?? [];
+
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -219,25 +57,27 @@ export default function HairdressingRecordsPage() {
 
   const filtered = useMemo(() => {
     let items = [...data];
-    if (filterYP !== "all") items = items.filter((a) => a.youngPerson === filterYP);
-    if (filterType !== "all") items = items.filter((a) => a.salonType === filterType);
+    if (filterYP !== "all") items = items.filter((a) => a.child_id === filterYP);
+    if (filterType !== "all") items = items.filter((a) => a.salon_type === filterType);
     items.sort((a, b) => {
       switch (sortBy) {
         case "date":
           return b.date.localeCompare(a.date);
         case "satisfaction":
-          return b.childSatisfaction - a.childSatisfaction;
+          return b.child_satisfaction - a.child_satisfaction;
         default:
           return 0;
       }
     });
     return items;
-  }, [filterYP, filterType, sortBy]);
+  }, [data, filterYP, filterType, sortBy]);
+
+  if (isLoading) return <PageShell title="Hairdressing Records" subtitle="Hair appointments per child — choice, dignity, cultural and sensory awareness"><div className="p-8 text-center text-muted-foreground">Loading hairdressing records…</div></PageShell>;
 
   const total = data.length;
-  const culturalMatched = data.filter((a) => a.salonType === "Specialist Black hair barber").length;
-  const sensoryAdjusted = data.filter((a) => a.reasonableAdjustments.length > 0).length;
-  const allChildChose = data.every((a) => a.childChose);
+  const culturalMatched = data.filter((a) => a.salon_type === "specialist_black_hair").length;
+  const sensoryAdjusted = data.filter((a) => a.reasonable_adjustments.length > 0).length;
+  const allChildChose = data.every((a) => a.child_chose);
 
   return (
     <PageShell
@@ -264,7 +104,7 @@ export default function HairdressingRecordsPage() {
           <p className="text-xs text-muted-foreground">Sensory Adjustments</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{allChildChose ? "100%" : `${data.filter((a) => a.childChose).length}/${total}`}</p>
+          <p className="text-2xl font-bold text-green-600">{allChildChose ? "100%" : `${data.filter((a) => a.child_chose).length}/${total}`}</p>
           <p className="text-xs text-muted-foreground">Child-Chosen Style</p>
         </div>
       </div>
@@ -292,11 +132,9 @@ export default function HairdressingRecordsPage() {
           <SelectTrigger className="w-[200px]"><SelectValue placeholder="All Types" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Salon Types</SelectItem>
-            <SelectItem value="High street barber">High Street Barber</SelectItem>
-            <SelectItem value="Specialist Black hair barber">Specialist Black Hair</SelectItem>
-            <SelectItem value="Mobile/home">Mobile/Home</SelectItem>
-            <SelectItem value="Salon">Salon</SelectItem>
-            <SelectItem value="Specialist (e.g. sensory-friendly)">Sensory Specialist</SelectItem>
+            {(Object.keys(salonColour) as SalonType[]).map((k) => (
+              <SelectItem key={k} value={k}>{SALON_TYPE_LABEL[k]}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -324,15 +162,15 @@ export default function HairdressingRecordsPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Scissors className="h-5 w-5 text-pink-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(a.youngPerson)} — {a.salonOrBarber}</p>
+                    <p className="font-medium truncate">{getYPName(a.child_id)} — {a.salon_or_barber}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {a.date} &middot; {a.styleAchieved} &middot; £{a.cost}
+                      {a.date} &middot; {a.style_achieved} &middot; £{a.cost}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", salonColour[a.salonType])}>{a.salonType}</span>
-                  <span className="text-sm font-bold text-amber-600">{a.childSatisfaction}/5</span>
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", salonColour[a.salon_type])}>{SALON_TYPE_LABEL[a.salon_type]}</span>
+                  <span className="text-sm font-bold text-amber-600">{a.child_satisfaction}/5</span>
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </button>
@@ -342,19 +180,19 @@ export default function HairdressingRecordsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Style Requested</p>
-                      <p>{a.styleRequested}</p>
+                      <p>{a.style_requested}</p>
                     </div>
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Style Achieved</p>
-                      <p>{a.styleAchieved}</p>
+                      <p>{a.style_achieved}</p>
                     </div>
                   </div>
 
-                  {a.reasonableAdjustments.length > 0 && (
+                  {a.reasonable_adjustments.length > 0 && (
                     <div className="bg-purple-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-1">Reasonable Adjustments</p>
                       <ul className="space-y-1">
-                        {a.reasonableAdjustments.map((adj, i) => (
+                        {a.reasonable_adjustments.map((adj, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <Sparkles className="h-3 w-3 text-purple-500 mt-1 shrink-0" />
                             <span>{adj}</span>
@@ -366,13 +204,13 @@ export default function HairdressingRecordsPage() {
 
                   <div className="bg-amber-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">Cultural Relevance</p>
-                    <p>{a.culturalRelevance}</p>
+                    <p>{a.cultural_relevance}</p>
                   </div>
 
                   <div className="bg-emerald-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Staff Observation</p>
-                    <p>{a.staffObservation}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Anxiety level: {a.anxietyLevelObserved}</p>
+                    <p>{a.staff_observation}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Anxiety level: {a.anxiety_level_observed}</p>
                   </div>
 
                   {a.notes && (
@@ -383,12 +221,14 @@ export default function HairdressingRecordsPage() {
                   )}
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span><Heart className="h-3 w-3 inline mr-1" />Satisfaction: {a.childSatisfaction}/5</span>
-                    <span>£{a.cost} &middot; {a.durationMinutes} mins</span>
-                    <span>Escort: {getStaffName(a.staffEscort)}</span>
-                    <span>Next: {a.nextAppointmentDue}</span>
-                    {a.childChose && <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium"><Star className="h-3 w-3 inline mr-1" />Child Chose</span>}
+                    <span><Heart className="h-3 w-3 inline mr-1" />Satisfaction: {a.child_satisfaction}/5</span>
+                    <span>£{a.cost} &middot; {a.duration_minutes} mins</span>
+                    <span>Escort: {getStaffName(a.staff_escort)}</span>
+                    <span>Next: {a.next_appointment_due}</span>
+                    {a.child_chose && <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium"><Star className="h-3 w-3 inline mr-1" />Child Chose</span>}
                   </div>
+
+                  <SmartLinkPanel sourceType="hairdressing-records" sourceId={a.id} childId={a.child_id} compact />
                 </div>
               )}
             </div>
@@ -399,7 +239,7 @@ export default function HairdressingRecordsPage() {
       <div className="mt-8 rounded-lg bg-muted/50 border p-4">
         <p className="text-xs text-muted-foreground">
           <strong>Regulatory Context:</strong> Hairdressing records support Quality Standard 1 (child-centred
-          care), Quality Standard 2 (children's wishes and feelings), and Equality Act 2010 reasonable
+          care), Quality Standard 2 (children&apos;s wishes and feelings), and Equality Act 2010 reasonable
           adjustments. Cultural and sensory matching is core, not optional. Linked to Cultural Identity,
           Sensory Profiles, and Personal Belongings.
         </p>

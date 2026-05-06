@@ -170,6 +170,12 @@ import type {
   SafetyCheckRecord,
   GiftRecord,
   GovernanceMeeting,
+  GrabBag,
+  GriefRecord,
+  HairAppointment,
+  HandoverAudit,
+  HateIncident,
+  HealthAssessment,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -398,6 +404,12 @@ const store = {
   safetyCheckRecords: [] as SafetyCheckRecord[],
   giftRecords: [] as GiftRecord[],
   governanceMeetings: [] as GovernanceMeeting[],
+  grabBags: [] as GrabBag[],
+  griefRecords: [] as GriefRecord[],
+  hairAppointments: [] as HairAppointment[],
+  handoverAudits: [] as HandoverAudit[],
+  hateIncidents: [] as HateIncident[],
+  healthAssessments: [] as HealthAssessment[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -5754,6 +5766,106 @@ export const db = {
       if (idx === -1) return null;
       store.governanceMeetings[idx] = { ...store.governanceMeetings[idx], ...data };
       return store.governanceMeetings[idx];
+    },
+  },
+
+  grabBags: {
+    findAll: () => store.grabBags,
+    findById: (id: string) => store.grabBags.find((r) => r.id === id),
+    findByChild: (childId: string) => store.grabBags.filter((r) => r.child_id === childId),
+    create: (data: Partial<GrabBag>): GrabBag => {
+      const record = { ...data, id: generateId("grab"), created_at: new Date().toISOString() } as GrabBag;
+      store.grabBags.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<GrabBag>): GrabBag | null => {
+      const idx = store.grabBags.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.grabBags[idx] = { ...store.grabBags[idx], ...data };
+      return store.grabBags[idx];
+    },
+  },
+
+  griefRecords: {
+    findAll: () => store.griefRecords,
+    findById: (id: string) => store.griefRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.griefRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<GriefRecord>): GriefRecord => {
+      const record = { ...data, id: generateId("grief"), created_at: new Date().toISOString() } as GriefRecord;
+      store.griefRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<GriefRecord>): GriefRecord | null => {
+      const idx = store.griefRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.griefRecords[idx] = { ...store.griefRecords[idx], ...data };
+      return store.griefRecords[idx];
+    },
+  },
+
+  hairAppointments: {
+    findAll: () => store.hairAppointments,
+    findById: (id: string) => store.hairAppointments.find((r) => r.id === id),
+    findByChild: (childId: string) => store.hairAppointments.filter((r) => r.child_id === childId),
+    create: (data: Partial<HairAppointment>): HairAppointment => {
+      const record = { ...data, id: generateId("hair"), created_at: new Date().toISOString() } as HairAppointment;
+      store.hairAppointments.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<HairAppointment>): HairAppointment | null => {
+      const idx = store.hairAppointments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.hairAppointments[idx] = { ...store.hairAppointments[idx], ...data };
+      return store.hairAppointments[idx];
+    },
+  },
+
+  handoverAudits: {
+    findAll: () => store.handoverAudits,
+    findById: (id: string) => store.handoverAudits.find((r) => r.id === id),
+    create: (data: Partial<HandoverAudit>): HandoverAudit => {
+      const record = { ...data, id: generateId("haud"), created_at: new Date().toISOString() } as HandoverAudit;
+      store.handoverAudits.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<HandoverAudit>): HandoverAudit | null => {
+      const idx = store.handoverAudits.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.handoverAudits[idx] = { ...store.handoverAudits[idx], ...data };
+      return store.handoverAudits[idx];
+    },
+  },
+
+  hateIncidents: {
+    findAll: () => store.hateIncidents,
+    findById: (id: string) => store.hateIncidents.find((r) => r.id === id),
+    create: (data: Partial<HateIncident>): HateIncident => {
+      const record = { ...data, id: generateId("hate"), created_at: new Date().toISOString() } as HateIncident;
+      store.hateIncidents.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<HateIncident>): HateIncident | null => {
+      const idx = store.hateIncidents.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.hateIncidents[idx] = { ...store.hateIncidents[idx], ...data };
+      return store.hateIncidents[idx];
+    },
+  },
+
+  healthAssessments: {
+    findAll: () => store.healthAssessments,
+    findById: (id: string) => store.healthAssessments.find((r) => r.id === id),
+    findByChild: (childId: string) => store.healthAssessments.filter((r) => r.child_id === childId),
+    create: (data: Partial<HealthAssessment>): HealthAssessment => {
+      const record = { ...data, id: generateId("hlth"), created_at: new Date().toISOString() } as HealthAssessment;
+      store.healthAssessments.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<HealthAssessment>): HealthAssessment | null => {
+      const idx = store.healthAssessments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.healthAssessments[idx] = { ...store.healthAssessments[idx], ...data };
+      return store.healthAssessments[idx];
     },
   },
 };

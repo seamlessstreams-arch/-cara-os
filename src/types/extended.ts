@@ -9486,3 +9486,301 @@ export interface GovernanceMeeting {
   next_meeting_date: string;
   created_at: string;
 }
+
+// ── Batch 25 ──
+
+// ── Grab Bag (child-level) ──
+
+export type GrabBagStatus = "complete" | "incomplete" | "expired_items";
+
+export const GRAB_BAG_STATUS_LABEL: Record<GrabBagStatus, string> = {
+  complete: "Complete",
+  incomplete: "Incomplete",
+  expired_items: "Expired Items",
+};
+
+export interface GrabBagItem {
+  name: string;
+  required: boolean;
+  present: boolean;
+  expiry_date: string | null;
+  notes: string;
+}
+
+export interface GrabBag {
+  id: string;
+  child_id: string;
+  location: string;
+  last_checked: string;
+  checked_by: string;
+  next_check_due: string;
+  items: GrabBagItem[];
+  overall_status: GrabBagStatus;
+  notes: string;
+  created_at: string;
+}
+
+// ── Grief and Loss Support (child-level) ──
+
+export type LossType = "bereavement" | "family_separation" | "placement_move" | "pet_loss" | "friendship_loss" | "identity_loss" | "loss_of_routine" | "other";
+
+export const LOSS_TYPE_LABEL: Record<LossType, string> = {
+  bereavement: "Bereavement",
+  family_separation: "Family Separation",
+  placement_move: "Placement Move",
+  pet_loss: "Pet Loss",
+  friendship_loss: "Friendship Loss",
+  identity_loss: "Identity Loss",
+  loss_of_routine: "Loss of Routine",
+  other: "Other",
+};
+
+export interface GriefRecord {
+  id: string;
+  child_id: string;
+  loss_type: LossType;
+  loss_description: string;
+  date_of_loss: string;
+  time_since_loss: string;
+  child_relationship_to_loss: string;
+  grief_stage_observation: string;
+  external_support_in_place: string[];
+  home_based_support: string[];
+  key_worker_involvement: string;
+  traditions_and_rituals: string[];
+  anniversary_acknowledgement: string;
+  creative_outlets: string[];
+  commemoration_activities: string[];
+  child_coping_strategies: string[];
+  behaviours_to_watch_for: string[];
+  review_schedule: string;
+  last_review_date: string;
+  reviewed_by: string;
+  next_review_date: string;
+  created_at: string;
+}
+
+// ── Hairdressing Records (child-level) ──
+
+export type SalonType = "high_street_barber" | "specialist_black_hair" | "mobile_home" | "salon" | "specialist_sensory";
+
+export const SALON_TYPE_LABEL: Record<SalonType, string> = {
+  high_street_barber: "High Street Barber",
+  specialist_black_hair: "Specialist Black Hair Barber",
+  mobile_home: "Mobile/Home",
+  salon: "Salon",
+  specialist_sensory: "Specialist (e.g. Sensory-Friendly)",
+};
+
+export interface HairAppointment {
+  id: string;
+  child_id: string;
+  date: string;
+  salon_or_barber: string;
+  salon_type: SalonType;
+  staff_escort: string;
+  style_requested: string;
+  style_achieved: string;
+  products_used: string[];
+  duration_minutes: number;
+  cost: number;
+  child_satisfaction: number;
+  staff_observation: string;
+  anxiety_level_observed: string;
+  reasonable_adjustments: string[];
+  child_chose: boolean;
+  cultural_relevance: string;
+  next_appointment_due: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Handover Quality Audit (home-level) ──
+
+export type RagRating = "red" | "amber" | "green";
+
+export const RAG_RATING_LABEL: Record<RagRating, string> = {
+  red: "Red",
+  amber: "Amber",
+  green: "Green",
+};
+
+export interface HandoverDomainScore {
+  domain: string;
+  score: 1 | 2 | 3 | 4 | 5;
+  observation: string;
+  evidence: string;
+}
+
+export interface HandoverAudit {
+  id: string;
+  audit_date: string;
+  audit_period: string;
+  handover_observed: string;
+  auditor: string;
+  staff_on_duty: string[];
+  duration_minutes: number;
+  scoring_domains: HandoverDomainScore[];
+  overall_score: number;
+  overall_rag_rating: RagRating;
+  strengths_observed: string[];
+  gaps_identified: string[];
+  childrens_safety_info_covered: boolean;
+  risk_info_covered: boolean;
+  handover_documentation_quality: string;
+  child_voice_reflected: boolean;
+  recommendations_to_handover: string[];
+  training_arising: string[];
+  policy_arising: string[];
+  shareable_observations: string[];
+  confidential_notes: string;
+  next_audit_date: string;
+  created_at: string;
+}
+
+// ── Hate Incident Log (home-level) ──
+
+export type HateTargetType = "young_person" | "staff" | "visitor";
+
+export const HATE_TARGET_TYPE_LABEL: Record<HateTargetType, string> = {
+  young_person: "Young Person",
+  staff: "Staff",
+  visitor: "Visitor",
+};
+
+export type HatePerpetratorType = "external_community" | "peer_at_school" | "visitor" | "other_yp" | "staff" | "online";
+
+export const HATE_PERPETRATOR_TYPE_LABEL: Record<HatePerpetratorType, string> = {
+  external_community: "External Community",
+  peer_at_school: "Peer at School",
+  visitor: "Visitor",
+  other_yp: "Other YP",
+  staff: "Staff",
+  online: "Online",
+};
+
+export type HateIncidentType = "racist" | "homophobic_transphobic" | "religious" | "disability_related" | "antisemitic" | "misogynistic" | "other";
+
+export const HATE_INCIDENT_TYPE_LABEL: Record<HateIncidentType, string> = {
+  racist: "Racist",
+  homophobic_transphobic: "Homophobic/Transphobic",
+  religious: "Religious",
+  disability_related: "Disability-Related",
+  antisemitic: "Antisemitic",
+  misogynistic: "Misogynistic",
+  other: "Other",
+};
+
+export type HateIncidentStatus = "open" | "closed_resolved" | "closed_escalated";
+
+export const HATE_INCIDENT_STATUS_LABEL: Record<HateIncidentStatus, string> = {
+  open: "Open",
+  closed_resolved: "Closed - Resolved",
+  closed_escalated: "Closed - Escalated",
+};
+
+export interface HateIncident {
+  id: string;
+  date: string;
+  time: string;
+  location: string;
+  target_type: HateTargetType;
+  target_identity: string;
+  perpetrator_type: HatePerpetratorType;
+  incident_type: HateIncidentType;
+  description: string;
+  affected_person_response: string;
+  support_provided: string[];
+  reported_by: string;
+  reported_to_police: boolean;
+  police_reference: string;
+  reported_to_ofsted: boolean;
+  reported_to_la: boolean;
+  school_notified: boolean;
+  restorative_approach: string;
+  perpetrator_addressed: string;
+  prevention_measures_added: string[];
+  follow_up_date: string;
+  status: HateIncidentStatus;
+  learnings: string;
+  created_at: string;
+}
+
+// ── Health Assessments (child-level) ──
+
+export type HealthAssessmentType = "iha" | "rha" | "dental" | "optician" | "sdq";
+
+export const HEALTH_ASSESSMENT_TYPE_LABEL: Record<HealthAssessmentType, string> = {
+  iha: "IHA",
+  rha: "RHA",
+  dental: "Dental",
+  optician: "Optician",
+  sdq: "SDQ",
+};
+
+export type HealthAssessmentStatus = "completed" | "scheduled" | "overdue" | "referred";
+
+export const HEALTH_ASSESSMENT_STATUS_LABEL: Record<HealthAssessmentStatus, string> = {
+  completed: "Completed",
+  scheduled: "Scheduled",
+  overdue: "Overdue",
+  referred: "Referred",
+};
+
+export type SdqBand = "normal" | "borderline" | "abnormal";
+
+export const SDQ_BAND_LABEL: Record<SdqBand, string> = {
+  normal: "Normal",
+  borderline: "Borderline",
+  abnormal: "Abnormal",
+};
+
+export interface SdqScores {
+  emotional: number;
+  conduct: number;
+  hyperactivity: number;
+  peer: number;
+  prosocial: number;
+  total: number;
+  band: SdqBand;
+}
+
+export type HealthFollowUpStatus = "pending" | "completed" | "overdue";
+
+export const HEALTH_FOLLOW_UP_STATUS_LABEL: Record<HealthFollowUpStatus, string> = {
+  pending: "Pending",
+  completed: "Completed",
+  overdue: "Overdue",
+};
+
+export interface HealthFollowUp {
+  action: string;
+  owner: string;
+  due_date: string;
+  status: HealthFollowUpStatus;
+}
+
+export interface HealthNeed {
+  need: string;
+  how_met: string;
+}
+
+export interface HealthAssessment {
+  id: string;
+  child_id: string;
+  type: HealthAssessmentType;
+  status: HealthAssessmentStatus;
+  date: string;
+  next_due: string;
+  conducted_by: string;
+  location: string;
+  key_findings: string[];
+  recommendations: string[];
+  follow_ups: HealthFollowUp[];
+  sdq_scores: SdqScores | null;
+  health_needs: HealthNeed[];
+  consent: string;
+  child_view: string;
+  notes: string;
+  created_at: string;
+}

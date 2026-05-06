@@ -21,37 +21,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ── types ───────────────────────────────────────────────────────────── */
-interface GrabBagItem {
-  name: string;
-  required: boolean;
-  present: boolean;
-  expiryDate: string | null;
-  notes: string;
-}
-
-interface GrabBag {
-  id: string;
-  youngPersonId: string;
-  location: string;
-  lastChecked: string;
-  checkedBy: string;
-  nextCheckDue: string;
-  items: GrabBagItem[];
-  overallStatus: "complete" | "incomplete" | "expired_items";
-  notes: string;
-}
+import type { GrabBag, GrabBagItem, GrabBagStatus } from "@/types/extended";
+import { GRAB_BAG_STATUS_LABEL } from "@/types/extended";
+import { useGrabBags, useUpdateGrabBag } from "@/hooks/use-grab-bags";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── default items per bag ──────────────────────────────────────────── */
-const DEFAULT_ITEMS: Omit<GrabBagItem, "present" | "expiryDate" | "notes">[] = [
+const DEFAULT_ITEMS: Omit<GrabBagItem, "present" | "expiry_date" | "notes">[] = [
   { name: "Placement Plan (copy)", required: true },
   { name: "Care Plan (copy)", required: true },
   { name: "Risk Assessment (copy)", required: true },
@@ -72,50 +48,13 @@ const DEFAULT_ITEMS: Omit<GrabBagItem, "present" | "expiryDate" | "notes">[] = [
   { name: "EHCP / PEP Summary (copy)", required: false },
 ];
 
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: GrabBag[] = [
-  {
-    id: "gb_1", youngPersonId: "yp_alex", location: "Office — top shelf, labelled",
-    lastChecked: d(-7), checkedBy: "staff_anna", nextCheckDue: d(23),
-    overallStatus: "complete",
-    items: DEFAULT_ITEMS.map((item) => ({
-      ...item,
-      present: true,
-      expiryDate: item.name.includes("Medication") ? d(60) : null,
-      notes: item.name === "Comfort Item Details" ? "Alex's headphones and sketchbook noted" : "",
-    })),
-    notes: "All items present and current. Medication re-checked after recent prescription change.",
-  },
-  {
-    id: "gb_2", youngPersonId: "yp_jordan", location: "Office — top shelf, labelled",
-    lastChecked: d(-14), checkedBy: "staff_chervelle", nextCheckDue: d(16),
-    overallStatus: "expired_items",
-    items: DEFAULT_ITEMS.map((item, idx) => ({
-      ...item,
-      present: idx !== 9, // missing passport copy
-      expiryDate: item.name.includes("Care Plan") ? d(-5) : item.name.includes("Medication") ? d(45) : null,
-      notes: idx === 9 ? "Passport copy requested from SW — awaiting" : item.name === "Cash" ? "£20 in sealed envelope" : "",
-    })),
-    notes: "Care plan copy needs updating following recent review. Passport copy still being sourced from placing authority.",
-  },
-  {
-    id: "gb_3", youngPersonId: "yp_casey", location: "Office — top shelf, labelled",
-    lastChecked: d(-3), checkedBy: "staff_mirela", nextCheckDue: d(27),
-    overallStatus: "incomplete",
-    items: DEFAULT_ITEMS.map((item) => ({
-      ...item,
-      present: item.name !== "Change of Clothes",
-      expiryDate: item.name.includes("Medication") ? d(30) : null,
-      notes: item.name === "Change of Clothes" ? "Casey outgrew last set — new clothes being added this week" :
-             item.name === "Allergy / Dietary Info Card" ? "Updated to reflect new vegetarian preference" : "",
-    })),
-    notes: "Clothing needs replacing — Casey has grown. All documents current. Dietary card updated.",
-  },
-];
-
 /* ── component ───────────────────────────────────────────────────────── */
 export default function GrabBagPage() {
-  const [bags, setBags] = useState<GrabBag[]>(SEED);
+  const { data: res, isLoading } = useGrabBags();
+  const bags = res?.data ?? [];
+
+  const updateMutation = useUpdateGrabBag();
+
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("nextCheck");
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -130,17 +69,18 @@ export default function GrabBagPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (b) =>
-          getYPName(b.youngPersonId).toLowerCase().includes(q) ||
+          getYPName(b.child_id).toLowerCase().includes(q) ||
           b.notes.toLowerCase().includes(q)
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "nextCheck": return a.nextCheckDue.localeCompare(b.nextCheckDue);
-        case "name": return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
-        case "status":
-          const order = { incomplete: 0, expired_items: 1, complete: 2 };
-          return order[a.overallStatus] - order[b.overallStatus];
+        case "nextCheck": return a.next_check_due.localeCompare(b.next_check_due);
+        case "name": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "status": {
+          const order: Record<GrabBagStatus, number> = { incomplete: 0, expired_items: 1, complete: 2 };
+          return order[a.overall_status] - order[b.overall_status];
+        }
         default: return 0;
       }
     });
@@ -149,49 +89,45 @@ export default function GrabBagPage() {
 
   /* stats */
   const totalBags = bags.length;
-  const completeBags = bags.filter((b) => b.overallStatus === "complete").length;
-  const overdueChecks = bags.filter((b) => b.nextCheckDue < today).length;
-  const issuesBags = bags.filter((b) => b.overallStatus !== "complete").length;
+  const completeBags = bags.filter((b) => b.overall_status === "complete").length;
+  const overdueChecks = bags.filter((b) => b.next_check_due < today).length;
+  const issuesBags = bags.filter((b) => b.overall_status !== "complete").length;
 
   const STATUS_COLORS: Record<string, string> = {
     complete: "bg-green-100 text-green-800",
     incomplete: "bg-red-100 text-red-800",
     expired_items: "bg-orange-100 text-orange-800",
   };
-  const STATUS_LABELS: Record<string, string> = {
-    complete: "Complete", incomplete: "Incomplete", expired_items: "Expired Items",
-  };
 
   /* flatten for export */
   const exportData = useMemo(() => {
     return bags.flatMap((b) =>
-      b.items.map((item) => ({ bagId: b.id, youngPersonId: b.youngPersonId, ...item, bagStatus: b.overallStatus, lastChecked: b.lastChecked, checkedBy: b.checkedBy }))
+      b.items.map((item) => ({ bagId: b.id, child_id: b.child_id, ...item, bagStatus: b.overall_status, last_checked: b.last_checked, checked_by: b.checked_by }))
     );
   }, [bags]);
 
-  type ExportRow = { bagId: string; youngPersonId: string; name: string; required: boolean; present: boolean; expiryDate: string | null; notes: string; bagStatus: string; lastChecked: string; checkedBy: string };
+  type ExportRow = { bagId: string; child_id: string; name: string; required: boolean; present: boolean; expiry_date: string | null; notes: string; bagStatus: string; last_checked: string; checked_by: string };
 
   const exportCols: ExportColumn<ExportRow>[] = [
-    { header: "Young Person", accessor: (r: ExportRow) => getYPName(r.youngPersonId) },
+    { header: "Young Person", accessor: (r: ExportRow) => getYPName(r.child_id) },
     { header: "Item", accessor: (r: ExportRow) => r.name },
     { header: "Required", accessor: (r: ExportRow) => r.required ? "Yes" : "No" },
     { header: "Present", accessor: (r: ExportRow) => r.present ? "Yes" : "No" },
-    { header: "Expiry Date", accessor: (r: ExportRow) => r.expiryDate ?? "N/A" },
+    { header: "Expiry Date", accessor: (r: ExportRow) => r.expiry_date ?? "N/A" },
     { header: "Item Notes", accessor: (r: ExportRow) => r.notes },
     { header: "Bag Status", accessor: (r: ExportRow) => r.bagStatus },
-    { header: "Last Checked", accessor: (r: ExportRow) => r.lastChecked },
-    { header: "Checked By", accessor: (r: ExportRow) => getStaffName(r.checkedBy) },
+    { header: "Last Checked", accessor: (r: ExportRow) => r.last_checked },
+    { header: "Checked By", accessor: (r: ExportRow) => getStaffName(r.checked_by) },
   ];
 
   const handleMarkChecked = (bagId: string) => {
-    setBags((prev) =>
-      prev.map((b) =>
-        b.id === bagId
-          ? { ...b, lastChecked: today, checkedBy: "staff_darren", nextCheckDue: d(30) }
-          : b
-      )
-    );
+    const today = new Date().toISOString().slice(0, 10);
+    const next = new Date();
+    next.setDate(next.getDate() + 30);
+    updateMutation.mutate({ id: bagId, last_checked: today, checked_by: "staff_darren", next_check_due: next.toISOString().slice(0, 10) });
   };
+
+  if (isLoading) return <PageShell title="Emergency Grab Bags" subtitle="Essential documents and supplies for each young person — ready for immediate use"><div className="p-8 text-center text-muted-foreground">Loading grab bags…</div></PageShell>;
 
   return (
     <PageShell
@@ -264,9 +200,9 @@ export default function GrabBagPage() {
         <div className="space-y-3">
           {filtered.map((bag) => {
             const isExpanded = expanded === bag.id;
-            const checkOverdue = bag.nextCheckDue < today;
+            const checkOverdue = bag.next_check_due < today;
             const missingRequired = bag.items.filter((i) => i.required && !i.present).length;
-            const expiredItems = bag.items.filter((i) => i.expiryDate && i.expiryDate < today).length;
+            const expiredItems = bag.items.filter((i) => i.expiry_date && i.expiry_date < today).length;
             const totalPresent = bag.items.filter((i) => i.present).length;
 
             return (
@@ -277,20 +213,20 @@ export default function GrabBagPage() {
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Briefcase className={cn("h-5 w-5 shrink-0",
-                      bag.overallStatus === "complete" ? "text-green-600" :
-                      bag.overallStatus === "expired_items" ? "text-orange-600" : "text-red-600"
+                      bag.overall_status === "complete" ? "text-green-600" :
+                      bag.overall_status === "expired_items" ? "text-orange-600" : "text-red-600"
                     )} />
                     <div className="min-w-0">
-                      <p className="font-medium">{getYPName(bag.youngPersonId)}</p>
+                      <p className="font-medium">{getYPName(bag.child_id)}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {bag.location} · {totalPresent}/{bag.items.length} items · Checked: {bag.lastChecked}
+                        {bag.location} · {totalPresent}/{bag.items.length} items · Checked: {bag.last_checked}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {checkOverdue && <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700">Check Overdue</Badge>}
-                    <Badge className={cn("text-xs", STATUS_COLORS[bag.overallStatus])}>
-                      {STATUS_LABELS[bag.overallStatus]}
+                    <Badge className={cn("text-xs", STATUS_COLORS[bag.overall_status])}>
+                      {GRAB_BAG_STATUS_LABEL[bag.overall_status]}
                     </Badge>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -300,9 +236,9 @@ export default function GrabBagPage() {
                   <div className="border-t bg-slate-50 p-4 space-y-4">
                     {/* meta */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div><span className="text-muted-foreground">Last Checked:</span> <span className="font-medium">{bag.lastChecked}</span></div>
-                      <div><span className="text-muted-foreground">Checked By:</span> <span className="font-medium">{getStaffName(bag.checkedBy)}</span></div>
-                      <div><span className="text-muted-foreground">Next Check:</span> <span className={cn("font-medium", checkOverdue && "text-red-600")}>{bag.nextCheckDue}{checkOverdue ? " (Overdue)" : ""}</span></div>
+                      <div><span className="text-muted-foreground">Last Checked:</span> <span className="font-medium">{bag.last_checked}</span></div>
+                      <div><span className="text-muted-foreground">Checked By:</span> <span className="font-medium">{getStaffName(bag.checked_by)}</span></div>
+                      <div><span className="text-muted-foreground">Next Check:</span> <span className={cn("font-medium", checkOverdue && "text-red-600")}>{bag.next_check_due}{checkOverdue ? " (Overdue)" : ""}</span></div>
                       <div><span className="text-muted-foreground">Location:</span> <span className="font-medium">{bag.location}</span></div>
                     </div>
 
@@ -320,7 +256,7 @@ export default function GrabBagPage() {
                       <p className="text-sm font-medium mb-2">Contents Checklist</p>
                       <div className="space-y-1">
                         {bag.items.map((item: GrabBagItem, idx: number) => {
-                          const isExpired = item.expiryDate && item.expiryDate < today;
+                          const isExpired = item.expiry_date && item.expiry_date < today;
                           return (
                             <div key={idx} className={cn(
                               "flex items-start gap-2 rounded-lg border p-2.5 text-sm",
@@ -341,7 +277,7 @@ export default function GrabBagPage() {
                                   {isExpired && <Badge variant="outline" className="text-[10px] py-0 border-orange-300 text-orange-700">Expired</Badge>}
                                 </div>
                                 {item.notes && <p className="text-xs text-muted-foreground mt-0.5">{item.notes}</p>}
-                                {item.expiryDate && <p className="text-xs text-muted-foreground">Expires: {item.expiryDate}</p>}
+                                {item.expiry_date && <p className="text-xs text-muted-foreground">Expires: {item.expiry_date}</p>}
                               </div>
                             </div>
                           );
@@ -363,6 +299,9 @@ export default function GrabBagPage() {
                         <RefreshCw className="h-3 w-3 mr-1" /> Mark Checked
                       </Button>
                     </div>
+
+                    {/* smart links */}
+                    <SmartLinkPanel sourceType="grab-bag" sourceId={bag.id} childId={bag.child_id} compact />
                   </div>
                 )}
               </div>
