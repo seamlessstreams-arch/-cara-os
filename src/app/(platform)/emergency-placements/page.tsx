@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import {
   AlertTriangle, Phone, Clock, ChevronDown, ChevronUp,
   CheckCircle2, XCircle, HelpCircle, Shield, PhoneCall,
-  Mail, Search, ArrowUpDown, Timer,
+  Mail, Search, ArrowUpDown, Timer, Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -15,156 +15,57 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import type {
+  EmergencyReferral,
+  EmergencyPlacementStatus,
+  EmergencyPlacementContactMethod,
+  EmergencyPlacementUrgency,
+} from "@/types/extended";
+import {
+  EMERGENCY_PLACEMENT_STATUS_LABEL,
+  EMERGENCY_PLACEMENT_URGENCY_LABEL,
+} from "@/types/extended";
+import { useEmergencyReferrals } from "@/hooks/use-emergency-referrals";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-type EmergencyStatus = "accepted_emergency" | "declined" | "pending_capacity";
-type ContactMethod = "phone" | "email";
-type UrgencyLevel = "immediate" | "same_day" | "24_hours";
-
-interface EmergencyReferral {
-  id: string;
-  childRef: string;
-  age: number;
-  gender: string;
-  requestTime: string;
-  requestDate: string;
-  requestingAuthority: string;
-  contactPerson: string;
-  contactMethod: ContactMethod;
-  reason: string;
-  urgencyLevel: UrgencyLevel;
-  status: EmergencyStatus;
-  respondedBy: string;
-  responseTime: number;
-  declineReason: string | null;
-  admissionDate: string | null;
-  notes: string;
-  outOfHours: boolean;
-}
-
-const STATUS_META: Record<EmergencyStatus, { label: string; color: string }> = {
+// ── Meta maps ───────────────────────────────────────────────────────────────
+const STATUS_META: Record<EmergencyPlacementStatus, { label: string; color: string }> = {
   accepted_emergency: { label: "Accepted (Emergency)", color: "bg-green-100 text-green-800" },
   declined:           { label: "Declined",             color: "bg-red-100 text-red-800" },
   pending_capacity:   { label: "Pending Capacity",     color: "bg-amber-100 text-amber-800" },
 };
 
-const URGENCY_META: Record<UrgencyLevel, { label: string; color: string }> = {
+const URGENCY_META: Record<EmergencyPlacementUrgency, { label: string; color: string }> = {
   immediate: { label: "Immediate",  color: "bg-red-100 text-red-800" },
   same_day:  { label: "Same Day",   color: "bg-amber-100 text-amber-800" },
   "24_hours": { label: "Within 24h", color: "bg-blue-100 text-blue-800" },
 };
 
-// ── Seed data ────────────────────────────────────────────────────────────────
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const SEED: EmergencyReferral[] = [
-  {
-    id: "emr_001",
-    childRef: "Child W",
-    age: 14,
-    gender: "Female",
-    requestTime: "23:45",
-    requestDate: d(-12),
-    requestingAuthority: "Warwickshire County Council (EDT out-of-hours team)",
-    contactPerson: "EDT Duty Social Worker",
-    contactMethod: "phone",
-    reason: "Police protection order after domestic violence incident",
-    urgencyLevel: "immediate",
-    status: "declined",
-    respondedBy: "staff_darren",
-    responseTime: 20,
-    declineReason: "Home at capacity (3/3). Referred to 2 alternative homes.",
-    admissionDate: null,
-    notes: "Received call from EDT at 23:45. Home full. Unable to accommodate. Contacted Maple Lodge and Cedar House — Cedar House had capacity. Updated EDT.",
-    outOfHours: true,
-  },
-  {
-    id: "emr_002",
-    childRef: "Child X",
-    age: 13,
-    gender: "Male",
-    requestTime: "19:30",
-    requestDate: d(-90),
-    requestingAuthority: "Birmingham EDT",
-    contactPerson: "Birmingham Emergency Duty Team",
-    contactMethod: "phone",
-    reason: "Previous placement broke down (foster carer gave notice with immediate effect)",
-    urgencyLevel: "immediate",
-    status: "accepted_emergency",
-    respondedBy: "staff_darren",
-    responseTime: 15,
-    declineReason: null,
-    admissionDate: d(-90),
-    notes: "Emergency admission agreed by RM (Darren) and RI. Impact assessment completed retrospectively within 24 hours. Child settled well initially.",
-    outOfHours: true,
-  },
-  {
-    id: "emr_003",
-    childRef: "Child Y",
-    age: 16,
-    gender: "Female",
-    requestTime: "02:00",
-    requestDate: d(-45),
-    requestingAuthority: "West Midlands Police / Coventry CC EDT",
-    contactPerson: "Sgt. K. Phillips / Coventry EDT",
-    contactMethod: "phone",
-    reason: "Absconded from another home, found by police, refuses to return",
-    urgencyLevel: "immediate",
-    status: "declined",
-    respondedBy: "staff_darren",
-    responseTime: 25,
-    declineReason: "Not appropriate match — CSE risk would compound existing dynamics with Casey",
-    admissionDate: null,
-    notes: "Careful consideration given but CSE risk profile would negatively impact Casey’s safety plan. Declined with full explanation to EDT.",
-    outOfHours: true,
-  },
-  {
-    id: "emr_004",
-    childRef: "Child Z",
-    age: 11,
-    gender: "Male",
-    requestTime: "09:00",
-    requestDate: d(-7),
-    requestingAuthority: "Sandwell Children’s Services",
-    contactPerson: "Amy Hartwell — Referrals Co-ordinator",
-    contactMethod: "email",
-    reason: "Section 20 voluntary care — family crisis",
-    urgencyLevel: "same_day",
-    status: "pending_capacity",
-    respondedBy: "staff_ryan",
-    responseTime: 35,
-    declineReason: null,
-    admissionDate: null,
-    notes: "Not a true emergency but marked as urgent. Good matching profile. Added to referral tracker as priority.",
-    outOfHours: false,
-  },
-];
-
 // ── Export columns ────────────────────────────────────────────────────────────
 const EXPORT_COLS: ExportColumn<EmergencyReferral>[] = [
   { header: "ID",                  accessor: (r: EmergencyReferral) => r.id },
-  { header: "Child Ref",           accessor: (r: EmergencyReferral) => r.childRef },
+  { header: "Child Ref",           accessor: (r: EmergencyReferral) => r.child_ref },
   { header: "Age",                 accessor: (r: EmergencyReferral) => String(r.age) },
   { header: "Gender",              accessor: (r: EmergencyReferral) => r.gender },
-  { header: "Request Date",        accessor: (r: EmergencyReferral) => r.requestDate },
-  { header: "Request Time",        accessor: (r: EmergencyReferral) => r.requestTime },
-  { header: "Out of Hours",        accessor: (r: EmergencyReferral) => r.outOfHours ? "Yes" : "No" },
-  { header: "Requesting Authority", accessor: (r: EmergencyReferral) => r.requestingAuthority },
-  { header: "Contact Person",      accessor: (r: EmergencyReferral) => r.contactPerson },
-  { header: "Contact Method",      accessor: (r: EmergencyReferral) => r.contactMethod },
+  { header: "Request Date",        accessor: (r: EmergencyReferral) => r.request_date },
+  { header: "Request Time",        accessor: (r: EmergencyReferral) => r.request_time },
+  { header: "Out of Hours",        accessor: (r: EmergencyReferral) => r.out_of_hours ? "Yes" : "No" },
+  { header: "Requesting Authority", accessor: (r: EmergencyReferral) => r.requesting_authority },
+  { header: "Contact Person",      accessor: (r: EmergencyReferral) => r.contact_person },
+  { header: "Contact Method",      accessor: (r: EmergencyReferral) => r.contact_method },
   { header: "Reason",              accessor: (r: EmergencyReferral) => r.reason },
-  { header: "Urgency",             accessor: (r: EmergencyReferral) => URGENCY_META[r.urgencyLevel].label },
-  { header: "Status",              accessor: (r: EmergencyReferral) => STATUS_META[r.status].label },
-  { header: "Responded By",        accessor: (r: EmergencyReferral) => getStaffName(r.respondedBy) },
-  { header: "Response Time (mins)", accessor: (r: EmergencyReferral) => String(r.responseTime) },
-  { header: "Decline Reason",      accessor: (r: EmergencyReferral) => r.declineReason || "—" },
-  { header: "Admission Date",      accessor: (r: EmergencyReferral) => r.admissionDate || "—" },
+  { header: "Urgency",             accessor: (r: EmergencyReferral) => EMERGENCY_PLACEMENT_URGENCY_LABEL[r.urgency_level] },
+  { header: "Status",              accessor: (r: EmergencyReferral) => EMERGENCY_PLACEMENT_STATUS_LABEL[r.status] },
+  { header: "Responded By",        accessor: (r: EmergencyReferral) => getStaffName(r.responded_by) },
+  { header: "Response Time (mins)", accessor: (r: EmergencyReferral) => String(r.response_time) },
+  { header: "Decline Reason",      accessor: (r: EmergencyReferral) => r.decline_reason || "—" },
+  { header: "Admission Date",      accessor: (r: EmergencyReferral) => r.admission_date || "—" },
   { header: "Notes",               accessor: (r: EmergencyReferral) => r.notes },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function EmergencyPlacementsPage() {
-  const [referrals] = useState<EmergencyReferral[]>(SEED);
+  const { data: queryData, isLoading } = useEmergencyReferrals();
+  const referrals = queryData?.data ?? [];
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -179,8 +80,8 @@ export default function EmergencyPlacementsPage() {
       const s = search.toLowerCase();
       list = list.filter(
         (r) =>
-          r.childRef.toLowerCase().includes(s) ||
-          r.requestingAuthority.toLowerCase().includes(s) ||
+          r.child_ref.toLowerCase().includes(s) ||
+          r.requesting_authority.toLowerCase().includes(s) ||
           r.reason.toLowerCase().includes(s) ||
           r.notes.toLowerCase().includes(s)
       );
@@ -189,9 +90,9 @@ export default function EmergencyPlacementsPage() {
 
     list.sort((a, b) => {
       switch (sortBy) {
-        case "date":     return b.requestDate.localeCompare(a.requestDate);
-        case "urgency":  return a.urgencyLevel.localeCompare(b.urgencyLevel);
-        case "response": return a.responseTime - b.responseTime;
+        case "date":     return b.request_date.localeCompare(a.request_date);
+        case "urgency":  return a.urgency_level.localeCompare(b.urgency_level);
+        case "response": return a.response_time - b.response_time;
         default:         return 0;
       }
     });
@@ -203,10 +104,23 @@ export default function EmergencyPlacementsPage() {
     const total = referrals.length;
     const accepted = referrals.filter((r) => r.status === "accepted_emergency").length;
     const acceptedPct = total > 0 ? Math.round((accepted / total) * 100) : 0;
-    const avgResponse = total > 0 ? Math.round(referrals.reduce((sum, r) => sum + r.responseTime, 0) / total) : 0;
-    const ooh = referrals.filter((r) => r.outOfHours).length;
+    const avgResponse = total > 0 ? Math.round(referrals.reduce((sum, r) => sum + r.response_time, 0) / total) : 0;
+    const ooh = referrals.filter((r) => r.out_of_hours).length;
     return { total, accepted, acceptedPct, avgResponse, ooh };
   }, [referrals]);
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Emergency & Out-of-Hours Placements"
+        subtitle="Urgent referrals, emergency admissions, and out-of-hours placement requests"
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -283,7 +197,7 @@ export default function EmergencyPlacementsPage() {
           {filtered.map((r) => {
             const open = expandedId === r.id;
             const sm = STATUS_META[r.status];
-            const um = URGENCY_META[r.urgencyLevel];
+            const um = URGENCY_META[r.urgency_level];
             return (
               <Card
                 key={r.id}
@@ -302,18 +216,18 @@ export default function EmergencyPlacementsPage() {
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <Badge className={cn("text-xs", sm.color)}>{sm.label}</Badge>
                         <Badge className={cn("text-xs", um.color)}>{um.label}</Badge>
-                        {r.outOfHours && (
+                        {r.out_of_hours && (
                           <Badge variant="outline" className="text-xs text-purple-600 border-purple-300">Out-of-Hours</Badge>
                         )}
                       </div>
-                      <p className="font-semibold">{r.childRef} &mdash; Age {r.age}, {r.gender}</p>
+                      <p className="font-semibold">{r.child_ref} &mdash; Age {r.age}, {r.gender}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1 flex-wrap">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> {r.requestDate} at {r.requestTime}
+                          <Clock className="h-3 w-3" /> {r.request_date} at {r.request_time}
                         </span>
-                        <span>{r.requestingAuthority}</span>
+                        <span>{r.requesting_authority}</span>
                         <span className="flex items-center gap-1">
-                          <Timer className="h-3 w-3" /> Response: {r.responseTime} mins
+                          <Timer className="h-3 w-3" /> Response: {r.response_time} mins
                         </span>
                       </div>
                     </div>
@@ -338,13 +252,13 @@ export default function EmergencyPlacementsPage() {
                         <div>
                           <p className="text-xs text-muted-foreground">Contact Method</p>
                           <p className="font-medium flex items-center gap-1">
-                            {r.contactMethod === "phone" ? <Phone className="h-3 w-3" /> : <Mail className="h-3 w-3" />}
-                            {r.contactMethod === "phone" ? "Phone" : "Email"}
+                            {r.contact_method === "phone" ? <Phone className="h-3 w-3" /> : <Mail className="h-3 w-3" />}
+                            {r.contact_method === "phone" ? "Phone" : "Email"}
                           </p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground">Contact Person</p>
-                          <p className="font-medium">{r.contactPerson}</p>
+                          <p className="font-medium">{r.contact_person}</p>
                         </div>
                       </div>
 
@@ -356,24 +270,24 @@ export default function EmergencyPlacementsPage() {
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                         <div>
                           <p className="text-xs text-muted-foreground">Responded By</p>
-                          <p className="font-medium">{getStaffName(r.respondedBy)}</p>
+                          <p className="font-medium">{getStaffName(r.responded_by)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground">Response Time</p>
-                          <p className="font-medium">{r.responseTime} minutes</p>
+                          <p className="font-medium">{r.response_time} minutes</p>
                         </div>
-                        {r.admissionDate && (
+                        {r.admission_date && (
                           <div>
                             <p className="text-xs text-muted-foreground">Admission Date</p>
-                            <p className="font-medium">{r.admissionDate}</p>
+                            <p className="font-medium">{r.admission_date}</p>
                           </div>
                         )}
                       </div>
 
-                      {r.declineReason && (
+                      {r.decline_reason && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">Reason for Decline</p>
-                          <p className="bg-red-50 p-2 rounded text-xs text-red-900">{r.declineReason}</p>
+                          <p className="bg-red-50 p-2 rounded text-xs text-red-900">{r.decline_reason}</p>
                         </div>
                       )}
 

@@ -146,6 +146,12 @@ import type {
   DutyLogEntry,
   EatingSupportPlan,
   EduAttendanceRecord,
+  EhcpRecord,
+  EmergencyChildContact,
+  EvacuationPlan,
+  EmergencyMedicationProtocol,
+  EmergencyReferral,
+  EmergencyPlan,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -350,6 +356,12 @@ const store = {
   dutyLogEntries: [] as DutyLogEntry[],
   eatingSupportPlans: [] as EatingSupportPlan[],
   eduAttendanceRecords: [] as EduAttendanceRecord[],
+  ehcpRecords: [] as EhcpRecord[],
+  emergencyChildContacts: [] as EmergencyChildContact[],
+  evacuationPlans: [] as EvacuationPlan[],
+  emergencyMedicationProtocols: [] as EmergencyMedicationProtocol[],
+  emergencyReferrals: [] as EmergencyReferral[],
+  emergencyPlans: [] as EmergencyPlan[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -5313,6 +5325,105 @@ export const db = {
       if (idx === -1) return null;
       store.eduAttendanceRecords[idx] = { ...store.eduAttendanceRecords[idx], ...data };
       return store.eduAttendanceRecords[idx];
+    },
+  },
+
+  ehcpRecords: {
+    findAll: () => store.ehcpRecords,
+    findById: (id: string) => store.ehcpRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.ehcpRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<EhcpRecord>): EhcpRecord => {
+      const record = { ...data, id: generateId("ehcp"), created_at: new Date().toISOString() } as EhcpRecord;
+      store.ehcpRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<EhcpRecord>): EhcpRecord | null => {
+      const idx = store.ehcpRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ehcpRecords[idx] = { ...store.ehcpRecords[idx], ...data };
+      return store.ehcpRecords[idx];
+    },
+  },
+
+  emergencyChildContacts: {
+    findAll: () => store.emergencyChildContacts,
+    findById: (id: string) => store.emergencyChildContacts.find((r) => r.id === id),
+    findByChild: (childId: string) => store.emergencyChildContacts.filter((r) => r.child_id === childId),
+    create: (data: Partial<EmergencyChildContact>): EmergencyChildContact => {
+      const record = { ...data, id: generateId("ecc"), created_at: new Date().toISOString() } as EmergencyChildContact;
+      store.emergencyChildContacts.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<EmergencyChildContact>): EmergencyChildContact | null => {
+      const idx = store.emergencyChildContacts.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.emergencyChildContacts[idx] = { ...store.emergencyChildContacts[idx], ...data };
+      return store.emergencyChildContacts[idx];
+    },
+  },
+
+  evacuationPlans: {
+    findAll: () => store.evacuationPlans,
+    findById: (id: string) => store.evacuationPlans.find((r) => r.id === id),
+    create: (data: Partial<EvacuationPlan>): EvacuationPlan => {
+      const record = { ...data, id: generateId("evac"), created_at: new Date().toISOString() } as EvacuationPlan;
+      store.evacuationPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<EvacuationPlan>): EvacuationPlan | null => {
+      const idx = store.evacuationPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.evacuationPlans[idx] = { ...store.evacuationPlans[idx], ...data };
+      return store.evacuationPlans[idx];
+    },
+  },
+
+  emergencyMedicationProtocols: {
+    findAll: () => store.emergencyMedicationProtocols,
+    findById: (id: string) => store.emergencyMedicationProtocols.find((r) => r.id === id),
+    findByChild: (childId: string) => store.emergencyMedicationProtocols.filter((r) => r.child_id === childId),
+    create: (data: Partial<EmergencyMedicationProtocol>): EmergencyMedicationProtocol => {
+      const record = { ...data, id: generateId("emp"), created_at: new Date().toISOString() } as EmergencyMedicationProtocol;
+      store.emergencyMedicationProtocols.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<EmergencyMedicationProtocol>): EmergencyMedicationProtocol | null => {
+      const idx = store.emergencyMedicationProtocols.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.emergencyMedicationProtocols[idx] = { ...store.emergencyMedicationProtocols[idx], ...data };
+      return store.emergencyMedicationProtocols[idx];
+    },
+  },
+
+  emergencyReferrals: {
+    findAll: () => store.emergencyReferrals,
+    findById: (id: string) => store.emergencyReferrals.find((r) => r.id === id),
+    create: (data: Partial<EmergencyReferral>): EmergencyReferral => {
+      const record = { ...data, id: generateId("emr"), created_at: new Date().toISOString() } as EmergencyReferral;
+      store.emergencyReferrals.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<EmergencyReferral>): EmergencyReferral | null => {
+      const idx = store.emergencyReferrals.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.emergencyReferrals[idx] = { ...store.emergencyReferrals[idx], ...data };
+      return store.emergencyReferrals[idx];
+    },
+  },
+
+  emergencyPlans: {
+    findAll: () => store.emergencyPlans,
+    findById: (id: string) => store.emergencyPlans.find((r) => r.id === id),
+    create: (data: Partial<EmergencyPlan>): EmergencyPlan => {
+      const record = { ...data, id: generateId("epl"), created_at: new Date().toISOString() } as EmergencyPlan;
+      store.emergencyPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<EmergencyPlan>): EmergencyPlan | null => {
+      const idx = store.emergencyPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.emergencyPlans[idx] = { ...store.emergencyPlans[idx], ...data };
+      return store.emergencyPlans[idx];
     },
   },
 };

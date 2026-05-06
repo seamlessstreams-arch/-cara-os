@@ -8107,3 +8107,306 @@ export interface EduAttendanceRecord {
   notes: string;
   created_at: string;
 }
+
+// ── Batch 21 ──
+
+// ── EHCP Tracker (child-level) ──
+
+export type EhcpPlanStatus =
+  | "pre_assessment"
+  | "needs_assessment_in_progress"
+  | "final_plan_in_place"
+  | "annual_review_due"
+  | "refused";
+
+export const EHCP_PLAN_STATUS_LABEL: Record<EhcpPlanStatus, string> = {
+  pre_assessment: "Pre-assessment",
+  needs_assessment_in_progress: "Needs Assessment in progress",
+  final_plan_in_place: "Final Plan in place",
+  annual_review_due: "Annual Review due",
+  refused: "Refused",
+};
+
+export interface EhcpProvision {
+  section: string;
+  provision: string;
+  frequency: string;
+  provider: string;
+}
+
+export interface EhcpRecord {
+  id: string;
+  child_id: string;
+  plan_status: EhcpPlanStatus;
+  plan_version: string;
+  date_of_plan: string;
+  last_annual_review_date: string;
+  next_annual_review_due: string;
+  primary_need: string;
+  secondary_needs: string[];
+  placement: string;
+  section_a: string;
+  section_b: string;
+  section_d: string;
+  section_e: string;
+  provisions_listed: EhcpProvision[];
+  funding: string;
+  local_authority: string;
+  sendo_officer: string;
+  transition_planning: string;
+  child_contribution: string;
+  parental_involvement: string;
+  reviewed_by: string;
+  outstanding_actions: string[];
+  created_at: string;
+}
+
+// ── Emergency Contacts (child-level — per-child contacts only) ──
+
+export type EmergencyContactRole =
+  | "social_worker"
+  | "iro"
+  | "parent_carer"
+  | "school"
+  | "gp"
+  | "dentist"
+  | "camhs"
+  | "other";
+
+export const EMERGENCY_CONTACT_ROLE_LABEL: Record<EmergencyContactRole, string> = {
+  social_worker: "Social Worker",
+  iro: "IRO",
+  parent_carer: "Parent / Carer",
+  school: "School",
+  gp: "GP",
+  dentist: "Dentist",
+  camhs: "CAMHS",
+  other: "Other",
+};
+
+export interface EmergencyChildContact {
+  id: string;
+  child_id: string;
+  role: EmergencyContactRole;
+  name: string;
+  organisation?: string;
+  phone: string;
+  secondary_phone?: string;
+  email?: string;
+  notes?: string;
+  created_at: string;
+}
+
+// ── Emergency Evacuation Plan (home-level) ──
+
+export type EvacuationScenarioType =
+  | "fire"
+  | "gas_leak"
+  | "water_leak_flood"
+  | "power_failure"
+  | "intruder_lockdown"
+  | "bomb_threat"
+  | "carbon_monoxide"
+  | "structural_collapse"
+  | "severe_weather";
+
+export const EVACUATION_SCENARIO_TYPE_LABEL: Record<EvacuationScenarioType, string> = {
+  fire: "Fire",
+  gas_leak: "Gas Leak",
+  water_leak_flood: "Water Leak/Flood",
+  power_failure: "Power Failure",
+  intruder_lockdown: "Intruder/Lockdown",
+  bomb_threat: "Bomb Threat",
+  carbon_monoxide: "Carbon Monoxide",
+  structural_collapse: "Structural Collapse",
+  severe_weather: "Severe Weather",
+};
+
+export interface EvacuationStaffRole {
+  role: string;
+  staff_position: string;
+  tasks: string[];
+}
+
+export interface EvacuationChildConsideration {
+  young_person: string;
+  special_needs: string;
+}
+
+export interface EvacuationEmergencyContact {
+  contact: string;
+  number: string;
+  when: string;
+}
+
+export interface EvacuationPlan {
+  id: string;
+  scenario_name: string;
+  scenario_type: EvacuationScenarioType;
+  trigger_criteria: string[];
+  primary_evacuation_route: string;
+  secondary_evacuation_route: string;
+  assembly_point: string;
+  alternative_assembly_point: string;
+  roles_by_staff: EvacuationStaffRole[];
+  child_specific_considerations: EvacuationChildConsideration[];
+  evacuation_order: string[];
+  documents_to_take: string[];
+  items_not_to_take_back: string[];
+  emergency_contacts: EvacuationEmergencyContact[];
+  roll_call_procedure: string;
+  reentry_process: string;
+  post_incident_care: string[];
+  child_preparation: string;
+  drill_frequency: string;
+  last_drill_date: string;
+  next_drill_due: string;
+  reviewed_date: string;
+  reviewed_by: string;
+  approved_by_fire_officer: boolean;
+  created_at: string;
+}
+
+// ── Emergency Medication Protocols (child-level) ──
+
+export type EmergencyMedTrigger =
+  | "asthma_attack"
+  | "anaphylaxis"
+  | "seizure"
+  | "hypoglycaemia"
+  | "severe_allergic_reaction"
+  | "mental_health_crisis";
+
+export const EMERGENCY_MED_TRIGGER_LABEL: Record<EmergencyMedTrigger, string> = {
+  asthma_attack: "Asthma Attack",
+  anaphylaxis: "Anaphylaxis",
+  seizure: "Seizure",
+  hypoglycaemia: "Hypoglycaemia",
+  severe_allergic_reaction: "Severe Allergic Reaction",
+  mental_health_crisis: "Mental Health Crisis",
+};
+
+export interface EmergencyMedicationProtocol {
+  id: string;
+  child_id: string;
+  condition: string;
+  trigger: EmergencyMedTrigger;
+  emergency_medication: string;
+  spare_epi_pen_locations: string[];
+  recognise_symptoms: string[];
+  step_by_step_procedure: string[];
+  when_to_call_999: string;
+  when_to_call_gp: string;
+  position_of_patient: string;
+  aftercare: string[];
+  staff_trained_to_administer: string[];
+  child_can_self_administer: boolean;
+  child_recognises_symptoms: boolean;
+  school_and_community_provision: string;
+  medication_locations: string[];
+  expiry_check_schedule: string;
+  last_review_date: string;
+  reviewed_by: string;
+  next_review_due: string;
+  signed_off_by_gp: boolean;
+  child_informed: boolean;
+  created_at: string;
+}
+
+// ── Emergency Placements (home-level) ──
+
+export type EmergencyPlacementStatus = "accepted_emergency" | "declined" | "pending_capacity";
+
+export const EMERGENCY_PLACEMENT_STATUS_LABEL: Record<EmergencyPlacementStatus, string> = {
+  accepted_emergency: "Accepted (Emergency)",
+  declined: "Declined",
+  pending_capacity: "Pending Capacity",
+};
+
+export type EmergencyPlacementContactMethod = "phone" | "email";
+
+export const EMERGENCY_PLACEMENT_CONTACT_METHOD_LABEL: Record<EmergencyPlacementContactMethod, string> = {
+  phone: "Phone",
+  email: "Email",
+};
+
+export type EmergencyPlacementUrgency = "immediate" | "same_day" | "24_hours";
+
+export const EMERGENCY_PLACEMENT_URGENCY_LABEL: Record<EmergencyPlacementUrgency, string> = {
+  immediate: "Immediate",
+  same_day: "Same Day",
+  "24_hours": "Within 24h",
+};
+
+export interface EmergencyReferral {
+  id: string;
+  child_ref: string;
+  age: number;
+  gender: string;
+  request_time: string;
+  request_date: string;
+  requesting_authority: string;
+  contact_person: string;
+  contact_method: EmergencyPlacementContactMethod;
+  reason: string;
+  urgency_level: EmergencyPlacementUrgency;
+  status: EmergencyPlacementStatus;
+  responded_by: string;
+  response_time: number;
+  decline_reason: string | null;
+  admission_date: string | null;
+  notes: string;
+  out_of_hours: boolean;
+  created_at: string;
+}
+
+// ── Emergency Planning (home-level) ──
+
+export type EmergencyPlanType =
+  | "fire_evacuation"
+  | "power_failure"
+  | "flood_water_damage"
+  | "infectious_disease"
+  | "serious_incident";
+
+export const EMERGENCY_PLAN_TYPE_LABEL: Record<EmergencyPlanType, string> = {
+  fire_evacuation: "Fire Evacuation",
+  power_failure: "Power Failure",
+  flood_water_damage: "Flood / Water Damage",
+  infectious_disease: "Infectious Disease Outbreak",
+  serious_incident: "Serious Incident",
+};
+
+export type EmergencyPlanStatus = "current" | "review_due" | "draft";
+
+export const EMERGENCY_PLAN_STATUS_LABEL: Record<EmergencyPlanStatus, string> = {
+  current: "Current",
+  review_due: "Review Due",
+  draft: "Draft",
+};
+
+export interface EmergencyPlanContactSequence {
+  who: string;
+  number: string;
+  when: string;
+}
+
+export interface EmergencyPlan {
+  id: string;
+  title: string;
+  plan_type: EmergencyPlanType;
+  colour: string;
+  scenario: string;
+  immediate_actions: string[];
+  contact_sequence: EmergencyPlanContactSequence[];
+  evacuation_required: boolean;
+  assembly_point: string | null;
+  child_considerations: string[];
+  staff_roles: string[];
+  equipment_needed: string[];
+  recovery_actions: string[];
+  last_tested: string;
+  next_test: string;
+  status: EmergencyPlanStatus;
+  created_at: string;
+}
