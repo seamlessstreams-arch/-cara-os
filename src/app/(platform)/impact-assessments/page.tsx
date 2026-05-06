@@ -5,7 +5,7 @@ import {
   Scale, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, Clock,
   ChevronDown, ChevronUp, Users, Shield,
-  ThumbsUp, ThumbsDown,
+  ThumbsUp, ThumbsDown, Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -14,132 +14,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
-import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName } from "@/lib/seed-data";
+import type { ImpactAssessment, ImpactAssessmentStatus, ImpactRecommendation, ImpactArea } from "@/types/extended";
+import { IMPACT_ASSESSMENT_STATUS_LABEL, IMPACT_RECOMMENDATION_LABEL } from "@/types/extended";
+import { useImpactAssessments } from "@/hooks/use-impact-assessments";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
+/* ── helpers ─────────────────────────────────────────────────── */
+const STATUSES: ImpactAssessmentStatus[] = ["draft", "in_progress", "completed", "approved", "declined"];
 
-/* ── types ───────────────────────────────────────────────────────────── */
-const STATUSES = ["draft", "in_progress", "completed", "approved", "declined"] as const;
-type Status = typeof STATUSES[number];
-const STATUS_COLORS: Record<Status, string> = {
+const STATUS_COLORS: Record<ImpactAssessmentStatus, string> = {
   draft: "bg-slate-100 text-slate-800", in_progress: "bg-blue-100 text-blue-800",
   completed: "bg-green-100 text-green-800", approved: "bg-emerald-100 text-emerald-800",
   declined: "bg-red-100 text-red-800",
 };
-const STATUS_LABELS: Record<Status, string> = {
-  draft: "Draft", in_progress: "In Progress", completed: "Completed",
-  approved: "Approved", declined: "Declined",
+
+const REC_COLORS: Record<ImpactRecommendation, string> = {
+  proceed: "bg-green-100 text-green-800", proceed_with_conditions: "bg-blue-100 text-blue-800",
+  decline: "bg-red-100 text-red-800", further_info: "bg-yellow-100 text-yellow-800",
 };
 
-interface ImpactArea {
-  area: string;
-  currentLevel: "positive" | "neutral" | "concern";
-  projectedImpact: "positive" | "neutral" | "negative";
-  detail: string;
-  mitigation: string;
-}
-
-interface ImpactAssessment {
-  id: string;
-  referralName: string;
-  referralAge: number;
-  referralGender: string;
-  referralAuthority: string;
-  date: string;
-  status: Status;
-  assessor: string;
-  impactOnExisting: ImpactArea[];
-  impactOnReferral: ImpactArea[];
-  overallRecommendation: "proceed" | "proceed_with_conditions" | "decline" | "further_info";
-  conditions: string[];
-  rationale: string;
-  panelDate: string | null;
-  panelOutcome: string | null;
-  notes: string;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: ImpactAssessment[] = [
-  {
-    id: "ia_1", referralName: "Child R", referralAge: 14, referralGender: "Male",
-    referralAuthority: "Birmingham City Council",
-    date: d(-21), status: "approved", assessor: "staff_darren",
-    impactOnExisting: [
-      { area: "Alex — emotional stability", currentLevel: "concern", projectedImpact: "neutral", detail: "Alex is currently managing social media-related anxiety. A new admission may add to feelings of insecurity initially.", mitigation: "Enhanced key work support for Alex. Clear introduction plan. Alex's views sought and considered." },
-      { area: "Jordan — settling in", currentLevel: "positive", projectedImpact: "neutral", detail: "Jordan is well-settled and secure. May initially feel anxious about a new young person but has adapted well before.", mitigation: "Jordan prepared in advance. Choice in how to welcome new YP. Extra check-ins during settling period." },
-      { area: "Casey — anxiety management", currentLevel: "concern", projectedImpact: "negative", detail: "Casey's anxiety could be triggered by disruption to routine. A new admission brings inevitable change.", mitigation: "CAMHS consulted and supportive. Extra session scheduled around admission. Casey involved in age-appropriate way." },
-      { area: "Group dynamics", currentLevel: "positive", projectedImpact: "neutral", detail: "Current group is stable and positive. New young person's profile suggests potential compatibility.", mitigation: "Careful phased introduction. Supervised shared activities initially. Staff to monitor dynamics closely." },
-    ],
-    impactOnReferral: [
-      { area: "Emotional needs", currentLevel: "concern", projectedImpact: "positive", detail: "Child R has experienced multiple placement breakdowns. Oak House's therapeutic approach is well-suited.", mitigation: "Detailed settling-in plan. Consistent key worker allocated. Trauma-informed approach from day one." },
-      { area: "Education", currentLevel: "concern", projectedImpact: "positive", detail: "Currently not in education. Local provision identified and available to accept within 2 weeks.", mitigation: "Education placement confirmed. PEP meeting arranged within first week." },
-      { area: "Peer relationships", currentLevel: "neutral", projectedImpact: "positive", detail: "Child R's age (14) fits within the current group (13-16). Interests overlap with existing young people.", mitigation: "Shared activities planned. Gradual integration into house routines." },
-    ],
-    overallRecommendation: "proceed_with_conditions",
-    conditions: [
-      "Enhanced staffing for first 2 weeks of placement",
-      "CAMHS support confirmed for Casey prior to admission",
-      "Education placement secured before admission date",
-      "Phased introduction — visits before overnight stay",
-    ],
-    rationale: "Child R's profile is compatible with the current group. The therapeutic model at Oak House is well-suited to their needs. While there are manageable risks to existing placements, these can be mitigated with the conditions outlined. The benefit to Child R of a stable, therapeutic placement outweighs the temporary adjustment period for existing young people.",
-    panelDate: d(-14), panelOutcome: "Approved with conditions — all conditions met as of admission date.",
-    notes: "Strong referral. Good match for the home. All existing YP prepared and supportive. Conditions met before admission.",
-  },
-  {
-    id: "ia_2", referralName: "Child S", referralAge: 11, referralGender: "Female",
-    referralAuthority: "Solihull Council",
-    date: d(-7), status: "declined", assessor: "staff_darren",
-    impactOnExisting: [
-      { area: "All current YP — age gap", currentLevel: "positive", projectedImpact: "negative", detail: "Current age range is 13-16. An 11-year-old would be significantly younger, creating potential vulnerability and safeguarding concerns.", mitigation: "Limited mitigation available — age gap is a structural issue." },
-      { area: "Group dynamics", currentLevel: "positive", projectedImpact: "negative", detail: "Existing group has teenage dynamic. An 11-year-old would struggle to integrate at the same level.", mitigation: "Would require significant adaptation of routines and activities." },
-    ],
-    impactOnReferral: [
-      { area: "Developmental needs", currentLevel: "concern", projectedImpact: "negative", detail: "Child S's developmental stage would mean they're isolated from peer group within the home. This is not in their best interest.", mitigation: "A home with younger age range would be more appropriate." },
-    ],
-    overallRecommendation: "decline",
-    conditions: [],
-    rationale: "While Child S clearly needs a stable placement, Oak House is not the right match. The age gap between Child S (11) and the current young people (13-16) would create safeguarding vulnerabilities and prevent appropriate peer relationships within the home. Child S would be better placed in a home with a younger age profile where they can develop age-appropriate friendships and be cared for alongside developmental peers.",
-    panelDate: null, panelOutcome: null,
-    notes: "Declined with full rationale shared with placing authority. Offered to share our assessment to support their matching process. No suitable home identified yet for Child S — concerning.",
-  },
-  {
-    id: "ia_3", referralName: "Child T", referralAge: 15, referralGender: "Male",
-    referralAuthority: "Coventry City Council",
-    date: d(-2), status: "in_progress", assessor: "staff_darren",
-    impactOnExisting: [
-      { area: "Alex — peer relationship", currentLevel: "concern", projectedImpact: "neutral", detail: "Similar age and interests. Potential for positive friendship. However, Child T has a history of peer influence concerns that need consideration.", mitigation: "Supervised activities initially. Clear boundaries on peer influence risks. Key worker awareness." },
-      { area: "Staff capacity", currentLevel: "neutral", projectedImpact: "negative", detail: "Current staffing is at capacity for 3 YP. A 4th would require additional recruitment or agency cover initially.", mitigation: "Recruitment already in progress. Agency staff identified as temporary cover." },
-    ],
-    impactOnReferral: [
-      { area: "Stability", currentLevel: "concern", projectedImpact: "positive", detail: "Child T has had 3 placements in 2 years. Needs stability. Oak House's track record of placement stability is strong.", mitigation: "Detailed stability plan. RM-led settling-in process." },
-    ],
-    overallRecommendation: "further_info",
-    conditions: [],
-    rationale: "Promising referral but requires further information. Need clarity on: (1) nature and extent of peer influence concerns, (2) full details of previous placement breakdowns, (3) current CAMHS involvement and recommendations. Staffing capacity also needs resolving before proceeding to panel.",
-    panelDate: null, panelOutcome: null,
-    notes: "Requested additional information from placing authority. Awaiting response. Staffing solution being worked on in parallel.",
-  },
-];
-
-/* ── component ───────────────────────────────────────────────────────── */
+/* ── component ───────────────────────────────────────────────── */
 export default function ImpactAssessmentsPage() {
-  const [assessments] = useState<ImpactAssessment[]>(SEED);
+  const { data: raw, isLoading } = useImpactAssessments();
+  const assessments = useMemo(() => raw?.data ?? [], [raw]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Impact Assessments" subtitle="Loading…">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </PageShell>
+    );
+  }
 
   const filtered = useMemo(() => {
     let list = [...assessments];
@@ -147,8 +59,8 @@ export default function ImpactAssessmentsPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (a) =>
-          a.referralName.toLowerCase().includes(q) ||
-          a.referralAuthority.toLowerCase().includes(q) ||
+          a.referral_name.toLowerCase().includes(q) ||
+          a.referral_authority.toLowerCase().includes(q) ||
           a.rationale.toLowerCase().includes(q)
       );
     }
@@ -158,7 +70,7 @@ export default function ImpactAssessmentsPage() {
       switch (sortBy) {
         case "date": return b.date.localeCompare(a.date);
         case "status": return STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status);
-        case "name": return a.referralName.localeCompare(b.referralName);
+        case "name": return a.referral_name.localeCompare(b.referral_name);
         default: return 0;
       }
     });
@@ -170,30 +82,21 @@ export default function ImpactAssessmentsPage() {
   const declined = assessments.filter((a) => a.status === "declined").length;
   const inProgress = assessments.filter((a) => a.status === "in_progress" || a.status === "draft").length;
 
-  const REC_LABELS: Record<string, string> = {
-    proceed: "Proceed", proceed_with_conditions: "Proceed with Conditions",
-    decline: "Decline", further_info: "Further Info Required",
-  };
-  const REC_COLORS: Record<string, string> = {
-    proceed: "bg-green-100 text-green-800", proceed_with_conditions: "bg-blue-100 text-blue-800",
-    decline: "bg-red-100 text-red-800", further_info: "bg-yellow-100 text-yellow-800",
-  };
-
   const exportCols: ExportColumn<ImpactAssessment>[] = [
-    { header: "ID", accessor: (r: ImpactAssessment) => r.id },
-    { header: "Referral Name", accessor: (r: ImpactAssessment) => r.referralName },
-    { header: "Age", accessor: (r: ImpactAssessment) => r.referralAge },
-    { header: "Gender", accessor: (r: ImpactAssessment) => r.referralGender },
-    { header: "Authority", accessor: (r: ImpactAssessment) => r.referralAuthority },
-    { header: "Date", accessor: (r: ImpactAssessment) => r.date },
-    { header: "Status", accessor: (r: ImpactAssessment) => STATUS_LABELS[r.status] },
-    { header: "Assessor", accessor: (r: ImpactAssessment) => getStaffName(r.assessor) },
-    { header: "Recommendation", accessor: (r: ImpactAssessment) => REC_LABELS[r.overallRecommendation] },
-    { header: "Conditions", accessor: (r: ImpactAssessment) => r.conditions.join("; ") },
-    { header: "Rationale", accessor: (r: ImpactAssessment) => r.rationale },
-    { header: "Panel Date", accessor: (r: ImpactAssessment) => r.panelDate ?? "N/A" },
-    { header: "Panel Outcome", accessor: (r: ImpactAssessment) => r.panelOutcome ?? "N/A" },
-    { header: "Notes", accessor: (r: ImpactAssessment) => r.notes },
+    { header: "ID", accessor: (r) => r.id },
+    { header: "Referral Name", accessor: (r) => r.referral_name },
+    { header: "Age", accessor: (r) => String(r.referral_age) },
+    { header: "Gender", accessor: (r) => r.referral_gender },
+    { header: "Authority", accessor: (r) => r.referral_authority },
+    { header: "Date", accessor: (r) => r.date },
+    { header: "Status", accessor: (r) => IMPACT_ASSESSMENT_STATUS_LABEL[r.status] },
+    { header: "Assessor", accessor: (r) => getStaffName(r.assessor) },
+    { header: "Recommendation", accessor: (r) => IMPACT_RECOMMENDATION_LABEL[r.overall_recommendation] },
+    { header: "Conditions", accessor: (r) => r.conditions.join("; ") },
+    { header: "Rationale", accessor: (r) => r.rationale },
+    { header: "Panel Date", accessor: (r) => r.panel_date ?? "N/A" },
+    { header: "Panel Outcome", accessor: (r) => r.panel_outcome ?? "N/A" },
+    { header: "Notes", accessor: (r) => r.notes },
   ];
 
   return (
@@ -247,7 +150,7 @@ export default function ImpactAssessmentsPage() {
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
+                  <SelectItem key={s} value={s}>{IMPACT_ASSESSMENT_STATUS_LABEL[s]}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -282,18 +185,18 @@ export default function ImpactAssessmentsPage() {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Scale className="h-5 w-5 text-blue-600 shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-medium">{assessment.referralName} (Age {assessment.referralAge}, {assessment.referralGender})</p>
+                      <p className="font-medium">{assessment.referral_name} (Age {assessment.referral_age}, {assessment.referral_gender})</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {assessment.date} · {assessment.referralAuthority} · {getStaffName(assessment.assessor)}
+                        {assessment.date} · {assessment.referral_authority} · {getStaffName(assessment.assessor)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge className={cn("text-xs", REC_COLORS[assessment.overallRecommendation])}>
-                      {REC_LABELS[assessment.overallRecommendation]}
+                    <Badge className={cn("text-xs", REC_COLORS[assessment.overall_recommendation])}>
+                      {IMPACT_RECOMMENDATION_LABEL[assessment.overall_recommendation]}
                     </Badge>
                     <Badge className={cn("text-xs", STATUS_COLORS[assessment.status])}>
-                      {STATUS_LABELS[assessment.status]}
+                      {IMPACT_ASSESSMENT_STATUS_LABEL[assessment.status]}
                     </Badge>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -308,16 +211,16 @@ export default function ImpactAssessmentsPage() {
                         <p className="text-sm font-medium">Impact on Existing Young People</p>
                       </div>
                       <div className="space-y-2">
-                        {assessment.impactOnExisting.map((area: ImpactArea, idx: number) => (
+                        {assessment.impact_on_existing.map((area: ImpactArea, idx: number) => (
                           <div key={idx} className={cn("rounded-lg border p-3 text-sm",
-                            area.projectedImpact === "positive" ? "bg-green-50 border-green-200" :
-                            area.projectedImpact === "negative" ? "bg-red-50 border-red-200" :
+                            area.projected_impact === "positive" ? "bg-green-50 border-green-200" :
+                            area.projected_impact === "negative" ? "bg-red-50 border-red-200" :
                             "bg-white"
                           )}>
                             <div className="flex items-center gap-2 mb-1">
                               <span className="font-medium">{area.area}</span>
                               <Badge variant="outline" className="text-xs">
-                                Impact: {area.projectedImpact}
+                                Impact: {area.projected_impact}
                               </Badge>
                             </div>
                             <p className="text-xs text-muted-foreground">{area.detail}</p>
@@ -331,19 +234,19 @@ export default function ImpactAssessmentsPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Shield className="h-4 w-4 text-purple-600" />
-                        <p className="text-sm font-medium">Impact on Referral ({assessment.referralName})</p>
+                        <p className="text-sm font-medium">Impact on Referral ({assessment.referral_name})</p>
                       </div>
                       <div className="space-y-2">
-                        {assessment.impactOnReferral.map((area: ImpactArea, idx: number) => (
+                        {assessment.impact_on_referral.map((area: ImpactArea, idx: number) => (
                           <div key={idx} className={cn("rounded-lg border p-3 text-sm",
-                            area.projectedImpact === "positive" ? "bg-green-50 border-green-200" :
-                            area.projectedImpact === "negative" ? "bg-red-50 border-red-200" :
+                            area.projected_impact === "positive" ? "bg-green-50 border-green-200" :
+                            area.projected_impact === "negative" ? "bg-red-50 border-red-200" :
                             "bg-white"
                           )}>
                             <div className="flex items-center gap-2 mb-1">
                               <span className="font-medium">{area.area}</span>
                               <Badge variant="outline" className="text-xs">
-                                Impact: {area.projectedImpact}
+                                Impact: {area.projected_impact}
                               </Badge>
                             </div>
                             <p className="text-xs text-muted-foreground">{area.detail}</p>
@@ -375,11 +278,11 @@ export default function ImpactAssessmentsPage() {
                     </div>
 
                     {/* panel */}
-                    {(assessment.panelDate || assessment.panelOutcome) && (
+                    {(assessment.panel_date || assessment.panel_outcome) && (
                       <div className="rounded-lg bg-green-50 border border-green-200 p-3">
                         <p className="text-xs font-medium text-green-700 mb-1">Panel Decision</p>
-                        {assessment.panelDate && <p className="text-sm">Date: {assessment.panelDate}</p>}
-                        {assessment.panelOutcome && <p className="text-sm">{assessment.panelOutcome}</p>}
+                        {assessment.panel_date && <p className="text-sm">Date: {assessment.panel_date}</p>}
+                        {assessment.panel_outcome && <p className="text-sm">{assessment.panel_outcome}</p>}
                       </div>
                     )}
 

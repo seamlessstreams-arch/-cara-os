@@ -10192,3 +10192,279 @@ export interface PetRecord {
   logged_by: string;
   created_at: string;
 }
+
+/* ── Homework Support Log ──────────────────────────────────────────────────── */
+
+export type ChildInitiation = "self_started" | "reminded" | "resisted_then_engaged" | "refused";
+export const CHILD_INITIATION_LABEL: Record<ChildInitiation, string> = {
+  self_started: "Self-started",
+  reminded: "Reminded",
+  resisted_then_engaged: "Resisted then engaged",
+  refused: "Refused (logged)",
+};
+
+export type WorkQuality = "strong_effort" | "adequate" | "hurried" | "stuck";
+export const WORK_QUALITY_LABEL: Record<WorkQuality, string> = {
+  strong_effort: "Strong effort",
+  adequate: "Adequate",
+  hurried: "Hurried",
+  stuck: "Stuck — needed more help",
+};
+
+export type ChildMoodDuring = "engaged" | "frustrated_but_persisted" | "distracted" | "overwhelmed";
+export const CHILD_MOOD_DURING_LABEL: Record<ChildMoodDuring, string> = {
+  engaged: "Engaged",
+  frustrated_but_persisted: "Frustrated but persisted",
+  distracted: "Distracted",
+  overwhelmed: "Overwhelmed",
+};
+
+export interface HomeworkSession {
+  id: string;
+  child_id: string;
+  date: string;
+  subject: string;
+  topic: string;
+  duration_minutes: number;
+  supporting_staff: string;
+  external_tutor: string;
+  set_by_school: string;
+  child_initiation: ChildInitiation;
+  work_completed: boolean;
+  quality_of_work: WorkQuality;
+  child_mood_during: ChildMoodDuring;
+  challenges_faced: string[];
+  strategies_used: string[];
+  child_understanding: string;
+  parental_like_support: string;
+  feedback_to_school: string;
+  homework_submitted_to_school: boolean;
+  pep_goal_progress: string;
+  recorded_by: string;
+  created_at: string;
+}
+
+/* ── House Rules ───────────────────────────────────────────────────────────── */
+
+export type HouseRuleCategory = "boundaries" | "routines" | "respect" | "safety" | "community" | "technology" | "visitors";
+export const HOUSE_RULE_CATEGORY_LABEL: Record<HouseRuleCategory, string> = {
+  boundaries: "Boundaries",
+  routines: "Routines",
+  respect: "Respect",
+  safety: "Safety",
+  community: "Community",
+  technology: "Technology",
+  visitors: "Visitors",
+};
+
+export type HouseRuleStatus = "active" | "under_review" | "amended";
+export const HOUSE_RULE_STATUS_LABEL: Record<HouseRuleStatus, string> = {
+  active: "Active",
+  under_review: "Under Review",
+  amended: "Amended",
+};
+
+export interface HouseRuleAmendment {
+  date: string;
+  change: string;
+  reason: string;
+}
+
+export interface HouseRule {
+  id: string;
+  category: HouseRuleCategory;
+  title: string;
+  description: string;
+  rationale: string;
+  agreed_date: string;
+  review_date: string;
+  status: HouseRuleStatus;
+  child_friendly_version: string;
+  young_people_consulted: string[];
+  amendments: HouseRuleAmendment[];
+  consequences: string;
+  linked_to_right: string;
+  created_at: string;
+}
+
+/* ── Household Tasks Rota ──────────────────────────────────────────────────── */
+
+export type TaskCategory = "personal_room" | "shared_space" | "kitchen" | "laundry" | "garden" | "pet_care" | "shopping" | "cooking" | "cleaning";
+export const TASK_CATEGORY_LABEL: Record<TaskCategory, string> = {
+  personal_room: "Personal room",
+  shared_space: "Shared space",
+  kitchen: "Kitchen",
+  laundry: "Laundry",
+  garden: "Garden",
+  pet_care: "Pet care",
+  shopping: "Shopping",
+  cooking: "Cooking",
+  cleaning: "Cleaning",
+};
+
+export type TaskFrequency = "daily" | "weekly" | "fortnightly" | "ad_hoc";
+export const TASK_FREQUENCY_LABEL: Record<TaskFrequency, string> = {
+  daily: "Daily",
+  weekly: "Weekly",
+  fortnightly: "Fortnightly",
+  ad_hoc: "Ad-hoc",
+};
+
+export type SupportLevel = "independent" | "prompted" | "supported" | "doing_alongside_staff";
+export const SUPPORT_LEVEL_LABEL: Record<SupportLevel, string> = {
+  independent: "Independent",
+  prompted: "Prompted",
+  supported: "Supported",
+  doing_alongside_staff: "Doing alongside staff",
+};
+
+export interface HouseholdTask {
+  id: string;
+  child_id: string;
+  task_name: string;
+  task_category: TaskCategory;
+  frequency: TaskFrequency;
+  support_level: SupportLevel;
+  child_chose: boolean;
+  pocket_money_linked: boolean;
+  pocket_money_amount?: number;
+  sensory_considerations: string;
+  skills_being_developed: string[];
+  child_attitude: string;
+  staff_observation: string;
+  completion_recent: number;
+  reviewed_date: string;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Immunisation Record ───────────────────────────────────────────────────── */
+
+export type VaccineStatus = "up_to_date" | "due_now" | "overdue" | "caught_up_after_gap" | "refused" | "medically_exempt";
+export const VACCINE_STATUS_LABEL: Record<VaccineStatus, string> = {
+  up_to_date: "Up to date",
+  due_now: "Due now",
+  overdue: "Overdue",
+  caught_up_after_gap: "Caught up after gap",
+  refused: "Refused",
+  medically_exempt: "Medically exempt",
+};
+
+export interface VaccineEntry {
+  vaccine: string;
+  age_due: string;
+  date_given: string;
+  batch_number: string;
+  location: string;
+  brand: string;
+  side_effects: string;
+  side_effects_observed: boolean;
+  status: VaccineStatus;
+}
+
+export interface UpcomingDose {
+  vaccine: string;
+  due_date: string;
+  scheduled: boolean;
+}
+
+export interface ImmunisationRecord {
+  id: string;
+  child_id: string;
+  gp_registration: string;
+  red_book_held: boolean;
+  records: VaccineEntry[];
+  missed_at_age: string[];
+  caught_up_during_placement: string[];
+  upcoming_due_within_90_days: UpcomingDose[];
+  child_attitude: string;
+  child_informed_and_consent: boolean;
+  gp_reviewed_schedule: boolean;
+  review_date: string;
+  last_update: string;
+  created_at: string;
+}
+
+/* ── Impact Assessments ────────────────────────────────────────────────────── */
+
+export type ImpactAssessmentStatus = "draft" | "in_progress" | "completed" | "approved" | "declined";
+export const IMPACT_ASSESSMENT_STATUS_LABEL: Record<ImpactAssessmentStatus, string> = {
+  draft: "Draft",
+  in_progress: "In Progress",
+  completed: "Completed",
+  approved: "Approved",
+  declined: "Declined",
+};
+
+export type ImpactRecommendation = "proceed" | "proceed_with_conditions" | "decline" | "further_info";
+export const IMPACT_RECOMMENDATION_LABEL: Record<ImpactRecommendation, string> = {
+  proceed: "Proceed",
+  proceed_with_conditions: "Proceed with Conditions",
+  decline: "Decline",
+  further_info: "Further Info Required",
+};
+
+export type ImpactLevel = "positive" | "neutral" | "negative" | "concern";
+
+export interface ImpactArea {
+  area: string;
+  current_level: ImpactLevel;
+  projected_impact: ImpactLevel;
+  detail: string;
+  mitigation: string;
+}
+
+export interface ImpactAssessment {
+  id: string;
+  referral_name: string;
+  referral_age: number;
+  referral_gender: string;
+  referral_authority: string;
+  date: string;
+  status: ImpactAssessmentStatus;
+  assessor: string;
+  impact_on_existing: ImpactArea[];
+  impact_on_referral: ImpactArea[];
+  overall_recommendation: ImpactRecommendation;
+  conditions: string[];
+  rationale: string;
+  panel_date: string | null;
+  panel_outcome: string | null;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Incident Trend Analysis ───────────────────────────────────────────────── */
+
+export type TrendActionStatus = "completed" | "in_progress" | "not_started" | "overdue";
+export const TREND_ACTION_STATUS_LABEL: Record<TrendActionStatus, string> = {
+  completed: "Completed",
+  in_progress: "In Progress",
+  not_started: "Not Started",
+  overdue: "Overdue",
+};
+
+export interface TrendPreventionAction {
+  action: string;
+  owner: string;
+  deadline: string;
+  status: TrendActionStatus;
+}
+
+export interface IncidentTrendRecord {
+  id: string;
+  period: string;
+  total_incidents: number;
+  incident_type_breakdown: Record<string, number>;
+  children_involved: string[];
+  top_triggers: string[];
+  time_of_day_patterns: Record<string, number>;
+  day_of_week_patterns: Record<string, number>;
+  staff_on_duty_patterns: string;
+  key_learning: string[];
+  prevention_actions: TrendPreventionAction[];
+  reduction_vs_previous: number;
+  analyst: string;
+  review_date: string;
+  created_at: string;
+}

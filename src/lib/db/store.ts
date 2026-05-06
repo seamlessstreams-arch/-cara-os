@@ -182,6 +182,12 @@ import type {
   TripPlan,
   ImprovementObjective,
   PetRecord,
+  HomeworkSession,
+  HouseRule,
+  HouseholdTask,
+  ImmunisationRecord,
+  ImpactAssessment,
+  IncidentTrendRecord,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -422,6 +428,12 @@ const store = {
   tripPlans: [] as TripPlan[],
   improvementObjectives: [] as ImprovementObjective[],
   petRecords: [] as PetRecord[],
+  homeworkSessions: [] as HomeworkSession[],
+  houseRules: [] as HouseRule[],
+  householdTasks: [] as HouseholdTask[],
+  immunisationRecords: [] as ImmunisationRecord[],
+  impactAssessments: [] as ImpactAssessment[],
+  incidentTrends: [] as IncidentTrendRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -5977,6 +5989,105 @@ export const db = {
       if (idx === -1) return null;
       store.petRecords[idx] = { ...store.petRecords[idx], ...data };
       return store.petRecords[idx];
+    },
+  },
+
+  homeworkSessions: {
+    findAll: () => store.homeworkSessions,
+    findById: (id: string) => store.homeworkSessions.find((r) => r.id === id),
+    findByChild: (childId: string) => store.homeworkSessions.filter((r) => r.child_id === childId),
+    create: (data: Partial<HomeworkSession>): HomeworkSession => {
+      const record = { ...data, id: generateId("hw__"), created_at: new Date().toISOString() } as HomeworkSession;
+      store.homeworkSessions.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<HomeworkSession>): HomeworkSession | null => {
+      const idx = store.homeworkSessions.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.homeworkSessions[idx] = { ...store.homeworkSessions[idx], ...data };
+      return store.homeworkSessions[idx];
+    },
+  },
+
+  houseRules: {
+    findAll: () => store.houseRules,
+    findById: (id: string) => store.houseRules.find((r) => r.id === id),
+    create: (data: Partial<HouseRule>): HouseRule => {
+      const record = { ...data, id: generateId("hrul"), created_at: new Date().toISOString() } as HouseRule;
+      store.houseRules.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<HouseRule>): HouseRule | null => {
+      const idx = store.houseRules.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.houseRules[idx] = { ...store.houseRules[idx], ...data };
+      return store.houseRules[idx];
+    },
+  },
+
+  householdTasks: {
+    findAll: () => store.householdTasks,
+    findById: (id: string) => store.householdTasks.find((r) => r.id === id),
+    findByChild: (childId: string) => store.householdTasks.filter((r) => r.child_id === childId),
+    create: (data: Partial<HouseholdTask>): HouseholdTask => {
+      const record = { ...data, id: generateId("htsk"), created_at: new Date().toISOString() } as HouseholdTask;
+      store.householdTasks.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<HouseholdTask>): HouseholdTask | null => {
+      const idx = store.householdTasks.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.householdTasks[idx] = { ...store.householdTasks[idx], ...data };
+      return store.householdTasks[idx];
+    },
+  },
+
+  immunisationRecords: {
+    findAll: () => store.immunisationRecords,
+    findById: (id: string) => store.immunisationRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.immunisationRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<ImmunisationRecord>): ImmunisationRecord => {
+      const record = { ...data, id: generateId("immu"), created_at: new Date().toISOString() } as ImmunisationRecord;
+      store.immunisationRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ImmunisationRecord>): ImmunisationRecord | null => {
+      const idx = store.immunisationRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.immunisationRecords[idx] = { ...store.immunisationRecords[idx], ...data };
+      return store.immunisationRecords[idx];
+    },
+  },
+
+  impactAssessments: {
+    findAll: () => store.impactAssessments,
+    findById: (id: string) => store.impactAssessments.find((r) => r.id === id),
+    create: (data: Partial<ImpactAssessment>): ImpactAssessment => {
+      const record = { ...data, id: generateId("ia__"), created_at: new Date().toISOString() } as ImpactAssessment;
+      store.impactAssessments.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ImpactAssessment>): ImpactAssessment | null => {
+      const idx = store.impactAssessments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.impactAssessments[idx] = { ...store.impactAssessments[idx], ...data };
+      return store.impactAssessments[idx];
+    },
+  },
+
+  incidentTrends: {
+    findAll: () => store.incidentTrends,
+    findById: (id: string) => store.incidentTrends.find((r) => r.id === id),
+    create: (data: Partial<IncidentTrendRecord>): IncidentTrendRecord => {
+      const record = { ...data, id: generateId("itrn"), created_at: new Date().toISOString() } as IncidentTrendRecord;
+      store.incidentTrends.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<IncidentTrendRecord>): IncidentTrendRecord | null => {
+      const idx = store.incidentTrends.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.incidentTrends[idx] = { ...store.incidentTrends[idx], ...data };
+      return store.incidentTrends[idx];
     },
   },
 };
