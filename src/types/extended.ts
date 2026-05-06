@@ -3918,3 +3918,323 @@ export interface CareAnniversaryRecord {
   key_worker: string;
   created_at: string;
 }
+
+// ── Batch 9 ──────────────────────────────────────────────────────────────
+
+export type BikeabilityLevel = "not_started" | "level_1_off_road" | "level_2_on_road_basic" | "level_3_on_road_advanced" | "beyond_independent_rider";
+export const BIKEABILITY_LEVEL_LABEL: Record<BikeabilityLevel, string> = {
+  not_started: "Not started",
+  level_1_off_road: "Level 1 (off-road)",
+  level_2_on_road_basic: "Level 2 (on-road basic)",
+  level_3_on_road_advanced: "Level 3 (on-road advanced)",
+  beyond_independent_rider: "Beyond — independent rider",
+};
+
+export type HelmetCondition = "new" | "good" | "replace_soon" | "damaged";
+export const HELMET_CONDITION_LABEL: Record<HelmetCondition, string> = {
+  new: "New",
+  good: "Good",
+  replace_soon: "Replace soon",
+  damaged: "Damaged",
+};
+
+export type BikeMaintenanceCompetence = "adult_led" | "with_prompts" | "independent_basics" | "confident";
+export const BIKE_MAINTENANCE_COMPETENCE_LABEL: Record<BikeMaintenanceCompetence, string> = {
+  adult_led: "Adult-led",
+  with_prompts: "With prompts",
+  independent_basics: "Independent basics",
+  confident: "Confident",
+};
+
+export interface BikeDetails {
+  make: string;
+  model: string;
+  size: string;
+  colour: string;
+  serial_number?: string;
+}
+
+export interface CyclingBikeRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  bike_owned: boolean;
+  bike_details?: BikeDetails;
+  helmet_owned: boolean;
+  helmet_condition?: HelmetCondition;
+  lights_fitted: boolean;
+  reflective_gear_owned: boolean;
+  lock_type?: string;
+  bike_storage_location: string;
+  bikeability_level: BikeabilityLevel;
+  bikeability_certificate_date?: string;
+  routes_ridden_independently: string[];
+  route_risk_assessment_done: boolean;
+  child_wears_helmet_consistently: boolean;
+  maintenance_competence: BikeMaintenanceCompetence;
+  theft_risk_screening: string[];
+  child_voice: string;
+  staff_observation: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+export type CharityGrantCategory = "education" | "recreation_hobbies" | "therapy_wellbeing" | "sports_equipment" | "music_arts" | "driving_lessons" | "it_tech" | "travel_experience" | "family_support" | "other";
+export const CHARITY_GRANT_CATEGORY_LABEL: Record<CharityGrantCategory, string> = {
+  education: "Education",
+  recreation_hobbies: "Recreation / hobbies",
+  therapy_wellbeing: "Therapy / wellbeing",
+  sports_equipment: "Sports equipment",
+  music_arts: "Music / arts",
+  driving_lessons: "Driving lessons",
+  it_tech: "IT / tech",
+  travel_experience: "Travel / experience",
+  family_support: "Family support",
+  other: "Other",
+};
+
+export type CharityGrantStatus = "drafted" | "submitted" | "under_review" | "awarded" | "declined" | "partial_award" | "withdrawn";
+export const CHARITY_GRANT_STATUS_LABEL: Record<CharityGrantStatus, string> = {
+  drafted: "Drafted",
+  submitted: "Submitted",
+  under_review: "Under review",
+  awarded: "Awarded",
+  declined: "Declined",
+  partial_award: "Partial award",
+  withdrawn: "Withdrawn",
+};
+
+export interface CharityGrantRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  charity_name: string;
+  grant_purpose: string;
+  category: CharityGrantCategory;
+  application_date: string;
+  application_status: CharityGrantStatus;
+  amount_requested: number;
+  amount_awarded?: number;
+  decision_date?: string;
+  items_funded: string[];
+  evidence_provided_to_charity: string[];
+  child_involved_in_application: boolean;
+  child_acknowledgement_sent: boolean;
+  follow_up_report_required: boolean;
+  follow_up_report_date?: string;
+  child_voice: string;
+  staff_observation: string;
+  recorded_by: string;
+  created_at: string;
+}
+
+export type ClothingShopType = "high_street" | "sports_specialist" | "department_store" | "cultural_specialist" | "sensory_friendly" | "online_child_involvement" | "charity_shop" | "independent_boutique";
+export const CLOTHING_SHOP_TYPE_LABEL: Record<ClothingShopType, string> = {
+  high_street: "High street",
+  sports_specialist: "Sports specialist",
+  department_store: "Department store",
+  cultural_specialist: "Cultural/Specialist",
+  sensory_friendly: "Sensory-friendly",
+  online_child_involvement: "Online (with child involvement)",
+  charity_shop: "Charity shop",
+  independent_boutique: "Independent boutique",
+};
+
+export type ShoppingMood = "excited" | "engaged" | "selective" | "overwhelmed" | "reluctant";
+export const SHOPPING_MOOD_LABEL: Record<ShoppingMood, string> = {
+  excited: "Excited",
+  engaged: "Engaged",
+  selective: "Selective",
+  overwhelmed: "Overwhelmed",
+  reluctant: "Reluctant",
+};
+
+export interface ClothingShoppingItem {
+  item: string;
+  cost: number;
+  child_chose: boolean;
+  reason_for_purchase: string;
+}
+
+export interface ClothingShoppingTrip {
+  id: string;
+  child_id: string;
+  date: string;
+  shop_name: string;
+  shop_type: ClothingShopType;
+  staff_escort: string;
+  duration_minutes: number;
+  budget_available: number;
+  spend: number;
+  remaining_budget_after: number;
+  items_bought: ClothingShoppingItem[];
+  child_mood_during: ShoppingMood;
+  challenges_navigated: string[];
+  staff_support_provided: string;
+  child_comments: string;
+  child_pride: string;
+  items_for_long_term_use: string[];
+  items_for_specific_event: string;
+  child_chose_all_items: boolean;
+  receipts_kept: boolean;
+  notes: string;
+  created_at: string;
+}
+
+export type ContinencePresentation = "nocturnal_enuresis" | "daytime_wetting" | "encopresis" | "mixed" | "post_trauma_onset" | "developmental" | "resolving" | "resolved";
+export const CONTINENCE_PRESENTATION_LABEL: Record<ContinencePresentation, string> = {
+  nocturnal_enuresis: "Nocturnal enuresis",
+  daytime_wetting: "Daytime wetting",
+  encopresis: "Encopresis (soiling)",
+  mixed: "Mixed",
+  post_trauma_onset: "Post-trauma onset",
+  developmental: "Developmental — being patient",
+  resolving: "Resolving",
+  resolved: "Resolved",
+};
+
+export interface ContinenceExternalSupport {
+  service: string;
+  clinician: string;
+  frequency: string;
+}
+
+export interface ContinencePlan {
+  id: string;
+  child_id: string;
+  plan_date: string;
+  presentation: ContinencePresentation;
+  presentation_duration: string;
+  triggers_links: string[];
+  products_in_use: string[];
+  bed_protection_in_use: string[];
+  fluid_plan: string[];
+  toileting_routines: string[];
+  alarm_therapy?: string;
+  medication?: string;
+  external_support_engaged: ContinenceExternalSupport[];
+  child_language_used: string;
+  privacy_measures: string[];
+  laundry_routine: string[];
+  staff_do_strategies: string[];
+  staff_do_not_strategies: string[];
+  progress_notes: string[];
+  child_voice: string;
+  staff_observation: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+export type CookingCategory = "knife_skills" | "hob_cooking" | "oven_baking" | "microwave" | "recipe_planning" | "shopping_list" | "budgeting" | "food_hygiene" | "allergens_awareness" | "cultural_cooking";
+export const COOKING_CATEGORY_LABEL: Record<CookingCategory, string> = {
+  knife_skills: "Knife skills",
+  hob_cooking: "Hob/cooking",
+  oven_baking: "Oven/baking",
+  microwave: "Microwave",
+  recipe_planning: "Recipe planning",
+  shopping_list: "Shopping list",
+  budgeting: "Budgeting",
+  food_hygiene: "Food hygiene",
+  allergens_awareness: "Allergens awareness",
+  cultural_cooking: "Cultural cooking",
+};
+
+export type CookingCompetency = "not_yet_introduced" | "observed_staff" | "assisted" | "did_with_prompts" | "did_independently" | "can_teach_others";
+export const COOKING_COMPETENCY_LABEL: Record<CookingCompetency, string> = {
+  not_yet_introduced: "Not yet introduced",
+  observed_staff: "Observed staff",
+  assisted: "Assisted",
+  did_with_prompts: "Did with prompts",
+  did_independently: "Did independently",
+  can_teach_others: "Can teach others",
+};
+
+export type CookingOutcome = "burnt" | "edible" | "good" | "excellent" | "showed_off";
+export const COOKING_OUTCOME_LABEL: Record<CookingOutcome, string> = {
+  burnt: "Burnt",
+  edible: "Edible",
+  good: "Good",
+  excellent: "Excellent",
+  showed_off: "Showed off to others",
+};
+
+export interface CookingRecipeAttempt {
+  name: string;
+  date: string;
+  outcome: CookingOutcome;
+}
+
+export interface CookingBakingRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  skill: string;
+  category: CookingCategory;
+  competency_level: CookingCompetency;
+  first_attempt_date?: string;
+  achieved_independently_date?: string;
+  recipes_attempted: CookingRecipeAttempt[];
+  cuisines_explored: string[];
+  child_voice: string;
+  staff_observation: string;
+  hygiene_certificate: boolean;
+  led_family_meal: boolean;
+  flags_risks: string[];
+  next_skill_to_build: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+export type CorrespondenceSenderType = "birth_family" | "mother" | "father" | "sibling" | "grandparent" | "extended_family" | "school" | "friend" | "solicitor_legal" | "pen_pal_scheme" | "charity_anonymous" | "other_professional" | "junk_mail";
+export const CORRESPONDENCE_SENDER_TYPE_LABEL: Record<CorrespondenceSenderType, string> = {
+  birth_family: "Birth family",
+  mother: "Mother",
+  father: "Father",
+  sibling: "Sibling",
+  grandparent: "Grandparent",
+  extended_family: "Extended family",
+  school: "School",
+  friend: "Friend",
+  solicitor_legal: "Solicitor/legal",
+  pen_pal_scheme: "Pen-pal scheme",
+  charity_anonymous: "Charity/anonymous",
+  other_professional: "Other professional",
+  junk_mail: "Junk mail",
+};
+
+export type CorrespondenceItemType = "letter" | "card" | "package" | "birthday_card" | "christmas_card" | "school_letter" | "solicitor_letter" | "letterbox_contact";
+export const CORRESPONDENCE_ITEM_TYPE_LABEL: Record<CorrespondenceItemType, string> = {
+  letter: "Letter",
+  card: "Card",
+  package: "Package",
+  birthday_card: "Birthday card",
+  christmas_card: "Christmas card",
+  school_letter: "School letter",
+  solicitor_letter: "Solicitor letter",
+  letterbox_contact: "Letterbox contact",
+};
+
+export interface IncomingCorrespondence {
+  id: string;
+  child_id: string;
+  date_received: string;
+  sender_type: CorrespondenceSenderType;
+  sender_name: string;
+  item_type: CorrespondenceItemType;
+  reviewed_first: boolean;
+  reviewed_by: string;
+  reviewed_reason: string;
+  child_given_item: boolean;
+  date_child_received: string;
+  child_response_observed: string;
+  child_choose_to_reply: boolean;
+  support_provided_to_respond: string;
+  kept: boolean;
+  kept_location: string;
+  shared_with_social_worker: boolean;
+  notes: string;
+  created_at: string;
+}

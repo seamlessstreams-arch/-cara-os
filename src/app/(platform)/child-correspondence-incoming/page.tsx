@@ -23,225 +23,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type {
+  IncomingCorrespondence,
+  CorrespondenceSenderType,
+  CorrespondenceItemType,
+} from "@/types/extended";
+import {
+  CORRESPONDENCE_SENDER_TYPE_LABEL,
+  CORRESPONDENCE_ITEM_TYPE_LABEL,
+} from "@/types/extended";
+import { useIncomingCorrespondence } from "@/hooks/use-incoming-correspondence";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-interface IncomingMail {
-  id: string;
-  dateReceived: string;
-  recipientChild: string;
-  senderType: "Birth family" | "Mother" | "Father" | "Sibling" | "Grandparent" | "Extended family" | "School" | "Friend" | "Solicitor/legal" | "Pen-pal scheme" | "Charity/anonymous" | "Other professional" | "Junk mail";
-  senderName: string;
-  itemType: "Letter" | "Card" | "Package" | "Birthday card" | "Christmas card" | "School letter" | "Solicitor letter" | "Letterbox contact";
-  reviewedFirst: boolean;
-  reviewedBy: string;
-  reviewedReason: string;
-  childGivenItem: boolean;
-  dateChildReceived: string;
-  childResponseObserved: string;
-  childChooseToReply: boolean;
-  supportProvidedToRespond: string;
-  kept: boolean;
-  keptLocation: string;
-  sharedWithSocialWorker: boolean;
-  notes: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const senderColour: Record<CorrespondenceSenderType, string> = {
+  mother: "bg-pink-100 text-pink-800",
+  father: "bg-blue-100 text-blue-800",
+  sibling: "bg-purple-100 text-purple-800",
+  grandparent: "bg-amber-100 text-amber-800",
+  extended_family: "bg-rose-100 text-rose-800",
+  birth_family: "bg-pink-100 text-pink-800",
+  friend: "bg-emerald-100 text-emerald-800",
+  school: "bg-indigo-100 text-indigo-800",
+  solicitor_legal: "bg-slate-100 text-slate-800",
+  pen_pal_scheme: "bg-blue-100 text-blue-800",
+  charity_anonymous: "bg-cyan-100 text-cyan-800",
+  other_professional: "bg-indigo-100 text-indigo-800",
+  junk_mail: "bg-slate-100 text-slate-700",
 };
 
-const data: IncomingMail[] = [
-  {
-    id: "im-001",
-    dateReceived: d(-3),
-    recipientChild: "yp_alex",
-    senderType: "Grandparent",
-    senderName: "Maternal Grandmother (Nan)",
-    itemType: "Card",
-    reviewedFirst: false,
-    reviewedBy: "",
-    reviewedReason: "Standard family card — no review required",
-    childGivenItem: true,
-    dateChildReceived: d(-3),
-    childResponseObserved: "Smiled. Read it twice. 'Nan remembers.'",
-    childChooseToReply: true,
-    supportProvidedToRespond: "Anna provided card and stamps. Alex wrote himself.",
-    kept: true,
-    keptLocation: "Bedroom shelf",
-    sharedWithSocialWorker: false,
-    notes: "Routine family card. No safeguarding considerations.",
-  },
-  {
-    id: "im-002",
-    dateReceived: d(-7),
-    recipientChild: "yp_casey",
-    senderType: "Mother",
-    senderName: "Birth Mother (letterbox arrangement)",
-    itemType: "Letterbox contact",
-    reviewedFirst: true,
-    reviewedBy: "staff_darren",
-    reviewedReason: "Letterbox arrangement requires SW review per court order. RM also reviews before opening with Casey.",
-    childGivenItem: true,
-    dateChildReceived: d(-5),
-    childResponseObserved: "Casey opened letter with Anna. Used visual cards. Pointed at green for 'okay'. Set the letter down and looked at Otter.",
-    childChooseToReply: false,
-    supportProvidedToRespond: "Anna offered drawing or letter; Casey declined this time. Choice respected.",
-    kept: true,
-    keptLocation: "Casey's letterbox folder (drawer)",
-    sharedWithSocialWorker: true,
-    notes: "Twice-yearly letterbox arrangement. Reviewed and shared with SW. Casey's pace respected.",
-  },
-  {
-    id: "im-003",
-    dateReceived: d(-14),
-    recipientChild: "yp_jordan",
-    senderType: "Mother",
-    senderName: "Mum (HMP)",
-    itemType: "Letter",
-    reviewedFirst: false,
-    reviewedBy: "",
-    reviewedReason: "Mother's letters not reviewed (no safeguarding requirement); standard prison correspondence",
-    childGivenItem: true,
-    dateChildReceived: d(-14),
-    childResponseObserved: "Jordan read in his bedroom privately. Came down quieter but okay.",
-    childChooseToReply: true,
-    supportProvidedToRespond: "Chervelle provided pen, paper, and time. Jordan replied independently.",
-    kept: true,
-    keptLocation: "Bedroom — Mum's letters folder",
-    sharedWithSocialWorker: false,
-    notes: "Standard mother correspondence. Jordan's privacy respected.",
-  },
-  {
-    id: "im-004",
-    dateReceived: d(-21),
-    recipientChild: "yp_alex",
-    senderType: "School",
-    senderName: "Alex's school (formal letter — exam timetable)",
-    itemType: "School letter",
-    reviewedFirst: false,
-    reviewedBy: "",
-    reviewedReason: "School communication — opened by Alex with Anna",
-    childGivenItem: true,
-    dateChildReceived: d(-21),
-    childResponseObserved: "Read with Anna; planned exam dates together",
-    childChooseToReply: false,
-    supportProvidedToRespond: "N/A — informational",
-    kept: true,
-    keptLocation: "Alex's school folder",
-    sharedWithSocialWorker: false,
-    notes: "Routine school admin.",
-  },
-  {
-    id: "im-005",
-    dateReceived: d(-30),
-    recipientChild: "yp_jordan",
-    senderType: "Sibling",
-    senderName: "Sister Tia",
-    itemType: "Card",
-    reviewedFirst: false,
-    reviewedBy: "",
-    reviewedReason: "Sibling correspondence via foster carer — known and approved",
-    childGivenItem: true,
-    dateChildReceived: d(-30),
-    childResponseObserved: "Beamed. 'My sister.' Showed Chervelle.",
-    childChooseToReply: true,
-    supportProvidedToRespond: "Chervelle helped post via Tia's foster carer",
-    kept: true,
-    keptLocation: "Bedroom — sibling cards collection",
-    sharedWithSocialWorker: false,
-    notes: "Standard sibling contact through foster carer arrangement.",
-  },
-  {
-    id: "im-006",
-    dateReceived: d(-45),
-    recipientChild: "yp_alex",
-    senderType: "Junk mail",
-    senderName: "Various marketing",
-    itemType: "Letter",
-    reviewedFirst: true,
-    reviewedBy: "staff_anna",
-    reviewedReason: "Bulk junk mail intercepted and recycled",
-    childGivenItem: false,
-    dateChildReceived: "",
-    childResponseObserved: "",
-    childChooseToReply: false,
-    supportProvidedToRespond: "",
-    kept: false,
-    keptLocation: "",
-    sharedWithSocialWorker: false,
-    notes: "Junk mail with Alex's name — intercepted; child not bothered with marketing.",
-  },
-  {
-    id: "im-007",
-    dateReceived: d(-60),
-    recipientChild: "yp_casey",
-    senderType: "Friend",
-    senderName: "Ellie (art group friend)",
-    itemType: "Card",
-    reviewedFirst: false,
-    reviewedBy: "",
-    reviewedReason: "Friend correspondence — known relationship",
-    childGivenItem: true,
-    dateChildReceived: d(-60),
-    childResponseObserved: "Casey held the card carefully and smiled. Significant — first peer correspondence.",
-    childChooseToReply: true,
-    supportProvidedToRespond: "Anna provided card; Casey drew their reply (otter)",
-    kept: true,
-    keptLocation: "Bedroom shelf — special card",
-    sharedWithSocialWorker: false,
-    notes: "Casey's first independent friend card. Major milestone.",
-  },
-  {
-    id: "im-008",
-    dateReceived: d(-90),
-    recipientChild: "yp_jordan",
-    senderType: "Solicitor/legal",
-    senderName: "LA Legal Team",
-    itemType: "Solicitor letter",
-    reviewedFirst: true,
-    reviewedBy: "staff_darren",
-    reviewedReason: "Legal correspondence reviewed by RM before sharing with Jordan",
-    childGivenItem: true,
-    dateChildReceived: d(-89),
-    childResponseObserved: "Jordan read with Chervelle. Asked questions. Appreciated transparency.",
-    childChooseToReply: false,
-    supportProvidedToRespond: "Chervelle answered questions; SW followed up",
-    kept: true,
-    keptLocation: "Office locked file (sensitive — copy in care plan)",
-    sharedWithSocialWorker: true,
-    notes: "Court-related correspondence about Mum's release. Handled with care and full explanation.",
-  },
-];
-
-const senderColour: Record<string, string> = {
-  "Mother": "bg-pink-100 text-pink-800",
-  "Father": "bg-blue-100 text-blue-800",
-  "Sibling": "bg-purple-100 text-purple-800",
-  "Grandparent": "bg-amber-100 text-amber-800",
-  "Extended family": "bg-rose-100 text-rose-800",
-  "Birth family": "bg-pink-100 text-pink-800",
-  "Friend": "bg-emerald-100 text-emerald-800",
-  "School": "bg-indigo-100 text-indigo-800",
-  "Solicitor/legal": "bg-slate-100 text-slate-800",
-  "Pen-pal scheme": "bg-blue-100 text-blue-800",
-  "Charity/anonymous": "bg-cyan-100 text-cyan-800",
-  "Other professional": "bg-indigo-100 text-indigo-800",
-  "Junk mail": "bg-slate-100 text-slate-700",
-};
-
-const exportCols: ExportColumn<IncomingMail>[] = [
-  { header: "Date", accessor: (r: IncomingMail) => r.dateReceived },
-  { header: "Child", accessor: (r: IncomingMail) => getYPName(r.recipientChild) },
-  { header: "Sender Type", accessor: (r: IncomingMail) => r.senderType },
-  { header: "Sender", accessor: (r: IncomingMail) => r.senderName },
-  { header: "Item Type", accessor: (r: IncomingMail) => r.itemType },
-  { header: "Reviewed First", accessor: (r: IncomingMail) => r.reviewedFirst ? "Yes" : "No" },
-  { header: "Given to Child", accessor: (r: IncomingMail) => r.childGivenItem ? "Yes" : "No" },
-  { header: "Kept", accessor: (r: IncomingMail) => r.kept ? "Yes" : "No" },
+const exportCols: ExportColumn<IncomingCorrespondence>[] = [
+  { header: "Date", accessor: (r: IncomingCorrespondence) => r.date_received },
+  { header: "Child", accessor: (r: IncomingCorrespondence) => getYPName(r.child_id) },
+  { header: "Sender Type", accessor: (r: IncomingCorrespondence) => CORRESPONDENCE_SENDER_TYPE_LABEL[r.sender_type] },
+  { header: "Sender", accessor: (r: IncomingCorrespondence) => r.sender_name },
+  { header: "Item Type", accessor: (r: IncomingCorrespondence) => CORRESPONDENCE_ITEM_TYPE_LABEL[r.item_type] },
+  { header: "Reviewed First", accessor: (r: IncomingCorrespondence) => r.reviewed_first ? "Yes" : "No" },
+  { header: "Given to Child", accessor: (r: IncomingCorrespondence) => r.child_given_item ? "Yes" : "No" },
+  { header: "Kept", accessor: (r: IncomingCorrespondence) => r.kept ? "Yes" : "No" },
 ];
 
 export default function ChildCorrespondenceIncomingPage() {
+  const { data: res, isLoading } = useIncomingCorrespondence();
+  const data = res?.data ?? [];
+
   const [filterYP, setFilterYP] = useState("all");
   const [filterSender, setFilterSender] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -249,25 +73,33 @@ export default function ChildCorrespondenceIncomingPage() {
 
   const filtered = useMemo(() => {
     let items = [...data];
-    if (filterYP !== "all") items = items.filter((m) => m.recipientChild === filterYP);
-    if (filterSender !== "all") items = items.filter((m) => m.senderType === filterSender);
+    if (filterYP !== "all") items = items.filter((m) => m.child_id === filterYP);
+    if (filterSender !== "all") items = items.filter((m) => m.sender_type === filterSender);
     items.sort((a, b) => {
       switch (sortBy) {
         case "date":
-          return b.dateReceived.localeCompare(a.dateReceived);
+          return b.date_received.localeCompare(a.date_received);
         case "child":
-          return a.recipientChild.localeCompare(b.recipientChild);
+          return a.child_id.localeCompare(b.child_id);
         default:
           return 0;
       }
     });
     return items;
-  }, [filterYP, filterSender, sortBy]);
+  }, [data, filterYP, filterSender, sortBy]);
 
   const total = data.length;
-  const reviewed = data.filter((m) => m.reviewedFirst).length;
-  const replied = data.filter((m) => m.childChooseToReply).length;
+  const reviewed = data.filter((m) => m.reviewed_first).length;
+  const replied = data.filter((m) => m.child_choose_to_reply).length;
   const kept = data.filter((m) => m.kept).length;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <PageShell
@@ -322,15 +154,15 @@ export default function ChildCorrespondenceIncomingPage() {
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="All Senders" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Sender Types</SelectItem>
-            <SelectItem value="Mother">Mother</SelectItem>
-            <SelectItem value="Father">Father</SelectItem>
-            <SelectItem value="Sibling">Sibling</SelectItem>
-            <SelectItem value="Grandparent">Grandparent</SelectItem>
-            <SelectItem value="Extended family">Extended Family</SelectItem>
-            <SelectItem value="Friend">Friend</SelectItem>
-            <SelectItem value="School">School</SelectItem>
-            <SelectItem value="Solicitor/legal">Solicitor</SelectItem>
-            <SelectItem value="Junk mail">Junk Mail</SelectItem>
+            <SelectItem value="mother">Mother</SelectItem>
+            <SelectItem value="father">Father</SelectItem>
+            <SelectItem value="sibling">Sibling</SelectItem>
+            <SelectItem value="grandparent">Grandparent</SelectItem>
+            <SelectItem value="extended_family">Extended Family</SelectItem>
+            <SelectItem value="friend">Friend</SelectItem>
+            <SelectItem value="school">School</SelectItem>
+            <SelectItem value="solicitor_legal">Solicitor</SelectItem>
+            <SelectItem value="junk_mail">Junk Mail</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -358,15 +190,15 @@ export default function ChildCorrespondenceIncomingPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Mail className="h-5 w-5 text-purple-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(m.recipientChild)} — {m.itemType} from {m.senderName}</p>
+                    <p className="font-medium truncate">{getYPName(m.child_id)} — {CORRESPONDENCE_ITEM_TYPE_LABEL[m.item_type]} from {m.sender_name}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Received {m.dateReceived} &middot; {m.reviewedFirst ? "Reviewed first" : "Direct to child"}
+                      Received {m.date_received} &middot; {m.reviewed_first ? "Reviewed first" : "Direct to child"}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", senderColour[m.senderType])}>
-                    {m.senderType}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", senderColour[m.sender_type])}>
+                    {CORRESPONDENCE_SENDER_TYPE_LABEL[m.sender_type]}
                   </span>
                   {m.kept && <Heart className="h-4 w-4 text-pink-500" />}
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -375,44 +207,44 @@ export default function ChildCorrespondenceIncomingPage() {
 
               {isExpanded && (
                 <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
-                  {m.reviewedFirst && (
+                  {m.reviewed_first && (
                     <div className="bg-amber-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
-                        <Eye className="h-3 w-3 inline mr-1" />Reviewed First by {getStaffName(m.reviewedBy)}
+                        <Eye className="h-3 w-3 inline mr-1" />Reviewed First by {getStaffName(m.reviewed_by)}
                       </p>
-                      <p className="text-sm">{m.reviewedReason}</p>
+                      <p className="text-sm">{m.reviewed_reason}</p>
                     </div>
                   )}
 
-                  {m.childGivenItem ? (
+                  {m.child_given_item ? (
                     <>
                       <div className="bg-blue-50 rounded-lg p-3">
                         <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Child&apos;s Response</p>
-                        <p className="text-sm italic">{m.childResponseObserved}</p>
+                        <p className="text-sm italic">{m.child_response_observed}</p>
                       </div>
 
-                      {m.childChooseToReply && (
+                      {m.child_choose_to_reply && (
                         <div className="bg-emerald-50 rounded-lg p-3">
                           <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Reply</p>
-                          <p className="text-sm">{m.supportProvidedToRespond}</p>
+                          <p className="text-sm">{m.support_provided_to_respond}</p>
                         </div>
                       )}
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="bg-white rounded-lg p-3 border">
                           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Storage</p>
-                          <p className="text-sm">{m.kept ? `Kept: ${m.keptLocation}` : "Not kept"}</p>
+                          <p className="text-sm">{m.kept ? `Kept: ${m.kept_location}` : "Not kept"}</p>
                         </div>
                         <div className="bg-white rounded-lg p-3 border">
                           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">SW Aware</p>
-                          <p className="text-sm">{m.sharedWithSocialWorker ? "Yes" : "No (not required)"}</p>
+                          <p className="text-sm">{m.shared_with_social_worker ? "Yes" : "No (not required)"}</p>
                         </div>
                       </div>
                     </>
                   ) : (
                     <div className="bg-slate-50 rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-slate-800 uppercase tracking-wide mb-1">Item Not Given to Child</p>
-                      <p className="text-sm">{m.reviewedReason}</p>
+                      <p className="text-sm">{m.reviewed_reason}</p>
                     </div>
                   )}
 
@@ -424,10 +256,11 @@ export default function ChildCorrespondenceIncomingPage() {
                   )}
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span><CheckCircle className="h-3 w-3 inline mr-1" />Item: {m.itemType}</span>
-                    <span>Received: {m.dateReceived}</span>
-                    {m.dateChildReceived && <span>Given: {m.dateChildReceived}</span>}
+                    <span><CheckCircle className="h-3 w-3 inline mr-1" />Item: {CORRESPONDENCE_ITEM_TYPE_LABEL[m.item_type]}</span>
+                    <span>Received: {m.date_received}</span>
+                    {m.date_child_received && <span>Given: {m.date_child_received}</span>}
                   </div>
+                  <SmartLinkPanel sourceType="incoming-correspondence" sourceId={m.id} childId={m.child_id} compact />
                 </div>
               )}
             </div>

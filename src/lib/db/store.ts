@@ -74,6 +74,12 @@ import type {
   AutismPlan,
   ChildBankAccount,
   CareAnniversaryRecord,
+  CyclingBikeRecord,
+  CharityGrantRecord,
+  ClothingShoppingTrip,
+  ContinencePlan,
+  CookingBakingRecord,
+  IncomingCorrespondence,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -206,6 +212,12 @@ const store = {
   autismPlans: [] as AutismPlan[],
   childBankAccounts: [] as ChildBankAccount[],
   careAnniversaryRecords: [] as CareAnniversaryRecord[],
+  cyclingBikeRecords: [] as CyclingBikeRecord[],
+  charityGrantRecords: [] as CharityGrantRecord[],
+  clothingShoppingTrips: [] as ClothingShoppingTrip[],
+  continencePlans: [] as ContinencePlan[],
+  cookingBakingRecords: [] as CookingBakingRecord[],
+  incomingCorrespondence: [] as IncomingCorrespondence[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -3957,6 +3969,108 @@ export const db = {
       if (idx === -1) return null;
       store.careAnniversaryRecords[idx] = { ...store.careAnniversaryRecords[idx], ...data };
       return store.careAnniversaryRecords[idx];
+    },
+  },
+
+  cyclingBikeRecords: {
+    findAll: () => store.cyclingBikeRecords,
+    findById: (id: string) => store.cyclingBikeRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.cyclingBikeRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<CyclingBikeRecord>): CyclingBikeRecord => {
+      const record = { ...data, id: generateId("cbr"), created_at: new Date().toISOString() } as CyclingBikeRecord;
+      store.cyclingBikeRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CyclingBikeRecord>): CyclingBikeRecord | null => {
+      const idx = store.cyclingBikeRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.cyclingBikeRecords[idx] = { ...store.cyclingBikeRecords[idx], ...data };
+      return store.cyclingBikeRecords[idx];
+    },
+  },
+
+  charityGrantRecords: {
+    findAll: () => store.charityGrantRecords,
+    findById: (id: string) => store.charityGrantRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.charityGrantRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<CharityGrantRecord>): CharityGrantRecord => {
+      const record = { ...data, id: generateId("cgr"), created_at: new Date().toISOString() } as CharityGrantRecord;
+      store.charityGrantRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CharityGrantRecord>): CharityGrantRecord | null => {
+      const idx = store.charityGrantRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.charityGrantRecords[idx] = { ...store.charityGrantRecords[idx], ...data };
+      return store.charityGrantRecords[idx];
+    },
+  },
+
+  clothingShoppingTrips: {
+    findAll: () => store.clothingShoppingTrips,
+    findById: (id: string) => store.clothingShoppingTrips.find((r) => r.id === id),
+    findByChild: (childId: string) => store.clothingShoppingTrips.filter((r) => r.child_id === childId),
+    create: (data: Partial<ClothingShoppingTrip>): ClothingShoppingTrip => {
+      const record = { ...data, id: generateId("cst"), created_at: new Date().toISOString() } as ClothingShoppingTrip;
+      store.clothingShoppingTrips.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ClothingShoppingTrip>): ClothingShoppingTrip | null => {
+      const idx = store.clothingShoppingTrips.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.clothingShoppingTrips[idx] = { ...store.clothingShoppingTrips[idx], ...data };
+      return store.clothingShoppingTrips[idx];
+    },
+  },
+
+  continencePlans: {
+    findAll: () => store.continencePlans,
+    findById: (id: string) => store.continencePlans.find((r) => r.id === id),
+    findByChild: (childId: string) => store.continencePlans.filter((r) => r.child_id === childId),
+    create: (data: Partial<ContinencePlan>): ContinencePlan => {
+      const record = { ...data, id: generateId("ccp"), created_at: new Date().toISOString() } as ContinencePlan;
+      store.continencePlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ContinencePlan>): ContinencePlan | null => {
+      const idx = store.continencePlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.continencePlans[idx] = { ...store.continencePlans[idx], ...data };
+      return store.continencePlans[idx];
+    },
+  },
+
+  cookingBakingRecords: {
+    findAll: () => store.cookingBakingRecords,
+    findById: (id: string) => store.cookingBakingRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.cookingBakingRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<CookingBakingRecord>): CookingBakingRecord => {
+      const record = { ...data, id: generateId("ckb"), created_at: new Date().toISOString() } as CookingBakingRecord;
+      store.cookingBakingRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CookingBakingRecord>): CookingBakingRecord | null => {
+      const idx = store.cookingBakingRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.cookingBakingRecords[idx] = { ...store.cookingBakingRecords[idx], ...data };
+      return store.cookingBakingRecords[idx];
+    },
+  },
+
+  incomingCorrespondence: {
+    findAll: () => store.incomingCorrespondence,
+    findById: (id: string) => store.incomingCorrespondence.find((r) => r.id === id),
+    findByChild: (childId: string) => store.incomingCorrespondence.filter((r) => r.child_id === childId),
+    create: (data: Partial<IncomingCorrespondence>): IncomingCorrespondence => {
+      const record = { ...data, id: generateId("icr"), created_at: new Date().toISOString() } as IncomingCorrespondence;
+      store.incomingCorrespondence.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<IncomingCorrespondence>): IncomingCorrespondence | null => {
+      const idx = store.incomingCorrespondence.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.incomingCorrespondence[idx] = { ...store.incomingCorrespondence[idx], ...data };
+      return store.incomingCorrespondence[idx];
     },
   },
 };

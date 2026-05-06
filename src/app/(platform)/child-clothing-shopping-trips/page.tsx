@@ -24,228 +24,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { ClothingShoppingTrip, ClothingShopType, ShoppingMood } from "@/types/extended";
+import { CLOTHING_SHOP_TYPE_LABEL, SHOPPING_MOOD_LABEL } from "@/types/extended";
+import { useClothingShoppingTrips } from "@/hooks/use-clothing-shopping-trips";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-interface ShoppingTrip {
-  id: string;
-  youngPerson: string;
-  date: string;
-  shopName: string;
-  shopType: "High street" | "Sports specialist" | "Department store" | "Cultural/Specialist" | "Sensory-friendly" | "Online (with child involvement)" | "Charity shop" | "Independent boutique";
-  staffEscort: string;
-  durationMinutes: number;
-  budgetAvailable: number;
-  spend: number;
-  remainingBudgetAfter: number;
-  itemsBought: { item: string; cost: number; childChose: boolean; reasonForPurchase: string }[];
-  childMoodDuring: "Excited" | "Engaged" | "Selective" | "Overwhelmed" | "Reluctant";
-  challengesNavigated: string[];
-  staffSupportProvided: string;
-  childComments: string;
-  childPride: string;
-  itemsForLongTermUse: string[];
-  itemsForSpecificEvent: string;
-  childChoseAllItems: boolean;
-  receiptsKept: boolean;
-  notes: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const moodColour: Record<ShoppingMood, string> = {
+  excited: "bg-amber-100 text-amber-800",
+  engaged: "bg-green-100 text-green-800",
+  selective: "bg-blue-100 text-blue-800",
+  overwhelmed: "bg-red-100 text-red-800",
+  reluctant: "bg-purple-100 text-purple-800",
 };
 
-const data: ShoppingTrip[] = [
-  {
-    id: "shop-001",
-    youngPerson: "yp_alex",
-    date: d(-7),
-    shopName: "JD Sports + Sports Direct",
-    shopType: "Sports specialist",
-    staffEscort: "staff_lackson",
-    durationMinutes: 90,
-    budgetAvailable: 150,
-    spend: 132,
-    remainingBudgetAfter: 18,
-    itemsBought: [
-      { item: "Boxing-safe sport glasses (frames specific)", cost: 95, childChose: true, reasonForPurchase: "Replacement — old pair scratched at training" },
-      { item: "Sport socks 3-pack", cost: 12, childChose: true, reasonForPurchase: "Restocking" },
-      { item: "Boxing wraps (replacement)", cost: 25, childChose: true, reasonForPurchase: "Practical" },
-    ],
-    childMoodDuring: "Engaged",
-    challengesNavigated: [],
-    staffSupportProvided: "Lackson present but not directing. Helped with size sense check on glasses. Encouraged Alex to try frames.",
-    childComments: "Got proper kit now. Coach said the glasses look class.",
-    childPride: "Showed glasses to Coach James at next session — coach's reaction was positive.",
-    itemsForLongTermUse: ["Boxing-safe sport glasses", "Boxing wraps"],
-    itemsForSpecificEvent: "Inter-club competition next month",
-    childChoseAllItems: true,
-    receiptsKept: true,
-    notes: "Successful trip. Alex felt valued through investment in his sport identity.",
-  },
-  {
-    id: "shop-002",
-    youngPerson: "yp_jordan",
-    date: d(-14),
-    shopName: "JD Sports (Manchester)",
-    shopType: "Sports specialist",
-    staffEscort: "staff_chervelle",
-    durationMinutes: 75,
-    budgetAvailable: 120,
-    spend: 105,
-    remainingBudgetAfter: 15,
-    itemsBought: [
-      { item: "Football boots (chosen by Jordan)", cost: 65, childChose: true, reasonForPurchase: "Match readiness; previous pair worn" },
-      { item: "Training socks 5-pack", cost: 15, childChose: true, reasonForPurchase: "Restocking" },
-      { item: "Captain's armband (cultural pattern)", cost: 25, childChose: true, reasonForPurchase: "Identity affirmation" },
-    ],
-    childMoodDuring: "Excited",
-    challengesNavigated: [],
-    staffSupportProvided: "Chervelle quietly supported. Stayed out of clothing decisions; available for sizing and budget.",
-    childComments: "Boots are class. Coach will love the armband.",
-    childPride: "Wore new kit to Saturday match — scored. Captain's armband particularly significant.",
-    itemsForLongTermUse: ["Football boots", "Captain's armband"],
-    itemsForSpecificEvent: "Weekly match days",
-    childChoseAllItems: true,
-    receiptsKept: true,
-    notes: "Cultural pattern armband choice meaningful. Chervelle observed Jordan's pride.",
-  },
-  {
-    id: "shop-003",
-    youngPerson: "yp_casey",
-    date: d(-21),
-    shopName: "Sensory-friendly clothing online (Casey-led)",
-    shopType: "Online (with child involvement)",
-    staffEscort: "staff_anna",
-    durationMinutes: 60,
-    budgetAvailable: 80,
-    spend: 72,
-    remainingBudgetAfter: 8,
-    itemsBought: [
-      { item: "Pyjamas (3 identical sets — Casey's preference)", cost: 36, childChose: true, reasonForPurchase: "Replacement — tag-free, soft fabric, sensory-tolerable" },
-      { item: "Soft cotton t-shirts (3 in sage green)", cost: 24, childChose: true, reasonForPurchase: "Casey's preferred colour and fabric" },
-      { item: "Seamless socks 5-pack", cost: 12, childChose: true, reasonForPurchase: "No seams = sensory tolerable" },
-    ],
-    childMoodDuring: "Engaged",
-    challengesNavigated: [
-      "Online shopping protected Casey from busy shop sensory load",
-      "Familiar brand chosen — Casey knows what works",
-    ],
-    staffSupportProvided: "Anna helped with checkout process and shipping address. Casey directed all choices.",
-    childComments: "[Pointed at green visual feeling card and at clothes when they arrived]",
-    childPride: "Casey unpacked carefully and stored in usual drawer pattern. Visible contentment.",
-    itemsForLongTermUse: ["Pyjamas (3 sets)", "T-shirts (3 sage)", "Seamless socks"],
-    itemsForSpecificEvent: "",
-    childChoseAllItems: true,
-    receiptsKept: true,
-    notes: "Online avoids sensory overload. Familiar items replicated. Critical accommodation for Casey.",
-  },
-  {
-    id: "shop-004",
-    youngPerson: "yp_alex",
-    date: d(-30),
-    shopName: "Marks & Spencer + Primark",
-    shopType: "Department store",
-    staffEscort: "staff_anna",
-    durationMinutes: 60,
-    budgetAvailable: 100,
-    spend: 88,
-    remainingBudgetAfter: 12,
-    itemsBought: [
-      { item: "School trousers x2", cost: 40, childChose: true, reasonForPurchase: "Replacement — outgrown" },
-      { item: "School shirt x3", cost: 24, childChose: true, reasonForPurchase: "Restocking" },
-      { item: "Hoodie (own choice — for after school)", cost: 24, childChose: true, reasonForPurchase: "Style preference; Alex chose colour and brand" },
-    ],
-    childMoodDuring: "Engaged",
-    challengesNavigated: [],
-    staffSupportProvided: "Anna supported with budget pacing. Encouraged Alex to choose own hoodie design.",
-    childComments: "Got the hoodie I wanted. Mum will think it's a bit dark but I like it.",
-    childPride: "",
-    itemsForLongTermUse: ["School trousers", "School shirts", "Hoodie"],
-    itemsForSpecificEvent: "School uniform refresh",
-    childChoseAllItems: true,
-    receiptsKept: true,
-    notes: "Routine school uniform refresh. Hoodie was Alex's choice — choice respected.",
-  },
-  {
-    id: "shop-005",
-    youngPerson: "yp_jordan",
-    date: d(-45),
-    shopName: "Cultural clothing market — Manchester",
-    shopType: "Cultural/Specialist",
-    staffEscort: "staff_chervelle",
-    durationMinutes: 120,
-    budgetAvailable: 80,
-    spend: 70,
-    remainingBudgetAfter: 10,
-    itemsBought: [
-      { item: "Cultural-pattern shirt (West African print)", cost: 35, childChose: true, reasonForPurchase: "Cultural identity expression" },
-      { item: "Cultural beaded bracelet", cost: 15, childChose: true, reasonForPurchase: "Heritage symbol" },
-      { item: "Cultural cooking apron (gift to wear when cooking cultural meals)", cost: 20, childChose: true, reasonForPurchase: "Identity + practical" },
-    ],
-    childMoodDuring: "Excited",
-    challengesNavigated: [],
-    staffSupportProvided: "Chervelle (matched cultural background) shared the trip. Cultural mentor recommended specific market.",
-    childComments: "Felt like a place where I belong. The lady at the stall told me about the pattern history.",
-    childPride: "Wore the shirt to next cultural heritage Saturday club. Met other young people who recognised it.",
-    itemsForLongTermUse: ["Cultural shirt", "Beaded bracelet", "Cultural apron"],
-    itemsForSpecificEvent: "Cultural Saturday club; cultural cooking sessions",
-    childChoseAllItems: true,
-    receiptsKept: true,
-    notes: "Profoundly meaningful trip. Cultural identity affirmed through real engagement with heritage market. Chervelle's matched background made trip feel safe and authentic.",
-  },
-  {
-    id: "shop-006",
-    youngPerson: "yp_casey",
-    date: d(-90),
-    shopName: "Specialist sensory store + Charity shop",
-    shopType: "Sensory-friendly",
-    staffEscort: "staff_anna",
-    durationMinutes: 75,
-    budgetAvailable: 60,
-    spend: 48,
-    remainingBudgetAfter: 12,
-    itemsBought: [
-      { item: "Weighted lap pad", cost: 25, childChose: true, reasonForPurchase: "Sensory regulation tool" },
-      { item: "Soft fleece blanket (Casey's preferred green)", cost: 15, childChose: true, reasonForPurchase: "Sensory comfort" },
-      { item: "Cotton long-sleeve top from charity shop (Casey-specific texture)", cost: 8, childChose: true, reasonForPurchase: "Specific fabric Casey liked" },
-    ],
-    childMoodDuring: "Selective",
-    challengesNavigated: [
-      "Charity shop required sensory preparation",
-      "Casey took breaks during the trip",
-    ],
-    staffSupportProvided: "Anna paced trip carefully. Stopped for quiet time mid-trip. Casey directed every choice.",
-    childComments: "[Showed thumbs up to lap pad]",
-    childPride: "Casey now uses lap pad daily.",
-    itemsForLongTermUse: ["Weighted lap pad", "Fleece blanket"],
-    itemsForSpecificEvent: "",
-    childChoseAllItems: true,
-    receiptsKept: true,
-    notes: "Sensory-friendly specialist trip. Casey's tolerance for charity shop short — moved quickly.",
-  },
-];
-
-const moodColour: Record<string, string> = {
-  Excited: "bg-amber-100 text-amber-800",
-  Engaged: "bg-green-100 text-green-800",
-  Selective: "bg-blue-100 text-blue-800",
-  Overwhelmed: "bg-red-100 text-red-800",
-  Reluctant: "bg-purple-100 text-purple-800",
-};
-
-const exportCols: ExportColumn<ShoppingTrip>[] = [
-  { header: "Young Person", accessor: (r: ShoppingTrip) => getYPName(r.youngPerson) },
-  { header: "Date", accessor: (r: ShoppingTrip) => r.date },
-  { header: "Shop", accessor: (r: ShoppingTrip) => r.shopName },
-  { header: "Type", accessor: (r: ShoppingTrip) => r.shopType },
-  { header: "Spend £", accessor: (r: ShoppingTrip) => `£${r.spend}` },
-  { header: "Budget £", accessor: (r: ShoppingTrip) => `£${r.budgetAvailable}` },
-  { header: "Items", accessor: (r: ShoppingTrip) => String(r.itemsBought.length) },
-  { header: "All Child-Chosen", accessor: (r: ShoppingTrip) => r.childChoseAllItems ? "Yes" : "No" },
+const exportCols: ExportColumn<ClothingShoppingTrip>[] = [
+  { header: "Young Person", accessor: (r: ClothingShoppingTrip) => getYPName(r.child_id) },
+  { header: "Date", accessor: (r: ClothingShoppingTrip) => r.date },
+  { header: "Shop", accessor: (r: ClothingShoppingTrip) => r.shop_name },
+  { header: "Type", accessor: (r: ClothingShoppingTrip) => CLOTHING_SHOP_TYPE_LABEL[r.shop_type] },
+  { header: "Spend £", accessor: (r: ClothingShoppingTrip) => `£${r.spend}` },
+  { header: "Budget £", accessor: (r: ClothingShoppingTrip) => `£${r.budget_available}` },
+  { header: "Items", accessor: (r: ClothingShoppingTrip) => String(r.items_bought.length) },
+  { header: "All Child-Chosen", accessor: (r: ClothingShoppingTrip) => r.child_chose_all_items ? "Yes" : "No" },
 ];
 
 export default function ChildClothingShoppingTripsPage() {
+  const { data: res, isLoading } = useClothingShoppingTrips();
+  const data = res?.data ?? [];
+
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -253,8 +59,8 @@ export default function ChildClothingShoppingTripsPage() {
 
   const filtered = useMemo(() => {
     let items = [...data];
-    if (filterYP !== "all") items = items.filter((s) => s.youngPerson === filterYP);
-    if (filterType !== "all") items = items.filter((s) => s.shopType === filterType);
+    if (filterYP !== "all") items = items.filter((s) => s.child_id === filterYP);
+    if (filterType !== "all") items = items.filter((s) => s.shop_type === filterType);
     items.sort((a, b) => {
       switch (sortBy) {
         case "date":
@@ -266,12 +72,20 @@ export default function ChildClothingShoppingTripsPage() {
       }
     });
     return items;
-  }, [filterYP, filterType, sortBy]);
+  }, [data, filterYP, filterType, sortBy]);
 
   const total = data.length;
   const totalSpend = data.reduce((sum, s) => sum + s.spend, 0);
-  const allChildChose = data.every((s) => s.childChoseAllItems);
-  const totalItems = data.reduce((sum, s) => sum + s.itemsBought.length, 0);
+  const allChildChose = data.every((s) => s.child_chose_all_items);
+  const totalItems = data.reduce((sum, s) => sum + s.items_bought.length, 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <PageShell
@@ -290,7 +104,7 @@ export default function ChildClothingShoppingTripsPage() {
           <p className="text-xs text-muted-foreground">Recent Trips</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{allChildChose ? "100%" : `${data.filter((s) => s.childChoseAllItems).length}/${total}`}</p>
+          <p className="text-2xl font-bold text-green-600">{allChildChose ? "100%" : `${data.filter((s) => s.child_chose_all_items).length}/${total}`}</p>
           <p className="text-xs text-muted-foreground">Child-Chosen</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -326,14 +140,14 @@ export default function ChildClothingShoppingTripsPage() {
           <SelectTrigger className="w-[200px]"><SelectValue placeholder="All Shop Types" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Shop Types</SelectItem>
-            <SelectItem value="High street">High Street</SelectItem>
-            <SelectItem value="Sports specialist">Sports</SelectItem>
-            <SelectItem value="Department store">Department</SelectItem>
-            <SelectItem value="Cultural/Specialist">Cultural</SelectItem>
-            <SelectItem value="Sensory-friendly">Sensory</SelectItem>
-            <SelectItem value="Online (with child involvement)">Online (Child-Led)</SelectItem>
-            <SelectItem value="Charity shop">Charity Shop</SelectItem>
-            <SelectItem value="Independent boutique">Independent</SelectItem>
+            <SelectItem value="high_street">High Street</SelectItem>
+            <SelectItem value="sports_specialist">Sports</SelectItem>
+            <SelectItem value="department_store">Department</SelectItem>
+            <SelectItem value="cultural_specialist">Cultural</SelectItem>
+            <SelectItem value="sensory_friendly">Sensory</SelectItem>
+            <SelectItem value="online_child_involvement">Online (Child-Led)</SelectItem>
+            <SelectItem value="charity_shop">Charity Shop</SelectItem>
+            <SelectItem value="independent_boutique">Independent</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -361,15 +175,15 @@ export default function ChildClothingShoppingTripsPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Shirt className="h-5 w-5 text-pink-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(s.youngPerson)} — {s.shopName}</p>
+                    <p className="font-medium truncate">{getYPName(s.child_id)} — {s.shop_name}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {s.date} &middot; {s.itemsBought.length} items &middot; £{s.spend}/£{s.budgetAvailable}
+                      {s.date} &middot; {s.items_bought.length} items &middot; £{s.spend}/£{s.budget_available}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", moodColour[s.childMoodDuring])}>{s.childMoodDuring}</span>
-                  {s.childChoseAllItems && <Sparkles className="h-4 w-4 text-amber-500" />}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", moodColour[s.child_mood_during])}>{SHOPPING_MOOD_LABEL[s.child_mood_during]}</span>
+                  {s.child_chose_all_items && <Sparkles className="h-4 w-4 text-amber-500" />}
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </button>
@@ -379,13 +193,13 @@ export default function ChildClothingShoppingTripsPage() {
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Items Bought</p>
                     <div className="space-y-1">
-                      {s.itemsBought.map((it, i) => (
+                      {s.items_bought.map((it, i) => (
                         <div key={i} className="bg-white rounded-lg p-2 border text-sm">
                           <div className="flex items-center justify-between">
                             <span className="font-medium">{it.item}</span>
-                            <span>£{it.cost}{it.childChose && <Star className="h-3 w-3 inline ml-1 text-amber-500" />}</span>
+                            <span>£{it.cost}{it.child_chose && <Star className="h-3 w-3 inline ml-1 text-amber-500" />}</span>
                           </div>
-                          <p className="text-xs text-muted-foreground">{it.reasonForPurchase}</p>
+                          <p className="text-xs text-muted-foreground">{it.reason_for_purchase}</p>
                         </div>
                       ))}
                     </div>
@@ -393,19 +207,19 @@ export default function ChildClothingShoppingTripsPage() {
 
                   <div className="bg-blue-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Child&apos;s Comments</p>
-                    <p className="text-sm italic">&ldquo;{s.childComments}&rdquo;</p>
+                    <p className="text-sm italic">&ldquo;{s.child_comments}&rdquo;</p>
                   </div>
 
                   <div className="bg-emerald-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Staff Support</p>
-                    <p className="text-sm">{s.staffSupportProvided}</p>
+                    <p className="text-sm">{s.staff_support_provided}</p>
                   </div>
 
-                  {s.challengesNavigated.length > 0 && (
+                  {s.challenges_navigated.length > 0 && (
                     <div className="bg-amber-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">Challenges Navigated</p>
                       <ul className="space-y-1">
-                        {s.challengesNavigated.map((c, i) => (
+                        {s.challenges_navigated.map((c, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-amber-600 mt-0.5">•</span>
                             <span>{c}</span>
@@ -415,20 +229,20 @@ export default function ChildClothingShoppingTripsPage() {
                     </div>
                   )}
 
-                  {s.childPride && (
+                  {s.child_pride && (
                     <div className="bg-pink-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-pink-800 uppercase tracking-wide mb-1">
                         <Sparkles className="h-3 w-3 inline mr-1" />Child&apos;s Pride
                       </p>
-                      <p className="text-sm">{s.childPride}</p>
+                      <p className="text-sm">{s.child_pride}</p>
                     </div>
                   )}
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span><Wallet className="h-3 w-3 inline mr-1" />£{s.spend} of £{s.budgetAvailable} (remaining £{s.remainingBudgetAfter})</span>
-                    <span><Clock className="h-3 w-3 inline mr-1" />{s.durationMinutes} mins</span>
-                    <span>Staff: {getStaffName(s.staffEscort)}</span>
-                    {s.itemsForSpecificEvent && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">For: {s.itemsForSpecificEvent}</span>}
+                    <span><Wallet className="h-3 w-3 inline mr-1" />£{s.spend} of £{s.budget_available} (remaining £{s.remaining_budget_after})</span>
+                    <span><Clock className="h-3 w-3 inline mr-1" />{s.duration_minutes} mins</span>
+                    <span>Staff: {getStaffName(s.staff_escort)}</span>
+                    {s.items_for_specific_event && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">For: {s.items_for_specific_event}</span>}
                   </div>
 
                   {s.notes && (
@@ -437,6 +251,8 @@ export default function ChildClothingShoppingTripsPage() {
                       <p className="text-sm">{s.notes}</p>
                     </div>
                   )}
+
+                  <SmartLinkPanel sourceType="clothing-shopping-trip" sourceId={s.id} childId={s.child_id} compact />
                 </div>
               )}
             </div>
