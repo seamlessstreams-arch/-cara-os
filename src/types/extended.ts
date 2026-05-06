@@ -7264,3 +7264,239 @@ export interface ContextualSafeguardingRisk {
   review_date: string;
   created_at: string;
 }
+
+// ── Batch 18 ──────────────────────────────────────────────────────────────────
+
+// correspondence
+export type CorrespondenceDirection = "incoming" | "outgoing";
+export type CorrespondenceMethod = "email" | "letter" | "phone_call" | "meeting" | "formal_notice" | "other";
+export type CorrespondencePriority = "urgent" | "normal" | "low";
+export type CorrespondenceStatus = "pending" | "actioned" | "filed" | "awaiting_response";
+
+export interface CorrespondenceEntry {
+  id: string;
+  date: string;
+  time: string;
+  direction: CorrespondenceDirection;
+  method: CorrespondenceMethod;
+  priority: CorrespondencePriority;
+  status: CorrespondenceStatus;
+  subject: string;
+  from_name: string;
+  from_role: string;
+  to_name: string;
+  to_role: string;
+  summary: string;
+  action_required: string | null;
+  action_due: string | null;
+  child_id: string | null;
+  recorded_by: string;
+  created_at: string;
+}
+
+// critical-incident-debrief
+export type DebriefIncidentCategory = "restraint" | "self_harm" | "missing" | "violence" | "property_damage" | "safeguarding" | "medical_emergency" | "fire" | "near_miss" | "other";
+export const DEBRIEF_INCIDENT_CATEGORY_LABEL: Record<DebriefIncidentCategory, string> = {
+  restraint: "Physical Intervention", self_harm: "Self-Harm", missing: "Missing from Care",
+  violence: "Violence/Aggression", property_damage: "Property Damage", safeguarding: "Safeguarding Concern",
+  medical_emergency: "Medical Emergency", fire: "Fire/Evacuation", near_miss: "Near Miss", other: "Other",
+};
+
+export type IncidentDebriefStatus = "scheduled" | "completed" | "deferred" | "not_required";
+export const INCIDENT_DEBRIEF_STATUS_LABEL: Record<IncidentDebriefStatus, string> = {
+  scheduled: "Scheduled", completed: "Completed", deferred: "Deferred", not_required: "Not Required",
+};
+
+export type DebriefImpactLevel = "low" | "medium" | "high" | "critical";
+export const DEBRIEF_IMPACT_LEVEL_LABEL: Record<DebriefImpactLevel, string> = {
+  low: "Low", medium: "Medium", high: "High", critical: "Critical",
+};
+
+export interface CriticalIncidentDebriefRecord {
+  id: string;
+  incident_date: string;
+  debrief_date: string;
+  incident_category: DebriefIncidentCategory;
+  incident_summary: string;
+  impact_level: DebriefImpactLevel;
+  young_person_ids: string[];
+  staff_involved_ids: string[];
+  facilitator_id: string;
+  attendees: string[];
+  status: IncidentDebriefStatus;
+  what_happened: string;
+  what_worked_well: string[];
+  what_could_improve: string[];
+  root_causes: string[];
+  emotional_impact: string;
+  actions_agreed: string[];
+  actions_completed: number;
+  policy_changes: string;
+  training_needs: string[];
+  shared_with: string[];
+  follow_up_date: string | null;
+  notes: string;
+  created_at: string;
+}
+
+// cultural-identity
+export type CulturalIdentityAreaStatus = "well_supported" | "needs_attention" | "exploring";
+export const CULTURAL_IDENTITY_AREA_STATUS_LABEL: Record<CulturalIdentityAreaStatus, string> = {
+  well_supported: "Well Supported", needs_attention: "Needs Attention", exploring: "Exploring",
+};
+
+export interface CulturalIdentityArea {
+  area: string;
+  child_view: string;
+  current_support: string;
+  status: CulturalIdentityAreaStatus;
+}
+
+export interface CulturalIdentityPlan {
+  id: string;
+  child_id: string;
+  ethnicity: string;
+  heritage: string;
+  religion: string;
+  first_language: string;
+  other_languages: string[];
+  dietary_needs: string;
+  identity_areas: CulturalIdentityArea[];
+  celebrations: string[];
+  resources: string[];
+  action_plan: string;
+  last_reviewed: string;
+  next_review: string;
+  reviewed_by: string;
+  child_contributed: boolean;
+  notes: string;
+  created_at: string;
+}
+
+// data-breach-log
+export type DataBreachType = "lost_device" | "lost_paper" | "email_to_wrong_recipient" | "unauthorised_access" | "unauthorised_disclosure" | "verbal_disclosure" | "system_error" | "phishing_social_engineering" | "other";
+export const DATA_BREACH_TYPE_LABEL: Record<DataBreachType, string> = {
+  lost_device: "Lost Device", lost_paper: "Lost Paper", email_to_wrong_recipient: "Email to Wrong Recipient",
+  unauthorised_access: "Unauthorised Access", unauthorised_disclosure: "Unauthorised Disclosure",
+  verbal_disclosure: "Verbal Disclosure", system_error: "System Error",
+  phishing_social_engineering: "Phishing/Social Engineering", other: "Other",
+};
+
+export type DataBreachSeverity = "low" | "medium" | "high" | "critical";
+export const DATA_BREACH_SEVERITY_LABEL: Record<DataBreachSeverity, string> = {
+  low: "Low", medium: "Medium", high: "High", critical: "Critical",
+};
+
+export type DataBreachRiskLevel = "low" | "medium" | "high";
+export const DATA_BREACH_RISK_LEVEL_LABEL: Record<DataBreachRiskLevel, string> = {
+  low: "Low", medium: "Medium", high: "High",
+};
+
+export type DataBreachStatus = "investigating" | "closed_resolved" | "reported_awaiting_ico" | "monitoring";
+export const DATA_BREACH_STATUS_LABEL: Record<DataBreachStatus, string> = {
+  investigating: "Investigating", closed_resolved: "Closed — Resolved",
+  reported_awaiting_ico: "Reported — Awaiting ICO", monitoring: "Monitoring",
+};
+
+export interface DataBreachRecord {
+  id: string;
+  date_discovered: string;
+  date_incident: string;
+  breach_type: DataBreachType;
+  severity: DataBreachSeverity;
+  near_miss: boolean;
+  summary_of_breach: string;
+  data_subjects: string;
+  data_categories_affected: string[];
+  special_category_data: boolean;
+  risk_to_individuals: DataBreachRiskLevel;
+  reported_to_ico: boolean;
+  ico_reported_date: string;
+  ico_reference: string;
+  data_subjects_notified: boolean;
+  notification_date: string;
+  immediate_actions_taken: string[];
+  root_cause_analysis: string;
+  lessons_learned: string[];
+  preventive_actions: string[];
+  training_arising: string[];
+  policy_arising: string;
+  status: DataBreachStatus;
+  reported_to: string[];
+  reviewed_by: string;
+  created_at: string;
+}
+
+// data-protection
+export type DataProtectionRecordType = "dsar" | "breach" | "dpia" | "consent_review" | "retention_review";
+export const DATA_PROTECTION_RECORD_TYPE_LABEL: Record<DataProtectionRecordType, string> = {
+  dsar: "Subject Access Request", breach: "Data Breach", dpia: "Impact Assessment",
+  consent_review: "Consent Review", retention_review: "Retention Review",
+};
+
+export type DataProtectionRecordStatus = "received" | "in_progress" | "completed" | "overdue" | "closed";
+export const DATA_PROTECTION_RECORD_STATUS_LABEL: Record<DataProtectionRecordStatus, string> = {
+  received: "Received", in_progress: "In Progress", completed: "Completed",
+  overdue: "Overdue", closed: "Closed",
+};
+
+export type DataProtectionBreachSeverity = "low" | "medium" | "high" | "critical";
+export const DATA_PROTECTION_BREACH_SEVERITY_LABEL: Record<DataProtectionBreachSeverity, string> = {
+  low: "Low", medium: "Medium", high: "High", critical: "Critical",
+};
+
+export interface DataProtectionRecord {
+  id: string;
+  type: DataProtectionRecordType;
+  status: DataProtectionRecordStatus;
+  subject: string;
+  description: string;
+  date_raised: string;
+  due_date: string;
+  completed_date: string | null;
+  handled_by: string;
+  breach_severity: DataProtectionBreachSeverity | null;
+  ico_notified: boolean;
+  ico_notification_date: string | null;
+  individuals_notified: boolean;
+  root_cause: string;
+  remedial_actions: string[];
+  lessons_learned: string;
+  notes: string;
+  created_at: string;
+}
+
+// debriefs
+export type ReflectiveDebriefType = "post_incident" | "post_restraint" | "critical_event" | "near_miss" | "team_reflection" | "safeguarding";
+export const REFLECTIVE_DEBRIEF_TYPE_LABEL: Record<ReflectiveDebriefType, string> = {
+  post_incident: "Post-Incident", post_restraint: "Post-Restraint", critical_event: "Critical Event",
+  near_miss: "Near Miss", team_reflection: "Team Reflection", safeguarding: "Safeguarding",
+};
+
+export interface DebriefFollowUpAction {
+  action: string;
+  owner: string;
+  completed: boolean;
+}
+
+export interface DebriefRecord {
+  id: string;
+  date: string;
+  type: ReflectiveDebriefType;
+  linked_incident_id: string;
+  linked_incident_summary: string;
+  child_id: string;
+  staff_involved: string[];
+  facilitated_by: string;
+  what_happened: string;
+  what_worked_well: string;
+  what_could_improve: string;
+  staff_wellbeing: string;
+  child_perspective: string;
+  lessons_learned: string[];
+  changes_needed: string[];
+  follow_up_actions: DebriefFollowUpAction[];
+  support_offered: boolean;
+  support_details: string;
+  created_at: string;
+}

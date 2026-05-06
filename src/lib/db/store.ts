@@ -128,6 +128,12 @@ import type {
   ContactDirectoryEntry,
   ContactSupervisionSession,
   ContextualSafeguardingRisk,
+  CorrespondenceEntry,
+  CriticalIncidentDebriefRecord,
+  CulturalIdentityPlan,
+  DataBreachRecord,
+  DataProtectionRecord,
+  DebriefRecord,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -314,6 +320,12 @@ const store = {
   contactDirectoryEntries: [] as ContactDirectoryEntry[],
   contactSupervisionSessions: [] as ContactSupervisionSession[],
   contextualSafeguardingRisks: [] as ContextualSafeguardingRisk[],
+  correspondenceEntries: [] as CorrespondenceEntry[],
+  criticalIncidentDebriefRecords: [] as CriticalIncidentDebriefRecord[],
+  culturalIdentityPlans: [] as CulturalIdentityPlan[],
+  dataBreachRecords: [] as DataBreachRecord[],
+  dataProtectionRecords: [] as DataProtectionRecord[],
+  debriefRecords: [] as DebriefRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -4977,6 +4989,105 @@ export const db = {
       if (idx === -1) return null;
       store.contextualSafeguardingRisks[idx] = { ...store.contextualSafeguardingRisks[idx], ...data };
       return store.contextualSafeguardingRisks[idx];
+    },
+  },
+
+  correspondenceEntries: {
+    findAll: () => store.correspondenceEntries,
+    findById: (id: string) => store.correspondenceEntries.find((r) => r.id === id),
+    findByChild: (childId: string) => store.correspondenceEntries.filter((r) => r.child_id === childId),
+    create: (data: Partial<CorrespondenceEntry>): CorrespondenceEntry => {
+      const record = { ...data, id: generateId("cre"), created_at: new Date().toISOString() } as CorrespondenceEntry;
+      store.correspondenceEntries.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CorrespondenceEntry>): CorrespondenceEntry | null => {
+      const idx = store.correspondenceEntries.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.correspondenceEntries[idx] = { ...store.correspondenceEntries[idx], ...data };
+      return store.correspondenceEntries[idx];
+    },
+  },
+
+  criticalIncidentDebriefRecords: {
+    findAll: () => store.criticalIncidentDebriefRecords,
+    findById: (id: string) => store.criticalIncidentDebriefRecords.find((r) => r.id === id),
+    create: (data: Partial<CriticalIncidentDebriefRecord>): CriticalIncidentDebriefRecord => {
+      const record = { ...data, id: generateId("cid"), created_at: new Date().toISOString() } as CriticalIncidentDebriefRecord;
+      store.criticalIncidentDebriefRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CriticalIncidentDebriefRecord>): CriticalIncidentDebriefRecord | null => {
+      const idx = store.criticalIncidentDebriefRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.criticalIncidentDebriefRecords[idx] = { ...store.criticalIncidentDebriefRecords[idx], ...data };
+      return store.criticalIncidentDebriefRecords[idx];
+    },
+  },
+
+  culturalIdentityPlans: {
+    findAll: () => store.culturalIdentityPlans,
+    findById: (id: string) => store.culturalIdentityPlans.find((r) => r.id === id),
+    findByChild: (childId: string) => store.culturalIdentityPlans.filter((r) => r.child_id === childId),
+    create: (data: Partial<CulturalIdentityPlan>): CulturalIdentityPlan => {
+      const record = { ...data, id: generateId("cip"), created_at: new Date().toISOString() } as CulturalIdentityPlan;
+      store.culturalIdentityPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CulturalIdentityPlan>): CulturalIdentityPlan | null => {
+      const idx = store.culturalIdentityPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.culturalIdentityPlans[idx] = { ...store.culturalIdentityPlans[idx], ...data };
+      return store.culturalIdentityPlans[idx];
+    },
+  },
+
+  dataBreachRecords: {
+    findAll: () => store.dataBreachRecords,
+    findById: (id: string) => store.dataBreachRecords.find((r) => r.id === id),
+    create: (data: Partial<DataBreachRecord>): DataBreachRecord => {
+      const record = { ...data, id: generateId("dbr"), created_at: new Date().toISOString() } as DataBreachRecord;
+      store.dataBreachRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<DataBreachRecord>): DataBreachRecord | null => {
+      const idx = store.dataBreachRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.dataBreachRecords[idx] = { ...store.dataBreachRecords[idx], ...data };
+      return store.dataBreachRecords[idx];
+    },
+  },
+
+  dataProtectionRecords: {
+    findAll: () => store.dataProtectionRecords,
+    findById: (id: string) => store.dataProtectionRecords.find((r) => r.id === id),
+    create: (data: Partial<DataProtectionRecord>): DataProtectionRecord => {
+      const record = { ...data, id: generateId("dpr"), created_at: new Date().toISOString() } as DataProtectionRecord;
+      store.dataProtectionRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<DataProtectionRecord>): DataProtectionRecord | null => {
+      const idx = store.dataProtectionRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.dataProtectionRecords[idx] = { ...store.dataProtectionRecords[idx], ...data };
+      return store.dataProtectionRecords[idx];
+    },
+  },
+
+  debriefRecords: {
+    findAll: () => store.debriefRecords,
+    findById: (id: string) => store.debriefRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.debriefRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<DebriefRecord>): DebriefRecord => {
+      const record = { ...data, id: generateId("dbf"), created_at: new Date().toISOString() } as DebriefRecord;
+      store.debriefRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<DebriefRecord>): DebriefRecord | null => {
+      const idx = store.debriefRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.debriefRecords[idx] = { ...store.debriefRecords[idx], ...data };
+      return store.debriefRecords[idx];
     },
   },
 };

@@ -10,6 +10,10 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import type { CorrespondenceEntry, CorrespondenceDirection, CorrespondenceMethod, CorrespondencePriority, CorrespondenceStatus } from "@/types/extended";
+import { useCorrespondenceEntries, useCreateCorrespondenceEntry, useUpdateCorrespondenceEntry } from "@/hooks/use-correspondence-entries";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { toast } from "sonner";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,37 +37,9 @@ import {
   Send, Inbox, Reply,
 } from "lucide-react";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type Direction = "incoming" | "outgoing";
-type Method = "email" | "letter" | "phone_call" | "meeting" | "formal_notice" | "other";
-type Priority = "urgent" | "normal" | "low";
-type CorrStatus = "pending" | "actioned" | "filed" | "awaiting_response";
-
-interface CorrespondenceEntry {
-  id: string;
-  date: string;
-  time: string;
-  direction: Direction;
-  method: Method;
-  priority: Priority;
-  status: CorrStatus;
-  subject: string;
-  from_name: string;
-  from_role: string;
-  to_name: string;
-  to_role: string;
-  summary: string;
-  action_required: string | null;
-  action_due: string | null;
-  child_id: string | null;
-  recorded_by: string;
-  created_at: string;
-}
-
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const METHOD_CONFIG: Record<Method, { label: string; icon: React.ElementType; colour: string }> = {
+const METHOD_CONFIG: Record<CorrespondenceMethod, { label: string; icon: React.ElementType; colour: string }> = {
   email:         { label: "Email",         icon: Mail,     colour: "bg-blue-100 text-blue-700"   },
   letter:        { label: "Letter",        icon: FileText, colour: "bg-amber-100 text-amber-700" },
   phone_call:    { label: "Phone Call",    icon: Phone,    colour: "bg-green-100 text-green-700" },
@@ -72,112 +48,28 @@ const METHOD_CONFIG: Record<Method, { label: string; icon: React.ElementType; co
   other:         { label: "Other",         icon: FileText, colour: "bg-gray-100 text-gray-600"   },
 };
 
-const PRIORITY_CONFIG: Record<Priority, { label: string; colour: string }> = {
+const PRIORITY_CONFIG: Record<CorrespondencePriority, { label: string; colour: string }> = {
   urgent: { label: "Urgent", colour: "bg-red-100 text-red-700"    },
   normal: { label: "Normal", colour: "bg-blue-100 text-blue-700"  },
   low:    { label: "Low",    colour: "bg-gray-100 text-gray-600"  },
 };
 
-const STATUS_CONFIG: Record<CorrStatus, { label: string; colour: string }> = {
+const STATUS_CONFIG: Record<CorrespondenceStatus, { label: string; colour: string }> = {
   pending:           { label: "Pending",           colour: "bg-yellow-100 text-yellow-700" },
   actioned:          { label: "Actioned",          colour: "bg-green-100 text-green-700"   },
   filed:             { label: "Filed",             colour: "bg-gray-100 text-gray-600"     },
   awaiting_response: { label: "Awaiting Response", colour: "bg-blue-100 text-blue-700"     },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: CorrespondenceEntry[] = [
-  {
-    id: "cor_001", date: d(-1), time: "09:15", direction: "incoming", method: "email",
-    priority: "urgent", status: "actioned",
-    subject: "Safeguarding disclosure — Alex W",
-    from_name: "Karen Holding", from_role: "Social Worker (Derby City)",
-    to_name: "Darren Laville", to_role: "Registered Manager",
-    summary: "Follow-up email regarding Alex's safeguarding disclosure. SW requesting written chronology of events, risk assessment update, and confirmation of referral to MASH. Deadline: end of day.",
-    action_required: "Chronology sent. Risk assessment updated and emailed back. MASH referral confirmed.",
-    action_due: d(-1), child_id: "yp_alex", recorded_by: "staff_darren", created_at: d(-1) + "T09:15:00Z",
-  },
-  {
-    id: "cor_002", date: d(-2), time: "14:30", direction: "outgoing", method: "phone_call",
-    priority: "normal", status: "filed",
-    subject: "Jordan's LAC review preparation",
-    from_name: "Anna Richards", from_role: "Key Worker",
-    to_name: "Michael Osei", to_role: "Social Worker (Notts CC)",
-    summary: "Called to discuss preparation for Jordan's upcoming LAC review. Agreed on agenda items: placement stability, education progress, and contact arrangements. SW will send updated care plan by Friday.",
-    action_required: null, action_due: null, child_id: "yp_jordan", recorded_by: "staff_anna", created_at: d(-2) + "T14:30:00Z",
-  },
-  {
-    id: "cor_003", date: d(-3), time: "10:00", direction: "incoming", method: "letter",
-    priority: "normal", status: "filed",
-    subject: "Reg 44 visit report — March 2026",
-    from_name: "Independent Visitor", from_role: "Regulation 44 Visitor",
-    to_name: "Darren Laville", to_role: "Registered Manager",
-    summary: "Monthly Reg 44 visit report received. Overall positive assessment. Three recommendations: update fire drill log, review medication storage temperature monitoring, improve signage for visitors.",
-    action_required: "Three recommendations to be actioned within 28 days. Tasks created.",
-    action_due: d(25), child_id: null, recorded_by: "staff_darren", created_at: d(-3) + "T10:00:00Z",
-  },
-  {
-    id: "cor_004", date: d(-4), time: "16:45", direction: "outgoing", method: "email",
-    priority: "normal", status: "awaiting_response",
-    subject: "Casey's medication review — GP appointment outcome",
-    from_name: "Chervelle Brooks", from_role: "Key Worker",
-    to_name: "Fiona Brennan", to_role: "Social Worker (Derbyshire CC)",
-    summary: "Emailed social worker with outcome of Casey's GP medication review. No dosage change. GP recommended sleep hygiene review. Follow-up appointment in 3 months. Requested SW confirmation of health plan update.",
-    action_required: "Awaiting SW confirmation of health plan update",
-    action_due: d(3), child_id: "yp_casey", recorded_by: "staff_chervelle", created_at: d(-4) + "T16:45:00Z",
-  },
-  {
-    id: "cor_005", date: d(-5), time: "11:00", direction: "incoming", method: "phone_call",
-    priority: "urgent", status: "actioned",
-    subject: "School exclusion notification — Alex",
-    from_name: "Mrs. Thompson", from_role: "Head of Inclusion (Derby AP)",
-    to_name: "Edward Mombe", to_role: "Key Worker",
-    summary: "School called to notify of Alex's fixed-term exclusion. One day for verbal altercation with TA. Reintegration meeting required before return. School offered reduced timetable option for two weeks.",
-    action_required: "Reintegration meeting booked. SW and Virtual School Head notified. Emergency PEP requested.",
-    action_due: d(-3), child_id: "yp_alex", recorded_by: "staff_edward", created_at: d(-5) + "T11:00:00Z",
-  },
-  {
-    id: "cor_006", date: d(-7), time: "09:00", direction: "incoming", method: "formal_notice",
-    priority: "urgent", status: "actioned",
-    subject: "Ofsted notification — monitoring visit scheduled",
-    from_name: "Ofsted", from_role: "HM Chief Inspector",
-    to_name: "Darren Laville", to_role: "Registered Manager",
-    summary: "Formal notification of Ofsted monitoring visit. Inspector assigned. Date confirmed for two weeks' time. Focus areas: safeguarding practice, quality of care records, and management oversight.",
-    action_required: "Preparation plan created. Staff briefed. Documentation audit scheduled. Pre-inspection walkthrough booked.",
-    action_due: d(7), child_id: null, recorded_by: "staff_darren", created_at: d(-7) + "T09:00:00Z",
-  },
-  {
-    id: "cor_007", date: d(0), time: "08:30", direction: "incoming", method: "email",
-    priority: "normal", status: "pending",
-    subject: "Training certificates — Team Teach refresher",
-    from_name: "Team Teach Ltd", from_role: "Training Provider",
-    to_name: "Darren Laville", to_role: "Registered Manager",
-    summary: "Certificates for recent Team Teach refresher training session received. Five staff members certified. Certificates valid until March 2027.",
-    action_required: "Certificates to be filed in individual staff training records. Training matrix to be updated.",
-    action_due: d(7), child_id: null, recorded_by: "staff_darren", created_at: d(0) + "T08:30:00Z",
-  },
-  {
-    id: "cor_008", date: d(-1), time: "13:00", direction: "outgoing", method: "email",
-    priority: "normal", status: "filed",
-    subject: "Monthly placement summary — all children",
-    from_name: "Darren Laville", from_role: "Registered Manager",
-    to_name: "Multiple SWs", to_role: "Social Workers",
-    summary: "Monthly placement summary sent to all allocated social workers. Covered: attendance updates, wellbeing observations, key achievements, and any concerns for each child.",
-    action_required: null, action_due: null, child_id: null, recorded_by: "staff_darren", created_at: d(-1) + "T13:00:00Z",
-  },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function CorrespondencePage() {
   const { currentUser } = useAuthContext();
 
-  const [entries, setEntries] = useState<CorrespondenceEntry[]>(SEED);
+  const { data: raw, isLoading } = useCorrespondenceEntries();
+  const entries = raw?.data ?? [];
+  const createEntry = useCreateCorrespondenceEntry();
+  const updateEntry = useUpdateCorrespondenceEntry();
   const [search, setSearch] = useState("");
   const [dirFilter, setDirFilter] = useState("all");
   const [methodFilter, setMethodFilter] = useState("all");
@@ -188,9 +80,9 @@ export default function CorrespondencePage() {
   const [tab, setTab] = useState<"all" | "pending" | "urgent">("all");
 
   // new form
-  const [nDir, setNDir] = useState<Direction | "">("");
-  const [nMethod, setNMethod] = useState<Method | "">("");
-  const [nPriority, setNPriority] = useState<Priority>("normal");
+  const [nDir, setNDir] = useState<CorrespondenceDirection | "">("");
+  const [nMethod, setNMethod] = useState<CorrespondenceMethod | "">("");
+  const [nPriority, setNPriority] = useState<CorrespondencePriority>("normal");
   const [nSubject, setNSubject] = useState("");
   const [nFromName, setNFromName] = useState("");
   const [nFromRole, setNFromRole] = useState("");
@@ -201,6 +93,8 @@ export default function CorrespondencePage() {
   const [nChild, setNChild] = useState("");
 
   const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
+
+  if (isLoading) return <PageShell title="Correspondence Log" subtitle="Professional communications and formal correspondence"><div /></PageShell>;
 
   /* ── filtering ──────────────────────────────────────────────────────────── */
   const filtered = useMemo(() => {
@@ -225,7 +119,7 @@ export default function CorrespondencePage() {
         case "newest": return b.created_at.localeCompare(a.created_at);
         case "oldest": return a.created_at.localeCompare(b.created_at);
         case "priority": {
-          const po: Record<Priority, number> = { urgent: 0, normal: 1, low: 2 };
+          const po: Record<CorrespondencePriority, number> = { urgent: 0, normal: 1, low: 2 };
           return po[a.priority] - po[b.priority];
         }
         default: return 0;
@@ -264,20 +158,21 @@ export default function CorrespondencePage() {
 
   /* ── mark actioned ──────────────────────────────────────────────────────── */
   const markActioned = (id: string) => {
-    setEntries(prev => prev.map(e => e.id === id ? { ...e, status: "actioned" as CorrStatus } : e));
+    updateEntry.mutate({ id, status: "actioned" as CorrespondenceStatus }, {
+      onSuccess: () => toast.success("Marked as actioned"),
+    });
   };
 
   /* ── create ─────────────────────────────────────────────────────────────── */
   const handleCreate = () => {
     if (!nDir || !nMethod || !nSubject || !nSummary) return;
-    const entry: CorrespondenceEntry = {
-      id: `cor_${Date.now()}`,
+    createEntry.mutate({
       date: todayStr(),
       time: new Date().toTimeString().slice(0, 5),
-      direction: nDir as Direction,
-      method: nMethod as Method,
+      direction: nDir as CorrespondenceDirection,
+      method: nMethod as CorrespondenceMethod,
       priority: nPriority,
-      status: "pending",
+      status: "pending" as CorrespondenceStatus,
       subject: nSubject,
       from_name: nFromName,
       from_role: nFromRole,
@@ -288,9 +183,9 @@ export default function CorrespondencePage() {
       action_due: null,
       child_id: nChild || null,
       recorded_by: currentUser?.id || "staff_darren",
-      created_at: new Date().toISOString(),
-    };
-    setEntries(prev => [entry, ...prev]);
+    }, {
+      onSuccess: () => toast.success("Correspondence logged"),
+    });
     setShowNew(false);
     setNDir(""); setNMethod(""); setNPriority("normal"); setNSubject("");
     setNFromName(""); setNFromRole(""); setNToName(""); setNToRole("");
@@ -379,7 +274,7 @@ export default function CorrespondencePage() {
           <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Method" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Methods</SelectItem>
-            {(Object.entries(METHOD_CONFIG) as [Method, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(METHOD_CONFIG) as [CorrespondenceMethod, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -388,7 +283,7 @@ export default function CorrespondencePage() {
           <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {(Object.entries(STATUS_CONFIG) as [CorrStatus, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(STATUS_CONFIG) as [CorrespondenceStatus, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -487,6 +382,9 @@ export default function CorrespondencePage() {
                       </Button>
                     </div>
                   )}
+                  {entry.child_id && (
+                    <SmartLinkPanel sourceType="correspondence" sourceId={entry.id} childId={entry.child_id} compact />
+                  )}
                 </div>
               )}
             </div>
@@ -518,7 +416,7 @@ export default function CorrespondencePage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium mb-1 block">Direction *</label>
-                <Select value={nDir} onValueChange={v => setNDir(v as Direction)}>
+                <Select value={nDir} onValueChange={v => setNDir(v as CorrespondenceDirection)}>
                   <SelectTrigger><SelectValue placeholder="In / Out" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="incoming">Incoming</SelectItem>
@@ -528,10 +426,10 @@ export default function CorrespondencePage() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Method *</label>
-                <Select value={nMethod} onValueChange={v => setNMethod(v as Method)}>
+                <Select value={nMethod} onValueChange={v => setNMethod(v as CorrespondenceMethod)}>
                   <SelectTrigger><SelectValue placeholder="Method" /></SelectTrigger>
                   <SelectContent>
-                    {(Object.entries(METHOD_CONFIG) as [Method, { label: string }][]).map(([k, v]) => (
+                    {(Object.entries(METHOD_CONFIG) as [CorrespondenceMethod, { label: string }][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v.label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -564,7 +462,7 @@ export default function CorrespondencePage() {
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Priority</label>
-              <Select value={nPriority} onValueChange={v => setNPriority(v as Priority)}>
+              <Select value={nPriority} onValueChange={v => setNPriority(v as CorrespondencePriority)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="urgent">Urgent</SelectItem>
