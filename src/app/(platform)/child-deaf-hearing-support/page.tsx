@@ -15,6 +15,7 @@ import {
   ArrowUpDown,
   Search,
   Heart,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -23,127 +24,58 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useDeafHearingSupportRecords } from "@/hooks/use-deaf-hearing-support-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type {
+  DeafHearingSupportRecord,
+  HearingStatus,
+  HearingPreferredLanguage,
+  BSLLevel,
+} from "@/types/extended";
+import {
+  HEARING_STATUS_LABEL,
+  HEARING_PREFERRED_LANGUAGE_LABEL,
+  BSL_LEVEL_LABEL,
+} from "@/types/extended";
 
-interface HearingRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  hearingStatus:
-    | "Hearing — full"
-    | "Mild loss"
-    | "Moderate loss"
-    | "Severe loss"
-    | "Profound loss"
-    | "Single-sided deafness"
-    | "Auditory processing difficulties"
-    | "Awaiting assessment";
-  identifyAsDeaf: boolean;
-  preferredLanguage: "Spoken English" | "BSL" | "SSE (Sign Supported English)" | "Lip-reading + spoken" | "Mixed" | "Other";
-  hearingAids?: { side: "Left" | "Right" | "Both"; type: string; fitted: string; battery?: string };
-  cochlearImplant?: { side: "Left" | "Right" | "Both"; surgeryDate: string; processor: string };
-  audiologyService: string;
-  audiologistName?: string;
-  lastReview?: string;
-  nextReviewDue?: string;
-  bslLevel?: "Pre-introduction" | "Some signs" | "Level 1" | "Level 2" | "Level 3" | "Fluent / native";
-  bslLearningPlan: string[];
-  staffSigningTrained: string[];
-  schoolHasPlan: boolean;
-  schoolHasRadioAid: boolean;
-  homeAdaptations: string[];
-  socialOpportunitiesDeaf: string[];
-  identityWork: string[];
-  emergencyAlarms: string[];
-  childVoice: string;
-  staffObservation: string;
-  flagsForReview: string[];
-  reviewDate: string;
-  keyWorker: string;
-}
+/* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const statusColour: Record<HearingStatus, string> = {
+  hearing_full: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  mild_loss: "bg-blue-100 text-blue-800 border-blue-200",
+  moderate_loss: "bg-sky-100 text-sky-800 border-sky-200",
+  severe_loss: "bg-amber-100 text-amber-800 border-amber-200",
+  profound_loss: "bg-orange-100 text-orange-800 border-orange-200",
+  single_sided_deafness: "bg-purple-100 text-purple-800 border-purple-200",
+  auditory_processing_difficulties: "bg-violet-100 text-violet-800 border-violet-200",
+  awaiting_assessment: "bg-slate-100 text-slate-800 border-slate-200",
 };
 
-const records: HearingRecord[] = [
-  {
-    id: "hear_001",
-    youngPerson: "yp_casey",
-    recordedDate: d(-21),
-    hearingStatus: "Hearing — full",
-    identifyAsDeaf: false,
-    preferredLanguage: "Spoken English",
-    audiologyService: "Routine school screening only",
-    bslLevel: "Some signs",
-    bslLearningPlan: [
-      "Casey learning BSL Level 1 informally to communicate with Ellie's deaf cousin Mia",
-      "Online resource (BSL Sign Bank) used with Anna",
-      "Anna also learning alongside Casey — shared activity",
-      "BSL Level 1 course considered for Casey + Anna in summer holidays",
-      "Casey teaches Jordan and Alex new signs at family meals",
-    ],
-    staffSigningTrained: [
-      "Anna (some signs alongside Casey)",
-      "Devon (BSL Level 1 from previous role)",
-    ],
-    schoolHasPlan: false,
-    schoolHasRadioAid: false,
-    homeAdaptations: [],
-    socialOpportunitiesDeaf: [
-      "Friendship with Ellie's family — Mia (Ellie's cousin) is profoundly deaf and visits monthly",
-      "Local Deaf Children's Society family fun day attended once",
-    ],
-    identityWork: [
-      "Casey understands Deaf identity is a culture not a disability",
-      "Watched 'Coda' with Anna and discussed",
-      "Jordan, Alex, Casey all sign 'thank you' at meals as a small ritual",
-    ],
-    emergencyAlarms: [],
-    childVoice:
-      "Mia and me sign now. I taught Anna 'biscuit' and 'tired' and 'best friend'. I want to learn more. I'm not deaf but Mia is and I want to be a good friend.",
-    staffObservation:
-      "Casey's friendship-led learning is meaningful. The fact this is shared activity (Anna learning too) keeps it dignified. Watch for moments to connect with the wider Deaf community without tokenising. Identity work is informal and well-pitched.",
-    flagsForReview: [
-      "Consider routine audiology screening — Casey's processing differences (sensory) sometimes resemble auditory processing",
-    ],
-    reviewDate: d(120),
-    keyWorker: "staff_anna",
-  },
+const exportCols: ExportColumn<DeafHearingSupportRecord>[] = [
+  { header: "Young Person", accessor: (r: DeafHearingSupportRecord) => getYPName(r.child_id) },
+  { header: "Recorded", accessor: (r: DeafHearingSupportRecord) => r.recorded_date },
+  { header: "Hearing Status", accessor: (r: DeafHearingSupportRecord) => HEARING_STATUS_LABEL[r.hearing_status] },
+  { header: "Identifies as Deaf", accessor: (r: DeafHearingSupportRecord) => (r.identify_as_deaf ? "Yes" : "No") },
+  { header: "Preferred Language", accessor: (r: DeafHearingSupportRecord) => HEARING_PREFERRED_LANGUAGE_LABEL[r.preferred_language] },
+  { header: "BSL Level", accessor: (r: DeafHearingSupportRecord) => (r.bsl_level ? BSL_LEVEL_LABEL[r.bsl_level] : "—") },
+  { header: "Hearing Aids", accessor: (r: DeafHearingSupportRecord) => (r.hearing_aids ? `${r.hearing_aids.side} ${r.hearing_aids.type}` : "—") },
+  { header: "Cochlear Implant", accessor: (r: DeafHearingSupportRecord) => (r.cochlear_implant ? `${r.cochlear_implant.side} ${r.cochlear_implant.processor}` : "—") },
+  { header: "Audiology Service", accessor: (r: DeafHearingSupportRecord) => r.audiology_service },
+  { header: "Last Review", accessor: (r: DeafHearingSupportRecord) => r.last_review ?? "—" },
+  { header: "Next Review", accessor: (r: DeafHearingSupportRecord) => r.next_review_due ?? "—" },
+  { header: "Staff Trained", accessor: (r: DeafHearingSupportRecord) => r.staff_signing_trained.join("; ") },
+  { header: "School Plan", accessor: (r: DeafHearingSupportRecord) => (r.school_has_plan ? "Yes" : "No") },
+  { header: "Child Voice", accessor: (r: DeafHearingSupportRecord) => r.child_voice },
+  { header: "Review", accessor: (r: DeafHearingSupportRecord) => r.review_date },
+  { header: "Key Worker", accessor: (r: DeafHearingSupportRecord) => getStaffName(r.key_worker) },
 ];
 
-const exportCols: ExportColumn<HearingRecord>[] = [
-  { header: "Young Person", accessor: (r: HearingRecord) => getYPName(r.youngPerson) },
-  { header: "Recorded", accessor: (r: HearingRecord) => r.recordedDate },
-  { header: "Hearing Status", accessor: (r: HearingRecord) => r.hearingStatus },
-  { header: "Identifies as Deaf", accessor: (r: HearingRecord) => (r.identifyAsDeaf ? "Yes" : "No") },
-  { header: "Preferred Language", accessor: (r: HearingRecord) => r.preferredLanguage },
-  { header: "BSL Level", accessor: (r: HearingRecord) => r.bslLevel ?? "—" },
-  { header: "Hearing Aids", accessor: (r: HearingRecord) => (r.hearingAids ? `${r.hearingAids.side} ${r.hearingAids.type}` : "—") },
-  { header: "Cochlear Implant", accessor: (r: HearingRecord) => (r.cochlearImplant ? `${r.cochlearImplant.side} ${r.cochlearImplant.processor}` : "—") },
-  { header: "Audiology Service", accessor: (r: HearingRecord) => r.audiologyService },
-  { header: "Last Review", accessor: (r: HearingRecord) => r.lastReview ?? "—" },
-  { header: "Next Review", accessor: (r: HearingRecord) => r.nextReviewDue ?? "—" },
-  { header: "Staff Trained", accessor: (r: HearingRecord) => r.staffSigningTrained.join("; ") },
-  { header: "School Plan", accessor: (r: HearingRecord) => (r.schoolHasPlan ? "Yes" : "No") },
-  { header: "Child Voice", accessor: (r: HearingRecord) => r.childVoice },
-  { header: "Review", accessor: (r: HearingRecord) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: HearingRecord) => getStaffName(r.keyWorker) },
-];
-
-const statusColour: Record<HearingRecord["hearingStatus"], string> = {
-  "Hearing — full": "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "Mild loss": "bg-blue-100 text-blue-800 border-blue-200",
-  "Moderate loss": "bg-sky-100 text-sky-800 border-sky-200",
-  "Severe loss": "bg-amber-100 text-amber-800 border-amber-200",
-  "Profound loss": "bg-orange-100 text-orange-800 border-orange-200",
-  "Single-sided deafness": "bg-purple-100 text-purple-800 border-purple-200",
-  "Auditory processing difficulties": "bg-violet-100 text-violet-800 border-violet-200",
-  "Awaiting assessment": "bg-slate-100 text-slate-800 border-slate-200",
-};
+/* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function ChildDeafHearingSupportPage() {
+  const { data: response, isLoading } = useDeafHearingSupportRecords();
+  const records = response?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "name" | "status" | "review">("date");
@@ -153,27 +85,41 @@ export default function ChildDeafHearingSupportPage() {
     let r = records.filter((rec) => {
       const matchesSearch =
         !search ||
-        getYPName(rec.youngPerson).toLowerCase().includes(search.toLowerCase()) ||
-        rec.preferredLanguage.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = statusFilter === "all" || rec.hearingStatus === statusFilter;
+        getYPName(rec.child_id).toLowerCase().includes(search.toLowerCase()) ||
+        HEARING_PREFERRED_LANGUAGE_LABEL[rec.preferred_language].toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === "all" || rec.hearing_status === statusFilter;
       return matchesSearch && matchesStatus;
     });
     r = [...r].sort((a, b) => {
-      if (sortBy === "name") return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
-      if (sortBy === "status") return a.hearingStatus.localeCompare(b.hearingStatus);
-      if (sortBy === "review") return a.reviewDate.localeCompare(b.reviewDate);
-      return b.recordedDate.localeCompare(a.recordedDate);
+      if (sortBy === "name") return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+      if (sortBy === "status") return a.hearing_status.localeCompare(b.hearing_status);
+      if (sortBy === "review") return a.review_date.localeCompare(b.review_date);
+      return b.recorded_date.localeCompare(a.recorded_date);
     });
     return r;
-  }, [search, statusFilter, sortBy]);
+  }, [records, search, statusFilter, sortBy]);
 
   const stats = useMemo(() => {
     const tracked = records.length;
-    const deafIdentifying = records.filter((r) => r.identifyAsDeaf).length;
-    const bslLearners = records.filter((r) => r.bslLevel && r.bslLevel !== "Pre-introduction").length;
-    const reviewsDue = records.filter((r) => r.reviewDate <= d(60)).length;
+    const deafIdentifying = records.filter((r) => r.identify_as_deaf).length;
+    const bslLearners = records.filter((r) => r.bsl_level && r.bsl_level !== "pre_introduction").length;
+    const now = new Date();
+    const sixtyDays = new Date(now);
+    sixtyDays.setDate(sixtyDays.getDate() + 60);
+    const cutoff = sixtyDays.toISOString().slice(0, 10);
+    const reviewsDue = records.filter((r) => r.review_date <= cutoff).length;
     return { tracked, deafIdentifying, bslLearners, reviewsDue };
-  }, []);
+  }, [records]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Deaf & Hearing Support" subtitle="Loading...">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -234,14 +180,14 @@ export default function ChildDeafHearingSupportPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="Hearing — full">Hearing — full</SelectItem>
-            <SelectItem value="Mild loss">Mild loss</SelectItem>
-            <SelectItem value="Moderate loss">Moderate loss</SelectItem>
-            <SelectItem value="Severe loss">Severe loss</SelectItem>
-            <SelectItem value="Profound loss">Profound loss</SelectItem>
-            <SelectItem value="Single-sided deafness">Single-sided deafness</SelectItem>
-            <SelectItem value="Auditory processing difficulties">Auditory processing difficulties</SelectItem>
-            <SelectItem value="Awaiting assessment">Awaiting assessment</SelectItem>
+            <SelectItem value="hearing_full">{HEARING_STATUS_LABEL.hearing_full}</SelectItem>
+            <SelectItem value="mild_loss">{HEARING_STATUS_LABEL.mild_loss}</SelectItem>
+            <SelectItem value="moderate_loss">{HEARING_STATUS_LABEL.moderate_loss}</SelectItem>
+            <SelectItem value="severe_loss">{HEARING_STATUS_LABEL.severe_loss}</SelectItem>
+            <SelectItem value="profound_loss">{HEARING_STATUS_LABEL.profound_loss}</SelectItem>
+            <SelectItem value="single_sided_deafness">{HEARING_STATUS_LABEL.single_sided_deafness}</SelectItem>
+            <SelectItem value="auditory_processing_difficulties">{HEARING_STATUS_LABEL.auditory_processing_difficulties}</SelectItem>
+            <SelectItem value="awaiting_assessment">{HEARING_STATUS_LABEL.awaiting_assessment}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
@@ -269,26 +215,26 @@ export default function ChildDeafHearingSupportPage() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-semibold text-slate-900">{getYPName(r.youngPerson)}</span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", statusColour[r.hearingStatus])}>
-                      {r.hearingStatus}
+                    <span className="font-semibold text-slate-900">{getYPName(r.child_id)}</span>
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", statusColour[r.hearing_status])}>
+                      {HEARING_STATUS_LABEL[r.hearing_status]}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-full border bg-slate-100 text-slate-700 border-slate-200">
-                      {r.preferredLanguage}
+                      {HEARING_PREFERRED_LANGUAGE_LABEL[r.preferred_language]}
                     </span>
-                    {r.bslLevel ? (
+                    {r.bsl_level ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-violet-100 text-violet-800 border-violet-200">
-                        BSL: {r.bslLevel}
+                        BSL: {BSL_LEVEL_LABEL[r.bsl_level]}
                       </span>
                     ) : null}
-                    {r.identifyAsDeaf ? (
+                    {r.identify_as_deaf ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-pink-100 text-pink-800 border-pink-200">
                         Deaf identity
                       </span>
                     ) : null}
                   </div>
                   <div className="text-sm text-slate-600">
-                    Recorded {r.recordedDate} · Review {r.reviewDate} · {getStaffName(r.keyWorker)}
+                    Recorded {r.recorded_date} · Review {r.review_date} · {getStaffName(r.key_worker)}
                   </div>
                 </div>
                 {isOpen ? <ChevronUp className="h-5 w-5 text-slate-400" /> : <ChevronDown className="h-5 w-5 text-slate-400" />}
@@ -298,38 +244,38 @@ export default function ChildDeafHearingSupportPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
                     <div className="rounded-md border border-violet-200 bg-violet-50 p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-violet-700 uppercase mb-2">Child Voice</div>
-                      <p className="text-sm text-violet-900 italic">&ldquo;{r.childVoice}&rdquo;</p>
+                      <p className="text-sm text-violet-900 italic">&ldquo;{r.child_voice}&rdquo;</p>
                     </div>
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Staff Observation</div>
-                      <p className="text-sm text-slate-700">{r.staffObservation}</p>
+                      <p className="text-sm text-slate-700">{r.staff_observation}</p>
                     </div>
-                    {r.hearingAids ? (
+                    {r.hearing_aids ? (
                       <div className="rounded-md border border-slate-200 bg-white p-3">
                         <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Hearing aids</div>
                         <div className="text-sm text-slate-700 space-y-1">
-                          <div><span className="text-slate-500">Side:</span> {r.hearingAids.side}</div>
-                          <div><span className="text-slate-500">Type:</span> {r.hearingAids.type}</div>
-                          <div><span className="text-slate-500">Fitted:</span> {r.hearingAids.fitted}</div>
-                          {r.hearingAids.battery ? <div><span className="text-slate-500">Battery:</span> {r.hearingAids.battery}</div> : null}
+                          <div><span className="text-slate-500">Side:</span> {r.hearing_aids.side}</div>
+                          <div><span className="text-slate-500">Type:</span> {r.hearing_aids.type}</div>
+                          <div><span className="text-slate-500">Fitted:</span> {r.hearing_aids.fitted}</div>
+                          {r.hearing_aids.battery ? <div><span className="text-slate-500">Battery:</span> {r.hearing_aids.battery}</div> : null}
                         </div>
                       </div>
                     ) : null}
-                    {r.cochlearImplant ? (
+                    {r.cochlear_implant ? (
                       <div className="rounded-md border border-slate-200 bg-white p-3">
                         <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Cochlear implant</div>
                         <div className="text-sm text-slate-700 space-y-1">
-                          <div><span className="text-slate-500">Side:</span> {r.cochlearImplant.side}</div>
-                          <div><span className="text-slate-500">Surgery:</span> {r.cochlearImplant.surgeryDate}</div>
-                          <div><span className="text-slate-500">Processor:</span> {r.cochlearImplant.processor}</div>
+                          <div><span className="text-slate-500">Side:</span> {r.cochlear_implant.side}</div>
+                          <div><span className="text-slate-500">Surgery:</span> {r.cochlear_implant.surgery_date}</div>
+                          <div><span className="text-slate-500">Processor:</span> {r.cochlear_implant.processor}</div>
                         </div>
                       </div>
                     ) : null}
-                    {r.bslLearningPlan.length ? (
+                    {r.bsl_learning_plan.length ? (
                       <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                         <div className="text-xs font-semibold text-slate-500 uppercase mb-2">BSL learning plan</div>
                         <ul className="text-sm text-slate-700 space-y-1">
-                          {r.bslLearningPlan.map((b, i) => (
+                          {r.bsl_learning_plan.map((b, i) => (
                             <li key={i} className="flex gap-2"><span className="text-violet-500">·</span><span>{b}</span></li>
                           ))}
                         </ul>
@@ -338,42 +284,44 @@ export default function ChildDeafHearingSupportPage() {
                     <div className="rounded-md border border-slate-200 bg-white p-3">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Staff signing-trained</div>
                       <ul className="text-sm text-slate-700 space-y-1">
-                        {r.staffSigningTrained.map((s, i) => (
+                        {r.staff_signing_trained.map((s, i) => (
                           <li key={i} className="flex gap-2"><span className="text-emerald-500">·</span><span>{s}</span></li>
                         ))}
                       </ul>
                     </div>
-                    {r.identityWork.length ? (
+                    {r.identity_work.length ? (
                       <div className="rounded-md border border-pink-200 bg-pink-50 p-3">
                         <div className="text-xs font-semibold text-pink-700 uppercase mb-2">Identity work</div>
                         <ul className="text-sm text-pink-900 space-y-1">
-                          {r.identityWork.map((s, i) => (
+                          {r.identity_work.map((s, i) => (
                             <li key={i} className="flex gap-2"><span>♡</span><span>{s}</span></li>
                           ))}
                         </ul>
                       </div>
                     ) : null}
-                    {r.socialOpportunitiesDeaf.length ? (
+                    {r.social_opportunities_deaf.length ? (
                       <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                         <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Social opportunities — Deaf community</div>
                         <ul className="text-sm text-slate-700 space-y-1">
-                          {r.socialOpportunitiesDeaf.map((s, i) => (
+                          {r.social_opportunities_deaf.map((s, i) => (
                             <li key={i} className="flex gap-2"><span className="text-slate-400">·</span><span>{s}</span></li>
                           ))}
                         </ul>
                       </div>
                     ) : null}
-                    {r.flagsForReview.length ? (
+                    {r.flags_for_review.length ? (
                       <div className="rounded-md border border-amber-200 bg-amber-50 p-3 lg:col-span-2">
                         <div className="text-xs font-semibold text-amber-800 uppercase mb-2">Flags for review</div>
                         <ul className="text-sm text-amber-900 space-y-1">
-                          {r.flagsForReview.map((f, i) => (
+                          {r.flags_for_review.map((f, i) => (
                             <li key={i} className="flex gap-2"><span>!</span><span>{f}</span></li>
                           ))}
                         </ul>
                       </div>
                     ) : null}
                   </div>
+
+                  <SmartLinkPanel sourceType="deaf-hearing-support" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               ) : null}
             </div>

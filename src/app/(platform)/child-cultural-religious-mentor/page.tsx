@@ -16,6 +16,7 @@ import {
   Search,
   ShieldCheck,
   Award,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -24,134 +25,61 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useCulturalReligiousMentors } from "@/hooks/use-cultural-religious-mentors";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type {
+  CulturalReligiousMentor,
+  CulturalMentorRole,
+  MentorContactFrequency,
+  MentorRelationshipQuality,
+} from "@/types/extended";
+import {
+  CULTURAL_MENTOR_ROLE_LABEL,
+  MENTOR_CONTACT_FREQUENCY_LABEL,
+  MENTOR_RELATIONSHIP_QUALITY_LABEL,
+} from "@/types/extended";
 
-interface MentorRecord {
-  id: string;
-  youngPerson: string;
-  mentorName: string;
-  mentorRole:
-    | "Imam"
-    | "Pandit"
-    | "Rabbi"
-    | "Pastor / minister"
-    | "Cultural elder"
-    | "Community leader"
-    | "Heritage language teacher"
-    | "Faith-aware therapist"
-    | "Diaspora mentor"
-    | "Other";
-  faithCulture: string;
-  matchedDate: string;
-  introductionMethod: string;
-  contactFrequency: "Weekly" | "Fortnightly" | "Monthly" | "As needed" | "Annual events";
-  contactSettings: string[];
-  rolePlayed: string[];
-  safeguardingChecksDone: { check: string; date: string; outcome: string }[];
-  homeAwareness: string;
-  parentSwAware: boolean;
-  meetingsRecord: { date: string; topic: string; outcome: string }[];
-  childRelationshipQuality: "Building" | "Settled" | "Strong" | "Central figure";
-  challengesNoted: string[];
-  childVoice: string;
-  staffObservation: string;
-  reviewDate: string;
-  keyWorker: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const records: MentorRecord[] = [
-  {
-    id: "men_001",
-    youngPerson: "yp_jordan",
-    mentorName: "Imam Yusuf Rahman",
-    mentorRole: "Imam",
-    faithCulture: "Islam — Sunni; Pakistani-British heritage shared",
-    matchedDate: d(-1460),
-    introductionMethod:
-      "Pre-care continuity — Jordan attended this mosque with mum from age 8. Relationship preserved into placement (a deliberate care planning decision).",
-    contactFrequency: "Weekly",
-    contactSettings: [
-      "Friday Jumu'ah prayer at mosque",
-      "Quarterly 1:1 mentoring session at mosque office (door open, not closed)",
-      "Eid celebrations and milestone events",
-      "Phone or WhatsApp where Jordan needs counsel between meetings",
-    ],
-    rolePlayed: [
-      "Faith identity anchor — particularly during early-placement instability",
-      "Code-switching guide between cultures (school British / mosque Pakistani-British / home mixed)",
-      "Spiritual significance of mum's recipes and food traditions",
-      "Brother-in-Pakistan support — Yusuf calls his network there to check on Jordan's brother",
-      "Eid leadership grooming — Yusuf trusts Jordan with junior welcoming role",
-      "Reference letter for college portfolio",
-    ],
-    safeguardingChecksDone: [
-      { check: "DBS Enhanced", date: d(-200), outcome: "Clear — supplied by mosque safeguarding lead" },
-      { check: "Mosque safeguarding policy verified", date: d(-200), outcome: "BPCA-aligned, child-protection clear" },
-      { check: "Reference from local authority Faith Liaison Officer", date: d(-90), outcome: "Positive — Yusuf is a known and respected leader" },
-      { check: "Open-door policy confirmed for 1:1s", date: d(-1460), outcome: "Always door open in mosque office during 1:1" },
-    ],
-    homeAwareness:
-      "Anna and Darren both attended Jumu'ah once at Yusuf's invitation to meet him in his setting (with Jordan's consent). Yusuf has visited the home twice for milestone events.",
-    parentSwAware: true,
-    meetingsRecord: [
-      { date: d(-21), topic: "Eid al-Adha planning + brother in Pakistan", outcome: "Charity portion confirmed; Yusuf's network arranging visit to brother's family" },
-      { date: d(-60), topic: "Coaching wages and Zakat — first earned-money charity", outcome: "Jordan made first formal Zakat contribution; spiritual growth noted" },
-      { date: d(-120), topic: "College choices and Islamic identity", outcome: "Yusuf supportive of any pathway; reminded Jordan that football is halal and good when intentions are pure" },
-    ],
-    childRelationshipQuality: "Central figure",
-    challengesNoted: [],
-    childVoice:
-      "Yusuf has known me since I was eight. He doesn't treat me like 'a kid in care'. He treats me like a young Muslim man finding his way. That matters.",
-    staffObservation:
-      "Yusuf is an extraordinary protective factor for Jordan. The continuity from pre-care to placement was a deliberate care planning win. The relationship is dignified, faith-respectful, safeguarding-checked, and central to Jordan's identity stability.",
-    reviewDate: d(120),
-    keyWorker: "staff_anna",
-  },
+const exportCols: ExportColumn<CulturalReligiousMentor>[] = [
+  { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+  { header: "Mentor", accessor: (r) => r.mentor_name },
+  { header: "Role", accessor: (r) => CULTURAL_MENTOR_ROLE_LABEL[r.mentor_role] },
+  { header: "Faith / Culture", accessor: (r) => r.faith_culture },
+  { header: "Matched", accessor: (r) => r.matched_date },
+  { header: "Frequency", accessor: (r) => MENTOR_CONTACT_FREQUENCY_LABEL[r.contact_frequency] },
+  { header: "Quality", accessor: (r) => MENTOR_RELATIONSHIP_QUALITY_LABEL[r.child_relationship_quality] },
+  { header: "Settings", accessor: (r) => r.contact_settings.join("; ") },
+  { header: "Role Played", accessor: (r) => r.role_played.join("; ") },
+  { header: "Safeguarding Checks", accessor: (r) => r.safeguarding_checks_done.map((c) => `${c.check} (${c.date} — ${c.outcome})`).join("; ") },
+  { header: "Parent / SW Aware", accessor: (r) => (r.parent_sw_aware ? "Yes" : "No") },
+  { header: "Child Voice", accessor: (r) => r.child_voice },
+  { header: "Review", accessor: (r) => r.review_date },
+  { header: "Key Worker", accessor: (r) => getStaffName(r.key_worker) },
 ];
 
-const exportCols: ExportColumn<MentorRecord>[] = [
-  { header: "Young Person", accessor: (r: MentorRecord) => getYPName(r.youngPerson) },
-  { header: "Mentor", accessor: (r: MentorRecord) => r.mentorName },
-  { header: "Role", accessor: (r: MentorRecord) => r.mentorRole },
-  { header: "Faith / Culture", accessor: (r: MentorRecord) => r.faithCulture },
-  { header: "Matched", accessor: (r: MentorRecord) => r.matchedDate },
-  { header: "Frequency", accessor: (r: MentorRecord) => r.contactFrequency },
-  { header: "Quality", accessor: (r: MentorRecord) => r.childRelationshipQuality },
-  { header: "Settings", accessor: (r: MentorRecord) => r.contactSettings.join("; ") },
-  { header: "Role Played", accessor: (r: MentorRecord) => r.rolePlayed.join("; ") },
-  { header: "Safeguarding Checks", accessor: (r: MentorRecord) => r.safeguardingChecksDone.map((c) => `${c.check} (${c.date} — ${c.outcome})`).join("; ") },
-  { header: "Parent / SW Aware", accessor: (r: MentorRecord) => (r.parentSwAware ? "Yes" : "No") },
-  { header: "Child Voice", accessor: (r: MentorRecord) => r.childVoice },
-  { header: "Review", accessor: (r: MentorRecord) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: MentorRecord) => getStaffName(r.keyWorker) },
-];
-
-const qualityColour: Record<MentorRecord["childRelationshipQuality"], string> = {
-  Building: "bg-blue-100 text-blue-800 border-blue-200",
-  Settled: "bg-sky-100 text-sky-800 border-sky-200",
-  Strong: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "Central figure": "bg-purple-100 text-purple-800 border-purple-200",
+const qualityColour: Record<MentorRelationshipQuality, string> = {
+  building: "bg-blue-100 text-blue-800 border-blue-200",
+  settled: "bg-sky-100 text-sky-800 border-sky-200",
+  strong: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  central_figure: "bg-purple-100 text-purple-800 border-purple-200",
 };
 
-const roleColour: Record<MentorRecord["mentorRole"], string> = {
-  Imam: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  Pandit: "bg-amber-100 text-amber-800 border-amber-200",
-  Rabbi: "bg-blue-100 text-blue-800 border-blue-200",
-  "Pastor / minister": "bg-red-100 text-red-800 border-red-200",
-  "Cultural elder": "bg-orange-100 text-orange-800 border-orange-200",
-  "Community leader": "bg-violet-100 text-violet-800 border-violet-200",
-  "Heritage language teacher": "bg-teal-100 text-teal-800 border-teal-200",
-  "Faith-aware therapist": "bg-purple-100 text-purple-800 border-purple-200",
-  "Diaspora mentor": "bg-pink-100 text-pink-800 border-pink-200",
-  Other: "bg-slate-100 text-slate-800 border-slate-200",
+const roleColour: Record<CulturalMentorRole, string> = {
+  imam: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  pandit: "bg-amber-100 text-amber-800 border-amber-200",
+  rabbi: "bg-blue-100 text-blue-800 border-blue-200",
+  pastor_minister: "bg-red-100 text-red-800 border-red-200",
+  cultural_elder: "bg-orange-100 text-orange-800 border-orange-200",
+  community_leader: "bg-violet-100 text-violet-800 border-violet-200",
+  heritage_language_teacher: "bg-teal-100 text-teal-800 border-teal-200",
+  faith_aware_therapist: "bg-purple-100 text-purple-800 border-purple-200",
+  diaspora_mentor: "bg-pink-100 text-pink-800 border-pink-200",
+  other: "bg-slate-100 text-slate-800 border-slate-200",
 };
 
 export default function ChildCulturalReligiousMentorPage() {
+  const { data: response, isLoading } = useCulturalReligiousMentors();
+  const records = response?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"matched" | "name" | "quality" | "review">("matched");
@@ -161,28 +89,31 @@ export default function ChildCulturalReligiousMentorPage() {
     let r = records.filter((rec) => {
       const matchesSearch =
         !search ||
-        getYPName(rec.youngPerson).toLowerCase().includes(search.toLowerCase()) ||
-        rec.mentorName.toLowerCase().includes(search.toLowerCase()) ||
-        rec.faithCulture.toLowerCase().includes(search.toLowerCase());
-      const matchesRole = roleFilter === "all" || rec.mentorRole === roleFilter;
+        getYPName(rec.child_id).toLowerCase().includes(search.toLowerCase()) ||
+        rec.mentor_name.toLowerCase().includes(search.toLowerCase()) ||
+        rec.faith_culture.toLowerCase().includes(search.toLowerCase());
+      const matchesRole = roleFilter === "all" || rec.mentor_role === roleFilter;
       return matchesSearch && matchesRole;
     });
     r = [...r].sort((a, b) => {
-      if (sortBy === "name") return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
-      if (sortBy === "quality") return a.childRelationshipQuality.localeCompare(b.childRelationshipQuality);
-      if (sortBy === "review") return a.reviewDate.localeCompare(b.reviewDate);
-      return b.matchedDate.localeCompare(a.matchedDate);
+      if (sortBy === "name") return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+      if (sortBy === "quality") return a.child_relationship_quality.localeCompare(b.child_relationship_quality);
+      if (sortBy === "review") return a.review_date.localeCompare(b.review_date);
+      return b.matched_date.localeCompare(a.matched_date);
     });
     return r;
-  }, [search, roleFilter, sortBy]);
+  }, [search, roleFilter, sortBy, records]);
 
   const stats = useMemo(() => {
     const matched = records.length;
-    const central = records.filter((r) => r.childRelationshipQuality === "Central figure" || r.childRelationshipQuality === "Strong").length;
-    const safeguardingChecked = records.filter((r) => r.safeguardingChecksDone.length > 0).length;
-    const reviewsDue = records.filter((r) => r.reviewDate <= d(90)).length;
+    const central = records.filter((r) => r.child_relationship_quality === "central_figure" || r.child_relationship_quality === "strong").length;
+    const safeguardingChecked = records.filter((r) => r.safeguarding_checks_done.length > 0).length;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() + 90);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    const reviewsDue = records.filter((r) => r.review_date <= cutoffStr).length;
     return { matched, central, safeguardingChecked, reviewsDue };
-  }, []);
+  }, [records]);
 
   return (
     <PageShell
@@ -195,6 +126,10 @@ export default function ChildCulturalReligiousMentorPage() {
         </div>
       }
     >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+      ) : (
+      <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
@@ -243,16 +178,16 @@ export default function ChildCulturalReligiousMentorPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All roles</SelectItem>
-            <SelectItem value="Imam">Imam</SelectItem>
-            <SelectItem value="Pandit">Pandit</SelectItem>
-            <SelectItem value="Rabbi">Rabbi</SelectItem>
-            <SelectItem value="Pastor / minister">Pastor / minister</SelectItem>
-            <SelectItem value="Cultural elder">Cultural elder</SelectItem>
-            <SelectItem value="Community leader">Community leader</SelectItem>
-            <SelectItem value="Heritage language teacher">Heritage language teacher</SelectItem>
-            <SelectItem value="Faith-aware therapist">Faith-aware therapist</SelectItem>
-            <SelectItem value="Diaspora mentor">Diaspora mentor</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
+            <SelectItem value="imam">{CULTURAL_MENTOR_ROLE_LABEL.imam}</SelectItem>
+            <SelectItem value="pandit">{CULTURAL_MENTOR_ROLE_LABEL.pandit}</SelectItem>
+            <SelectItem value="rabbi">{CULTURAL_MENTOR_ROLE_LABEL.rabbi}</SelectItem>
+            <SelectItem value="pastor_minister">{CULTURAL_MENTOR_ROLE_LABEL.pastor_minister}</SelectItem>
+            <SelectItem value="cultural_elder">{CULTURAL_MENTOR_ROLE_LABEL.cultural_elder}</SelectItem>
+            <SelectItem value="community_leader">{CULTURAL_MENTOR_ROLE_LABEL.community_leader}</SelectItem>
+            <SelectItem value="heritage_language_teacher">{CULTURAL_MENTOR_ROLE_LABEL.heritage_language_teacher}</SelectItem>
+            <SelectItem value="faith_aware_therapist">{CULTURAL_MENTOR_ROLE_LABEL.faith_aware_therapist}</SelectItem>
+            <SelectItem value="diaspora_mentor">{CULTURAL_MENTOR_ROLE_LABEL.diaspora_mentor}</SelectItem>
+            <SelectItem value="other">{CULTURAL_MENTOR_ROLE_LABEL.other}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
@@ -280,22 +215,22 @@ export default function ChildCulturalReligiousMentorPage() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-semibold text-slate-900">{getYPName(r.youngPerson)}</span>
-                    <span className="text-slate-700">— {r.mentorName}</span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", roleColour[r.mentorRole])}>
-                      {r.mentorRole}
+                    <span className="font-semibold text-slate-900">{getYPName(r.child_id)}</span>
+                    <span className="text-slate-700">— {r.mentor_name}</span>
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", roleColour[r.mentor_role])}>
+                      {CULTURAL_MENTOR_ROLE_LABEL[r.mentor_role]}
                     </span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", qualityColour[r.childRelationshipQuality])}>
-                      {r.childRelationshipQuality}
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", qualityColour[r.child_relationship_quality])}>
+                      {MENTOR_RELATIONSHIP_QUALITY_LABEL[r.child_relationship_quality]}
                     </span>
-                    {r.safeguardingChecksDone.length ? (
+                    {r.safeguarding_checks_done.length ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-800 border-emerald-200">
                         Safeguarded
                       </span>
                     ) : null}
                   </div>
                   <div className="text-sm text-slate-600">
-                    {r.faithCulture} · {r.contactFrequency} · {getStaffName(r.keyWorker)}
+                    {r.faith_culture} · {MENTOR_CONTACT_FREQUENCY_LABEL[r.contact_frequency]} · {getStaffName(r.key_worker)}
                   </div>
                 </div>
                 {isOpen ? <ChevronUp className="h-5 w-5 text-slate-400" /> : <ChevronDown className="h-5 w-5 text-slate-400" />}
@@ -305,21 +240,21 @@ export default function ChildCulturalReligiousMentorPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
                     <div className="rounded-md border border-amber-200 bg-amber-50 p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-amber-700 uppercase mb-2">Child Voice</div>
-                      <p className="text-sm text-amber-900 italic">&ldquo;{r.childVoice}&rdquo;</p>
+                      <p className="text-sm text-amber-900 italic">&ldquo;{r.child_voice}&rdquo;</p>
                     </div>
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Staff Observation</div>
-                      <p className="text-sm text-slate-700">{r.staffObservation}</p>
+                      <p className="text-sm text-slate-700">{r.staff_observation}</p>
                     </div>
                     <div className="rounded-md border border-slate-200 bg-white p-3">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">How matched</div>
-                      <p className="text-sm text-slate-700">{r.introductionMethod}</p>
-                      <div className="text-xs text-slate-500 mt-2">Matched {r.matchedDate}</div>
+                      <p className="text-sm text-slate-700">{r.introduction_method}</p>
+                      <div className="text-xs text-slate-500 mt-2">Matched {r.matched_date}</div>
                     </div>
                     <div className="rounded-md border border-slate-200 bg-white p-3">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Contact settings</div>
                       <ul className="text-sm text-slate-700 space-y-1">
-                        {r.contactSettings.map((s, i) => (
+                        {r.contact_settings.map((s, i) => (
                           <li key={i} className="flex gap-2"><span className="text-slate-400">·</span><span>{s}</span></li>
                         ))}
                       </ul>
@@ -327,7 +262,7 @@ export default function ChildCulturalReligiousMentorPage() {
                     <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-emerald-700 uppercase mb-2">Role played</div>
                       <ul className="text-sm text-emerald-900 space-y-1">
-                        {r.rolePlayed.map((s, i) => (
+                        {r.role_played.map((s, i) => (
                           <li key={i} className="flex gap-2"><span>+</span><span>{s}</span></li>
                         ))}
                       </ul>
@@ -335,7 +270,7 @@ export default function ChildCulturalReligiousMentorPage() {
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Safeguarding checks</div>
                       <ul className="text-sm text-slate-700 space-y-1.5">
-                        {r.safeguardingChecksDone.map((c, i) => (
+                        {r.safeguarding_checks_done.map((c, i) => (
                           <li key={i} className="flex gap-2 justify-between">
                             <span>{c.check}</span>
                             <span className="text-xs text-slate-500">{c.date} · {c.outcome}</span>
@@ -346,7 +281,7 @@ export default function ChildCulturalReligiousMentorPage() {
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Recent meetings</div>
                       <ul className="text-sm text-slate-700 space-y-1.5">
-                        {r.meetingsRecord.map((m, i) => (
+                        {r.meetings_record.map((m, i) => (
                           <li key={i}>
                             <div className="text-xs text-slate-500">{m.date}</div>
                             <div><span className="font-medium">{m.topic}</span> — {m.outcome}</div>
@@ -356,20 +291,21 @@ export default function ChildCulturalReligiousMentorPage() {
                     </div>
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Home awareness</div>
-                      <p className="text-sm text-slate-700">{r.homeAwareness}</p>
-                      <div className="text-xs text-slate-500 mt-2">Parent / SW aware: {r.parentSwAware ? "Yes" : "No"}</div>
+                      <p className="text-sm text-slate-700">{r.home_awareness}</p>
+                      <div className="text-xs text-slate-500 mt-2">Parent / SW aware: {r.parent_sw_aware ? "Yes" : "No"}</div>
                     </div>
-                    {r.challengesNoted.length ? (
+                    {r.challenges_noted.length ? (
                       <div className="rounded-md border border-amber-200 bg-amber-50 p-3 lg:col-span-2">
                         <div className="text-xs font-semibold text-amber-800 uppercase mb-2">Challenges noted</div>
                         <ul className="text-sm text-amber-900 space-y-1">
-                          {r.challengesNoted.map((c, i) => (
+                          {r.challenges_noted.map((c, i) => (
                             <li key={i} className="flex gap-2"><span>!</span><span>{c}</span></li>
                           ))}
                         </ul>
                       </div>
                     ) : null}
                   </div>
+                  <SmartLinkPanel sourceType="cultural-religious-mentor" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               ) : null}
             </div>
@@ -388,6 +324,8 @@ export default function ChildCulturalReligiousMentorPage() {
           policies for 1:1 meetings.
         </p>
       </div>
+      </>
+      )}
     </PageShell>
   );
 }

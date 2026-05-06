@@ -80,6 +80,12 @@ import type {
   ContinencePlan,
   CookingBakingRecord,
   IncomingCorrespondence,
+  CourtAttendanceRecord,
+  CreativeProjectRecord,
+  CulturalReligiousMentor,
+  DeafHearingSupportRecord,
+  DiabeticCarePlan,
+  SpldSupportPlan,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -218,6 +224,12 @@ const store = {
   continencePlans: [] as ContinencePlan[],
   cookingBakingRecords: [] as CookingBakingRecord[],
   incomingCorrespondence: [] as IncomingCorrespondence[],
+  courtAttendanceRecords: [] as CourtAttendanceRecord[],
+  creativeProjectRecords: [] as CreativeProjectRecord[],
+  culturalReligiousMentors: [] as CulturalReligiousMentor[],
+  deafHearingSupportRecords: [] as DeafHearingSupportRecord[],
+  diabeticCarePlans: [] as DiabeticCarePlan[],
+  spldSupportPlans: [] as SpldSupportPlan[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -4071,6 +4083,108 @@ export const db = {
       if (idx === -1) return null;
       store.incomingCorrespondence[idx] = { ...store.incomingCorrespondence[idx], ...data };
       return store.incomingCorrespondence[idx];
+    },
+  },
+
+  courtAttendanceRecords: {
+    findAll: () => store.courtAttendanceRecords,
+    findById: (id: string) => store.courtAttendanceRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.courtAttendanceRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<CourtAttendanceRecord>): CourtAttendanceRecord => {
+      const record = { ...data, id: generateId("car"), created_at: new Date().toISOString() } as CourtAttendanceRecord;
+      store.courtAttendanceRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CourtAttendanceRecord>): CourtAttendanceRecord | null => {
+      const idx = store.courtAttendanceRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.courtAttendanceRecords[idx] = { ...store.courtAttendanceRecords[idx], ...data };
+      return store.courtAttendanceRecords[idx];
+    },
+  },
+
+  creativeProjectRecords: {
+    findAll: () => store.creativeProjectRecords,
+    findById: (id: string) => store.creativeProjectRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.creativeProjectRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<CreativeProjectRecord>): CreativeProjectRecord => {
+      const record = { ...data, id: generateId("cpr"), created_at: new Date().toISOString() } as CreativeProjectRecord;
+      store.creativeProjectRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CreativeProjectRecord>): CreativeProjectRecord | null => {
+      const idx = store.creativeProjectRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.creativeProjectRecords[idx] = { ...store.creativeProjectRecords[idx], ...data };
+      return store.creativeProjectRecords[idx];
+    },
+  },
+
+  culturalReligiousMentors: {
+    findAll: () => store.culturalReligiousMentors,
+    findById: (id: string) => store.culturalReligiousMentors.find((r) => r.id === id),
+    findByChild: (childId: string) => store.culturalReligiousMentors.filter((r) => r.child_id === childId),
+    create: (data: Partial<CulturalReligiousMentor>): CulturalReligiousMentor => {
+      const record = { ...data, id: generateId("crm"), created_at: new Date().toISOString() } as CulturalReligiousMentor;
+      store.culturalReligiousMentors.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CulturalReligiousMentor>): CulturalReligiousMentor | null => {
+      const idx = store.culturalReligiousMentors.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.culturalReligiousMentors[idx] = { ...store.culturalReligiousMentors[idx], ...data };
+      return store.culturalReligiousMentors[idx];
+    },
+  },
+
+  deafHearingSupportRecords: {
+    findAll: () => store.deafHearingSupportRecords,
+    findById: (id: string) => store.deafHearingSupportRecords.find((r) => r.id === id),
+    findByChild: (childId: string) => store.deafHearingSupportRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<DeafHearingSupportRecord>): DeafHearingSupportRecord => {
+      const record = { ...data, id: generateId("dhs"), created_at: new Date().toISOString() } as DeafHearingSupportRecord;
+      store.deafHearingSupportRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<DeafHearingSupportRecord>): DeafHearingSupportRecord | null => {
+      const idx = store.deafHearingSupportRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.deafHearingSupportRecords[idx] = { ...store.deafHearingSupportRecords[idx], ...data };
+      return store.deafHearingSupportRecords[idx];
+    },
+  },
+
+  diabeticCarePlans: {
+    findAll: () => store.diabeticCarePlans,
+    findById: (id: string) => store.diabeticCarePlans.find((r) => r.id === id),
+    findByChild: (childId: string) => store.diabeticCarePlans.filter((r) => r.child_id === childId),
+    create: (data: Partial<DiabeticCarePlan>): DiabeticCarePlan => {
+      const record = { ...data, id: generateId("dcp"), created_at: new Date().toISOString() } as DiabeticCarePlan;
+      store.diabeticCarePlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<DiabeticCarePlan>): DiabeticCarePlan | null => {
+      const idx = store.diabeticCarePlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.diabeticCarePlans[idx] = { ...store.diabeticCarePlans[idx], ...data };
+      return store.diabeticCarePlans[idx];
+    },
+  },
+
+  spldSupportPlans: {
+    findAll: () => store.spldSupportPlans,
+    findById: (id: string) => store.spldSupportPlans.find((r) => r.id === id),
+    findByChild: (childId: string) => store.spldSupportPlans.filter((r) => r.child_id === childId),
+    create: (data: Partial<SpldSupportPlan>): SpldSupportPlan => {
+      const record = { ...data, id: generateId("ssp"), created_at: new Date().toISOString() } as SpldSupportPlan;
+      store.spldSupportPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SpldSupportPlan>): SpldSupportPlan | null => {
+      const idx = store.spldSupportPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.spldSupportPlans[idx] = { ...store.spldSupportPlans[idx], ...data };
+      return store.spldSupportPlans[idx];
     },
   },
 };

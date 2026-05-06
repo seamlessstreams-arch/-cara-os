@@ -4238,3 +4238,418 @@ export interface IncomingCorrespondence {
   notes: string;
   created_at: string;
 }
+
+// ── Court Attendance Support ──────────────────────────────────────────────────
+
+export type CourtAttendanceType = "family_court_care_proceedings" | "family_court_contact_private_law" | "youth_court_criminal_defendant" | "crown_court_witness" | "magistrates_witness" | "abe_interview" | "court_familiarisation_visit" | "other_tribunal";
+export const COURT_ATTENDANCE_TYPE_LABEL: Record<CourtAttendanceType, string> = {
+  family_court_care_proceedings: "Family Court (care proceedings)",
+  family_court_contact_private_law: "Family Court (contact / private law)",
+  youth_court_criminal_defendant: "Youth Court (criminal — defendant)",
+  crown_court_witness: "Crown Court (witness)",
+  magistrates_witness: "Magistrates (witness)",
+  abe_interview: "ABE interview",
+  court_familiarisation_visit: "Court familiarisation visit",
+  other_tribunal: "Other tribunal",
+};
+
+export type CourtChildRole = "subject_of_proceedings" | "witness" | "defendant" | "special_party_re_w" | "observer_familiarisation";
+export const COURT_CHILD_ROLE_LABEL: Record<CourtChildRole, string> = {
+  subject_of_proceedings: "Subject of proceedings",
+  witness: "Witness",
+  defendant: "Defendant",
+  special_party_re_w: "Special party (Re W)",
+  observer_familiarisation: "Observer / familiarisation",
+};
+
+export interface CourtAttendanceRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  court_type: CourtAttendanceType;
+  child_role: CourtChildRole;
+  hearing_date?: string;
+  hearing_time?: string;
+  court_location?: string;
+  legal_rep?: string;
+  guardian_ad_litem?: string;
+  social_worker_involved?: string;
+  special_measures_agreed: string[];
+  pre_hearing_prep: string[];
+  who_attends_with_child: string[];
+  travel_arrangements?: string;
+  risk_assessment_done: boolean;
+  risk_factors: string[];
+  protective_factors: string[];
+  outcomes?: string;
+  post_hearing_support: string[];
+  child_voice: string;
+  staff_observation: string;
+  flags_concerns: string[];
+  follow_up_date?: string;
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Creative Projects ─────────────────────────────────────────────────────────
+
+export type CreativeProjectMedium = "drawing" | "painting" | "music_instrument" | "music_production" | "singing" | "writing_poetry" | "writing_prose" | "photography" | "video" | "coding" | "crafts" | "sculpture" | "dance" | "mixed_media";
+export const CREATIVE_PROJECT_MEDIUM_LABEL: Record<CreativeProjectMedium, string> = {
+  drawing: "Drawing",
+  painting: "Painting",
+  music_instrument: "Music — instrument",
+  music_production: "Music — production",
+  singing: "Singing",
+  writing_poetry: "Writing — poetry",
+  writing_prose: "Writing — prose",
+  photography: "Photography",
+  video: "Video",
+  coding: "Coding",
+  crafts: "Crafts",
+  sculpture: "Sculpture",
+  dance: "Dance",
+  mixed_media: "Mixed media",
+};
+
+export type CreativeProjectStatus = "idea" | "active" | "paused" | "completed" | "shared_publicly";
+export const CREATIVE_PROJECT_STATUS_LABEL: Record<CreativeProjectStatus, string> = {
+  idea: "Idea",
+  active: "Active",
+  paused: "Paused",
+  completed: "Completed",
+  shared_publicly: "Shared publicly",
+};
+
+export type CreativeProjectFunding = "home_budget" | "pocket_money" | "family_contribution" | "grant_award" | "free";
+export const CREATIVE_PROJECT_FUNDING_LABEL: Record<CreativeProjectFunding, string> = {
+  home_budget: "Home budget",
+  pocket_money: "Pocket money",
+  family_contribution: "Family contribution",
+  grant_award: "Grant/award",
+  free: "Free",
+};
+
+export interface CreativeContestEntry {
+  name: string;
+  date: string;
+  outcome?: string;
+}
+
+export interface CreativeProjectRecord {
+  id: string;
+  child_id: string;
+  project_name: string;
+  medium: CreativeProjectMedium;
+  status: CreativeProjectStatus;
+  started_date: string;
+  last_worked_on: string;
+  materials_cost: number;
+  materials_funding: CreativeProjectFunding;
+  skills_growing: string[];
+  child_inspiration: string;
+  collaborators?: string;
+  external_showcase?: string;
+  contests_entered: CreativeContestEntry[];
+  child_voice: string;
+  staff_observation: string;
+  next_steps: string[];
+  flags_concerns: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Cultural / Religious Mentor ───────────────────────────────────────────────
+
+export type CulturalMentorRole = "imam" | "pandit" | "rabbi" | "pastor_minister" | "cultural_elder" | "community_leader" | "heritage_language_teacher" | "faith_aware_therapist" | "diaspora_mentor" | "other";
+export const CULTURAL_MENTOR_ROLE_LABEL: Record<CulturalMentorRole, string> = {
+  imam: "Imam",
+  pandit: "Pandit",
+  rabbi: "Rabbi",
+  pastor_minister: "Pastor / minister",
+  cultural_elder: "Cultural elder",
+  community_leader: "Community leader",
+  heritage_language_teacher: "Heritage language teacher",
+  faith_aware_therapist: "Faith-aware therapist",
+  diaspora_mentor: "Diaspora mentor",
+  other: "Other",
+};
+
+export type MentorContactFrequency = "weekly" | "fortnightly" | "monthly" | "as_needed" | "annual_events";
+export const MENTOR_CONTACT_FREQUENCY_LABEL: Record<MentorContactFrequency, string> = {
+  weekly: "Weekly",
+  fortnightly: "Fortnightly",
+  monthly: "Monthly",
+  as_needed: "As needed",
+  annual_events: "Annual events",
+};
+
+export type MentorRelationshipQuality = "building" | "settled" | "strong" | "central_figure";
+export const MENTOR_RELATIONSHIP_QUALITY_LABEL: Record<MentorRelationshipQuality, string> = {
+  building: "Building",
+  settled: "Settled",
+  strong: "Strong",
+  central_figure: "Central figure",
+};
+
+export interface MentorSafeguardingCheck {
+  check: string;
+  date: string;
+  outcome: string;
+}
+
+export interface MentorMeetingRecord {
+  date: string;
+  topic: string;
+  outcome: string;
+}
+
+export interface CulturalReligiousMentor {
+  id: string;
+  child_id: string;
+  mentor_name: string;
+  mentor_role: CulturalMentorRole;
+  faith_culture: string;
+  matched_date: string;
+  introduction_method: string;
+  contact_frequency: MentorContactFrequency;
+  contact_settings: string[];
+  role_played: string[];
+  safeguarding_checks_done: MentorSafeguardingCheck[];
+  home_awareness: string;
+  parent_sw_aware: boolean;
+  meetings_record: MentorMeetingRecord[];
+  child_relationship_quality: MentorRelationshipQuality;
+  challenges_noted: string[];
+  child_voice: string;
+  staff_observation: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Deaf / Hearing Support ────────────────────────────────────────────────────
+
+export type HearingStatus = "hearing_full" | "mild_loss" | "moderate_loss" | "severe_loss" | "profound_loss" | "single_sided_deafness" | "auditory_processing_difficulties" | "awaiting_assessment";
+export const HEARING_STATUS_LABEL: Record<HearingStatus, string> = {
+  hearing_full: "Hearing — full",
+  mild_loss: "Mild loss",
+  moderate_loss: "Moderate loss",
+  severe_loss: "Severe loss",
+  profound_loss: "Profound loss",
+  single_sided_deafness: "Single-sided deafness",
+  auditory_processing_difficulties: "Auditory processing difficulties",
+  awaiting_assessment: "Awaiting assessment",
+};
+
+export type HearingPreferredLanguage = "spoken_english" | "bsl" | "sse" | "lip_reading_spoken" | "mixed" | "other";
+export const HEARING_PREFERRED_LANGUAGE_LABEL: Record<HearingPreferredLanguage, string> = {
+  spoken_english: "Spoken English",
+  bsl: "BSL",
+  sse: "SSE (Sign Supported English)",
+  lip_reading_spoken: "Lip-reading + spoken",
+  mixed: "Mixed",
+  other: "Other",
+};
+
+export type BSLLevel = "pre_introduction" | "some_signs" | "level_1" | "level_2" | "level_3" | "fluent_native";
+export const BSL_LEVEL_LABEL: Record<BSLLevel, string> = {
+  pre_introduction: "Pre-introduction",
+  some_signs: "Some signs",
+  level_1: "Level 1",
+  level_2: "Level 2",
+  level_3: "Level 3",
+  fluent_native: "Fluent / native",
+};
+
+export interface HearingAidDetails {
+  side: string;
+  type: string;
+  fitted: string;
+  battery?: string;
+}
+
+export interface CochlearImplantDetails {
+  side: string;
+  surgery_date: string;
+  processor: string;
+}
+
+export interface DeafHearingSupportRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  hearing_status: HearingStatus;
+  identify_as_deaf: boolean;
+  preferred_language: HearingPreferredLanguage;
+  hearing_aids?: HearingAidDetails;
+  cochlear_implant?: CochlearImplantDetails;
+  audiology_service: string;
+  audiologist_name?: string;
+  last_review?: string;
+  next_review_due?: string;
+  bsl_level?: BSLLevel;
+  bsl_learning_plan: string[];
+  staff_signing_trained: string[];
+  school_has_plan: boolean;
+  school_has_radio_aid: boolean;
+  home_adaptations: string[];
+  social_opportunities_deaf: string[];
+  identity_work: string[];
+  emergency_alarms: string[];
+  child_voice: string;
+  staff_observation: string;
+  flags_for_review: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Diabetic Care Plan ────────────────────────────────────────────────────────
+
+export type DiabetesType = "type_1" | "type_2" | "mody" | "other";
+export const DIABETES_TYPE_LABEL: Record<DiabetesType, string> = {
+  type_1: "Type 1",
+  type_2: "Type 2",
+  mody: "MODY",
+  other: "Other",
+};
+
+export type DiabetesSelfManageLevel = "fully" | "with_prompts" | "adult_administered" | "building";
+export const DIABETES_SELF_MANAGE_LEVEL_LABEL: Record<DiabetesSelfManageLevel, string> = {
+  fully: "Fully",
+  with_prompts: "With prompts",
+  adult_administered: "Adult-administered",
+  building: "Building",
+};
+
+export type InsulinRegimeType = "basal_bolus_mdi" | "pump_csii" | "mixed_twice_daily";
+export const INSULIN_REGIME_TYPE_LABEL: Record<InsulinRegimeType, string> = {
+  basal_bolus_mdi: "Basal-bolus MDI",
+  pump_csii: "Pump CSII",
+  mixed_twice_daily: "Mixed twice daily",
+};
+
+export interface InsulinRegime {
+  type: InsulinRegimeType;
+  details: string;
+}
+
+export interface BasalInsulinDetails {
+  name: string;
+  dose: string;
+  timing: string;
+}
+
+export interface BolusInsulinDetails {
+  name: string;
+  ratio: string;
+  correction: string;
+}
+
+export interface DiabetesEmergencyContact {
+  name: string;
+  role: string;
+  phone: string;
+}
+
+export interface DiabeticCarePlan {
+  id: string;
+  child_id: string;
+  plan_date: string;
+  diabetes_type: DiabetesType;
+  diagnosis_date: string;
+  hba1c_latest?: string;
+  hba1c_target?: string;
+  hba1c_last_taken?: string;
+  cgm_in_use: boolean;
+  cgm_device?: string;
+  insulin_pump: boolean;
+  pump_device?: string;
+  insulin_regime: InsulinRegime;
+  basal_insulin?: BasalInsulinDetails;
+  bolus_insulin?: BolusInsulinDetails;
+  carb_counting_active: boolean;
+  hypo_symptoms: string[];
+  hypo_treatment_steps: string[];
+  hyper_symptoms: string[];
+  hyper_treatment_steps: string[];
+  ketone_testing_trigger: string;
+  sick_day_rules: string[];
+  school_plan_in_place: boolean;
+  child_can_self_manage: DiabetesSelfManageLevel;
+  emergency_contacts: DiabetesEmergencyContact[];
+  dietician_review_frequency?: string;
+  consultant_review_frequency?: string;
+  child_voice: string;
+  staff_observation: string;
+  flags_for_review: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Dyslexia / SpLD Support Plan ──────────────────────────────────────────────
+
+export type SpldCondition = "dyslexia" | "dyscalculia" | "dysgraphia" | "dcd_dyspraxia" | "auditory_processing_difficulty" | "visual_processing_difficulty";
+export const SPLD_CONDITION_LABEL: Record<SpldCondition, string> = {
+  dyslexia: "Dyslexia",
+  dyscalculia: "Dyscalculia",
+  dysgraphia: "Dysgraphia",
+  dcd_dyspraxia: "DCD / Dyspraxia",
+  auditory_processing_difficulty: "Auditory processing difficulty",
+  visual_processing_difficulty: "Visual processing difficulty",
+};
+
+export type SpldDiagnosisStatus = "diagnosed" | "awaiting_assessment" | "suspected" | "self_identified";
+export const SPLD_DIAGNOSIS_STATUS_LABEL: Record<SpldDiagnosisStatus, string> = {
+  diagnosed: "Diagnosed",
+  awaiting_assessment: "Awaiting assessment",
+  suspected: "Suspected",
+  self_identified: "Self-identified",
+};
+
+export type SpldTechOutcome = "loves_it" | "useful" | "tried_not_useful" | "resists";
+export const SPLD_TECH_OUTCOME_LABEL: Record<SpldTechOutcome, string> = {
+  loves_it: "Loves it",
+  useful: "Useful",
+  tried_not_useful: "Tried — not useful",
+  resists: "Resists",
+};
+
+export interface SpldTechnologyTried {
+  name: string;
+  outcome: SpldTechOutcome;
+}
+
+export interface SpldExternalSupport {
+  agency: string;
+  role: string;
+  frequency: string;
+}
+
+export interface SpldSupportPlan {
+  id: string;
+  child_id: string;
+  plan_date: string;
+  conditions: SpldCondition[];
+  diagnosis_status: SpldDiagnosisStatus;
+  diagnosing_professional?: string;
+  diagnosis_date?: string;
+  strengths: string[];
+  challenges: string[];
+  technology_in_use: string[];
+  technology_tried: SpldTechnologyTried[];
+  school_access_arrangements: string[];
+  exam_concessions_agreed: string[];
+  home_study_support: string[];
+  staff_strategies: string[];
+  external_support: SpldExternalSupport[];
+  identity_work: string[];
+  child_voice: string;
+  staff_observation: string;
+  next_step: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}

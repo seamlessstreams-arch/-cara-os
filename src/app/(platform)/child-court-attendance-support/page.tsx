@@ -11,6 +11,7 @@ import {
   Search,
   Calendar,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -24,277 +25,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-type CourtType =
-  | "Family Court (care proceedings)"
-  | "Family Court (contact / private law)"
-  | "Youth Court (criminal — defendant)"
-  | "Crown Court (witness)"
-  | "Magistrates (witness)"
-  | "ABE interview"
-  | "Court familiarisation visit"
-  | "Other tribunal";
-
-type ChildRole =
-  | "Subject of proceedings"
-  | "Witness"
-  | "Defendant"
-  | "Special party (Re W)"
-  | "Observer / familiarisation";
-
-interface CourtRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  courtType: CourtType;
-  childRole: ChildRole;
-  hearingDate?: string;
-  hearingTime?: string;
-  courtLocation?: string;
-  legalRep?: string;
-  guardianAdLitem?: string;
-  socialWorkerInvolved?: string;
-  specialMeasuresAgreed: string[];
-  preHearingPrep: string[];
-  whoAttendsWithChild: string[];
-  travelArrangements?: string;
-  riskAssessmentDone: boolean;
-  riskFactors: string[];
-  protectiveFactors: string[];
-  outcomes?: string;
-  postHearingSupport: string[];
-  childVoice: string;
-  staffObservation: string;
-  flagsConcerns: string[];
-  followUpDate?: string;
-  keyWorker: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const SEED: CourtRecord[] = [
-  {
-    id: "court1",
-    youngPerson: "yp_casey",
-    recordedDate: d(-21),
-    courtType: "Family Court (care proceedings)",
-    childRole: "Subject of proceedings",
-    hearingDate: d(7),
-    hearingTime: "10:30",
-    courtLocation: "Derby Family Court, Morledge",
-    legalRep: "Helen Watts (Coram Children's Legal Centre)",
-    guardianAdLitem: "Sarah Lewis (CAFCASS)",
-    socialWorkerInvolved: "Fiona Brennan (Derbyshire CC)",
-    specialMeasuresAgreed: [
-      "Casey not present in courtroom — Re W threshold considered",
-      "Anna (key worker) attends as supporter, available outside courtroom",
-      "Judge to receive summary of Casey's wishes and feelings via guardian",
-    ],
-    preHearingPrep: [
-      "Two preparation sessions with Mark Reid (advocate) over past fortnight",
-      "Court familiarisation visit completed — Casey shown empty courtroom on Tues",
-      "Casey's wishes recorded in age-appropriate format with guardian Sarah Lewis",
-      "Picture book about court used to explain process at Casey's developmental level",
-    ],
-    whoAttendsWithChild: [
-      "Anna (key worker — present at court building, not in court)",
-      "Mark Reid (advocate — attends pre-hearing meeting)",
-      "Sarah Lewis (guardian — represents Casey's voice in court)",
-    ],
-    travelArrangements:
-      "Anna will drive Casey to court. Quiet route planned. Snacks and comfort items packed. Soft toy permitted in waiting area. Will arrive 30 mins early to settle.",
-    riskAssessmentDone: true,
-    riskFactors: [
-      "Possibility of seeing mum in court building — corridors shared",
-      "Casey may experience emotional dysregulation hearing about contact decisions",
-      "Sleep disturbance pattern — hearing day may be difficult",
-    ],
-    protectiveFactors: [
-      "Strong attachment to Anna — primary support",
-      "Familiarisation visit reduced anticipatory anxiety",
-      "Guardian has built rapport with Casey over six visits",
-      "Home will protect quiet evening with calm activity post-hearing",
-    ],
-    outcomes:
-      "Hearing pending. Court to decide on contact arrangements with mum following s.34 application. Casey's expressed wish: monthly supervised contact, not weekly.",
-    postHearingSupport: [
-      "Anna to debrief gently with Casey same evening — child-led pace",
-      "No school next morning — protected day",
-      "Guardian Sarah to visit within 7 days to explain outcome in age-appropriate way",
-      "Therapeutic check-in scheduled with play therapist",
-    ],
-    childVoice:
-      "I don't want to go in the room with the judge. Anna said I don't have to. Sarah is going to tell them what I think. I want to see mum but not so much. Maybe like one time a month is enough.",
-    staffObservation:
-      "Casey has engaged thoughtfully with preparation. Familiarisation visit was important — she walked into the empty courtroom, sat in the witness box and the judge's chair, asked good questions. Anticipatory anxiety has reduced. Some sleep disturbance noted in the past week. Anna is well-placed to support; relationship is secure.",
-    flagsConcerns: [
-      "Risk of seeing mum unexpectedly in court building",
-      "Outcome uncertainty — Casey's preferred contact level may not be ordered",
-    ],
-    followUpDate: d(14),
-    keyWorker: "staff_chervelle",
-  },
-  {
-    id: "court2",
-    youngPerson: "yp_alex",
-    recordedDate: d(-10),
-    courtType: "ABE interview",
-    childRole: "Witness",
-    hearingDate: d(-3),
-    hearingTime: "11:00",
-    courtLocation: "Derbyshire Police video suite, St Mary's Wharf",
-    legalRep: "N/A — interview phase",
-    guardianAdLitem: undefined,
-    socialWorkerInvolved: "Karen Holding (Derby City)",
-    specialMeasuresAgreed: [
-      "Video-recorded interview (s.27 YJCEA 1999) — to be played at any future trial",
-      "ABE-trained officer (DC Hughes) conducting — known to Alex from prep",
-      "Interview broken into short segments with breaks at Alex's pace",
-      "Anna present in adjoining room throughout — Alex could see her on screen",
-    ],
-    preHearingPrep: [
-      "Three preparation sessions with Anna and DC Hughes — building trust, no leading content",
-      "Alex shown the video suite the week before — sat in chair, met camera",
-      "Sensory plan agreed — water, fidget object, low-arousal lighting",
-      "Trauma-informed pacing discussed — Alex chose 'green/amber/red' break signals",
-      "No discussion of evidence content during prep — strictly procedural",
-    ],
-    whoAttendsWithChild: [
-      "Anna (key worker — adjoining room, visible on screen)",
-      "DC Hughes (ABE-trained interviewing officer)",
-      "Karen Holding (social worker — debriefed after, not present in interview)",
-    ],
-    travelArrangements:
-      "Anna drove Alex. Familiar route. Music chosen by Alex. Arrival 20 mins early to use bathroom and settle. Same return route home — direct, no stops.",
-    riskAssessmentDone: true,
-    riskFactors: [
-      "Disclosure relates to historic harm — emotional distress likely during/after",
-      "Risk of dysregulation, self-harm urges post-interview",
-      "Possibility of recall-triggered nightmares",
-      "Alex prone to dissociation when overwhelmed",
-    ],
-    protectiveFactors: [
-      "Trusted relationship with Anna — primary attachment figure on shift",
-      "ABE officer is trauma-informed and known to Alex",
-      "Therapeutic team aware and on standby",
-      "Home prepared for low-arousal evening",
-    ],
-    outcomes:
-      "Interview completed. Alex spoke for 47 minutes across three segments with two breaks. DC Hughes confirmed evidence captured to required standard. No further interview required at this stage. Police will update on charging decision in 6–8 weeks.",
-    postHearingSupport: [
-      "Low-arousal evening at home — Alex chose film, hot chocolate, weighted blanket",
-      "Anna stayed on shift past usual finish to remain with Alex",
-      "Therapeutic check-in within 48 hours — completed, Alex regulated",
-      "Sleep monitored for 7 days — two disturbed nights, otherwise settled",
-      "Police FLO contact details on Alex's bedside table — Alex's choice",
-    ],
-    childVoice:
-      "It was hard. But the man was nice and Anna was there on the screen so I didn't feel alone. I'm glad I said it. I don't want to do it again though. Can we have pizza now.",
-    staffObservation:
-      "Alex showed remarkable courage. Used the amber signal twice to take a break and reset. Post-interview presented as flat, then tearful, then sought physical proximity to Anna — appropriate regulation cycle. Slept eight hours that night. Two nightmares since. Overall: well-prepared, well-supported, no crisis.",
-    flagsConcerns: [
-      "Monitor for delayed trauma response over coming weeks",
-      "If charging decision is no further action, prepare Alex sensitively",
-      "Anniversary effect — note in calendar 12 months on",
-    ],
-    followUpDate: d(21),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "court3",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-5),
-    courtType: "Family Court (contact / private law)",
-    childRole: "Observer / familiarisation",
-    hearingDate: d(-1),
-    hearingTime: "14:00",
-    courtLocation: "Nottingham Family Court",
-    legalRep: "Not represented — Jordan is 16 and chose not to give live evidence",
-    guardianAdLitem: undefined,
-    socialWorkerInvolved: "Michael Osei (Notts CC)",
-    specialMeasuresAgreed: [
-      "Jordan attended waiting area only — did not enter courtroom for hearing",
-      "Familiarisation only — Jordan exercising right under FJC Children's Guide to be present in building",
-      "Mum present on opposing side — separate waiting areas arranged in advance",
-    ],
-    preHearingPrep: [
-      "Conversation with Mark Reid (advocate) about Jordan's options under Re W",
-      "Jordan informed of right to give evidence, write a letter to judge, or attend as observer",
-      "Jordan chose familiarisation only — wanted to 'be there but not speak'",
-      "Mark Reid confirmed Jordan's choice with judge in advance",
-    ],
-    whoAttendsWithChild: [
-      "Mirela (secondary worker — attended day off rota to support Jordan)",
-      "Mark Reid (advocate — met Jordan in building, conveyed Jordan's wishes to court)",
-    ],
-    travelArrangements:
-      "Mirela and Jordan travelled by train — Jordan's preference. Lunch beforehand at chosen cafe. Return train booked with flexibility in case hearing ran late.",
-    riskAssessmentDone: true,
-    riskFactors: [
-      "First time in same building as mum since placement",
-      "Mum's side may attempt informal contact in corridor",
-      "Hearing content may be distressing even from waiting area",
-    ],
-    protectiveFactors: [
-      "Jordan is 16, articulate, and made an informed choice",
-      "Mirela has known Jordan since admission — secure relationship",
-      "Mark Reid pre-arranged separate waiting areas with court usher",
-      "Jordan had clear exit plan if needed",
-    ],
-    outcomes:
-      "Hearing completed. Court reserved judgment for two weeks. Jordan did not encounter mum in building — separation arrangements held. Jordan reported feeling 'glad I went' and 'glad I didn't go in'.",
-    postHearingSupport: [
-      "Train home — Jordan chose silence for first half, talked second half",
-      "Pizza ordered on return to home — Jordan's request",
-      "Check-in with key worker next day — Jordan low but settled",
-      "Judgment outcome to be shared with Jordan when received — in person, not by phone",
-    ],
-    childVoice:
-      "I didn't want to give evidence but I wanted to be there. Like, I exist in this. They were talking about me. I needed to be in the building. I'm glad Mirela came on her day off — that meant a lot.",
-    staffObservation:
-      "Jordan handled the day with maturity. Quiet on outward leg, more communicative on return. No encounter with mum — separation held. Jordan articulated afterwards a sense of agency from having attended on own terms. Sleep that night was disturbed but not significantly. Monitoring for impact when judgment lands.",
-    flagsConcerns: [
-      "Judgment outcome in two weeks — prepare Jordan sensitively whichever way it goes",
-      "Mum may attempt indirect contact via social media post-hearing — online safety briefing refreshed",
-    ],
-    followUpDate: d(13),
-    keyWorker: "staff_anna",
-  },
-];
+import type {
+  CourtAttendanceRecord,
+  CourtAttendanceType,
+  CourtChildRole,
+} from "@/types/extended";
+import {
+  COURT_ATTENDANCE_TYPE_LABEL,
+  COURT_CHILD_ROLE_LABEL,
+} from "@/types/extended";
+import { useCourtAttendanceRecords } from "@/hooks/use-court-attendance-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
-const COURT_TYPES: CourtType[] = [
-  "Family Court (care proceedings)",
-  "Family Court (contact / private law)",
-  "Youth Court (criminal — defendant)",
-  "Crown Court (witness)",
-  "Magistrates (witness)",
-  "ABE interview",
-  "Court familiarisation visit",
-  "Other tribunal",
+const COURT_TYPES: CourtAttendanceType[] = [
+  "family_court_care_proceedings",
+  "family_court_contact_private_law",
+  "youth_court_criminal_defendant",
+  "crown_court_witness",
+  "magistrates_witness",
+  "abe_interview",
+  "court_familiarisation_visit",
+  "other_tribunal",
 ];
 
-const ROLE_COLOURS: Record<ChildRole, string> = {
-  "Subject of proceedings": "bg-sky-100 text-sky-800",
-  Witness: "bg-teal-100 text-teal-800",
-  Defendant: "bg-amber-100 text-amber-800",
-  "Special party (Re W)": "bg-purple-100 text-purple-800",
-  "Observer / familiarisation": "bg-slate-100 text-slate-700",
+const ROLE_COLOURS: Record<CourtChildRole, string> = {
+  subject_of_proceedings: "bg-sky-100 text-sky-800",
+  witness: "bg-teal-100 text-teal-800",
+  defendant: "bg-amber-100 text-amber-800",
+  special_party_re_w: "bg-purple-100 text-purple-800",
+  observer_familiarisation: "bg-slate-100 text-slate-700",
 };
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildCourtAttendanceSupportPage() {
-  const [data] = useState<CourtRecord[]>(SEED);
+  const { data: response, isLoading } = useCourtAttendanceRecords();
+  const data = response?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterCourt, setFilterCourt] = useState("all");
@@ -307,37 +75,39 @@ export default function ChildCourtAttendanceSupportPage() {
       activeProceedings: data.filter(
         (r) => !r.outcomes || /pending|reserved|no further action.*sensitively/i.test(r.outcomes)
       ).length,
-      thisMonth: data.filter((r) => r.hearingDate?.startsWith(monthStart)).length,
-      specialMeasures: data.reduce((s, r) => s + r.specialMeasuresAgreed.length, 0),
-      followUpsDue: data.filter((r) => r.followUpDate && r.followUpDate >= today).length,
+      thisMonth: data.filter((r) => r.hearing_date?.startsWith(monthStart)).length,
+      specialMeasures: data.reduce((s, r) => s + r.special_measures_agreed.length, 0),
+      followUpsDue: data.filter((r) => r.follow_up_date && r.follow_up_date >= today).length,
     };
   }, [data]);
 
   const filtered = useMemo(() => {
     let list = [...data];
-    if (filterCourt !== "all") list = list.filter((r) => r.courtType === filterCourt);
+    if (filterCourt !== "all") list = list.filter((r) => r.court_type === filterCourt);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.courtType.toLowerCase().includes(q) ||
-          r.childRole.toLowerCase().includes(q) ||
-          (r.courtLocation ?? "").toLowerCase().includes(q) ||
-          (r.legalRep ?? "").toLowerCase().includes(q) ||
-          r.childVoice.toLowerCase().includes(q)
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          COURT_ATTENDANCE_TYPE_LABEL[r.court_type].toLowerCase().includes(q) ||
+          COURT_CHILD_ROLE_LABEL[r.child_role].toLowerCase().includes(q) ||
+          (r.court_location ?? "").toLowerCase().includes(q) ||
+          (r.legal_rep ?? "").toLowerCase().includes(q) ||
+          r.child_voice.toLowerCase().includes(q)
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
         case "yp":
-          return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "court":
-          return a.courtType.localeCompare(b.courtType);
+          return COURT_ATTENDANCE_TYPE_LABEL[a.court_type].localeCompare(
+            COURT_ATTENDANCE_TYPE_LABEL[b.court_type]
+          );
         case "recorded":
-          return b.recordedDate.localeCompare(a.recordedDate);
+          return b.recorded_date.localeCompare(a.recorded_date);
         default:
-          return (b.hearingDate ?? "").localeCompare(a.hearingDate ?? "");
+          return (b.hearing_date ?? "").localeCompare(a.hearing_date ?? "");
       }
     });
     return list;
@@ -346,30 +116,30 @@ export default function ChildCourtAttendanceSupportPage() {
   const exportData = useMemo(
     () =>
       data.map((r) => ({
-        youngPerson: getYPName(r.youngPerson),
-        recordedDate: r.recordedDate,
-        courtType: r.courtType,
-        childRole: r.childRole,
-        hearingDate: r.hearingDate ?? "",
-        hearingTime: r.hearingTime ?? "",
-        courtLocation: r.courtLocation ?? "",
-        legalRep: r.legalRep ?? "",
-        guardianAdLitem: r.guardianAdLitem ?? "",
-        socialWorkerInvolved: r.socialWorkerInvolved ?? "",
-        specialMeasuresAgreed: r.specialMeasuresAgreed.join("; "),
-        preHearingPrep: r.preHearingPrep.join("; "),
-        whoAttendsWithChild: r.whoAttendsWithChild.join("; "),
-        travelArrangements: r.travelArrangements ?? "",
-        riskAssessmentDone: r.riskAssessmentDone ? "Yes" : "No",
-        riskFactors: r.riskFactors.join("; "),
-        protectiveFactors: r.protectiveFactors.join("; "),
+        youngPerson: getYPName(r.child_id),
+        recordedDate: r.recorded_date,
+        courtType: COURT_ATTENDANCE_TYPE_LABEL[r.court_type],
+        childRole: COURT_CHILD_ROLE_LABEL[r.child_role],
+        hearingDate: r.hearing_date ?? "",
+        hearingTime: r.hearing_time ?? "",
+        courtLocation: r.court_location ?? "",
+        legalRep: r.legal_rep ?? "",
+        guardianAdLitem: r.guardian_ad_litem ?? "",
+        socialWorkerInvolved: r.social_worker_involved ?? "",
+        specialMeasuresAgreed: r.special_measures_agreed.join("; "),
+        preHearingPrep: r.pre_hearing_prep.join("; "),
+        whoAttendsWithChild: r.who_attends_with_child.join("; "),
+        travelArrangements: r.travel_arrangements ?? "",
+        riskAssessmentDone: r.risk_assessment_done ? "Yes" : "No",
+        riskFactors: r.risk_factors.join("; "),
+        protectiveFactors: r.protective_factors.join("; "),
         outcomes: r.outcomes ?? "",
-        postHearingSupport: r.postHearingSupport.join("; "),
-        childVoice: r.childVoice,
-        staffObservation: r.staffObservation,
-        flagsConcerns: r.flagsConcerns.join("; "),
-        followUpDate: r.followUpDate ?? "",
-        keyWorker: getStaffName(r.keyWorker),
+        postHearingSupport: r.post_hearing_support.join("; "),
+        childVoice: r.child_voice,
+        staffObservation: r.staff_observation,
+        flagsConcerns: r.flags_concerns.join("; "),
+        followUpDate: r.follow_up_date ?? "",
+        keyWorker: getStaffName(r.key_worker),
       })),
     [data]
   );
@@ -414,6 +184,11 @@ export default function ChildCourtAttendanceSupportPage() {
         </div>
       }
     >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
       <div id="print-area" className="space-y-6">
         {/* stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -450,7 +225,7 @@ export default function ChildCourtAttendanceSupportPage() {
               <SelectItem value="all">All Court Types</SelectItem>
               {COURT_TYPES.map((c) => (
                 <SelectItem key={c} value={c}>
-                  {c}
+                  {COURT_ATTENDANCE_TYPE_LABEL[c]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -481,29 +256,29 @@ export default function ChildCourtAttendanceSupportPage() {
                 <Scale className="h-5 w-5 text-sky-600" />
                 <div className="text-left">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{getYPName(rec.youngPerson)}</h3>
+                    <h3 className="font-semibold">{getYPName(rec.child_id)}</h3>
                     <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-800">
-                      {rec.courtType}
+                      {COURT_ATTENDANCE_TYPE_LABEL[rec.court_type]}
                     </span>
                     <span
                       className={cn(
                         "rounded-full px-2 py-0.5 text-xs font-medium",
-                        ROLE_COLOURS[rec.childRole]
+                        ROLE_COLOURS[rec.child_role]
                       )}
                     >
-                      {rec.childRole}
+                      {COURT_CHILD_ROLE_LABEL[rec.child_role]}
                     </span>
-                    {rec.hearingDate && (
+                    {rec.hearing_date && (
                       <span className="rounded-full bg-teal-50 border border-teal-200 px-2 py-0.5 text-xs text-teal-800 inline-flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {rec.hearingDate}
-                        {rec.hearingTime ? ` · ${rec.hearingTime}` : ""}
+                        {rec.hearing_date}
+                        {rec.hearing_time ? ` · ${rec.hearing_time}` : ""}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Key worker: {getStaffName(rec.keyWorker)}
-                    {rec.courtLocation ? ` · ${rec.courtLocation}` : ""}
+                    Key worker: {getStaffName(rec.key_worker)}
+                    {rec.court_location ? ` · ${rec.court_location}` : ""}
                   </p>
                 </div>
               </div>
@@ -518,60 +293,60 @@ export default function ChildCourtAttendanceSupportPage() {
               <div className="border-t p-4 space-y-4 bg-sky-50/30">
                 {/* hearing details */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                  {rec.hearingDate && (
+                  {rec.hearing_date && (
                     <div>
-                      <span className="text-muted-foreground">Hearing date:</span> {rec.hearingDate}
+                      <span className="text-muted-foreground">Hearing date:</span> {rec.hearing_date}
                     </div>
                   )}
-                  {rec.hearingTime && (
+                  {rec.hearing_time && (
                     <div>
-                      <span className="text-muted-foreground">Time:</span> {rec.hearingTime}
+                      <span className="text-muted-foreground">Time:</span> {rec.hearing_time}
                     </div>
                   )}
-                  {rec.courtLocation && (
+                  {rec.court_location && (
                     <div>
-                      <span className="text-muted-foreground">Location:</span> {rec.courtLocation}
+                      <span className="text-muted-foreground">Location:</span> {rec.court_location}
                     </div>
                   )}
-                  {rec.legalRep && (
+                  {rec.legal_rep && (
                     <div className="col-span-2 md:col-span-3">
-                      <span className="text-muted-foreground">Legal rep:</span> {rec.legalRep}
+                      <span className="text-muted-foreground">Legal rep:</span> {rec.legal_rep}
                     </div>
                   )}
-                  {rec.guardianAdLitem && (
+                  {rec.guardian_ad_litem && (
                     <div className="col-span-2 md:col-span-3">
                       <span className="text-muted-foreground">Guardian ad litem:</span>{" "}
-                      {rec.guardianAdLitem}
+                      {rec.guardian_ad_litem}
                     </div>
                   )}
-                  {rec.socialWorkerInvolved && (
+                  {rec.social_worker_involved && (
                     <div className="col-span-2 md:col-span-3">
                       <span className="text-muted-foreground">Social worker:</span>{" "}
-                      {rec.socialWorkerInvolved}
+                      {rec.social_worker_involved}
                     </div>
                   )}
                   <div>
-                    <span className="text-muted-foreground">Recorded:</span> {rec.recordedDate}
+                    <span className="text-muted-foreground">Recorded:</span> {rec.recorded_date}
                   </div>
-                  {rec.followUpDate && (
+                  {rec.follow_up_date && (
                     <div>
-                      <span className="text-muted-foreground">Follow-up:</span> {rec.followUpDate}
+                      <span className="text-muted-foreground">Follow-up:</span> {rec.follow_up_date}
                     </div>
                   )}
                   <div>
                     <span className="text-muted-foreground">Risk assessment:</span>{" "}
-                    {rec.riskAssessmentDone ? "Completed" : "Outstanding"}
+                    {rec.risk_assessment_done ? "Completed" : "Outstanding"}
                   </div>
                 </div>
 
                 {/* special measures */}
-                {rec.specialMeasuresAgreed.length > 0 && (
+                {rec.special_measures_agreed.length > 0 && (
                   <div className="rounded-lg bg-purple-50 border border-purple-200 p-3">
                     <h4 className="text-sm font-semibold text-purple-900 mb-2 flex items-center gap-1">
                       <Shield className="h-4 w-4" /> Special Measures Agreed
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
-                      {rec.specialMeasuresAgreed.map((m, i) => (
+                      {rec.special_measures_agreed.map((m, i) => (
                         <span
                           key={i}
                           className="rounded-full bg-white border border-purple-200 px-2 py-0.5 text-xs text-purple-900"
@@ -587,7 +362,7 @@ export default function ChildCourtAttendanceSupportPage() {
                 <div>
                   <h4 className="text-sm font-semibold mb-1">Pre-Hearing Preparation</h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    {rec.preHearingPrep.map((p, i) => (
+                    {rec.pre_hearing_prep.map((p, i) => (
                       <li key={i}>{p}</li>
                     ))}
                   </ul>
@@ -599,17 +374,17 @@ export default function ChildCourtAttendanceSupportPage() {
                     <Users className="h-4 w-4" /> Who Attends With Child
                   </h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-teal-900">
-                    {rec.whoAttendsWithChild.map((w, i) => (
+                    {rec.who_attends_with_child.map((w, i) => (
                       <li key={i}>{w}</li>
                     ))}
                   </ul>
                 </div>
 
                 {/* travel */}
-                {rec.travelArrangements && (
+                {rec.travel_arrangements && (
                   <div>
                     <h4 className="text-sm font-semibold mb-1">Travel Arrangements</h4>
-                    <p className="text-sm text-muted-foreground">{rec.travelArrangements}</p>
+                    <p className="text-sm text-muted-foreground">{rec.travel_arrangements}</p>
                   </div>
                 )}
 
@@ -620,7 +395,7 @@ export default function ChildCourtAttendanceSupportPage() {
                       <AlertTriangle className="h-4 w-4" /> Risk Factors
                     </h4>
                     <ul className="list-disc list-inside space-y-1 text-sm text-amber-900">
-                      {rec.riskFactors.map((r, i) => (
+                      {rec.risk_factors.map((r, i) => (
                         <li key={i}>{r}</li>
                       ))}
                     </ul>
@@ -628,7 +403,7 @@ export default function ChildCourtAttendanceSupportPage() {
                   <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
                     <h4 className="text-sm font-semibold text-emerald-900 mb-1">Protective Factors</h4>
                     <ul className="list-disc list-inside space-y-1 text-sm text-emerald-900">
-                      {rec.protectiveFactors.map((p, i) => (
+                      {rec.protective_factors.map((p, i) => (
                         <li key={i}>{p}</li>
                       ))}
                     </ul>
@@ -647,7 +422,7 @@ export default function ChildCourtAttendanceSupportPage() {
                 <div>
                   <h4 className="text-sm font-semibold mb-1">Post-Hearing Support</h4>
                   <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                    {rec.postHearingSupport.map((p, i) => (
+                    {rec.post_hearing_support.map((p, i) => (
                       <li key={i}>{p}</li>
                     ))}
                   </ul>
@@ -656,28 +431,31 @@ export default function ChildCourtAttendanceSupportPage() {
                 {/* child voice */}
                 <div className="rounded-lg bg-sky-50 border border-sky-200 p-3">
                   <h4 className="text-sm font-semibold text-sky-900 mb-1">Child&apos;s Voice</h4>
-                  <p className="text-sm text-sky-900 italic">&ldquo;{rec.childVoice}&rdquo;</p>
+                  <p className="text-sm text-sky-900 italic">&ldquo;{rec.child_voice}&rdquo;</p>
                 </div>
 
                 {/* staff observation */}
                 <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
                   <h4 className="text-sm font-semibold text-slate-900 mb-1">Staff Observation</h4>
-                  <p className="text-sm text-slate-800">{rec.staffObservation}</p>
+                  <p className="text-sm text-slate-800">{rec.staff_observation}</p>
                 </div>
 
                 {/* flags */}
-                {rec.flagsConcerns.length > 0 && (
+                {rec.flags_concerns.length > 0 && (
                   <div className="rounded-lg bg-red-50 border border-red-200 p-3">
                     <h4 className="text-sm font-semibold text-red-900 mb-1 flex items-center gap-1">
                       <AlertTriangle className="h-4 w-4" /> Flags / Concerns
                     </h4>
                     <ul className="list-disc list-inside space-y-1 text-sm text-red-900">
-                      {rec.flagsConcerns.map((f, i) => (
+                      {rec.flags_concerns.map((f, i) => (
                         <li key={i}>{f}</li>
                       ))}
                     </ul>
                   </div>
                 )}
+
+                {/* smart link panel */}
+                <SmartLinkPanel sourceType="court-attendance-support" sourceId={rec.id} childId={rec.child_id} compact />
               </div>
             )}
           </div>
@@ -695,6 +473,7 @@ export default function ChildCourtAttendanceSupportPage() {
           a trusted adult.
         </div>
       </div>
+      )}
     </PageShell>
   );
 }
