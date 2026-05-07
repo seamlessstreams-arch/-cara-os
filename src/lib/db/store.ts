@@ -188,6 +188,12 @@ import type {
   ImmunisationRecord,
   ImpactAssessment,
   IncidentTrendRecord,
+  ClubRecord,
+  AgencyFeedback,
+  BedroomProfile,
+  BedtimeRoutine,
+  CardRecord,
+  BoardReport,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -434,6 +440,12 @@ const store = {
   immunisationRecords: [] as ImmunisationRecord[],
   impactAssessments: [] as ImpactAssessment[],
   incidentTrends: [] as IncidentTrendRecord[],
+  clubRecords: [] as ClubRecord[],
+  agencyFeedback: [] as AgencyFeedback[],
+  bedroomProfiles: [] as BedroomProfile[],
+  bedtimeRoutines: [] as BedtimeRoutine[],
+  cardRecords: [] as CardRecord[],
+  boardReports: [] as BoardReport[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -6088,6 +6100,106 @@ export const db = {
       if (idx === -1) return null;
       store.incidentTrends[idx] = { ...store.incidentTrends[idx], ...data };
       return store.incidentTrends[idx];
+    },
+  },
+
+  clubRecords: {
+    findAll: () => store.clubRecords,
+    findByChild: (childId: string) => store.clubRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.clubRecords.find((r) => r.id === id),
+    create: (data: Partial<ClubRecord>): ClubRecord => {
+      const record = { ...data, id: generateId("club"), created_at: new Date().toISOString() } as ClubRecord;
+      store.clubRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ClubRecord>): ClubRecord | null => {
+      const idx = store.clubRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.clubRecords[idx] = { ...store.clubRecords[idx], ...data };
+      return store.clubRecords[idx];
+    },
+  },
+
+  agencyFeedback: {
+    findAll: () => store.agencyFeedback,
+    findById: (id: string) => store.agencyFeedback.find((r) => r.id === id),
+    create: (data: Partial<AgencyFeedback>): AgencyFeedback => {
+      const record = { ...data, id: generateId("afbk"), created_at: new Date().toISOString() } as AgencyFeedback;
+      store.agencyFeedback.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<AgencyFeedback>): AgencyFeedback | null => {
+      const idx = store.agencyFeedback.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.agencyFeedback[idx] = { ...store.agencyFeedback[idx], ...data };
+      return store.agencyFeedback[idx];
+    },
+  },
+
+  bedroomProfiles: {
+    findAll: () => store.bedroomProfiles,
+    findByChild: (childId: string) => store.bedroomProfiles.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.bedroomProfiles.find((r) => r.id === id),
+    create: (data: Partial<BedroomProfile>): BedroomProfile => {
+      const record = { ...data, id: generateId("bdrm"), created_at: new Date().toISOString() } as BedroomProfile;
+      store.bedroomProfiles.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<BedroomProfile>): BedroomProfile | null => {
+      const idx = store.bedroomProfiles.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.bedroomProfiles[idx] = { ...store.bedroomProfiles[idx], ...data };
+      return store.bedroomProfiles[idx];
+    },
+  },
+
+  bedtimeRoutines: {
+    findAll: () => store.bedtimeRoutines,
+    findByChild: (childId: string) => store.bedtimeRoutines.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.bedtimeRoutines.find((r) => r.id === id),
+    create: (data: Partial<BedtimeRoutine>): BedtimeRoutine => {
+      const record = { ...data, id: generateId("bdtm"), created_at: new Date().toISOString() } as BedtimeRoutine;
+      store.bedtimeRoutines.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<BedtimeRoutine>): BedtimeRoutine | null => {
+      const idx = store.bedtimeRoutines.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.bedtimeRoutines[idx] = { ...store.bedtimeRoutines[idx], ...data };
+      return store.bedtimeRoutines[idx];
+    },
+  },
+
+  cardRecords: {
+    findAll: () => store.cardRecords,
+    findByChild: (childId: string) => store.cardRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.cardRecords.find((r) => r.id === id),
+    create: (data: Partial<CardRecord>): CardRecord => {
+      const record = { ...data, id: generateId("card"), created_at: new Date().toISOString() } as CardRecord;
+      store.cardRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CardRecord>): CardRecord | null => {
+      const idx = store.cardRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.cardRecords[idx] = { ...store.cardRecords[idx], ...data };
+      return store.cardRecords[idx];
+    },
+  },
+
+  boardReports: {
+    findAll: () => store.boardReports,
+    findById: (id: string) => store.boardReports.find((r) => r.id === id),
+    create: (data: Partial<BoardReport>): BoardReport => {
+      const record = { ...data, id: generateId("brpt"), created_at: new Date().toISOString() } as BoardReport;
+      store.boardReports.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<BoardReport>): BoardReport | null => {
+      const idx = store.boardReports.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.boardReports[idx] = { ...store.boardReports[idx], ...data };
+      return store.boardReports[idx];
     },
   },
 };

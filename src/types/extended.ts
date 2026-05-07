@@ -10468,3 +10468,324 @@ export interface IncidentTrendRecord {
   review_date: string;
   created_at: string;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BATCH 28 — After-School Club Tracker, Agency Staff Feedback,
+   Bedroom Personalisation, Bedtime Routines, Birthday Card Tracker,
+   Board Reporting
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── After-School Club Tracker ────────────────────────────────────────────── */
+
+export type ClubType = "sport" | "arts" | "music" | "drama" | "stem_coding" | "outdoor_adventure" | "cultural_heritage" | "volunteering" | "faith" | "skill_development";
+export const CLUB_TYPE_LABEL: Record<ClubType, string> = {
+  sport: "Sport", arts: "Arts", music: "Music", drama: "Drama",
+  stem_coding: "STEM/Coding", outdoor_adventure: "Outdoor/Adventure",
+  cultural_heritage: "Cultural/Heritage", volunteering: "Volunteering",
+  faith: "Faith", skill_development: "Skill development",
+};
+
+export type ClubOngoingStatus = "active" | "trialled_declined" | "on_break" | "ended";
+export const CLUB_ONGOING_STATUS_LABEL: Record<ClubOngoingStatus, string> = {
+  active: "Active", trialled_declined: "Trialled — declined",
+  on_break: "On break", ended: "Ended",
+};
+
+export type ClubFundingSource = "home_budget" | "scholarship" | "charitable_funding" | "free" | "la_grant" | "cornerstone_care_group";
+export const CLUB_FUNDING_SOURCE_LABEL: Record<ClubFundingSource, string> = {
+  home_budget: "Home budget", scholarship: "Scholarship",
+  charitable_funding: "Charitable funding", free: "Free",
+  la_grant: "LA grant", cornerstone_care_group: "Cornerstone Care Group",
+};
+
+export type ClubSocialAspect = "solo_activity" | "with_staff" | "friend_group_at_club" | "group_with_peers" | "mixed";
+export const CLUB_SOCIAL_ASPECT_LABEL: Record<ClubSocialAspect, string> = {
+  solo_activity: "Solo activity", with_staff: "With staff",
+  friend_group_at_club: "Friend group at club",
+  group_with_peers: "Group with peers", mixed: "Mixed",
+};
+
+export interface ClubAttendance {
+  sessions_held_last_term: number;
+  sessions_attended: number;
+  reason_for_absence: string;
+}
+
+export interface ClubRecord {
+  id: string;
+  child_id: string;
+  club_name: string;
+  club_type: ClubType;
+  schedule: string;
+  started_date: string;
+  ongoing_status: ClubOngoingStatus;
+  ended_date: string;
+  reason_for_ending: string;
+  cost: number;
+  funding_source: ClubFundingSource;
+  attendance: ClubAttendance;
+  travel_arrangements: string;
+  staff_escort: string;
+  child_enjoyment_rating: number;
+  social_aspect: ClubSocialAspect;
+  achievements_at_club: string[];
+  challenges_at_club: string[];
+  staff_observations: string;
+  child_comments: string;
+  contributes_to_outcomes: string[];
+  reviewed_date: string;
+  reviewed_by: string;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Agency Staff Feedback ────────────────────────────────────────────────── */
+
+export type AgencyShiftType = "early" | "late" | "sleep_in" | "wake_night" | "long_day";
+export const AGENCY_SHIFT_TYPE_LABEL: Record<AgencyShiftType, string> = {
+  early: "Early", late: "Late", sleep_in: "Sleep-in",
+  wake_night: "Wake-night", long_day: "Long day",
+};
+
+export type RecordingQuality = "excellent" | "good" | "adequate" | "needs_improvement";
+export const RECORDING_QUALITY_LABEL: Record<RecordingQuality, string> = {
+  excellent: "Excellent", good: "Good", adequate: "Adequate",
+  needs_improvement: "Needs improvement",
+};
+
+export type AgencyVerdict = "approved_for_repeat" | "approved_with_development_plan" | "not_approved_for_repeat" | "conditional";
+export const AGENCY_VERDICT_LABEL: Record<AgencyVerdict, string> = {
+  approved_for_repeat: "Approved for repeat",
+  approved_with_development_plan: "Approved with development plan",
+  not_approved_for_repeat: "Not approved for repeat",
+  conditional: "Conditional",
+};
+
+export interface AgencyFeedback {
+  id: string;
+  agency_staff_name: string;
+  agency: string;
+  shift_date: string;
+  shift_type: AgencyShiftType;
+  induction_recorded: boolean;
+  permanent_staff_on_shift: string;
+  children_interacted_with: string[];
+  observations_positive: string[];
+  observations_constructive: string[];
+  child_feedback: string;
+  follows_routines: boolean;
+  follows_behaviour_support_plans: boolean;
+  follows_sensory_protocols: boolean;
+  recording_quality: RecordingQuality;
+  professionalism_rating: number;
+  relational_skills_rating: number;
+  overall_verdict: AgencyVerdict;
+  feedback_to_agency_date: string;
+  feedback_summary: string;
+  follow_up_action: string;
+  reviewed_by: string;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Bedroom Personalisation ──────────────────────────────────────────────── */
+
+export interface BedroomFurnitureItem {
+  item: string;
+  child_chose: boolean;
+  special_note: string;
+}
+
+export interface BedroomTechItem {
+  device: string;
+  agreed_use_rules: string;
+  location_in_room: string;
+}
+
+export interface BedroomMeaningfulItem {
+  item: string;
+  significance: string;
+}
+
+export interface BedroomRecentChange {
+  date: string;
+  change: string;
+}
+
+export interface BedroomProfile {
+  id: string;
+  child_id: string;
+  room_number: string;
+  child_choose_colours: boolean;
+  wall_colours: string[];
+  furniture_chosen_by_child: boolean;
+  furniture_items: BedroomFurnitureItem[];
+  decor_themes: string[];
+  personal_artwork_displayed: string[];
+  photos_displayed: string[];
+  comfort_items: string[];
+  tech_setup: BedroomTechItem[];
+  storage_arrangement: string;
+  private_space: string[];
+  sensory_accommodations: string[];
+  window_dressing: string;
+  flooring: string;
+  lighting_preferences: string;
+  bed_and_bedding: string;
+  meaningful_items: BedroomMeaningfulItem[];
+  total_budget_spent: number;
+  budget_remaining: number;
+  child_satisfaction_rating: number;
+  improvement_wishes: string[];
+  recent_changes: BedroomRecentChange[];
+  review_date: string;
+  reviewed_with: string;
+  child_authored: boolean;
+  created_at: string;
+}
+
+/* ── Bedtime Routines ─────────────────────────────────────────────────────── */
+
+export type AgeBand = "under_11" | "11_13" | "14_15" | "16_plus";
+export const AGE_BAND_LABEL: Record<AgeBand, string> = {
+  under_11: "Under 11", "11_13": "11-13", "14_15": "14-15", "16_plus": "16+",
+};
+
+export type RoutineSupportLevel = "independent" | "prompted" | "supported";
+export const ROUTINE_SUPPORT_LEVEL_LABEL: Record<RoutineSupportLevel, string> = {
+  independent: "Independent", prompted: "Prompted", supported: "Supported",
+};
+
+export interface RoutineStep {
+  time: string;
+  activity: string;
+  support_level: RoutineSupportLevel;
+}
+
+export interface SleepEnvironment {
+  lighting: string;
+  temperature: string;
+  sound: string;
+  bedding: string;
+}
+
+export interface BedtimeRoutine {
+  id: string;
+  child_id: string;
+  age_band: AgeBand;
+  agreed_bedtime: string;
+  weekend_bedtime: string;
+  wind_down_start_time: string;
+  routine_steps: RoutineStep[];
+  pre_bed_rituals: string[];
+  sensory_needs: string[];
+  comfort_items: string[];
+  preferred_environment: SleepEnvironment;
+  triggers_to_avoid: string[];
+  if_struggling_to_sleep: string[];
+  night_terrors: string;
+  morning_wake_routine: string;
+  reviewed_date: string;
+  reviewed_with: string;
+  child_agreed: boolean;
+  effectiveness_rating: number;
+  created_at: string;
+}
+
+/* ── Birthday Card Tracker ────────────────────────────────────────────────── */
+
+export type CardOccasion = "birthday" | "christmas" | "eid" | "other_religious_festival" | "anniversary_of_arrival" | "achievement" | "just_because" | "get_well";
+export const CARD_OCCASION_LABEL: Record<CardOccasion, string> = {
+  birthday: "Birthday", christmas: "Christmas", eid: "Eid",
+  other_religious_festival: "Other religious festival",
+  anniversary_of_arrival: "Anniversary of arrival",
+  achievement: "Achievement", just_because: "Just because", get_well: "Get well",
+};
+
+export type CardType = "card" | "card_with_money" | "card_with_gift" | "letter" | "postcard" | "drawing_handmade";
+export const CARD_TYPE_LABEL: Record<CardType, string> = {
+  card: "Card", card_with_money: "Card with money", card_with_gift: "Card with gift",
+  letter: "Letter", postcard: "Postcard", drawing_handmade: "Drawing/handmade",
+};
+
+export type SenderType = "mother" | "father" | "sibling" | "grandparent" | "aunt_uncle" | "cousin" | "family_friend" | "coach_mentor" | "school_staff" | "former_carer" | "cornerstone_staff" | "anonymous_well_wisher";
+export const SENDER_TYPE_LABEL: Record<SenderType, string> = {
+  mother: "Mother", father: "Father", sibling: "Sibling",
+  grandparent: "Grandparent", aunt_uncle: "Aunt/Uncle", cousin: "Cousin",
+  family_friend: "Family friend", coach_mentor: "Coach/mentor",
+  school_staff: "School staff", former_carer: "Former carer",
+  cornerstone_staff: "Cornerstone staff", anonymous_well_wisher: "Anonymous well-wisher",
+};
+
+export interface CardRecord {
+  id: string;
+  child_id: string;
+  occasion: CardOccasion;
+  occasion_date: string;
+  received_date: string;
+  card_type: CardType;
+  sender_type: SenderType;
+  sender_name: string;
+  child_response_observed: string;
+  child_kept_card: boolean;
+  card_location: string;
+  item_value: number;
+  acknowledgement_sent: boolean;
+  acknowledgement_method: string;
+  recorded_by: string;
+  significance: string;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Board Reporting ──────────────────────────────────────────────────────── */
+
+export type BoardReportType = "monthly_rm_report" | "quarterly_performance" | "annual_report" | "reg_45_six_monthly" | "reg_44_triangulation" | "incident_briefing" | "strategic_update";
+export const BOARD_REPORT_TYPE_LABEL: Record<BoardReportType, string> = {
+  monthly_rm_report: "Monthly RM Report", quarterly_performance: "Quarterly Performance",
+  annual_report: "Annual Report", reg_45_six_monthly: "Reg 45 Six-Monthly",
+  reg_44_triangulation: "Reg 44 Triangulation", incident_briefing: "Incident Briefing",
+  strategic_update: "Strategic Update",
+};
+
+export type BoardActionStatus = "completed" | "in_progress" | "overdue" | "pending";
+export const BOARD_ACTION_STATUS_LABEL: Record<BoardActionStatus, string> = {
+  completed: "Completed", in_progress: "In Progress",
+  overdue: "Overdue", pending: "Pending",
+};
+
+export interface BoardMetricValue {
+  value: string;
+  change: string;
+}
+
+export interface BoardAgreedAction {
+  action: string;
+  owner: string;
+  deadline: string;
+  status: BoardActionStatus;
+}
+
+export interface BoardReport {
+  id: string;
+  report_type: BoardReportType;
+  report_period: string;
+  submitted_date: string;
+  submitted_to: string;
+  authored_by: string;
+  summary: string;
+  key_metrics: Record<string, BoardMetricValue>;
+  narrative_highlights: string[];
+  areas_of_concern: string[];
+  risk_rag_rating: RagRating;
+  strategic_questions_raised: string[];
+  board_response_received: boolean;
+  board_feedback: string;
+  actions_agreed: BoardAgreedAction[];
+  evidence_attachments: string[];
+  child_outcomes_narrative: string;
+  distribution_list: string[];
+  retention_period: string;
+  next_report_due: string;
+  created_at: string;
+}
