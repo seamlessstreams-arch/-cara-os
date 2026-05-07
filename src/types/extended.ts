@@ -13831,3 +13831,324 @@ export interface LacReviewPrep {
   notes: string;
   created_at: string;
 }
+
+/* ── Batch 37 ─────────────────────────────────────────────────────────────── */
+
+/* LADO Referrals (home-level) */
+
+export type LadoAllegationType = "physical_abuse" | "emotional_abuse" | "sexual_abuse" | "neglect" | "inappropriate_behaviour" | "inappropriate_relationship" | "boundary_violation" | "other";
+export const LADO_ALLEGATION_TYPE_LABEL: Record<LadoAllegationType, string> = {
+  physical_abuse: "Physical Abuse",
+  emotional_abuse: "Emotional Abuse",
+  sexual_abuse: "Sexual Abuse",
+  neglect: "Neglect",
+  inappropriate_behaviour: "Inappropriate Behaviour",
+  inappropriate_relationship: "Inappropriate Relationship",
+  boundary_violation: "Boundary Violation",
+  other: "Other",
+};
+
+export type LadoOutcome = "substantiated" | "unsubstantiated" | "unfounded" | "malicious" | "pending";
+export const LADO_OUTCOME_LABEL: Record<LadoOutcome, string> = {
+  substantiated: "Substantiated",
+  unsubstantiated: "Unsubstantiated",
+  unfounded: "Unfounded",
+  malicious: "Malicious",
+  pending: "Pending",
+};
+
+export type LadoReferralStatus = "initial_assessment" | "lado_contacted" | "strategy_meeting" | "investigation" | "outcome_reached" | "closed" | "nfa";
+export const LADO_REFERRAL_STATUS_LABEL: Record<LadoReferralStatus, string> = {
+  initial_assessment: "Initial Assessment",
+  lado_contacted: "LADO Contacted",
+  strategy_meeting: "Strategy Meeting",
+  investigation: "Investigation",
+  outcome_reached: "Outcome Reached",
+  closed: "Closed",
+  nfa: "No Further Action",
+};
+
+export type LadoStaffAction = "suspended" | "restricted_duties" | "normal_duties" | "resigned" | "dismissed" | "cleared";
+export const LADO_STAFF_ACTION_LABEL: Record<LadoStaffAction, string> = {
+  suspended: "Suspended",
+  restricted_duties: "Restricted Duties",
+  normal_duties: "Normal Duties",
+  resigned: "Resigned",
+  dismissed: "Dismissed",
+  cleared: "Cleared",
+};
+
+export type LadoConfidentialityLevel = "restricted" | "highly_restricted";
+export const LADO_CONFIDENTIALITY_LEVEL_LABEL: Record<LadoConfidentialityLevel, string> = {
+  restricted: "Restricted",
+  highly_restricted: "Highly Restricted",
+};
+
+export interface LadoReferral {
+  id: string;
+  date_referred: string;
+  date_allegation: string;
+  referred_by: string;
+  subject_staff_id: string;
+  subject_staff_role: string;
+  allegation_type: LadoAllegationType;
+  status: LadoReferralStatus;
+  outcome: LadoOutcome;
+  staff_action: LadoStaffAction;
+  child_ids: string[];
+  lado_name: string;
+  lado_contact: string;
+  allegation_summary: string;
+  evidence_summary: string;
+  strategy_meeting_date: string | null;
+  strategy_meeting_attendees: string[];
+  investigation_findings: string;
+  ofsted_notified: boolean;
+  ofsted_notified_date: string | null;
+  dbs_referral: boolean;
+  police_involved: boolean;
+  police_ref: string | null;
+  support_for_staff: string;
+  support_for_child: string;
+  lesson_learned: string;
+  confidentiality_level: LadoConfidentialityLevel;
+  review_dates: string[];
+  closed_date: string | null;
+  closed_by: string | null;
+  created_at: string;
+}
+
+/* Language & Communication Profiles (child-level) */
+
+export type CommLevel = "age_appropriate" | "below_age" | "significant_need" | "non_verbal";
+export const COMM_LEVEL_LABEL: Record<CommLevel, string> = {
+  age_appropriate: "Age Appropriate",
+  below_age: "Below Age",
+  significant_need: "Significant Need",
+  non_verbal: "Non-Verbal / Minimal Verbal",
+};
+
+export type CommSupportLevel = "no_additional" | "some_support" | "significant_support" | "specialist";
+export const COMM_SUPPORT_LEVEL_LABEL: Record<CommSupportLevel, string> = {
+  no_additional: "No Additional Support",
+  some_support: "Some Support",
+  significant_support: "Significant Support",
+  specialist: "Specialist Support",
+};
+
+export type CommEffectiveness = "effective" | "partially_effective" | "not_effective" | "not_yet_evaluated";
+export const COMM_EFFECTIVENESS_LABEL: Record<CommEffectiveness, string> = {
+  effective: "Effective",
+  partially_effective: "Partially Effective",
+  not_effective: "Not Effective",
+  not_yet_evaluated: "Not Yet Evaluated",
+};
+
+export type SendStatus = "none" | "sen_support" | "ehcp";
+export const SEND_STATUS_LABEL: Record<SendStatus, string> = {
+  none: "None",
+  sen_support: "SEN Support",
+  ehcp: "EHCP",
+};
+
+export interface CommunicationStrategy {
+  strategy: string;
+  in_use: boolean;
+  effectiveness: CommEffectiveness;
+  notes: string;
+}
+
+export interface CommunicationProfile {
+  id: string;
+  child_id: string;
+  last_review_date: string;
+  reviewed_by: string;
+  preferred_language: string;
+  additional_languages: string[];
+  interpreter_required: boolean;
+  interpreter_details: string | null;
+  receptive_level: CommLevel;
+  expressive_level: CommLevel;
+  support_level: CommSupportLevel;
+  send_status: SendStatus;
+  salt_involved: boolean;
+  salt_details: string | null;
+  strengths: string[];
+  challenges: string[];
+  strategies: CommunicationStrategy[];
+  aac_tools: string[];
+  staff_guidance: string;
+  child_views: string;
+  created_at: string;
+}
+
+/* Leaving Care Financial Package (child-level) */
+
+export type TransitionStage = "pre_pathway" | "building_16_17" | "active_leaving_17_18" | "post_care_18_plus";
+export const TRANSITION_STAGE_LABEL: Record<TransitionStage, string> = {
+  pre_pathway: "Pre-pathway",
+  building_16_17: "Building (16-17)",
+  active_leaving_17_18: "Active leaving (17-18)",
+  post_care_18_plus: "Post-care (18+)",
+};
+
+export interface SavingsEntry {
+  date: string;
+  amount: number;
+  source: string;
+}
+
+export interface LeavingCarePackage {
+  id: string;
+  child_id: string;
+  child_initials: string;
+  age: number;
+  transition_stage: TransitionStage;
+  junior_isa_balance: number;
+  junior_isa_provider: string;
+  junior_isa_contributions_to_date: string;
+  savings_balance: number;
+  savings_history: SavingsEntry[];
+  setting_up_home_allowance: number;
+  setting_up_home_allowance_used: number;
+  setting_up_home_allowance_items: string[];
+  monthly_allowance_current: number;
+  financial_literacy_progression: Record<string, string>;
+  bank_account_status: string;
+  debt_and_credit: string;
+  employment_status: string;
+  benefits_applied: string[];
+  housing_pathway: string;
+  cost_of_living_costings: string;
+  future_risk_factors: string[];
+  protective_financial_factors: string[];
+  reviewed_date: string;
+  reviewed_by: string;
+  created_at: string;
+}
+
+/* Lessons Learned Register (home-level) */
+
+export type LessonSource = "incident" | "complaint" | "audit" | "reflective_practice" | "reg_44" | "external_feedback" | "critical_incident_review";
+export const LESSON_SOURCE_LABEL: Record<LessonSource, string> = {
+  incident: "Incident",
+  complaint: "Complaint",
+  audit: "Audit",
+  reflective_practice: "Reflective Practice",
+  reg_44: "Reg 44",
+  external_feedback: "External Feedback",
+  critical_incident_review: "Critical Incident Review",
+};
+
+export type LessonThemeArea = "safeguarding" | "practice" | "communication" | "recording" | "training" | "environment" | "wellbeing" | "multi_agency";
+export const LESSON_THEME_AREA_LABEL: Record<LessonThemeArea, string> = {
+  safeguarding: "Safeguarding",
+  practice: "Practice",
+  communication: "Communication",
+  recording: "Recording",
+  training: "Training",
+  environment: "Environment",
+  wellbeing: "Wellbeing",
+  multi_agency: "Multi-agency",
+};
+
+export type LessonStatus = "identified" | "in_progress" | "embedded" | "monitoring";
+export const LESSON_STATUS_LABEL: Record<LessonStatus, string> = {
+  identified: "Identified",
+  in_progress: "In Progress",
+  embedded: "Embedded",
+  monitoring: "Monitoring",
+};
+
+export interface LessonLearned {
+  id: string;
+  date_identified: string;
+  source: LessonSource;
+  source_reference: string;
+  theme_area: LessonThemeArea;
+  lesson: string;
+  context: string;
+  what_happened: string;
+  root_cause_analysis: string;
+  what_we_changed: string[];
+  policies_updated: string[];
+  training_delivered: string[];
+  staff_briefed: boolean;
+  briefing_date: string;
+  evidence_of_embedding: string[];
+  recurrence_check: string;
+  status: LessonStatus;
+  embedding_score: number;
+  reviewed_by: string;
+  next_review_date: string;
+  created_at: string;
+}
+
+/* LGBTQ+ Inclusion Record (child-level) */
+
+export type OutStatus = "yes" | "selectively" | "no" | "not_yet_decided";
+export const OUT_STATUS_LABEL: Record<OutStatus, string> = {
+  yes: "Yes",
+  selectively: "Selectively",
+  no: "No",
+  not_yet_decided: "Not yet decided",
+};
+
+export interface LgbtqInclusionRecord {
+  id: string;
+  child_id: string;
+  last_updated: string;
+  identity_as_shared: string;
+  pronouns: string;
+  preferred_name: string;
+  who_knows_at_child_pace: string[];
+  out_at_school: OutStatus;
+  out_to_family: OutStatus;
+  identity_affirming_actions: string[];
+  challenges_faced: string[];
+  external_support: string[];
+  staff_actions_this_month: string[];
+  pronouns_used_consistently: boolean;
+  preferred_name_used_consistently: boolean;
+  child_voice: string;
+  staff_observation: string;
+  flags_concerns: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* Life Story Work (child-level) */
+
+export type LifeStoryEntryType = "memory" | "milestone" | "heritage" | "identity" | "wish" | "achievement" | "photo_story" | "creative";
+export const LIFE_STORY_ENTRY_TYPE_LABEL: Record<LifeStoryEntryType, string> = {
+  memory: "Memory",
+  milestone: "Milestone",
+  heritage: "Heritage",
+  identity: "Identity",
+  wish: "Wish / Dream",
+  achievement: "Achievement",
+  photo_story: "Photo Story",
+  creative: "Creative Work",
+};
+
+export type LifeStoryEntryStatus = "in_progress" | "completed" | "planned";
+export const LIFE_STORY_ENTRY_STATUS_LABEL: Record<LifeStoryEntryStatus, string> = {
+  in_progress: "In Progress",
+  completed: "Completed",
+  planned: "Planned",
+};
+
+export interface LifeStoryEntry {
+  id: string;
+  child_id: string;
+  date: string;
+  type: LifeStoryEntryType;
+  title: string;
+  description: string;
+  child_voice: string;
+  facilitator: string;
+  status: LifeStoryEntryStatus;
+  linked_to_book: boolean;
+  created_at: string;
+}
