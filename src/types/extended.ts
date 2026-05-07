@@ -10789,3 +10789,381 @@ export interface BoardReport {
   next_report_due: string;
   created_at: string;
 }
+
+// ── Batch 29 ────────────────────────────────────────────────────────────────
+
+// ── Building Asbestos Register (home-level) ──────────────────────────────────
+
+export type AsbestosSurveyType =
+  | "management_survey"
+  | "refurbishment_demolition_survey"
+  | "re_inspection"
+  | "air_monitoring"
+  | "removal_record";
+
+export const ASBESTOS_SURVEY_TYPE_LABEL: Record<AsbestosSurveyType, string> = {
+  management_survey: "Management Survey",
+  refurbishment_demolition_survey: "Refurbishment & Demolition Survey",
+  re_inspection: "Re-inspection",
+  air_monitoring: "Air monitoring",
+  removal_record: "Removal record",
+};
+
+export type AsbestosConditionRating =
+  | "no_acm_identified"
+  | "good_condition_sealed"
+  | "minor_damage_encapsulated"
+  | "significant_damage_action_required"
+  | "removed";
+
+export const ASBESTOS_CONDITION_RATING_LABEL: Record<AsbestosConditionRating, string> = {
+  no_acm_identified: "No ACM identified",
+  good_condition_sealed: "Good condition — sealed",
+  minor_damage_encapsulated: "Minor damage — encapsulated",
+  significant_damage_action_required: "Significant damage — action required",
+  removed: "Removed",
+};
+
+export type AsbestosReinspectionFrequency =
+  | "annual"
+  | "bi_annual"
+  | "on_disturbance_only"
+  | "not_applicable";
+
+export const ASBESTOS_REINSPECTION_FREQUENCY_LABEL: Record<AsbestosReinspectionFrequency, string> = {
+  annual: "Annual",
+  bi_annual: "Bi-annual",
+  on_disturbance_only: "On disturbance only",
+  not_applicable: "Not applicable",
+};
+
+export interface AsbestosRemovalContractor {
+  name: string;
+  hse_licence_number: string;
+  date: string;
+}
+
+export interface AsbestosRecord {
+  id: string;
+  survey_date: string;
+  survey_type: AsbestosSurveyType;
+  surveyor: string;
+  surveyor_accreditation: string;
+  certificate_number: string;
+  building_area: string;
+  acm_identified: boolean;
+  acm_type?: string;
+  condition_rating: AsbestosConditionRating;
+  management_action: string;
+  removal_contractor?: AsbestosRemovalContractor;
+  encapsulation_details?: string;
+  reinspection_frequency: AsbestosReinspectionFrequency;
+  next_inspection_due?: string;
+  tradesperson_briefings_required: boolean;
+  notes_for_contractors?: string;
+  recorded_by: string;
+  flags_concerns: string[];
+  created_at: string;
+}
+
+// ── Building Pest Control (home-level) ───────────────────────────────────────
+
+export type PestRecordType =
+  | "routine_preventive_treatment"
+  | "reactive_call_out"
+  | "annual_contract_review"
+  | "bait_station_refresh"
+  | "survey_only"
+  | "follow_up_monitoring";
+
+export const PEST_RECORD_TYPE_LABEL: Record<PestRecordType, string> = {
+  routine_preventive_treatment: "Routine preventive treatment",
+  reactive_call_out: "Reactive call-out",
+  annual_contract_review: "Annual contract review",
+  bait_station_refresh: "Bait station refresh",
+  survey_only: "Survey only",
+  follow_up_monitoring: "Follow-up monitoring",
+};
+
+export type PestCategory =
+  | "mice"
+  | "rats"
+  | "ants"
+  | "wasps_hornets"
+  | "silverfish"
+  | "bedbugs"
+  | "cockroaches"
+  | "moths"
+  | "pigeons"
+  | "mixed_general"
+  | "none_preventive_only";
+
+export const PEST_CATEGORY_LABEL: Record<PestCategory, string> = {
+  mice: "Mice",
+  rats: "Rats",
+  ants: "Ants",
+  wasps_hornets: "Wasps / hornets",
+  silverfish: "Silverfish",
+  bedbugs: "Bedbugs",
+  cockroaches: "Cockroaches",
+  moths: "Moths",
+  pigeons: "Pigeons",
+  mixed_general: "Mixed / general",
+  none_preventive_only: "None — preventive only",
+};
+
+export interface PestRecord {
+  id: string;
+  record_date: string;
+  record_type: PestRecordType;
+  pest_category: PestCategory;
+  affected_areas: string[];
+  contractor: string;
+  contractor_accreditation: string;
+  treatment_method: string[];
+  chemicals_used: string[];
+  child_safety_measures: string[];
+  child_informed_and_paced: boolean;
+  prevention_advice: string[];
+  follow_up_required: boolean;
+  follow_up_date?: string;
+  cost_paid?: number;
+  outcome_evidence: string;
+  recorded_by: string;
+  flags_concerns: string[];
+  created_at: string;
+}
+
+// ── Building Window Restrictor Checks (home-level) ───────────────────────────
+
+export type WindowType =
+  | "sash"
+  | "casement"
+  | "tilt_and_turn"
+  | "top_hung"
+  | "skylight"
+  | "other";
+
+export const WINDOW_TYPE_LABEL: Record<WindowType, string> = {
+  sash: "Sash",
+  casement: "Casement",
+  tilt_and_turn: "Tilt-and-turn",
+  top_hung: "Top-hung",
+  skylight: "Skylight",
+  other: "Other",
+};
+
+export type WindowFloorLevel =
+  | "ground"
+  | "first"
+  | "second"
+  | "third"
+  | "loft_above";
+
+export const WINDOW_FLOOR_LEVEL_LABEL: Record<WindowFloorLevel, string> = {
+  ground: "Ground",
+  first: "First",
+  second: "Second",
+  third: "Third",
+  loft_above: "Loft / above",
+};
+
+export type RestrictorType =
+  | "cable_key"
+  | "permanent_fixed"
+  | "pin_lock"
+  | "combination"
+  | "standard_window_lock"
+  | "none_child_accessible";
+
+export const RESTRICTOR_TYPE_LABEL: Record<RestrictorType, string> = {
+  cable_key: "Cable + key",
+  permanent_fixed: "Permanent fixed",
+  pin_lock: "Pin lock",
+  combination: "Combination",
+  standard_window_lock: "Standard window lock",
+  none_child_accessible: "None — child-accessible",
+};
+
+export type WindowCheckOutcome =
+  | "pass"
+  | "pass_with_advisory"
+  | "remedial_required"
+  | "failed_restrict_immediately";
+
+export const WINDOW_CHECK_OUTCOME_LABEL: Record<WindowCheckOutcome, string> = {
+  pass: "Pass",
+  pass_with_advisory: "Pass with advisory",
+  remedial_required: "Remedial required",
+  failed_restrict_immediately: "Failed — restrict immediately",
+};
+
+export interface WindowCheck {
+  id: string;
+  inspection_date: string;
+  window_location: string;
+  window_type: WindowType;
+  floor_level: WindowFloorLevel;
+  restrictor_present: boolean;
+  restrictor_type: RestrictorType;
+  restrictor_working: boolean;
+  key_location?: string;
+  opening_maximum_cm: number;
+  opening_compliance_with_100mm_rule: boolean;
+  signage_in_place: boolean;
+  child_aware: boolean;
+  damage_noted: string[];
+  remedial_actions: string[];
+  outcome: WindowCheckOutcome;
+  inspected_by: string;
+  flags_concerns: string[];
+  next_due_date: string;
+  created_at: string;
+}
+
+// ── Business Continuity (home-level) ─────────────────────────────────────────
+
+export type BcpSeverity = "critical" | "high" | "medium";
+
+export const BCP_SEVERITY_LABEL: Record<BcpSeverity, string> = {
+  critical: "Critical",
+  high: "High",
+  medium: "Medium",
+};
+
+export interface BcpScenarioPlan {
+  id: string;
+  title: string;
+  icon_key: string;
+  severity: BcpSeverity;
+  content: string[];
+  created_at: string;
+}
+
+// ── Case File Audit (child-level) ────────────────────────────────────────────
+
+export type CaseFileAuditType =
+  | "quarterly"
+  | "annual"
+  | "pre_inspection"
+  | "targeted"
+  | "triggered_by_concern";
+
+export const CASE_FILE_AUDIT_TYPE_LABEL: Record<CaseFileAuditType, string> = {
+  quarterly: "Quarterly",
+  annual: "Annual",
+  pre_inspection: "Pre-Inspection",
+  targeted: "Targeted",
+  triggered_by_concern: "Triggered by concern",
+};
+
+export type CaseFileActionStatus =
+  | "open"
+  | "in_progress"
+  | "complete"
+  | "overdue";
+
+export const CASE_FILE_ACTION_STATUS_LABEL: Record<CaseFileActionStatus, string> = {
+  open: "Open",
+  in_progress: "In Progress",
+  complete: "Complete",
+  overdue: "Overdue",
+};
+
+export interface CaseFileSectionAudit {
+  section: string;
+  score: number;
+  rag_rating: RagRating;
+  findings: string;
+  required_actions: string[];
+}
+
+export interface CaseFilePriorityAction {
+  action: string;
+  owner: string;
+  deadline: string;
+  status: CaseFileActionStatus;
+}
+
+export interface CaseFileAudit {
+  id: string;
+  child_id: string;
+  audit_date: string;
+  auditor: string;
+  audit_type: CaseFileAuditType;
+  sections_audited: CaseFileSectionAudit[];
+  overall_rag_rating: RagRating;
+  overall_score: number;
+  strengths_identified: string[];
+  gaps_identified: string[];
+  priority_actions: CaseFilePriorityAction[];
+  child_contributed_to_audit: boolean;
+  child_observation: string;
+  next_audit_due: string;
+  created_at: string;
+}
+
+// ── Child Money Management & Budgeting (child-level) ─────────────────────────
+
+export type MoneySkillCategory =
+  | "weekly_budget"
+  | "bank_app_fluency"
+  | "comparison_shopping"
+  | "reading_contracts"
+  | "scam_recognition"
+  | "cashflow_planning"
+  | "payslip_reading"
+  | "debt_awareness"
+  | "tax_ni_literacy"
+  | "pension_awareness"
+  | "bnpl_risks"
+  | "uc_benefits_literacy";
+
+export const MONEY_SKILL_CATEGORY_LABEL: Record<MoneySkillCategory, string> = {
+  weekly_budget: "Weekly budget",
+  bank_app_fluency: "Bank app fluency",
+  comparison_shopping: "Comparison shopping",
+  reading_contracts: "Reading contracts",
+  scam_recognition: "Scam recognition",
+  cashflow_planning: "Cashflow planning",
+  payslip_reading: "Payslip reading",
+  debt_awareness: "Debt awareness",
+  tax_ni_literacy: "Tax & NI literacy",
+  pension_awareness: "Pension awareness",
+  bnpl_risks: "Buy-now-pay-later (BNPL) risks",
+  uc_benefits_literacy: "Universal Credit / benefits literacy",
+};
+
+export type MoneyCompetency =
+  | "not_yet_introduced"
+  | "aware"
+  | "did_with_help"
+  | "did_independently"
+  | "confident";
+
+export const MONEY_COMPETENCY_LABEL: Record<MoneyCompetency, string> = {
+  not_yet_introduced: "Not yet introduced",
+  aware: "Aware",
+  did_with_help: "Did with help",
+  did_independently: "Did independently",
+  confident: "Confident",
+};
+
+export interface MoneyRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  skill_category: MoneySkillCategory;
+  competency: MoneyCompetency;
+  practical_examples: string[];
+  real_world_application: string[];
+  tools_used: string[];
+  challenges_faced: string[];
+  child_money_values_notes?: string;
+  child_voice: string;
+  staff_observation: string;
+  next_step: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}

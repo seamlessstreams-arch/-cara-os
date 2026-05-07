@@ -194,6 +194,12 @@ import type {
   BedtimeRoutine,
   CardRecord,
   BoardReport,
+  AsbestosRecord,
+  PestRecord,
+  WindowCheck,
+  BcpScenarioPlan,
+  CaseFileAudit,
+  MoneyRecord,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -446,6 +452,12 @@ const store = {
   bedtimeRoutines: [] as BedtimeRoutine[],
   cardRecords: [] as CardRecord[],
   boardReports: [] as BoardReport[],
+  asbestosRecords: [] as AsbestosRecord[],
+  pestRecords: [] as PestRecord[],
+  windowChecks: [] as WindowCheck[],
+  bcpScenarios: [] as BcpScenarioPlan[],
+  caseFileAudits: [] as CaseFileAudit[],
+  moneyRecords: [] as MoneyRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -6200,6 +6212,104 @@ export const db = {
       if (idx === -1) return null;
       store.boardReports[idx] = { ...store.boardReports[idx], ...data };
       return store.boardReports[idx];
+    },
+  },
+
+  asbestosRecords: {
+    findAll: () => store.asbestosRecords,
+    findById: (id: string) => store.asbestosRecords.find((r) => r.id === id),
+    create: (data: Partial<AsbestosRecord>): AsbestosRecord => {
+      const record = { ...data, id: generateId("asbr"), created_at: new Date().toISOString() } as AsbestosRecord;
+      store.asbestosRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<AsbestosRecord>): AsbestosRecord | null => {
+      const idx = store.asbestosRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.asbestosRecords[idx] = { ...store.asbestosRecords[idx], ...data };
+      return store.asbestosRecords[idx];
+    },
+  },
+
+  pestRecords: {
+    findAll: () => store.pestRecords,
+    findById: (id: string) => store.pestRecords.find((r) => r.id === id),
+    create: (data: Partial<PestRecord>): PestRecord => {
+      const record = { ...data, id: generateId("pest"), created_at: new Date().toISOString() } as PestRecord;
+      store.pestRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<PestRecord>): PestRecord | null => {
+      const idx = store.pestRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.pestRecords[idx] = { ...store.pestRecords[idx], ...data };
+      return store.pestRecords[idx];
+    },
+  },
+
+  windowChecks: {
+    findAll: () => store.windowChecks,
+    findById: (id: string) => store.windowChecks.find((r) => r.id === id),
+    create: (data: Partial<WindowCheck>): WindowCheck => {
+      const record = { ...data, id: generateId("winc"), created_at: new Date().toISOString() } as WindowCheck;
+      store.windowChecks.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<WindowCheck>): WindowCheck | null => {
+      const idx = store.windowChecks.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.windowChecks[idx] = { ...store.windowChecks[idx], ...data };
+      return store.windowChecks[idx];
+    },
+  },
+
+  bcpScenarios: {
+    findAll: () => store.bcpScenarios,
+    findById: (id: string) => store.bcpScenarios.find((r) => r.id === id),
+    create: (data: Partial<BcpScenarioPlan>): BcpScenarioPlan => {
+      const record = { ...data, id: generateId("bcps"), created_at: new Date().toISOString() } as BcpScenarioPlan;
+      store.bcpScenarios.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<BcpScenarioPlan>): BcpScenarioPlan | null => {
+      const idx = store.bcpScenarios.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.bcpScenarios[idx] = { ...store.bcpScenarios[idx], ...data };
+      return store.bcpScenarios[idx];
+    },
+  },
+
+  caseFileAudits: {
+    findAll: () => store.caseFileAudits,
+    findByChild: (childId: string) => store.caseFileAudits.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.caseFileAudits.find((r) => r.id === id),
+    create: (data: Partial<CaseFileAudit>): CaseFileAudit => {
+      const record = { ...data, id: generateId("cfau"), created_at: new Date().toISOString() } as CaseFileAudit;
+      store.caseFileAudits.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CaseFileAudit>): CaseFileAudit | null => {
+      const idx = store.caseFileAudits.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.caseFileAudits[idx] = { ...store.caseFileAudits[idx], ...data };
+      return store.caseFileAudits[idx];
+    },
+  },
+
+  moneyRecords: {
+    findAll: () => store.moneyRecords,
+    findByChild: (childId: string) => store.moneyRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.moneyRecords.find((r) => r.id === id),
+    create: (data: Partial<MoneyRecord>): MoneyRecord => {
+      const record = { ...data, id: generateId("mney"), created_at: new Date().toISOString() } as MoneyRecord;
+      store.moneyRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MoneyRecord>): MoneyRecord | null => {
+      const idx = store.moneyRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.moneyRecords[idx] = { ...store.moneyRecords[idx], ...data };
+      return store.moneyRecords[idx];
     },
   },
 };
