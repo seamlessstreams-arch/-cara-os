@@ -11652,3 +11652,705 @@ export interface SwimRecord {
   key_worker: string;
   created_at: string;
 }
+
+/* ─── batch 31 ─── */
+
+/* ── Volunteering & Charity ── */
+
+export type VolunteerCategory =
+  | "charity_fundraising"
+  | "community_volunteering"
+  | "mosque_temple_church"
+  | "sport_coaching_refereeing"
+  | "animal_welfare"
+  | "environmental"
+  | "befriending_mentoring"
+  | "youth_advocacy"
+  | "school_peer_support"
+  | "other";
+
+export const VOLUNTEER_CATEGORY_LABEL: Record<VolunteerCategory, string> = {
+  charity_fundraising: "Charity fundraising",
+  community_volunteering: "Community volunteering",
+  mosque_temple_church: "Mosque/temple/church",
+  sport_coaching_refereeing: "Sport — coaching/refereeing",
+  animal_welfare: "Animal welfare",
+  environmental: "Environmental",
+  befriending_mentoring: "Befriending/mentoring",
+  youth_advocacy: "Youth advocacy",
+  school_peer_support: "School / peer support",
+  other: "Other",
+};
+
+export interface VolunteerRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  activity: string;
+  category: VolunteerCategory;
+  organisation?: string;
+  start_date: string;
+  ongoing: boolean;
+  end_date?: string;
+  hours_this_month: number;
+  hours_total: number;
+  child_initiated: boolean;
+  motivation_stated: string;
+  skills_built: string[];
+  funds_raised?: number;
+  beneficiaries_reached?: string;
+  recognition_received: string[];
+  risk_assessment_done: boolean;
+  safeguarding_checked: boolean;
+  child_voice: string;
+  staff_observation: string;
+  cv_added_to: boolean;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* ── Work Experience ── */
+
+export type WorkExpType =
+  | "year_10_placement"
+  | "post_16_placement"
+  | "taster_day"
+  | "career_exploration_meeting"
+  | "employer_mentor_session"
+  | "apprenticeship_taster"
+  | "volunteering_placement"
+  | "vocational_course_visit"
+  | "university_taster";
+
+export const WORK_EXP_TYPE_LABEL: Record<WorkExpType, string> = {
+  year_10_placement: "Year 10 placement",
+  post_16_placement: "Post-16 placement",
+  taster_day: "Taster day",
+  career_exploration_meeting: "Career exploration meeting",
+  employer_mentor_session: "Employer mentor session",
+  apprenticeship_taster: "Apprenticeship taster",
+  volunteering_placement: "Volunteering placement (counts as work exp)",
+  vocational_course_visit: "Vocational course visit",
+  university_taster: "University taster",
+};
+
+export interface WorkExpRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  type: WorkExpType;
+  employer?: string;
+  industry: string;
+  start_date: string;
+  end_date?: string;
+  days_hours_total: string;
+  supervisor_name?: string;
+  supervisor_role?: string;
+  tasks_undertaken: string[];
+  skills_built: string[];
+  challenges_faced: string[];
+  employer_feedback?: string;
+  child_reflection: string;
+  links_to_aspirations: string[];
+  follow_up_opportunity?: string;
+  risk_assessment_done: boolean;
+  safeguarding_checked: boolean;
+  travel_budget_used?: number;
+  child_voice: string;
+  staff_observation: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* ── Children Pledges ── */
+
+export type PledgeCategory =
+  | "safety"
+  | "respect"
+  | "opportunity"
+  | "belonging"
+  | "voice"
+  | "identity";
+
+export const PLEDGE_CATEGORY_LABEL: Record<PledgeCategory, string> = {
+  safety: "Safety",
+  respect: "Respect",
+  opportunity: "Opportunity",
+  belonging: "Belonging",
+  voice: "Voice",
+  identity: "Identity",
+};
+
+export type PledgeStatus =
+  | "consistently_met"
+  | "mostly_met"
+  | "working_on_it"
+  | "not_yet_met";
+
+export const PLEDGE_STATUS_LABEL: Record<PledgeStatus, string> = {
+  consistently_met: "Consistently Met",
+  mostly_met: "Mostly Met",
+  working_on_it: "Working On It",
+  not_yet_met: "Not Yet Met",
+};
+
+export interface ChildPledge {
+  id: string;
+  child_id: string;
+  pledge_category: PledgeCategory;
+  pledge: string;
+  how_we_deliver: string;
+  evidence_of_delivery: string[];
+  child_feedback: string;
+  status: PledgeStatus;
+  last_review_date: string;
+  reviewed_with: string;
+  created_date: string;
+  uncrc_article: string;
+  created_at: string;
+}
+
+/* ── Cleaning Rota ── */
+
+export type CleaningShift =
+  | "morning"
+  | "late"
+  | "sleep_in"
+  | "wake_night"
+  | "deep_clean_scheduled";
+
+export const CLEANING_SHIFT_LABEL: Record<CleaningShift, string> = {
+  morning: "Morning",
+  late: "Late",
+  sleep_in: "Sleep-in",
+  wake_night: "Wake-night",
+  deep_clean_scheduled: "Deep clean (scheduled)",
+};
+
+export type CleaningArea =
+  | "kitchen"
+  | "lounge"
+  | "hallway_stairs"
+  | "office"
+  | "communal_bathroom"
+  | "laundry"
+  | "garden_external"
+  | "sensory_space"
+  | "childrens_bathrooms"
+  | "whole_home";
+
+export const CLEANING_AREA_LABEL: Record<CleaningArea, string> = {
+  kitchen: "Kitchen",
+  lounge: "Lounge",
+  hallway_stairs: "Hallway/Stairs",
+  office: "Office",
+  communal_bathroom: "Communal bathroom",
+  laundry: "Laundry",
+  garden_external: "Garden/External",
+  sensory_space: "Sensory space",
+  childrens_bathrooms: "Children's bathrooms (with consent)",
+  whole_home: "Whole home (deep clean)",
+};
+
+export type CleaningType =
+  | "routine"
+  | "spot_clean"
+  | "deep_clean"
+  | "post_incident"
+  | "hygiene_escalation";
+
+export const CLEANING_TYPE_LABEL: Record<CleaningType, string> = {
+  routine: "Routine",
+  spot_clean: "Spot clean",
+  deep_clean: "Deep clean",
+  post_incident: "Post-incident",
+  hygiene_escalation: "Hygiene escalation",
+};
+
+export type CleaningChildInvolvement =
+  | "none"
+  | "observed"
+  | "helped_age_appropriate"
+  | "lead_with_support";
+
+export const CLEANING_CHILD_INVOLVEMENT_LABEL: Record<CleaningChildInvolvement, string> = {
+  none: "None",
+  observed: "Observed",
+  helped_age_appropriate: "Helped (age-appropriate)",
+  lead_with_support: "Lead with support",
+};
+
+export interface CleaningTask {
+  task: string;
+  completed: boolean;
+  notes: string;
+}
+
+export interface CleaningEntry {
+  id: string;
+  date: string;
+  shift: CleaningShift;
+  area: CleaningArea;
+  staff_member: string;
+  cleaning_type: CleaningType;
+  duration_minutes: number;
+  tasks_completed: CleaningTask[];
+  products_used: string[];
+  allergy_aware: boolean;
+  child_involvement: CleaningChildInvolvement;
+  children_who_helped: string;
+  child_learning_points: string;
+  items_requiring_attention: string[];
+  defects_logged: string[];
+  follow_up_actions: string[];
+  signed_off: boolean;
+  signed_off_by: string;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Community Engagement ── */
+
+export type CommunityActivityType =
+  | "sports_fitness"
+  | "arts_culture"
+  | "volunteering"
+  | "education"
+  | "religious_spiritual"
+  | "social"
+  | "civic"
+  | "environmental";
+
+export const COMMUNITY_ACTIVITY_TYPE_LABEL: Record<CommunityActivityType, string> = {
+  sports_fitness: "Sports/Fitness",
+  arts_culture: "Arts/Culture",
+  volunteering: "Volunteering",
+  education: "Education",
+  religious_spiritual: "Religious/Spiritual",
+  social: "Social",
+  civic: "Civic",
+  environmental: "Environmental",
+};
+
+export interface CommunityEngagement {
+  id: string;
+  date: string;
+  young_people: string[];
+  activity_type: CommunityActivityType;
+  activity: string;
+  location: string;
+  organisation: string;
+  duration_minutes: number;
+  staff_present: string[];
+  outcomes: string[];
+  child_feedback: string;
+  builds_connections: boolean;
+  ongoing_commitment: boolean;
+  recorded_by: string;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Complaint Resolution Meetings ── */
+
+export type ResolutionComplainantType =
+  | "child"
+  | "parent"
+  | "social_worker"
+  | "other_professional"
+  | "member_of_public";
+
+export const COMPLAINANT_TYPE_LABEL: Record<ResolutionComplainantType, string> = {
+  child: "Child",
+  parent: "Parent",
+  social_worker: "Social Worker",
+  other_professional: "Other Professional",
+  member_of_public: "Member of Public",
+};
+
+export type MeetingType =
+  | "stage_1_informal"
+  | "stage_2_formal"
+  | "stage_3_external_review"
+  | "restorative"
+  | "apology_meeting";
+
+export const MEETING_TYPE_LABEL: Record<MeetingType, string> = {
+  stage_1_informal: "Stage 1 - Informal",
+  stage_2_formal: "Stage 2 - Formal",
+  stage_3_external_review: "Stage 3 - External Review",
+  restorative: "Restorative",
+  apology_meeting: "Apology meeting",
+};
+
+export type MeetingFormat = "in_person" | "video_call" | "phone";
+
+export const MEETING_FORMAT_LABEL: Record<MeetingFormat, string> = {
+  in_person: "In person",
+  video_call: "Video call",
+  phone: "Phone",
+};
+
+export type ComplainantSatisfaction = "satisfied" | "partially_satisfied" | "not_satisfied";
+
+export const COMPLAINANT_SATISFACTION_LABEL: Record<ComplainantSatisfaction, string> = {
+  satisfied: "Satisfied",
+  partially_satisfied: "Partially satisfied",
+  not_satisfied: "Not satisfied",
+};
+
+export type FollowUpActionStatus = "open" | "in_progress" | "done";
+
+export const FOLLOW_UP_ACTION_STATUS_LABEL: Record<FollowUpActionStatus, string> = {
+  open: "Open",
+  in_progress: "In Progress",
+  done: "Done",
+};
+
+export interface ComplaintFollowUpAction {
+  action: string;
+  owner: string;
+  deadline: string;
+  status: FollowUpActionStatus;
+}
+
+export interface ResolutionMeeting {
+  id: string;
+  date: string;
+  duration_minutes: number;
+  complainant_type: ResolutionComplainantType;
+  complainant_identifier: string;
+  original_complaint_ref: string;
+  complaint_summary: string;
+  meeting_type: MeetingType;
+  facilitator: string;
+  attendees_home: string[];
+  external_attendees: string[];
+  child_present: boolean;
+  child_support_person: string;
+  meeting_format: MeetingFormat;
+  agenda: string[];
+  complainant_opening: string;
+  home_response: string;
+  points_of_agreement: string[];
+  points_of_disagreement: string[];
+  apology_offered: boolean;
+  apology_accepted_by_complainant: boolean;
+  practice_changes_agreed: string[];
+  follow_up_actions: ComplaintFollowUpAction[];
+  resolution_achieved: boolean;
+  complainant_satisfaction: ComplainantSatisfaction;
+  will_escalate: boolean;
+  feedback_on_process: string;
+  minuted_by: string;
+  minutes_shared: boolean;
+  minutes_shared_date: string;
+  created_at: string;
+}
+
+/* ─── batch 32 ─── */
+
+/* ── Consequence Framework ── */
+
+export type BehaviourLevel = "low" | "medium" | "high" | "crisis";
+
+export const BEHAVIOUR_LEVEL_LABEL: Record<BehaviourLevel, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  crisis: "Crisis",
+};
+
+export type ConsequenceApproach =
+  | "restorative_conversation"
+  | "natural_consequence"
+  | "logical_consequence"
+  | "repair_activity"
+  | "relational_repair"
+  | "boundary_reset";
+
+export const CONSEQUENCE_APPROACH_LABEL: Record<ConsequenceApproach, string> = {
+  restorative_conversation: "Restorative conversation",
+  natural_consequence: "Natural consequence",
+  logical_consequence: "Logical consequence",
+  repair_activity: "Repair activity",
+  relational_repair: "Relational repair",
+  boundary_reset: "Boundary reset",
+};
+
+export interface ConsequenceRecord {
+  id: string;
+  child_id: string;
+  date: string;
+  behaviour: string;
+  behaviour_level: BehaviourLevel;
+  approach: ConsequenceApproach;
+  description: string;
+  child_voice: string;
+  staff_response: string;
+  restorative_questions: string[];
+  outcome: string;
+  relationship_repaired: boolean;
+  follow_up: string;
+  recorded_by: string;
+  linked_behaviour_plan: boolean;
+  created_at: string;
+}
+
+/* ── Contact Plans ── */
+
+export type ContactMethodType = "face_to_face" | "phone" | "video" | "letter" | "supervised";
+
+export const CONTACT_METHOD_TYPE_LABEL: Record<ContactMethodType, string> = {
+  face_to_face: "Face to face",
+  phone: "Phone",
+  video: "Video",
+  letter: "Letter",
+  supervised: "Supervised",
+};
+
+export type ContactPlanSupervisionLevel = "unsupervised" | "monitored" | "supervised" | "no_contact";
+
+export const CONTACT_PLAN_SUPERVISION_LEVEL_LABEL: Record<ContactPlanSupervisionLevel, string> = {
+  unsupervised: "Unsupervised",
+  monitored: "Monitored",
+  supervised: "Supervised",
+  no_contact: "No contact",
+};
+
+export type ContactPlanStatus = "active" | "under_review" | "suspended";
+
+export const CONTACT_PLAN_STATUS_LABEL: Record<ContactPlanStatus, string> = {
+  active: "Active",
+  under_review: "Under review",
+  suspended: "Suspended",
+};
+
+export interface ContactPlanArrangement {
+  contact_with: string;
+  relationship: string;
+  frequency: string;
+  duration: string;
+  type: ContactMethodType;
+  supervision_level: ContactPlanSupervisionLevel;
+  supervision_reason: string | null;
+  venue: string;
+  notes: string;
+}
+
+export interface ContactPlan {
+  id: string;
+  child_id: string;
+  created_by: string;
+  created_date: string;
+  review_date: string;
+  status: ContactPlanStatus;
+  arrangements: ContactPlanArrangement[];
+  child_wishes: string;
+  court_orders: string | null;
+  risk_factors: string[];
+  positive_factors: string[];
+  overall_assessment: string;
+  last_reviewed_date: string;
+  next_scheduled_contact: string;
+  created_at: string;
+}
+
+/* ── Daily Routine Plans ── */
+
+export type RoutinePlanStatus = "active" | "under_review";
+
+export const ROUTINE_PLAN_STATUS_LABEL: Record<RoutinePlanStatus, string> = {
+  active: "Active",
+  under_review: "Under review",
+};
+
+export interface RoutineSlot {
+  time: string;
+  activity: string;
+  support: string;
+  flexibility: string;
+}
+
+export interface DailyRoutinePlan {
+  id: string;
+  child_id: string;
+  created_by: string;
+  created_date: string;
+  review_date: string;
+  status: RoutinePlanStatus;
+  weekday_routine: RoutineSlot[];
+  weekend_routine: RoutineSlot[];
+  sensory_considerations: string[];
+  transition_support: string[];
+  child_input: string;
+  flexibility: string;
+  notes: string;
+  created_at: string;
+}
+
+/* ── Dietary Requirements ── */
+
+export type DietaryAllergySeverity = "life_threatening" | "severe" | "moderate" | "mild";
+
+export const DIETARY_ALLERGY_SEVERITY_LABEL: Record<DietaryAllergySeverity, string> = {
+  life_threatening: "Life-threatening",
+  severe: "Severe",
+  moderate: "Moderate",
+  mild: "Mild",
+};
+
+export interface AllergyEntry {
+  allergen: string;
+  severity: DietaryAllergySeverity;
+  reaction: string;
+  treatment: string;
+}
+
+export interface GrowthMonitoring {
+  last_weight: string;
+  last_weight_date: string;
+  last_height: string;
+  last_height_date: string;
+  concerns: string;
+}
+
+export interface DietaryPlan {
+  id: string;
+  child_id: string;
+  allergies: AllergyEntry[];
+  intolerances: string[];
+  medical_dietary_needs: string[];
+  religious_dietary_needs: string;
+  ethical_choices: string;
+  sensory_food_needs: string[];
+  preferred_foods: string[];
+  disliked_foods: string[];
+  always_available: string[];
+  forbidden: string[];
+  texture_requirements: string;
+  portion_guidance: string;
+  hydration_needs: string;
+  mealtime_routines: string[];
+  mealtime_challenges: string[];
+  support_at_meals: string;
+  social_eating_preferences: string;
+  cooking_involvement: string;
+  shopping_involvement: string;
+  growth_monitoring: GrowthMonitoring;
+  reviewed_by: string;
+  reviewed_date: string;
+  reviewed_with_child: boolean;
+  child_agreed: boolean;
+  signed_off_by_dietitian: boolean;
+  next_review_date: string;
+  created_at: string;
+}
+
+/* ── Digital Wellbeing Plan ── */
+
+export type ParentalControlLevel =
+  | "none_age_appropriate_trust"
+  | "light"
+  | "standard"
+  | "high";
+
+export const PARENTAL_CONTROL_LEVEL_LABEL: Record<ParentalControlLevel, string> = {
+  none_age_appropriate_trust: "None (age-appropriate trust)",
+  light: "Light",
+  standard: "Standard",
+  high: "High",
+};
+
+export type OnlineSafetyLevel = "strong" | "developing" | "emerging" | "needs_work";
+
+export const ONLINE_SAFETY_LEVEL_LABEL: Record<OnlineSafetyLevel, string> = {
+  strong: "Strong",
+  developing: "Developing",
+  emerging: "Emerging",
+  needs_work: "Needs work",
+};
+
+export type AppType = "social" | "gaming" | "educational" | "creative" | "communication" | "streaming";
+
+export const APP_TYPE_LABEL: Record<AppType, string> = {
+  social: "Social",
+  gaming: "Gaming",
+  educational: "Educational",
+  creative: "Creative",
+  communication: "Communication",
+  streaming: "Streaming",
+};
+
+export type OversightLevel = "none" | "light" | "active_monitoring";
+
+export const OVERSIGHT_LEVEL_LABEL: Record<OversightLevel, string> = {
+  none: "None",
+  light: "Light",
+  active_monitoring: "Active monitoring",
+};
+
+export interface DeviceUsed {
+  device: string;
+  ownership: "personal" | "shared" | "loaned";
+  primary_use: string;
+}
+
+export interface AgreedScreenTimeLimit {
+  period: string;
+  max_hours: number;
+  rationale: string;
+}
+
+export interface AppUsed {
+  app: string;
+  type: AppType;
+  age_appropriate: boolean;
+  agreed_use: string;
+  oversight_level: OversightLevel;
+}
+
+export interface SocialMediaProfile {
+  platform: string;
+  username: string;
+  age_verified: boolean;
+  privacy_settings: string;
+  who_can_see_content: string;
+  staff_approved: boolean;
+}
+
+export interface OnlineSafetyKnowledge {
+  topic: string;
+  level: OnlineSafetyLevel;
+}
+
+export interface DigitalPlan {
+  id: string;
+  child_id: string;
+  age: number;
+  devices_used: DeviceUsed[];
+  agreed_screen_time_limits: AgreedScreenTimeLimit[];
+  bedtime_routine_with_devices: string;
+  apps_used: AppUsed[];
+  social_media_profiles: SocialMediaProfile[];
+  known_friends_online: string;
+  unknown_contact_risks: string[];
+  child_online_safety_knowledge: OnlineSafetyKnowledge[];
+  digital_literacy_skills: string[];
+  pornography_and_exposure_protections: string[];
+  cyberbullying_response: string[];
+  exploitation_risk_factors: string[];
+  exploitation_protections: string[];
+  parental_controls_level: ParentalControlLevel;
+  filtering_in_place: string[];
+  child_can_request_privacy: string;
+  staff_oversight_approach: string;
+  reviewed_date: string;
+  reviewed_with: string;
+  child_agreed: boolean;
+  next_review_date: string;
+  notes: string;
+  created_at: string;
+}
