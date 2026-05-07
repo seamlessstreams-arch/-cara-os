@@ -13416,3 +13416,418 @@ export interface IroCorrespondence {
   filed: boolean;
   created_at: string;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BATCH 36 — child-summer-holiday-record, complaints-trend-analysis,
+   keyholding-register, kitchen-hygiene-monitoring, kpi-dashboard,
+   lac-review-prep
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── child-summer-holiday-record (CHILD-LEVEL) ─────────────────────────── */
+
+export type HolidayPeriod =
+  | "summer"
+  | "easter"
+  | "christmas"
+  | "october_half_term"
+  | "february_half_term"
+  | "may_half_term"
+  | "bank_holiday"
+  | "other";
+
+export const HOLIDAY_PERIOD_LABEL: Record<HolidayPeriod, string> = {
+  summer: "Summer",
+  easter: "Easter",
+  christmas: "Christmas",
+  october_half_term: "October half-term",
+  february_half_term: "February half-term",
+  may_half_term: "May half-term",
+  bank_holiday: "Bank holiday",
+  other: "Other",
+};
+
+export interface HolidayRecord {
+  id: string;
+  child_id: string;
+  holiday_period: HolidayPeriod;
+  year: string;
+  duration_days: number;
+  destinations: string[];
+  highlights: string[];
+  with_whom: string[];
+  cost_spent: number;
+  funding_source: string;
+  child_chose_destination: boolean;
+  challenges_noted: string[];
+  photos_taken: boolean;
+  photos_location: string;
+  child_memory_headline: string;
+  child_voice: string;
+  staff_observation: string;
+  review_date: string;
+  recorded_by: string;
+  created_at: string;
+}
+
+/* ── complaints-trend-analysis (HOME-LEVEL) ────────────────────────────── */
+
+export interface ComplaintTrend {
+  id: string;
+  period: string;
+  total_complaints: number;
+  by_category: Record<string, number>;
+  by_source: Record<string, number>;
+  by_outcome: Record<string, number>;
+  avg_resolution_days: number;
+  resolved_within_timeframe: number;
+  child_complaints_count: number;
+  themes: string[];
+  root_causes: string[];
+  improvements_implemented: string[];
+  policy_changes_arising: string[];
+  training_arising: string[];
+  change_vs_last_period: number;
+  analyst: string;
+  review_date: string;
+  created_at: string;
+}
+
+/* ── keyholding-register (HOME-LEVEL) ──────────────────────────────────── */
+
+export type KeyType =
+  | "master"
+  | "room"
+  | "office"
+  | "vehicle"
+  | "safe"
+  | "medication_cabinet"
+  | "external"
+  | "fob"
+  | "gate";
+
+export const KEY_TYPE_LABEL: Record<KeyType, string> = {
+  master: "Master Key",
+  room: "Room Key",
+  office: "Office Key",
+  vehicle: "Vehicle Key",
+  safe: "Safe Key",
+  medication_cabinet: "Medication Cabinet",
+  external: "External",
+  fob: "Fob",
+  gate: "Gate Key",
+};
+
+export type KeyholdingStatus =
+  | "in_use"
+  | "all_accounted"
+  | "lost"
+  | "replacement_ordered"
+  | "decommissioned";
+
+export const KEYHOLDING_STATUS_LABEL: Record<KeyholdingStatus, string> = {
+  in_use: "In Use",
+  all_accounted: "All Accounted",
+  lost: "Lost",
+  replacement_ordered: "Replacement Ordered",
+  decommissioned: "Decommissioned",
+};
+
+export interface KeyPermanentHolder {
+  staff_id: string;
+  issued_date: string;
+  return_date: string | null;
+}
+
+export interface KeySignOutEntry {
+  staff_id: string;
+  signed_out: string;
+  signed_in: string | null;
+  purpose: string;
+}
+
+export interface KeyLostIncident {
+  date: string;
+  reported_by: string;
+  circumstances: string;
+  locks_changed: boolean;
+  resolved: boolean;
+}
+
+export interface KeyRecord {
+  id: string;
+  key_name: string;
+  key_type: KeyType;
+  key_number: string;
+  total_copies: number;
+  permanent_holders: KeyPermanentHolder[];
+  sign_out_log: KeySignOutEntry[];
+  restricted_access: boolean;
+  authorised_staff: string[];
+  location: string;
+  last_audit: string;
+  next_audit_due: string;
+  status: KeyholdingStatus;
+  lost_key_incidents: KeyLostIncident[];
+  notes: string;
+  created_at: string;
+}
+
+/* ── kitchen-hygiene-monitoring (HOME-LEVEL) ───────────────────────────── */
+
+export type HygieneShiftType = "early" | "late" | "sleep_in" | "wake_night";
+
+export const HYGIENE_SHIFT_TYPE_LABEL: Record<HygieneShiftType, string> = {
+  early: "Early",
+  late: "Late",
+  sleep_in: "Sleep-in",
+  wake_night: "Wake-night",
+};
+
+export type FridgeOrganisation = "excellent" | "good" | "adequate" | "needs_attention";
+
+export const FRIDGE_ORGANISATION_LABEL: Record<FridgeOrganisation, string> = {
+  excellent: "Excellent",
+  good: "Good",
+  adequate: "Adequate",
+  needs_attention: "Needs attention",
+};
+
+export type BinStatus = "empty" | "half_full" | "full" | "overflow";
+
+export const BIN_STATUS_LABEL: Record<BinStatus, string> = {
+  empty: "Empty",
+  half_full: "Half full",
+  full: "Full",
+  overflow: "Overflow",
+};
+
+export type HygieneVerdict = "pass" | "pass_with_minor_actions" | "fail";
+
+export const HYGIENE_VERDICT_LABEL: Record<HygieneVerdict, string> = {
+  pass: "Pass",
+  pass_with_minor_actions: "Pass with minor actions",
+  fail: "Fail",
+};
+
+export interface CookingTempRecord {
+  meal: string;
+  temp_reading: number;
+  min_required: number;
+  pass: boolean;
+}
+
+export interface ExpiredItemFound {
+  item: string;
+  expiry_date: string;
+  disposed: boolean;
+}
+
+export interface HotHoldingTemp {
+  item: string;
+  temp: number;
+  pass: boolean;
+}
+
+export interface KitchenHygieneCheck {
+  id: string;
+  date: string;
+  time: string;
+  staff_member: string;
+  shift_type: HygieneShiftType;
+  fridge_temperature: number;
+  fridge_within_range: boolean;
+  freezer_temperature: number;
+  freezer_within_range: boolean;
+  cooking_temps_recorded: CookingTempRecord[];
+  fridge_organisation: FridgeOrganisation;
+  fridge_rotation: boolean;
+  expired_items_found: ExpiredItemFound[];
+  surfaces_cleaned: boolean;
+  cleaning_products_correct: boolean;
+  handwashing_observed: boolean;
+  aprons_and_hair_covers: boolean;
+  children_preparing_food_supervision: string;
+  cooking_activity_safety_briefing_done: boolean;
+  pests_observed: boolean;
+  pest_actions: string;
+  bins: BinStatus;
+  bin_emptied_time: string;
+  dishwasher_cycle_notes: string;
+  cutting_board_segregation: boolean;
+  allergen_labelling: boolean;
+  defrosting_practice: string;
+  hot_holding_temps: HotHoldingTemp[];
+  overall_verdict: HygieneVerdict;
+  immediate_actions: string[];
+  follow_up_actions: string[];
+  notes: string;
+  created_at: string;
+}
+
+/* ── kpi-dashboard (HOME-LEVEL) ────────────────────────────────────────── */
+
+export type KpiRag = "green" | "amber" | "red";
+
+export const KPI_RAG_LABEL: Record<KpiRag, string> = {
+  green: "Green",
+  amber: "Amber",
+  red: "Red",
+};
+
+export type KpiTrend = "up" | "down" | "stable";
+
+export const KPI_TREND_LABEL: Record<KpiTrend, string> = {
+  up: "Improving",
+  down: "Declining",
+  stable: "Stable",
+};
+
+export type KpiCategory =
+  | "experiences_progress"
+  | "health_wellbeing"
+  | "safety"
+  | "education"
+  | "leadership_management";
+
+export const KPI_CATEGORY_LABEL: Record<KpiCategory, string> = {
+  experiences_progress: "Overall Experiences & Progress",
+  health_wellbeing: "Health & Wellbeing",
+  safety: "Safety",
+  education: "Education",
+  leadership_management: "Leadership & Management",
+};
+
+export interface KpiEntry {
+  id: string;
+  category: KpiCategory;
+  name: string;
+  value: string;
+  target: string;
+  rag: KpiRag;
+  trend: KpiTrend;
+  notes: string;
+  created_at: string;
+}
+
+/* ── lac-review-prep (CHILD-LEVEL) ─────────────────────────────────────── */
+
+export type LacReviewType =
+  | "initial_28_days"
+  | "first_3_months"
+  | "subsequent_6_monthly"
+  | "disruption_review";
+
+export const LAC_REVIEW_TYPE_LABEL: Record<LacReviewType, string> = {
+  initial_28_days: "Initial review (28 days)",
+  first_3_months: "First review (3 months)",
+  subsequent_6_monthly: "Subsequent review (6 monthly)",
+  disruption_review: "Disruption review",
+};
+
+export type LacPrepStatus =
+  | "not_started"
+  | "in_progress"
+  | "ready_for_review"
+  | "review_held"
+  | "post_review_actions";
+
+export const LAC_PREP_STATUS_LABEL: Record<LacPrepStatus, string> = {
+  not_started: "Not started",
+  in_progress: "In progress",
+  ready_for_review: "Ready for review",
+  review_held: "Review held",
+  post_review_actions: "Post-review actions",
+};
+
+export type ChildPrepStatus =
+  | "not_started"
+  | "initial_conversation_done"
+  | "views_captured"
+  | "visual_prep_done"
+  | "ready";
+
+export const CHILD_PREP_STATUS_LABEL: Record<ChildPrepStatus, string> = {
+  not_started: "Not started",
+  initial_conversation_done: "Initial conversation done",
+  views_captured: "Views captured",
+  visual_prep_done: "Visual prep done",
+  ready: "Ready",
+};
+
+export type ChildAttendanceChoice =
+  | "will_attend"
+  | "will_not_attend"
+  | "partial_attendance"
+  | "decision_pending"
+  | "views_via_advocate"
+  | "views_via_key_worker";
+
+export const CHILD_ATTENDANCE_CHOICE_LABEL: Record<ChildAttendanceChoice, string> = {
+  will_attend: "Will attend",
+  will_not_attend: "Will not attend",
+  partial_attendance: "Partial attendance",
+  decision_pending: "Decision pending",
+  views_via_advocate: "Views via advocate",
+  views_via_key_worker: "Views via key worker",
+};
+
+export type LacPrepActionStatus = "open" | "in_progress" | "done";
+
+export const LAC_PREP_ACTION_STATUS_LABEL: Record<LacPrepActionStatus, string> = {
+  open: "Open",
+  in_progress: "In Progress",
+  done: "Done",
+};
+
+export interface MultiAgencyReport {
+  agency: string;
+  received: boolean;
+  received_date: string;
+}
+
+export interface LacPrepOutstandingAction {
+  action: string;
+  owner: string;
+  deadline: string;
+  status: LacPrepActionStatus;
+}
+
+export interface LacPrepPastAction {
+  action: string;
+  status: string;
+}
+
+export interface LacReviewPrep {
+  id: string;
+  child_id: string;
+  review_type: LacReviewType;
+  review_scheduled_for: string;
+  iro_name: string;
+  iro_local_authority: string;
+  prep_status: LacPrepStatus;
+  prep_start_date: string;
+  home_report_deadline: string;
+  home_report_submitted: boolean;
+  home_report_submitted_date: string;
+  report_author: string;
+  child_prep_status: ChildPrepStatus;
+  child_prep_activities: string[];
+  child_choose_to_attend: ChildAttendanceChoice;
+  child_advocate_involved: boolean;
+  child_advocate_name: string;
+  child_wishes_and_feelings: string[];
+  child_topics_to_raise: string[];
+  child_topics_to_avoid: string[];
+  multi_agency_reports_collected: MultiAgencyReport[];
+  outstanding_actions: LacPrepOutstandingAction[];
+  past_actions_to_review_progress: LacPrepPastAction[];
+  risk_assessment_current: boolean;
+  care_plan_current: boolean;
+  pathway_plan_current: boolean;
+  education_report_obtained: boolean;
+  health_report_obtained: boolean;
+  child_post_review_support_plan: string;
+  prepared_by: string;
+  notes: string;
+  created_at: string;
+}

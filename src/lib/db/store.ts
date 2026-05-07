@@ -240,6 +240,8 @@ import type {
   IndependenceLivingAssessment, IndependentTravelRecord,
   VisitorReport, InfectionRecord, ReadinessItem,
   InsurancePolicy, InventoryItem, IroCorrespondence,
+  HolidayRecord, ComplaintTrend, KeyRecord,
+  KitchenHygieneCheck, KpiEntry, LacReviewPrep,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -522,6 +524,12 @@ const store = {
   insurancePolicies: [] as InsurancePolicy[],
   inventoryItems: [] as InventoryItem[],
   iroCorrespondences: [] as IroCorrespondence[],
+  holidayRecords: [] as HolidayRecord[],
+  complaintTrends: [] as ComplaintTrend[],
+  keyRecords: [] as KeyRecord[],
+  kitchenHygieneChecks: [] as KitchenHygieneCheck[],
+  kpiEntries: [] as KpiEntry[],
+  lacReviewPreps: [] as LacReviewPrep[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -6972,6 +6980,106 @@ export const db = {
       if (idx === -1) return null;
       store.iroCorrespondences[idx] = { ...store.iroCorrespondences[idx], ...data };
       return store.iroCorrespondences[idx];
+    },
+  },
+
+  /* ── batch 36 ─────────────────────────────────────────────────────────── */
+
+  holidayRecords: {
+    findAll: () => store.holidayRecords,
+    findByChild: (childId: string) => store.holidayRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.holidayRecords.find((r) => r.id === id),
+    create: (data: Partial<HolidayRecord>): HolidayRecord => {
+      const record = { ...data, id: generateId("holr"), created_at: new Date().toISOString() } as HolidayRecord;
+      store.holidayRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<HolidayRecord>): HolidayRecord | null => {
+      const idx = store.holidayRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.holidayRecords[idx] = { ...store.holidayRecords[idx], ...data };
+      return store.holidayRecords[idx];
+    },
+  },
+
+  complaintTrends: {
+    findAll: () => store.complaintTrends,
+    findById: (id: string) => store.complaintTrends.find((r) => r.id === id),
+    create: (data: Partial<ComplaintTrend>): ComplaintTrend => {
+      const record = { ...data, id: generateId("ctrd"), created_at: new Date().toISOString() } as ComplaintTrend;
+      store.complaintTrends.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ComplaintTrend>): ComplaintTrend | null => {
+      const idx = store.complaintTrends.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.complaintTrends[idx] = { ...store.complaintTrends[idx], ...data };
+      return store.complaintTrends[idx];
+    },
+  },
+
+  keyRecords: {
+    findAll: () => store.keyRecords,
+    findById: (id: string) => store.keyRecords.find((r) => r.id === id),
+    create: (data: Partial<KeyRecord>): KeyRecord => {
+      const record = { ...data, id: generateId("keyr"), created_at: new Date().toISOString() } as KeyRecord;
+      store.keyRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<KeyRecord>): KeyRecord | null => {
+      const idx = store.keyRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.keyRecords[idx] = { ...store.keyRecords[idx], ...data };
+      return store.keyRecords[idx];
+    },
+  },
+
+  kitchenHygieneChecks: {
+    findAll: () => store.kitchenHygieneChecks,
+    findById: (id: string) => store.kitchenHygieneChecks.find((r) => r.id === id),
+    create: (data: Partial<KitchenHygieneCheck>): KitchenHygieneCheck => {
+      const record = { ...data, id: generateId("kthg"), created_at: new Date().toISOString() } as KitchenHygieneCheck;
+      store.kitchenHygieneChecks.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<KitchenHygieneCheck>): KitchenHygieneCheck | null => {
+      const idx = store.kitchenHygieneChecks.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.kitchenHygieneChecks[idx] = { ...store.kitchenHygieneChecks[idx], ...data };
+      return store.kitchenHygieneChecks[idx];
+    },
+  },
+
+  kpiEntries: {
+    findAll: () => store.kpiEntries,
+    findById: (id: string) => store.kpiEntries.find((r) => r.id === id),
+    create: (data: Partial<KpiEntry>): KpiEntry => {
+      const record = { ...data, id: generateId("kpie"), created_at: new Date().toISOString() } as KpiEntry;
+      store.kpiEntries.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<KpiEntry>): KpiEntry | null => {
+      const idx = store.kpiEntries.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.kpiEntries[idx] = { ...store.kpiEntries[idx], ...data };
+      return store.kpiEntries[idx];
+    },
+  },
+
+  lacReviewPreps: {
+    findAll: () => store.lacReviewPreps,
+    findByChild: (childId: string) => store.lacReviewPreps.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.lacReviewPreps.find((r) => r.id === id),
+    create: (data: Partial<LacReviewPrep>): LacReviewPrep => {
+      const record = { ...data, id: generateId("lrpr"), created_at: new Date().toISOString() } as LacReviewPrep;
+      store.lacReviewPreps.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<LacReviewPrep>): LacReviewPrep | null => {
+      const idx = store.lacReviewPreps.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.lacReviewPreps[idx] = { ...store.lacReviewPreps[idx], ...data };
+      return store.lacReviewPreps[idx];
     },
   },
 };
