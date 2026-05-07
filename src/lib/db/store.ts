@@ -257,6 +257,8 @@ import type {
   SelfEvaluationArea, OnCallShift, OnlineGamingRecord,
   OnlineSafetyIncident, OnlineSafetyAgreement, OperationalMeeting,
   OpticiansRecord,
+  OutcomeStarAssessment, OutcomeMetric, OutdoorActivityRiskAssessment,
+  ParentPartnershipRecord, ParentalResponsibilityRecord, PathwayPlan,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -588,6 +590,12 @@ const store = {
   onlineSafetyAgreements: [] as OnlineSafetyAgreement[],
   operationalMeetings: [] as OperationalMeeting[],
   opticiansRecords: [] as OpticiansRecord[],
+  outcomeStarAssessments: [] as OutcomeStarAssessment[],
+  outcomeMetrics: [] as OutcomeMetric[],
+  outdoorActivityRiskAssessments: [] as OutdoorActivityRiskAssessment[],
+  parentPartnershipRecords: [] as ParentPartnershipRecord[],
+  parentalResponsibilityRecords: [] as ParentalResponsibilityRecord[],
+  pathwayPlans: [] as PathwayPlan[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -7852,6 +7860,106 @@ export const db = {
       if (idx === -1) return null;
       store.opticiansRecords[idx] = { ...store.opticiansRecords[idx], ...data };
       return store.opticiansRecords[idx];
+    },
+  },
+
+  outcomeStarAssessments: {
+    findAll: (): OutcomeStarAssessment[] => store.outcomeStarAssessments,
+    findByChild: (childId: string): OutcomeStarAssessment[] => store.outcomeStarAssessments.filter((r) => r.child_id === childId),
+    findById: (id: string): OutcomeStarAssessment | undefined => store.outcomeStarAssessments.find((r) => r.id === id),
+    create: (data: Partial<OutcomeStarAssessment>): OutcomeStarAssessment => {
+      const record = { ...data, id: generateId("osar"), created_at: new Date().toISOString() } as OutcomeStarAssessment;
+      store.outcomeStarAssessments.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<OutcomeStarAssessment>): OutcomeStarAssessment | null => {
+      const idx = store.outcomeStarAssessments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.outcomeStarAssessments[idx] = { ...store.outcomeStarAssessments[idx], ...data };
+      return store.outcomeStarAssessments[idx];
+    },
+  },
+
+  outcomeMetrics: {
+    findAll: (): OutcomeMetric[] => store.outcomeMetrics,
+    findById: (id: string): OutcomeMetric | undefined => store.outcomeMetrics.find((r) => r.id === id),
+    create: (data: Partial<OutcomeMetric>): OutcomeMetric => {
+      const record = { ...data, id: generateId("omrc"), created_at: new Date().toISOString() } as OutcomeMetric;
+      store.outcomeMetrics.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<OutcomeMetric>): OutcomeMetric | null => {
+      const idx = store.outcomeMetrics.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.outcomeMetrics[idx] = { ...store.outcomeMetrics[idx], ...data };
+      return store.outcomeMetrics[idx];
+    },
+  },
+
+  outdoorActivityRiskAssessments: {
+    findAll: (): OutdoorActivityRiskAssessment[] => store.outdoorActivityRiskAssessments,
+    findById: (id: string): OutdoorActivityRiskAssessment | undefined => store.outdoorActivityRiskAssessments.find((r) => r.id === id),
+    create: (data: Partial<OutdoorActivityRiskAssessment>): OutdoorActivityRiskAssessment => {
+      const record = { ...data, id: generateId("oara"), created_at: new Date().toISOString() } as OutdoorActivityRiskAssessment;
+      store.outdoorActivityRiskAssessments.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<OutdoorActivityRiskAssessment>): OutdoorActivityRiskAssessment | null => {
+      const idx = store.outdoorActivityRiskAssessments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.outdoorActivityRiskAssessments[idx] = { ...store.outdoorActivityRiskAssessments[idx], ...data };
+      return store.outdoorActivityRiskAssessments[idx];
+    },
+  },
+
+  parentPartnershipRecords: {
+    findAll: (): ParentPartnershipRecord[] => store.parentPartnershipRecords,
+    findByChild: (childId: string): ParentPartnershipRecord[] => store.parentPartnershipRecords.filter((r) => r.child_id === childId),
+    findById: (id: string): ParentPartnershipRecord | undefined => store.parentPartnershipRecords.find((r) => r.id === id),
+    create: (data: Partial<ParentPartnershipRecord>): ParentPartnershipRecord => {
+      const record = { ...data, id: generateId("pprc"), created_at: new Date().toISOString() } as ParentPartnershipRecord;
+      store.parentPartnershipRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ParentPartnershipRecord>): ParentPartnershipRecord | null => {
+      const idx = store.parentPartnershipRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.parentPartnershipRecords[idx] = { ...store.parentPartnershipRecords[idx], ...data };
+      return store.parentPartnershipRecords[idx];
+    },
+  },
+
+  parentalResponsibilityRecords: {
+    findAll: (): ParentalResponsibilityRecord[] => store.parentalResponsibilityRecords,
+    findByChild: (childId: string): ParentalResponsibilityRecord[] => store.parentalResponsibilityRecords.filter((r) => r.child_id === childId),
+    findById: (id: string): ParentalResponsibilityRecord | undefined => store.parentalResponsibilityRecords.find((r) => r.id === id),
+    create: (data: Partial<ParentalResponsibilityRecord>): ParentalResponsibilityRecord => {
+      const record = { ...data, id: generateId("prrc"), created_at: new Date().toISOString() } as ParentalResponsibilityRecord;
+      store.parentalResponsibilityRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ParentalResponsibilityRecord>): ParentalResponsibilityRecord | null => {
+      const idx = store.parentalResponsibilityRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.parentalResponsibilityRecords[idx] = { ...store.parentalResponsibilityRecords[idx], ...data };
+      return store.parentalResponsibilityRecords[idx];
+    },
+  },
+
+  pathwayPlans: {
+    findAll: (): PathwayPlan[] => store.pathwayPlans,
+    findByChild: (childId: string): PathwayPlan[] => store.pathwayPlans.filter((r) => r.child_id === childId),
+    findById: (id: string): PathwayPlan | undefined => store.pathwayPlans.find((r) => r.id === id),
+    create: (data: Partial<PathwayPlan>): PathwayPlan => {
+      const record = { ...data, id: generateId("pwpl"), created_at: new Date().toISOString() } as PathwayPlan;
+      store.pathwayPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<PathwayPlan>): PathwayPlan | null => {
+      const idx = store.pathwayPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.pathwayPlans[idx] = { ...store.pathwayPlans[idx], ...data };
+      return store.pathwayPlans[idx];
     },
   },
 };

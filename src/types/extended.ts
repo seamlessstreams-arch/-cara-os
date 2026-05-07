@@ -15955,3 +15955,336 @@ export interface OpticiansRecord {
   notes: string;
   created_at: string;
 }
+
+// ── Batch 44 ────────────────────────────────────────────────────────────────
+
+// Outcome Star
+export type OutcomeStarDomain = "safety" | "emotional_wellbeing" | "physical_health" | "education" | "relationships" | "identity" | "independence" | "social_presentation" | "self_care" | "community";
+export const OUTCOME_STAR_DOMAIN_LABEL: Record<OutcomeStarDomain, string> = {
+  safety: "Safety & Stability",
+  emotional_wellbeing: "Emotional Wellbeing",
+  physical_health: "Physical Health",
+  education: "Education & Learning",
+  relationships: "Relationships",
+  identity: "Identity & Self-Esteem",
+  independence: "Independence",
+  social_presentation: "Social Presentation",
+  self_care: "Self-Care Skills",
+  community: "Community & Belonging",
+};
+export interface OutcomeStarActionPlanItem {
+  domain: OutcomeStarDomain;
+  action: string;
+}
+export interface OutcomeStarAssessment {
+  id: string;
+  child_id: string;
+  assessed_by_id: string;
+  date: string;
+  scores: Record<OutcomeStarDomain, number>;
+  previous_scores: Record<OutcomeStarDomain, number> | null;
+  child_views: string;
+  staff_views: string;
+  action_plan: OutcomeStarActionPlanItem[];
+  created_at: string;
+}
+
+// Outcomes Dashboard
+export type OutcomeSCCIFArea = "overall_experiences_and_progress" | "how_well_children_helped_protected" | "effectiveness_leaders_managers";
+export const OUTCOME_SCCIF_AREA_LABEL: Record<OutcomeSCCIFArea, string> = {
+  overall_experiences_and_progress: "Overall Experiences and Progress",
+  how_well_children_helped_protected: "How well children are helped and protected",
+  effectiveness_leaders_managers: "Effectiveness of leaders and managers",
+};
+export type OutcomeDashboardDomain = "education" | "health" | "identity" | "family_social" | "behaviour_emotional" | "self_care" | "spiritual_cultural" | "safety" | "workforce" | "practice";
+export const OUTCOME_DASHBOARD_DOMAIN_LABEL: Record<OutcomeDashboardDomain, string> = {
+  education: "Education",
+  health: "Health",
+  identity: "Identity",
+  family_social: "Family & Social",
+  behaviour_emotional: "Behaviour & Emotional",
+  self_care: "Self-care",
+  spiritual_cultural: "Spiritual & Cultural",
+  safety: "Safety",
+  workforce: "Workforce",
+  practice: "Practice",
+};
+export type OutcomeTrend = "strong_improvement" | "improving" | "stable" | "declining" | "concerning";
+export const OUTCOME_TREND_LABEL: Record<OutcomeTrend, string> = {
+  strong_improvement: "Strong improvement",
+  improving: "Improving",
+  stable: "Stable",
+  declining: "Declining",
+  concerning: "Concerning",
+};
+export type OutcomeRAG = "green" | "amber" | "red";
+export const OUTCOME_RAG_LABEL: Record<OutcomeRAG, string> = {
+  green: "Green",
+  amber: "Amber",
+  red: "Red",
+};
+export interface OutcomeMetric {
+  id: string;
+  metric_name: string;
+  sccif_judgement_area: OutcomeSCCIFArea;
+  domain: OutcomeDashboardDomain;
+  description: string;
+  current_value: string;
+  baseline: string;
+  target: string;
+  period: string;
+  data_source: string;
+  trend: OutcomeTrend;
+  per_child_breakdown: Record<string, string>;
+  narrative: string;
+  contextual_factors: string[];
+  risk_rating: OutcomeRAG;
+  responsible_owner: string;
+  review_date: string;
+  next_review: string;
+  created_at: string;
+}
+
+// Outdoor Activity Risk Assessments
+export type OutdoorActivityType = "walking_hiking" | "cycling" | "water_based" | "climbing" | "sport_spectator" | "adventure_park" | "theme_park" | "beach" | "wildlife_zoo" | "music_festival" | "public_transport" | "city_visit";
+export const OUTDOOR_ACTIVITY_TYPE_LABEL: Record<OutdoorActivityType, string> = {
+  walking_hiking: "Walking/Hiking",
+  cycling: "Cycling",
+  water_based: "Water-based",
+  climbing: "Climbing",
+  sport_spectator: "Sport spectator",
+  adventure_park: "Adventure park",
+  theme_park: "Theme park",
+  beach: "Beach",
+  wildlife_zoo: "Wildlife/Zoo",
+  music_festival: "Music/Festival",
+  public_transport: "Public transport",
+  city_visit: "City visit",
+};
+export type OutdoorRiskLevel = "low" | "medium" | "high";
+export const OUTDOOR_RISK_LEVEL_LABEL: Record<OutdoorRiskLevel, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+};
+export interface OutdoorHazard {
+  hazard: string;
+  severity: OutdoorRiskLevel;
+  control: string;
+}
+export interface OutdoorChildConsideration {
+  child_id: string;
+  consideration: string;
+}
+export interface OutdoorActivityRiskAssessment {
+  id: string;
+  activity_name: string;
+  activity_type: OutdoorActivityType;
+  young_people_attending: string[];
+  staff_escort: string[];
+  date: string;
+  duration_hours: number;
+  location: string;
+  hazards: OutdoorHazard[];
+  child_specific_considerations: OutdoorChildConsideration[];
+  behaviour_risk_rating: OutdoorRiskLevel;
+  missing_from_care_risk: OutdoorRiskLevel;
+  supervision_ratio: string;
+  equipment_required: string[];
+  permissions_obtained: boolean;
+  external_risk_assessment: string;
+  emergency_procedures: string[];
+  pre_activity_briefing: string;
+  reviewed_by: string;
+  signed_off_by_rm: boolean;
+  created_at: string;
+}
+
+// Parent Partnership
+export type ParentContactType = "phone_call" | "visit" | "email" | "meeting" | "letter" | "video_call";
+export const PARENT_CONTACT_TYPE_LABEL: Record<ParentContactType, string> = {
+  phone_call: "Phone Call",
+  visit: "Visit",
+  email: "Email",
+  meeting: "Meeting",
+  letter: "Letter",
+  video_call: "Video Call",
+};
+export type ParentEngagementLevel = "positive" | "neutral" | "difficult" | "disengaged" | "hostile";
+export const PARENT_ENGAGEMENT_LEVEL_LABEL: Record<ParentEngagementLevel, string> = {
+  positive: "Positive",
+  neutral: "Neutral",
+  difficult: "Difficult",
+  disengaged: "Disengaged",
+  hostile: "Hostile",
+};
+export type ParentRelationshipType = "birth_parent" | "grandparent" | "sibling" | "extended_family" | "foster_carer" | "other";
+export const PARENT_RELATIONSHIP_TYPE_LABEL: Record<ParentRelationshipType, string> = {
+  birth_parent: "Birth Parent",
+  grandparent: "Grandparent",
+  sibling: "Sibling",
+  extended_family: "Extended Family",
+  foster_carer: "Foster Carer",
+  other: "Other",
+};
+export type ParentContactInitiator = "home" | "family" | "social_worker";
+export const PARENT_CONTACT_INITIATOR_LABEL: Record<ParentContactInitiator, string> = {
+  home: "Home",
+  family: "Family",
+  social_worker: "Social Worker",
+};
+export interface ParentPartnershipRecord {
+  id: string;
+  date: string;
+  child_id: string;
+  family_member_name: string;
+  relationship_type: ParentRelationshipType;
+  contact_type: ParentContactType;
+  engagement_level: ParentEngagementLevel;
+  initiated_by: ParentContactInitiator;
+  duration: number;
+  staff_member_id: string;
+  summary: string;
+  concerns: string;
+  positive_outcomes: string[];
+  follow_up_actions: string[];
+  sw_informed: boolean;
+  notes: string;
+  created_at: string;
+}
+
+// Parental Responsibility Record
+export type PrPartyType = "birth_mother" | "birth_father" | "maternal_grandparent" | "paternal_grandparent" | "adoptive_parent" | "special_guardian" | "local_authority" | "court" | "step_parent";
+export const PR_PARTY_TYPE_LABEL: Record<PrPartyType, string> = {
+  birth_mother: "Birth Mother",
+  birth_father: "Birth Father",
+  maternal_grandparent: "Maternal Grandparent",
+  paternal_grandparent: "Paternal Grandparent",
+  adoptive_parent: "Adoptive Parent",
+  special_guardian: "Special Guardian",
+  local_authority: "Local Authority",
+  court: "Court",
+  step_parent: "Step-Parent",
+};
+export type PrAcquiredMethod = "by_birth_mother" | "by_marriage_to_mother" | "by_birth_certificate" | "by_pr_agreement" | "by_court_order" | "by_care_order_s31" | "by_adoption_order" | "by_special_guardianship_order" | "other";
+export const PR_ACQUIRED_METHOD_LABEL: Record<PrAcquiredMethod, string> = {
+  by_birth_mother: "By birth (Mother)",
+  by_marriage_to_mother: "By marriage to mother",
+  by_birth_certificate: "By being on birth certificate",
+  by_pr_agreement: "By Parental Responsibility Agreement",
+  by_court_order: "By Court Order",
+  by_care_order_s31: "By Care Order (s31)",
+  by_adoption_order: "By Adoption Order",
+  by_special_guardianship_order: "By Special Guardianship Order",
+  other: "Other",
+};
+export type PrDelegatedTo = "home" | "social_worker" | "parent_specific" | "joint" | "la_director";
+export const PR_DELEGATED_TO_LABEL: Record<PrDelegatedTo, string> = {
+  home: "Home",
+  social_worker: "Social Worker",
+  parent_specific: "Parent (specific)",
+  joint: "Joint",
+  la_director: "LA Director",
+};
+export type PrLegalStatus = "section_20_voluntary" | "section_31_care_order" | "section_38_interim_care_order" | "section_17_child_in_need" | "police_protection_s46" | "emergency_protection_order" | "special_guardianship";
+export const PR_LEGAL_STATUS_LABEL: Record<PrLegalStatus, string> = {
+  section_20_voluntary: "Section 20 Voluntary",
+  section_31_care_order: "Section 31 Care Order",
+  section_38_interim_care_order: "Section 38 Interim Care Order",
+  section_17_child_in_need: "Section 17 Child in Need",
+  police_protection_s46: "Police Protection (s46)",
+  emergency_protection_order: "Emergency Protection Order",
+  special_guardianship: "Special Guardianship",
+};
+export interface PrHolder {
+  party: string;
+  party_type: PrPartyType;
+  acquired: PrAcquiredMethod;
+  acquired_date: string;
+  current: boolean;
+  ended_date: string;
+  ended_reason: string;
+  notes: string;
+}
+export interface PrDelegatedAuthority {
+  category: string;
+  delegated_to: PrDelegatedTo;
+  rationale: string;
+  reviewed_date: string;
+  exceptions: string[];
+}
+export interface PrCourtOrder {
+  order: string;
+  date_issued: string;
+  expiry: string;
+  terms: string;
+}
+export interface PrIdentityDocument {
+  document: string;
+  held: boolean;
+  location: string;
+}
+export interface PrConsentMatrixItem {
+  activity: string;
+  who_consents: string;
+  last_used: string;
+}
+export interface ParentalResponsibilityRecord {
+  id: string;
+  child_id: string;
+  legal_status: PrLegalStatus;
+  legal_status_date: string;
+  pr_holders: PrHolder[];
+  delegated_authorities: PrDelegatedAuthority[];
+  child_awareness_of_status: string;
+  routinely_consulted_parties: string[];
+  parental_responsibility_complex_notes: string;
+  court_orders_in_place: PrCourtOrder[];
+  contact_arrangements: string;
+  prohibited_steps: string[];
+  identity_documents: PrIdentityDocument[];
+  consent_matrix: PrConsentMatrixItem[];
+  reviewed_date: string;
+  reviewed_by: string;
+  signed_off_by_la: boolean;
+  created_at: string;
+}
+
+// Pathway Plan 16+
+export type PathwayPlanStatus = "pre_pathway_15plus" | "active_16_18" | "active_18plus_formerly_looked_after" | "closed_at_25";
+export const PATHWAY_PLAN_STATUS_LABEL: Record<PathwayPlanStatus, string> = {
+  pre_pathway_15plus: "Pre-pathway (15+)",
+  active_16_18: "Active 16-18",
+  active_18plus_formerly_looked_after: "Active 18+ (formerly looked after)",
+  closed_at_25: "Closed at 25",
+};
+export type PathwaySkillLevel = "established" | "developing" | "emerging" | "not_yet";
+export const PATHWAY_SKILL_LEVEL_LABEL: Record<PathwaySkillLevel, string> = {
+  established: "Established",
+  developing: "Developing",
+  emerging: "Emerging",
+  not_yet: "Not yet",
+};
+export interface PathwayPlan {
+  id: string;
+  child_id: string;
+  child_initials: string;
+  age: number;
+  status: PathwayPlanStatus;
+  plan_version: string;
+  last_review_date: string;
+  personal_advisor: string;
+  social_worker: string;
+  accommodation: string;
+  education_employment_training: string;
+  health_needs: string[];
+  financial_support: string[];
+  support_network: string[];
+  aspirations: string[];
+  risks: string[];
+  independent_living_skills: Record<string, PathwaySkillLevel>;
+  next_review_date: string;
+  contact_arrangements: string;
+  statutory_16plus_review_schedule: string;
+  created_at: string;
+}
