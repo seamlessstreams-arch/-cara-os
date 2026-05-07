@@ -20,244 +20,47 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-type BudgetCategory =
-  | "Clothing & Footwear"
-  | "Activities & Hobbies"
-  | "School & Education"
-  | "Cultural Items & Heritage"
-  | "Sensory & Wellbeing"
-  | "Birthdays & Anniversaries"
-  | "Holidays"
-  | "Personal Phone & Tech"
-  | "Travel & Transport"
-  | "Hairdressing & Personal Care";
-
-interface BudgetLine {
-  category: BudgetCategory;
-  allocated: number;
-  spent: number;
-  remaining: number;
-  lastSpend: string;
-  notes: string;
-}
-
-interface SavingsEntry {
-  date: string;
-  amount: number;
-  source: string;
-  target: string;
-}
-
-interface ExceptionalRequest {
-  request: string;
-  decision: string;
-  date: string;
-}
-
-interface BudgetTracker {
-  id: string;
-  youngPerson: string;
-  financialYear: string;
-  totalAnnualBudget: number;
-  breakdown: BudgetLine[];
-  monthlyAllowance: number;
-  savingsHistory: SavingsEntry[];
-  juniorIsaContributionThisYear: number;
-  settingUpHomeAllowanceProgress: number;
-  childInputOnSpend: string;
-  agreedSpendingPriorities: string[];
-  exceptionalRequests: ExceptionalRequest[];
-  reviewedDate: string;
-  reviewedBy: string;
-  childAgreed: boolean;
-}
+import type { PlacementBudgetTracker, PlacementBudgetCategory } from "@/types/extended";
+import { PLACEMENT_BUDGET_CATEGORY_LABEL } from "@/types/extended";
+import { usePlacementBudgetTrackers } from "@/hooks/use-placement-budget-trackers";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const CATEGORIES: BudgetCategory[] = [
-  "Clothing & Footwear",
-  "Activities & Hobbies",
-  "School & Education",
-  "Cultural Items & Heritage",
-  "Sensory & Wellbeing",
-  "Birthdays & Anniversaries",
-  "Holidays",
-  "Personal Phone & Tech",
-  "Travel & Transport",
-  "Hairdressing & Personal Care",
-];
-
 const SAVINGS_GOAL_MONTHLY = 25;
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const SEED: BudgetTracker[] = [
-  {
-    id: "bt1",
-    youngPerson: "yp_alex",
-    financialYear: "2025-26",
-    totalAnnualBudget: 4800,
-    monthlyAllowance: 35,
-    juniorIsaContributionThisYear: 240,
-    settingUpHomeAllowanceProgress: 480,
-    breakdown: [
-      { category: "Clothing & Footwear",         allocated: 1200, spent: 187.50, remaining: 1012.50, lastSpend: d(-3),  notes: "On track — Alex chose own items at JD Sports and Primark." },
-      { category: "Activities & Hobbies",        allocated: 600,  spent: 145.00, remaining: 455.00,  lastSpend: d(-9),  notes: "Football club subs paid Q1; gym pass renewed." },
-      { category: "School & Education",          allocated: 400,  spent: 95.00,  remaining: 305.00,  lastSpend: d(-21), notes: "College stationery and a graphics calculator." },
-      { category: "Cultural Items & Heritage",   allocated: 250,  spent: 30.00,  remaining: 220.00,  lastSpend: d(-40), notes: "Books on family heritage; planning museum trip." },
-      { category: "Sensory & Wellbeing",         allocated: 200,  spent: 45.00,  remaining: 155.00,  lastSpend: d(-12), notes: "Weighted blanket — supports sleep routine." },
-      { category: "Birthdays & Anniversaries",   allocated: 250,  spent: 0,      remaining: 250.00,  lastSpend: "—",     notes: "Birthday in November; planning under way." },
-      { category: "Holidays",                    allocated: 600,  spent: 0,      remaining: 600.00,  lastSpend: "—",     notes: "Summer holiday to Cornwall scheduled August." },
-      { category: "Personal Phone & Tech",       allocated: 360,  spent: 240.00, remaining: 120.00,  lastSpend: d(-18), notes: "New phone contract; child contributed £30 from own money." },
-      { category: "Travel & Transport",          allocated: 300,  spent: 78.00,  remaining: 222.00,  lastSpend: d(-2),  notes: "Bus pass and contact travel." },
-      { category: "Hairdressing & Personal Care",allocated: 240,  spent: 64.00,  remaining: 176.00,  lastSpend: d(-7),  notes: "Monthly haircut at preferred barber." },
-    ],
-    savingsHistory: [
-      { date: d(-90), amount: 25, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-60), amount: 25, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-30), amount: 25, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-30), amount: 50, source: "Birthday gift from grandparent", target: "Personal savings account" },
-      { date: d(-7),  amount: 25, source: "Monthly allowance saving", target: "Junior ISA" },
-    ],
-    childInputOnSpend: "Alex requested a larger allocation for activities so he can join the football academy trial weekend. Agreed to redirect £50 from cultural items.",
-    agreedSpendingPriorities: [
-      "Save £25/month into Junior ISA without fail",
-      "Build up funds for a football academy weekend",
-      "Replace winter coat before October half-term",
-    ],
-    exceptionalRequests: [
-      { request: "£120 extra for football academy trial weekend (kit + travel)", decision: "Approved by RM — funded from contingency", date: d(-45) },
-      { request: "£80 for noise-cancelling headphones for revision", decision: "Approved — sensory + education benefit, recorded against Sensory & Wellbeing", date: d(-20) },
-    ],
-    reviewedDate: d(-14),
-    reviewedBy: "staff_darren",
-    childAgreed: true,
-  },
-  {
-    id: "bt2",
-    youngPerson: "yp_jordan",
-    financialYear: "2025-26",
-    totalAnnualBudget: 4800,
-    monthlyAllowance: 25,
-    juniorIsaContributionThisYear: 100,
-    settingUpHomeAllowanceProgress: 280,
-    breakdown: [
-      { category: "Clothing & Footwear",         allocated: 1200, spent: 95.00,  remaining: 1105.00, lastSpend: d(-10), notes: "Soft fabric items only — sensory consideration." },
-      { category: "Activities & Hobbies",        allocated: 600,  spent: 60.00,  remaining: 540.00,  lastSpend: d(-22), notes: "Art supplies — Jordan engaging well with art therapy." },
-      { category: "School & Education",          allocated: 400,  spent: 40.00,  remaining: 360.00,  lastSpend: d(-30), notes: "School supplies; tutor resources to follow." },
-      { category: "Cultural Items & Heritage",   allocated: 250,  spent: 80.00,  remaining: 170.00,  lastSpend: d(-25), notes: "Heritage cookbook + ingredients for cultural meal evenings." },
-      { category: "Sensory & Wellbeing",         allocated: 350,  spent: 130.00, remaining: 220.00,  lastSpend: d(-8),  notes: "Sensory lighting + fidget tools — care plan recommendation." },
-      { category: "Birthdays & Anniversaries",   allocated: 250,  spent: 60.00,  remaining: 190.00,  lastSpend: d(-50), notes: "Mother's Day gift — supported contact." },
-      { category: "Holidays",                    allocated: 600,  spent: 0,      remaining: 600.00,  lastSpend: "—",     notes: "Quiet seaside break planned (sensory-friendly)." },
-      { category: "Personal Phone & Tech",       allocated: 250,  spent: 180.00, remaining: 70.00,   lastSpend: d(-15), notes: "Tablet and protective case." },
-      { category: "Travel & Transport",          allocated: 300,  spent: 45.00,  remaining: 255.00,  lastSpend: d(-4),  notes: "Family contact travel reimbursements." },
-      { category: "Hairdressing & Personal Care",allocated: 240,  spent: 50.00,  remaining: 190.00,  lastSpend: d(-18), notes: "Quiet salon — sensory-friendly slot." },
-    ],
-    savingsHistory: [
-      { date: d(-120), amount: 25, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-90),  amount: 25, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-30),  amount: 25, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-30),  amount: 25, source: "Monthly allowance saving", target: "Junior ISA" },
-    ],
-    childInputOnSpend: "Jordan prefers staff to pre-select 2-3 options, then chooses. Found shopping decisions overwhelming. Has agreed clear weekly routines for spending.",
-    agreedSpendingPriorities: [
-      "Maintain steady Junior ISA contributions",
-      "Invest in sensory regulation tools recommended by therapist",
-      "Save toward a personal art kit for 14th birthday",
-    ],
-    exceptionalRequests: [
-      { request: "£60 for weighted lap pad recommended by OT", decision: "Approved — therapeutic need", date: d(-35) },
-    ],
-    reviewedDate: d(-21),
-    reviewedBy: "staff_anna",
-    childAgreed: true,
-  },
-  {
-    id: "bt3",
-    youngPerson: "yp_casey",
-    financialYear: "2025-26",
-    totalAnnualBudget: 5200,
-    monthlyAllowance: 45,
-    juniorIsaContributionThisYear: 360,
-    settingUpHomeAllowanceProgress: 1250,
-    breakdown: [
-      { category: "Clothing & Footwear",         allocated: 1200, spent: 245.00, remaining: 955.00,  lastSpend: d(-2),  notes: "Includes interview outfit — independence pathway milestone." },
-      { category: "Activities & Hobbies",        allocated: 700,  spent: 220.00, remaining: 480.00,  lastSpend: d(-6),  notes: "Driving lessons started — pathway plan priority." },
-      { category: "School & Education",          allocated: 500,  spent: 165.00, remaining: 335.00,  lastSpend: d(-11), notes: "College textbooks and laptop accessories." },
-      { category: "Cultural Items & Heritage",   allocated: 250,  spent: 90.00,  remaining: 160.00,  lastSpend: d(-28), notes: "Identity-affirming books and cultural workshop fee." },
-      { category: "Sensory & Wellbeing",         allocated: 200,  spent: 25.00,  remaining: 175.00,  lastSpend: d(-40), notes: "Aromatherapy kit." },
-      { category: "Birthdays & Anniversaries",   allocated: 250,  spent: 90.00,  remaining: 160.00,  lastSpend: d(-60), notes: "Birthday celebration with friends." },
-      { category: "Holidays",                    allocated: 700,  spent: 250.00, remaining: 450.00,  lastSpend: d(-14), notes: "Independent travel weekend with peer (planned & risk-assessed)." },
-      { category: "Personal Phone & Tech",       allocated: 500,  spent: 320.00, remaining: 180.00,  lastSpend: d(-9),  notes: "Phone upgrade + laptop repair — independence pathway." },
-      { category: "Travel & Transport",          allocated: 500,  spent: 175.00, remaining: 325.00,  lastSpend: d(-1),  notes: "Provisional licence + driving lesson travel." },
-      { category: "Hairdressing & Personal Care",allocated: 400,  spent: 140.00, remaining: 260.00,  lastSpend: d(-12), notes: "Casey manages own appointments — encouraged." },
-    ],
-    savingsHistory: [
-      { date: d(-150), amount: 30, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-120), amount: 30, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-90),  amount: 30, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-60),  amount: 30, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-30),  amount: 30, source: "Monthly allowance saving", target: "Junior ISA" },
-      { date: d(-30),  amount: 100, source: "Part-time job earnings", target: "Personal savings — driving lessons" },
-      { date: d(-7),   amount: 30, source: "Monthly allowance saving", target: "Junior ISA" },
-    ],
-    childInputOnSpend: "Casey is leading own budget decisions as part of independence pathway. Tracks spend in a personal app and reviews monthly with key worker.",
-    agreedSpendingPriorities: [
-      "Pass driving theory + practical test before 18th birthday",
-      "Save consistently toward Setting Up Home costs",
-      "Maintain Junior ISA contributions",
-      "Build a starter wardrobe of work-appropriate clothing",
-    ],
-    exceptionalRequests: [
-      { request: "£200 toward intensive driving course",       decision: "Approved — pathway plan priority", date: d(-22) },
-      { request: "£75 for college trip to London",             decision: "Approved — educational benefit", date: d(-65) },
-      { request: "£150 toward laptop repair after accident",   decision: "Part-approved — Casey contributing £40", date: d(-12) },
-    ],
-    reviewedDate: d(-7),
-    reviewedBy: "staff_darren",
-    childAgreed: true,
-  },
-];
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function PlacementBudgetTrackerPage() {
-  const [data] = useState<BudgetTracker[]>(SEED);
+  const { data: res, isLoading } = usePlacementBudgetTrackers();
+  const records = res?.data ?? [];
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("youngPerson");
 
   /* summary stats */
   const stats = useMemo(() => {
-    const totalAllocated = data.reduce((s, r) => s + r.totalAnnualBudget, 0);
-    const totalSpent = data.reduce(
+    const totalAllocated = records.reduce((s, r) => s + r.total_annual_budget, 0);
+    const totalSpent = records.reduce(
       (s, r) => s + r.breakdown.reduce((a, b) => a + b.spent, 0),
       0,
     );
     const monthsElapsed = 7; // illustrative — through November of FY
-    const meetingSavingsGoal = data.filter((r) => {
-      const ytdSavings = r.savingsHistory
+    const meetingSavingsGoal = records.filter((r) => {
+      const ytdSavings = r.savings_history
         .filter((h) => h.target.toLowerCase().includes("isa") || h.source.toLowerCase().includes("monthly allowance"))
         .reduce((a, b) => a + b.amount, 0);
       return ytdSavings >= SAVINGS_GOAL_MONTHLY * monthsElapsed * 0.6;
     }).length;
-    const exceptional = data.reduce((s, r) => s + r.exceptionalRequests.length, 0);
+    const exceptional = records.reduce((s, r) => s + r.exceptional_requests.length, 0);
     return { totalAllocated, totalSpent, meetingSavingsGoal, exceptional };
-  }, [data]);
+  }, [records]);
 
   /* sorted/filtered list */
   const list = useMemo(() => {
-    let l = [...data];
-    if (filterYP !== "all") l = l.filter((r) => r.youngPerson === filterYP);
+    let l = [...records];
+    if (filterYP !== "all") l = l.filter((r) => r.child_id === filterYP);
     l.sort((a, b) => {
       switch (sortBy) {
         case "spent": {
@@ -266,68 +69,68 @@ export default function PlacementBudgetTrackerPage() {
           return bS - aS;
         }
         case "remaining": {
-          const aR = a.totalAnnualBudget - a.breakdown.reduce((s, x) => s + x.spent, 0);
-          const bR = b.totalAnnualBudget - b.breakdown.reduce((s, x) => s + x.spent, 0);
+          const aR = a.total_annual_budget - a.breakdown.reduce((s, x) => s + x.spent, 0);
+          const bR = b.total_annual_budget - b.breakdown.reduce((s, x) => s + x.spent, 0);
           return bR - aR;
         }
         case "reviewed":
-          return b.reviewedDate.localeCompare(a.reviewedDate);
+          return b.reviewed_date.localeCompare(a.reviewed_date);
         default:
-          return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
       }
     });
     return l;
-  }, [data, filterYP, sortBy]);
+  }, [records, filterYP, sortBy]);
 
   /* export — flatten breakdown rows */
   const exportData = useMemo(
     () =>
-      data.flatMap((r) =>
+      records.flatMap((r) =>
         r.breakdown.map((b) => ({
           id: r.id,
-          youngPerson: r.youngPerson,
-          financialYear: r.financialYear,
-          totalAnnualBudget: r.totalAnnualBudget,
+          child_id: r.child_id,
+          financial_year: r.financial_year,
+          total_annual_budget: r.total_annual_budget,
           breakdown: r.breakdown,
-          monthlyAllowance: r.monthlyAllowance,
-          savingsHistory: r.savingsHistory,
-          juniorIsaContributionThisYear: r.juniorIsaContributionThisYear,
-          settingUpHomeAllowanceProgress: r.settingUpHomeAllowanceProgress,
-          childInputOnSpend: r.childInputOnSpend,
-          agreedSpendingPriorities: r.agreedSpendingPriorities,
-          exceptionalRequests: r.exceptionalRequests,
-          reviewedDate: r.reviewedDate,
-          reviewedBy: r.reviewedBy,
-          childAgreed: r.childAgreed,
+          monthly_allowance: r.monthly_allowance,
+          savings_history: r.savings_history,
+          junior_isa_contribution_this_year: r.junior_isa_contribution_this_year,
+          setting_up_home_allowance_progress: r.setting_up_home_allowance_progress,
+          child_input_on_spend: r.child_input_on_spend,
+          agreed_spending_priorities: r.agreed_spending_priorities,
+          exceptional_requests: r.exceptional_requests,
+          reviewed_date: r.reviewed_date,
+          reviewed_by: r.reviewed_by,
+          child_agreed: r.child_agreed,
           _category: b.category,
           _allocated: b.allocated,
           _spent: b.spent,
           _remaining: b.remaining,
-          _lastSpend: b.lastSpend,
+          _last_spend: b.last_spend,
           _notes: b.notes,
         })),
       ),
-    [data],
+    [records],
   );
 
   type ExportRow = typeof exportData[number];
 
   const exportCols: ExportColumn<ExportRow>[] = [
-    { header: "Young Person",       accessor: (r: ExportRow) => getYPName(r.youngPerson) },
-    { header: "Financial Year",     accessor: (r: ExportRow) => r.financialYear },
-    { header: "Total Annual Budget",accessor: (r: ExportRow) => `£${r.totalAnnualBudget.toFixed(2)}` },
-    { header: "Monthly Allowance",  accessor: (r: ExportRow) => `£${r.monthlyAllowance.toFixed(2)}` },
-    { header: "Category",           accessor: (r: ExportRow) => r._category },
+    { header: "Young Person",       accessor: (r: ExportRow) => getYPName(r.child_id) },
+    { header: "Financial Year",     accessor: (r: ExportRow) => r.financial_year },
+    { header: "Total Annual Budget",accessor: (r: ExportRow) => `£${r.total_annual_budget.toFixed(2)}` },
+    { header: "Monthly Allowance",  accessor: (r: ExportRow) => `£${r.monthly_allowance.toFixed(2)}` },
+    { header: "Category",           accessor: (r: ExportRow) => PLACEMENT_BUDGET_CATEGORY_LABEL[r._category] },
     { header: "Allocated",          accessor: (r: ExportRow) => `£${r._allocated.toFixed(2)}` },
     { header: "Spent",              accessor: (r: ExportRow) => `£${r._spent.toFixed(2)}` },
     { header: "Remaining",          accessor: (r: ExportRow) => `£${r._remaining.toFixed(2)}` },
-    { header: "Last Spend",         accessor: (r: ExportRow) => r._lastSpend },
+    { header: "Last Spend",         accessor: (r: ExportRow) => r._last_spend },
     { header: "Notes",              accessor: (r: ExportRow) => r._notes },
-    { header: "Junior ISA YTD",     accessor: (r: ExportRow) => `£${r.juniorIsaContributionThisYear.toFixed(2)}` },
-    { header: "Setting Up Home £",  accessor: (r: ExportRow) => `£${r.settingUpHomeAllowanceProgress.toFixed(2)}` },
-    { header: "Reviewed Date",      accessor: (r: ExportRow) => r.reviewedDate },
-    { header: "Reviewed By",        accessor: (r: ExportRow) => getStaffName(r.reviewedBy) },
-    { header: "Child Agreed",       accessor: (r: ExportRow) => (r.childAgreed ? "Yes" : "No") },
+    { header: "Junior ISA YTD",     accessor: (r: ExportRow) => `£${r.junior_isa_contribution_this_year.toFixed(2)}` },
+    { header: "Setting Up Home £",  accessor: (r: ExportRow) => `£${r.setting_up_home_allowance_progress.toFixed(2)}` },
+    { header: "Reviewed Date",      accessor: (r: ExportRow) => r.reviewed_date },
+    { header: "Reviewed By",        accessor: (r: ExportRow) => getStaffName(r.reviewed_by) },
+    { header: "Child Agreed",       accessor: (r: ExportRow) => (r.child_agreed ? "Yes" : "No") },
   ];
 
   return (
@@ -341,13 +144,20 @@ export default function PlacementBudgetTrackerPage() {
         </div>
       }
     >
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full" />
+        </div>
+      )}
+
+      {!isLoading && (
       <div id="print-area" className="space-y-6">
         {/* summary stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { l: "Total Allocated",          v: `£${stats.totalAllocated.toLocaleString()}`, icon: Wallet,        c: "text-blue-600" },
             { l: "Total Spent YTD",          v: `£${stats.totalSpent.toFixed(2)}`,           icon: TrendingUp,    c: "text-amber-600" },
-            { l: "Meeting Savings Goal",     v: `${stats.meetingSavingsGoal} / ${data.length}`, icon: PiggyBank,  c: "text-green-600" },
+            { l: "Meeting Savings Goal",     v: `${stats.meetingSavingsGoal} / ${records.length}`, icon: PiggyBank,  c: "text-green-600" },
             { l: "Exceptional Requests",     v: stats.exceptional,                            icon: AlertTriangle, c: "text-purple-600" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
@@ -364,8 +174,8 @@ export default function PlacementBudgetTrackerPage() {
             <SelectTrigger className="w-[200px]"><SelectValue placeholder="Young Person" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Children</SelectItem>
-              {data.map((r) => (
-                <SelectItem key={r.youngPerson} value={r.youngPerson}>{getYPName(r.youngPerson)}</SelectItem>
+              {records.map((r) => (
+                <SelectItem key={r.child_id} value={r.child_id}>{getYPName(r.child_id)}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -388,8 +198,8 @@ export default function PlacementBudgetTrackerPage() {
         <div className="space-y-3">
           {list.map((rec) => {
             const totalSpent = rec.breakdown.reduce((s, x) => s + x.spent, 0);
-            const remaining = rec.totalAnnualBudget - totalSpent;
-            const pct = (totalSpent / rec.totalAnnualBudget) * 100;
+            const remaining = rec.total_annual_budget - totalSpent;
+            const pct = (totalSpent / rec.total_annual_budget) * 100;
             const isOpen = expandedId === rec.id;
             return (
               <div key={rec.id} className="rounded-lg border bg-white overflow-hidden">
@@ -400,11 +210,11 @@ export default function PlacementBudgetTrackerPage() {
                   <div className="flex items-center gap-3 text-left">
                     <Coins className="h-5 w-5 text-brand" />
                     <div>
-                      <h3 className="font-semibold">{getYPName(rec.youngPerson)}</h3>
+                      <h3 className="font-semibold">{getYPName(rec.child_id)}</h3>
                       <p className="text-xs text-muted-foreground">
-                        FY {rec.financialYear} · £{totalSpent.toFixed(2)} / £{rec.totalAnnualBudget.toLocaleString()} ·
-                        {" "}Reviewed {rec.reviewedDate} by {getStaffName(rec.reviewedBy)}
-                        {" "}{rec.childAgreed ? "· Child agreed" : "· Awaiting child sign-off"}
+                        FY {rec.financial_year} · £{totalSpent.toFixed(2)} / £{rec.total_annual_budget.toLocaleString()} ·
+                        {" "}Reviewed {rec.reviewed_date} by {getStaffName(rec.reviewed_by)}
+                        {" "}{rec.child_agreed ? "· Child agreed" : "· Awaiting child sign-off"}
                       </p>
                     </div>
                   </div>
@@ -448,7 +258,7 @@ export default function PlacementBudgetTrackerPage() {
                             const linePct = (b.spent / b.allocated) * 100;
                             return (
                               <tr key={b.category} className="border-b last:border-0">
-                                <td className="py-2 pr-3 font-medium">{b.category}</td>
+                                <td className="py-2 pr-3 font-medium">{PLACEMENT_BUDGET_CATEGORY_LABEL[b.category]}</td>
                                 <td className="py-2 pr-3">£{b.allocated.toFixed(2)}</td>
                                 <td className="py-2 pr-3">£{b.spent.toFixed(2)}</td>
                                 <td className="py-2 pr-3">
@@ -461,7 +271,7 @@ export default function PlacementBudgetTrackerPage() {
                                     £{b.remaining.toFixed(2)}
                                   </span>
                                 </td>
-                                <td className="py-2 pr-3 whitespace-nowrap">{b.lastSpend}</td>
+                                <td className="py-2 pr-3 whitespace-nowrap">{b.last_spend}</td>
                                 <td className="py-2 text-muted-foreground">{b.notes}</td>
                               </tr>
                             );
@@ -477,7 +287,7 @@ export default function PlacementBudgetTrackerPage() {
                           <Wallet className="h-4 w-4 text-blue-700" />
                           <h4 className="text-sm font-semibold text-blue-900">Monthly Allowance</h4>
                         </div>
-                        <p className="text-xl font-bold text-blue-900">£{rec.monthlyAllowance.toFixed(2)}</p>
+                        <p className="text-xl font-bold text-blue-900">£{rec.monthly_allowance.toFixed(2)}</p>
                         <p className="text-xs text-blue-800">paid weekly/monthly to young person</p>
                       </div>
                       <div className="rounded-lg bg-green-50 p-3">
@@ -485,7 +295,7 @@ export default function PlacementBudgetTrackerPage() {
                           <PiggyBank className="h-4 w-4 text-green-700" />
                           <h4 className="text-sm font-semibold text-green-900">Junior ISA — YTD</h4>
                         </div>
-                        <p className="text-xl font-bold text-green-900">£{rec.juniorIsaContributionThisYear.toFixed(2)}</p>
+                        <p className="text-xl font-bold text-green-900">£{rec.junior_isa_contribution_this_year.toFixed(2)}</p>
                         <p className="text-xs text-green-800">contributions this financial year</p>
                       </div>
                       <div className="rounded-lg bg-purple-50 p-3">
@@ -493,7 +303,7 @@ export default function PlacementBudgetTrackerPage() {
                           <CheckCircle2 className="h-4 w-4 text-purple-700" />
                           <h4 className="text-sm font-semibold text-purple-900">Setting Up Home</h4>
                         </div>
-                        <p className="text-xl font-bold text-purple-900">£{rec.settingUpHomeAllowanceProgress.toFixed(2)}</p>
+                        <p className="text-xl font-bold text-purple-900">£{rec.setting_up_home_allowance_progress.toFixed(2)}</p>
                         <p className="text-xs text-purple-800">earned/accrued toward leaving-care grant</p>
                       </div>
                     </div>
@@ -512,7 +322,7 @@ export default function PlacementBudgetTrackerPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {rec.savingsHistory.map((s, i) => (
+                            {rec.savings_history.map((s, i) => (
                               <tr key={i} className="border-b last:border-0">
                                 <td className="py-1.5 pr-3 whitespace-nowrap">{s.date}</td>
                                 <td className="py-1.5 pr-3 font-medium">£{s.amount.toFixed(2)}</td>
@@ -528,25 +338,25 @@ export default function PlacementBudgetTrackerPage() {
                     {/* child input */}
                     <div className="rounded-lg bg-pink-50 p-3">
                       <h4 className="text-sm font-semibold text-pink-800 mb-1">Child's Input on Spend</h4>
-                      <p className="text-sm text-pink-900">{rec.childInputOnSpend}</p>
+                      <p className="text-sm text-pink-900">{rec.child_input_on_spend}</p>
                     </div>
 
                     {/* agreed priorities */}
                     <div className="rounded-lg bg-amber-50 p-3">
                       <h4 className="text-sm font-semibold text-amber-900 mb-1">Agreed Spending Priorities</h4>
                       <ul className="list-disc list-inside text-sm text-amber-900">
-                        {rec.agreedSpendingPriorities.map((p, i) => <li key={i}>{p}</li>)}
+                        {rec.agreed_spending_priorities.map((p, i) => <li key={i}>{p}</li>)}
                       </ul>
                     </div>
 
                     {/* exceptional requests */}
-                    {rec.exceptionalRequests.length > 0 && (
+                    {rec.exceptional_requests.length > 0 && (
                       <div className="rounded-lg border p-3">
                         <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
                           <AlertTriangle className="h-4 w-4 text-amber-600" /> Exceptional Requests this Year
                         </h4>
                         <ul className="space-y-2 text-sm">
-                          {rec.exceptionalRequests.map((er, i) => (
+                          {rec.exceptional_requests.map((er, i) => (
                             <li key={i} className="border-l-2 border-amber-300 pl-3">
                               <p className="font-medium">{er.request}</p>
                               <p className="text-xs text-muted-foreground">{er.date} — {er.decision}</p>
@@ -555,6 +365,9 @@ export default function PlacementBudgetTrackerPage() {
                         </ul>
                       </div>
                     )}
+
+                    {/* smart links */}
+                    <SmartLinkPanel sourceType="placement-budget-tracker" sourceId={rec.id} childId={rec.child_id} compact />
                   </div>
                 )}
               </div>
@@ -571,6 +384,7 @@ export default function PlacementBudgetTrackerPage() {
           are protected. All figures shown are illustrative only (£ GBP).
         </div>
       </div>
+      )}
     </PageShell>
   );
 }

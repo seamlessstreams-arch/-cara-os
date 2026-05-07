@@ -16563,3 +16563,240 @@ export interface PhotoAlbumRecord {
   protection_measures: string[];
   created_at: string;
 }
+
+// Photo Consent
+export type PhotoConsentCategory = "school_photos" | "activities_outings" | "social_media" | "internal_records" | "press_media" | "medical" | "life_story" | "celebration_events" | "cctv";
+export const PHOTO_CONSENT_CATEGORY_LABEL: Record<PhotoConsentCategory, string> = {
+  school_photos: "School Photographs", activities_outings: "Activities & Outings",
+  social_media: "Social Media", internal_records: "Internal Records / Life Story Book",
+  press_media: "Press / Media", medical: "Medical Photography",
+  life_story: "Life Story Work", celebration_events: "Celebration Events",
+  cctv: "CCTV Recording",
+};
+export type PhotoConsentStatus = "granted" | "refused" | "conditional" | "expired" | "pending_sw";
+export const PHOTO_CONSENT_STATUS_LABEL: Record<PhotoConsentStatus, string> = {
+  granted: "Granted", refused: "Refused", conditional: "Conditional", expired: "Expired", pending_sw: "Pending SW Decision",
+};
+export interface PhotoConsentPermission {
+  category: PhotoConsentCategory;
+  status: PhotoConsentStatus;
+  conditions: string;
+  granted_by: string;
+  granted_date: string;
+  review_date: string;
+}
+export interface PhotoConsentRecord {
+  id: string;
+  child_id: string;
+  last_review_date: string;
+  next_review_date: string;
+  reviewed_by: string;
+  overall_notes: string;
+  permissions: PhotoConsentPermission[];
+  social_worker_consent: boolean;
+  young_person_views: string;
+  delegated_authority: string;
+  created_at: string;
+}
+
+// Physical Activity Tracker
+export type PhysicalActivityCategory = "sport" | "walking_hiking" | "cycling" | "dance_movement" | "active_play" | "swimming" | "gym" | "outdoor_adventure" | "daily_activity" | "active_travel";
+export const PHYSICAL_ACTIVITY_CATEGORY_LABEL: Record<PhysicalActivityCategory, string> = {
+  sport: "Sport", walking_hiking: "Walking/Hiking", cycling: "Cycling", dance_movement: "Dance/Movement",
+  active_play: "Active play", swimming: "Swimming", gym: "Gym", outdoor_adventure: "Outdoor adventure",
+  daily_activity: "Daily activity (e.g., school PE)", active_travel: "Active travel",
+};
+export type PhysicalActivityIntensity = "light" | "moderate" | "vigorous";
+export const PHYSICAL_ACTIVITY_INTENSITY_LABEL: Record<PhysicalActivityIntensity, string> = {
+  light: "Light", moderate: "Moderate", vigorous: "Vigorous",
+};
+export type PhysicalActivityInitiator = "child" | "routine" | "staff_suggested" | "group_activity";
+export const PHYSICAL_ACTIVITY_INITIATOR_LABEL: Record<PhysicalActivityInitiator, string> = {
+  child: "Child", routine: "Routine", staff_suggested: "Staff suggested", group_activity: "Group activity",
+};
+export type PhysicalActivitySocialAspect = "solo" | "with_staff" | "with_friend" | "team" | "family";
+export const PHYSICAL_ACTIVITY_SOCIAL_ASPECT_LABEL: Record<PhysicalActivitySocialAspect, string> = {
+  solo: "Solo", with_staff: "With staff", with_friend: "With friend", team: "Team", family: "Family",
+};
+export interface PhysicalActivityEntry {
+  id: string;
+  child_id: string;
+  date: string;
+  activity: string;
+  category: PhysicalActivityCategory;
+  intensity: PhysicalActivityIntensity;
+  duration_minutes: number;
+  initiated_by: PhysicalActivityInitiator;
+  staff_present: string;
+  location: string;
+  enjoyment_rating: number;
+  social_aspect: PhysicalActivitySocialAspect;
+  child_comment: string;
+  staff_observation: string;
+  part_of_weekly_target: boolean;
+  contributes_to_outcome: string;
+  notes: string;
+  created_at: string;
+}
+
+// Placement Anniversaries
+export type AnniversarySignificanceType = "birthday" | "arrival_anniversary" | "care_order_anniversary" | "bereavement" | "family_birthday" | "court_date" | "cultural_date" | "personal_milestone" | "trauma_anniversary" | "significant_achievement";
+export const ANNIVERSARY_SIGNIFICANCE_TYPE_LABEL: Record<AnniversarySignificanceType, string> = {
+  birthday: "Birthday", arrival_anniversary: "Arrival anniversary", care_order_anniversary: "Care order anniversary",
+  bereavement: "Bereavement", family_birthday: "Family birthday", court_date: "Court date",
+  cultural_date: "Cultural date", personal_milestone: "Personal milestone",
+  trauma_anniversary: "Trauma anniversary", significant_achievement: "Significant achievement",
+};
+export type AnniversaryEmotionalSignificance = "celebratory" | "bittersweet" | "difficult" | "practical_only" | "mixed";
+export const ANNIVERSARY_EMOTIONAL_SIGNIFICANCE_LABEL: Record<AnniversaryEmotionalSignificance, string> = {
+  celebratory: "Celebratory", bittersweet: "Bittersweet", difficult: "Difficult", practical_only: "Practical-only", mixed: "Mixed",
+};
+export type AnniversaryRecurrence = "annual" | "one_off" | "monthly" | "variable";
+export const ANNIVERSARY_RECURRENCE_LABEL: Record<AnniversaryRecurrence, string> = {
+  annual: "Annual", one_off: "One-off", monthly: "Monthly", variable: "Variable",
+};
+export interface PlacementAnniversaryEntry {
+  id: string;
+  child_id: string;
+  significance_type: AnniversarySignificanceType;
+  date: string;
+  year_of_original: number;
+  years_ago: number | null;
+  description: string;
+  emotional_significance: AnniversaryEmotionalSignificance;
+  child_preference: string;
+  agreed_approach: string[];
+  staff_role_on_day: string[];
+  resources_needed: string[];
+  preferred_key_worker: string;
+  emotional_support_plan: string;
+  remembrance_practices: string[];
+  contingency_if_hard: string[];
+  recurrence: AnniversaryRecurrence;
+  reviewed_with_child: boolean;
+  child_agreed: boolean;
+  reviewed_date: string;
+  reviewed_by: string;
+  created_at: string;
+}
+
+// Placement Budget Tracker
+export type PlacementBudgetCategory = "clothing_footwear" | "activities_hobbies" | "school_education" | "cultural_items_heritage" | "sensory_wellbeing" | "birthdays_anniversaries" | "holidays" | "personal_phone_tech" | "travel_transport" | "hairdressing_personal_care";
+export const PLACEMENT_BUDGET_CATEGORY_LABEL: Record<PlacementBudgetCategory, string> = {
+  clothing_footwear: "Clothing & Footwear", activities_hobbies: "Activities & Hobbies",
+  school_education: "School & Education", cultural_items_heritage: "Cultural Items & Heritage",
+  sensory_wellbeing: "Sensory & Wellbeing", birthdays_anniversaries: "Birthdays & Anniversaries",
+  holidays: "Holidays", personal_phone_tech: "Personal Phone & Tech",
+  travel_transport: "Travel & Transport", hairdressing_personal_care: "Hairdressing & Personal Care",
+};
+export interface PlacementBudgetLine {
+  category: PlacementBudgetCategory;
+  allocated: number;
+  spent: number;
+  remaining: number;
+  last_spend: string;
+  notes: string;
+}
+export interface PlacementBudgetSavingsEntry {
+  date: string;
+  amount: number;
+  source: string;
+  target: string;
+}
+export interface PlacementBudgetExceptionalRequest {
+  request: string;
+  decision: string;
+  date: string;
+}
+export interface PlacementBudgetTracker {
+  id: string;
+  child_id: string;
+  financial_year: string;
+  total_annual_budget: number;
+  breakdown: PlacementBudgetLine[];
+  monthly_allowance: number;
+  savings_history: PlacementBudgetSavingsEntry[];
+  junior_isa_contribution_this_year: number;
+  setting_up_home_allowance_progress: number;
+  child_input_on_spend: string;
+  agreed_spending_priorities: string[];
+  exceptional_requests: PlacementBudgetExceptionalRequest[];
+  reviewed_date: string;
+  reviewed_by: string;
+  child_agreed: boolean;
+  created_at: string;
+}
+
+// Placement Cohort Analysis
+export type CohortPairDynamic = "strong_friendship" | "neutral" | "some_friction" | "active_conflict";
+export const COHORT_PAIR_DYNAMIC_LABEL: Record<CohortPairDynamic, string> = {
+  strong_friendship: "Strong friendship", neutral: "Neutral", some_friction: "Some friction", active_conflict: "Active conflict",
+};
+export interface CohortPeerRelationshipPair {
+  pair: string;
+  dynamic: CohortPairDynamic;
+  notes: string;
+}
+export interface CohortAnalysis {
+  id: string;
+  analysis_date: string;
+  period: string;
+  authored_by: string;
+  cohort_members: string[];
+  demographic_profile: string;
+  strengths_of_cohort: string[];
+  tensions_or_dynamics: string[];
+  peer_relationship_map: CohortPeerRelationshipPair[];
+  individual_impacts_on_group: Record<string, string>;
+  group_impacts_on_individual: Record<string, string>;
+  group_activities: string[];
+  individualised_support_in_group_context: Record<string, string>;
+  conflict_resolution_instances: number;
+  positive_dynamics_instances: number;
+  staffing_challenges_arising: string;
+  proposed_admission_considerations: string;
+  recommended_actions: string[];
+  created_at: string;
+}
+
+// Placement Disruption Prevention Plan
+export type DisruptionRiskLevel = "low" | "building" | "heightened" | "acute";
+export const DISRUPTION_RISK_LEVEL_LABEL: Record<DisruptionRiskLevel, string> = {
+  low: "Low", building: "Building", heightened: "Heightened", acute: "Acute",
+};
+export interface DisruptionWarningSignAction {
+  warning_sign: string;
+  action: string;
+  owner: string;
+  timeframe: string;
+}
+export interface DisruptionInterventionHistory {
+  date: string;
+  intervention: string;
+  outcome: string;
+}
+export interface DisruptionPreventionPlan {
+  id: string;
+  child_id: string;
+  plan_date: string;
+  risk_of_disruption_level: DisruptionRiskLevel;
+  key_stability_factors: string[];
+  warning_signs_to_watch_for: string[];
+  recent_triggers: string[];
+  proactive_actions_in_place: string[];
+  support_network_in_place: string[];
+  child_aware_of_plan: boolean;
+  child_contribution: string;
+  family_involvement: string;
+  professionals_involved: string[];
+  special_actions_if_warning_signs_appear: DisruptionWarningSignAction[];
+  home_specific_mitigations: string[];
+  staffing_adjustments: string;
+  child_actions_agreed: string[];
+  reviewed_date: string;
+  reviewed_by: string;
+  next_review_date: string;
+  signed_off_by_la: boolean;
+  interventions_deployed_history: DisruptionInterventionHistory[];
+  created_at: string;
+}

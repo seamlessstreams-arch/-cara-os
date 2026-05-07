@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle2, TrendingUp,
   ChevronDown, ChevronUp, Calendar, Shield,
   Heart, Target, Clock, Users, UserCheck,
-  Activity, FileSignature, Eye, Wrench,
+  Activity, FileSignature, Eye, Wrench, Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -18,387 +18,26 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import type { DisruptionPreventionPlan, DisruptionRiskLevel } from "@/types/extended";
+import { DISRUPTION_RISK_LEVEL_LABEL } from "@/types/extended";
+import { useDisruptionPreventionPlans } from "@/hooks/use-disruption-prevention-plans";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+/* ── constants ──────────────────────────────────────────────────────── */
+const RISK_LEVEL_ORDER: DisruptionRiskLevel[] = ["low", "building", "heightened", "acute"];
+
+const RISK_COLORS: Record<DisruptionRiskLevel, string> = {
+  low: "bg-green-100 text-green-800",
+  building: "bg-yellow-100 text-yellow-800",
+  heightened: "bg-orange-100 text-orange-800",
+  acute: "bg-red-100 text-red-800",
 };
-
-/* ── types ───────────────────────────────────────────────────────────── */
-const RISK_LEVELS = ["Low", "Building", "Heightened", "Acute"] as const;
-type RiskLevel = typeof RISK_LEVELS[number];
-const RISK_COLORS: Record<RiskLevel, string> = {
-  Low: "bg-green-100 text-green-800",
-  Building: "bg-yellow-100 text-yellow-800",
-  Heightened: "bg-orange-100 text-orange-800",
-  Acute: "bg-red-100 text-red-800",
-};
-
-interface WarningSignAction {
-  warningSign: string;
-  action: string;
-  owner: string; // staff ID
-  timeframe: string;
-}
-
-interface InterventionHistory {
-  date: string;
-  intervention: string;
-  outcome: string;
-}
-
-interface DisruptionPlan {
-  id: string;
-  youngPerson: string; // yp ID
-  planDate: string;
-  riskOfDisruptionLevel: RiskLevel;
-  keyStabilityFactors: string[];
-  warningSignsToWatchFor: string[];
-  recentTriggers: string[];
-  proactiveActionsInPlace: string[];
-  supportNetworkInPlace: string[];
-  childAwareOfPlan: boolean;
-  childContribution: string;
-  familyInvolvement: string;
-  professionalsInvolved: string[];
-  specialActionsIfWarningSignsAppear: WarningSignAction[];
-  homeSpecificMitigations: string[];
-  staffingAdjustments: string;
-  childActionsAgreed: string[];
-  reviewedDate: string;
-  reviewedBy: string; // staff ID
-  nextReviewDate: string;
-  signedOffByLA: boolean;
-  interventionsDeployedHistory: InterventionHistory[];
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: DisruptionPlan[] = [
-  {
-    id: "ddp_alex",
-    youngPerson: "yp_alex",
-    planDate: d(-45),
-    riskOfDisruptionLevel: "Low",
-    keyStabilityFactors: [
-      "Longest placement to date — strong sense of belonging",
-      "Trusted attachment to key worker (Anna) and wider staff team",
-      "Improving relationship with mum",
-      "Stable peer dynamic with Jordan and Casey",
-    ],
-    warningSignsToWatchFor: [
-      "School avoidance increasing or refusal escalating",
-      "Withdrawal from key worker or refusing key work sessions",
-      "Late-night phone use causing sleep disruption",
-      "Reactive social-media-driven distress",
-      "Comments suggesting wanting to leave or 'they'll send me away'",
-    ],
-    recentTriggers: [
-      "Bullying concern at school under investigation",
-      "Sibling-like friction with Jordan during exam stress (resolved)",
-    ],
-    proactiveActionsInPlace: [
-      "Daily wellbeing check-ins with key worker each morning",
-      "Phone handover at 9:30pm — maintained consistently",
-      "School liaison meetings every 2 weeks while bullying issue active",
-      "Key work sessions weekly focused on emotional literacy",
-      "CAMHS open referral retained — re-activate if anxiety escalates",
-    ],
-    supportNetworkInPlace: [
-      "Key Worker: Anna",
-      "Co-Key Worker: Chervelle",
-      "Social Worker: Sarah Mitchell (LA)",
-      "IRO: Helen Brown",
-      "School pastoral lead: Mr Davies",
-      "Mum (positive contact)",
-    ],
-    childAwareOfPlan: true,
-    childContribution:
-      "Alex helped write the warning signs section. Said 'I know when I'm getting wobbly — it's usually about phone stuff or school.' Asked that staff don't 'make a big deal' if they spot warning signs but instead 'just sit with me'.",
-    familyInvolvement:
-      "Mum is aware of the plan in principle. Sarah (SW) shared headlines with mum at last LAC. Mum agreed to flag any concerns from contact calls quickly.",
-    professionalsInvolved: [
-      "Social Worker — Sarah Mitchell",
-      "IRO — Helen Brown",
-      "CAMHS — open referral, Dr Patel",
-      "School pastoral — Mr Davies",
-      "GP — Dr Khan",
-    ],
-    specialActionsIfWarningSignsAppear: [
-      {
-        warningSign: "Two consecutive school refusals",
-        action: "Trigger school liaison meeting; key work session same day; review phone routine",
-        owner: "staff_anna",
-        timeframe: "Same day",
-      },
-      {
-        warningSign: "Late-night social media distress incident",
-        action: "Phone removed for 24h with explanation; calm conversation next morning; log on behaviour map",
-        owner: "staff_chervelle",
-        timeframe: "Within 2h",
-      },
-      {
-        warningSign: "Comments about leaving or being 'sent away'",
-        action: "Reassurance script; one-to-one with key worker; escalate to RM and SW if persists 48h",
-        owner: "staff_darren",
-        timeframe: "Same shift",
-      },
-    ],
-    homeSpecificMitigations: [
-      "Bedroom is fully personalised — protected space",
-      "Favourite chair in lounge respected as 'Alex's spot'",
-      "Sunday cooking ritual maintained — protective routine",
-      "Wi-fi schedule applied consistently across home",
-    ],
-    staffingAdjustments:
-      "Anna's shift pattern preserved on Mondays/Wednesdays where possible — Alex's preferred days. No new agency staff to be lone-working with Alex during school-bullying investigation period.",
-    childActionsAgreed: [
-      "Tell Anna or any trusted staff if school feels unsafe",
-      "Hand phone in by 9:30pm without resistance",
-      "Try at least one coping strategy before reaching for phone when upset",
-    ],
-    reviewedDate: d(-45),
-    reviewedBy: "staff_darren",
-    nextReviewDate: d(45),
-    signedOffByLA: true,
-    interventionsDeployedHistory: [
-      {
-        date: d(-120),
-        intervention: "Phone routine introduced after late-night distress pattern",
-        outcome: "Sleep improved within 2 weeks; pattern stable since",
-      },
-      {
-        date: d(-60),
-        intervention: "School pastoral liaison stepped up after attendance dip",
-        outcome: "Attendance recovered to 78% (target 90% — still in progress)",
-      },
-    ],
-  },
-  {
-    id: "ddp_jordan",
-    youngPerson: "yp_jordan",
-    planDate: d(-14),
-    riskOfDisruptionLevel: "Building",
-    keyStabilityFactors: [
-      "5 months in placement — settled, says 'best home'",
-      "Strong school engagement and peer relationships",
-      "Effective coping strategies developing through key work",
-      "Positive recent LAC review — IRO praised stability",
-    ],
-    warningSignsToWatchFor: [
-      "Increased anxiety leading up to or after contact calls with mum",
-      "Sleep disturbance returning",
-      "Withdrawal from football or peer activities",
-      "Asking repeated questions about 'when mum's out'",
-      "Regression in self-care or appetite changes",
-    ],
-    recentTriggers: [
-      "Mum's release from prison confirmed for next month — anticipated change in contact arrangements",
-      "Solicitor letter received re: future contact — Jordan present when post arrived (now mitigated)",
-    ],
-    proactiveActionsInPlace: [
-      "Pre-contact and post-contact debrief sessions with key worker",
-      "Calm-down toolkit kept in Jordan's bedroom (chosen items)",
-      "Weekly key work session dedicated to processing mum's release",
-      "Coordinated comms plan with SW so Jordan hears news from trusted adults first",
-      "Therapeutic life-story work brought forward",
-    ],
-    supportNetworkInPlace: [
-      "Key Worker: Anna",
-      "Co-Key Worker: Darren (RM)",
-      "Social Worker: Tom Richards (LA)",
-      "IRO: Helen Brown",
-      "School pastoral: Ms Lewis",
-      "Therapist: pending allocation",
-    ],
-    childAwareOfPlan: true,
-    childContribution:
-      "Jordan said 'I want to know what's happening but not all at once.' Asked that staff give one piece of news at a time. Chose three trusted adults (Anna, Darren, Tom) as 'okay to give me news'.",
-    familyInvolvement:
-      "Mum's release is the central trigger. Information sharing is being managed jointly with Tom (SW). Father remains supervised contact only — anxiety pre-visit being supported well.",
-    professionalsInvolved: [
-      "Social Worker — Tom Richards",
-      "IRO — Helen Brown",
-      "Prison release liaison via LA",
-      "School pastoral — Ms Lewis",
-      "GP — Dr Khan",
-      "CAMHS — referral submitted, awaiting allocation",
-    ],
-    specialActionsIfWarningSignsAppear: [
-      {
-        warningSign: "Sleep disturbance for two consecutive nights",
-        action: "Gentle bedtime check-in; offer warm drink and chat; record on sleep log; flag to SW if persists",
-        owner: "staff_anna",
-        timeframe: "Same night",
-      },
-      {
-        warningSign: "Repeated questions about mum's release indicating overwhelm",
-        action: "Plan-led conversation using agreed script; loop in Tom (SW) within 24h to coordinate next info update",
-        owner: "staff_darren",
-        timeframe: "Same shift",
-      },
-      {
-        warningSign: "Withdrawal from football or refusing to attend school",
-        action: "Do not pressure; key work check-in; protective contact with school pastoral; avoid linking to mum unless Jordan opens it",
-        owner: "staff_chervelle",
-        timeframe: "Same day",
-      },
-      {
-        warningSign: "Distress directly linked to contact call",
-        action: "Pause future calls until SW review; debrief with Anna; ensure father-contact dynamics not bleeding in",
-        owner: "staff_anna",
-        timeframe: "Within 24h",
-      },
-    ],
-    homeSpecificMitigations: [
-      "Post is opened by staff first while mum's release process is active",
-      "TV news channels avoided during shared time if mum's case was reported locally",
-      "Football kit kept ready — protective routine, never used as leverage",
-      "Bedroom door policy unchanged — not raised with Jordan unless he raises it",
-    ],
-    staffingAdjustments:
-      "Anna and Darren cover the week of mum's release. Agency staff briefed to defer any contact-related questions to Anna. Handovers extended by 15 minutes during this period to maintain continuity.",
-    childActionsAgreed: [
-      "Tell a trusted adult if I'm thinking about mum and feeling worried",
-      "Use the calm-down toolkit before bed if I can't settle",
-      "Keep going to football even on tricky weeks — staff will help",
-    ],
-    reviewedDate: d(-14),
-    reviewedBy: "staff_darren",
-    nextReviewDate: d(16),
-    signedOffByLA: true,
-    interventionsDeployedHistory: [
-      {
-        date: d(-90),
-        intervention: "Pre-contact support routine introduced for paternal contact",
-        outcome: "Anxiety reduced; Jordan now uses coping strategies independently most weeks",
-      },
-      {
-        date: d(-30),
-        intervention: "Coordinated comms plan agreed with SW for mum's release",
-        outcome: "Working — Jordan hearing one update at a time and digesting well so far",
-      },
-      {
-        date: d(-7),
-        intervention: "Solicitor letter intercepted; calm conversation held with Jordan",
-        outcome: "Initial spike in questioning, settled within 48h with Anna's support",
-      },
-    ],
-  },
-  {
-    id: "ddp_casey",
-    youngPerson: "yp_casey",
-    planDate: d(-30),
-    riskOfDisruptionLevel: "Low",
-    keyStabilityFactors: [
-      "310 days in placement — strong stability history",
-      "Thriving at college — protective routine and identity factor",
-      "Close attachment to key worker Chervelle",
-      "Engaged CAMHS support and family relationship",
-      "Developing independence skills — sense of forward momentum",
-    ],
-    warningSignsToWatchFor: [
-      "Sleep difficulties worsening or insomnia returning",
-      "Withdrawal from art portfolio work or college absences",
-      "Anxiety spikes around transition planning conversations",
-      "Reduced food intake or appetite changes",
-      "Increased reassurance-seeking from staff",
-    ],
-    recentTriggers: [
-      "Approaching transition planning milestone (semi-independence pathway)",
-      "CAMHS therapist on extended leave — interim cover only",
-    ],
-    proactiveActionsInPlace: [
-      "Sleep hygiene plan agreed and embedded — followed nightly",
-      "College tutor liaison every 4 weeks — strong rapport already",
-      "Transition planning paced to Casey's lead — no fixed timeline pressure",
-      "Mother included in monthly care plan reviews",
-      "Art studio space at home protected — creative outlet maintained",
-    ],
-    supportNetworkInPlace: [
-      "Key Worker: Chervelle",
-      "Co-Key Worker: Anna",
-      "Social Worker: Lisa Park (LA)",
-      "IRO: Helen Brown",
-      "CAMHS: Dr Reeves (interim cover)",
-      "College tutor: Ms Hartley",
-      "Mother (positive engaged contact)",
-    ],
-    childAwareOfPlan: true,
-    childContribution:
-      "Casey reviewed and signed the plan with Chervelle. Asked for the line about 'pacing transition to my lead' to be highlighted. Said 'I want to be ready, not rushed.' Suggested the art studio mitigation themselves.",
-    familyInvolvement:
-      "Mother is engaged in monthly reviews and is supportive of the pace. Mother to flag any concerns from weekend contact directly to Chervelle.",
-    professionalsInvolved: [
-      "Social Worker — Lisa Park",
-      "IRO — Helen Brown",
-      "CAMHS — Dr Reeves (interim)",
-      "College tutor — Ms Hartley",
-      "GP — Dr Khan",
-      "Independence pathway worker — to be allocated",
-    ],
-    specialActionsIfWarningSignsAppear: [
-      {
-        warningSign: "Two nights of disrupted sleep in a row",
-        action: "Reinforce sleep hygiene plan; offer chamomile/quiet time; flag to CAMHS interim if 4+ nights",
-        owner: "staff_chervelle",
-        timeframe: "Same night",
-      },
-      {
-        warningSign: "College absence not explained by illness",
-        action: "Gentle check-in same evening; tutor liaison if 2+ days; never frame as failure",
-        owner: "staff_chervelle",
-        timeframe: "Same day",
-      },
-      {
-        warningSign: "Distress linked to transition conversation",
-        action: "Pause transition planning; reassure timeline is Casey-led; key work session focused on grounding",
-        owner: "staff_anna",
-        timeframe: "Within 24h",
-      },
-      {
-        warningSign: "Reduced appetite over 3+ days",
-        action: "GP appointment booked; CAMHS informed; mother gently informed via Lisa (SW)",
-        owner: "staff_darren",
-        timeframe: "Within 72h",
-      },
-    ],
-    homeSpecificMitigations: [
-      "Vegetarian menu options always available — agency added",
-      "Art supplies budget protected in monthly spend",
-      "Quiet hours respected — Casey's room is a sanctuary",
-      "No surprise visitors — Casey notified in advance of any new professional",
-    ],
-    staffingAdjustments:
-      "Chervelle's key-work shifts protected through transition planning period. Any new staff briefed by Chervelle before lone-working with Casey. CAMHS interim cover gap mitigated by extra weekly key work session.",
-    childActionsAgreed: [
-      "Tell Chervelle if I'm not sleeping or eating properly",
-      "Use the art studio when I'm overwhelmed",
-      "Keep going to college — say if I need a break, we'll plan it together",
-    ],
-    reviewedDate: d(-30),
-    reviewedBy: "staff_darren",
-    nextReviewDate: d(60),
-    signedOffByLA: true,
-    interventionsDeployedHistory: [
-      {
-        date: d(-180),
-        intervention: "CAMHS referral activated for anxiety management",
-        outcome: "Significant improvement in coping strategies and self-awareness",
-      },
-      {
-        date: d(-90),
-        intervention: "Sleep hygiene plan introduced",
-        outcome: "Sleep improved markedly; Casey owns the routine independently",
-      },
-    ],
-  },
-];
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function PlacementDisruptionPreventionPlanPage() {
-  const [records] = useState<DisruptionPlan[]>(SEED);
+  const { data: res, isLoading } = useDisruptionPreventionPlans();
+  const records = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState("risk");
@@ -410,26 +49,26 @@ export default function PlacementDisruptionPreventionPlanPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.keyStabilityFactors.some((s) => s.toLowerCase().includes(q)) ||
-          r.warningSignsToWatchFor.some((s) => s.toLowerCase().includes(q)) ||
-          r.proactiveActionsInPlace.some((s) => s.toLowerCase().includes(q))
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          r.key_stability_factors.some((s) => s.toLowerCase().includes(q)) ||
+          r.warning_signs_to_watch_for.some((s) => s.toLowerCase().includes(q)) ||
+          r.proactive_actions_in_place.some((s) => s.toLowerCase().includes(q))
       );
     }
     if (riskFilter !== "all") {
-      list = list.filter((r) => r.riskOfDisruptionLevel === riskFilter);
+      list = list.filter((r) => r.risk_of_disruption_level === riskFilter);
     }
     list.sort((a, b) => {
       switch (sortBy) {
         case "risk":
           return (
-            RISK_LEVELS.indexOf(b.riskOfDisruptionLevel) -
-            RISK_LEVELS.indexOf(a.riskOfDisruptionLevel)
+            RISK_LEVEL_ORDER.indexOf(b.risk_of_disruption_level) -
+            RISK_LEVEL_ORDER.indexOf(a.risk_of_disruption_level)
           );
         case "review":
-          return a.nextReviewDate.localeCompare(b.nextReviewDate);
+          return a.next_review_date.localeCompare(b.next_review_date);
         case "name":
-          return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         default:
           return 0;
       }
@@ -440,16 +79,16 @@ export default function PlacementDisruptionPreventionPlanPage() {
   // Summary stats
   const activePlans = records.length;
   const heightenedOrAcute = records.filter(
-    (r) => r.riskOfDisruptionLevel === "Heightened" || r.riskOfDisruptionLevel === "Acute"
+    (r) => r.risk_of_disruption_level === "heightened" || r.risk_of_disruption_level === "acute"
   ).length;
   const todayIso = new Date().toISOString().slice(0, 10);
   const reviewsDue30 = records.filter((r) => {
-    const nr = new Date(r.nextReviewDate);
+    const nr = new Date(r.next_review_date);
     const today = new Date(todayIso);
     const diff = (nr.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
     return diff <= 30;
   }).length;
-  const allInterventions = records.flatMap((r) => r.interventionsDeployedHistory);
+  const allInterventions = records.flatMap((r) => r.interventions_deployed_history);
   const successfulInterventions = allInterventions.filter((i) =>
     /improv|recover|reduced|stable|working|signific|markedly/i.test(i.outcome)
   ).length;
@@ -458,41 +97,52 @@ export default function PlacementDisruptionPreventionPlanPage() {
       ? Math.round((successfulInterventions / allInterventions.length) * 100)
       : 0;
 
-  const exportCols: ExportColumn<DisruptionPlan>[] = [
-    { header: "Young Person", accessor: (r: DisruptionPlan) => getYPName(r.youngPerson) },
-    { header: "Plan Date", accessor: (r: DisruptionPlan) => r.planDate },
-    { header: "Risk Level", accessor: (r: DisruptionPlan) => r.riskOfDisruptionLevel },
-    { header: "Key Stability Factors", accessor: (r: DisruptionPlan) => r.keyStabilityFactors.join("; ") },
-    { header: "Warning Signs", accessor: (r: DisruptionPlan) => r.warningSignsToWatchFor.join("; ") },
-    { header: "Recent Triggers", accessor: (r: DisruptionPlan) => r.recentTriggers.join("; ") },
-    { header: "Proactive Actions", accessor: (r: DisruptionPlan) => r.proactiveActionsInPlace.join("; ") },
-    { header: "Support Network", accessor: (r: DisruptionPlan) => r.supportNetworkInPlace.join("; ") },
-    { header: "Child Aware", accessor: (r: DisruptionPlan) => (r.childAwareOfPlan ? "Yes" : "No") },
-    { header: "Child Contribution", accessor: (r: DisruptionPlan) => r.childContribution },
-    { header: "Family Involvement", accessor: (r: DisruptionPlan) => r.familyInvolvement },
-    { header: "Professionals Involved", accessor: (r: DisruptionPlan) => r.professionalsInvolved.join("; ") },
+  const exportCols: ExportColumn<DisruptionPreventionPlan>[] = [
+    { header: "Young Person", accessor: (r: DisruptionPreventionPlan) => getYPName(r.child_id) },
+    { header: "Plan Date", accessor: (r: DisruptionPreventionPlan) => r.plan_date },
+    { header: "Risk Level", accessor: (r: DisruptionPreventionPlan) => DISRUPTION_RISK_LEVEL_LABEL[r.risk_of_disruption_level] },
+    { header: "Key Stability Factors", accessor: (r: DisruptionPreventionPlan) => r.key_stability_factors.join("; ") },
+    { header: "Warning Signs", accessor: (r: DisruptionPreventionPlan) => r.warning_signs_to_watch_for.join("; ") },
+    { header: "Recent Triggers", accessor: (r: DisruptionPreventionPlan) => r.recent_triggers.join("; ") },
+    { header: "Proactive Actions", accessor: (r: DisruptionPreventionPlan) => r.proactive_actions_in_place.join("; ") },
+    { header: "Support Network", accessor: (r: DisruptionPreventionPlan) => r.support_network_in_place.join("; ") },
+    { header: "Child Aware", accessor: (r: DisruptionPreventionPlan) => (r.child_aware_of_plan ? "Yes" : "No") },
+    { header: "Child Contribution", accessor: (r: DisruptionPreventionPlan) => r.child_contribution },
+    { header: "Family Involvement", accessor: (r: DisruptionPreventionPlan) => r.family_involvement },
+    { header: "Professionals Involved", accessor: (r: DisruptionPreventionPlan) => r.professionals_involved.join("; ") },
     {
       header: "Warning-Sign Actions",
-      accessor: (r: DisruptionPlan) =>
-        r.specialActionsIfWarningSignsAppear
-          .map((a) => `${a.warningSign} -> ${a.action} (owner: ${getStaffName(a.owner)}, ${a.timeframe})`)
+      accessor: (r: DisruptionPreventionPlan) =>
+        r.special_actions_if_warning_signs_appear
+          .map((a) => `${a.warning_sign} -> ${a.action} (owner: ${getStaffName(a.owner)}, ${a.timeframe})`)
           .join("; "),
     },
-    { header: "Home-Specific Mitigations", accessor: (r: DisruptionPlan) => r.homeSpecificMitigations.join("; ") },
-    { header: "Staffing Adjustments", accessor: (r: DisruptionPlan) => r.staffingAdjustments },
-    { header: "Child Actions Agreed", accessor: (r: DisruptionPlan) => r.childActionsAgreed.join("; ") },
-    { header: "Reviewed Date", accessor: (r: DisruptionPlan) => r.reviewedDate },
-    { header: "Reviewed By", accessor: (r: DisruptionPlan) => getStaffName(r.reviewedBy) },
-    { header: "Next Review", accessor: (r: DisruptionPlan) => r.nextReviewDate },
-    { header: "Signed Off by LA", accessor: (r: DisruptionPlan) => (r.signedOffByLA ? "Yes" : "No") },
+    { header: "Home-Specific Mitigations", accessor: (r: DisruptionPreventionPlan) => r.home_specific_mitigations.join("; ") },
+    { header: "Staffing Adjustments", accessor: (r: DisruptionPreventionPlan) => r.staffing_adjustments },
+    { header: "Child Actions Agreed", accessor: (r: DisruptionPreventionPlan) => r.child_actions_agreed.join("; ") },
+    { header: "Reviewed Date", accessor: (r: DisruptionPreventionPlan) => r.reviewed_date },
+    { header: "Reviewed By", accessor: (r: DisruptionPreventionPlan) => getStaffName(r.reviewed_by) },
+    { header: "Next Review", accessor: (r: DisruptionPreventionPlan) => r.next_review_date },
+    { header: "Signed Off by LA", accessor: (r: DisruptionPreventionPlan) => (r.signed_off_by_la ? "Yes" : "No") },
     {
       header: "Interventions History",
-      accessor: (r: DisruptionPlan) =>
-        r.interventionsDeployedHistory
+      accessor: (r: DisruptionPreventionPlan) =>
+        r.interventions_deployed_history
           .map((i) => `${i.date}: ${i.intervention} -> ${i.outcome}`)
           .join("; "),
     },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Placement Disruption Prevention Plan" subtitle="Per-child proactive plans to prevent placement breakdown when warning signs emerge">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+          <span className="ml-2 text-sm text-slate-400">Loading disruption prevention plans…</span>
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -546,10 +196,10 @@ export default function PlacementDisruptionPreventionPlanPage() {
               <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Risk Levels</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-                <SelectItem value="Building">Building</SelectItem>
-                <SelectItem value="Heightened">Heightened</SelectItem>
-                <SelectItem value="Acute">Acute</SelectItem>
+                <SelectItem value="low">{DISRUPTION_RISK_LEVEL_LABEL.low}</SelectItem>
+                <SelectItem value="building">{DISRUPTION_RISK_LEVEL_LABEL.building}</SelectItem>
+                <SelectItem value="heightened">{DISRUPTION_RISK_LEVEL_LABEL.heightened}</SelectItem>
+                <SelectItem value="acute">{DISRUPTION_RISK_LEVEL_LABEL.acute}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -580,30 +230,30 @@ export default function PlacementDisruptionPreventionPlanPage() {
                     <ShieldAlert
                       className={cn(
                         "h-5 w-5 shrink-0",
-                        rec.riskOfDisruptionLevel === "Low"
+                        rec.risk_of_disruption_level === "low"
                           ? "text-green-600"
-                          : rec.riskOfDisruptionLevel === "Building"
+                          : rec.risk_of_disruption_level === "building"
                           ? "text-yellow-600"
-                          : rec.riskOfDisruptionLevel === "Heightened"
+                          : rec.risk_of_disruption_level === "heightened"
                           ? "text-orange-600"
                           : "text-red-600"
                       )}
                     />
                     <div className="min-w-0">
-                      <p className="font-medium">{getYPName(rec.youngPerson)}</p>
+                      <p className="font-medium">{getYPName(rec.child_id)}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Plan dated {rec.planDate} · Reviewed by {getStaffName(rec.reviewedBy)} · Next review {rec.nextReviewDate}
+                        Plan dated {rec.plan_date} · Reviewed by {getStaffName(rec.reviewed_by)} · Next review {rec.next_review_date}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {rec.signedOffByLA && (
+                    {rec.signed_off_by_la && (
                       <Badge variant="outline" className="text-xs flex items-center gap-1">
                         <FileSignature className="h-3 w-3" /> LA signed
                       </Badge>
                     )}
-                    <Badge className={cn("text-xs", RISK_COLORS[rec.riskOfDisruptionLevel])}>
-                      {rec.riskOfDisruptionLevel}
+                    <Badge className={cn("text-xs", RISK_COLORS[rec.risk_of_disruption_level])}>
+                      {DISRUPTION_RISK_LEVEL_LABEL[rec.risk_of_disruption_level]}
                     </Badge>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -613,10 +263,10 @@ export default function PlacementDisruptionPreventionPlanPage() {
                   <div className="border-t bg-slate-50 p-4 space-y-4">
                     {/* meta */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div><span className="text-muted-foreground">Plan Date:</span> <span className="font-medium">{rec.planDate}</span></div>
-                      <div><span className="text-muted-foreground">Reviewed:</span> <span className="font-medium">{rec.reviewedDate}</span></div>
-                      <div><span className="text-muted-foreground">Reviewed By:</span> <span className="font-medium">{getStaffName(rec.reviewedBy)}</span></div>
-                      <div><span className="text-muted-foreground">Next Review:</span> <span className="font-medium">{rec.nextReviewDate}</span></div>
+                      <div><span className="text-muted-foreground">Plan Date:</span> <span className="font-medium">{rec.plan_date}</span></div>
+                      <div><span className="text-muted-foreground">Reviewed:</span> <span className="font-medium">{rec.reviewed_date}</span></div>
+                      <div><span className="text-muted-foreground">Reviewed By:</span> <span className="font-medium">{getStaffName(rec.reviewed_by)}</span></div>
+                      <div><span className="text-muted-foreground">Next Review:</span> <span className="font-medium">{rec.next_review_date}</span></div>
                     </div>
 
                     {/* stability + warning signs */}
@@ -627,7 +277,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                           <p className="text-xs font-medium text-green-700">Key Stability Factors</p>
                         </div>
                         <ul className="space-y-1">
-                          {rec.keyStabilityFactors.map((s, i) => (
+                          {rec.key_stability_factors.map((s, i) => (
                             <li key={i} className="flex items-start gap-1 text-sm">
                               <CheckCircle2 className="h-3 w-3 text-green-600 mt-0.5 shrink-0" />
                               <span>{s}</span>
@@ -641,7 +291,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                           <p className="text-xs font-medium text-orange-700">Warning Signs to Watch For</p>
                         </div>
                         <ul className="space-y-1">
-                          {rec.warningSignsToWatchFor.map((s, i) => (
+                          {rec.warning_signs_to_watch_for.map((s, i) => (
                             <li key={i} className="flex items-start gap-1 text-sm">
                               <AlertTriangle className="h-3 w-3 text-orange-600 mt-0.5 shrink-0" />
                               <span>{s}</span>
@@ -659,7 +309,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                           <p className="text-xs font-medium text-yellow-700">Recent Triggers</p>
                         </div>
                         <ul className="space-y-1">
-                          {rec.recentTriggers.map((t, i) => (
+                          {rec.recent_triggers.map((t, i) => (
                             <li key={i} className="flex items-start gap-1 text-sm">
                               <span className="mt-1.5 h-1 w-1 rounded-full bg-yellow-700 shrink-0" />
                               <span>{t}</span>
@@ -673,7 +323,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                           <p className="text-xs font-medium text-blue-700">Proactive Actions in Place</p>
                         </div>
                         <ul className="space-y-1">
-                          {rec.proactiveActionsInPlace.map((a, i) => (
+                          {rec.proactive_actions_in_place.map((a, i) => (
                             <li key={i} className="flex items-start gap-1 text-sm">
                               <CheckCircle2 className="h-3 w-3 text-blue-600 mt-0.5 shrink-0" />
                               <span>{a}</span>
@@ -690,12 +340,12 @@ export default function PlacementDisruptionPreventionPlanPage() {
                         <p className="text-sm font-medium">Special Actions if Warning Signs Appear</p>
                       </div>
                       <div className="space-y-2">
-                        {rec.specialActionsIfWarningSignsAppear.map((wa, i) => (
+                        {rec.special_actions_if_warning_signs_appear.map((wa, i) => (
                           <div key={i} className="rounded-lg border bg-white p-3 text-sm">
                             <div className="flex items-start gap-2">
                               <AlertTriangle className="h-4 w-4 text-orange-600 mt-0.5 shrink-0" />
                               <div className="flex-1">
-                                <p className="font-medium">{wa.warningSign}</p>
+                                <p className="font-medium">{wa.warning_sign}</p>
                                 <p className="text-muted-foreground mt-1">{wa.action}</p>
                                 <div className="flex flex-wrap items-center gap-2 mt-2">
                                   <Badge variant="outline" className="text-xs flex items-center gap-1">
@@ -720,7 +370,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                           <p className="text-xs font-medium text-slate-700">Support Network</p>
                         </div>
                         <ul className="space-y-1">
-                          {rec.supportNetworkInPlace.map((s, i) => (
+                          {rec.support_network_in_place.map((s, i) => (
                             <li key={i} className="text-sm text-slate-700">{s}</li>
                           ))}
                         </ul>
@@ -731,7 +381,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                           <p className="text-xs font-medium text-slate-700">Professionals Involved</p>
                         </div>
                         <ul className="space-y-1">
-                          {rec.professionalsInvolved.map((p, i) => (
+                          {rec.professionals_involved.map((p, i) => (
                             <li key={i} className="text-sm text-slate-700">{p}</li>
                           ))}
                         </ul>
@@ -747,15 +397,15 @@ export default function PlacementDisruptionPreventionPlanPage() {
                         </div>
                         <p className="text-sm">
                           <Badge variant="outline" className="text-xs mr-2">
-                            {rec.childAwareOfPlan ? "Aware of plan" : "Not yet shared"}
+                            {rec.child_aware_of_plan ? "Aware of plan" : "Not yet shared"}
                           </Badge>
                         </p>
-                        <p className="text-sm mt-2">{rec.childContribution}</p>
-                        {rec.childActionsAgreed.length > 0 && (
+                        <p className="text-sm mt-2">{rec.child_contribution}</p>
+                        {rec.child_actions_agreed.length > 0 && (
                           <>
                             <p className="text-xs font-medium text-pink-700 mt-3 mb-1">Actions Child Agreed</p>
                             <ul className="space-y-1">
-                              {rec.childActionsAgreed.map((c, i) => (
+                              {rec.child_actions_agreed.map((c, i) => (
                                 <li key={i} className="flex items-start gap-1 text-sm">
                                   <CheckCircle2 className="h-3 w-3 text-pink-600 mt-0.5 shrink-0" />
                                   <span>{c}</span>
@@ -770,7 +420,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                           <Users className="h-4 w-4 text-purple-700" />
                           <p className="text-xs font-medium text-purple-700">Family Involvement</p>
                         </div>
-                        <p className="text-sm">{rec.familyInvolvement}</p>
+                        <p className="text-sm">{rec.family_involvement}</p>
                       </div>
                     </div>
 
@@ -782,7 +432,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                           <p className="text-xs font-medium text-slate-700">Home-Specific Mitigations</p>
                         </div>
                         <ul className="space-y-1">
-                          {rec.homeSpecificMitigations.map((m, i) => (
+                          {rec.home_specific_mitigations.map((m, i) => (
                             <li key={i} className="flex items-start gap-1 text-sm">
                               <span className="mt-1.5 h-1 w-1 rounded-full bg-slate-700 shrink-0" />
                               <span>{m}</span>
@@ -795,7 +445,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                           <UserCheck className="h-4 w-4 text-slate-700" />
                           <p className="text-xs font-medium text-slate-700">Staffing Adjustments</p>
                         </div>
-                        <p className="text-sm">{rec.staffingAdjustments}</p>
+                        <p className="text-sm">{rec.staffing_adjustments}</p>
                       </div>
                     </div>
 
@@ -806,7 +456,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
                         <p className="text-sm font-medium">Interventions Deployed History</p>
                       </div>
                       <div className="space-y-2">
-                        {rec.interventionsDeployedHistory.map((h, i) => (
+                        {rec.interventions_deployed_history.map((h, i) => (
                           <div key={i} className="flex items-start gap-2 rounded-lg border bg-white p-2.5 text-sm">
                             <Badge variant="outline" className="text-xs shrink-0">{h.date}</Badge>
                             <div className="min-w-0">
@@ -823,14 +473,17 @@ export default function PlacementDisruptionPreventionPlanPage() {
                       <div className="flex items-center gap-2">
                         <FileSignature className="h-4 w-4 text-slate-700" />
                         <span className="text-muted-foreground">Local Authority sign-off:</span>
-                        <Badge className={cn("text-xs", rec.signedOffByLA ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-700")}>
-                          {rec.signedOffByLA ? "Signed" : "Pending"}
+                        <Badge className={cn("text-xs", rec.signed_off_by_la ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-700")}>
+                          {rec.signed_off_by_la ? "Signed" : "Pending"}
                         </Badge>
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        Reviewed {rec.reviewedDate} by {getStaffName(rec.reviewedBy)}
+                        Reviewed {rec.reviewed_date} by {getStaffName(rec.reviewed_by)}
                       </span>
                     </div>
+
+                    {/* smart links */}
+                    <SmartLinkPanel sourceType="placement-disruption-prevention-plan" sourceId={rec.id} childId={rec.child_id} compact />
                   </div>
                 )}
               </div>

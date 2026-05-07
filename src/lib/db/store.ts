@@ -261,6 +261,12 @@ import type {
   ParentPartnershipRecord, ParentalResponsibilityRecord, PathwayPlan,
   PeerDynamic, PeerGroupDynamic, PepRecord, BelongingsRecord,
   PersonalPassport, PettyCashEntry, PhotoAlbumRecord,
+  PhotoConsentRecord,
+  PhysicalActivityEntry,
+  PlacementAnniversaryEntry,
+  PlacementBudgetTracker,
+  CohortAnalysis,
+  DisruptionPreventionPlan,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -605,6 +611,12 @@ const store = {
   personalPassports: [] as PersonalPassport[],
   pettyCashEntries: [] as PettyCashEntry[],
   photoAlbumRecords: [] as PhotoAlbumRecord[],
+  photoConsentRecords: [] as PhotoConsentRecord[],
+  physicalActivityEntries: [] as PhysicalActivityEntry[],
+  placementAnniversaryEntries: [] as PlacementAnniversaryEntry[],
+  placementBudgetTrackers: [] as PlacementBudgetTracker[],
+  cohortAnalyses: [] as CohortAnalysis[],
+  disruptionPreventionPlans: [] as DisruptionPreventionPlan[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -8085,6 +8097,111 @@ export const db = {
       if (idx === -1) return null;
       store.photoAlbumRecords[idx] = { ...store.photoAlbumRecords[idx], ...data };
       return store.photoAlbumRecords[idx];
+    },
+  },
+
+  photoConsentRecords: {
+    getAll: (childId?: string) => {
+      if (childId) return store.photoConsentRecords.filter((r) => r.child_id === childId);
+      return store.photoConsentRecords;
+    },
+    create: (data: Partial<PhotoConsentRecord>) => {
+      const record = { ...data, id: `pcrc_${Date.now()}`, created_at: new Date().toISOString() } as PhotoConsentRecord;
+      store.photoConsentRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<PhotoConsentRecord>) => {
+      const idx = store.photoConsentRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.photoConsentRecords[idx] = { ...store.photoConsentRecords[idx], ...data };
+      return store.photoConsentRecords[idx];
+    },
+  },
+
+  physicalActivityEntries: {
+    getAll: (childId?: string) => {
+      if (childId) return store.physicalActivityEntries.filter((r) => r.child_id === childId);
+      return store.physicalActivityEntries;
+    },
+    create: (data: Partial<PhysicalActivityEntry>) => {
+      const record = { ...data, id: `paen_${Date.now()}`, created_at: new Date().toISOString() } as PhysicalActivityEntry;
+      store.physicalActivityEntries.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<PhysicalActivityEntry>) => {
+      const idx = store.physicalActivityEntries.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.physicalActivityEntries[idx] = { ...store.physicalActivityEntries[idx], ...data };
+      return store.physicalActivityEntries[idx];
+    },
+  },
+
+  placementAnniversaryEntries: {
+    getAll: (childId?: string) => {
+      if (childId) return store.placementAnniversaryEntries.filter((r) => r.child_id === childId);
+      return store.placementAnniversaryEntries;
+    },
+    create: (data: Partial<PlacementAnniversaryEntry>) => {
+      const record = { ...data, id: `pann_${Date.now()}`, created_at: new Date().toISOString() } as PlacementAnniversaryEntry;
+      store.placementAnniversaryEntries.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<PlacementAnniversaryEntry>) => {
+      const idx = store.placementAnniversaryEntries.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.placementAnniversaryEntries[idx] = { ...store.placementAnniversaryEntries[idx], ...data };
+      return store.placementAnniversaryEntries[idx];
+    },
+  },
+
+  placementBudgetTrackers: {
+    getAll: (childId?: string) => {
+      if (childId) return store.placementBudgetTrackers.filter((r) => r.child_id === childId);
+      return store.placementBudgetTrackers;
+    },
+    create: (data: Partial<PlacementBudgetTracker>) => {
+      const record = { ...data, id: `pbtk_${Date.now()}`, created_at: new Date().toISOString() } as PlacementBudgetTracker;
+      store.placementBudgetTrackers.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<PlacementBudgetTracker>) => {
+      const idx = store.placementBudgetTrackers.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.placementBudgetTrackers[idx] = { ...store.placementBudgetTrackers[idx], ...data };
+      return store.placementBudgetTrackers[idx];
+    },
+  },
+
+  cohortAnalyses: {
+    getAll: () => store.cohortAnalyses,
+    create: (data: Partial<CohortAnalysis>) => {
+      const record = { ...data, id: `coan_${Date.now()}`, created_at: new Date().toISOString() } as CohortAnalysis;
+      store.cohortAnalyses.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CohortAnalysis>) => {
+      const idx = store.cohortAnalyses.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.cohortAnalyses[idx] = { ...store.cohortAnalyses[idx], ...data };
+      return store.cohortAnalyses[idx];
+    },
+  },
+
+  disruptionPreventionPlans: {
+    getAll: (childId?: string) => {
+      if (childId) return store.disruptionPreventionPlans.filter((r) => r.child_id === childId);
+      return store.disruptionPreventionPlans;
+    },
+    create: (data: Partial<DisruptionPreventionPlan>) => {
+      const record = { ...data, id: `dppl_${Date.now()}`, created_at: new Date().toISOString() } as DisruptionPreventionPlan;
+      store.disruptionPreventionPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<DisruptionPreventionPlan>) => {
+      const idx = store.disruptionPreventionPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.disruptionPreventionPlans[idx] = { ...store.disruptionPreventionPlans[idx], ...data };
+      return store.disruptionPreventionPlans[idx];
     },
   },
 };
