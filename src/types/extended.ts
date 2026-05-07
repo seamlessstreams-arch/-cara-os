@@ -6715,13 +6715,14 @@ export const MEETING_MOOD_LABEL: Record<MeetingMood, string> = {
   difficult: "Difficult",
 };
 
-export type MeetingActionStatus = "pending" | "in_progress" | "completed" | "carried_forward";
+export type MeetingActionStatus = "pending" | "in_progress" | "completed" | "carried_forward" | "overdue";
 
 export const MEETING_ACTION_STATUS_LABEL: Record<MeetingActionStatus, string> = {
   pending: "Pending",
   in_progress: "In Progress",
   completed: "Completed",
   carried_forward: "Carried Forward",
+  overdue: "Overdue",
 };
 
 export interface MeetingAgendaItem {
@@ -15165,5 +15166,263 @@ export interface MealPlan {
   special_notes: string;
   budget: number;
   leftover_action: string;
+  created_at: string;
+}
+
+// ── Missing Return Interviews ─────────────────────────────────────────────────
+
+export type ReturnInterviewStatus = "completed" | "offered_declined" | "pending" | "not_yet_due";
+export const RETURN_INTERVIEW_STATUS_LABEL: Record<ReturnInterviewStatus, string> = {
+  completed: "Completed",
+  offered_declined: "Declined",
+  pending: "Pending",
+  not_yet_due: "Not Yet Due",
+};
+
+export type ReturnInterviewActionStatus = "completed" | "in_progress" | "pending";
+export const RETURN_INTERVIEW_ACTION_STATUS_LABEL: Record<ReturnInterviewActionStatus, string> = {
+  completed: "Completed",
+  in_progress: "In Progress",
+  pending: "Pending",
+};
+
+export interface ReturnInterviewAction {
+  action: string;
+  owner: string;
+  deadline: string;
+  status: ReturnInterviewActionStatus;
+}
+
+export interface ReturnInterview {
+  id: string;
+  child_id: string;
+  missing_episode_date: string;
+  return_date: string;
+  interview_date: string | null;
+  interviewed_by: string;
+  independent_of_home: boolean;
+  interview_status: ReturnInterviewStatus;
+  declined_reason: string | null;
+  duration: string | null;
+  location: string;
+  push_factors: string[];
+  pull_factors: string[];
+  where_went: string;
+  who_with: string;
+  risks_identified: string[];
+  exploitation_concerns: boolean;
+  exploitation_details: string | null;
+  child_view_on_safety: string;
+  what_would_help: string;
+  actions_agreed: ReturnInterviewAction[];
+  shared_with: string[];
+  notes: string;
+  created_at: string;
+}
+
+// ── Multi-Agency Meetings ─────────────────────────────────────────────────────
+
+export type MultiAgencyMeetingType = "lac_review" | "pep" | "cin" | "cpp" | "strategy" | "professionals" | "ehcp_annual" | "transition" | "placement" | "disruption";
+export const MULTI_AGENCY_MEETING_TYPE_LABEL: Record<MultiAgencyMeetingType, string> = {
+  lac_review: "LAC Review",
+  pep: "PEP",
+  cin: "CIN Meeting",
+  cpp: "Child Protection Conference",
+  strategy: "Strategy Meeting",
+  professionals: "Professionals Meeting",
+  ehcp_annual: "EHCP Annual Review",
+  transition: "Transition Planning",
+  placement: "Placement Meeting",
+  disruption: "Disruption Meeting",
+};
+
+export type MultiAgencyMeetingStatus = "scheduled" | "completed" | "cancelled" | "postponed";
+export const MULTI_AGENCY_MEETING_STATUS_LABEL: Record<MultiAgencyMeetingStatus, string> = {
+  scheduled: "Scheduled",
+  completed: "Completed",
+  cancelled: "Cancelled",
+  postponed: "Postponed",
+};
+
+export interface MeetingAttendee {
+  name: string;
+  role: string;
+  organisation: string;
+  attended: boolean;
+}
+
+export interface MultiAgencyActionItem {
+  action: string;
+  owner: string;
+  due_date: string;
+  status: MeetingActionStatus;
+}
+
+export interface MultiAgencyMeeting {
+  id: string;
+  child_id: string;
+  meeting_type: MultiAgencyMeetingType;
+  meeting_status: MultiAgencyMeetingStatus;
+  date: string;
+  time: string;
+  venue: string;
+  chaired_by: string;
+  home_representative: string;
+  attendees: MeetingAttendee[];
+  key_discussion_points: string[];
+  decisions_reached: string[];
+  child_participation: string;
+  action_items: MultiAgencyActionItem[];
+  next_meeting_date: string | null;
+  notes: string;
+  created_at: string;
+}
+
+// ── Multi-Disciplinary Formulation ────────────────────────────────────────────
+
+export type FormulationModel = "5ps" | "cognitive_behavioural" | "attachment_based" | "trauma_informed" | "systemic" | "integrated";
+export const FORMULATION_MODEL_LABEL: Record<FormulationModel, string> = {
+  "5ps": "5Ps",
+  cognitive_behavioural: "Cognitive Behavioural",
+  attachment_based: "Attachment-based",
+  trauma_informed: "Trauma-informed",
+  systemic: "Systemic",
+  integrated: "Integrated",
+};
+
+export interface MultiDisciplinaryFormulation {
+  id: string;
+  child_id: string;
+  version: number;
+  formulation_date: string;
+  model_used: FormulationModel;
+  participants_attended: string[];
+  presenting_difficulties: string[];
+  predisposing: string[];
+  precipitating: string[];
+  perpetuating: string[];
+  protective: string[];
+  key_hypotheses: string[];
+  agreed_interventions: string[];
+  risk_factors: string[];
+  child_contribution: string;
+  next_review_date: string;
+  internal_lead: string;
+  shareable_summary: string;
+  confidential_notes: string;
+  created_at: string;
+}
+
+// ── Museum & Cultural Visits ──────────────────────────────────────────────────
+
+export type CulturalVisitVenueType = "museum" | "art_gallery" | "theatre" | "cinema" | "heritage_site" | "library_special_exhibit" | "music_venue" | "stadium_tour" | "botanical_garden" | "aquarium_zoo" | "cultural_festival";
+export const CULTURAL_VISIT_VENUE_TYPE_LABEL: Record<CulturalVisitVenueType, string> = {
+  museum: "Museum",
+  art_gallery: "Art Gallery",
+  theatre: "Theatre",
+  cinema: "Cinema",
+  heritage_site: "Heritage Site",
+  library_special_exhibit: "Library Special Exhibit",
+  music_venue: "Music Venue",
+  stadium_tour: "Stadium Tour",
+  botanical_garden: "Botanical Garden",
+  aquarium_zoo: "Aquarium/Zoo",
+  cultural_festival: "Cultural Festival",
+};
+
+export interface CulturalVisit {
+  id: string;
+  date: string;
+  venue_name: string;
+  venue_type: CulturalVisitVenueType;
+  young_people_attended: string[];
+  staff_escort: string[];
+  purpose_of_visit: string;
+  learning_outcomes: string[];
+  child_interest_area: Record<string, string>;
+  duration_hours: number;
+  cost_total: number;
+  accessibility_adjustments: string[];
+  child_comments: Record<string, string>;
+  staff_observations: string;
+  photographs_taken: boolean;
+  photo_consent_log: string;
+  repeat_visit_interest: boolean;
+  linked_to_curriculum: string;
+  linked_to_care_plan_goal: string;
+  travel_logged: string;
+  created_at: string;
+}
+
+// ── Night Checks ──────────────────────────────────────────────────────────────
+
+export type NightCheckSleepStatus = "sleeping" | "awake_settled" | "awake_unsettled" | "distressed" | "not_in_room" | "asleep_restless";
+export const NIGHT_CHECK_SLEEP_STATUS_LABEL: Record<NightCheckSleepStatus, string> = {
+  sleeping: "Sleeping",
+  awake_settled: "Awake (Settled)",
+  awake_unsettled: "Awake (Unsettled)",
+  distressed: "Distressed",
+  not_in_room: "Not in Room",
+  asleep_restless: "Restless Sleep",
+};
+
+export type NightCheckType = "scheduled" | "additional" | "concern_follow_up";
+export const NIGHT_CHECK_TYPE_LABEL: Record<NightCheckType, string> = {
+  scheduled: "Scheduled",
+  additional: "Additional",
+  concern_follow_up: "Concern Follow-up",
+};
+
+export type DoorPosition = "open" | "closed" | "ajar";
+export const DOOR_POSITION_LABEL: Record<DoorPosition, string> = {
+  open: "Open",
+  closed: "Closed",
+  ajar: "Ajar",
+};
+
+export interface NightCheck {
+  id: string;
+  date: string;
+  time: string;
+  child_id: string;
+  staff_id: string;
+  sleep_status: NightCheckSleepStatus;
+  check_type: NightCheckType;
+  notes: string;
+  concern_raised: boolean;
+  concern_detail: string | null;
+  room_temp_ok: boolean;
+  door_position: DoorPosition;
+  created_at: string;
+}
+
+// ── Night Staff Guidance ──────────────────────────────────────────────────────
+
+export type GuidancePriority = "essential" | "important" | "reference";
+export const GUIDANCE_PRIORITY_LABEL: Record<GuidancePriority, string> = {
+  essential: "Essential",
+  important: "Important",
+  reference: "Reference",
+};
+
+export type GuidanceSectionKey = "night_check_schedule" | "emergency_procedures" | "medication_night" | "lone_working" | "contact_numbers" | "night_shift_handover" | "night_tasks_checklist" | "fire_evacuation_night";
+export const GUIDANCE_SECTION_KEY_LABEL: Record<GuidanceSectionKey, string> = {
+  night_check_schedule: "Night Check Schedule",
+  emergency_procedures: "Emergency Procedures",
+  medication_night: "Medication — Night Procedures",
+  lone_working: "Lone Working Protocol",
+  contact_numbers: "Contact Numbers",
+  night_shift_handover: "Night Shift Handover",
+  night_tasks_checklist: "Night Tasks Checklist",
+  fire_evacuation_night: "Fire Evacuation — Night Specific",
+};
+
+export interface NightStaffGuidanceSection {
+  id: string;
+  section_key: GuidanceSectionKey;
+  title: string;
+  priority: GuidancePriority;
+  last_updated: string;
+  content: string[];
   created_at: string;
 }

@@ -250,6 +250,8 @@ import type {
   MedicationAuditRecord, MedicationErrorInvestigation, MedicationNearMiss,
   MedicationStockCheck, MedicationStorageAudit, MedTrainingRecord,
   MemorialOccasionRecord, MenstrualHealthPlan, MealPlan,
+  ReturnInterview, MultiAgencyMeeting, MultiDisciplinaryFormulation,
+  CulturalVisit, NightCheck, NightStaffGuidanceSection,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -562,6 +564,12 @@ const store = {
   memorialOccasionRecords: [] as MemorialOccasionRecord[],
   menstrualHealthPlans: [] as MenstrualHealthPlan[],
   mealPlans: [] as MealPlan[],
+  returnInterviews: [] as ReturnInterview[],
+  multiAgencyMeetings: [] as MultiAgencyMeeting[],
+  multiDisciplinaryFormulations: [] as MultiDisciplinaryFormulation[],
+  culturalVisits: [] as CulturalVisit[],
+  nightChecks: [] as NightCheck[],
+  nightStaffGuidanceSections: [] as NightStaffGuidanceSection[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -7511,6 +7519,107 @@ export const db = {
       if (idx === -1) return null;
       store.mealPlans[idx] = { ...store.mealPlans[idx], ...data };
       return store.mealPlans[idx];
+    },
+  },
+
+  returnInterviews: {
+    findAll: (): ReturnInterview[] => store.returnInterviews,
+    findByChild: (childId: string): ReturnInterview[] => store.returnInterviews.filter((r) => r.child_id === childId),
+    findById: (id: string): ReturnInterview | undefined => store.returnInterviews.find((r) => r.id === id),
+    create: (data: Partial<ReturnInterview>): ReturnInterview => {
+      const record = { ...data, id: generateId("rtni"), created_at: new Date().toISOString() } as ReturnInterview;
+      store.returnInterviews.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ReturnInterview>): ReturnInterview | null => {
+      const idx = store.returnInterviews.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.returnInterviews[idx] = { ...store.returnInterviews[idx], ...data };
+      return store.returnInterviews[idx];
+    },
+  },
+
+  multiAgencyMeetings: {
+    findAll: (): MultiAgencyMeeting[] => store.multiAgencyMeetings,
+    findByChild: (childId: string): MultiAgencyMeeting[] => store.multiAgencyMeetings.filter((r) => r.child_id === childId),
+    findById: (id: string): MultiAgencyMeeting | undefined => store.multiAgencyMeetings.find((r) => r.id === id),
+    create: (data: Partial<MultiAgencyMeeting>): MultiAgencyMeeting => {
+      const record = { ...data, id: generateId("mamg"), created_at: new Date().toISOString() } as MultiAgencyMeeting;
+      store.multiAgencyMeetings.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MultiAgencyMeeting>): MultiAgencyMeeting | null => {
+      const idx = store.multiAgencyMeetings.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.multiAgencyMeetings[idx] = { ...store.multiAgencyMeetings[idx], ...data };
+      return store.multiAgencyMeetings[idx];
+    },
+  },
+
+  multiDisciplinaryFormulations: {
+    findAll: (): MultiDisciplinaryFormulation[] => store.multiDisciplinaryFormulations,
+    findByChild: (childId: string): MultiDisciplinaryFormulation[] => store.multiDisciplinaryFormulations.filter((r) => r.child_id === childId),
+    findById: (id: string): MultiDisciplinaryFormulation | undefined => store.multiDisciplinaryFormulations.find((r) => r.id === id),
+    create: (data: Partial<MultiDisciplinaryFormulation>): MultiDisciplinaryFormulation => {
+      const record = { ...data, id: generateId("mdfl"), created_at: new Date().toISOString() } as MultiDisciplinaryFormulation;
+      store.multiDisciplinaryFormulations.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MultiDisciplinaryFormulation>): MultiDisciplinaryFormulation | null => {
+      const idx = store.multiDisciplinaryFormulations.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.multiDisciplinaryFormulations[idx] = { ...store.multiDisciplinaryFormulations[idx], ...data };
+      return store.multiDisciplinaryFormulations[idx];
+    },
+  },
+
+  culturalVisits: {
+    findAll: (): CulturalVisit[] => store.culturalVisits,
+    findByChild: (childId: string): CulturalVisit[] => store.culturalVisits.filter((r) => r.young_people_attended.includes(childId)),
+    findById: (id: string): CulturalVisit | undefined => store.culturalVisits.find((r) => r.id === id),
+    create: (data: Partial<CulturalVisit>): CulturalVisit => {
+      const record = { ...data, id: generateId("cvst"), created_at: new Date().toISOString() } as CulturalVisit;
+      store.culturalVisits.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<CulturalVisit>): CulturalVisit | null => {
+      const idx = store.culturalVisits.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.culturalVisits[idx] = { ...store.culturalVisits[idx], ...data };
+      return store.culturalVisits[idx];
+    },
+  },
+
+  nightChecks: {
+    findAll: (): NightCheck[] => store.nightChecks,
+    findByChild: (childId: string): NightCheck[] => store.nightChecks.filter((r) => r.child_id === childId),
+    findById: (id: string): NightCheck | undefined => store.nightChecks.find((r) => r.id === id),
+    create: (data: Partial<NightCheck>): NightCheck => {
+      const record = { ...data, id: generateId("nchk"), created_at: new Date().toISOString() } as NightCheck;
+      store.nightChecks.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<NightCheck>): NightCheck | null => {
+      const idx = store.nightChecks.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.nightChecks[idx] = { ...store.nightChecks[idx], ...data };
+      return store.nightChecks[idx];
+    },
+  },
+
+  nightStaffGuidanceSections: {
+    findAll: (): NightStaffGuidanceSection[] => store.nightStaffGuidanceSections,
+    findById: (id: string): NightStaffGuidanceSection | undefined => store.nightStaffGuidanceSections.find((r) => r.id === id),
+    create: (data: Partial<NightStaffGuidanceSection>): NightStaffGuidanceSection => {
+      const record = { ...data, id: generateId("nsgs"), created_at: new Date().toISOString() } as NightStaffGuidanceSection;
+      store.nightStaffGuidanceSections.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<NightStaffGuidanceSection>): NightStaffGuidanceSection | null => {
+      const idx = store.nightStaffGuidanceSections.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.nightStaffGuidanceSections[idx] = { ...store.nightStaffGuidanceSections[idx], ...data };
+      return store.nightStaffGuidanceSections[idx];
     },
   },
 };

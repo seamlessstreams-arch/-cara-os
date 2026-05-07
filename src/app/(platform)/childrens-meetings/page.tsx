@@ -55,6 +55,7 @@ const ACTION_COLOURS: Record<MeetingActionStatus, string> = {
   in_progress: "bg-blue-100 text-blue-800",
   completed: "bg-green-100 text-green-800",
   carried_forward: "bg-amber-100 text-amber-800",
+  overdue: "bg-red-100 text-red-800",
 };
 
 /* ── flat row for export ─────────────────────────────────────────────── */
