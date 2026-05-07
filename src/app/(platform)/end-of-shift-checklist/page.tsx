@@ -39,299 +39,39 @@ import {
   MessageSquare,
   ArrowRightLeft,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-
-// ── Local date helper ────────────────────────────────────────────────────────
-const d = (n: number): string => {
-  const date = new Date();
-  date.setDate(date.getDate() + n);
-  return date.toISOString().slice(0, 10);
-};
-
-// ── Types ────────────────────────────────────────────────────────────────────
-type ShiftType = "Early" | "Late" | "Sleep-in" | "Wake-night";
-
-type CheckCategory =
-  | "Safeguarding"
-  | "Medication"
-  | "Environment & Security"
-  | "Records"
-  | "Children's wellbeing"
-  | "Communication";
-
-interface ChecklistItem {
-  category: CheckCategory;
-  item: string;
-  completed: boolean;
-  notes: string;
-}
-
-interface ShiftChecklist {
-  id: string;
-  date: string;
-  shiftType: ShiftType;
-  shiftStart: string;
-  shiftEnd: string;
-  staffMember: string;
-  checks: ChecklistItem[];
-  anyEscalations: string[];
-  keyHandoverPoints: string[];
-  childObservations: string;
-  staffWellbeingCheckIn: string;
-  buildingSecurityChecked: boolean;
-  medicationCabinetLocked: boolean;
-  petsCaredFor: boolean;
-  kitchenClosed: boolean;
-  nextShiftStaff: string;
-  handoverDelivered: boolean;
-  allTasksComplete: boolean;
-}
-
-// ── Standard checklist template ──────────────────────────────────────────────
-const STANDARD_CHECKS = (
-  overrides: Partial<Record<string, { completed: boolean; notes: string }>> = {},
-): ChecklistItem[] => {
-  const base: Array<Omit<ChecklistItem, "completed" | "notes">> = [
-    { category: "Safeguarding", item: "Reviewed open safeguarding flags and confirmed no new concerns left unrecorded" },
-    { category: "Safeguarding", item: "Body map / accident book reviewed for the shift" },
-    { category: "Medication", item: "MAR sheet up to date and signed for every administration this shift" },
-    { category: "Medication", item: "Medication cabinet locked, keys returned to safe location" },
-    { category: "Medication", item: "Controlled drugs stock count completed and signed (where applicable)" },
-    { category: "Environment & Security", item: "All external doors and windows secured" },
-    { category: "Environment & Security", item: "Building walk-round completed, no hazards left in communal areas" },
-    { category: "Environment & Security", item: "Kitchen cleaned, appliances off, fridge temperature checked" },
-    { category: "Records", item: "Daily logs written for each young person on shift" },
-    { category: "Records", item: "Incidents, sanctions and physical interventions recorded" },
-    { category: "Records", item: "Petty cash and pocket money reconciled where used" },
-    { category: "Children's wellbeing", item: "Each young person checked in on; mood and presentation noted" },
-    { category: "Children's wellbeing", item: "Bedtime / wake routine supported in line with care plan" },
-    { category: "Communication", item: "Verbal handover delivered to incoming staff, key risks named" },
-    { category: "Communication", item: "Outstanding tasks and follow-ups passed on in writing" },
-  ];
-  return base.map((b) => ({
-    ...b,
-    completed: overrides[b.item]?.completed ?? true,
-    notes: overrides[b.item]?.notes ?? "",
-  }));
-};
-
-// ── Seed records (most recent first) ─────────────────────────────────────────
-const RECORDS: ShiftChecklist[] = [
-  {
-    id: "eos_007",
-    date: d(0),
-    shiftType: "Late",
-    shiftStart: "14:00",
-    shiftEnd: "22:00",
-    staffMember: "staff_darren",
-    checks: STANDARD_CHECKS(),
-    anyEscalations: [],
-    keyHandoverPoints: [
-      "Alex settled well after evening call with mum — no further support needed tonight",
-      "Casey's prescription collection due tomorrow morning before 10:00",
-      "Jordan's social worker confirmed visit Friday at 16:00",
-    ],
-    childObservations:
-      "All three young people in good spirits. Casey shared positive feedback about her new keyworker session structure. Alex spent time in the lounge with Jordan, which is a notable positive after last week's friction.",
-    staffWellbeingCheckIn:
-      "Felt well-supported on shift, manageable workload, no issues to raise.",
-    buildingSecurityChecked: true,
-    medicationCabinetLocked: true,
-    petsCaredFor: true,
-    kitchenClosed: true,
-    nextShiftStaff: "staff_anna",
-    handoverDelivered: true,
-    allTasksComplete: true,
-  },
-  {
-    id: "eos_006",
-    date: d(0),
-    shiftType: "Early",
-    shiftStart: "07:00",
-    shiftEnd: "14:00",
-    staffMember: "staff_ryan",
-    checks: STANDARD_CHECKS(),
-    anyEscalations: [],
-    keyHandoverPoints: [
-      "All three young people attended education on time",
-      "Maintenance team booked to fix bathroom radiator Thursday morning",
-      "Casey requested earlier dinner tomorrow — agreed for 17:30",
-    ],
-    childObservations:
-      "Calm morning routine. Jordan a little quiet at breakfast — no triggers identified, will be monitored. Alex engaged well with chores and earned all four points.",
-    staffWellbeingCheckIn:
-      "Good shift. Plenty of cover and clear handover received from waking-night.",
-    buildingSecurityChecked: true,
-    medicationCabinetLocked: true,
-    petsCaredFor: true,
-    kitchenClosed: true,
-    nextShiftStaff: "staff_darren",
-    handoverDelivered: true,
-    allTasksComplete: true,
-  },
-  {
-    id: "eos_005",
-    date: d(-1),
-    shiftType: "Wake-night",
-    shiftStart: "22:00",
-    shiftEnd: "07:00",
-    staffMember: "staff_chervelle",
-    checks: STANDARD_CHECKS(),
-    anyEscalations: [],
-    keyHandoverPoints: [
-      "All young people slept through with no disturbances",
-      "Hourly walk-round logs completed",
-      "Heating boiler reset at 03:15 after low-pressure warning — operational since",
-    ],
-    childObservations:
-      "Settled night for all three. Alex up briefly at 02:00 for water, returned to bed without prompting.",
-    staffWellbeingCheckIn:
-      "Quiet shift, used downtime to update house diary and clean staff office.",
-    buildingSecurityChecked: true,
-    medicationCabinetLocked: true,
-    petsCaredFor: true,
-    kitchenClosed: true,
-    nextShiftStaff: "staff_ryan",
-    handoverDelivered: true,
-    allTasksComplete: true,
-  },
-  {
-    id: "eos_004",
-    date: d(-1),
-    shiftType: "Late",
-    shiftStart: "14:00",
-    shiftEnd: "22:00",
-    staffMember: "staff_anna",
-    checks: STANDARD_CHECKS({
-      "Petty cash and pocket money reconciled where used": {
-        completed: false,
-        notes:
-          "Receipt from Casey's clothing trip not yet matched — receipt left in petty cash tin for finance team to verify in the morning.",
-      },
-    }),
-    anyEscalations: [
-      "Behaviour escalation — Jordan refused medication at 20:00. De-escalation successful by 20:35, medication taken under supervision. Behaviour log written, ARIA prompt completed, on-call manager (Darren) informed by phone at 20:40.",
-    ],
-    keyHandoverPoints: [
-      "Jordan medication refusal earlier — manager aware, no further follow-up tonight",
-      "Casey clothing receipt to be reconciled in the morning",
-      "Alex requested family contact call to be moved to Saturday — agreed pending social worker confirmation",
-    ],
-    childObservations:
-      "Jordan presented as anxious about tomorrow's contact arrangements — root cause of the medication refusal. Casey calm and engaged. Alex cooperative throughout.",
-    staffWellbeingCheckIn:
-      "Felt the situation with Jordan well — debrief with Darren by phone helpful. Will reflect in supervision.",
-    buildingSecurityChecked: true,
-    medicationCabinetLocked: true,
-    petsCaredFor: true,
-    kitchenClosed: true,
-    nextShiftStaff: "staff_chervelle",
-    handoverDelivered: true,
-    allTasksComplete: false,
-  },
-  {
-    id: "eos_003",
-    date: d(-2),
-    shiftType: "Sleep-in",
-    shiftStart: "22:00",
-    shiftEnd: "07:00",
-    staffMember: "staff_edward",
-    checks: STANDARD_CHECKS(),
-    anyEscalations: [],
-    keyHandoverPoints: [
-      "Quiet sleep-in, no disturbances",
-      "Boiler operating normally — flagged for routine service next week",
-      "Casey's school PE kit washed and ready",
-    ],
-    childObservations:
-      "All settled. No overnight calls or interactions needed.",
-    staffWellbeingCheckIn:
-      "Restful sleep-in, fully alert at 06:45 wake.",
-    buildingSecurityChecked: true,
-    medicationCabinetLocked: true,
-    petsCaredFor: true,
-    kitchenClosed: true,
-    nextShiftStaff: "staff_lackson",
-    handoverDelivered: true,
-    allTasksComplete: true,
-  },
-  {
-    id: "eos_002",
-    date: d(-3),
-    shiftType: "Late",
-    shiftStart: "14:00",
-    shiftEnd: "22:00",
-    staffMember: "staff_lackson",
-    checks: STANDARD_CHECKS(),
-    anyEscalations: [],
-    keyHandoverPoints: [
-      "Casey completed first homework session of the term — celebrate with her tomorrow",
-      "Alex's bedroom radiator still warmer than other rooms — maintenance ticket open",
-      "House meeting scheduled for Sunday at 18:00",
-    ],
-    childObservations:
-      "Positive evening across the house. Jordan helped prepare dinner — confidence visibly growing.",
-    staffWellbeingCheckIn:
-      "Productive shift, time well-distributed across all three young people.",
-    buildingSecurityChecked: true,
-    medicationCabinetLocked: true,
-    petsCaredFor: true,
-    kitchenClosed: true,
-    nextShiftStaff: "staff_edward",
-    handoverDelivered: true,
-    allTasksComplete: true,
-  },
-  {
-    id: "eos_001",
-    date: d(-4),
-    shiftType: "Early",
-    shiftStart: "07:00",
-    shiftEnd: "14:00",
-    staffMember: "staff_mirela",
-    checks: STANDARD_CHECKS(),
-    anyEscalations: [],
-    keyHandoverPoints: [
-      "School transport ran 10 minutes late — communicated to all three schools",
-      "Casey collected new bus pass from reception",
-      "Cleaning rota updated and shared in staff WhatsApp",
-    ],
-    childObservations:
-      "Smooth morning. Alex needed extra encouragement to leave for school but went without escalation.",
-    staffWellbeingCheckIn:
-      "Felt confident managing the morning rush solo with sleep-in support overlap.",
-    buildingSecurityChecked: true,
-    medicationCabinetLocked: true,
-    petsCaredFor: true,
-    kitchenClosed: true,
-    nextShiftStaff: "staff_lackson",
-    handoverDelivered: true,
-    allTasksComplete: true,
-  },
-];
+import { useShiftChecklists } from "@/hooks/use-shift-checklists";
+import type { ShiftChecklist, ChecklistItem } from "@/types/extended";
+import {
+  END_OF_SHIFT_TYPE_LABEL,
+  CHECKLIST_CATEGORY_LABEL,
+} from "@/types/extended";
+import type { EndOfShiftType, ChecklistCategory } from "@/types/extended";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-const shiftColour = (s: ShiftType): string => {
+const shiftColour = (s: EndOfShiftType): string => {
   switch (s) {
-    case "Early":
+    case "early":
       return "bg-amber-100 text-amber-800 border-amber-200";
-    case "Late":
+    case "late":
       return "bg-indigo-100 text-indigo-800 border-indigo-200";
-    case "Sleep-in":
+    case "sleep_in":
       return "bg-violet-100 text-violet-800 border-violet-200";
-    case "Wake-night":
+    case "wake_night":
       return "bg-slate-200 text-slate-800 border-slate-300";
   }
 };
 
-const categoryIcon: Record<CheckCategory, React.ReactNode> = {
-  Safeguarding: <ShieldCheck className="h-4 w-4" />,
-  Medication: <Pill className="h-4 w-4" />,
-  "Environment & Security": <Building2 className="h-4 w-4" />,
-  Records: <BookOpen className="h-4 w-4" />,
-  "Children's wellbeing": <Heart className="h-4 w-4" />,
-  Communication: <MessageSquare className="h-4 w-4" />,
+const categoryIcon: Record<ChecklistCategory, React.ReactNode> = {
+  safeguarding: <ShieldCheck className="h-4 w-4" />,
+  medication: <Pill className="h-4 w-4" />,
+  environment_security: <Building2 className="h-4 w-4" />,
+  records: <BookOpen className="h-4 w-4" />,
+  childrens_wellbeing: <Heart className="h-4 w-4" />,
+  communication: <MessageSquare className="h-4 w-4" />,
 };
 
 const formatPretty = (iso: string): string => {
@@ -359,6 +99,9 @@ type SortKey =
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function EndOfShiftChecklistPage() {
+  const { data: res, isLoading } = useShiftChecklists();
+  const records = useMemo(() => res?.data ?? [], [res]);
+
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [filterShift, setFilterShift] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -367,35 +110,35 @@ export default function EndOfShiftChecklistPage() {
   const summary = useMemo(() => {
     const seven = new Date();
     seven.setDate(seven.getDate() - 7);
-    const recent = RECORDS.filter((r) => new Date(r.date) >= seven);
-    const totalChecks = RECORDS.reduce((s, r) => s + r.checks.length, 0);
-    const completed = RECORDS.reduce(
+    const recent = records.filter((r) => new Date(r.date) >= seven);
+    const totalChecks = records.reduce((s, r) => s + r.checks.length, 0);
+    const completed = records.reduce(
       (s, r) => s + r.checks.filter((c) => c.completed).length,
       0,
     );
     const completionRate =
       totalChecks > 0 ? Math.round((completed / totalChecks) * 100) : 0;
     const escalations = recent.reduce(
-      (s, r) => s + r.anyEscalations.length,
+      (s, r) => s + r.any_escalations.length,
       0,
     );
     const avgComplete = Math.round(
-      RECORDS.reduce((s, r) => s + completionPct(r), 0) /
-        Math.max(RECORDS.length, 1),
+      records.reduce((s, r) => s + completionPct(r), 0) /
+        Math.max(records.length, 1),
     );
     return {
-      shiftsLogged: RECORDS.length,
+      shiftsLogged: records.length,
       completionRate,
       escalations,
       avgComplete,
     };
-  }, []);
+  }, [records]);
 
   // ── Filtered + sorted ──────────────────────────────────────────────────────
   const visible = useMemo(() => {
-    let list = [...RECORDS];
+    let list = [...records];
     if (filterShift !== "all") {
-      list = list.filter((r) => r.shiftType === filterShift);
+      list = list.filter((r) => r.shift_type === filterShift);
     }
     switch (sortKey) {
       case "date_desc":
@@ -411,86 +154,91 @@ export default function EndOfShiftChecklistPage() {
         list.sort((a, b) => completionPct(a) - completionPct(b));
         break;
       case "shift": {
-        const order: Record<ShiftType, number> = {
-          Early: 0,
-          Late: 1,
-          "Sleep-in": 2,
-          "Wake-night": 3,
+        const order: Record<string, number> = {
+          early: 0,
+          late: 1,
+          sleep_in: 2,
+          wake_night: 3,
         };
-        list.sort((a, b) => order[a.shiftType] - order[b.shiftType]);
+        list.sort((a, b) => (order[a.shift_type] ?? 4) - (order[b.shift_type] ?? 4));
         break;
       }
     }
     return list;
-  }, [sortKey, filterShift]);
+  }, [records, sortKey, filterShift]);
 
   // ── Export columns ─────────────────────────────────────────────────────────
   const exportColumns: ExportColumn<ShiftChecklist>[] = [
-    { header: "ID", accessor: (r: ShiftChecklist) => r.id },
-    { header: "Date", accessor: (r: ShiftChecklist) => r.date },
-    { header: "Shift type", accessor: (r: ShiftChecklist) => r.shiftType },
-    { header: "Shift start", accessor: (r: ShiftChecklist) => r.shiftStart },
-    { header: "Shift end", accessor: (r: ShiftChecklist) => r.shiftEnd },
-    {
-      header: "Staff member",
-      accessor: (r: ShiftChecklist) => getStaffName(r.staffMember),
-    },
+    { header: "ID", accessor: (r) => r.id },
+    { header: "Date", accessor: (r) => r.date },
+    { header: "Shift type", accessor: (r) => END_OF_SHIFT_TYPE_LABEL[r.shift_type] },
+    { header: "Shift start", accessor: (r) => r.shift_start },
+    { header: "Shift end", accessor: (r) => r.shift_end },
+    { header: "Staff member", accessor: (r) => getStaffName(r.staff_member) },
     {
       header: "Tasks complete",
-      accessor: (r: ShiftChecklist) =>
+      accessor: (r) =>
         `${r.checks.filter((c) => c.completed).length}/${r.checks.length}`,
     },
     {
       header: "Completion %",
-      accessor: (r: ShiftChecklist) => String(completionPct(r)),
+      accessor: (r) => String(completionPct(r)),
     },
     {
       header: "All tasks complete",
-      accessor: (r: ShiftChecklist) => (r.allTasksComplete ? "Yes" : "No"),
+      accessor: (r) => (r.all_tasks_complete ? "Yes" : "No"),
     },
     {
       header: "Escalations",
-      accessor: (r: ShiftChecklist) => r.anyEscalations.join(" | "),
+      accessor: (r) => r.any_escalations.join(" | "),
     },
     {
       header: "Key handover points",
-      accessor: (r: ShiftChecklist) => r.keyHandoverPoints.join(" | "),
+      accessor: (r) => r.key_handover_points.join(" | "),
     },
     {
       header: "Child observations",
-      accessor: (r: ShiftChecklist) => r.childObservations,
+      accessor: (r) => r.child_observations,
     },
     {
       header: "Staff wellbeing check-in",
-      accessor: (r: ShiftChecklist) => r.staffWellbeingCheckIn,
+      accessor: (r) => r.staff_wellbeing_check_in,
     },
     {
       header: "Building secured",
-      accessor: (r: ShiftChecklist) =>
-        r.buildingSecurityChecked ? "Yes" : "No",
+      accessor: (r) => r.building_security_checked ? "Yes" : "No",
     },
     {
       header: "Medication cabinet locked",
-      accessor: (r: ShiftChecklist) =>
-        r.medicationCabinetLocked ? "Yes" : "No",
+      accessor: (r) => r.medication_cabinet_locked ? "Yes" : "No",
     },
     {
       header: "Pets cared for",
-      accessor: (r: ShiftChecklist) => (r.petsCaredFor ? "Yes" : "No"),
+      accessor: (r) => (r.pets_cared_for ? "Yes" : "No"),
     },
     {
       header: "Kitchen closed",
-      accessor: (r: ShiftChecklist) => (r.kitchenClosed ? "Yes" : "No"),
+      accessor: (r) => (r.kitchen_closed ? "Yes" : "No"),
     },
     {
       header: "Next shift staff",
-      accessor: (r: ShiftChecklist) => getStaffName(r.nextShiftStaff),
+      accessor: (r) => getStaffName(r.next_shift_staff),
     },
     {
       header: "Handover delivered",
-      accessor: (r: ShiftChecklist) => (r.handoverDelivered ? "Yes" : "No"),
+      accessor: (r) => (r.handover_delivered ? "Yes" : "No"),
     },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="End-of-Shift Checklist" subtitle="Loading...">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -590,10 +338,9 @@ export default function EndOfShiftChecklistPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Early">Early</SelectItem>
-              <SelectItem value="Late">Late</SelectItem>
-              <SelectItem value="Sleep-in">Sleep-in</SelectItem>
-              <SelectItem value="Wake-night">Wake-night</SelectItem>
+              {Object.entries(END_OF_SHIFT_TYPE_LABEL).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -621,7 +368,7 @@ export default function EndOfShiftChecklistPage() {
           </Select>
         </div>
         <div className="ml-auto text-xs text-slate-500">
-          Showing {visible.length} of {RECORDS.length}
+          Showing {visible.length} of {records.length}
         </div>
       </div>
 
@@ -647,17 +394,17 @@ export default function EndOfShiftChecklistPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold text-slate-900">
-                      {getStaffName(r.staffMember)}
+                      {getStaffName(r.staff_member)}
                     </span>
                     <span
                       className={cn(
                         "rounded-full border px-2 py-0.5 text-xs font-medium",
-                        shiftColour(r.shiftType),
+                        shiftColour(r.shift_type),
                       )}
                     >
-                      {r.shiftType}
+                      {END_OF_SHIFT_TYPE_LABEL[r.shift_type]}
                     </span>
-                    {r.allTasksComplete ? (
+                    {r.all_tasks_complete ? (
                       <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800">
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         All complete
@@ -668,7 +415,7 @@ export default function EndOfShiftChecklistPage() {
                         Outstanding
                       </span>
                     )}
-                    {r.anyEscalations.length > 0 && (
+                    {r.any_escalations.length > 0 && (
                       <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-800">
                         <AlertTriangle className="h-3.5 w-3.5" />
                         Escalation
@@ -685,11 +432,11 @@ export default function EndOfShiftChecklistPage() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      {r.shiftStart}–{r.shiftEnd}
+                      {r.shift_start}–{r.shift_end}
                     </span>
                     <span className="flex items-center gap-1">
                       <ArrowRightLeft className="h-3.5 w-3.5" />
-                      Handover to {getStaffName(r.nextShiftStaff)}
+                      Handover to {getStaffName(r.next_shift_staff)}
                     </span>
                   </div>
                 </div>
@@ -710,7 +457,7 @@ export default function EndOfShiftChecklistPage() {
                     <div
                       className={cn(
                         "rounded-md border p-3",
-                        r.buildingSecurityChecked
+                        r.building_security_checked
                           ? "border-emerald-200 bg-emerald-50"
                           : "border-rose-200 bg-rose-50",
                       )}
@@ -721,18 +468,18 @@ export default function EndOfShiftChecklistPage() {
                       <div
                         className={cn(
                           "mt-1 text-sm font-semibold",
-                          r.buildingSecurityChecked
+                          r.building_security_checked
                             ? "text-emerald-800"
                             : "text-rose-800",
                         )}
                       >
-                        {r.buildingSecurityChecked ? "Yes" : "No"}
+                        {r.building_security_checked ? "Yes" : "No"}
                       </div>
                     </div>
                     <div
                       className={cn(
                         "rounded-md border p-3",
-                        r.medicationCabinetLocked
+                        r.medication_cabinet_locked
                           ? "border-emerald-200 bg-emerald-50"
                           : "border-rose-200 bg-rose-50",
                       )}
@@ -743,18 +490,18 @@ export default function EndOfShiftChecklistPage() {
                       <div
                         className={cn(
                           "mt-1 text-sm font-semibold",
-                          r.medicationCabinetLocked
+                          r.medication_cabinet_locked
                             ? "text-emerald-800"
                             : "text-rose-800",
                         )}
                       >
-                        {r.medicationCabinetLocked ? "Yes" : "No"}
+                        {r.medication_cabinet_locked ? "Yes" : "No"}
                       </div>
                     </div>
                     <div
                       className={cn(
                         "rounded-md border p-3",
-                        r.kitchenClosed
+                        r.kitchen_closed
                           ? "border-emerald-200 bg-emerald-50"
                           : "border-rose-200 bg-rose-50",
                       )}
@@ -765,18 +512,18 @@ export default function EndOfShiftChecklistPage() {
                       <div
                         className={cn(
                           "mt-1 text-sm font-semibold",
-                          r.kitchenClosed
+                          r.kitchen_closed
                             ? "text-emerald-800"
                             : "text-rose-800",
                         )}
                       >
-                        {r.kitchenClosed ? "Yes" : "No"}
+                        {r.kitchen_closed ? "Yes" : "No"}
                       </div>
                     </div>
                     <div
                       className={cn(
                         "rounded-md border p-3",
-                        r.petsCaredFor
+                        r.pets_cared_for
                           ? "border-emerald-200 bg-emerald-50"
                           : "border-rose-200 bg-rose-50",
                       )}
@@ -787,12 +534,12 @@ export default function EndOfShiftChecklistPage() {
                       <div
                         className={cn(
                           "mt-1 text-sm font-semibold",
-                          r.petsCaredFor
+                          r.pets_cared_for
                             ? "text-emerald-800"
                             : "text-rose-800",
                         )}
                       >
-                        {r.petsCaredFor ? "Yes" : "No"}
+                        {r.pets_cared_for ? "Yes" : "No"}
                       </div>
                     </div>
                   </div>
@@ -805,13 +552,13 @@ export default function EndOfShiftChecklistPage() {
                     <div className="space-y-3">
                       {(
                         [
-                          "Safeguarding",
-                          "Medication",
-                          "Environment & Security",
-                          "Records",
-                          "Children's wellbeing",
-                          "Communication",
-                        ] as CheckCategory[]
+                          "safeguarding",
+                          "medication",
+                          "environment_security",
+                          "records",
+                          "childrens_wellbeing",
+                          "communication",
+                        ] as ChecklistCategory[]
                       ).map((cat) => {
                         const items = r.checks.filter((c) => c.category === cat);
                         if (items.length === 0) return null;
@@ -822,7 +569,7 @@ export default function EndOfShiftChecklistPage() {
                           >
                             <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 uppercase tracking-wide">
                               {categoryIcon[cat]}
-                              {cat}
+                              {CHECKLIST_CATEGORY_LABEL[cat]}
                             </div>
                             <ul className="divide-y divide-slate-100">
                               {items.map((it, i) => (
@@ -860,14 +607,14 @@ export default function EndOfShiftChecklistPage() {
                   </div>
 
                   {/* Escalations */}
-                  {r.anyEscalations.length > 0 && (
+                  {r.any_escalations.length > 0 && (
                     <div className="rounded-md border border-rose-200 bg-rose-50 p-3">
                       <h4 className="text-sm font-semibold text-rose-900 flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" /> Escalations during
                         shift
                       </h4>
                       <ul className="mt-2 list-disc pl-5 space-y-1 text-sm text-rose-900">
-                        {r.anyEscalations.map((e, i) => (
+                        {r.any_escalations.map((e, i) => (
                           <li key={i}>{e}</li>
                         ))}
                       </ul>
@@ -879,9 +626,9 @@ export default function EndOfShiftChecklistPage() {
                     <h4 className="text-sm font-semibold text-indigo-900 flex items-center gap-2">
                       <ArrowRightLeft className="h-4 w-4" /> Key handover points
                     </h4>
-                    {r.keyHandoverPoints.length > 0 ? (
+                    {r.key_handover_points.length > 0 ? (
                       <ul className="mt-2 list-disc pl-5 space-y-1 text-sm text-indigo-900">
-                        {r.keyHandoverPoints.map((p, i) => (
+                        {r.key_handover_points.map((p, i) => (
                           <li key={i}>{p}</li>
                         ))}
                       </ul>
@@ -899,7 +646,7 @@ export default function EndOfShiftChecklistPage() {
                         <Heart className="h-4 w-4" /> Child observations
                       </h4>
                       <p className="mt-1 text-sm text-slate-700">
-                        {r.childObservations}
+                        {r.child_observations}
                       </p>
                     </div>
                     <div className="rounded-md border border-slate-200 p-3">
@@ -907,7 +654,7 @@ export default function EndOfShiftChecklistPage() {
                         <Users className="h-4 w-4" /> Staff wellbeing check-in
                       </h4>
                       <p className="mt-1 text-sm text-slate-700">
-                        {r.staffWellbeingCheckIn}
+                        {r.staff_wellbeing_check_in}
                       </p>
                     </div>
                   </div>
@@ -924,12 +671,12 @@ export default function EndOfShiftChecklistPage() {
                       <span
                         className={cn(
                           "font-medium",
-                          r.handoverDelivered
+                          r.handover_delivered
                             ? "text-emerald-700"
                             : "text-rose-700",
                         )}
                       >
-                        {r.handoverDelivered ? "Yes" : "No"}
+                        {r.handover_delivered ? "Yes" : "No"}
                       </span>
                     </span>
                   </div>

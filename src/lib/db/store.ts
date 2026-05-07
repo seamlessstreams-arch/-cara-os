@@ -217,6 +217,12 @@ import type {
   DailyRoutinePlan,
   DietaryPlan,
   DigitalPlan,
+  Disclosure,
+  ShiftChecklist,
+  Escalation,
+  ChosenFamilyRecord,
+  FamilyRelationshipRecord,
+  FirstRelationshipRecord,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -492,6 +498,12 @@ const store = {
   dailyRoutinePlans: [] as DailyRoutinePlan[],
   dietaryPlans: [] as DietaryPlan[],
   digitalPlans: [] as DigitalPlan[],
+  disclosures: [] as Disclosure[],
+  shiftChecklists: [] as ShiftChecklist[],
+  escalations: [] as Escalation[],
+  chosenFamilyRecords: [] as ChosenFamilyRecord[],
+  familyRelationshipRecords: [] as FamilyRelationshipRecord[],
+  firstRelationshipRecords: [] as FirstRelationshipRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -6629,6 +6641,106 @@ export const db = {
       if (idx === -1) return null;
       store.digitalPlans[idx] = { ...store.digitalPlans[idx], ...data };
       return store.digitalPlans[idx];
+    },
+  },
+
+  disclosures: {
+    findAll: () => store.disclosures,
+    findByChild: (childId: string) => store.disclosures.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.disclosures.find((r) => r.id === id),
+    create: (data: Partial<Disclosure>): Disclosure => {
+      const record = { ...data, id: generateId("dscl"), created_at: new Date().toISOString() } as Disclosure;
+      store.disclosures.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<Disclosure>): Disclosure | null => {
+      const idx = store.disclosures.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.disclosures[idx] = { ...store.disclosures[idx], ...data };
+      return store.disclosures[idx];
+    },
+  },
+
+  shiftChecklists: {
+    findAll: () => store.shiftChecklists,
+    findById: (id: string) => store.shiftChecklists.find((r) => r.id === id),
+    create: (data: Partial<ShiftChecklist>): ShiftChecklist => {
+      const record = { ...data, id: generateId("shck"), created_at: new Date().toISOString() } as ShiftChecklist;
+      store.shiftChecklists.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ShiftChecklist>): ShiftChecklist | null => {
+      const idx = store.shiftChecklists.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.shiftChecklists[idx] = { ...store.shiftChecklists[idx], ...data };
+      return store.shiftChecklists[idx];
+    },
+  },
+
+  escalations: {
+    findAll: () => store.escalations,
+    findById: (id: string) => store.escalations.find((r) => r.id === id),
+    create: (data: Partial<Escalation>): Escalation => {
+      const record = { ...data, id: generateId("escl"), created_at: new Date().toISOString() } as Escalation;
+      store.escalations.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<Escalation>): Escalation | null => {
+      const idx = store.escalations.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.escalations[idx] = { ...store.escalations[idx], ...data };
+      return store.escalations[idx];
+    },
+  },
+
+  chosenFamilyRecords: {
+    findAll: () => store.chosenFamilyRecords,
+    findByChild: (childId: string) => store.chosenFamilyRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.chosenFamilyRecords.find((r) => r.id === id),
+    create: (data: Partial<ChosenFamilyRecord>): ChosenFamilyRecord => {
+      const record = { ...data, id: generateId("chfm"), created_at: new Date().toISOString() } as ChosenFamilyRecord;
+      store.chosenFamilyRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ChosenFamilyRecord>): ChosenFamilyRecord | null => {
+      const idx = store.chosenFamilyRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.chosenFamilyRecords[idx] = { ...store.chosenFamilyRecords[idx], ...data };
+      return store.chosenFamilyRecords[idx];
+    },
+  },
+
+  familyRelationshipRecords: {
+    findAll: () => store.familyRelationshipRecords,
+    findByChild: (childId: string) => store.familyRelationshipRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.familyRelationshipRecords.find((r) => r.id === id),
+    create: (data: Partial<FamilyRelationshipRecord>): FamilyRelationshipRecord => {
+      const record = { ...data, id: generateId("fmrl"), created_at: new Date().toISOString() } as FamilyRelationshipRecord;
+      store.familyRelationshipRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FamilyRelationshipRecord>): FamilyRelationshipRecord | null => {
+      const idx = store.familyRelationshipRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.familyRelationshipRecords[idx] = { ...store.familyRelationshipRecords[idx], ...data };
+      return store.familyRelationshipRecords[idx];
+    },
+  },
+
+  firstRelationshipRecords: {
+    findAll: () => store.firstRelationshipRecords,
+    findByChild: (childId: string) => store.firstRelationshipRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.firstRelationshipRecords.find((r) => r.id === id),
+    create: (data: Partial<FirstRelationshipRecord>): FirstRelationshipRecord => {
+      const record = { ...data, id: generateId("frrs"), created_at: new Date().toISOString() } as FirstRelationshipRecord;
+      store.firstRelationshipRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<FirstRelationshipRecord>): FirstRelationshipRecord | null => {
+      const idx = store.firstRelationshipRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.firstRelationshipRecords[idx] = { ...store.firstRelationshipRecords[idx], ...data };
+      return store.firstRelationshipRecords[idx];
     },
   },
 };

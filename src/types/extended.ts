@@ -12354,3 +12354,390 @@ export interface DigitalPlan {
   notes: string;
   created_at: string;
 }
+
+/* ── Disclosure Log ── */
+
+export type DisclosureType =
+  | "historical_abuse"
+  | "recent_harm"
+  | "concern_about_another"
+  | "self_harm"
+  | "online_concern"
+  | "family_concern"
+  | "peer_concern"
+  | "other";
+
+export const DISCLOSURE_TYPE_LABEL: Record<DisclosureType, string> = {
+  historical_abuse: "Historical abuse",
+  recent_harm: "Recent harm",
+  concern_about_another: "Concern about another",
+  self_harm: "Self-harm",
+  online_concern: "Online concern",
+  family_concern: "Family concern",
+  peer_concern: "Peer concern",
+  other: "Other",
+};
+
+export type DisclosureSeverity = "low" | "medium" | "high" | "crisis";
+
+export const DISCLOSURE_SEVERITY_LABEL: Record<DisclosureSeverity, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  crisis: "Crisis",
+};
+
+export type QuestionsAskedType = "none_listened_only" | "open_clarifying" | "closed_leading_flagged";
+
+export const QUESTIONS_ASKED_LABEL: Record<QuestionsAskedType, string> = {
+  none_listened_only: "None — listened only",
+  open_clarifying: "Open clarifying",
+  closed_leading_flagged: "Closed/leading — flagged",
+};
+
+export type DisclosureStatus = "active_investigation" | "external_agency_leading" | "closed_actioned" | "monitoring";
+
+export const DISCLOSURE_STATUS_LABEL: Record<DisclosureStatus, string> = {
+  active_investigation: "Active investigation",
+  external_agency_leading: "External agency leading",
+  closed_actioned: "Closed - actioned",
+  monitoring: "Monitoring",
+};
+
+export interface Disclosure {
+  id: string;
+  child_id: string;
+  disclosure_date: string;
+  disclosure_time: string;
+  location: string;
+  context_of_disclosure: string;
+  heard_by: string;
+  disclosure_summary: string;
+  disclosure_type: DisclosureType;
+  child_words_used: string;
+  staff_response_at_time: string;
+  reassurance_given: string;
+  questions_asked: QuestionsAskedType;
+  disclosure_severity: DisclosureSeverity;
+  immediate_actions_taken: string[];
+  reported_to_dsl: boolean;
+  reported_to_dsl_date: string;
+  reported_to_lado: boolean;
+  reported_to_police: boolean;
+  referrals_made: string[];
+  child_informed_of_actions: boolean;
+  child_given_agency: string;
+  support_provided_to_child: string[];
+  staff_debrief: boolean;
+  parallel_process_noted: string;
+  status: DisclosureStatus;
+  created_at: string;
+}
+
+/* ── End-of-Shift Checklist ── */
+
+export type EndOfShiftType = "early" | "late" | "sleep_in" | "wake_night";
+
+export const END_OF_SHIFT_TYPE_LABEL: Record<EndOfShiftType, string> = {
+  early: "Early",
+  late: "Late",
+  sleep_in: "Sleep-in",
+  wake_night: "Wake-night",
+};
+
+export type ChecklistCategory =
+  | "safeguarding"
+  | "medication"
+  | "environment_security"
+  | "records"
+  | "childrens_wellbeing"
+  | "communication";
+
+export const CHECKLIST_CATEGORY_LABEL: Record<ChecklistCategory, string> = {
+  safeguarding: "Safeguarding",
+  medication: "Medication",
+  environment_security: "Environment & Security",
+  records: "Records",
+  childrens_wellbeing: "Children's wellbeing",
+  communication: "Communication",
+};
+
+export interface ChecklistItem {
+  category: ChecklistCategory;
+  item: string;
+  completed: boolean;
+  notes: string;
+}
+
+export interface ShiftChecklist {
+  id: string;
+  date: string;
+  shift_type: EndOfShiftType;
+  shift_start: string;
+  shift_end: string;
+  staff_member: string;
+  checks: ChecklistItem[];
+  any_escalations: string[];
+  key_handover_points: string[];
+  child_observations: string;
+  staff_wellbeing_check_in: string;
+  building_security_checked: boolean;
+  medication_cabinet_locked: boolean;
+  pets_cared_for: boolean;
+  kitchen_closed: boolean;
+  next_shift_staff: string;
+  handover_delivered: boolean;
+  all_tasks_complete: boolean;
+  created_at: string;
+}
+
+/* ── Escalation Tracker ── */
+
+export type EscalationCategory = "safeguarding" | "behaviour" | "health" | "placement" | "staffing" | "compliance";
+
+export const ESCALATION_CATEGORY_LABEL: Record<EscalationCategory, string> = {
+  safeguarding: "Safeguarding",
+  behaviour: "Behaviour",
+  health: "Health",
+  placement: "Placement",
+  staffing: "Staffing",
+  compliance: "Compliance",
+};
+
+export type EscalationPriority = "urgent" | "high" | "medium";
+
+export const ESCALATION_PRIORITY_LABEL: Record<EscalationPriority, string> = {
+  urgent: "Urgent",
+  high: "High",
+  medium: "Medium",
+};
+
+export type EscalationStatus = "resolved" | "open" | "monitoring";
+
+export const ESCALATION_STATUS_LABEL: Record<EscalationStatus, string> = {
+  resolved: "Resolved",
+  open: "Open",
+  monitoring: "Monitoring",
+};
+
+export interface Escalation {
+  id: string;
+  title: string;
+  date: string;
+  escalated_by: string;
+  escalated_to: string;
+  category: EscalationCategory;
+  priority: EscalationPriority;
+  child_id: string | null;
+  description: string;
+  reason: string;
+  action_taken: string;
+  outcome: string;
+  status: EscalationStatus;
+  resolved_date: string | null;
+  time_to_resolve: string | null;
+  linked_documents: string[];
+  notes: string;
+  created_at: string;
+}
+
+/* ── Chosen Family Tracker ── */
+
+export type ChosenFamilyRelationship =
+  | "mentor"
+  | "coach"
+  | "teacher"
+  | "faith_leader"
+  | "neighbour"
+  | "family_friend"
+  | "ex_foster_carer"
+  | "grandparent_figure"
+  | "older_friend"
+  | "sports_club_leader"
+  | "other_significant_adult";
+
+export const CHOSEN_FAMILY_RELATIONSHIP_LABEL: Record<ChosenFamilyRelationship, string> = {
+  mentor: "Mentor",
+  coach: "Coach",
+  teacher: "Teacher",
+  faith_leader: "Faith leader",
+  neighbour: "Neighbour",
+  family_friend: "Family friend",
+  ex_foster_carer: "Ex foster carer",
+  grandparent_figure: "Grandparent figure",
+  older_friend: "Older friend",
+  sports_club_leader: "Sports/club leader",
+  other_significant_adult: "Other significant adult",
+};
+
+export type ChosenFamilyContactFrequency = "daily" | "weekly" | "monthly" | "quarterly" | "annually" | "as_needed";
+
+export const CHOSEN_FAMILY_CONTACT_FREQUENCY_LABEL: Record<ChosenFamilyContactFrequency, string> = {
+  daily: "Daily",
+  weekly: "Weekly",
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  annually: "Annually",
+  as_needed: "As needed",
+};
+
+export type ChosenFamilyImportance = "significant" | "very_significant" | "like_family" | "central_figure";
+
+export const CHOSEN_FAMILY_IMPORTANCE_LABEL: Record<ChosenFamilyImportance, string> = {
+  significant: "Significant",
+  very_significant: "Very significant",
+  like_family: "Like family",
+  central_figure: "Central figure",
+};
+
+export interface ChosenFamilyRecord {
+  id: string;
+  child_id: string;
+  person_name: string;
+  relationship: ChosenFamilyRelationship;
+  how_met: string;
+  years_known: number;
+  contact_frequency: ChosenFamilyContactFrequency;
+  contact_type: string[];
+  importance_to_child: ChosenFamilyImportance;
+  role_played: string[];
+  safeguarding_checked: boolean;
+  safeguarding_check_date: string | null;
+  child_initiated_relationship: boolean;
+  reciprocal: boolean;
+  child_voice: string;
+  staff_observation: string;
+  risk_factors: string[];
+  protective_factors: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* ── Family Relationship Quality Tracker ── */
+
+export type FamilyRelationshipType =
+  | "mother"
+  | "father"
+  | "grandparent"
+  | "sibling"
+  | "aunt_uncle"
+  | "cousin"
+  | "step_family"
+  | "adoptive_parent";
+
+export const FAMILY_RELATIONSHIP_TYPE_LABEL: Record<FamilyRelationshipType, string> = {
+  mother: "Mother",
+  father: "Father",
+  grandparent: "Grandparent",
+  sibling: "Sibling",
+  aunt_uncle: "Aunt/Uncle",
+  cousin: "Cousin",
+  step_family: "Step-family",
+  adoptive_parent: "Adoptive parent",
+};
+
+export type FamilyRelationshipQuality = "strong" | "stable" | "complicated" | "fragile" | "severed_restricted";
+
+export const FAMILY_RELATIONSHIP_QUALITY_LABEL: Record<FamilyRelationshipQuality, string> = {
+  strong: "Strong",
+  stable: "Stable",
+  complicated: "Complicated",
+  fragile: "Fragile",
+  severed_restricted: "Severed/Restricted",
+};
+
+export type FamilyRelationshipTrajectory = "improving" | "stable" | "concerning" | "declining";
+
+export const FAMILY_RELATIONSHIP_TRAJECTORY_LABEL: Record<FamilyRelationshipTrajectory, string> = {
+  improving: "Improving",
+  stable: "Stable",
+  concerning: "Concerning",
+  declining: "Declining",
+};
+
+export interface FamilyRelationshipRecord {
+  id: string;
+  child_id: string;
+  assessment_date: string;
+  family_member: string;
+  relationship_type: FamilyRelationshipType;
+  current_quality: FamilyRelationshipQuality;
+  quality_1_to_10: number;
+  contact_frequency: string;
+  contact_quality: string;
+  recent_events: string[];
+  strengths_observed: string[];
+  challenges_observed: string[];
+  child_perspective: string;
+  interventions_active: string[];
+  trajectory: FamilyRelationshipTrajectory;
+  risk_factors: string[];
+  protective_factors: string[];
+  child_wishes_and_feelings: string;
+  next_review: string;
+  reviewed_by: string;
+  created_at: string;
+}
+
+/* ── First Relationship Support ── */
+
+export type FirstRelationshipStatus =
+  | "expressing_interest"
+  | "first_crush"
+  | "early_relationship"
+  | "established_first_relationship"
+  | "recently_ended"
+  | "not_currently_interested";
+
+export const FIRST_RELATIONSHIP_STATUS_LABEL: Record<FirstRelationshipStatus, string> = {
+  expressing_interest: "Expressing interest in dating",
+  first_crush: "First crush identified",
+  early_relationship: "Early relationship — talking stage",
+  established_first_relationship: "Established first relationship",
+  recently_ended: "Recently ended first relationship",
+  not_currently_interested: "Not currently interested",
+};
+
+export type ConsentEducationLevel = "not_yet_introduced" | "foundational" | "developing" | "confident";
+
+export const CONSENT_EDUCATION_LEVEL_LABEL: Record<ConsentEducationLevel, string> = {
+  not_yet_introduced: "Not yet introduced",
+  foundational: "Foundational",
+  developing: "Developing",
+  confident: "Confident",
+};
+
+export type ExploitationRiskScreen = "no_concerns" | "watch" | "concerns_identified" | "active_concerns_escalated";
+
+export const EXPLOITATION_RISK_SCREEN_LABEL: Record<ExploitationRiskScreen, string> = {
+  no_concerns: "No concerns",
+  watch: "Watch",
+  concerns_identified: "Concerns identified",
+  active_concerns_escalated: "Active concerns — escalated",
+};
+
+export interface FirstRelationshipRecord {
+  id: string;
+  child_id: string;
+  record_date: string;
+  relationship_status: FirstRelationshipStatus;
+  partner_info: string | null;
+  partner_age: string | null;
+  age_gap_ok: boolean | null;
+  how_they_met: string | null;
+  child_led_disclosure: boolean;
+  rse_topics_covered: string[];
+  consent_education_level: ConsentEducationLevel;
+  exploitation_risk_screen: ExploitationRiskScreen;
+  risk_factors_noted: string[];
+  protective_factors_noted: string[];
+  support_offered: string[];
+  child_voice: string;
+  staff_observation: string;
+  parent_carer_involved: string | null;
+  social_worker_notified: boolean;
+  follow_up_date: string;
+  key_worker: string;
+  created_at: string;
+}
