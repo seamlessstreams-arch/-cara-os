@@ -200,6 +200,12 @@ import type {
   BcpScenarioPlan,
   CaseFileAudit,
   MoneyRecord,
+  OrthoRecord,
+  ParticipationEntry,
+  RiteRecord,
+  UniformRecord,
+  SaltRecord,
+  SwimRecord,
 } from "@/types/extended";
 import type { Document, DocumentReadReceipt, Expense } from "@/types";
 import type { UploadedDocument, DocumentAuditEntry } from "@/types/documents";
@@ -458,6 +464,12 @@ const store = {
   bcpScenarios: [] as BcpScenarioPlan[],
   caseFileAudits: [] as CaseFileAudit[],
   moneyRecords: [] as MoneyRecord[],
+  orthoRecords: [] as OrthoRecord[],
+  participationEntries: [] as ParticipationEntry[],
+  riteRecords: [] as RiteRecord[],
+  uniformRecords: [] as UniformRecord[],
+  saltRecords: [] as SaltRecord[],
+  swimRecords: [] as SwimRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -6310,6 +6322,107 @@ export const db = {
       if (idx === -1) return null;
       store.moneyRecords[idx] = { ...store.moneyRecords[idx], ...data };
       return store.moneyRecords[idx];
+    },
+  },
+
+  orthoRecords: {
+    findAll: () => store.orthoRecords,
+    findByChild: (childId: string) => store.orthoRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.orthoRecords.find((r) => r.id === id),
+    create: (data: Partial<OrthoRecord>): OrthoRecord => {
+      const record = { ...data, id: generateId("orth"), created_at: new Date().toISOString() } as OrthoRecord;
+      store.orthoRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<OrthoRecord>): OrthoRecord | null => {
+      const idx = store.orthoRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.orthoRecords[idx] = { ...store.orthoRecords[idx], ...data };
+      return store.orthoRecords[idx];
+    },
+  },
+
+  participationEntries: {
+    findAll: () => store.participationEntries,
+    findById: (id: string) => store.participationEntries.find((r) => r.id === id),
+    create: (data: Partial<ParticipationEntry>): ParticipationEntry => {
+      const record = { ...data, id: generateId("part"), created_at: new Date().toISOString() } as ParticipationEntry;
+      store.participationEntries.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ParticipationEntry>): ParticipationEntry | null => {
+      const idx = store.participationEntries.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.participationEntries[idx] = { ...store.participationEntries[idx], ...data };
+      return store.participationEntries[idx];
+    },
+  },
+
+  riteRecords: {
+    findAll: () => store.riteRecords,
+    findByChild: (childId: string) => store.riteRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.riteRecords.find((r) => r.id === id),
+    create: (data: Partial<RiteRecord>): RiteRecord => {
+      const record = { ...data, id: generateId("rite"), created_at: new Date().toISOString() } as RiteRecord;
+      store.riteRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RiteRecord>): RiteRecord | null => {
+      const idx = store.riteRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.riteRecords[idx] = { ...store.riteRecords[idx], ...data };
+      return store.riteRecords[idx];
+    },
+  },
+
+  uniformRecords: {
+    findAll: () => store.uniformRecords,
+    findByChild: (childId: string) => store.uniformRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.uniformRecords.find((r) => r.id === id),
+    create: (data: Partial<UniformRecord>): UniformRecord => {
+      const record = { ...data, id: generateId("unif"), created_at: new Date().toISOString() } as UniformRecord;
+      store.uniformRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<UniformRecord>): UniformRecord | null => {
+      const idx = store.uniformRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.uniformRecords[idx] = { ...store.uniformRecords[idx], ...data };
+      return store.uniformRecords[idx];
+    },
+  },
+
+  saltRecords: {
+    findAll: () => store.saltRecords,
+    findByChild: (childId: string) => store.saltRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.saltRecords.find((r) => r.id === id),
+    create: (data: Partial<SaltRecord>): SaltRecord => {
+      const record = { ...data, id: generateId("salt"), created_at: new Date().toISOString() } as SaltRecord;
+      store.saltRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SaltRecord>): SaltRecord | null => {
+      const idx = store.saltRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.saltRecords[idx] = { ...store.saltRecords[idx], ...data };
+      return store.saltRecords[idx];
+    },
+  },
+
+  swimRecords: {
+    findAll: () => store.swimRecords,
+    findByChild: (childId: string) => store.swimRecords.filter((r) => r.child_id === childId),
+    findById: (id: string) => store.swimRecords.find((r) => r.id === id),
+    create: (data: Partial<SwimRecord>): SwimRecord => {
+      const record = { ...data, id: generateId("swim"), created_at: new Date().toISOString() } as SwimRecord;
+      store.swimRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SwimRecord>): SwimRecord | null => {
+      const idx = store.swimRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.swimRecords[idx] = { ...store.swimRecords[idx], ...data };
+      return store.swimRecords[idx];
     },
   },
 };

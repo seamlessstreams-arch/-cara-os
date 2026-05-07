@@ -11167,3 +11167,488 @@ export interface MoneyRecord {
   key_worker: string;
   created_at: string;
 }
+
+/* ─── batch 30 ─── */
+
+/* ── Orthodontic Treatment ── */
+
+export type OrthoStage =
+  | "awaiting_referral"
+  | "referred_assessment_booked"
+  | "assessed_on_waiting_list"
+  | "active_treatment"
+  | "retention_phase"
+  | "discharged"
+  | "not_currently_indicated";
+
+export const ORTHO_STAGE_LABEL: Record<OrthoStage, string> = {
+  awaiting_referral: "Awaiting referral",
+  referred_assessment_booked: "Referred — assessment booked",
+  assessed_on_waiting_list: "Assessed — on waiting list",
+  active_treatment: "Active treatment",
+  retention_phase: "Retention phase",
+  discharged: "Discharged",
+  not_currently_indicated: "Not currently indicated",
+};
+
+export type OrthoTreatmentType =
+  | "fixed_metal_braces"
+  | "fixed_ceramic_braces"
+  | "removable_functional_appliance"
+  | "twin_block"
+  | "clear_aligners"
+  | "lingual"
+  | "other";
+
+export const ORTHO_TREATMENT_TYPE_LABEL: Record<OrthoTreatmentType, string> = {
+  fixed_metal_braces: "Fixed metal braces",
+  fixed_ceramic_braces: "Fixed ceramic braces",
+  removable_functional_appliance: "Removable functional appliance",
+  twin_block: "Twin block",
+  clear_aligners: "Clear aligners (Invisalign)",
+  lingual: "Lingual",
+  other: "Other",
+};
+
+export type OrthoHygieneCompliance =
+  | "excellent"
+  | "good"
+  | "fair"
+  | "poor_needs_support"
+  | "not_yet_started";
+
+export const ORTHO_HYGIENE_COMPLIANCE_LABEL: Record<OrthoHygieneCompliance, string> = {
+  excellent: "Excellent",
+  good: "Good",
+  fair: "Fair",
+  poor_needs_support: "Poor — needs support",
+  not_yet_started: "Not yet started",
+};
+
+export type OrthoMotivation =
+  | "high"
+  | "moderate"
+  | "mixed"
+  | "low_wants_to_stop";
+
+export const ORTHO_MOTIVATION_LABEL: Record<OrthoMotivation, string> = {
+  high: "High",
+  moderate: "Moderate",
+  mixed: "Mixed",
+  low_wants_to_stop: "Low / wants to stop",
+};
+
+export interface OrthoEmergencyContact {
+  name: string;
+  role: string;
+  phone: string;
+}
+
+export interface OrthoRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  stage: OrthoStage;
+  iotn_score?: string;
+  nhs_eligible: boolean;
+  private_option?: string;
+  treatment_type?: OrthoTreatmentType;
+  orthodontist?: string;
+  practice_name?: string;
+  start_date?: string;
+  expected_end_date?: string;
+  appointment_frequency?: string;
+  appointments_attended: number;
+  appointments_missed: number;
+  oral_hygiene_compliance: OrthoHygieneCompliance;
+  retainer_wear_reported_nightly?: boolean;
+  retainer_type?: string;
+  child_motivation: OrthoMotivation;
+  emergency_contacts: OrthoEmergencyContact[];
+  cost_covered?: string;
+  child_voice: string;
+  staff_observation: string;
+  flags_concerns: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* ── Participation Log ── */
+
+export type ParticipationCategory =
+  | "care_planning"
+  | "house_rules"
+  | "activities"
+  | "environment"
+  | "staffing"
+  | "complaints"
+  | "menu"
+  | "policy";
+
+export const PARTICIPATION_CATEGORY_LABEL: Record<ParticipationCategory, string> = {
+  care_planning: "Care Planning",
+  house_rules: "House Rules",
+  activities: "Activities",
+  environment: "Environment",
+  staffing: "Staffing",
+  complaints: "Complaints",
+  menu: "Menu",
+  policy: "Policy",
+};
+
+export type ParticipationEvidenceType =
+  | "house_meeting"
+  | "key_work"
+  | "one_to_one"
+  | "survey"
+  | "reg44_interview"
+  | "lac_review"
+  | "informal";
+
+export const PARTICIPATION_EVIDENCE_TYPE_LABEL: Record<ParticipationEvidenceType, string> = {
+  house_meeting: "House Meeting",
+  key_work: "Key Work",
+  one_to_one: "1:1 Discussion",
+  survey: "Survey",
+  reg44_interview: "Reg 44 Interview",
+  lac_review: "LAC Review",
+  informal: "Informal",
+};
+
+export interface ParticipationEntry {
+  id: string;
+  date: string;
+  context: string;
+  category: ParticipationCategory;
+  children_involved: string[];
+  how_consulted: string;
+  what_child_said: string;
+  decision_made: string;
+  child_influenced: boolean;
+  influence_description: string;
+  feedback_given: string;
+  recorded_by: string;
+  evidence_type: ParticipationEvidenceType;
+  created_at: string;
+}
+
+/* ── Religious Rite Milestones ── */
+
+export type RiteFaithTradition =
+  | "islam"
+  | "christianity"
+  | "judaism"
+  | "hinduism"
+  | "sikhism"
+  | "buddhism"
+  | "rastafari"
+  | "multi_faith_family_choice"
+  | "other";
+
+export const RITE_FAITH_TRADITION_LABEL: Record<RiteFaithTradition, string> = {
+  islam: "Islam",
+  christianity: "Christianity",
+  judaism: "Judaism",
+  hinduism: "Hinduism",
+  sikhism: "Sikhism",
+  buddhism: "Buddhism",
+  rastafari: "Rastafari",
+  multi_faith_family_choice: "Multi-faith / family choice",
+  other: "Other",
+};
+
+export type RiteStatus =
+  | "already_done_pre_care"
+  | "planned_with_home_support"
+  | "considering_child_led"
+  | "declined_by_child"
+  | "postponed"
+  | "not_applicable"
+  | "done_in_care";
+
+export const RITE_STATUS_LABEL: Record<RiteStatus, string> = {
+  already_done_pre_care: "Already done (pre-care)",
+  planned_with_home_support: "Planned with home support",
+  considering_child_led: "Considering — child-led",
+  declined_by_child: "Declined by child",
+  postponed: "Postponed",
+  not_applicable: "Not applicable",
+  done_in_care: "Done in care",
+};
+
+export type RiteChildChoice =
+  | "strongly_chose"
+  | "family_influenced_choice"
+  | "choosing_between_options"
+  | "not_yet_old_enough_to_choose";
+
+export const RITE_CHILD_CHOICE_LABEL: Record<RiteChildChoice, string> = {
+  strongly_chose: "Strongly chose",
+  family_influenced_choice: "Family-influenced choice",
+  choosing_between_options: "Choosing between options",
+  not_yet_old_enough_to_choose: "Not yet old enough to choose",
+};
+
+export interface RiteCostFunding {
+  amount: number;
+  source: string;
+}
+
+export interface RiteRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  rite_name: string;
+  faith_tradition: RiteFaithTradition;
+  child_age_at_rite?: number;
+  status: RiteStatus;
+  significance: string;
+  preparation: string[];
+  who_officiates?: string;
+  venue?: string;
+  guests_involved: string[];
+  home_support_provided: string[];
+  cost_funding?: RiteCostFunding;
+  child_choice: RiteChildChoice;
+  birth_family_involvement?: string;
+  record_kept: string[];
+  child_voice: string;
+  staff_observation: string;
+  flags_for_review: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* ── School Uniform & Shoes Tracker ── */
+
+export type UniformCategory =
+  | "school_uniform"
+  | "pe_kit"
+  | "school_shoes"
+  | "trainers"
+  | "coat_outerwear"
+  | "casual_clothing_audit"
+  | "bag_equipment";
+
+export const UNIFORM_CATEGORY_LABEL: Record<UniformCategory, string> = {
+  school_uniform: "School uniform",
+  pe_kit: "PE kit",
+  school_shoes: "School shoes",
+  trainers: "Trainers",
+  coat_outerwear: "Coat / outerwear",
+  casual_clothing_audit: "Casual clothing audit",
+  bag_equipment: "Bag / equipment",
+};
+
+export type UniformItemCondition =
+  | "new"
+  | "good"
+  | "worn_fits"
+  | "worn_getting_tight"
+  | "outgrown"
+  | "damaged";
+
+export const UNIFORM_ITEM_CONDITION_LABEL: Record<UniformItemCondition, string> = {
+  new: "New",
+  good: "Good",
+  worn_fits: "Worn — fits",
+  worn_getting_tight: "Worn — getting tight",
+  outgrown: "Outgrown",
+  damaged: "Damaged",
+};
+
+export type UniformFundingSource =
+  | "pupil_premium_plus"
+  | "virtual_school_grant"
+  | "leaving_care_fund"
+  | "home_clothing_budget"
+  | "school_voucher"
+  | "charity"
+  | "mixed";
+
+export const UNIFORM_FUNDING_SOURCE_LABEL: Record<UniformFundingSource, string> = {
+  pupil_premium_plus: "Pupil Premium Plus",
+  virtual_school_grant: "Virtual School grant",
+  leaving_care_fund: "Leaving Care fund",
+  home_clothing_budget: "Home clothing budget",
+  school_voucher: "School voucher",
+  charity: "Charity (e.g., school uniform exchange)",
+  mixed: "Mixed",
+};
+
+export interface UniformItemDetail {
+  item: string;
+  size: string;
+  condition: UniformItemCondition;
+  purchase_date?: string;
+  cost?: number;
+}
+
+export interface UniformRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  category: UniformCategory;
+  item_details: UniformItemDetail[];
+  total_cost_this_record: number;
+  funding_source: UniformFundingSource;
+  child_chose_style: boolean;
+  child_chose_shop: boolean;
+  shopping_trip?: string;
+  school_uniform_policy_met: boolean;
+  child_comfort_notes: string;
+  sensory_considerations: string[];
+  growth_note_cm?: string;
+  shoe_size?: string;
+  next_size_anticipated: string;
+  next_review_date: string;
+  recorded_by: string;
+  flags_concerns: string[];
+  created_at: string;
+}
+
+/* ── Speech & Language Therapy ── */
+
+export type SaltArea =
+  | "articulation"
+  | "phonology"
+  | "receptive_language"
+  | "expressive_language"
+  | "pragmatic_social_communication"
+  | "voice"
+  | "stammer_fluency"
+  | "selective_mutism"
+  | "aac"
+  | "literacy_linked";
+
+export const SALT_AREA_LABEL: Record<SaltArea, string> = {
+  articulation: "Articulation",
+  phonology: "Phonology",
+  receptive_language: "Receptive language",
+  expressive_language: "Expressive language",
+  pragmatic_social_communication: "Pragmatic / social communication",
+  voice: "Voice",
+  stammer_fluency: "Stammer / fluency",
+  selective_mutism: "Selective mutism",
+  aac: "AAC (alternative communication)",
+  literacy_linked: "Literacy linked",
+};
+
+export type SaltStatus =
+  | "awaiting_referral"
+  | "assessed_no_salt_needed"
+  | "active"
+  | "maintenance_monitoring"
+  | "discharged";
+
+export const SALT_STATUS_LABEL: Record<SaltStatus, string> = {
+  awaiting_referral: "Awaiting referral",
+  assessed_no_salt_needed: "Assessed — no SaLT needed",
+  active: "Active",
+  maintenance_monitoring: "Maintenance / monitoring",
+  discharged: "Discharged",
+};
+
+export type SaltGoalStatus =
+  | "achieved"
+  | "on_track"
+  | "slow_progress"
+  | "not_started";
+
+export const SALT_GOAL_STATUS_LABEL: Record<SaltGoalStatus, string> = {
+  achieved: "Achieved",
+  on_track: "On track",
+  slow_progress: "Slow progress",
+  not_started: "Not started",
+};
+
+export interface SaltGoal {
+  goal: string;
+  baseline_date: string;
+  target_date?: string;
+  status: SaltGoalStatus;
+}
+
+export interface SaltRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  area: SaltArea;
+  status: SaltStatus;
+  salt_service: string;
+  salt_clinician?: string;
+  start_date?: string;
+  goals: SaltGoal[];
+  strategies_used: string[];
+  tools_resources: string[];
+  home_programme_frequency?: string;
+  home_programme_who_supports: string[];
+  school_involvement: string[];
+  hearing_clearance: boolean;
+  bilingual_considerations?: string;
+  child_comfort_discussing_comm: 1 | 2 | 3 | 4 | 5;
+  flags_concerns: string[];
+  child_voice: string;
+  staff_observation: string;
+  next_appointment?: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+/* ── Swimming & Water Safety ── */
+
+export type SwimmingLevel =
+  | "pre_stage_1"
+  | "stage_1"
+  | "stage_2"
+  | "stage_3"
+  | "stage_4"
+  | "stage_5"
+  | "stage_6"
+  | "stage_7"
+  | "beyond_stages"
+  | "not_currently_swimming";
+
+export const SWIMMING_LEVEL_LABEL: Record<SwimmingLevel, string> = {
+  pre_stage_1: "Pre-Stage 1 (water shy)",
+  stage_1: "Stage 1",
+  stage_2: "Stage 2",
+  stage_3: "Stage 3",
+  stage_4: "Stage 4",
+  stage_5: "Stage 5",
+  stage_6: "Stage 6",
+  stage_7: "Stage 7",
+  beyond_stages: "Beyond stages — recreational competent",
+  not_currently_swimming: "Not currently swimming",
+};
+
+export interface SwimRecord {
+  id: string;
+  child_id: string;
+  recorded_date: string;
+  swimming_level: SwimmingLevel;
+  can_swim_25m: boolean;
+  can_tread_water: boolean;
+  can_float_back: boolean;
+  comfortable_underwater: boolean;
+  lessons_booked_active: boolean;
+  lesson_provider?: string;
+  lesson_frequency?: string;
+  lessons_cost?: number;
+  home_funding_source?: string;
+  school_swimming_done: boolean;
+  school_swimming_outcome?: string;
+  beach_safety_aware: string[];
+  open_water_awareness: string[];
+  life_jacket_usage: string[];
+  triggers_to_water_shy: string[];
+  child_voice: string;
+  staff_observation: string;
+  next_step: string;
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
