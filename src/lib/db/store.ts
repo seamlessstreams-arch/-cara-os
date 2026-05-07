@@ -248,6 +248,8 @@ import type {
   MaintenanceScheduleItem, ManagementWalkround, TrainingMatrixRow,
   MarEntry, MatchingReferral, MediaPublicityConsent,
   MedicationAuditRecord, MedicationErrorInvestigation, MedicationNearMiss,
+  MedicationStockCheck, MedicationStorageAudit, MedTrainingRecord,
+  MemorialOccasionRecord, MenstrualHealthPlan, MealPlan,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -554,6 +556,12 @@ const store = {
   medicationAuditRecords: [] as MedicationAuditRecord[],
   medicationErrorInvestigations: [] as MedicationErrorInvestigation[],
   medicationNearMisses: [] as MedicationNearMiss[],
+  medicationStockChecks: [] as MedicationStockCheck[],
+  medicationStorageAudits: [] as MedicationStorageAudit[],
+  medTrainingRecords: [] as MedTrainingRecord[],
+  memorialOccasionRecords: [] as MemorialOccasionRecord[],
+  menstrualHealthPlans: [] as MenstrualHealthPlan[],
+  mealPlans: [] as MealPlan[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -7405,6 +7413,104 @@ export const db = {
       if (idx === -1) return null;
       store.medicationNearMisses[idx] = { ...store.medicationNearMisses[idx], ...data };
       return store.medicationNearMisses[idx];
+    },
+  },
+
+  medicationStockChecks: {
+    findAll: (): MedicationStockCheck[] => store.medicationStockChecks,
+    findById: (id: string): MedicationStockCheck | undefined => store.medicationStockChecks.find((r) => r.id === id),
+    create: (data: Partial<MedicationStockCheck>): MedicationStockCheck => {
+      const record = { ...data, id: generateId("mstk"), created_at: new Date().toISOString() } as MedicationStockCheck;
+      store.medicationStockChecks.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MedicationStockCheck>): MedicationStockCheck | null => {
+      const idx = store.medicationStockChecks.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.medicationStockChecks[idx] = { ...store.medicationStockChecks[idx], ...data };
+      return store.medicationStockChecks[idx];
+    },
+  },
+
+  medicationStorageAudits: {
+    findAll: (): MedicationStorageAudit[] => store.medicationStorageAudits,
+    findById: (id: string): MedicationStorageAudit | undefined => store.medicationStorageAudits.find((r) => r.id === id),
+    create: (data: Partial<MedicationStorageAudit>): MedicationStorageAudit => {
+      const record = { ...data, id: generateId("msau"), created_at: new Date().toISOString() } as MedicationStorageAudit;
+      store.medicationStorageAudits.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MedicationStorageAudit>): MedicationStorageAudit | null => {
+      const idx = store.medicationStorageAudits.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.medicationStorageAudits[idx] = { ...store.medicationStorageAudits[idx], ...data };
+      return store.medicationStorageAudits[idx];
+    },
+  },
+
+  medTrainingRecords: {
+    findAll: (): MedTrainingRecord[] => store.medTrainingRecords,
+    findById: (id: string): MedTrainingRecord | undefined => store.medTrainingRecords.find((r) => r.id === id),
+    create: (data: Partial<MedTrainingRecord>): MedTrainingRecord => {
+      const record = { ...data, id: generateId("mtrc"), created_at: new Date().toISOString() } as MedTrainingRecord;
+      store.medTrainingRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MedTrainingRecord>): MedTrainingRecord | null => {
+      const idx = store.medTrainingRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.medTrainingRecords[idx] = { ...store.medTrainingRecords[idx], ...data };
+      return store.medTrainingRecords[idx];
+    },
+  },
+
+  memorialOccasionRecords: {
+    findAll: (): MemorialOccasionRecord[] => store.memorialOccasionRecords,
+    findByChild: (childId: string): MemorialOccasionRecord[] => store.memorialOccasionRecords.filter((r) => r.affected_children.includes(childId)),
+    findById: (id: string): MemorialOccasionRecord | undefined => store.memorialOccasionRecords.find((r) => r.id === id),
+    create: (data: Partial<MemorialOccasionRecord>): MemorialOccasionRecord => {
+      const record = { ...data, id: generateId("meml"), created_at: new Date().toISOString() } as MemorialOccasionRecord;
+      store.memorialOccasionRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MemorialOccasionRecord>): MemorialOccasionRecord | null => {
+      const idx = store.memorialOccasionRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.memorialOccasionRecords[idx] = { ...store.memorialOccasionRecords[idx], ...data };
+      return store.memorialOccasionRecords[idx];
+    },
+  },
+
+  menstrualHealthPlans: {
+    findAll: (): MenstrualHealthPlan[] => store.menstrualHealthPlans,
+    findByChild: (childId: string): MenstrualHealthPlan[] => store.menstrualHealthPlans.filter((r) => r.child_id === childId),
+    findById: (id: string): MenstrualHealthPlan | undefined => store.menstrualHealthPlans.find((r) => r.id === id),
+    create: (data: Partial<MenstrualHealthPlan>): MenstrualHealthPlan => {
+      const record = { ...data, id: generateId("mhpl"), created_at: new Date().toISOString() } as MenstrualHealthPlan;
+      store.menstrualHealthPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MenstrualHealthPlan>): MenstrualHealthPlan | null => {
+      const idx = store.menstrualHealthPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.menstrualHealthPlans[idx] = { ...store.menstrualHealthPlans[idx], ...data };
+      return store.menstrualHealthPlans[idx];
+    },
+  },
+
+  mealPlans: {
+    findAll: (): MealPlan[] => store.mealPlans,
+    findById: (id: string): MealPlan | undefined => store.mealPlans.find((r) => r.id === id),
+    create: (data: Partial<MealPlan>): MealPlan => {
+      const record = { ...data, id: generateId("meal"), created_at: new Date().toISOString() } as MealPlan;
+      store.mealPlans.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<MealPlan>): MealPlan | null => {
+      const idx = store.mealPlans.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.mealPlans[idx] = { ...store.mealPlans[idx], ...data };
+      return store.mealPlans[idx];
     },
   },
 };

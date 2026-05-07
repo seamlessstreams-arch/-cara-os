@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -13,194 +14,51 @@ import {
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   Heart, Lock, MessageCircle, BookOpen, Sparkles, ShieldCheck,
-  Package, GraduationCap, HandHeart, Users, CheckCircle2,
+  Package, GraduationCap, HandHeart, Users, CheckCircle2, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { useMenstrualHealthPlans } from "@/hooks/use-menstrual-health-plans";
+import type { MenstrualHealthPlan, MenstrualStage, MenstrualComfortLevel } from "@/types/extended";
+import { MENSTRUAL_STAGE_LABEL, MENSTRUAL_COMFORT_LEVEL_LABEL } from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
-type Stage =
-  | "Pre-puberty awareness"
-  | "Early signs noted"
-  | "Started menstruating"
-  | "Established"
-  | "N/A — not menstruating";
-
-type ComfortLevel =
-  | "Comfortable discussing"
-  | "Developing comfort"
-  | "Reluctant"
-  | "Private — staff only when needed";
-
-interface MenstrualPlan {
-  id: string;
-  youngPerson: string;
-  childInitiationStage: Stage;
-  childInformedConsentAge: string;
-  supportingStaff: string;
-  preferredFemaleStaffOnly: boolean;
-  productsProvided: string[];
-  childChosenProducts: boolean;
-  painManagement: string;
-  educationDelivered: string[];
-  accessibilityOfProducts: string;
-  privacyArrangements: string;
-  familyConversations: string;
-  schoolHealthSupport: string;
-  conversationsWithChild: string;
-  childComfortLevel: ComfortLevel;
-  planReviewedDate: string;
-  reviewedBy: string;
-  confidentialityNote: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const STAGE_CLR: Record<MenstrualStage, string> = {
+  pre_puberty_awareness: "bg-sky-100 text-sky-800",
+  early_signs_noted: "bg-violet-100 text-violet-800",
+  started_menstruating: "bg-rose-100 text-rose-800",
+  established: "bg-pink-100 text-pink-800",
+  na_not_menstruating: "bg-slate-100 text-slate-700",
 };
 
-const STAGE_CLR: Record<Stage, string> = {
-  "Pre-puberty awareness": "bg-sky-100 text-sky-800",
-  "Early signs noted": "bg-violet-100 text-violet-800",
-  "Started menstruating": "bg-rose-100 text-rose-800",
-  "Established": "bg-pink-100 text-pink-800",
-  "N/A — not menstruating": "bg-slate-100 text-slate-700",
+const STAGE_BORDER: Record<MenstrualStage, string> = {
+  pre_puberty_awareness: "border-l-sky-300",
+  early_signs_noted: "border-l-violet-400",
+  started_menstruating: "border-l-rose-400",
+  established: "border-l-pink-400",
+  na_not_menstruating: "border-l-slate-300",
 };
 
-const STAGE_BORDER: Record<Stage, string> = {
-  "Pre-puberty awareness": "border-l-sky-300",
-  "Early signs noted": "border-l-violet-400",
-  "Started menstruating": "border-l-rose-400",
-  "Established": "border-l-pink-400",
-  "N/A — not menstruating": "border-l-slate-300",
+const COMFORT_CLR: Record<MenstrualComfortLevel, string> = {
+  comfortable_discussing: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  developing_comfort: "bg-amber-50 text-amber-700 border-amber-200",
+  reluctant: "bg-orange-50 text-orange-700 border-orange-200",
+  private_staff_only: "bg-slate-50 text-slate-700 border-slate-200",
 };
 
-const COMFORT_CLR: Record<ComfortLevel, string> = {
-  "Comfortable discussing": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "Developing comfort": "bg-amber-50 text-amber-700 border-amber-200",
-  "Reluctant": "bg-orange-50 text-orange-700 border-orange-200",
-  "Private — staff only when needed": "bg-slate-50 text-slate-700 border-slate-200",
-};
-
-const STAGES: Stage[] = [
-  "Pre-puberty awareness",
-  "Early signs noted",
-  "Started menstruating",
-  "Established",
-  "N/A — not menstruating",
+const STAGES: MenstrualStage[] = [
+  "pre_puberty_awareness",
+  "early_signs_noted",
+  "started_menstruating",
+  "established",
+  "na_not_menstruating",
 ];
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: MenstrualPlan[] = [
-  {
-    id: "mh_casey",
-    youngPerson: "yp_casey",
-    childInitiationStage: "Established",
-    childInformedConsentAge: "Plan co-developed with Casey (age-appropriate, ongoing consent revisited at each review)",
-    supportingStaff: "staff_anna",
-    preferredFemaleStaffOnly: true,
-    productsProvided: [
-      "Organic cotton pads (light/regular/night)",
-      "Period pants (Casey's preference)",
-      "Reusable pad option (offered, Casey trying gradually)",
-      "Heat pack",
-    ],
-    childChosenProducts: true,
-    painManagement:
-      "Casey has discussed pain management with the GP. A warm wheat bag and quiet bedroom time are first-line. Paracetamol available per agreed protocol. Casey tracks comfort in their own way — staff do not require disclosure of cycle dates.",
-    educationDelivered: [
-      "Age-appropriate menstrual health conversation (led by Anna)",
-      "Sensory considerations for product choice",
-      "Cycle tracking apps reviewed together — Casey chose not to use one",
-      "Body autonomy and consent reinforced",
-    ],
-    accessibilityOfProducts:
-      "Discreet supply in Casey's bedroom drawer (replenished weekly without prompt). Spare basket in the upstairs bathroom available to all children. Travel pouch packed for school bag.",
-    privacyArrangements:
-      "Casey can request the upstairs bathroom be reserved when needed — no questions asked. A small 'green dot' magnet on the bathroom door communicates privacy without verbal disclosure. Bedroom door always respected.",
-    familyConversations:
-      "Discussed at LAC review with Casey's agreement. Casey chose not to involve birth family on this topic at present — wish respected and recorded.",
-    schoolHealthSupport:
-      "School pastoral lead aware that Casey may need to leave class for the bathroom without challenge. School nurse offered as additional support — Casey declined for now but knows the option remains.",
-    conversationsWithChild:
-      "Casey has named Anna as their preferred staff member for any practical conversations. Casey uses they/them pronouns and has asked that we use neutral language ('your period' rather than gendered phrasing). This is honoured throughout the home.",
-    childComfortLevel: "Private — staff only when needed",
-    planReviewedDate: d(-21),
-    reviewedBy: "staff_darren",
-    confidentialityNote:
-      "This plan is shared only with the small circle of staff Casey has agreed to. Not visible in shared handover documents. Casey reviews who can see this at every plan review.",
-  },
-  {
-    id: "mh_alex",
-    youngPerson: "yp_alex",
-    childInitiationStage: "N/A — not menstruating",
-    childInformedConsentAge: "Pre-puberty awareness conversation — age-appropriate, child-led, staff-supported",
-    supportingStaff: "staff_chervelle",
-    preferredFemaleStaffOnly: false,
-    productsProvided: [],
-    childChosenProducts: false,
-    painManagement: "Not applicable. General wellbeing supported through usual care planning.",
-    educationDelivered: [
-      "Universal puberty awareness conversation (all children, age-appropriate)",
-      "Period products are normal household items — Alex knows where the spare basket is and that it is for anyone who needs it",
-      "Open-door approach: Alex knows he can ask any staff member about any health topic",
-    ],
-    accessibilityOfProducts:
-      "Spare basket in the upstairs bathroom is openly available to all children, family members and visitors who need it (Period Products (Free Provision) Scotland Act principle applied as best practice).",
-    privacyArrangements:
-      "All children are taught to respect bathroom privacy and the 'green dot' system. Alex understands the principle.",
-    familyConversations: "No specific conversations needed at this stage.",
-    schoolHealthSupport:
-      "School delivers age-appropriate RSHE — Alex has engaged well. No additional health input required.",
-    conversationsWithChild:
-      "Alex has had a brief, age-appropriate conversation about periods being a normal part of life and not a topic for teasing or shame. He responded with maturity and curiosity. No further action.",
-    childComfortLevel: "Comfortable discussing",
-    planReviewedDate: d(-45),
-    reviewedBy: "staff_darren",
-    confidentialityNote:
-      "Record kept as part of universal best practice — every child has a menstrual health awareness record so that no child feels singled out. Visible only to those with a legitimate need.",
-  },
-  {
-    id: "mh_jordan",
-    youngPerson: "yp_jordan",
-    childInitiationStage: "N/A — not menstruating",
-    childInformedConsentAge: "Pre-puberty awareness conversation — age-appropriate, child-led, staff-supported",
-    supportingStaff: "staff_mirela",
-    preferredFemaleStaffOnly: false,
-    productsProvided: [],
-    childChosenProducts: false,
-    painManagement: "Not applicable.",
-    educationDelivered: [
-      "Universal puberty awareness conversation (age-appropriate)",
-      "Period products are openly stocked — Jordan understands they are for anyone who needs them",
-      "Discussion about respect and challenging stigma if heard among peers",
-    ],
-    accessibilityOfProducts:
-      "Spare basket in the upstairs bathroom is openly available to all. Jordan knows where it is and what it's for.",
-    privacyArrangements:
-      "House privacy norms apply equally to all children. Jordan respects bathroom door signals.",
-    familyConversations: "No specific conversations needed at this stage.",
-    schoolHealthSupport:
-      "School delivers age-appropriate RSHE. No additional input required.",
-    conversationsWithChild:
-      "Jordan engaged in a short conversation with Mirela about periods being normal and never something to mock. Jordan asked thoughtful questions and the topic was handled briefly and matter-of-factly.",
-    childComfortLevel: "Comfortable discussing",
-    planReviewedDate: d(-60),
-    reviewedBy: "staff_darren",
-    confidentialityNote:
-      "Record kept as part of universal best practice. Visible only to those with a legitimate need.",
-  },
-];
-
-/* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function MenstrualHealthTrackerPage() {
-  const [data] = useState(SEED);
+  const { data: res, isLoading } = useMenstrualHealthPlans();
+  const data: MenstrualHealthPlan[] = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterStage, setFilterStage] = useState("all");
   const [filterYP, setFilterYP] = useState("all");
@@ -209,37 +67,35 @@ export default function MenstrualHealthTrackerPage() {
 
   const toggle = (id: string) => setExpandedId((p) => (p === id ? null : id));
 
-  /* ── derived ─────────────────────────────────────────────────────────────── */
-
   const filtered = useMemo(() => {
     let rows = data.filter((r) => {
-      if (filterStage !== "all" && r.childInitiationStage !== filterStage) return false;
-      if (filterYP !== "all" && r.youngPerson !== filterYP) return false;
+      if (filterStage !== "all" && r.child_initiation_stage !== filterStage) return false;
+      if (filterYP !== "all" && r.child_id !== filterYP) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.conversationsWithChild.toLowerCase().includes(q) ||
-          r.educationDelivered.join(" ").toLowerCase().includes(q) ||
-          r.accessibilityOfProducts.toLowerCase().includes(q)
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          r.conversations_with_child.toLowerCase().includes(q) ||
+          r.education_delivered.join(" ").toLowerCase().includes(q) ||
+          r.accessibility_of_products.toLowerCase().includes(q)
         );
       }
       return true;
     });
     rows = [...rows].sort((a, b) => {
       switch (sortBy) {
-        case "review-desc": return b.planReviewedDate.localeCompare(a.planReviewedDate);
-        case "review-asc": return a.planReviewedDate.localeCompare(b.planReviewedDate);
-        case "yp": return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+        case "review-desc": return b.plan_reviewed_date.localeCompare(a.plan_reviewed_date);
+        case "review-asc": return a.plan_reviewed_date.localeCompare(b.plan_reviewed_date);
+        case "yp": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "stage": {
-          const order: Stage[] = [
-            "Established",
-            "Started menstruating",
-            "Early signs noted",
-            "Pre-puberty awareness",
-            "N/A — not menstruating",
+          const order: MenstrualStage[] = [
+            "established",
+            "started_menstruating",
+            "early_signs_noted",
+            "pre_puberty_awareness",
+            "na_not_menstruating",
           ];
-          return order.indexOf(a.childInitiationStage) - order.indexOf(b.childInitiationStage);
+          return order.indexOf(a.child_initiation_stage) - order.indexOf(b.child_initiation_stage);
         }
         default: return 0;
       }
@@ -247,49 +103,45 @@ export default function MenstrualHealthTrackerPage() {
     return rows;
   }, [data, search, filterStage, filterYP, sortBy]);
 
-  /* ── stats ───────────────────────────────────────────────────────────────── */
-
   const activePlans = useMemo(
-    () => data.filter((r) => r.childInitiationStage !== "N/A — not menstruating").length,
+    () => data.filter((r) => r.child_initiation_stage !== "na_not_menstruating").length,
     [data],
   );
 
   const educationDelivered = useMemo(
-    () => data.filter((r) => r.educationDelivered.length > 0).length,
+    () => data.filter((r) => r.education_delivered.length > 0).length,
     [data],
   );
 
   const reviewedIn90d = useMemo(() => {
     const cutoff = d(-90);
-    return data.filter((r) => r.planReviewedDate >= cutoff).length;
+    return data.filter((r) => r.plan_reviewed_date >= cutoff).length;
   }, [data]);
 
-  const yps = Array.from(new Set(data.map((r) => r.youngPerson)));
+  const yps = Array.from(new Set(data.map((r) => r.child_id)));
 
-  /* ── export ──────────────────────────────────────────────────────────────── */
-
-  const exportCols: ExportColumn<MenstrualPlan>[] = [
-    { header: "Child", accessor: (r: MenstrualPlan) => getYPName(r.youngPerson) },
-    { header: "Stage", accessor: (r: MenstrualPlan) => r.childInitiationStage },
-    { header: "Consent / Age-appropriateness", accessor: (r: MenstrualPlan) => r.childInformedConsentAge },
-    { header: "Supporting Staff", accessor: (r: MenstrualPlan) => getStaffName(r.supportingStaff) },
-    { header: "Female Staff Only Preferred", accessor: (r: MenstrualPlan) => r.preferredFemaleStaffOnly ? "Yes" : "No" },
-    { header: "Products Provided", accessor: (r: MenstrualPlan) => r.productsProvided.join("; ") },
-    { header: "Child Chose Products", accessor: (r: MenstrualPlan) => r.childChosenProducts ? "Yes" : "No" },
-    { header: "Pain Management", accessor: (r: MenstrualPlan) => r.painManagement },
-    { header: "Education Delivered", accessor: (r: MenstrualPlan) => r.educationDelivered.join("; ") },
-    { header: "Accessibility of Products", accessor: (r: MenstrualPlan) => r.accessibilityOfProducts },
-    { header: "Privacy Arrangements", accessor: (r: MenstrualPlan) => r.privacyArrangements },
-    { header: "Family Conversations", accessor: (r: MenstrualPlan) => r.familyConversations },
-    { header: "School / Health Support", accessor: (r: MenstrualPlan) => r.schoolHealthSupport },
-    { header: "Conversations with Child", accessor: (r: MenstrualPlan) => r.conversationsWithChild },
-    { header: "Child Comfort Level", accessor: (r: MenstrualPlan) => r.childComfortLevel },
-    { header: "Plan Reviewed Date", accessor: (r: MenstrualPlan) => r.planReviewedDate },
-    { header: "Reviewed By", accessor: (r: MenstrualPlan) => getStaffName(r.reviewedBy) },
-    { header: "Confidentiality Note", accessor: (r: MenstrualPlan) => r.confidentialityNote },
+  const exportCols: ExportColumn<MenstrualHealthPlan>[] = [
+    { header: "Child", accessor: (r) => getYPName(r.child_id) },
+    { header: "Stage", accessor: (r) => MENSTRUAL_STAGE_LABEL[r.child_initiation_stage] },
+    { header: "Consent / Age-appropriateness", accessor: (r) => r.child_informed_consent_age },
+    { header: "Supporting Staff", accessor: (r) => getStaffName(r.supporting_staff) },
+    { header: "Female Staff Only Preferred", accessor: (r) => r.preferred_female_staff_only ? "Yes" : "No" },
+    { header: "Products Provided", accessor: (r) => r.products_provided.join("; ") },
+    { header: "Child Chose Products", accessor: (r) => r.child_chosen_products ? "Yes" : "No" },
+    { header: "Pain Management", accessor: (r) => r.pain_management },
+    { header: "Education Delivered", accessor: (r) => r.education_delivered.join("; ") },
+    { header: "Accessibility of Products", accessor: (r) => r.accessibility_of_products },
+    { header: "Privacy Arrangements", accessor: (r) => r.privacy_arrangements },
+    { header: "Family Conversations", accessor: (r) => r.family_conversations },
+    { header: "School / Health Support", accessor: (r) => r.school_health_support },
+    { header: "Conversations with Child", accessor: (r) => r.conversations_with_child },
+    { header: "Child Comfort Level", accessor: (r) => MENSTRUAL_COMFORT_LEVEL_LABEL[r.child_comfort_level] },
+    { header: "Plan Reviewed Date", accessor: (r) => r.plan_reviewed_date },
+    { header: "Reviewed By", accessor: (r) => getStaffName(r.reviewed_by) },
+    { header: "Confidentiality Note", accessor: (r) => r.confidentiality_note },
   ];
 
-  /* ── render ──────────────────────────────────────────────────────────────── */
+  if (isLoading) return <PageShell title="Menstrual Health Tracker" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -303,7 +155,6 @@ export default function MenstrualHealthTrackerPage() {
       }
     >
       <div id="print-area">
-        {/* ── stat strip ───────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {[
             { label: "Active Plans", value: activePlans, icon: Heart, clr: "text-rose-600" },
@@ -320,7 +171,6 @@ export default function MenstrualHealthTrackerPage() {
           ))}
         </div>
 
-        {/* ── tender banner ────────────────────────────────────────────────── */}
         <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 mb-4 flex items-start gap-3">
           <HandHeart className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
           <div className="text-sm">
@@ -335,7 +185,6 @@ export default function MenstrualHealthTrackerPage() {
           </div>
         </div>
 
-        {/* ── confidentiality strip ────────────────────────────────────────── */}
         <div className="bg-slate-100 border border-slate-300 rounded-lg p-3 mb-6 flex items-start gap-3">
           <Lock className="h-5 w-5 text-slate-700 shrink-0 mt-0.5" />
           <div className="text-sm text-slate-800">
@@ -347,7 +196,6 @@ export default function MenstrualHealthTrackerPage() {
           </div>
         </div>
 
-        {/* ── filters ──────────────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 mb-6">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -369,7 +217,7 @@ export default function MenstrualHealthTrackerPage() {
             <SelectTrigger className="w-[210px]"><Filter className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Stages</SelectItem>
-              {STAGES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+              {STAGES.map((s) => (<SelectItem key={s} value={s}>{MENSTRUAL_STAGE_LABEL[s]}</SelectItem>))}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -383,40 +231,39 @@ export default function MenstrualHealthTrackerPage() {
           </Select>
         </div>
 
-        {/* ── records ──────────────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.map((r) => {
             const open = expandedId === r.id;
-            const isActive = r.childInitiationStage !== "N/A — not menstruating";
+            const isActive = r.child_initiation_stage !== "na_not_menstruating";
             return (
               <Card
                 key={r.id}
-                className={cn("border-l-4", STAGE_BORDER[r.childInitiationStage])}
+                className={cn("border-l-4", STAGE_BORDER[r.child_initiation_stage])}
               >
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {getYPName(r.youngPerson)}
-                        <Badge variant="outline" className={STAGE_CLR[r.childInitiationStage]}>
-                          {r.childInitiationStage}
+                        {getYPName(r.child_id)}
+                        <Badge variant="outline" className={STAGE_CLR[r.child_initiation_stage]}>
+                          {MENSTRUAL_STAGE_LABEL[r.child_initiation_stage]}
                         </Badge>
-                        <Badge variant="outline" className={COMFORT_CLR[r.childComfortLevel]}>
-                          <MessageCircle className="h-3 w-3 mr-1" /> {r.childComfortLevel}
+                        <Badge variant="outline" className={COMFORT_CLR[r.child_comfort_level]}>
+                          <MessageCircle className="h-3 w-3 mr-1" /> {MENSTRUAL_COMFORT_LEVEL_LABEL[r.child_comfort_level]}
                         </Badge>
-                        {r.preferredFemaleStaffOnly && (
+                        {r.preferred_female_staff_only && (
                           <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
                             <ShieldCheck className="h-3 w-3 mr-1" /> Female staff preferred
                           </Badge>
                         )}
-                        {isActive && r.childChosenProducts && (
+                        {isActive && r.child_chosen_products && (
                           <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
                             <Sparkles className="h-3 w-3 mr-1" /> Child-chosen products
                           </Badge>
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Supporting staff: {getStaffName(r.supportingStaff)} · Last reviewed: {r.planReviewedDate}
+                        Supporting staff: {getStaffName(r.supporting_staff)} · Last reviewed: {r.plan_reviewed_date}
                       </p>
                     </div>
                     {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
@@ -424,20 +271,18 @@ export default function MenstrualHealthTrackerPage() {
                 </CardHeader>
                 {open && (
                   <CardContent className="pt-0 space-y-4 text-sm">
-                    {/* confidentiality reminder */}
                     <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
                       <p className="font-semibold text-slate-800 flex items-center gap-1">
                         <Lock className="h-4 w-4" /> Confidentiality note for this record
                       </p>
-                      <p className="text-slate-700 mt-1">{r.confidentialityNote}</p>
+                      <p className="text-slate-700 mt-1">{r.confidentiality_note}</p>
                     </div>
 
-                    {/* conversations led by child */}
                     <div className="bg-rose-50 border border-rose-200 rounded-lg p-3">
                       <p className="font-semibold text-rose-800 flex items-center gap-1">
                         <MessageCircle className="h-4 w-4" /> Conversations with the child
                       </p>
-                      <p className="text-rose-700 mt-1">{r.conversationsWithChild}</p>
+                      <p className="text-rose-700 mt-1">{r.conversations_with_child}</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -445,24 +290,23 @@ export default function MenstrualHealthTrackerPage() {
                         <p className="font-medium mb-1 flex items-center gap-1">
                           <ShieldCheck className="h-4 w-4" /> Consent &amp; age-appropriateness
                         </p>
-                        <p className="text-muted-foreground">{r.childInformedConsentAge}</p>
+                        <p className="text-muted-foreground">{r.child_informed_consent_age}</p>
                       </div>
                       <div>
                         <p className="font-medium mb-1 flex items-center gap-1">
                           <Heart className="h-4 w-4" /> Pain management
                         </p>
-                        <p className="text-muted-foreground">{r.painManagement}</p>
+                        <p className="text-muted-foreground">{r.pain_management}</p>
                       </div>
                     </div>
 
-                    {/* products */}
-                    {r.productsProvided.length > 0 && (
+                    {r.products_provided.length > 0 && (
                       <div>
                         <p className="font-medium mb-1 flex items-center gap-1">
                           <Package className="h-4 w-4" /> Products provided (child-chosen)
                         </p>
                         <div className="flex flex-wrap gap-1.5">
-                          {r.productsProvided.map((p, i) => (
+                          {r.products_provided.map((p: string, i: number) => (
                             <Badge key={i} variant="outline" className="bg-pink-50 text-pink-800 border-pink-200">
                               {p}
                             </Badge>
@@ -471,14 +315,13 @@ export default function MenstrualHealthTrackerPage() {
                       </div>
                     )}
 
-                    {/* education */}
-                    {r.educationDelivered.length > 0 && (
+                    {r.education_delivered.length > 0 && (
                       <div>
                         <p className="font-medium mb-1 flex items-center gap-1">
                           <BookOpen className="h-4 w-4" /> Education delivered
                         </p>
                         <div className="flex flex-wrap gap-1.5">
-                          {r.educationDelivered.map((e, i) => (
+                          {r.education_delivered.map((e: string, i: number) => (
                             <Badge key={i} variant="outline" className="bg-violet-50 text-violet-800 border-violet-200">
                               {e}
                             </Badge>
@@ -490,11 +333,11 @@ export default function MenstrualHealthTrackerPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="font-medium mb-1">Accessibility of products</p>
-                        <p className="text-muted-foreground">{r.accessibilityOfProducts}</p>
+                        <p className="text-muted-foreground">{r.accessibility_of_products}</p>
                       </div>
                       <div>
                         <p className="font-medium mb-1">Privacy arrangements</p>
-                        <p className="text-muted-foreground">{r.privacyArrangements}</p>
+                        <p className="text-muted-foreground">{r.privacy_arrangements}</p>
                       </div>
                     </div>
 
@@ -503,21 +346,22 @@ export default function MenstrualHealthTrackerPage() {
                         <p className="font-medium mb-1 flex items-center gap-1">
                           <Users className="h-4 w-4" /> Family conversations
                         </p>
-                        <p className="text-muted-foreground">{r.familyConversations}</p>
+                        <p className="text-muted-foreground">{r.family_conversations}</p>
                       </div>
                       <div>
                         <p className="font-medium mb-1 flex items-center gap-1">
                           <GraduationCap className="h-4 w-4" /> School / health support
                         </p>
-                        <p className="text-muted-foreground">{r.schoolHealthSupport}</p>
+                        <p className="text-muted-foreground">{r.school_health_support}</p>
                       </div>
                     </div>
 
-                    {/* footer */}
                     <div className="flex flex-wrap justify-between items-center pt-2 border-t text-xs text-muted-foreground gap-2">
-                      <span>Reviewed by: {getStaffName(r.reviewedBy)}</span>
-                      <span>Last review: {r.planReviewedDate}</span>
+                      <span>Reviewed by: {getStaffName(r.reviewed_by)}</span>
+                      <span>Last review: {r.plan_reviewed_date}</span>
                     </div>
+
+                    <SmartLinkPanel sourceType="menstrual-health-tracker" sourceId={r.id} childId={r.child_id} compact />
                   </CardContent>
                 )}
               </Card>
@@ -525,7 +369,6 @@ export default function MenstrualHealthTrackerPage() {
           })}
         </div>
 
-        {/* ── regulatory note ────────────────────────────────────────────── */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
           <p className="font-semibold mb-1">Regulatory Framework</p>
           <p>
@@ -534,8 +377,7 @@ export default function MenstrualHealthTrackerPage() {
             way that is right for them. We apply the principles of the Period Products (Free Provision) Scotland Act 2021 as best practice:
             menstrual products are provided free, openly accessible, dignified to access, and offered in a way that respects choice (including
             sensory and identity-affirming options). This record holds the support plan only &mdash; we do not record cycle data. Cross-reference
-            with the Personal Passport, Health Action Plan, and Key Work entries. Casey&apos;s pronouns (they/them) are used throughout and the
-            plan is reviewed in partnership with Casey at every review point. Records are sensitive &mdash; access is limited to those with a
+            with the Personal Passport, Health Action Plan, and Key Work entries. Records are sensitive &mdash; access is limited to those with a
             legitimate, child-agreed need to know &mdash; and retained until the child&apos;s 25th birthday (or 75 years for looked-after children,
             per Reg 37).
           </p>

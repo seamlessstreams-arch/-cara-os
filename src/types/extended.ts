@@ -14891,3 +14891,279 @@ export interface MedicationNearMiss {
   shareable_anonymously: boolean;
   created_at: string;
 }
+
+/* ── Batch 40 ─────────────────────────────────────────────────────────────── */
+
+/* medication-stock-check */
+export type StockCheckType = "weekly" | "monthly_audit";
+export const STOCK_CHECK_TYPE_LABEL: Record<StockCheckType, string> = {
+  weekly: "Weekly Stock Check",
+  monthly_audit: "Monthly Audit",
+};
+
+export type StockCheckStatus = "balanced" | "discrepancy" | "action_required";
+export const STOCK_CHECK_STATUS_LABEL: Record<StockCheckStatus, string> = {
+  balanced: "Balanced",
+  discrepancy: "Discrepancy",
+  action_required: "Action Required",
+};
+
+export interface StockCheckItem {
+  yp: string;
+  medication: string;
+  expected_count: number;
+  actual_count: number;
+  unit: string;
+  expiry_date: string;
+  discrepancy: boolean;
+}
+
+export interface MedicationStockCheck {
+  id: string;
+  date: string;
+  check_type: StockCheckType;
+  checked_by: string;
+  witnessed_by: string;
+  status: StockCheckStatus;
+  items: StockCheckItem[];
+  notes: string;
+  created_at: string;
+}
+
+/* medication-storage-audit */
+export type StorageAuditCabinetType = "main_lockable" | "prn_cabinet" | "controlled_drugs_safe" | "refrigerated" | "childrens_room";
+export const STORAGE_AUDIT_CABINET_TYPE_LABEL: Record<StorageAuditCabinetType, string> = {
+  main_lockable: "Main lockable medicine cabinet",
+  prn_cabinet: "PRN cabinet",
+  controlled_drugs_safe: "Controlled drugs safe",
+  refrigerated: "Refrigerated storage",
+  childrens_room: "Children's room (specific medication)",
+};
+
+export type StorageAuditVerdict = "pass" | "pass_with_minor_actions" | "fail_immediate_action";
+export const STORAGE_AUDIT_VERDICT_LABEL: Record<StorageAuditVerdict, string> = {
+  pass: "Pass",
+  pass_with_minor_actions: "Pass with minor actions",
+  fail_immediate_action: "Fail - immediate action required",
+};
+
+export type CleanlinessRating = "excellent" | "good" | "adequate" | "needs_attention";
+export const CLEANLINESS_RATING_LABEL: Record<CleanlinessRating, string> = {
+  excellent: "Excellent",
+  good: "Good",
+  adequate: "Adequate",
+  needs_attention: "Needs attention",
+};
+
+export type FollowUpStatus = "open" | "in_progress" | "done";
+export const FOLLOW_UP_STATUS_LABEL: Record<FollowUpStatus, string> = {
+  open: "Open",
+  in_progress: "In Progress",
+  done: "Done",
+};
+
+export interface StorageAuditCheckItem {
+  item: string;
+  pass: boolean;
+  observation: string;
+  action_required: string;
+}
+
+export interface StorageAuditExpiringItem {
+  medication: string;
+  expiry_date: string;
+}
+
+export interface StorageAuditExpiredItem {
+  medication: string;
+  expiry_date: string;
+  disposal_date: string;
+}
+
+export interface StorageAuditFollowUp {
+  action: string;
+  owner: string;
+  deadline: string;
+  status: FollowUpStatus;
+}
+
+export interface MedicationStorageAudit {
+  id: string;
+  audit_date: string;
+  auditor: string;
+  cabinet_location: string;
+  cabinet_type: StorageAuditCabinetType;
+  checks: StorageAuditCheckItem[];
+  temperature_range: string;
+  temperature_recorded: number;
+  temperature_within_range: boolean;
+  expiry_check_completed: boolean;
+  expiring_soon: StorageAuditExpiringItem[];
+  expired_found: StorageAuditExpiredItem[];
+  controlled_drugs_balance_correct: boolean;
+  controlled_drugs_discrepancies: string[];
+  cleanliness_rating: CleanlinessRating;
+  security_check_pass: boolean;
+  keys_accounted_for: boolean;
+  record_keeping_pass: boolean;
+  overall_verdict: StorageAuditVerdict;
+  immediate_actions_taken: string[];
+  follow_up_actions: StorageAuditFollowUp[];
+  next_audit_due: string;
+  signed_off_by: string;
+  created_at: string;
+}
+
+/* medication-training */
+export type MedCompetencyType = "level_3_cert" | "administration" | "controlled_drugs" | "prn_assessment" | "epipen" | "buccal_midazolam" | "insulin" | "rectal_diazepam" | "inhaler" | "refresher";
+export const MED_COMPETENCY_TYPE_LABEL: Record<MedCompetencyType, string> = {
+  level_3_cert: "Level 3 Medication Certificate",
+  administration: "General Administration",
+  controlled_drugs: "Controlled Drugs",
+  prn_assessment: "PRN Assessment",
+  epipen: "EpiPen",
+  buccal_midazolam: "Buccal Midazolam",
+  insulin: "Insulin Administration",
+  rectal_diazepam: "Rectal Diazepam",
+  inhaler: "Inhaler Technique",
+  refresher: "Annual Refresher",
+};
+
+export type MedCompetencyStatus = "competent" | "not_yet_competent" | "expired" | "in_training" | "supervised_only";
+export const MED_COMPETENCY_STATUS_LABEL: Record<MedCompetencyStatus, string> = {
+  competent: "Competent",
+  not_yet_competent: "Not Yet Competent",
+  expired: "Expired",
+  in_training: "In Training",
+  supervised_only: "Supervised Only",
+};
+
+export interface MedTrainingRecord {
+  id: string;
+  staff_id: string;
+  competency_type: MedCompetencyType;
+  status: MedCompetencyStatus;
+  assessment_date: string;
+  assessed_by: string;
+  expiry_date: string;
+  score: number | null;
+  pass_threshold: number;
+  practical_assessment: boolean;
+  written_assessment: boolean;
+  observations: number;
+  notes: string;
+  action_plan: string;
+  next_assessment_date: string;
+  created_at: string;
+}
+
+/* memorial-occasion-records */
+export type MemorialOccasionType = "bereavement_death" | "annual_remembrance" | "pet_bereavement" | "loss_anniversary" | "family_anniversary" | "cultural_memorial_day";
+export const MEMORIAL_OCCASION_TYPE_LABEL: Record<MemorialOccasionType, string> = {
+  bereavement_death: "Bereavement (death)",
+  annual_remembrance: "Annual remembrance",
+  pet_bereavement: "Pet bereavement",
+  loss_anniversary: "Loss anniversary",
+  family_anniversary: "Family anniversary",
+  cultural_memorial_day: "Cultural memorial day",
+};
+
+export interface MemorialOccasionRecord {
+  id: string;
+  occasion: MemorialOccasionType;
+  date: string;
+  who_is_remembered: string;
+  affected_children: string[];
+  significance: string;
+  child_preferences: string;
+  rituals_observed: string[];
+  staff_role_on_day: string;
+  external_support: string;
+  child_expressions_observed: string;
+  follow_up_date: string;
+  notes: string;
+  created_at: string;
+}
+
+/* menstrual-health-tracker */
+export type MenstrualStage = "pre_puberty_awareness" | "early_signs_noted" | "started_menstruating" | "established" | "na_not_menstruating";
+export const MENSTRUAL_STAGE_LABEL: Record<MenstrualStage, string> = {
+  pre_puberty_awareness: "Pre-puberty awareness",
+  early_signs_noted: "Early signs noted",
+  started_menstruating: "Started menstruating",
+  established: "Established",
+  na_not_menstruating: "N/A — not menstruating",
+};
+
+export type MenstrualComfortLevel = "comfortable_discussing" | "developing_comfort" | "reluctant" | "private_staff_only";
+export const MENSTRUAL_COMFORT_LEVEL_LABEL: Record<MenstrualComfortLevel, string> = {
+  comfortable_discussing: "Comfortable discussing",
+  developing_comfort: "Developing comfort",
+  reluctant: "Reluctant",
+  private_staff_only: "Private — staff only when needed",
+};
+
+export interface MenstrualHealthPlan {
+  id: string;
+  child_id: string;
+  child_initiation_stage: MenstrualStage;
+  child_informed_consent_age: string;
+  supporting_staff: string;
+  preferred_female_staff_only: boolean;
+  products_provided: string[];
+  child_chosen_products: boolean;
+  pain_management: string;
+  education_delivered: string[];
+  accessibility_of_products: string;
+  privacy_arrangements: string;
+  family_conversations: string;
+  school_health_support: string;
+  conversations_with_child: string;
+  child_comfort_level: MenstrualComfortLevel;
+  plan_reviewed_date: string;
+  reviewed_by: string;
+  confidentiality_note: string;
+  created_at: string;
+}
+
+/* menu-planning */
+export type MealType = "breakfast" | "lunch" | "dinner" | "snack" | "supper";
+export const MEAL_TYPE_LABEL: Record<MealType, string> = {
+  breakfast: "Breakfast",
+  lunch: "Lunch",
+  dinner: "Dinner",
+  snack: "Snack",
+  supper: "Supper",
+};
+
+export type DietaryFlag = "vegetarian" | "vegan" | "halal" | "gluten_free" | "dairy_free" | "nut_free" | "none";
+export const DIETARY_FLAG_LABEL: Record<DietaryFlag, string> = {
+  vegetarian: "Vegetarian",
+  vegan: "Vegan",
+  halal: "Halal",
+  gluten_free: "Gluten Free",
+  dairy_free: "Dairy Free",
+  nut_free: "Nut Free",
+  none: "Standard",
+};
+
+export interface MealChildPreference {
+  child_id: string;
+  rating: "liked" | "disliked" | "not_eaten";
+}
+
+export interface MealPlan {
+  id: string;
+  date: string;
+  meal: MealType;
+  main_dish: string;
+  sides: string[];
+  dessert: string;
+  dietary_flags: DietaryFlag[];
+  prepared_by: string;
+  child_preferences: MealChildPreference[];
+  special_notes: string;
+  budget: number;
+  leftover_action: string;
+  created_at: string;
+}

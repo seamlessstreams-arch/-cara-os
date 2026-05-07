@@ -4,152 +4,33 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { getYPName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import {
-  ChevronDown,
-  ChevronUp,
-  ArrowUpDown,
-  Heart,
-  Sparkles,
-  Flower,
-  Star,
+  ChevronDown, ChevronUp, ArrowUpDown,
+  Heart, Sparkles, Flower, Star, Loader2,
 } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useMemorialOccasionRecords } from "@/hooks/use-memorial-occasion-records";
+import type { MemorialOccasionRecord, MemorialOccasionType } from "@/types/extended";
+import { MEMORIAL_OCCASION_TYPE_LABEL } from "@/types/extended";
 
-interface MemorialRecord {
-  id: string;
-  occasion: "Bereavement (death)" | "Annual remembrance" | "Pet bereavement" | "Loss anniversary" | "Family anniversary" | "Cultural memorial day";
-  date: string;
-  whoIsRemembered: string;
-  affectedChildren: string[];
-  significance: string;
-  childPreferences: string;
-  ritualsObserved: string[];
-  staffRoleOnDay: string;
-  externalSupport: string;
-  childExpressionsObserved: string;
-  followUpDate: string;
-  notes: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const occasionColour: Record<MemorialOccasionType, string> = {
+  bereavement_death: "bg-purple-100 text-purple-800",
+  annual_remembrance: "bg-amber-100 text-amber-800",
+  pet_bereavement: "bg-pink-100 text-pink-800",
+  loss_anniversary: "bg-rose-100 text-rose-800",
+  family_anniversary: "bg-blue-100 text-blue-800",
+  cultural_memorial_day: "bg-emerald-100 text-emerald-800",
 };
-
-const data: MemorialRecord[] = [
-  {
-    id: "mo-001",
-    occasion: "Pet bereavement",
-    date: d(-30),
-    whoIsRemembered: "Casey's previous home pet (cat)",
-    affectedChildren: ["yp_casey"],
-    significance: "Casey lost a much-loved cat at previous placement. Significant emotional wound. Anniversary acknowledged at Casey's request.",
-    childPreferences: "Quiet acknowledgement. Drawing of cat added to memory book. Anna present quietly.",
-    ritualsObserved: [
-      "Casey drew a picture of the cat for Memory Book",
-      "Lit a candle for the evening (Casey's idea)",
-      "Anna brought sage green flowers (Casey's preferred colour)",
-      "No demands or activities — Casey directed the day",
-    ],
-    staffRoleOnDay: "Anna stayed close. Quiet presence. Visual cards available. Casey set the pace.",
-    externalSupport: "Art therapist briefed; offered session if Casey wished",
-    childExpressionsObserved: "Casey kept the drawing all day. Smiled softly at the candle. Said via visual cards that they 'liked having a quiet day for [pet name]'.",
-    followUpDate: d(335),
-    notes: "Honouring earlier loss matters. Casey's autonomy in marking it was central.",
-  },
-  {
-    id: "mo-002",
-    occasion: "Loss anniversary",
-    date: "2025-11-05",
-    whoIsRemembered: "Anniversary of house fire (Jordan's childhood)",
-    affectedChildren: ["yp_jordan"],
-    significance: "Trauma anniversary — house fire that destroyed family home. Bonfire night compounds the date. Jordan's PTSD risk elevated.",
-    childPreferences: "Acknowledged but not made a big thing. Avoid fireworks where possible. Available staff. Optional creative outlet.",
-    ritualsObserved: [
-      "Pre-emptive conversation in the days before",
-      "Quieter staffing — Chervelle on shift",
-      "Fireworks avoided where possible (challenging on bonfire night)",
-      "Optional creative session offered (Jordan's choice — declined this year)",
-      "Therapy session within 48 hours",
-      "Letter to lost family pet (a tradition Jordan started age 10)",
-    ],
-    staffRoleOnDay: "Chervelle led. Quiet presence. RM aware. On-call manager briefed. Sensory tools accessible.",
-    externalSupport: "CAMHS therapist had crisis slot pre-booked",
-    childExpressionsObserved: "Jordan wrote his annual letter to the family pet. Sat with Chervelle. Slept with night light. Spoke about it briefly the next morning.",
-    followUpDate: "2026-11-05",
-    notes: "Annual ritual respected and refined each year per Jordan's preferences. Linked to Trauma-Informed Timeline and Placement Anniversaries.",
-  },
-  {
-    id: "mo-003",
-    occasion: "Cultural memorial day",
-    date: d(-90),
-    whoIsRemembered: "Black History Month — collective remembrance and celebration",
-    affectedChildren: ["yp_jordan", "yp_alex", "yp_casey"],
-    significance: "Cultural celebration with memorial elements. Jordan led aspects given his heritage. Inclusive for all children.",
-    childPreferences: "Jordan led; Alex and Casey participated as wished. Cultural mentor invited.",
-    ritualsObserved: [
-      "Cultural meal (Jordan-led with Chervelle)",
-      "Watched documentaries chosen by Jordan",
-      "Visit to Black History Museum (whole house — see Cultural Visits)",
-      "Discussion of family heritage (gentle, child-led)",
-      "Jordan's cultural mentor visited",
-    ],
-    staffRoleOnDay: "Chervelle and Jordan co-led; staff supported children's individual engagement levels.",
-    externalSupport: "Cultural mentor (paid practitioner)",
-    childExpressionsObserved: "Jordan visibly proud. Alex curious and respectful. Casey engaged with quieter aspects (food, watching, drawing).",
-    followUpDate: d(275),
-    notes: "Meaningful inclusion of cultural memorial. Jordan-led rather than imposed. Also see Religious Observance Log.",
-  },
-  {
-    id: "mo-004",
-    occasion: "Bereavement (death)",
-    date: "2024-03-12",
-    whoIsRemembered: "Casey's birth grandmother (died) — letterbox notification",
-    affectedChildren: ["yp_casey"],
-    significance: "Birth grandmother died — Casey informed via SW. Complex emotion given limited contact.",
-    childPreferences: "Casey wished for quiet acknowledgement. Did not wish to attend funeral (decision respected).",
-    ritualsObserved: [
-      "SW informed Casey gently with Anna present",
-      "Casey wrote a private letter (kept in Memory Book — never sent)",
-      "Quiet day at home; Anna present throughout",
-      "Annual remembrance now established at Casey's request",
-    ],
-    staffRoleOnDay: "Anna and Lisa (SW) jointly informed Casey using visual support. Anna stayed for the day.",
-    externalSupport: "Art therapist offered session in following week",
-    childExpressionsObserved: "Casey processed quietly through art. Wrote private letter. Has marked anniversary annually since with similar quiet acknowledgement.",
-    followUpDate: "2026-03-12",
-    notes: "Loss with complexity given birth family situation. Honoured per Casey's wishes. Sensitive entry — see also Grief and Loss Support.",
-  },
-];
-
-const occasionColour: Record<string, string> = {
-  "Bereavement (death)": "bg-purple-100 text-purple-800",
-  "Annual remembrance": "bg-amber-100 text-amber-800",
-  "Pet bereavement": "bg-pink-100 text-pink-800",
-  "Loss anniversary": "bg-rose-100 text-rose-800",
-  "Family anniversary": "bg-blue-100 text-blue-800",
-  "Cultural memorial day": "bg-emerald-100 text-emerald-800",
-};
-
-const exportCols: ExportColumn<MemorialRecord>[] = [
-  { header: "Occasion", accessor: (r: MemorialRecord) => r.occasion },
-  { header: "Date", accessor: (r: MemorialRecord) => r.date },
-  { header: "Remembered", accessor: (r: MemorialRecord) => r.whoIsRemembered },
-  { header: "Children Affected", accessor: (r: MemorialRecord) => r.affectedChildren.map(getYPName).join("; ") },
-  { header: "Significance", accessor: (r: MemorialRecord) => r.significance },
-  { header: "Follow-Up", accessor: (r: MemorialRecord) => r.followUpDate },
-];
 
 export default function MemorialOccasionRecordsPage() {
+  const { data: res, isLoading } = useMemorialOccasionRecords();
+  const data: MemorialOccasionRecord[] = res?.data ?? [];
+
   const [filterOccasion, setFilterOccasion] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -168,11 +49,22 @@ export default function MemorialOccasionRecordsPage() {
       }
     });
     return items;
-  }, [filterOccasion, sortBy]);
+  }, [data, filterOccasion, sortBy]);
 
   const total = data.length;
-  const annualMarkers = data.filter((m) => m.occasion === "Annual remembrance" || m.occasion === "Loss anniversary" || m.occasion === "Pet bereavement").length;
-  const childrenWithRituals = new Set(data.flatMap((m) => m.affectedChildren)).size;
+  const annualMarkers = data.filter((m) => m.occasion === "annual_remembrance" || m.occasion === "loss_anniversary" || m.occasion === "pet_bereavement").length;
+  const childrenWithRituals = new Set(data.flatMap((m) => m.affected_children)).size;
+
+  const exportCols: ExportColumn<MemorialOccasionRecord>[] = [
+    { header: "Occasion", accessor: (r) => MEMORIAL_OCCASION_TYPE_LABEL[r.occasion] },
+    { header: "Date", accessor: (r) => r.date },
+    { header: "Remembered", accessor: (r) => r.who_is_remembered },
+    { header: "Children Affected", accessor: (r) => r.affected_children.map(getYPName).join("; ") },
+    { header: "Significance", accessor: (r) => r.significance },
+    { header: "Follow-Up", accessor: (r) => r.follow_up_date },
+  ];
+
+  if (isLoading) return <PageShell title="Memorial Occasions" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -218,12 +110,9 @@ export default function MemorialOccasionRecordsPage() {
           <SelectTrigger className="w-[220px]"><SelectValue placeholder="All Occasions" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Occasions</SelectItem>
-            <SelectItem value="Bereavement (death)">Bereavement</SelectItem>
-            <SelectItem value="Annual remembrance">Annual Remembrance</SelectItem>
-            <SelectItem value="Pet bereavement">Pet Bereavement</SelectItem>
-            <SelectItem value="Loss anniversary">Loss Anniversary</SelectItem>
-            <SelectItem value="Family anniversary">Family Anniversary</SelectItem>
-            <SelectItem value="Cultural memorial day">Cultural Memorial</SelectItem>
+            {(Object.keys(MEMORIAL_OCCASION_TYPE_LABEL) as MemorialOccasionType[]).map((k) => (
+              <SelectItem key={k} value={k}>{MEMORIAL_OCCASION_TYPE_LABEL[k]}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -251,14 +140,14 @@ export default function MemorialOccasionRecordsPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Flower className="h-5 w-5 text-purple-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{m.whoIsRemembered}</p>
+                    <p className="font-medium truncate">{m.who_is_remembered}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {m.date} &middot; {m.affectedChildren.map(getYPName).join(", ")}
+                      {m.date} &middot; {m.affected_children.map(getYPName).join(", ")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", occasionColour[m.occasion])}>{m.occasion}</span>
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", occasionColour[m.occasion])}>{MEMORIAL_OCCASION_TYPE_LABEL[m.occasion]}</span>
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </button>
@@ -274,7 +163,7 @@ export default function MemorialOccasionRecordsPage() {
                     <p className="text-xs font-semibold text-pink-800 uppercase tracking-wide mb-1">
                       <Heart className="h-3 w-3 inline mr-1" />Child Preferences
                     </p>
-                    <p className="text-sm">{m.childPreferences}</p>
+                    <p className="text-sm">{m.child_preferences}</p>
                   </div>
 
                   <div>
@@ -282,7 +171,7 @@ export default function MemorialOccasionRecordsPage() {
                       <Sparkles className="h-3 w-3 inline mr-1" />Rituals Observed
                     </p>
                     <ul className="space-y-1">
-                      {m.ritualsObserved.map((r, i) => (
+                      {m.rituals_observed.map((r: string, i: number) => (
                         <li key={i} className="text-sm flex items-start gap-1">
                           <Star className="h-3 w-3 text-amber-500 mt-1 shrink-0" />
                           <span>{r}</span>
@@ -293,19 +182,19 @@ export default function MemorialOccasionRecordsPage() {
 
                   <div className="bg-blue-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Staff Role</p>
-                    <p className="text-sm">{m.staffRoleOnDay}</p>
+                    <p className="text-sm">{m.staff_role_on_day}</p>
                   </div>
 
-                  {m.externalSupport && (
+                  {m.external_support && (
                     <div className="bg-emerald-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">External Support</p>
-                      <p className="text-sm">{m.externalSupport}</p>
+                      <p className="text-sm">{m.external_support}</p>
                     </div>
                   )}
 
                   <div className="bg-rose-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-rose-800 uppercase tracking-wide mb-1">Child&apos;s Expressions Observed</p>
-                    <p className="text-sm italic">{m.childExpressionsObserved}</p>
+                    <p className="text-sm italic">{m.child_expressions_observed}</p>
                   </div>
 
                   {m.notes && (
@@ -316,9 +205,11 @@ export default function MemorialOccasionRecordsPage() {
                   )}
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span>Follow-up: {m.followUpDate}</span>
-                    <span>Children: {m.affectedChildren.map(getYPName).join(", ")}</span>
+                    <span>Follow-up: {m.follow_up_date}</span>
+                    <span>Children: {m.affected_children.map(getYPName).join(", ")}</span>
                   </div>
+
+                  <SmartLinkPanel sourceType="memorial-occasion-records" sourceId={m.id} childId={m.affected_children[0]} compact />
                 </div>
               )}
             </div>
