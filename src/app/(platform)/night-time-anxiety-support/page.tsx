@@ -15,6 +15,7 @@ import {
   ArrowUpDown,
   Search,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -23,253 +24,61 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useNightAnxietySupport } from "@/hooks/use-night-anxiety-support";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type { NightAnxietySupportRecord, AnxietyLevel, NightmareFrequency } from "@/types/extended";
+import { ANXIETY_LEVEL_LABEL, NIGHTMARE_FREQUENCY_LABEL } from "@/types/extended";
 
-// ── types ───────────────────────────────────────────────────────────────────
-interface NightAnxietyRecord {
-  id: string;
-  youngPerson: string;
-  recordDate: string;
-  anxietyLevel:
-    | "Settled"
-    | "Mild — manageable"
-    | "Moderate"
-    | "Severe — frequent waking"
-    | "Crisis — sleep severely impacted";
-  primaryTriggers: string[];
-  bedtimeRoutine: string[];
-  comfortItems: string[];
-  doStrategies: string[];
-  doNotStrategies: string[];
-  childPreferences: string;
-  externalReferralActive?: string;
-  averageSleepHours?: number;
-  nightmareFrequency:
-    | "None"
-    | "Occasional"
-    | "Weekly"
-    | "Multiple per week"
-    | "Most nights";
-  hypervigilanceNotes?: string;
-  childVoice: string;
-  staffObservation: string;
-  staffActionsLastWeek: string[];
-  reviewDate: string;
-  keyWorker: string;
-}
-
+// ── helpers ─────────────────────────────────────────────────────────────────
 const d = (n: number) => {
   const dt = new Date();
   dt.setDate(dt.getDate() + n);
   return dt.toISOString().slice(0, 10);
 };
 
-// ── seed data ───────────────────────────────────────────────────────────────
-const records: NightAnxietyRecord[] = [
-  {
-    id: "nas-001",
-    youngPerson: "yp-casey",
-    recordDate: d(-3),
-    anxietyLevel: "Severe — frequent waking",
-    primaryTriggers: [
-      "Memories of previous home (raised voices at night)",
-      "Sudden noises (doors slamming, footsteps in corridor)",
-      "Total darkness",
-      "Door fully closed (feels trapped)",
-    ],
-    bedtimeRoutine: [
-      "Warm bath at 19:30 with calming bath salts",
-      "Story read aloud by key worker (20 minutes)",
-      "Comfort blanket and weighted blanket on bed",
-      "Nightlight on (warm amber, low setting)",
-      "Bedroom door left ajar approximately 15cm",
-      "Quiet 'goodnight' from staff — no extended conversation",
-    ],
-    comfortItems: [
-      "Pink comfort blanket (originally from grandmother)",
-      "Weighted blanket (4.5kg)",
-      "Soft bunny — 'Mr Hopps'",
-      "Amber nightlight",
-    ],
-    doStrategies: [
-      "Move quietly in corridor after 20:00",
-      "Use calm, low voice if Casey wakes",
-      "Offer warm milk if waking before midnight",
-      "Sit on chair near door (not on bed) if reassurance needed",
-      "Validate feelings: 'It makes sense you feel scared'",
-      "Allow comfort blanket to be taken everywhere",
-    ],
-    doNotStrategies: [
-      "Do NOT slam doors or speak loudly in corridor",
-      "Do NOT close bedroom door fully — even briefly",
-      "Do NOT remove the nightlight, even if bulb seems bright",
-      "Do NOT minimise fears ('there's nothing to be scared of')",
-      "Do NOT enter room without knocking softly first",
-      "Do NOT promise 'nothing bad will happen' — Casey knows this isn't always true",
-    ],
-    childPreferences:
-      "Casey has asked that staff not sit on her bed when she's anxious — prefers chair near door. Wants the same key worker to read story when possible. Has asked that the comfort blanket is never washed during the day (only when she's at school).",
-    externalReferralActive:
-      "CAMHS — trauma-focused CBT, fortnightly with Dr Hassan",
-    averageSleepHours: 5.5,
-    nightmareFrequency: "Multiple per week",
-    hypervigilanceNotes:
-      "Casey listens to corridor sounds and can identify which staff member is on. Reports feeling 'on alert' until she hears the night staff settle. Sleeps with one eye open if she doesn't recognise the night staff voice.",
-    childVoice:
-      "I sleep better when I know it's Maria on. The nightlight makes the room feel like mine. Please don't shut my door — even when I'm asleep. The weighted blanket feels like a hug.",
-    staffObservation:
-      "Casey settles more quickly on nights where her preferred key worker is on shift. Hypervigilance reduces over weeks of consistent staffing. Nightmares cluster around contact week and after social media exposure to old neighbourhood.",
-    staffActionsLastWeek: [
-      "Maintained nightlight + door-ajar protocol every night",
-      "Maria read story 5 of 7 nights",
-      "Soothed twice after nightmare — used grounding (5-4-3-2-1) technique",
-      "Logged sleep hours each morning",
-      "Liaised with CAMHS following Tuesday nightmare cluster",
-    ],
-    reviewDate: d(11),
-    keyWorker: "staff-maria",
-  },
-  {
-    id: "nas-002",
-    youngPerson: "yp-alex",
-    recordDate: d(-7),
-    anxietyLevel: "Moderate",
-    primaryTriggers: [
-      "Silence (associates with being alone after family rejection)",
-      "Door fully closed",
-      "Staff checking in too often (feels watched)",
-      "Anniversary dates (mum's birthday, contact refusals)",
-    ],
-    bedtimeRoutine: [
-      "Quiet chat in lounge (no pressure to talk) at 20:30",
-      "Optional shower",
-      "Lo-fi playlist on low volume",
-      "Door slightly open to hallway sounds",
-      "Single 'night Alex' from staff — no follow-up check-in",
-    ],
-    comfortItems: [
-      "Bluetooth speaker (lo-fi playlist)",
-      "Hoodie worn to bed",
-      "Phone within arm's reach (wind-down playlist)",
-    ],
-    doStrategies: [
-      "Leave hallway light on low until 23:00",
-      "Allow Alex to keep door slightly open",
-      "Respect that hallway voices are reassuring (not disruptive)",
-      "Walk past room normally — no tiptoeing (feels patronising)",
-      "Acknowledge anniversary dates proactively in keywork",
-    ],
-    doNotStrategies: [
-      "Do NOT check in repeatedly through the night — Alex finds this distressing",
-      "Do NOT play 'sleep music' apps Alex hasn't chosen",
-      "Do NOT close the door, even if hallway sounds carry",
-      "Do NOT raise contact-related topics within an hour of bedtime",
-      "Do NOT remove the phone at lights-out — wind-down playlist matters",
-    ],
-    childPreferences:
-      "Alex prefers staff to act 'normal' around bedtime — no whispering, no special voice. Has said the hallway sounds make the home feel 'lived in' and less like a placement.",
-    averageSleepHours: 6.5,
-    nightmareFrequency: "Weekly",
-    hypervigilanceNotes:
-      "Reports listening for staff voices to confirm someone is awake. Settles within 20 minutes once hallway activity is heard. Hypervigilance worsens around contact-refusal anniversaries.",
-    childVoice:
-      "I don't want anyone fussing. Just say goodnight and go. The music helps me stop thinking. I like hearing people in the hallway — means I'm not the only one awake.",
-    staffObservation:
-      "Alex's anxiety presents as withdrawal at bedtime rather than verbal distress. Sleep improves when staff hold a relaxed, non-watchful presence. Nightmares correlate strongly with contact-refusal anniversary dates.",
-    staffActionsLastWeek: [
-      "Held door-open + hallway-light protocol every night",
-      "Avoided check-ins after lights out (per plan)",
-      "Flagged upcoming anniversary date in handover",
-      "Shared lo-fi playlist suggestion Alex requested",
-    ],
-    reviewDate: d(21),
-    keyWorker: "staff-tom",
-  },
-  {
-    id: "nas-003",
-    youngPerson: "yp-jordan",
-    recordDate: d(-14),
-    anxietyLevel: "Mild — manageable",
-    primaryTriggers: [
-      "Contact day evenings (heightened thinking)",
-      "Big football fixtures (overstimulation)",
-    ],
-    bedtimeRoutine: [
-      "Football podcast (own choice) at 21:30",
-      "Lights out 22:00",
-      "Single 'goodnight' from staff at door — no entry",
-    ],
-    comfortItems: ["Headphones + football podcast", "Team scarf hung over chair"],
-    doStrategies: [
-      "Say goodnight from doorway only",
-      "Allow podcast to play through to natural end",
-      "Acknowledge the next day on contact eves ('big day tomorrow, sleep well')",
-      "Trust Jordan's self-regulation",
-    ],
-    doNotStrategies: [
-      "Do NOT enter the bedroom to check on Jordan",
-      "Do NOT remove headphones at lights out",
-      "Do NOT debrief contact in the hour before bed",
-      "Do NOT comment on the team scarf or 'tidiness' — it's deliberate",
-    ],
-    childPreferences:
-      "Jordan is clear: a verbal 'goodnight' from the doorway is the right amount of contact. Nothing more. Has asked staff to not raise football scores at bedtime if his team lost.",
-    averageSleepHours: 7.5,
-    nightmareFrequency: "Occasional",
-    childVoice:
-      "Honestly I'm fine. Just say night from the door. Don't come in. The podcast is the routine — it's not negotiable.",
-    staffObservation:
-      "Jordan shows good self-regulation around bedtime. Occasional nightmare clusters around contact days — generally self-resolves by morning. Does not seek staff support after bad nights but will mention briefly at breakfast if asked.",
-    staffActionsLastWeek: [
-      "Held doorway-goodnight protocol every night",
-      "Logged one nightmare on contact-Wednesday",
-      "Briefly checked in at breakfast Thursday — Jordan acknowledged but moved on",
-    ],
-    reviewDate: d(35),
-    keyWorker: "staff-sarah",
-  },
-];
-
-// ── helpers ─────────────────────────────────────────────────────────────────
-const anxietyOrder: Record<NightAnxietyRecord["anxietyLevel"], number> = {
-  "Crisis — sleep severely impacted": 5,
-  "Severe — frequent waking": 4,
-  Moderate: 3,
-  "Mild — manageable": 2,
-  Settled: 1,
+const anxietyOrder: Record<AnxietyLevel, number> = {
+  crisis: 5,
+  severe: 4,
+  moderate: 3,
+  mild: 2,
+  settled: 1,
 };
 
-const anxietyChip = (lvl: NightAnxietyRecord["anxietyLevel"]) => {
+const anxietyChip = (lvl: AnxietyLevel) => {
   switch (lvl) {
-    case "Crisis — sleep severely impacted":
+    case "crisis":
       return "bg-red-100 text-red-800 border-red-300";
-    case "Severe — frequent waking":
+    case "severe":
       return "bg-orange-100 text-orange-800 border-orange-300";
-    case "Moderate":
+    case "moderate":
       return "bg-amber-100 text-amber-800 border-amber-300";
-    case "Mild — manageable":
+    case "mild":
       return "bg-blue-100 text-blue-800 border-blue-300";
-    case "Settled":
+    case "settled":
       return "bg-emerald-100 text-emerald-800 border-emerald-300";
   }
 };
 
-const nightmareChip = (f: NightAnxietyRecord["nightmareFrequency"]) => {
+const nightmareChip = (f: NightmareFrequency) => {
   switch (f) {
-    case "Most nights":
+    case "most_nights":
       return "bg-red-100 text-red-800 border-red-300";
-    case "Multiple per week":
+    case "multiple_per_week":
       return "bg-orange-100 text-orange-800 border-orange-300";
-    case "Weekly":
+    case "weekly":
       return "bg-amber-100 text-amber-800 border-amber-300";
-    case "Occasional":
+    case "occasional":
       return "bg-blue-100 text-blue-800 border-blue-300";
-    case "None":
+    case "none":
       return "bg-emerald-100 text-emerald-800 border-emerald-300";
   }
 };
 
 // ── page ────────────────────────────────────────────────────────────────────
 export default function NightTimeAnxietySupportPage() {
+  const { data: res, isLoading } = useNightAnxietySupport();
+  const records: NightAnxietySupportRecord[] = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"level" | "name" | "review">("level");
@@ -278,14 +87,14 @@ export default function NightTimeAnxietySupportPage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = records.filter((r) => {
-      if (levelFilter !== "all" && r.anxietyLevel !== levelFilter) return false;
+      if (levelFilter !== "all" && r.anxiety_level !== levelFilter) return false;
       if (!q) return true;
       const hay = [
-        getYPName(r.youngPerson),
-        r.anxietyLevel,
-        r.childVoice,
-        r.staffObservation,
-        r.primaryTriggers.join(" "),
+        getYPName(r.child_id),
+        ANXIETY_LEVEL_LABEL[r.anxiety_level],
+        r.child_voice,
+        r.staff_observation,
+        r.primary_triggers.join(" "),
       ]
         .join(" ")
         .toLowerCase();
@@ -293,63 +102,65 @@ export default function NightTimeAnxietySupportPage() {
     });
     list = [...list].sort((a, b) => {
       if (sortBy === "level")
-        return anxietyOrder[b.anxietyLevel] - anxietyOrder[a.anxietyLevel];
+        return anxietyOrder[b.anxiety_level] - anxietyOrder[a.anxiety_level];
       if (sortBy === "name")
-        return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
-      return a.reviewDate.localeCompare(b.reviewDate);
+        return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+      return a.review_date.localeCompare(b.review_date);
     });
     return list;
-  }, [search, levelFilter, sortBy]);
+  }, [search, levelFilter, sortBy, records]);
+
+  // ── loading ──────────────────────────────────────────────────────────────
+  if (isLoading) return <PageShell title="Night-time Anxiety Support" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   // ── stats ─────────────────────────────────────────────────────────────────
-  const today = new Date().toISOString().slice(0, 10);
   const stats = {
     plans: records.length,
     severe: records.filter(
       (r) =>
-        r.anxietyLevel === "Severe — frequent waking" ||
-        r.anxietyLevel === "Crisis — sleep severely impacted"
+        r.anxiety_level === "severe" ||
+        r.anxiety_level === "crisis"
     ).length,
-    reviewsDue: records.filter((r) => r.reviewDate <= d(14)).length,
-    referrals: records.filter((r) => !!r.externalReferralActive).length,
+    reviewsDue: records.filter((r) => r.review_date <= d(14)).length,
+    referrals: records.filter((r) => !!r.external_referral_active).length,
   };
 
   // ── export ────────────────────────────────────────────────────────────────
-  const exportColumns: ExportColumn<NightAnxietyRecord>[] = [
-    { header: "Young person", accessor: (r: NightAnxietyRecord) => getYPName(r.youngPerson) },
-    { header: "Record date", accessor: (r: NightAnxietyRecord) => r.recordDate },
-    { header: "Anxiety level", accessor: (r: NightAnxietyRecord) => r.anxietyLevel },
-    { header: "Nightmare frequency", accessor: (r: NightAnxietyRecord) => r.nightmareFrequency },
+  const exportColumns: ExportColumn<NightAnxietySupportRecord>[] = [
+    { header: "Young person", accessor: (r) => getYPName(r.child_id) },
+    { header: "Record date", accessor: (r) => r.record_date },
+    { header: "Anxiety level", accessor: (r) => ANXIETY_LEVEL_LABEL[r.anxiety_level] },
+    { header: "Nightmare frequency", accessor: (r) => NIGHTMARE_FREQUENCY_LABEL[r.nightmare_frequency] },
     {
       header: "Avg sleep (hrs)",
-      accessor: (r: NightAnxietyRecord) =>
-        r.averageSleepHours !== undefined ? r.averageSleepHours : "",
+      accessor: (r) =>
+        r.average_sleep_hours !== null ? r.average_sleep_hours : "",
     },
     {
       header: "Primary triggers",
-      accessor: (r: NightAnxietyRecord) => r.primaryTriggers.join("; "),
+      accessor: (r) => r.primary_triggers.join("; "),
     },
     {
       header: "DO strategies",
-      accessor: (r: NightAnxietyRecord) => r.doStrategies.join("; "),
+      accessor: (r) => r.do_strategies.join("; "),
     },
     {
       header: "DO NOT strategies",
-      accessor: (r: NightAnxietyRecord) => r.doNotStrategies.join("; "),
+      accessor: (r) => r.do_not_strategies.join("; "),
     },
     {
       header: "External referral",
-      accessor: (r: NightAnxietyRecord) => r.externalReferralActive ?? "",
+      accessor: (r) => r.external_referral_active ?? "",
     },
-    { header: "Child voice", accessor: (r: NightAnxietyRecord) => r.childVoice },
+    { header: "Child voice", accessor: (r) => r.child_voice },
     {
       header: "Staff observation",
-      accessor: (r: NightAnxietyRecord) => r.staffObservation,
+      accessor: (r) => r.staff_observation,
     },
-    { header: "Review date", accessor: (r: NightAnxietyRecord) => r.reviewDate },
+    { header: "Review date", accessor: (r) => r.review_date },
     {
       header: "Key worker",
-      accessor: (r: NightAnxietyRecord) => getStaffName(r.keyWorker),
+      accessor: (r) => getStaffName(r.key_worker),
     },
   ];
 
@@ -443,15 +254,11 @@ export default function NightTimeAnxietySupportPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All anxiety levels</SelectItem>
-            <SelectItem value="Settled">Settled</SelectItem>
-            <SelectItem value="Mild — manageable">Mild — manageable</SelectItem>
-            <SelectItem value="Moderate">Moderate</SelectItem>
-            <SelectItem value="Severe — frequent waking">
-              Severe — frequent waking
-            </SelectItem>
-            <SelectItem value="Crisis — sleep severely impacted">
-              Crisis — sleep severely impacted
-            </SelectItem>
+            {(Object.keys(ANXIETY_LEVEL_LABEL) as AnxietyLevel[]).map((key) => (
+              <SelectItem key={key} value={key}>
+                {ANXIETY_LEVEL_LABEL[key]}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
@@ -491,35 +298,35 @@ export default function NightTimeAnxietySupportPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="truncate font-semibold text-slate-900">
-                        {getYPName(r.youngPerson)}
+                        {getYPName(r.child_id)}
                       </span>
                       <span className="text-xs text-slate-500">
-                        · key worker {getStaffName(r.keyWorker)}
+                        · key worker {getStaffName(r.key_worker)}
                       </span>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
                       <span
                         className={cn(
                           "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
-                          anxietyChip(r.anxietyLevel)
+                          anxietyChip(r.anxiety_level)
                         )}
                       >
-                        {r.anxietyLevel}
+                        {ANXIETY_LEVEL_LABEL[r.anxiety_level]}
                       </span>
                       <span
                         className={cn(
                           "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
-                          nightmareChip(r.nightmareFrequency)
+                          nightmareChip(r.nightmare_frequency)
                         )}
                       >
-                        Nightmares: {r.nightmareFrequency}
+                        Nightmares: {NIGHTMARE_FREQUENCY_LABEL[r.nightmare_frequency]}
                       </span>
-                      {r.averageSleepHours !== undefined && (
+                      {r.average_sleep_hours !== null && (
                         <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-700">
-                          {r.averageSleepHours}h avg sleep
+                          {r.average_sleep_hours}h avg sleep
                         </span>
                       )}
-                      {r.externalReferralActive && (
+                      {r.external_referral_active && (
                         <span className="inline-flex items-center rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-xs text-purple-700">
                           Referral active
                         </span>
@@ -528,7 +335,7 @@ export default function NightTimeAnxietySupportPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-3 text-xs text-slate-500">
-                  <span>Review {r.reviewDate}</span>
+                  <span>Review {r.review_date}</span>
                   {open ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -545,7 +352,7 @@ export default function NightTimeAnxietySupportPage() {
                       Child voice
                     </div>
                     <p className="mt-1 text-sm italic text-slate-800">
-                      “{r.childVoice}”
+                      &ldquo;{r.child_voice}&rdquo;
                     </p>
                   </div>
 
@@ -554,7 +361,7 @@ export default function NightTimeAnxietySupportPage() {
                     <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                       Staff observation
                     </div>
-                    <p className="mt-1 text-sm text-slate-800">{r.staffObservation}</p>
+                    <p className="mt-1 text-sm text-slate-800">{r.staff_observation}</p>
                   </div>
 
                   {/* Two-col grid */}
@@ -565,7 +372,7 @@ export default function NightTimeAnxietySupportPage() {
                         Primary triggers
                       </div>
                       <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-800">
-                        {r.primaryTriggers.map((t, i) => (
+                        {r.primary_triggers.map((t, i) => (
                           <li key={i}>{t}</li>
                         ))}
                       </ul>
@@ -577,7 +384,7 @@ export default function NightTimeAnxietySupportPage() {
                         Bedtime routine
                       </div>
                       <ol className="mt-1 list-decimal space-y-1 pl-5 text-sm text-slate-800">
-                        {r.bedtimeRoutine.map((step, i) => (
+                        {r.bedtime_routine.map((step, i) => (
                           <li key={i}>{step}</li>
                         ))}
                       </ol>
@@ -589,7 +396,7 @@ export default function NightTimeAnxietySupportPage() {
                         Comfort items
                       </div>
                       <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-800">
-                        {r.comfortItems.map((c, i) => (
+                        {r.comfort_items.map((c, i) => (
                           <li key={i}>{c}</li>
                         ))}
                       </ul>
@@ -601,7 +408,7 @@ export default function NightTimeAnxietySupportPage() {
                         Child preferences
                       </div>
                       <p className="mt-1 text-sm text-slate-800">
-                        {r.childPreferences}
+                        {r.child_preferences}
                       </p>
                     </div>
 
@@ -611,7 +418,7 @@ export default function NightTimeAnxietySupportPage() {
                         DO — what helps
                       </div>
                       <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-emerald-900">
-                        {r.doStrategies.map((s, i) => (
+                        {r.do_strategies.map((s, i) => (
                           <li key={i}>{s}</li>
                         ))}
                       </ul>
@@ -623,7 +430,7 @@ export default function NightTimeAnxietySupportPage() {
                         DO NOT — avoid
                       </div>
                       <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-red-900">
-                        {r.doNotStrategies.map((s, i) => (
+                        {r.do_not_strategies.map((s, i) => (
                           <li key={i}>{s}</li>
                         ))}
                       </ul>
@@ -631,25 +438,25 @@ export default function NightTimeAnxietySupportPage() {
                   </div>
 
                   {/* Hypervigilance */}
-                  {r.hypervigilanceNotes && (
+                  {r.hypervigilance_notes && (
                     <div className="rounded-md border border-orange-200 bg-orange-50/50 p-3">
                       <div className="text-xs font-semibold uppercase tracking-wide text-orange-800">
                         Hypervigilance notes
                       </div>
                       <p className="mt-1 text-sm text-slate-800">
-                        {r.hypervigilanceNotes}
+                        {r.hypervigilance_notes}
                       </p>
                     </div>
                   )}
 
                   {/* External referral */}
-                  {r.externalReferralActive && (
+                  {r.external_referral_active && (
                     <div className="rounded-md border border-purple-200 bg-white p-3">
                       <div className="text-xs font-semibold uppercase tracking-wide text-purple-700">
                         Active external referral
                       </div>
                       <p className="mt-1 text-sm text-slate-800">
-                        {r.externalReferralActive}
+                        {r.external_referral_active}
                       </p>
                     </div>
                   )}
@@ -660,19 +467,22 @@ export default function NightTimeAnxietySupportPage() {
                       Staff actions — last 7 days
                     </div>
                     <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-800">
-                      {r.staffActionsLastWeek.map((a, i) => (
+                      {r.staff_actions_last_week.map((a, i) => (
                         <li key={i}>{a}</li>
                       ))}
                     </ul>
                   </div>
 
+                  {/* Smart link panel */}
+                  <SmartLinkPanel sourceType="night-time-anxiety-support" sourceId={r.id} childId={r.child_id} compact />
+
                   {/* Footer meta */}
                   <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                    <span>Plan recorded {r.recordDate}</span>
+                    <span>Plan recorded {r.record_date}</span>
                     <span>·</span>
-                    <span>Next review {r.reviewDate}</span>
+                    <span>Next review {r.review_date}</span>
                     <span>·</span>
-                    <span>Key worker: {getStaffName(r.keyWorker)}</span>
+                    <span>Key worker: {getStaffName(r.key_worker)}</span>
                   </div>
                 </div>
               )}

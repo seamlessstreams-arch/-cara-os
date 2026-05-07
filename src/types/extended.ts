@@ -15426,3 +15426,233 @@ export interface NightStaffGuidanceSection {
   content: string[];
   created_at: string;
 }
+
+// ── Night Staff Handover ──────────────────────────────────────────────────────
+
+export interface NightStaffHandover {
+  id: string;
+  date: string;
+  evening_staff: string;
+  night_staff: string;
+  handover_time: string;
+  children_at_home: string[];
+  children_sleeping: Record<string, string>;
+  children_awake: string;
+  medication_given: boolean;
+  medication_due: string;
+  risk_briefing: string[];
+  specific_concerns: Record<string, string>;
+  night_checks_required: Record<string, string>;
+  expected_returns: string;
+  emergency_contacts: string;
+  morning_wake_time: string;
+  morning_staff: string;
+  night_events: string[];
+  morning_handover_complete: boolean;
+  created_at: string;
+}
+
+// ── Night-time Anxiety Support ────────────────────────────────────────────────
+
+export type AnxietyLevel = "settled" | "mild" | "moderate" | "severe" | "crisis";
+export const ANXIETY_LEVEL_LABEL: Record<AnxietyLevel, string> = {
+  settled: "Settled",
+  mild: "Mild — manageable",
+  moderate: "Moderate",
+  severe: "Severe — frequent waking",
+  crisis: "Crisis — sleep severely impacted",
+};
+
+export type NightmareFrequency = "none" | "occasional" | "weekly" | "multiple_per_week" | "most_nights";
+export const NIGHTMARE_FREQUENCY_LABEL: Record<NightmareFrequency, string> = {
+  none: "None",
+  occasional: "Occasional",
+  weekly: "Weekly",
+  multiple_per_week: "Multiple per week",
+  most_nights: "Most nights",
+};
+
+export interface NightAnxietySupportRecord {
+  id: string;
+  child_id: string;
+  record_date: string;
+  anxiety_level: AnxietyLevel;
+  primary_triggers: string[];
+  bedtime_routine: string[];
+  comfort_items: string[];
+  do_strategies: string[];
+  do_not_strategies: string[];
+  child_preferences: string;
+  external_referral_active: string | null;
+  average_sleep_hours: number | null;
+  nightmare_frequency: NightmareFrequency;
+  hypervigilance_notes: string | null;
+  child_voice: string;
+  staff_observation: string;
+  staff_actions_last_week: string[];
+  review_date: string;
+  key_worker: string;
+  created_at: string;
+}
+
+// ── Notification Log ──────────────────────────────────────────────────────────
+
+export interface NotificationLogEntry {
+  id: string;
+  date: string;
+  notified_to: string;
+  method: string;
+  notification_type: string;
+  regulation: string;
+  event_summary: string;
+  sent_by: string;
+  within_timeframe: boolean;
+  required_timeframe: string;
+  actual_timeframe: string;
+  acknowledgement_received: boolean;
+  linked_event: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Occupational Therapy Records ──────────────────────────────────────────────
+
+export type OtSessionType = "assessment" | "direct_intervention" | "consultation" | "review" | "sensory_diet_planning" | "equipment_recommendation" | "training_to_staff";
+export const OT_SESSION_TYPE_LABEL: Record<OtSessionType, string> = {
+  assessment: "Assessment",
+  direct_intervention: "Direct Intervention",
+  consultation: "Consultation",
+  review: "Review",
+  sensory_diet_planning: "Sensory Diet Planning",
+  equipment_recommendation: "Equipment Recommendation",
+  training_to_staff: "Training to Staff",
+};
+
+export interface OtRecommendation {
+  area: string;
+  recommendation: string;
+  frequency: string;
+  equipment: string;
+  staff_support_level: string;
+}
+
+export interface OccupationalTherapyRecord {
+  id: string;
+  child_id: string;
+  assessment_date: string;
+  ot_name: string;
+  ot_organisation: string;
+  session_type: OtSessionType;
+  duration_minutes: number;
+  location: string;
+  focus_areas: string[];
+  assessment_tools: string[];
+  findings: string;
+  sensory_profile: string;
+  recommendations: OtRecommendation[];
+  sensory_diet: string[];
+  equipment_provided: string[];
+  staff_training: string;
+  home_practice_advised: string[];
+  child_response: string;
+  family_informed_date: string;
+  progress_noted_since_last: string;
+  next_review_date: string;
+  report_provided: boolean;
+  created_at: string;
+}
+
+// ── Ofsted Action Plan ────────────────────────────────────────────────────────
+
+export type OfstedActionType = "requirement" | "recommendation" | "observation";
+export const OFSTED_ACTION_TYPE_LABEL: Record<OfstedActionType, string> = {
+  requirement: "Requirement",
+  recommendation: "Recommendation",
+  observation: "Observation",
+};
+
+export type OfstedActionPriority = "high" | "medium" | "low";
+export const OFSTED_ACTION_PRIORITY_LABEL: Record<OfstedActionPriority, string> = {
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+};
+
+export type OfstedActionStatus = "completed" | "in_progress" | "not_started" | "noted";
+export const OFSTED_ACTION_STATUS_LABEL: Record<OfstedActionStatus, string> = {
+  completed: "Completed",
+  in_progress: "In Progress",
+  not_started: "Not Started",
+  noted: "Noted",
+};
+
+export interface OfstedActionUpdate {
+  date: string;
+  note: string;
+  updated_by: string;
+}
+
+export interface OfstedActionItem {
+  id: string;
+  inspection_date: string;
+  action_type: OfstedActionType;
+  text: string;
+  priority: OfstedActionPriority | null;
+  status: OfstedActionStatus;
+  owner: string | null;
+  target_date: string | null;
+  completed_date: string | null;
+  progress: number;
+  evidence: string;
+  updates: OfstedActionUpdate[];
+  created_at: string;
+}
+
+// ── Ofsted Engagement Log ─────────────────────────────────────────────────────
+
+export type OfstedEngagementType = "statutory_notification" | "update_letter" | "phone_call_hmi" | "phone_call_rm" | "email" | "monitoring_visit" | "mock_inspection" | "reg45_submission" | "annual_return" | "inspection_full";
+export const OFSTED_ENGAGEMENT_TYPE_LABEL: Record<OfstedEngagementType, string> = {
+  statutory_notification: "Statutory Notification",
+  update_letter: "Update Letter",
+  phone_call_hmi: "Phone Call (HMI Initiated)",
+  phone_call_rm: "Phone Call (RM Initiated)",
+  email: "Email",
+  monitoring_visit: "Monitoring Visit",
+  mock_inspection: "Mock Inspection",
+  reg45_submission: "Reg 45 Submission",
+  annual_return: "Annual Return",
+  inspection_full: "Inspection (Full)",
+};
+
+export type OfstedEngagementStatus = "closed_resolved" | "active" | "following_up";
+export const OFSTED_ENGAGEMENT_STATUS_LABEL: Record<OfstedEngagementStatus, string> = {
+  closed_resolved: "Closed - Resolved",
+  active: "Active",
+  following_up: "Following Up",
+};
+
+export interface OfstedEngagementAction {
+  action: string;
+  owner: string;
+  deadline: string;
+  status: string;
+}
+
+export interface OfstedEngagementRecord {
+  id: string;
+  date: string;
+  engagement_type: OfstedEngagementType;
+  reference: string;
+  inspector_or_team: string;
+  topic_or_reason: string;
+  summary: string;
+  our_response: string;
+  documents_shared: string[];
+  actions_agreed: OfstedEngagementAction[];
+  inspector_feedback: string;
+  our_reflection: string;
+  recorded_by: string;
+  next_engagement: string;
+  engagement_status: OfstedEngagementStatus;
+  created_at: string;
+}

@@ -252,6 +252,8 @@ import type {
   MemorialOccasionRecord, MenstrualHealthPlan, MealPlan,
   ReturnInterview, MultiAgencyMeeting, MultiDisciplinaryFormulation,
   CulturalVisit, NightCheck, NightStaffGuidanceSection,
+  NightStaffHandover, NightAnxietySupportRecord, NotificationLogEntry,
+  OccupationalTherapyRecord, OfstedActionItem, OfstedEngagementRecord,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -570,6 +572,12 @@ const store = {
   culturalVisits: [] as CulturalVisit[],
   nightChecks: [] as NightCheck[],
   nightStaffGuidanceSections: [] as NightStaffGuidanceSection[],
+  nightStaffHandovers: [] as NightStaffHandover[],
+  nightAnxietySupportRecords: [] as NightAnxietySupportRecord[],
+  notificationLogEntries: [] as NotificationLogEntry[],
+  occupationalTherapyRecords: [] as OccupationalTherapyRecord[],
+  ofstedActionItems: [] as OfstedActionItem[],
+  ofstedEngagementRecords: [] as OfstedEngagementRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -7620,6 +7628,104 @@ export const db = {
       if (idx === -1) return null;
       store.nightStaffGuidanceSections[idx] = { ...store.nightStaffGuidanceSections[idx], ...data };
       return store.nightStaffGuidanceSections[idx];
+    },
+  },
+
+  nightStaffHandovers: {
+    findAll: (): NightStaffHandover[] => store.nightStaffHandovers,
+    findById: (id: string): NightStaffHandover | undefined => store.nightStaffHandovers.find((r) => r.id === id),
+    create: (data: Partial<NightStaffHandover>): NightStaffHandover => {
+      const record = { ...data, id: generateId("nshd"), created_at: new Date().toISOString() } as NightStaffHandover;
+      store.nightStaffHandovers.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<NightStaffHandover>): NightStaffHandover | null => {
+      const idx = store.nightStaffHandovers.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.nightStaffHandovers[idx] = { ...store.nightStaffHandovers[idx], ...data };
+      return store.nightStaffHandovers[idx];
+    },
+  },
+
+  nightAnxietySupportRecords: {
+    findAll: (): NightAnxietySupportRecord[] => store.nightAnxietySupportRecords,
+    findByChild: (childId: string): NightAnxietySupportRecord[] => store.nightAnxietySupportRecords.filter((r) => r.child_id === childId),
+    findById: (id: string): NightAnxietySupportRecord | undefined => store.nightAnxietySupportRecords.find((r) => r.id === id),
+    create: (data: Partial<NightAnxietySupportRecord>): NightAnxietySupportRecord => {
+      const record = { ...data, id: generateId("nasp"), created_at: new Date().toISOString() } as NightAnxietySupportRecord;
+      store.nightAnxietySupportRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<NightAnxietySupportRecord>): NightAnxietySupportRecord | null => {
+      const idx = store.nightAnxietySupportRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.nightAnxietySupportRecords[idx] = { ...store.nightAnxietySupportRecords[idx], ...data };
+      return store.nightAnxietySupportRecords[idx];
+    },
+  },
+
+  notificationLogEntries: {
+    findAll: (): NotificationLogEntry[] => store.notificationLogEntries,
+    findById: (id: string): NotificationLogEntry | undefined => store.notificationLogEntries.find((r) => r.id === id),
+    create: (data: Partial<NotificationLogEntry>): NotificationLogEntry => {
+      const record = { ...data, id: generateId("ntlg"), created_at: new Date().toISOString() } as NotificationLogEntry;
+      store.notificationLogEntries.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<NotificationLogEntry>): NotificationLogEntry | null => {
+      const idx = store.notificationLogEntries.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.notificationLogEntries[idx] = { ...store.notificationLogEntries[idx], ...data };
+      return store.notificationLogEntries[idx];
+    },
+  },
+
+  occupationalTherapyRecords: {
+    findAll: (): OccupationalTherapyRecord[] => store.occupationalTherapyRecords,
+    findByChild: (childId: string): OccupationalTherapyRecord[] => store.occupationalTherapyRecords.filter((r) => r.child_id === childId),
+    findById: (id: string): OccupationalTherapyRecord | undefined => store.occupationalTherapyRecords.find((r) => r.id === id),
+    create: (data: Partial<OccupationalTherapyRecord>): OccupationalTherapyRecord => {
+      const record = { ...data, id: generateId("otrr"), created_at: new Date().toISOString() } as OccupationalTherapyRecord;
+      store.occupationalTherapyRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<OccupationalTherapyRecord>): OccupationalTherapyRecord | null => {
+      const idx = store.occupationalTherapyRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.occupationalTherapyRecords[idx] = { ...store.occupationalTherapyRecords[idx], ...data };
+      return store.occupationalTherapyRecords[idx];
+    },
+  },
+
+  ofstedActionItems: {
+    findAll: (): OfstedActionItem[] => store.ofstedActionItems,
+    findById: (id: string): OfstedActionItem | undefined => store.ofstedActionItems.find((r) => r.id === id),
+    create: (data: Partial<OfstedActionItem>): OfstedActionItem => {
+      const record = { ...data, id: generateId("oapi"), created_at: new Date().toISOString() } as OfstedActionItem;
+      store.ofstedActionItems.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<OfstedActionItem>): OfstedActionItem | null => {
+      const idx = store.ofstedActionItems.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ofstedActionItems[idx] = { ...store.ofstedActionItems[idx], ...data };
+      return store.ofstedActionItems[idx];
+    },
+  },
+
+  ofstedEngagementRecords: {
+    findAll: (): OfstedEngagementRecord[] => store.ofstedEngagementRecords,
+    findById: (id: string): OfstedEngagementRecord | undefined => store.ofstedEngagementRecords.find((r) => r.id === id),
+    create: (data: Partial<OfstedEngagementRecord>): OfstedEngagementRecord => {
+      const record = { ...data, id: generateId("ofer"), created_at: new Date().toISOString() } as OfstedEngagementRecord;
+      store.ofstedEngagementRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<OfstedEngagementRecord>): OfstedEngagementRecord | null => {
+      const idx = store.ofstedEngagementRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ofstedEngagementRecords[idx] = { ...store.ofstedEngagementRecords[idx], ...data };
+      return store.ofstedEngagementRecords[idx];
     },
   },
 };
