@@ -18,71 +18,24 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown,
   ChevronDown, ChevronUp, AlertTriangle,
-  CheckCircle2, Clock, Eye,
+  CheckCircle2, Clock, Eye, Loader2,
 } from "lucide-react";
 import { cn }                          from "@/lib/utils";
 import { getStaffName, getYPName }     from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { useRoomSearchRecords } from "@/hooks/use-room-search-records";
+import type { RoomSearchRecord, RoomSearchType, RoomSearchStatus, RoomSearchDistressLevel, RoomSearchActionStatus } from "@/types/extended";
+import { ROOM_SEARCH_TYPE_LABEL, ROOM_SEARCH_STATUS_LABEL, ROOM_SEARCH_DISTRESS_LEVEL_LABEL, ROOM_SEARCH_ACTION_STATUS_LABEL } from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── local config ────────────────────────────────────────────────────── */
 
-type SearchType = "routine" | "intelligence_led" | "welfare_concern" | "missing_return" | "safeguarding" | "requested";
-type DistressLevel = "none" | "mild" | "moderate" | "significant";
-type SearchStatus = "completed" | "follow_up_required" | "escalated" | "closed";
-type ActionStatus = "pending" | "in_progress" | "completed";
-
-interface FoundItem {
-  item: string;
-  description: string;
-  actionTaken: string;
-  retained: boolean;
-  photoTaken: boolean;
-}
-
-interface FollowUpAction {
-  action: string;
-  owner: string;
-  dueDate: string;
-  status: ActionStatus;
-}
-
-interface RoomSearch {
-  id: string;
-  youngPersonId: string;
-  date: string;
-  time: string;
-  searchType: SearchType;
-  reason: string;
-  conductedBy: string;
-  witnessedBy: string;
-  childPresent: boolean;
-  childInformed: boolean;
-  areasSearched: string[];
-  itemsFound: FoundItem[];
-  nothingFound: boolean;
-  childResponse: string;
-  childDistressLevel: DistressLevel;
-  followUpRequired: boolean;
-  followUpActions: FollowUpAction[];
-  socialWorkerNotified: boolean;
-  parentNotified: boolean;
-  managerApproval: string;
-  notes: string;
-  status: SearchStatus;
-  linkedIncident: string | null;
-}
-
-/* ── constants ─────────────────────────────────────────────────────────── */
-
-const TYPE_LABELS: Record<SearchType, string> = {
-  routine: "Routine",
-  intelligence_led: "Intelligence-Led",
-  welfare_concern: "Welfare Concern",
-  missing_return: "Missing Return",
-  safeguarding: "Safeguarding",
-  requested: "Requested",
+const d = (n: number) => {
+  const dt = new Date();
+  dt.setDate(dt.getDate() + n);
+  return dt.toISOString().slice(0, 10);
 };
 
-const TYPE_COLOUR: Record<SearchType, string> = {
+const TYPE_COLOUR: Record<RoomSearchType, string> = {
   routine:         "bg-gray-100 text-gray-700",
   intelligence_led:"bg-amber-100 text-amber-700",
   welfare_concern: "bg-red-100 text-red-700",
@@ -91,24 +44,24 @@ const TYPE_COLOUR: Record<SearchType, string> = {
   requested:       "bg-blue-100 text-blue-700",
 };
 
-const STATUS_META: Record<SearchStatus, { label: string; colour: string }> = {
-  completed:          { label: "Completed",          colour: "bg-green-100 text-green-700" },
-  follow_up_required: { label: "Follow-Up Required", colour: "bg-amber-100 text-amber-700" },
-  escalated:          { label: "Escalated",           colour: "bg-red-100 text-red-700" },
-  closed:             { label: "Closed",              colour: "bg-gray-100 text-gray-700" },
+const STATUS_META: Record<RoomSearchStatus, { colour: string }> = {
+  completed:          { colour: "bg-green-100 text-green-700" },
+  follow_up_required: { colour: "bg-amber-100 text-amber-700" },
+  escalated:          { colour: "bg-red-100 text-red-700" },
+  closed:             { colour: "bg-gray-100 text-gray-700" },
 };
 
-const DISTRESS_META: Record<DistressLevel, { label: string; colour: string }> = {
-  none:        { label: "None",        colour: "text-green-600 bg-green-50" },
-  mild:        { label: "Mild",        colour: "text-yellow-600 bg-yellow-50" },
-  moderate:    { label: "Moderate",    colour: "text-amber-600 bg-amber-50" },
-  significant: { label: "Significant", colour: "text-red-600 bg-red-50" },
+const DISTRESS_META: Record<RoomSearchDistressLevel, { colour: string }> = {
+  none:        { colour: "text-green-600 bg-green-50" },
+  mild:        { colour: "text-yellow-600 bg-yellow-50" },
+  moderate:    { colour: "text-amber-600 bg-amber-50" },
+  significant: { colour: "text-red-600 bg-red-50" },
 };
 
-const ACTION_STATUS_META: Record<ActionStatus, { label: string; colour: string }> = {
-  pending:     { label: "Pending",     colour: "bg-amber-100 text-amber-700" },
-  in_progress: { label: "In Progress", colour: "bg-blue-100 text-blue-700" },
-  completed:   { label: "Completed",   colour: "bg-green-100 text-green-700" },
+const ACTION_STATUS_META: Record<RoomSearchActionStatus, { colour: string }> = {
+  pending:     { colour: "bg-amber-100 text-amber-700" },
+  in_progress: { colour: "bg-blue-100 text-blue-700" },
+  completed:   { colour: "bg-green-100 text-green-700" },
 };
 
 const AREA_OPTIONS = [
@@ -116,169 +69,10 @@ const AREA_OPTIONS = [
   "Bookshelf", "Window sill", "Behind furniture", "Mattress", "Bags",
 ];
 
-/* ── seed data ─────────────────────────────────────────────────────────── */
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const SEED: RoomSearch[] = [
-  {
-    id: "rs1",
-    youngPersonId: "yp_alex",
-    date: d(-14),
-    time: "10:30",
-    searchType: "routine",
-    reason: "Scheduled fortnightly routine room search as per home policy. No specific concerns — standard welfare and safety check.",
-    conductedBy: "staff_anna",
-    witnessedBy: "staff_ryan",
-    childPresent: true,
-    childInformed: true,
-    areasSearched: ["Wardrobe", "Under bed", "Drawers", "Desk", "Bathroom cabinet"],
-    itemsFound: [],
-    nothingFound: true,
-    childResponse: "Alex was cooperative throughout the search. Understood it was routine and asked if he could tidy his drawers afterwards. Positive interaction.",
-    childDistressLevel: "none",
-    followUpRequired: false,
-    followUpActions: [],
-    socialWorkerNotified: false,
-    parentNotified: false,
-    managerApproval: "staff_darren",
-    notes: "Room was tidy and well-maintained. No concerns identified. Alex engaged positively with the process.",
-    status: "completed",
-    linkedIncident: null,
-  },
-  {
-    id: "rs2",
-    youngPersonId: "yp_jordan",
-    date: d(-7),
-    time: "16:45",
-    searchType: "intelligence_led",
-    reason: "Intelligence received from school pastoral team that Jordan may have acquired a vape device. Staff observed sweet-smelling residue in bathroom. Search authorised by RM.",
-    conductedBy: "staff_edward",
-    witnessedBy: "staff_darren",
-    childPresent: true,
-    childInformed: true,
-    areasSearched: ["Wardrobe", "Drawers", "Desk", "Bags", "Bathroom cabinet", "Under bed"],
-    itemsFound: [
-      {
-        item: "Disposable vape pen",
-        description: "Elf Bar brand disposable vape pen (mango flavour), approximately half-used. Found concealed inside a rolled-up sock in the bottom drawer.",
-        actionTaken: "Item confiscated and placed in secure storage. Jordan informed this is a prohibited item under house rules and that possession by under-18s is illegal.",
-        retained: true,
-        photoTaken: true,
-      },
-    ],
-    nothingFound: false,
-    childResponse: "Jordan was initially defensive and denied ownership of the vape. Became upset when it was found. After calming down, admitted a friend gave it to him at school. Expressed worry about getting into trouble.",
-    childDistressLevel: "moderate",
-    followUpRequired: true,
-    followUpActions: [
-      { action: "Key work session with Jordan to discuss vaping risks, peer pressure, and house rules", owner: "staff_anna", dueDate: d(-5), status: "completed" },
-      { action: "Update Jordan's risk assessment to include substance use (vaping)", owner: "staff_darren", dueDate: d(-3), status: "in_progress" },
-    ],
-    socialWorkerNotified: true,
-    parentNotified: false,
-    managerApproval: "staff_darren",
-    notes: "Vape pen logged in confiscated items register (ref: CI-2026-012). School pastoral team informed of outcome. Jordan's social worker (Michael Osei) notified by phone same day.",
-    status: "follow_up_required",
-    linkedIncident: null,
-  },
-  {
-    id: "rs3",
-    youngPersonId: "yp_casey",
-    date: d(-3),
-    time: "19:20",
-    searchType: "welfare_concern",
-    reason: "Concern raised following Casey disclosing thoughts of self-harm during key work session. Staff noticed small cuts on forearm during evening routine. Welfare search authorised by RM to ensure room is safe.",
-    conductedBy: "staff_darren",
-    witnessedBy: "staff_chervelle",
-    childPresent: true,
-    childInformed: true,
-    areasSearched: ["Wardrobe", "Under bed", "Drawers", "Desk", "Bathroom cabinet", "Bookshelf", "Behind furniture", "Mattress"],
-    itemsFound: [
-      {
-        item: "Razor blade",
-        description: "Single razor blade found hidden inside a hollowed-out section of a paperback book on the bookshelf. Blade showed signs of use.",
-        actionTaken: "Item immediately secured by RM. Casey supported with 1:1 care. CAMHS crisis team contacted. Room made safe — all sharp items removed and catalogued.",
-        retained: true,
-        photoTaken: true,
-      },
-    ],
-    nothingFound: false,
-    childResponse: "Casey became very distressed when the blade was found. Cried and asked staff not to tell anyone. Chervelle provided emotional support and reassured Casey that staff care about her safety. Casey eventually agreed that keeping the blade was unsafe.",
-    childDistressLevel: "significant",
-    followUpRequired: true,
-    followUpActions: [
-      { action: "Urgent CAMHS referral for self-harm risk assessment", owner: "staff_darren", dueDate: d(-2), status: "completed" },
-      { action: "Update Casey's safety plan and risk assessment with self-harm protocol", owner: "staff_chervelle", dueDate: d(-1), status: "completed" },
-      { action: "Daily welfare room checks for Casey until CAMHS review completed", owner: "staff_darren", dueDate: d(4), status: "in_progress" },
-    ],
-    socialWorkerNotified: true,
-    parentNotified: true,
-    managerApproval: "staff_darren",
-    notes: "Escalated to Reg 40 notification. Social worker (Fiona Brennan) informed by phone at 19:45. Mother informed at 20:10. CAMHS crisis team accepted urgent referral — appointment booked for " + d(1) + ". Casey placed on enhanced monitoring with 30-minute welfare checks overnight. Notifiable event form completed.",
-    status: "escalated",
-    linkedIncident: null,
-  },
-  {
-    id: "rs4",
-    youngPersonId: "yp_alex",
-    date: d(-2),
-    time: "23:15",
-    searchType: "missing_return",
-    reason: "Alex returned from a missing from care episode at 23:00 after being absent since 18:30. Standard return-home protocol requires a welfare room search to check for any prohibited or harmful items brought back.",
-    conductedBy: "staff_ryan",
-    witnessedBy: "staff_diane",
-    childPresent: true,
-    childInformed: true,
-    areasSearched: ["Wardrobe", "Bags", "Drawers", "Under bed", "Desk"],
-    itemsFound: [],
-    nothingFound: true,
-    childResponse: "Alex was tired and slightly agitated but cooperated with the search. Said he understood why it was needed. Asked to go to bed straight after. Staff allowed this after welfare check completed.",
-    childDistressLevel: "mild",
-    followUpRequired: false,
-    followUpActions: [],
-    socialWorkerNotified: false,
-    parentNotified: false,
-    managerApproval: "staff_darren",
-    notes: "Search completed as part of missing-from-care return protocol. Nothing of concern found. Alex appeared physically well — no signs of substance use or injury. Full return interview to be completed by key worker in the morning.",
-    status: "completed",
-    linkedIncident: "INC-2026-0041",
-  },
-  {
-    id: "rs5",
-    youngPersonId: "yp_jordan",
-    date: d(-1),
-    time: "11:00",
-    searchType: "routine",
-    reason: "Scheduled routine room check. Jordan at school — search conducted in absence as per policy (child informed on return).",
-    conductedBy: "staff_anna",
-    witnessedBy: "staff_mirela",
-    childPresent: false,
-    childInformed: true,
-    areasSearched: ["Wardrobe", "Under bed", "Drawers", "Desk", "Bathroom cabinet", "Bookshelf"],
-    itemsFound: [],
-    nothingFound: true,
-    childResponse: "Jordan was informed of the search on return from school. Accepted it without concern and said he had nothing to hide. Positive attitude.",
-    childDistressLevel: "none",
-    followUpRequired: false,
-    followUpActions: [],
-    socialWorkerNotified: false,
-    parentNotified: false,
-    managerApproval: "staff_darren",
-    notes: "Room tidy. No prohibited items found. No follow-up required. Jordan informed upon return from school at 15:30 — accepted positively.",
-    status: "completed",
-    linkedIncident: null,
-  },
-];
-
-/* ── component ─────────────────────────────────────────────────────────── */
+/* ── page ────────────────────────────────────────────────────────────── */
 
 export default function RoomSearchesPage() {
-  const [data] = useState<RoomSearch[]>(SEED);
+  const { data: records = [], isLoading } = useRoomSearchRecords();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -286,65 +80,57 @@ export default function RoomSearchesPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [showDialog, setShowDialog] = useState(false);
 
-  /* ── stats ───────────────────────────────────────────────────────────── */
-
   const stats = useMemo(() => {
-    const totalSearches = data.length;
-    const itemsFoundCount = data.reduce((s, r) => s + r.itemsFound.length, 0);
-    const pendingFollowUps = data.reduce(
-      (s, r) => s + r.followUpActions.filter((a) => a.status !== "completed").length,
+    const totalSearches = records.length;
+    const itemsFoundCount = records.reduce((s, r) => s + r.items_found.length, 0);
+    const pendingFollowUps = records.reduce(
+      (s, r) => s + r.follow_up_actions.filter((a) => a.status !== "completed").length,
       0,
     );
-    const escalatedCases = data.filter((r) => r.status === "escalated").length;
+    const escalatedCases = records.filter((r) => r.status === "escalated").length;
     return { totalSearches, itemsFoundCount, pendingFollowUps, escalatedCases };
-  }, [data]);
-
-  /* ── overdue check ───────────────────────────────────────────────────── */
+  }, [records]);
 
   const hasOverdue = useMemo(() => {
     const today = d(0);
-    return data.some(
+    return records.some(
       (r) =>
         (r.status === "escalated" || r.status === "follow_up_required") &&
-        r.followUpActions.some((a) => a.status !== "completed" && a.dueDate < today),
+        r.follow_up_actions.some((a) => a.status !== "completed" && a.due_date < today),
     );
-  }, [data]);
-
-  /* ── per-child summaries ─────────────────────────────────────────────── */
+  }, [records]);
 
   const childSummaries = useMemo(() => {
     const map = new Map<string, { count: number; lastDate: string; itemsTotal: number; pendingActions: number }>();
-    data.forEach((r) => {
-      const existing = map.get(r.youngPersonId);
-      const pending = r.followUpActions.filter((a) => a.status !== "completed").length;
+    records.forEach((r) => {
+      const existing = map.get(r.child_id);
+      const pending = r.follow_up_actions.filter((a) => a.status !== "completed").length;
       if (!existing) {
-        map.set(r.youngPersonId, {
+        map.set(r.child_id, {
           count: 1,
           lastDate: r.date,
-          itemsTotal: r.itemsFound.length,
+          itemsTotal: r.items_found.length,
           pendingActions: pending,
         });
       } else {
         existing.count += 1;
         if (r.date > existing.lastDate) existing.lastDate = r.date;
-        existing.itemsTotal += r.itemsFound.length;
+        existing.itemsTotal += r.items_found.length;
         existing.pendingActions += pending;
       }
     });
     return Array.from(map.entries()).map(([id, s]) => ({ id, ...s }));
-  }, [data]);
-
-  /* ── filtered + sorted ───────────────────────────────────────────────── */
+  }, [records]);
 
   const filtered = useMemo(() => {
-    let list = [...data];
-    if (filterType !== "all") list = list.filter((r) => r.searchType === filterType);
+    let list = [...records];
+    if (filterType !== "all") list = list.filter((r) => r.search_type === filterType);
     if (filterStatus !== "all") list = list.filter((r) => r.status === filterStatus);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          getYPName(r.youngPersonId).toLowerCase().includes(q) ||
+          getYPName(r.child_id).toLowerCase().includes(q) ||
           r.reason.toLowerCase().includes(q) ||
           r.notes.toLowerCase().includes(q),
       );
@@ -354,32 +140,38 @@ export default function RoomSearchesPage() {
         case "oldest":
           return a.date.localeCompare(b.date) || a.time.localeCompare(b.time);
         case "child":
-          return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
-        default: // newest
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        default:
           return b.date.localeCompare(a.date) || b.time.localeCompare(a.time);
       }
     });
     return list;
-  }, [data, filterType, filterStatus, search, sortBy]);
+  }, [records, filterType, filterStatus, search, sortBy]);
 
-  /* ── export ──────────────────────────────────────────────────────────── */
-
-  const exportCols: ExportColumn<RoomSearch>[] = [
-    { header: "Date",              accessor: (r: RoomSearch) => r.date },
-    { header: "Time",              accessor: (r: RoomSearch) => r.time },
-    { header: "Young Person",      accessor: (r: RoomSearch) => getYPName(r.youngPersonId) },
-    { header: "Search Type",       accessor: (r: RoomSearch) => TYPE_LABELS[r.searchType] },
-    { header: "Reason",            accessor: (r: RoomSearch) => r.reason },
-    { header: "Conducted By",      accessor: (r: RoomSearch) => getStaffName(r.conductedBy) },
-    { header: "Witnessed By",      accessor: (r: RoomSearch) => getStaffName(r.witnessedBy) },
-    { header: "Child Present",     accessor: (r: RoomSearch) => r.childPresent ? "Yes" : "No" },
-    { header: "Items Found",       accessor: (r: RoomSearch) => r.nothingFound ? "None" : r.itemsFound.map((i) => i.item).join("; ") },
-    { header: "Distress Level",    accessor: (r: RoomSearch) => DISTRESS_META[r.childDistressLevel].label },
-    { header: "Status",            accessor: (r: RoomSearch) => STATUS_META[r.status].label },
-    { header: "Notes",             accessor: (r: RoomSearch) => r.notes },
+  const exportCols: ExportColumn<RoomSearchRecord>[] = [
+    { header: "Date",              accessor: (r) => r.date },
+    { header: "Time",              accessor: (r) => r.time },
+    { header: "Young Person",      accessor: (r) => getYPName(r.child_id) },
+    { header: "Search Type",       accessor: (r) => ROOM_SEARCH_TYPE_LABEL[r.search_type] },
+    { header: "Reason",            accessor: (r) => r.reason },
+    { header: "Conducted By",      accessor: (r) => getStaffName(r.conducted_by) },
+    { header: "Witnessed By",      accessor: (r) => getStaffName(r.witnessed_by) },
+    { header: "Child Present",     accessor: (r) => r.child_present ? "Yes" : "No" },
+    { header: "Items Found",       accessor: (r) => r.nothing_found ? "None" : r.items_found.map((i) => i.item).join("; ") },
+    { header: "Distress Level",    accessor: (r) => ROOM_SEARCH_DISTRESS_LEVEL_LABEL[r.child_distress_level] },
+    { header: "Status",            accessor: (r) => ROOM_SEARCH_STATUS_LABEL[r.status] },
+    { header: "Notes",             accessor: (r) => r.notes },
   ];
 
-  /* ── render ──────────────────────────────────────────────────────────── */
+  if (isLoading) {
+    return (
+      <PageShell title="Room Searches Register">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -387,7 +179,7 @@ export default function RoomSearchesPage() {
       subtitle="Records all room searches conducted in the home — routine checks, intelligence-led, welfare concerns, and safeguarding"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="room-searches" />
+          <ExportButton data={records} columns={exportCols} filename="room-searches" />
           <PrintButton title="Room Searches Register" />
           <Button onClick={() => setShowDialog(true)} size="sm">
             <Plus className="h-4 w-4 mr-1" /> New Search
@@ -396,8 +188,6 @@ export default function RoomSearchesPage() {
       }
     >
       <div id="print-area" className="space-y-6">
-
-        {/* ── summary strip ──────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
@@ -414,8 +204,6 @@ export default function RoomSearchesPage() {
           ))}
         </div>
 
-        {/* ── alert banner ───────────────────────────────────────────────── */}
-
         {(hasOverdue || stats.escalatedCases > 0) && (
           <div className="rounded-lg border-l-4 border-red-400 bg-red-50 p-3 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
@@ -429,8 +217,6 @@ export default function RoomSearchesPage() {
             </p>
           </div>
         )}
-
-        {/* ── per-child summary cards ────────────────────────────────────── */}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {childSummaries.map((cs) => (
@@ -464,8 +250,6 @@ export default function RoomSearchesPage() {
           ))}
         </div>
 
-        {/* ── filter bar ─────────────────────────────────────────────────── */}
-
         <div className="flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -483,8 +267,8 @@ export default function RoomSearchesPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                <SelectItem key={k} value={k}>{v}</SelectItem>
+              {(Object.keys(ROOM_SEARCH_TYPE_LABEL) as RoomSearchType[]).map((k) => (
+                <SelectItem key={k} value={k}>{ROOM_SEARCH_TYPE_LABEL[k]}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -494,8 +278,8 @@ export default function RoomSearchesPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              {Object.entries(STATUS_META).map(([k, v]) => (
-                <SelectItem key={k} value={k}>{v.label}</SelectItem>
+              {(Object.keys(ROOM_SEARCH_STATUS_LABEL) as RoomSearchStatus[]).map((k) => (
+                <SelectItem key={k} value={k}>{ROOM_SEARCH_STATUS_LABEL[k]}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -513,15 +297,12 @@ export default function RoomSearchesPage() {
           </div>
         </div>
 
-        {/* ── expandable search cards ────────────────────────────────────── */}
-
         {filtered.map((rs) => {
           const isOpen = expanded === rs.id;
           const today = d(0);
 
           return (
             <div key={rs.id} className="rounded-lg border bg-white overflow-hidden">
-              {/* header */}
               <button
                 onClick={() => setExpanded(isOpen ? null : rs.id)}
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50"
@@ -530,46 +311,41 @@ export default function RoomSearchesPage() {
                   <Eye className="h-5 w-5 text-brand" />
                   <div className="text-left">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold">{getYPName(rs.youngPersonId)}</h3>
+                      <h3 className="font-semibold">{getYPName(rs.child_id)}</h3>
                       <span className="text-sm text-muted-foreground">{rs.date} at {rs.time}</span>
-                      <Badge className={cn("text-xs", TYPE_COLOUR[rs.searchType])}>
-                        {TYPE_LABELS[rs.searchType]}
+                      <Badge className={cn("text-xs", TYPE_COLOUR[rs.search_type])}>
+                        {ROOM_SEARCH_TYPE_LABEL[rs.search_type]}
                       </Badge>
                       <Badge className={cn("text-xs", STATUS_META[rs.status].colour)}>
-                        {STATUS_META[rs.status].label}
+                        {ROOM_SEARCH_STATUS_LABEL[rs.status]}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Conducted by {getStaffName(rs.conductedBy)} &middot; Witnessed by {getStaffName(rs.witnessedBy)}
+                      Conducted by {getStaffName(rs.conducted_by)} &middot; Witnessed by {getStaffName(rs.witnessed_by)}
                     </p>
                   </div>
                 </div>
                 {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
               </button>
 
-              {/* expanded body */}
               {isOpen && (
                 <div className="border-t p-4 space-y-4">
-
-                  {/* conducted / witnessed / child present */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div><span className="text-muted-foreground">Conducted by:</span> {getStaffName(rs.conductedBy)}</div>
-                    <div><span className="text-muted-foreground">Witnessed by:</span> {getStaffName(rs.witnessedBy)}</div>
-                    <div><span className="text-muted-foreground">Child present:</span> {rs.childPresent ? "Yes" : "No"}</div>
-                    <div><span className="text-muted-foreground">Child informed:</span> {rs.childInformed ? "Yes" : "No"}</div>
+                    <div><span className="text-muted-foreground">Conducted by:</span> {getStaffName(rs.conducted_by)}</div>
+                    <div><span className="text-muted-foreground">Witnessed by:</span> {getStaffName(rs.witnessed_by)}</div>
+                    <div><span className="text-muted-foreground">Child present:</span> {rs.child_present ? "Yes" : "No"}</div>
+                    <div><span className="text-muted-foreground">Child informed:</span> {rs.child_informed ? "Yes" : "No"}</div>
                   </div>
 
-                  {/* reason — amber panel */}
                   <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                     <h4 className="text-sm font-semibold text-amber-800 mb-1">Reason for Search</h4>
                     <p className="text-sm text-amber-900">{rs.reason}</p>
                   </div>
 
-                  {/* areas searched — tags */}
                   <div>
                     <h4 className="text-sm font-semibold mb-2">Areas Searched</h4>
                     <div className="flex flex-wrap gap-1.5">
-                      {rs.areasSearched.map((area) => (
+                      {rs.areas_searched.map((area) => (
                         <span key={area} className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
                           {area}
                         </span>
@@ -577,8 +353,7 @@ export default function RoomSearchesPage() {
                     </div>
                   </div>
 
-                  {/* items found OR nothing found */}
-                  {rs.nothingFound ? (
+                  {rs.nothing_found ? (
                     <div className="rounded-lg bg-green-50 border border-green-200 p-3 flex items-center gap-2">
                       <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
                       <p className="text-sm text-green-800 font-medium">Nothing of concern found</p>
@@ -598,11 +373,11 @@ export default function RoomSearchesPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {rs.itemsFound.map((item, idx) => (
+                            {rs.items_found.map((item, idx) => (
                               <tr key={idx} className="border-b last:border-0">
                                 <td className="py-2 pr-3 font-medium whitespace-nowrap">{item.item}</td>
                                 <td className="py-2 pr-3 text-xs text-muted-foreground">{item.description}</td>
-                                <td className="py-2 pr-3 text-xs">{item.actionTaken}</td>
+                                <td className="py-2 pr-3 text-xs">{item.action_taken}</td>
                                 <td className="py-2 pr-3">
                                   <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium",
                                     item.retained ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"
@@ -612,9 +387,9 @@ export default function RoomSearchesPage() {
                                 </td>
                                 <td className="py-2">
                                   <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium",
-                                    item.photoTaken ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"
+                                    item.photo_taken ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"
                                   )}>
-                                    {item.photoTaken ? "Yes" : "No"}
+                                    {item.photo_taken ? "Yes" : "No"}
                                   </span>
                                 </td>
                               </tr>
@@ -625,50 +400,47 @@ export default function RoomSearchesPage() {
                     </div>
                   )}
 
-                  {/* child response — pink panel */}
                   <div className="rounded-lg bg-pink-50 border border-pink-200 p-3">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="text-sm font-semibold text-pink-800">Child&apos;s Response</h4>
-                      <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", DISTRESS_META[rs.childDistressLevel].colour)}>
-                        Distress: {DISTRESS_META[rs.childDistressLevel].label}
+                      <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", DISTRESS_META[rs.child_distress_level].colour)}>
+                        Distress: {ROOM_SEARCH_DISTRESS_LEVEL_LABEL[rs.child_distress_level]}
                       </span>
                     </div>
-                    <p className="text-sm text-pink-900">{rs.childResponse}</p>
+                    <p className="text-sm text-pink-900">{rs.child_response}</p>
                   </div>
 
-                  {/* notifications */}
                   <div>
                     <h4 className="text-sm font-semibold mb-2">Notifications</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                       <div className="flex items-center gap-2">
-                        {rs.socialWorkerNotified ? (
+                        {rs.social_worker_notified ? (
                           <CheckCircle2 className="h-4 w-4 text-green-600" />
                         ) : (
                           <span className="h-4 w-4 rounded-full border-2 border-gray-300 inline-block" />
                         )}
-                        <span className={rs.socialWorkerNotified ? "font-medium" : "text-muted-foreground"}>
+                        <span className={rs.social_worker_notified ? "font-medium" : "text-muted-foreground"}>
                           Social Worker
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {rs.parentNotified ? (
+                        {rs.parent_notified ? (
                           <CheckCircle2 className="h-4 w-4 text-green-600" />
                         ) : (
                           <span className="h-4 w-4 rounded-full border-2 border-gray-300 inline-block" />
                         )}
-                        <span className={rs.parentNotified ? "font-medium" : "text-muted-foreground"}>
+                        <span className={rs.parent_notified ? "font-medium" : "text-muted-foreground"}>
                           Parent / Carer
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        <span className="font-medium">Manager ({getStaffName(rs.managerApproval)})</span>
+                        <span className="font-medium">Manager ({getStaffName(rs.manager_approval)})</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* follow-up actions */}
-                  {rs.followUpActions.length > 0 && (
+                  {rs.follow_up_actions.length > 0 && (
                     <div>
                       <h4 className="text-sm font-semibold mb-2">Follow-Up Actions</h4>
                       <div className="overflow-x-auto">
@@ -682,19 +454,19 @@ export default function RoomSearchesPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {rs.followUpActions.map((fa, idx) => {
-                              const overdue = fa.status !== "completed" && fa.dueDate < today;
+                            {rs.follow_up_actions.map((fa, idx) => {
+                              const overdue = fa.status !== "completed" && fa.due_date < today;
                               return (
                                 <tr key={idx} className={cn("border-b last:border-0", overdue && "bg-red-50")}>
                                   <td className="py-2 pr-3">{fa.action}</td>
                                   <td className="py-2 pr-3 whitespace-nowrap">{getStaffName(fa.owner)}</td>
                                   <td className={cn("py-2 pr-3 whitespace-nowrap", overdue && "text-red-600 font-medium")}>
-                                    {fa.dueDate}
+                                    {fa.due_date}
                                     {overdue && <span className="ml-1 text-xs text-red-600">(overdue)</span>}
                                   </td>
                                   <td className="py-2">
                                     <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", ACTION_STATUS_META[fa.status].colour)}>
-                                      {ACTION_STATUS_META[fa.status].label}
+                                      {ROOM_SEARCH_ACTION_STATUS_LABEL[fa.status]}
                                     </span>
                                   </td>
                                 </tr>
@@ -706,23 +478,23 @@ export default function RoomSearchesPage() {
                     </div>
                   )}
 
-                  {/* linked incident */}
-                  {rs.linkedIncident && (
+                  {rs.linked_incident && (
                     <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-purple-600 flex-shrink-0" />
                       <p className="text-sm text-purple-800">
-                        <span className="font-medium">Linked Incident:</span> {rs.linkedIncident}
+                        <span className="font-medium">Linked Incident:</span> {rs.linked_incident}
                       </p>
                     </div>
                   )}
 
-                  {/* notes */}
                   {rs.notes && (
                     <div className="rounded-lg bg-blue-50 p-3">
                       <h4 className="text-sm font-semibold text-blue-800 mb-1">Notes</h4>
                       <p className="text-sm text-blue-900">{rs.notes}</p>
                     </div>
                   )}
+
+                  <SmartLinkPanel sourceType="room-search" sourceId={rs.id} childId={rs.child_id} compact />
                 </div>
               )}
             </div>
@@ -735,8 +507,6 @@ export default function RoomSearchesPage() {
           </div>
         )}
 
-        {/* ── regulatory note ──────────────────────────────────────────── */}
-
         <div className="rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
           <strong>Regulation 19 / Safeguarding / Data Protection</strong> — Room searches must
           be proportionate, necessary, and conducted with respect for the child&apos;s privacy and
@@ -748,15 +518,12 @@ export default function RoomSearchesPage() {
         </div>
       </div>
 
-      {/* ── new room search dialog ─────────────────────────────────────── */}
-
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Record Room Search</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2">
-            {/* row 1 */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium mb-1 block">Young Person</label>
@@ -774,14 +541,13 @@ export default function RoomSearchesPage() {
                 <Select>
                   <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                   <SelectContent>
-                    {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v}</SelectItem>
+                    {(Object.keys(ROOM_SEARCH_TYPE_LABEL) as RoomSearchType[]).map((k) => (
+                      <SelectItem key={k} value={k}>{ROOM_SEARCH_TYPE_LABEL[k]}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            {/* row 2 */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium mb-1 block">Date</label>
@@ -792,49 +558,10 @@ export default function RoomSearchesPage() {
                 <Input type="time" />
               </div>
             </div>
-            {/* row 3 */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium mb-1 block">Conducted By</label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger>
-                  <SelectContent>
-                    {["staff_darren", "staff_ryan", "staff_edward", "staff_anna", "staff_chervelle", "staff_diane", "staff_lackson", "staff_mirela"].map((id) => (
-                      <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Witnessed By</label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="Select witness" /></SelectTrigger>
-                  <SelectContent>
-                    {["staff_darren", "staff_ryan", "staff_edward", "staff_anna", "staff_chervelle", "staff_diane", "staff_lackson", "staff_mirela"].map((id) => (
-                      <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {/* reason */}
             <div>
               <label className="text-sm font-medium mb-1 block">Reason for Search</label>
               <Textarea placeholder="Describe the reason for this search..." rows={3} />
             </div>
-            {/* checkboxes */}
-            <div className="flex gap-6 text-sm">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" className="rounded border-gray-300" /> Child present
-              </label>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" className="rounded border-gray-300" /> Child informed
-              </label>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" className="rounded border-gray-300" /> Nothing found
-              </label>
-            </div>
-            {/* areas searched */}
             <div>
               <label className="text-sm font-medium mb-1 block">Areas Searched</label>
               <div className="flex flex-wrap gap-2">
@@ -846,33 +573,10 @@ export default function RoomSearchesPage() {
                 ))}
               </div>
             </div>
-            {/* child response */}
             <div>
               <label className="text-sm font-medium mb-1 block">Child&apos;s Response</label>
               <Textarea placeholder="How did the child respond?" rows={2} />
             </div>
-            {/* distress level */}
-            <div>
-              <label className="text-sm font-medium mb-1 block">Distress Level</label>
-              <Select>
-                <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(DISTRESS_META).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {/* notifications */}
-            <div className="flex gap-6 text-sm">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" className="rounded border-gray-300" /> Social worker notified
-              </label>
-              <label className="flex items-center gap-2">
-                <input type="checkbox" className="rounded border-gray-300" /> Parent notified
-              </label>
-            </div>
-            {/* notes */}
             <div>
               <label className="text-sm font-medium mb-1 block">Notes</label>
               <Textarea placeholder="Additional notes, linked incidents, items found details..." rows={3} />

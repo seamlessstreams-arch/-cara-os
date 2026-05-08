@@ -18771,3 +18771,341 @@ export interface StrategicRiskRecord {
   risk_appetite_alignment: StrategicRiskAppetiteAlignment;
   interconnected_risks: string[];
 }
+
+/* ── Batch 54 ────────────────────────────────────────────────────────── */
+
+/* risk-management-plans */
+
+export type RiskMgmtPlanCategory = "self_harm" | "absconding" | "aggression" | "exploitation" | "substance_misuse" | "sexualised_behaviour" | "online_risk" | "radicalisation" | "trafficking" | "other";
+export const RISK_MGMT_PLAN_CATEGORY_LABEL: Record<RiskMgmtPlanCategory, string> = {
+  self_harm: "Self-Harm",
+  absconding: "Absconding",
+  aggression: "Aggression",
+  exploitation: "Exploitation",
+  substance_misuse: "Substance Misuse",
+  sexualised_behaviour: "Sexualised Behaviour",
+  online_risk: "Online Risk",
+  radicalisation: "Radicalisation",
+  trafficking: "Trafficking",
+  other: "Other",
+};
+
+export type RiskMgmtPlanStatus = "active" | "under_review" | "archived" | "draft";
+export const RISK_MGMT_PLAN_STATUS_LABEL: Record<RiskMgmtPlanStatus, string> = {
+  active: "Active",
+  under_review: "Under Review",
+  archived: "Archived",
+  draft: "Draft",
+};
+
+export type RiskMgmtPlanStrategyEffectiveness = "effective" | "partially_effective" | "not_assessed" | "not_effective";
+export const RISK_MGMT_PLAN_STRATEGY_EFFECTIVENESS_LABEL: Record<RiskMgmtPlanStrategyEffectiveness, string> = {
+  effective: "Effective",
+  partially_effective: "Partially Effective",
+  not_assessed: "Not Assessed",
+  not_effective: "Not Effective",
+};
+
+export type RiskMgmtPlanTriggerLikelihood = "high" | "medium" | "low";
+
+export interface RiskMgmtPlanStrategy {
+  strategy: string;
+  owner: string;
+  frequency: string;
+  effectiveness: RiskMgmtPlanStrategyEffectiveness;
+}
+
+export interface RiskMgmtPlanTrigger {
+  trigger: string;
+  likelihood: RiskMgmtPlanTriggerLikelihood;
+  context: string;
+}
+
+export interface RiskMgmtPlanMultiAgencyInput {
+  professional: string;
+  role: string;
+  input: string;
+}
+
+export interface RiskManagementPlanRecord {
+  id: string;
+  child_id: string;
+  risk_category: RiskMgmtPlanCategory;
+  current_risk_level: RiskLevel;
+  previous_risk_level: RiskLevel;
+  risk_description: string;
+  triggers: RiskMgmtPlanTrigger[];
+  warning_signals: string[];
+  management_strategies: RiskMgmtPlanStrategy[];
+  emergency_plan: string;
+  protective_factors: string[];
+  escalation_procedure: string;
+  review_date: string;
+  last_reviewed: string;
+  created_by: string;
+  approved_by: string;
+  multi_agency_input: RiskMgmtPlanMultiAgencyInput[];
+  child_views: string;
+  status: RiskMgmtPlanStatus;
+}
+
+/* risk-register */
+
+export type RiskRegisterCategory = "safeguarding" | "behaviour" | "health" | "placement_stability" | "staffing" | "environmental" | "regulatory" | "emotional_wellbeing" | "exploitation" | "missing";
+export const RISK_REGISTER_CATEGORY_LABEL: Record<RiskRegisterCategory, string> = {
+  safeguarding: "Safeguarding",
+  behaviour: "Behaviour",
+  health: "Health",
+  placement_stability: "Placement Stability",
+  staffing: "Staffing",
+  environmental: "Environmental",
+  regulatory: "Regulatory",
+  emotional_wellbeing: "Emotional Wellbeing",
+  exploitation: "Exploitation",
+  missing: "Missing",
+};
+
+export type RiskRegisterStatus = "active" | "mitigated" | "monitoring" | "closed" | "escalated";
+export const RISK_REGISTER_STATUS_LABEL: Record<RiskRegisterStatus, string> = {
+  active: "Active",
+  mitigated: "Mitigated",
+  monitoring: "Monitoring",
+  closed: "Closed",
+  escalated: "Escalated",
+};
+
+export type RiskRegisterLevel = "critical" | "high" | "medium" | "low";
+export const RISK_REGISTER_LEVEL_LABEL: Record<RiskRegisterLevel, string> = {
+  critical: "Critical",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+};
+
+export interface RiskRegisterEntry {
+  id: string;
+  title: string;
+  description: string;
+  category: RiskRegisterCategory;
+  child_id: string | null;
+  likelihood: number;
+  impact: number;
+  risk_score: number;
+  risk_level: RiskRegisterLevel;
+  status: RiskRegisterStatus;
+  owner_id: string;
+  mitigations: string[];
+  review_date: string;
+  last_reviewed: string | null;
+  created_at: string;
+  updated_at: string;
+  escalated_to: string | null;
+  notes: string | null;
+}
+
+/* room-allocation-rationale */
+
+export type RoomAllocationSuitability = "strong_fit" | "acceptable" | "compromise" | "adapted";
+export const ROOM_ALLOCATION_SUITABILITY_LABEL: Record<RoomAllocationSuitability, string> = {
+  strong_fit: "Strong fit",
+  acceptable: "Acceptable",
+  compromise: "Compromise",
+  adapted: "Adapted",
+};
+
+export interface RoomAllocationAlternative {
+  room: string;
+  why_not_chosen: string;
+}
+
+export interface RoomAllocationCharacteristic {
+  feature: string;
+  suitability: RoomAllocationSuitability;
+}
+
+export interface RoomAllocationProximity {
+  peer: string;
+  relationship: string;
+  impact: string;
+}
+
+export interface RoomAllocationReview {
+  review_date: string;
+  outcome: string;
+}
+
+export interface RoomAllocationRecord {
+  id: string;
+  child_id: string;
+  room_number: string;
+  room_description: string;
+  allocated_date: string;
+  decision_maker: string;
+  reasons_for_allocation: string[];
+  considerations_at_panel_discussion: string[];
+  child_input_on_allocation: string;
+  alternative_rooms_considered: RoomAllocationAlternative[];
+  room_characteristics: RoomAllocationCharacteristic[];
+  proximity_to_other_children: RoomAllocationProximity[];
+  proximity_to_communal_areas: string;
+  proximity_to_staff_office: string;
+  sensory_considerations: string[];
+  safeguarding_considerations: string[];
+  review_schedule: string;
+  review_triggers: string[];
+  has_been_reviewed: RoomAllocationReview[];
+  fit_for_purpose_rating: number;
+  child_satisfaction_with_room: string;
+  notes: string;
+}
+
+/* room-searches */
+
+export type RoomSearchType = "routine" | "intelligence_led" | "welfare_concern" | "missing_return" | "safeguarding" | "requested";
+export const ROOM_SEARCH_TYPE_LABEL: Record<RoomSearchType, string> = {
+  routine: "Routine",
+  intelligence_led: "Intelligence-Led",
+  welfare_concern: "Welfare Concern",
+  missing_return: "Missing Return",
+  safeguarding: "Safeguarding",
+  requested: "Requested",
+};
+
+export type RoomSearchDistressLevel = "none" | "mild" | "moderate" | "significant";
+export const ROOM_SEARCH_DISTRESS_LEVEL_LABEL: Record<RoomSearchDistressLevel, string> = {
+  none: "None",
+  mild: "Mild",
+  moderate: "Moderate",
+  significant: "Significant",
+};
+
+export type RoomSearchStatus = "completed" | "follow_up_required" | "escalated" | "closed";
+export const ROOM_SEARCH_STATUS_LABEL: Record<RoomSearchStatus, string> = {
+  completed: "Completed",
+  follow_up_required: "Follow-Up Required",
+  escalated: "Escalated",
+  closed: "Closed",
+};
+
+export type RoomSearchActionStatus = "pending" | "in_progress" | "completed";
+export const ROOM_SEARCH_ACTION_STATUS_LABEL: Record<RoomSearchActionStatus, string> = {
+  pending: "Pending",
+  in_progress: "In Progress",
+  completed: "Completed",
+};
+
+export interface RoomSearchFoundItem {
+  item: string;
+  description: string;
+  action_taken: string;
+  retained: boolean;
+  photo_taken: boolean;
+}
+
+export interface RoomSearchFollowUpAction {
+  action: string;
+  owner: string;
+  due_date: string;
+  status: RoomSearchActionStatus;
+}
+
+export interface RoomSearchRecord {
+  id: string;
+  child_id: string;
+  date: string;
+  time: string;
+  search_type: RoomSearchType;
+  reason: string;
+  conducted_by: string;
+  witnessed_by: string;
+  child_present: boolean;
+  child_informed: boolean;
+  areas_searched: string[];
+  items_found: RoomSearchFoundItem[];
+  nothing_found: boolean;
+  child_response: string;
+  child_distress_level: RoomSearchDistressLevel;
+  follow_up_required: boolean;
+  follow_up_actions: RoomSearchFollowUpAction[];
+  social_worker_notified: boolean;
+  parent_notified: boolean;
+  manager_approval: string;
+  notes: string;
+  status: RoomSearchStatus;
+  linked_incident: string | null;
+}
+
+/* rse-tracker */
+
+export type RseTrackerTopic = "healthy_relationships" | "consent" | "online_safety_relationships" | "body_changes_puberty" | "boundaries" | "identity_lgbtq" | "family_relationships" | "friendship" | "coping_peer_pressure" | "recognising_harmful_relationships";
+export const RSE_TRACKER_TOPIC_LABEL: Record<RseTrackerTopic, string> = {
+  healthy_relationships: "Healthy relationships",
+  consent: "Consent",
+  online_safety_relationships: "Online safety + relationships",
+  body_changes_puberty: "Body changes/puberty",
+  boundaries: "Boundaries",
+  identity_lgbtq: "Identity (incl. LGBTQ+)",
+  family_relationships: "Family relationships",
+  friendship: "Friendship",
+  coping_peer_pressure: "Coping with peer pressure",
+  recognising_harmful_relationships: "Recognising harmful relationships",
+};
+
+export type RseTrackerMethod = "conversation" | "books_visual_resources" | "external_programme" | "through_school" | "drawing_expressive";
+export const RSE_TRACKER_METHOD_LABEL: Record<RseTrackerMethod, string> = {
+  conversation: "Conversation",
+  books_visual_resources: "Books/visual resources",
+  external_programme: "External programme",
+  through_school: "Through school",
+  drawing_expressive: "Drawing/expressive",
+};
+
+export interface RseTrackerRecord {
+  id: string;
+  child_id: string;
+  date: string;
+  topic: RseTrackerTopic;
+  duration_minutes: number;
+  delivered_by: string;
+  method: RseTrackerMethod;
+  child_initiation_of_topic: boolean;
+  key_concepts_covered: string[];
+  child_contribution: string;
+  questions_raised: string[];
+  follow_up: string;
+  parental_awareness: string;
+  curriculum_linked_to: string;
+  recorded_by: string;
+  notes: string;
+}
+
+/* safe-touch-protocol */
+
+export interface SafeTouchAcceptableTouch {
+  type: string;
+  context: string;
+  child_agreed: boolean;
+}
+
+export interface SafeTouchProtocolRecord {
+  id: string;
+  child_id: string;
+  trauma_informed_basis: string;
+  child_age: number;
+  acceptable_touches: SafeTouchAcceptableTouch[];
+  unacceptable_touches: string[];
+  greeting_preferences: string;
+  comfort_preferences: string;
+  physical_proximity: string;
+  personal_space_requirements: string;
+  triggers: string[];
+  signs_of_distress: string[];
+  response_if_triggered: string[];
+  child_preferred_language: string;
+  reviewed_date: string;
+  reviewed_with: string;
+  review_with_child: boolean;
+  child_understands_consent: boolean;
+  staff_briefing_date: string;
+  notes: string;
+}

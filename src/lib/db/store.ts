@@ -309,6 +309,12 @@ import type {
   RestrictionsLogRecord,
   RiskAppetiteDomain,
   StrategicRiskRecord,
+  RiskManagementPlanRecord,
+  RiskRegisterEntry,
+  RoomAllocationRecord,
+  RoomSearchRecord,
+  RseTrackerRecord,
+  SafeTouchProtocolRecord,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -701,6 +707,12 @@ const store = {
   restrictionsLogRecords: [] as RestrictionsLogRecord[],
   riskAppetiteDomains: [] as RiskAppetiteDomain[],
   strategicRiskRecords: [] as StrategicRiskRecord[],
+  riskManagementPlanRecords: [] as RiskManagementPlanRecord[],
+  riskRegisterEntries: [] as RiskRegisterEntry[],
+  roomAllocationRecords: [] as RoomAllocationRecord[],
+  roomSearchRecords: [] as RoomSearchRecord[],
+  rseTrackerRecords: [] as RseTrackerRecord[],
+  safeTouchProtocolRecords: [] as SafeTouchProtocolRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -8914,6 +8926,102 @@ export const db = {
       if (idx === -1) return null;
       store.strategicRiskRecords[idx] = { ...store.strategicRiskRecords[idx], ...data };
       return store.strategicRiskRecords[idx];
+    },
+  },
+
+  riskManagementPlanRecords: {
+    getAll: () => store.riskManagementPlanRecords,
+    getByChild: (childId: string) => store.riskManagementPlanRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<RiskManagementPlanRecord>) => {
+      const record = { ...data, id: `rmpr_${Date.now()}` } as RiskManagementPlanRecord;
+      store.riskManagementPlanRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RiskManagementPlanRecord>) => {
+      const idx = store.riskManagementPlanRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.riskManagementPlanRecords[idx] = { ...store.riskManagementPlanRecords[idx], ...data };
+      return store.riskManagementPlanRecords[idx];
+    },
+  },
+
+  riskRegisterEntries: {
+    getAll: () => store.riskRegisterEntries,
+    getByChild: (childId: string) => store.riskRegisterEntries.filter((r) => r.child_id === childId),
+    create: (data: Partial<RiskRegisterEntry>) => {
+      const record = { ...data, id: `rre_${Date.now()}` } as RiskRegisterEntry;
+      store.riskRegisterEntries.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RiskRegisterEntry>) => {
+      const idx = store.riskRegisterEntries.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.riskRegisterEntries[idx] = { ...store.riskRegisterEntries[idx], ...data };
+      return store.riskRegisterEntries[idx];
+    },
+  },
+
+  roomAllocationRecords: {
+    getAll: () => store.roomAllocationRecords,
+    getByChild: (childId: string) => store.roomAllocationRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<RoomAllocationRecord>) => {
+      const record = { ...data, id: `rar_${Date.now()}` } as RoomAllocationRecord;
+      store.roomAllocationRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RoomAllocationRecord>) => {
+      const idx = store.roomAllocationRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.roomAllocationRecords[idx] = { ...store.roomAllocationRecords[idx], ...data };
+      return store.roomAllocationRecords[idx];
+    },
+  },
+
+  roomSearchRecords: {
+    getAll: () => store.roomSearchRecords,
+    getByChild: (childId: string) => store.roomSearchRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<RoomSearchRecord>) => {
+      const record = { ...data, id: `rsr_${Date.now()}` } as RoomSearchRecord;
+      store.roomSearchRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RoomSearchRecord>) => {
+      const idx = store.roomSearchRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.roomSearchRecords[idx] = { ...store.roomSearchRecords[idx], ...data };
+      return store.roomSearchRecords[idx];
+    },
+  },
+
+  rseTrackerRecords: {
+    getAll: () => store.rseTrackerRecords,
+    getByChild: (childId: string) => store.rseTrackerRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<RseTrackerRecord>) => {
+      const record = { ...data, id: `rtr_${Date.now()}` } as RseTrackerRecord;
+      store.rseTrackerRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RseTrackerRecord>) => {
+      const idx = store.rseTrackerRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.rseTrackerRecords[idx] = { ...store.rseTrackerRecords[idx], ...data };
+      return store.rseTrackerRecords[idx];
+    },
+  },
+
+  safeTouchProtocolRecords: {
+    getAll: () => store.safeTouchProtocolRecords,
+    getByChild: (childId: string) => store.safeTouchProtocolRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<SafeTouchProtocolRecord>) => {
+      const record = { ...data, id: `stpr_${Date.now()}` } as SafeTouchProtocolRecord;
+      store.safeTouchProtocolRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SafeTouchProtocolRecord>) => {
+      const idx = store.safeTouchProtocolRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.safeTouchProtocolRecords[idx] = { ...store.safeTouchProtocolRecords[idx], ...data };
+      return store.safeTouchProtocolRecords[idx];
     },
   },
 };
