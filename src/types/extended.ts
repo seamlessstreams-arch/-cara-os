@@ -18472,3 +18472,302 @@ export interface RegistrationChangeRecord {
   review_date: string;
   notes: string;
 }
+
+/* ── Batch 53 ────────────────────────────────────────────────────── */
+
+/* Regulatory Correspondence Tracker */
+
+export type RegulatoryCorrespondenceRegulator = "la_riverside" | "la_valley" | "la_hillside" | "ofsted" | "ico" | "hmrc" | "hse" | "planning_authority" | "environmental_health" | "fire_authority" | "icb_nhs" | "dfe";
+export const REGULATORY_CORRESPONDENCE_REGULATOR_LABEL: Record<RegulatoryCorrespondenceRegulator, string> = {
+  la_riverside: "Local Authority — Riverside",
+  la_valley: "Local Authority — Valley",
+  la_hillside: "Local Authority — Hillside",
+  ofsted: "Ofsted (link to Ofsted log)",
+  ico: "ICO",
+  hmrc: "HMRC",
+  hse: "HSE",
+  planning_authority: "Planning Authority",
+  environmental_health: "Environmental Health",
+  fire_authority: "Fire Authority",
+  icb_nhs: "ICB / NHS Partner",
+  dfe: "DfE",
+};
+
+export type RegulatoryCorrespondenceDirection = "incoming" | "outgoing";
+export const REGULATORY_CORRESPONDENCE_DIRECTION_LABEL: Record<RegulatoryCorrespondenceDirection, string> = {
+  incoming: "Incoming",
+  outgoing: "Outgoing",
+};
+
+export type RegulatoryCorrespondenceUrgency = "routine" | "standard" | "urgent";
+export const REGULATORY_CORRESPONDENCE_URGENCY_LABEL: Record<RegulatoryCorrespondenceUrgency, string> = {
+  routine: "Routine",
+  standard: "Standard",
+  urgent: "Urgent",
+};
+
+export type RegulatoryCorrespondenceStatus = "open" | "closed" | "pending_action" | "awaiting_reply";
+export const REGULATORY_CORRESPONDENCE_STATUS_LABEL: Record<RegulatoryCorrespondenceStatus, string> = {
+  open: "Open",
+  closed: "Closed",
+  pending_action: "Pending action",
+  awaiting_reply: "Awaiting reply",
+};
+
+export type RegulatoryCorrespondenceConfidentiality = "standard_conf" | "sensitive" | "restricted";
+export const REGULATORY_CORRESPONDENCE_CONFIDENTIALITY_LABEL: Record<RegulatoryCorrespondenceConfidentiality, string> = {
+  standard_conf: "Standard",
+  sensitive: "Sensitive",
+  restricted: "Restricted",
+};
+
+export interface RegulatoryCorrespondenceLetter {
+  id: string;
+  date_sent: string;
+  date_received: string;
+  regulator: RegulatoryCorrespondenceRegulator;
+  direction: RegulatoryCorrespondenceDirection;
+  reference: string;
+  subject: string;
+  summary: string;
+  our_response: string;
+  documents_attached: string[];
+  response_required: boolean;
+  response_deadline: string;
+  response_sent: boolean;
+  actions_agreed: string[];
+  urgency: RegulatoryCorrespondenceUrgency;
+  status: RegulatoryCorrespondenceStatus;
+  confidentiality_level: RegulatoryCorrespondenceConfidentiality;
+  recorded_by: string;
+}
+
+/* Religious Festival Celebrations */
+
+export type ReligiousFestivalFaith = "islam" | "christianity" | "hinduism" | "sikhism" | "judaism" | "buddhism" | "rastafari" | "secular" | "other_multi_faith";
+export const RELIGIOUS_FESTIVAL_FAITH_LABEL: Record<ReligiousFestivalFaith, string> = {
+  islam: "Islam",
+  christianity: "Christianity",
+  hinduism: "Hinduism",
+  sikhism: "Sikhism",
+  judaism: "Judaism",
+  buddhism: "Buddhism",
+  rastafari: "Rastafari",
+  secular: "Secular",
+  other_multi_faith: "Other / Multi-faith",
+};
+
+export interface ReligiousFestivalRecord {
+  id: string;
+  festival: string;
+  faith: ReligiousFestivalFaith;
+  date: string;
+  children_involved: string[];
+  led_by_child: string | null;
+  preparation: string[];
+  food: string[];
+  decorations: string[];
+  guests_invited: string[];
+  rituals_observed: string[];
+  child_chosen_aspects: string[];
+  budget: number;
+  spent: number;
+  photos_taken: boolean;
+  consent_for_photos: string[];
+  reflections: string;
+  child_voice: string;
+  staff_observation: string;
+  improvements_for_next_time: string[];
+  recorded_by: string;
+}
+
+/* Religious Observance Log */
+
+export interface ReligiousObservancePracticeSupported {
+  practice: string;
+  date_last: string;
+  date_next: string;
+  supported_by: string;
+}
+
+export interface ReligiousObservanceFestival {
+  festival: string;
+  date: string;
+  plans_for_observance: string;
+  attending_with: string;
+}
+
+export interface ReligiousObservanceRecord {
+  id: string;
+  child_id: string;
+  faith_or_belief: string;
+  profile_summary: string;
+  regular_practices: string[];
+  practices_supported: ReligiousObservancePracticeSupported[];
+  dietary_needs_linked: string;
+  dress_code: string;
+  festivals_observed: ReligiousObservanceFestival[];
+  faith_leaders: string[];
+  place_of_worship_preferences: string;
+  spiritual_support: string[];
+  child_authored: boolean;
+  reviewed_date: string;
+  reviewed_with: string;
+  next_review_date: string;
+  notes: string;
+}
+
+/* Restrictions Log */
+
+export type RestrictionsLogType = "liberty" | "access" | "contact" | "technology" | "movement" | "medication" | "financial" | "dietary" | "other";
+export const RESTRICTIONS_LOG_TYPE_LABEL: Record<RestrictionsLogType, string> = {
+  liberty: "Liberty",
+  access: "Access",
+  contact: "Contact",
+  technology: "Technology",
+  movement: "Movement",
+  medication: "Medication",
+  financial: "Financial",
+  dietary: "Dietary",
+  other: "Other",
+};
+
+export type RestrictionsLogStatus = "active" | "under_review" | "ended" | "appealed";
+export const RESTRICTIONS_LOG_STATUS_LABEL: Record<RestrictionsLogStatus, string> = {
+  active: "Active",
+  under_review: "Under Review",
+  ended: "Ended",
+  appealed: "Appealed",
+};
+
+export type RestrictionsLogAuthorisedBy = "court_order" | "placing_authority" | "care_plan" | "risk_assessment" | "dols";
+export const RESTRICTIONS_LOG_AUTHORISED_BY_LABEL: Record<RestrictionsLogAuthorisedBy, string> = {
+  court_order: "Court Order",
+  placing_authority: "Placing Authority",
+  care_plan: "Care Plan",
+  risk_assessment: "Risk Assessment",
+  dols: "DoLS",
+};
+
+export interface RestrictionsLogReview {
+  date: string;
+  reviewer: string;
+  outcome: string;
+  continued: boolean;
+}
+
+export interface RestrictionsLogRecord {
+  id: string;
+  child_id: string;
+  type: RestrictionsLogType;
+  description: string;
+  reason: string;
+  status: RestrictionsLogStatus;
+  authorised_by: RestrictionsLogAuthorisedBy;
+  authoriser_name: string;
+  start_date: string;
+  end_date: string | null;
+  review_frequency: string;
+  reviews: RestrictionsLogReview[];
+  child_view: string;
+  proportionality: string;
+  least_restrictive: string;
+  impact_assessment: string;
+  notified_parties: string[];
+}
+
+/* Risk Appetite Statement */
+
+export type RiskAppetiteLevel = "high" | "medium_high" | "medium" | "low" | "graduated";
+export const RISK_APPETITE_LEVEL_LABEL: Record<RiskAppetiteLevel, string> = {
+  high: "HIGH",
+  medium_high: "MEDIUM-HIGH",
+  medium: "MEDIUM",
+  low: "LOW",
+  graduated: "GRADUATED",
+};
+
+export interface RiskAppetiteDomain {
+  id: string;
+  name: string;
+  appetite_level: RiskAppetiteLevel;
+  rationale: string;
+  examples: string[];
+  red_lines: string[];
+  decision_authority: string;
+}
+
+/* Strategic Risk Management Board */
+
+export type StrategicRiskCategory = "operational" | "workforce" | "regulatory" | "financial" | "reputational" | "strategic" | "safeguarding" | "environmental" | "cyber_data";
+export const STRATEGIC_RISK_CATEGORY_LABEL: Record<StrategicRiskCategory, string> = {
+  operational: "Operational",
+  workforce: "Workforce",
+  regulatory: "Regulatory",
+  financial: "Financial",
+  reputational: "Reputational",
+  strategic: "Strategic",
+  safeguarding: "Safeguarding",
+  environmental: "Environmental",
+  cyber_data: "Cyber/Data",
+};
+
+export type StrategicRiskVelocity = "slow" | "moderate" | "fast";
+export const STRATEGIC_RISK_VELOCITY_LABEL: Record<StrategicRiskVelocity, string> = {
+  slow: "Slow",
+  moderate: "Moderate",
+  fast: "Fast",
+};
+
+export type StrategicRiskTrendDirection = "decreasing" | "stable" | "increasing";
+export const STRATEGIC_RISK_TREND_DIRECTION_LABEL: Record<StrategicRiskTrendDirection, string> = {
+  decreasing: "Decreasing",
+  stable: "Stable",
+  increasing: "Increasing",
+};
+
+export type StrategicRiskAppetiteAlignment = "within_appetite" | "at_appetite_limit" | "above_appetite";
+export const STRATEGIC_RISK_APPETITE_ALIGNMENT_LABEL: Record<StrategicRiskAppetiteAlignment, string> = {
+  within_appetite: "Within appetite",
+  at_appetite_limit: "At appetite limit",
+  above_appetite: "Above appetite",
+};
+
+export type StrategicRiskKRIStatus = "ok" | "warning" | "trigger";
+export const STRATEGIC_RISK_KRI_STATUS_LABEL: Record<StrategicRiskKRIStatus, string> = {
+  ok: "OK",
+  warning: "Warning",
+  trigger: "Trigger",
+};
+
+export interface StrategicRiskKeyRiskIndicator {
+  indicator: string;
+  current_value: string;
+  threshold: string;
+  status: StrategicRiskKRIStatus;
+}
+
+export interface StrategicRiskRecord {
+  id: string;
+  risk_title: string;
+  category: StrategicRiskCategory;
+  description: string;
+  current_likelihood: number;
+  current_impact: number;
+  inherent_risk_score: number;
+  residual_risk_score: number;
+  target_risk_score: number;
+  current_controls: string[];
+  additional_controls_required: string[];
+  risk_owner: string;
+  review_frequency: string;
+  last_reviewed: string;
+  next_review_date: string;
+  escalation_criteria: string;
+  board_level: boolean;
+  key_risk_indicators: StrategicRiskKeyRiskIndicator[];
+  velocity_of_change: StrategicRiskVelocity;
+  trend: StrategicRiskTrendDirection;
+  risk_appetite_alignment: StrategicRiskAppetiteAlignment;
+  interconnected_risks: string[];
+}

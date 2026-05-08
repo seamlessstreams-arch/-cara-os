@@ -303,6 +303,12 @@ import type {
   Reg40StaffEntry,
   Reg44ActionRecord,
   RegistrationChangeRecord,
+  RegulatoryCorrespondenceLetter,
+  ReligiousFestivalRecord,
+  ReligiousObservanceRecord,
+  RestrictionsLogRecord,
+  RiskAppetiteDomain,
+  StrategicRiskRecord,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -689,6 +695,12 @@ const store = {
   reg40StaffEntries: [] as Reg40StaffEntry[],
   reg44ActionRecords: [] as Reg44ActionRecord[],
   registrationChangeRecords: [] as RegistrationChangeRecord[],
+  regulatoryCorrespondenceLetters: [] as RegulatoryCorrespondenceLetter[],
+  religiousFestivalRecords: [] as ReligiousFestivalRecord[],
+  religiousObservanceRecords: [] as ReligiousObservanceRecord[],
+  restrictionsLogRecords: [] as RestrictionsLogRecord[],
+  riskAppetiteDomains: [] as RiskAppetiteDomain[],
+  strategicRiskRecords: [] as StrategicRiskRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -8809,6 +8821,99 @@ export const db = {
       if (idx === -1) return null;
       store.registrationChangeRecords[idx] = { ...store.registrationChangeRecords[idx], ...data };
       return store.registrationChangeRecords[idx];
+    },
+  },
+
+  regulatoryCorrespondenceLetters: {
+    getAll: () => store.regulatoryCorrespondenceLetters,
+    create: (data: Partial<RegulatoryCorrespondenceLetter>) => {
+      const record = { ...data, id: `rcl_${Date.now()}` } as RegulatoryCorrespondenceLetter;
+      store.regulatoryCorrespondenceLetters.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RegulatoryCorrespondenceLetter>) => {
+      const idx = store.regulatoryCorrespondenceLetters.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.regulatoryCorrespondenceLetters[idx] = { ...store.regulatoryCorrespondenceLetters[idx], ...data };
+      return store.regulatoryCorrespondenceLetters[idx];
+    },
+  },
+
+  religiousFestivalRecords: {
+    getAll: () => store.religiousFestivalRecords,
+    getByChild: (childId: string) => store.religiousFestivalRecords.filter((r) => r.children_involved.includes(childId)),
+    create: (data: Partial<ReligiousFestivalRecord>) => {
+      const record = { ...data, id: `rfr_${Date.now()}` } as ReligiousFestivalRecord;
+      store.religiousFestivalRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ReligiousFestivalRecord>) => {
+      const idx = store.religiousFestivalRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.religiousFestivalRecords[idx] = { ...store.religiousFestivalRecords[idx], ...data };
+      return store.religiousFestivalRecords[idx];
+    },
+  },
+
+  religiousObservanceRecords: {
+    getAll: () => store.religiousObservanceRecords,
+    getByChild: (childId: string) => store.religiousObservanceRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<ReligiousObservanceRecord>) => {
+      const record = { ...data, id: `ror_${Date.now()}` } as ReligiousObservanceRecord;
+      store.religiousObservanceRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<ReligiousObservanceRecord>) => {
+      const idx = store.religiousObservanceRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.religiousObservanceRecords[idx] = { ...store.religiousObservanceRecords[idx], ...data };
+      return store.religiousObservanceRecords[idx];
+    },
+  },
+
+  restrictionsLogRecords: {
+    getAll: () => store.restrictionsLogRecords,
+    getByChild: (childId: string) => store.restrictionsLogRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<RestrictionsLogRecord>) => {
+      const record = { ...data, id: `rlr_${Date.now()}` } as RestrictionsLogRecord;
+      store.restrictionsLogRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RestrictionsLogRecord>) => {
+      const idx = store.restrictionsLogRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.restrictionsLogRecords[idx] = { ...store.restrictionsLogRecords[idx], ...data };
+      return store.restrictionsLogRecords[idx];
+    },
+  },
+
+  riskAppetiteDomains: {
+    getAll: () => store.riskAppetiteDomains,
+    create: (data: Partial<RiskAppetiteDomain>) => {
+      const record = { ...data, id: `rad_${Date.now()}` } as RiskAppetiteDomain;
+      store.riskAppetiteDomains.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<RiskAppetiteDomain>) => {
+      const idx = store.riskAppetiteDomains.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.riskAppetiteDomains[idx] = { ...store.riskAppetiteDomains[idx], ...data };
+      return store.riskAppetiteDomains[idx];
+    },
+  },
+
+  strategicRiskRecords: {
+    getAll: () => store.strategicRiskRecords,
+    create: (data: Partial<StrategicRiskRecord>) => {
+      const record = { ...data, id: `srr_${Date.now()}` } as StrategicRiskRecord;
+      store.strategicRiskRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StrategicRiskRecord>) => {
+      const idx = store.strategicRiskRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.strategicRiskRecords[idx] = { ...store.strategicRiskRecords[idx], ...data };
+      return store.strategicRiskRecords[idx];
     },
   },
 };
