@@ -367,6 +367,10 @@ import type {
   HealthRecordEntry,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
+import type {
+  CareEvent, CareEventRoute, CareEventJob, CareEventAuditLog,
+  Reg45EvidenceItem, AnnexAEvidenceItem, ChildDailySummary,
+} from "@/types/care-events";
 
 // ── Mutable collections ───────────────────────────────────────────────────────
 
@@ -813,6 +817,14 @@ const store = {
   admissionReferrals: [] as AdmissionReferral[],
   healthRecordEntries: [] as HealthRecordEntry[],
   ypSavingsAccountRecords: [] as YPSavingsAccountRecord[],
+  // ── Care Events (live update routing system) ───────────────────────────────
+  careEvents: [] as CareEvent[],
+  careEventRoutes: [] as CareEventRoute[],
+  careEventJobs: [] as CareEventJob[],
+  careEventAuditLog: [] as CareEventAuditLog[],
+  reg45EvidenceQueue: [] as Reg45EvidenceItem[],
+  annexAEvidenceQueue: [] as AnnexAEvidenceItem[],
+  childDailySummaries: [] as ChildDailySummary[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -10057,6 +10069,212 @@ export const db = {
       if (idx === -1) return null;
       store.ypSavingsAccountRecords[idx] = { ...store.ypSavingsAccountRecords[idx], ...data };
       return store.ypSavingsAccountRecords[idx];
+    },
+  },
+
+  // ── Care Events ─────────────────────────────────────────────────────────────
+  careEvents: {
+    findAll: () => store.careEvents,
+    findById: (id: string) => store.careEvents.find((e) => e.id === id),
+    findCurrent: () => store.careEvents.filter((e) => e.is_current_version),
+    findByChild: (childId: string) => store.careEvents.filter((e) => e.child_id === childId && e.is_current_version),
+    findByStatus: (status: CareEvent["status"]) => store.careEvents.filter((e) => e.status === status && e.is_current_version),
+    findNeedingManagerReview: () => store.careEvents.filter((e) => e.requires_manager_review && e.status === "manager_review_required"),
+    findForReg40: () => store.careEvents.filter((e) => e.requires_reg40_triage && e.is_current_version),
+    create: (data: Partial<CareEvent>): CareEvent => {
+      const now = new Date().toISOString();
+      const event: CareEvent = {
+        id: generateId("ce"),
+        home_id: "home_oak",
+        child_id: null,
+        shift_id: null,
+        staff_id: data.staff_id ?? "staff_darren",
+        verified_by: null,
+        returned_by: null,
+        locked_by: null,
+        category: "general",
+        title: "",
+        content: "",
+        mood_score: null,
+        is_significant: false,
+        status: "draft",
+        event_date: todayStr(),
+        event_time: null,
+        requires_manager_review: false,
+        requires_reg40_triage: false,
+        contributes_to_reg45: false,
+        contributes_to_annex_a: false,
+        is_safeguarding: false,
+        evidence_prompts: [],
+        evidence_prompts_completed: false,
+        staff_signature: false,
+        staff_signed_at: null,
+        manager_id: null,
+        manager_review_note: null,
+        manager_review_at: null,
+        manager_review_completed: false,
+        manager_signature: false,
+        manager_notes: null,
+        return_reason: null,
+        returned_at: null,
+        submitted_at: null,
+        submitted_by: null,
+        verified_at: null,
+        locked_at: null,
+        version: 1,
+        previous_version_id: null,
+        amendment_reason: null,
+        amended_by: null,
+        amended_at: null,
+        is_current_version: true,
+        aria_suggested_summary: null,
+        aria_suggested_category: null,
+        aria_suggested_routing: null,
+        aria_suggested_reg45: null,
+        aria_suggested_annex_a: null,
+        aria_suggestions_reviewed: false,
+        routing_summary: null,
+        created_at: now,
+        updated_at: now,
+        ...data,
+      };
+      store.careEvents.push(event);
+      return event;
+    },
+    patch: (id: string, data: Partial<CareEvent>): CareEvent | null => {
+      const idx = store.careEvents.findIndex((e) => e.id === id);
+      if (idx === -1) return null;
+      store.careEvents[idx] = { ...store.careEvents[idx], ...data, updated_at: new Date().toISOString() };
+      return store.careEvents[idx];
+    },
+  },
+
+  // ── Care Event Routes ────────────────────────────────────────────────────────
+  careEventRoutes: {
+    findByCareEvent: (careEventId: string) => store.careEventRoutes.filter((r) => r.care_event_id === careEventId),
+    findFailed: () => store.careEventRoutes.filter((r) => r.status === "failed" || r.status === "retry_required"),
+    upsert: (data: Omit<CareEventRoute, "id" | "created_at" | "updated_at">): CareEventRoute => {
+      const now = new Date().toISOString();
+      const existing = store.careEventRoutes.findIndex(
+        (r) => r.care_event_id === data.care_event_id && r.route_type === data.route_type
+      );
+      if (existing !== -1) {
+        store.careEventRoutes[existing] = { ...store.careEventRoutes[existing], ...data, updated_at: now };
+        return store.careEventRoutes[existing];
+      }
+      const route: CareEventRoute = { ...data, id: generateId("cer"), created_at: now, updated_at: now };
+      store.careEventRoutes.push(route);
+      return route;
+    },
+    patch: (id: string, data: Partial<CareEventRoute>): CareEventRoute | null => {
+      const idx = store.careEventRoutes.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.careEventRoutes[idx] = { ...store.careEventRoutes[idx], ...data, updated_at: new Date().toISOString() };
+      return store.careEventRoutes[idx];
+    },
+  },
+
+  // ── Care Event Jobs ──────────────────────────────────────────────────────────
+  careEventJobs: {
+    findPending: () => store.careEventJobs.filter((j) => j.status === "pending"),
+    findFailed: () => store.careEventJobs.filter((j) => j.status === "failed" || j.status === "retry_required"),
+    upsert: (data: Omit<CareEventJob, "id" | "created_at" | "updated_at">): CareEventJob => {
+      const now = new Date().toISOString();
+      const existing = store.careEventJobs.findIndex(
+        (j) => j.care_event_id === data.care_event_id && j.job_type === data.job_type
+      );
+      if (existing !== -1) {
+        store.careEventJobs[existing] = { ...store.careEventJobs[existing], ...data, updated_at: now };
+        return store.careEventJobs[existing];
+      }
+      const job: CareEventJob = { ...data, id: generateId("cej"), created_at: now, updated_at: now };
+      store.careEventJobs.push(job);
+      return job;
+    },
+    patch: (id: string, data: Partial<CareEventJob>): CareEventJob | null => {
+      const idx = store.careEventJobs.findIndex((j) => j.id === id);
+      if (idx === -1) return null;
+      store.careEventJobs[idx] = { ...store.careEventJobs[idx], ...data, updated_at: new Date().toISOString() };
+      return store.careEventJobs[idx];
+    },
+  },
+
+  // ── Care Event Audit Log ─────────────────────────────────────────────────────
+  careEventAuditLog: {
+    findByCareEvent: (careEventId: string) => store.careEventAuditLog.filter((a) => a.care_event_id === careEventId),
+    append: (data: Omit<CareEventAuditLog, "id" | "created_at">): CareEventAuditLog => {
+      const entry: CareEventAuditLog = { ...data, id: generateId("ceal"), created_at: new Date().toISOString() };
+      store.careEventAuditLog.push(entry);
+      return entry;
+    },
+  },
+
+  // ── Reg 45 Evidence Queue ────────────────────────────────────────────────────
+  reg45EvidenceQueue: {
+    findAll: () => store.reg45EvidenceQueue,
+    findByHome: () => store.reg45EvidenceQueue,
+    findPending: () => store.reg45EvidenceQueue.filter((e) => e.manager_decision === "pending"),
+    upsert: (data: Omit<Reg45EvidenceItem, "id" | "created_at" | "updated_at">): Reg45EvidenceItem => {
+      const now = new Date().toISOString();
+      const existing = store.reg45EvidenceQueue.findIndex((e) => e.care_event_id === data.care_event_id);
+      if (existing !== -1) {
+        store.reg45EvidenceQueue[existing] = { ...store.reg45EvidenceQueue[existing], ...data, updated_at: now };
+        return store.reg45EvidenceQueue[existing];
+      }
+      const item: Reg45EvidenceItem = { ...data, id: generateId("r45"), created_at: now, updated_at: now };
+      store.reg45EvidenceQueue.push(item);
+      return item;
+    },
+    patch: (id: string, data: Partial<Reg45EvidenceItem>): Reg45EvidenceItem | null => {
+      const idx = store.reg45EvidenceQueue.findIndex((e) => e.id === id);
+      if (idx === -1) return null;
+      store.reg45EvidenceQueue[idx] = { ...store.reg45EvidenceQueue[idx], ...data, updated_at: new Date().toISOString() };
+      return store.reg45EvidenceQueue[idx];
+    },
+  },
+
+  // ── Annex A Evidence Queue ───────────────────────────────────────────────────
+  annexAEvidenceQueue: {
+    findAll: () => store.annexAEvidenceQueue,
+    findPending: () => store.annexAEvidenceQueue.filter((e) => e.manager_decision === "pending"),
+    upsert: (data: Omit<AnnexAEvidenceItem, "id" | "created_at" | "updated_at">): AnnexAEvidenceItem => {
+      const now = new Date().toISOString();
+      const existing = store.annexAEvidenceQueue.findIndex(
+        (e) => e.care_event_id === data.care_event_id && e.annex_section === data.annex_section
+      );
+      if (existing !== -1) {
+        store.annexAEvidenceQueue[existing] = { ...store.annexAEvidenceQueue[existing], ...data, updated_at: now };
+        return store.annexAEvidenceQueue[existing];
+      }
+      const item: AnnexAEvidenceItem = { ...data, id: generateId("aae"), created_at: now, updated_at: now };
+      store.annexAEvidenceQueue.push(item);
+      return item;
+    },
+    patch: (id: string, data: Partial<AnnexAEvidenceItem>): AnnexAEvidenceItem | null => {
+      const idx = store.annexAEvidenceQueue.findIndex((e) => e.id === id);
+      if (idx === -1) return null;
+      store.annexAEvidenceQueue[idx] = { ...store.annexAEvidenceQueue[idx], ...data, updated_at: new Date().toISOString() };
+      return store.annexAEvidenceQueue[idx];
+    },
+  },
+
+  // ── Child Daily Summaries ────────────────────────────────────────────────────
+  childDailySummaries: {
+    findAll: () => store.childDailySummaries,
+    findByChild: (childId: string) => store.childDailySummaries.filter((s) => s.child_id === childId),
+    findByDate: (date: string) => store.childDailySummaries.filter((s) => s.summary_date === date),
+    upsert: (data: Omit<ChildDailySummary, "id" | "generated_at" | "updated_at">): ChildDailySummary => {
+      const now = new Date().toISOString();
+      const existing = store.childDailySummaries.findIndex(
+        (s) => s.child_id === data.child_id && s.summary_date === data.summary_date && s.home_id === data.home_id
+      );
+      if (existing !== -1) {
+        store.childDailySummaries[existing] = { ...store.childDailySummaries[existing], ...data, updated_at: now };
+        return store.childDailySummaries[existing];
+      }
+      const summary: ChildDailySummary = { ...data, id: generateId("cds"), generated_at: now, updated_at: now };
+      store.childDailySummaries.push(summary);
+      return summary;
     },
   },
 };

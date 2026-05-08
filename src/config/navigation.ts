@@ -59,6 +59,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Child Profiles",   href: "/young-people",              icon: "Heart",          module: "young-people"  },
       { label: "Care Plans",       href: "/care-plans",                icon: "ClipboardList",  module: "young-people"  },
       { label: "Daily Records",    href: "/daily-log",                 icon: "BookOpen",       module: "daily-log"     },
+      { label: "Care Events",      href: "/care-events",               icon: "Zap",            module: "care-events"   },
       { label: "Incidents",        href: "/incidents",                 icon: "AlertTriangle",  module: "incidents",    badgeKey: "incidents" },
       { label: "Incident Learning",href: "/incidents/learning-review", icon: "Lightbulb",      module: "incidents"     },
       { label: "PI Debriefs",      href: "/incidents/pi-debriefs",     icon: "ShieldAlert",    module: "incidents"     },
@@ -608,6 +609,7 @@ export interface CreateMenuItem {
 
 export const GLOBAL_CREATE_ITEMS: CreateMenuItem[] = [
   // Care
+  { label: "Care Event",            icon: "Zap",            href: "/care-events",        group: "Care",       module: "care-events"  },
   { label: "Daily Log Entry",       icon: "BookOpen",       href: "/daily-log",          group: "Care",       module: "daily-log"    },
   { label: "Incident",              icon: "AlertTriangle",  href: "/incidents",          group: "Care",       module: "incidents"    },
   { label: "Missing from Care",     icon: "MapPin",         href: "/missing-from-care",  group: "Care",       module: "safeguarding" },
