@@ -370,6 +370,7 @@ import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 import type {
   CareEvent, CareEventRoute, CareEventJob, CareEventAuditLog,
   Reg45EvidenceItem, AnnexAEvidenceItem, ChildDailySummary,
+  FilingCabinetItem, SavedTimeMetric,
 } from "@/types/care-events";
 
 // ── Mutable collections ───────────────────────────────────────────────────────
@@ -825,6 +826,8 @@ const store = {
   reg45EvidenceQueue: [] as Reg45EvidenceItem[],
   annexAEvidenceQueue: [] as AnnexAEvidenceItem[],
   childDailySummaries: [] as ChildDailySummary[],
+  filingCabinet: [] as FilingCabinetItem[],
+  savedTimeMetrics: [] as SavedTimeMetric[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -10201,6 +10204,7 @@ export const db = {
 
   // ── Care Event Audit Log ─────────────────────────────────────────────────────
   careEventAuditLog: {
+    findAll: () => store.careEventAuditLog,
     findByCareEvent: (careEventId: string) => store.careEventAuditLog.filter((a) => a.care_event_id === careEventId),
     append: (data: Omit<CareEventAuditLog, "id" | "created_at">): CareEventAuditLog => {
       const entry: CareEventAuditLog = { ...data, id: generateId("ceal"), created_at: new Date().toISOString() };
@@ -10275,6 +10279,57 @@ export const db = {
       const summary: ChildDailySummary = { ...data, id: generateId("cds"), generated_at: now, updated_at: now };
       store.childDailySummaries.push(summary);
       return summary;
+    },
+  },
+
+  // ── Filing Cabinet ───────────────────────────────────────────────────────────
+  filingCabinet: {
+    findAll: () => store.filingCabinet,
+    findByHome: (homeId: string) => store.filingCabinet.filter((f) => f.home_id === homeId),
+    findByChild: (childId: string) => store.filingCabinet.filter((f) => f.child_id === childId),
+    findByCategory: (category: string) => store.filingCabinet.filter((f) => f.category === category),
+    findByCareEvent: (careEventId: string) => store.filingCabinet.filter((f) => f.care_event_id === careEventId),
+    upsert: (data: Omit<FilingCabinetItem, "id" | "created_at" | "updated_at">): FilingCabinetItem => {
+      const now = new Date().toISOString();
+      const existing = store.filingCabinet.findIndex(
+        (f) => f.care_event_id === data.care_event_id && f.category === data.category
+      );
+      if (existing !== -1) {
+        store.filingCabinet[existing] = { ...store.filingCabinet[existing], ...data, updated_at: now };
+        return store.filingCabinet[existing];
+      }
+      const item: FilingCabinetItem = { ...data, id: generateId("fil"), created_at: now, updated_at: now };
+      store.filingCabinet.push(item);
+      return item;
+    },
+    patch: (id: string, data: Partial<FilingCabinetItem>): FilingCabinetItem | null => {
+      const idx = store.filingCabinet.findIndex((f) => f.id === id);
+      if (idx === -1) return null;
+      store.filingCabinet[idx] = { ...store.filingCabinet[idx], ...data, updated_at: new Date().toISOString() };
+      return store.filingCabinet[idx];
+    },
+  },
+
+  // ── Saved Time Metrics ───────────────────────────────────────────────────────
+  savedTimeMetrics: {
+    findAll: () => store.savedTimeMetrics,
+    findByHome: (homeId: string) => store.savedTimeMetrics.filter((m) => m.home_id === homeId),
+    findByStaff: (staffId: string) => store.savedTimeMetrics.filter((m) => m.staff_id === staffId),
+    findByCareEvent: (careEventId: string) => store.savedTimeMetrics.filter((m) => m.care_event_id === careEventId),
+    totalMinutesSaved: (homeId: string): number =>
+      store.savedTimeMetrics.filter((m) => m.home_id === homeId).reduce((sum, m) => sum + m.minutes_saved, 0),
+    upsert: (data: Omit<SavedTimeMetric, "id" | "created_at">): SavedTimeMetric => {
+      const now = new Date().toISOString();
+      const existing = store.savedTimeMetrics.findIndex(
+        (m) => m.care_event_id === data.care_event_id && m.route_type === data.route_type
+      );
+      if (existing !== -1) {
+        store.savedTimeMetrics[existing] = { ...store.savedTimeMetrics[existing], ...data };
+        return store.savedTimeMetrics[existing];
+      }
+      const metric: SavedTimeMetric = { ...data, id: generateId("stm"), created_at: now };
+      store.savedTimeMetrics.push(metric);
+      return metric;
     },
   },
 };

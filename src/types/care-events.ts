@@ -386,6 +386,80 @@ export const CARE_EVENT_CATEGORY_LABEL: Record<CareEventCategory, string> = {
   other: "Other",
 };
 
+// ── Filing Cabinet ────────────────────────────────────────────────────────────
+
+export type FilingCategory =
+  | "daily_care"
+  | "incident"
+  | "health"
+  | "medication"
+  | "education"
+  | "safeguarding"
+  | "missing_episode"
+  | "physical_intervention"
+  | "family_contact"
+  | "professional_contact"
+  | "complaint"
+  | "regulation_45"
+  | "annex_a"
+  | "regulation_40"
+  | "management_oversight"
+  | "other";
+
+export interface FilingCabinetItem {
+  id: string;
+  care_event_id: string;
+  home_id: string;
+  child_id: string | null;
+  category: FilingCategory;
+  sub_category: string | null;
+  title: string;
+  description: string | null;
+  source_type: string;
+  linked_record_id: string | null;
+  linked_record_table: string | null;
+  is_verified: boolean;
+  verified_at: string | null;
+  verified_by: string | null;
+  tags: string[];
+  filed_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Saved Time Metric ─────────────────────────────────────────────────────────
+
+export interface SavedTimeMetric {
+  id: string;
+  care_event_id: string;
+  home_id: string;
+  route_type: RouteType;
+  minutes_saved: number;
+  activity_description: string;
+  staff_id: string;
+  recorded_at: string;
+  created_at: string;
+}
+
+export const FILING_CATEGORY_LABEL: Record<FilingCategory, string> = {
+  daily_care: "Daily Care",
+  incident: "Incident",
+  health: "Health",
+  medication: "Medication",
+  education: "Education",
+  safeguarding: "Safeguarding",
+  missing_episode: "Missing Episode",
+  physical_intervention: "Physical Intervention",
+  family_contact: "Family Contact",
+  professional_contact: "Professional Contact",
+  complaint: "Complaint",
+  regulation_45: "Regulation 45",
+  annex_a: "Annex A",
+  regulation_40: "Regulation 40",
+  management_oversight: "Management Oversight",
+  other: "Other",
+};
+
 export const ROUTE_TYPE_LABEL: Record<RouteType, string> = {
   daily_log: "Daily Log",
   child_daily_summary: "Child Daily Summary",
