@@ -356,6 +356,13 @@ import type {
   TransitionPlanningRecord,
   TransportLogRecord,
   UnannouncedVisitRecord,
+  UtilityMonitoringRecord,
+  VisitorsFeedbackRecord,
+  WaterHygieneRecord,
+  WellbeingPulseSurveyRecord,
+  WhistleblowingRecord,
+  WBInvestigationRecord,
+  YPSavingsAccountRecord,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -795,6 +802,13 @@ const store = {
   transitionPlanningRecords: [] as TransitionPlanningRecord[],
   transportLogRecords: [] as TransportLogRecord[],
   unannouncedVisitRecords: [] as UnannouncedVisitRecord[],
+  utilityMonitoringRecords: [] as UtilityMonitoringRecord[],
+  visitorsFeedbackRecords: [] as VisitorsFeedbackRecord[],
+  waterHygieneRecords: [] as WaterHygieneRecord[],
+  wellbeingPulseSurveyRecords: [] as WellbeingPulseSurveyRecord[],
+  whistleblowingRecords: [] as WhistleblowingRecord[],
+  wbInvestigationRecords: [] as WBInvestigationRecord[],
+  ypSavingsAccountRecords: [] as YPSavingsAccountRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -9726,6 +9740,111 @@ export const db = {
       if (idx === -1) return null;
       store.unannouncedVisitRecords[idx] = { ...store.unannouncedVisitRecords[idx], ...data };
       return store.unannouncedVisitRecords[idx];
+    },
+  },
+
+  utilityMonitoringRecords: {
+    getAll: () => store.utilityMonitoringRecords,
+    create: (data: Omit<UtilityMonitoringRecord, "id">) => {
+      const record = { ...data, id: generateId("umr_") } as UtilityMonitoringRecord;
+      store.utilityMonitoringRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<UtilityMonitoringRecord>) => {
+      const idx = store.utilityMonitoringRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.utilityMonitoringRecords[idx] = { ...store.utilityMonitoringRecords[idx], ...data };
+      return store.utilityMonitoringRecords[idx];
+    },
+  },
+
+  visitorsFeedbackRecords: {
+    getAll: () => store.visitorsFeedbackRecords,
+    create: (data: Omit<VisitorsFeedbackRecord, "id">) => {
+      const record = { ...data, id: generateId("vfr_") } as VisitorsFeedbackRecord;
+      store.visitorsFeedbackRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<VisitorsFeedbackRecord>) => {
+      const idx = store.visitorsFeedbackRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.visitorsFeedbackRecords[idx] = { ...store.visitorsFeedbackRecords[idx], ...data };
+      return store.visitorsFeedbackRecords[idx];
+    },
+  },
+
+  waterHygieneRecords: {
+    getAll: () => store.waterHygieneRecords,
+    create: (data: Omit<WaterHygieneRecord, "id">) => {
+      const record = { ...data, id: generateId("whr_") } as WaterHygieneRecord;
+      store.waterHygieneRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<WaterHygieneRecord>) => {
+      const idx = store.waterHygieneRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.waterHygieneRecords[idx] = { ...store.waterHygieneRecords[idx], ...data };
+      return store.waterHygieneRecords[idx];
+    },
+  },
+
+  wellbeingPulseSurveyRecords: {
+    getAll: () => store.wellbeingPulseSurveyRecords,
+    create: (data: Omit<WellbeingPulseSurveyRecord, "id">) => {
+      const record = { ...data, id: generateId("wpsr_") } as WellbeingPulseSurveyRecord;
+      store.wellbeingPulseSurveyRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<WellbeingPulseSurveyRecord>) => {
+      const idx = store.wellbeingPulseSurveyRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.wellbeingPulseSurveyRecords[idx] = { ...store.wellbeingPulseSurveyRecords[idx], ...data };
+      return store.wellbeingPulseSurveyRecords[idx];
+    },
+  },
+
+  whistleblowingRecords: {
+    getAll: () => store.whistleblowingRecords,
+    create: (data: Omit<WhistleblowingRecord, "id">) => {
+      const record = { ...data, id: generateId("wbr_") } as WhistleblowingRecord;
+      store.whistleblowingRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<WhistleblowingRecord>) => {
+      const idx = store.whistleblowingRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.whistleblowingRecords[idx] = { ...store.whistleblowingRecords[idx], ...data };
+      return store.whistleblowingRecords[idx];
+    },
+  },
+
+  wbInvestigationRecords: {
+    getAll: () => store.wbInvestigationRecords,
+    create: (data: Omit<WBInvestigationRecord, "id">) => {
+      const record = { ...data, id: generateId("wbir_") } as WBInvestigationRecord;
+      store.wbInvestigationRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<WBInvestigationRecord>) => {
+      const idx = store.wbInvestigationRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.wbInvestigationRecords[idx] = { ...store.wbInvestigationRecords[idx], ...data };
+      return store.wbInvestigationRecords[idx];
+    },
+  },
+
+  ypSavingsAccountRecords: {
+    getAll: () => store.ypSavingsAccountRecords,
+    create: (data: Omit<YPSavingsAccountRecord, "id">) => {
+      const record = { ...data, id: generateId("ysar_") } as YPSavingsAccountRecord;
+      store.ypSavingsAccountRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<YPSavingsAccountRecord>) => {
+      const idx = store.ypSavingsAccountRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ypSavingsAccountRecords[idx] = { ...store.ypSavingsAccountRecords[idx], ...data };
+      return store.ypSavingsAccountRecords[idx];
     },
   },
 };

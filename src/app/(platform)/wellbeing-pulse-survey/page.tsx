@@ -6,6 +6,7 @@ import {
   TrendingUp, TrendingDown, Minus, Sparkles,
   ChevronDown, ChevronUp, MessageCircle, Quote,
   AlertTriangle, CheckCircle2, Smile, Calendar,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -17,213 +18,56 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { useWellbeingPulseSurveyRecords } from "@/hooks/use-wellbeing-pulse-survey-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type {
+  WellbeingPulseSurveyRecord,
+  WellbeingPulseMethod,
+  WellbeingPulseTrend,
+  WellbeingPulseDimension,
+} from "@/types/extended";
+import {
+  WELLBEING_PULSE_METHOD_LABEL,
+  WELLBEING_PULSE_TREND_LABEL,
+  WELLBEING_PULSE_DIMENSION_LABEL,
+} from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
+/* ── helpers ───────────────────────────────────────────────────────────── */
 const d = (n: number) => {
   const dt = new Date();
   dt.setDate(dt.getDate() + n);
   return dt.toISOString().slice(0, 10);
 };
 
-/* ── types ───────────────────────────────────────────────────────────── */
-const METHODS = [
-  "Visual cards", "1-10 scale", "Conversation",
-  "Drawing", "Emoji selection", "Written",
-] as const;
-type Method = typeof METHODS[number];
+/* ── local config (icons / colours — not serialisable) ─────────────────── */
 
-const METHOD_COLORS: Record<Method, string> = {
-  "Visual cards": "bg-purple-100 text-purple-800",
-  "1-10 scale": "bg-blue-100 text-blue-800",
-  "Conversation": "bg-green-100 text-green-800",
-  "Drawing": "bg-pink-100 text-pink-800",
-  "Emoji selection": "bg-yellow-100 text-yellow-800",
-  "Written": "bg-slate-100 text-slate-800",
+const METHOD_COLORS: Record<WellbeingPulseMethod, string> = {
+  visual_cards: "bg-purple-100 text-purple-800",
+  one_to_ten_scale: "bg-blue-100 text-blue-800",
+  conversation: "bg-green-100 text-green-800",
+  drawing: "bg-pink-100 text-pink-800",
+  emoji_selection: "bg-yellow-100 text-yellow-800",
+  written: "bg-slate-100 text-slate-800",
 };
 
-const TRENDS = ["Up", "Stable", "Down", "First survey"] as const;
-type Trend = typeof TRENDS[number];
-
-const TREND_CONFIG: Record<Trend, { color: string; icon: typeof TrendingUp }> = {
-  "Up": { color: "bg-green-100 text-green-800", icon: TrendingUp },
-  "Stable": { color: "bg-blue-100 text-blue-800", icon: Minus },
-  "Down": { color: "bg-red-100 text-red-800", icon: TrendingDown },
-  "First survey": { color: "bg-slate-100 text-slate-700", icon: Sparkles },
+const TREND_CONFIG: Record<WellbeingPulseTrend, { color: string; icon: typeof TrendingUp }> = {
+  up: { color: "bg-green-100 text-green-800", icon: TrendingUp },
+  stable: { color: "bg-blue-100 text-blue-800", icon: Minus },
+  down: { color: "bg-red-100 text-red-800", icon: TrendingDown },
+  first_survey: { color: "bg-slate-100 text-slate-700", icon: Sparkles },
 };
 
-const DIMENSIONS = [
-  "Feeling safe",
-  "Feeling listened to",
-  "Friendships",
-  "School/Activities",
-  "Family/Contact",
-  "Mood today",
-] as const;
-type Dimension = typeof DIMENSIONS[number];
-
-interface PulseSurvey {
-  id: string;
-  youngPerson: string;
-  date: string;
-  conductedBy: string;
-  method: Method;
-  durationMinutes: number;
-  scores: Record<Dimension, number>;
-  overallScore: number;
-  verbatimQuote: string;
-  keyThemes: string[];
-  staffObservations: string;
-  trendVsLast: Trend;
-  actionsArising: string[];
-  followUpNeeded: boolean;
-  followUpBy: string;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: PulseSurvey[] = [
-  /* ── ALEX — improving trend ─────────────────────────────────── */
-  {
-    id: "pulse_1", youngPerson: "yp_alex", date: d(-1), conductedBy: "staff_darren",
-    method: "Visual cards", durationMinutes: 12,
-    scores: {
-      "Feeling safe": 9, "Feeling listened to": 8, "Friendships": 7,
-      "School/Activities": 6, "Family/Contact": 5, "Mood today": 8,
-    },
-    overallScore: 7.2,
-    verbatimQuote: "I feel like staff actually listen now. Mum visit last week was good — better than before.",
-    keyThemes: ["Improved trust", "Family contact going well", "Still mixed about school"],
-    staffObservations: "Alex was settled and chatty during the check-in. Made strong eye contact. Picked the 'happy lion' card for mood and said it represented feeling brave.",
-    trendVsLast: "Up",
-    actionsArising: ["Continue current key work approach", "Plan next family contact"],
-    followUpNeeded: false, followUpBy: "",
-  },
-  {
-    id: "pulse_2", youngPerson: "yp_alex", date: d(-8), conductedBy: "staff_anna",
-    method: "1-10 scale", durationMinutes: 8,
-    scores: {
-      "Feeling safe": 8, "Feeling listened to": 7, "Friendships": 6,
-      "School/Activities": 5, "Family/Contact": 4, "Mood today": 6,
-    },
-    overallScore: 6.0,
-    verbatimQuote: "It's alright here. Better than the last place.",
-    keyThemes: ["Settling in", "School worries", "Family contact uncertain"],
-    staffObservations: "Quick chat after dinner. Alex engaged with the scale tool willingly. Some hesitation around family questions.",
-    trendVsLast: "Up",
-    actionsArising: ["Discuss family contact plans with SW", "Follow up on test anxiety"],
-    followUpNeeded: true, followUpBy: "staff_darren",
-  },
-  {
-    id: "pulse_3", youngPerson: "yp_alex", date: d(-16), conductedBy: "staff_darren",
-    method: "Conversation", durationMinutes: 15,
-    scores: {
-      "Feeling safe": 6, "Feeling listened to": 5, "Friendships": 4,
-      "School/Activities": 3, "Family/Contact": 3, "Mood today": 4,
-    },
-    overallScore: 4.2,
-    verbatimQuote: "I just want to go home. Nobody gets it.",
-    keyThemes: ["Low mood", "Missing family", "Disconnection from school"],
-    staffObservations: "Alex was quiet and tearful at points. Cuddled toy dog throughout. Took breaks when needed. Honest engagement despite difficulty.",
-    trendVsLast: "First survey",
-    actionsArising: ["CAMHS referral discussion", "Daily key work check-ins", "Liaise with school re: bullying"],
-    followUpNeeded: true, followUpBy: "staff_darren",
-  },
-  /* ── JORDAN — stable, slight dip ────────────────────────────── */
-  {
-    id: "pulse_4", youngPerson: "yp_jordan", date: d(-2), conductedBy: "staff_chervelle",
-    method: "Emoji selection", durationMinutes: 6,
-    scores: {
-      "Feeling safe": 9, "Feeling listened to": 8, "Friendships": 8,
-      "School/Activities": 7, "Family/Contact": 6, "Mood today": 7,
-    },
-    overallScore: 7.5,
-    verbatimQuote: "Things are okay. The football trial made me feel proud.",
-    keyThemes: ["Football achievement", "Stable mood", "Mild contact uncertainty"],
-    staffObservations: "Jordan picked the 'thinking face' for mood today — explained it as 'lots on my mind but not bad'. Comfortable with the emoji format.",
-    trendVsLast: "Stable",
-    actionsArising: ["Celebrate football trial result with family"],
-    followUpNeeded: false, followUpBy: "",
-  },
-  {
-    id: "pulse_5", youngPerson: "yp_jordan", date: d(-9), conductedBy: "staff_edward",
-    method: "Conversation", durationMinutes: 10,
-    scores: {
-      "Feeling safe": 9, "Feeling listened to": 8, "Friendships": 8,
-      "School/Activities": 8, "Family/Contact": 7, "Mood today": 8,
-    },
-    overallScore: 8.0,
-    verbatimQuote: "I had a really good week. Coach said I might make the squad.",
-    keyThemes: ["Sport progression", "Strong friendships", "Positive engagement"],
-    staffObservations: "Jordan volunteered for the chat. Animated and positive. Shared detail about football and a new friend.",
-    trendVsLast: "Up",
-    actionsArising: ["Support football trial preparation"],
-    followUpNeeded: false, followUpBy: "",
-  },
-  {
-    id: "pulse_6", youngPerson: "yp_jordan", date: d(-17), conductedBy: "staff_anna",
-    method: "1-10 scale", durationMinutes: 7,
-    scores: {
-      "Feeling safe": 8, "Feeling listened to": 7, "Friendships": 7,
-      "School/Activities": 7, "Family/Contact": 6, "Mood today": 7,
-    },
-    overallScore: 7.0,
-    verbatimQuote: "Most days are alright. Just miss my brother sometimes.",
-    keyThemes: ["Sibling contact", "Generally positive", "Settled"],
-    staffObservations: "Jordan thoughtful but engaged. Used the scale confidently. Mentioned brother three times.",
-    trendVsLast: "Stable",
-    actionsArising: ["Increase sibling contact frequency if possible"],
-    followUpNeeded: true, followUpBy: "staff_darren",
-  },
-  /* ── CASEY — concerning downward trend ──────────────────────── */
-  {
-    id: "pulse_7", youngPerson: "yp_casey", date: d(-3), conductedBy: "staff_anna",
-    method: "Drawing", durationMinutes: 18,
-    scores: {
-      "Feeling safe": 7, "Feeling listened to": 6, "Friendships": 4,
-      "School/Activities": 3, "Family/Contact": 3, "Mood today": 4,
-    },
-    overallScore: 4.5,
-    verbatimQuote: "It's hard. I drew a storm because that's what's in my head most days.",
-    keyThemes: ["Low mood", "Friendship struggles", "College disengagement"],
-    staffObservations: "Casey chose drawing — produced a stormy seascape. Articulate about meaning. Withdrawn before but warmed up. Tearful when discussing college peers.",
-    trendVsLast: "Down",
-    actionsArising: ["CAMHS appointment review", "College support meeting", "Daily check-ins increased"],
-    followUpNeeded: true, followUpBy: "staff_darren",
-  },
-  {
-    id: "pulse_8", youngPerson: "yp_casey", date: d(-10), conductedBy: "staff_chervelle",
-    method: "Visual cards", durationMinutes: 14,
-    scores: {
-      "Feeling safe": 7, "Feeling listened to": 7, "Friendships": 5,
-      "School/Activities": 5, "Family/Contact": 4, "Mood today": 5,
-    },
-    overallScore: 5.5,
-    verbatimQuote: "Some days are okay. I picked the cloudy card because that's how my head feels.",
-    keyThemes: ["Mood dip", "College pressure", "Limited family contact"],
-    staffObservations: "Casey willing to engage but quieter than recent weeks. Cards used effectively — chose 'cloudy' deliberately.",
-    trendVsLast: "Down",
-    actionsArising: ["Wellbeing plan review", "Speak with CAMHS keyworker"],
-    followUpNeeded: true, followUpBy: "staff_anna",
-  },
-  {
-    id: "pulse_9", youngPerson: "yp_casey", date: d(-18), conductedBy: "staff_edward",
-    method: "Written", durationMinutes: 11,
-    scores: {
-      "Feeling safe": 8, "Feeling listened to": 8, "Friendships": 7,
-      "School/Activities": 7, "Family/Contact": 5, "Mood today": 7,
-    },
-    overallScore: 7.0,
-    verbatimQuote: "Life here feels safe. I wrote a poem about it last week — staff are like a roof.",
-    keyThemes: ["Settled", "Creative expression", "Mild family worry"],
-    staffObservations: "Casey wrote responses on a worksheet, then read them aloud. Confident and reflective. Strong emotional vocabulary.",
-    trendVsLast: "Stable",
-    actionsArising: ["Encourage continued creative outlets"],
-    followUpNeeded: false, followUpBy: "",
-  },
+const ALL_DIMENSIONS: WellbeingPulseDimension[] = [
+  "feeling_safe", "feeling_listened_to", "friendships",
+  "school_activities", "family_contact", "mood_today",
 ];
 
-/* ── component ───────────────────────────────────────────────────────── */
+const ALL_METHODS: WellbeingPulseMethod[] = ["visual_cards", "one_to_ten_scale", "conversation", "drawing", "emoji_selection", "written"];
+const ALL_TRENDS: WellbeingPulseTrend[] = ["up", "stable", "down", "first_survey"];
+
+/* ── component ──────────────────────────────────────────────────────────── */
 export default function WellbeingPulseSurveyPage() {
-  const [records] = useState<PulseSurvey[]>(SEED);
+  const { data: records = [], isLoading } = useWellbeingPulseSurveyRecords();
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");
   const [filterTrend, setFilterTrend] = useState("all");
@@ -237,23 +81,23 @@ export default function WellbeingPulseSurveyPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          r.verbatimQuote.toLowerCase().includes(q) ||
-          r.staffObservations.toLowerCase().includes(q) ||
-          r.keyThemes.some((t) => t.toLowerCase().includes(q)) ||
-          r.actionsArising.some((a) => a.toLowerCase().includes(q))
+          r.verbatim_quote.toLowerCase().includes(q) ||
+          r.staff_observations.toLowerCase().includes(q) ||
+          r.key_themes.some((t) => t.toLowerCase().includes(q)) ||
+          r.actions_arising.some((a) => a.toLowerCase().includes(q))
       );
     }
-    if (filterYP !== "all") list = list.filter((r) => r.youngPerson === filterYP);
-    if (filterTrend !== "all") list = list.filter((r) => r.trendVsLast === filterTrend);
+    if (filterYP !== "all") list = list.filter((r) => r.child_id === filterYP);
+    if (filterTrend !== "all") list = list.filter((r) => r.trend_vs_last === filterTrend);
     if (filterMethod !== "all") list = list.filter((r) => r.method === filterMethod);
 
     list.sort((a, b) => {
       switch (sortBy) {
         case "date": return b.date.localeCompare(a.date);
-        case "yp": return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
-        case "score-high": return b.overallScore - a.overallScore;
-        case "score-low": return a.overallScore - b.overallScore;
-        case "trend": return a.trendVsLast.localeCompare(b.trendVsLast);
+        case "yp": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "score-high": return b.overall_score - a.overall_score;
+        case "score-low": return a.overall_score - b.overall_score;
+        case "trend": return a.trend_vs_last.localeCompare(b.trend_vs_last);
         default: return 0;
       }
     });
@@ -264,35 +108,35 @@ export default function WellbeingPulseSurveyPage() {
   const sevenDaysAgo = d(-7);
   const thisWeek = records.filter((r) => r.date >= sevenDaysAgo).length;
   const avgOverall = records.length === 0 ? 0
-    : records.reduce((s, r) => s + r.overallScore, 0) / records.length;
-  const trendUp = records.filter((r) => r.trendVsLast === "Up").length;
-  const trendStable = records.filter((r) => r.trendVsLast === "Stable").length;
-  const trendDown = records.filter((r) => r.trendVsLast === "Down").length;
-  const followUps = records.filter((r) => r.followUpNeeded).length;
+    : records.reduce((s, r) => s + r.overall_score, 0) / records.length;
+  const trendUp = records.filter((r) => r.trend_vs_last === "up").length;
+  const trendStable = records.filter((r) => r.trend_vs_last === "stable").length;
+  const trendDown = records.filter((r) => r.trend_vs_last === "down").length;
+  const followUps = records.filter((r) => r.follow_up_needed).length;
 
-  const ypIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const ypIds = useMemo(() => [...new Set(records.map((r) => r.child_id))], [records]);
 
-  const exportCols: ExportColumn<PulseSurvey>[] = [
-    { header: "ID", accessor: (r: PulseSurvey) => r.id },
-    { header: "Young Person", accessor: (r: PulseSurvey) => getYPName(r.youngPerson) },
-    { header: "Date", accessor: (r: PulseSurvey) => r.date },
-    { header: "Conducted By", accessor: (r: PulseSurvey) => getStaffName(r.conductedBy) },
-    { header: "Method", accessor: (r: PulseSurvey) => r.method },
-    { header: "Duration (min)", accessor: (r: PulseSurvey) => r.durationMinutes },
-    { header: "Feeling Safe", accessor: (r: PulseSurvey) => r.scores["Feeling safe"] },
-    { header: "Feeling Listened To", accessor: (r: PulseSurvey) => r.scores["Feeling listened to"] },
-    { header: "Friendships", accessor: (r: PulseSurvey) => r.scores["Friendships"] },
-    { header: "School/Activities", accessor: (r: PulseSurvey) => r.scores["School/Activities"] },
-    { header: "Family/Contact", accessor: (r: PulseSurvey) => r.scores["Family/Contact"] },
-    { header: "Mood Today", accessor: (r: PulseSurvey) => r.scores["Mood today"] },
-    { header: "Overall Score", accessor: (r: PulseSurvey) => r.overallScore.toFixed(1) },
-    { header: "Verbatim Quote", accessor: (r: PulseSurvey) => r.verbatimQuote },
-    { header: "Key Themes", accessor: (r: PulseSurvey) => r.keyThemes.join("; ") },
-    { header: "Staff Observations", accessor: (r: PulseSurvey) => r.staffObservations },
-    { header: "Trend", accessor: (r: PulseSurvey) => r.trendVsLast },
-    { header: "Actions Arising", accessor: (r: PulseSurvey) => r.actionsArising.join("; ") },
-    { header: "Follow-Up Needed", accessor: (r: PulseSurvey) => r.followUpNeeded ? "Yes" : "No" },
-    { header: "Follow-Up By", accessor: (r: PulseSurvey) => r.followUpBy ? getStaffName(r.followUpBy) : "" },
+  const exportCols: ExportColumn<WellbeingPulseSurveyRecord>[] = [
+    { header: "ID", accessor: (r: WellbeingPulseSurveyRecord) => r.id },
+    { header: "Young Person", accessor: (r: WellbeingPulseSurveyRecord) => getYPName(r.child_id) },
+    { header: "Date", accessor: (r: WellbeingPulseSurveyRecord) => r.date },
+    { header: "Conducted By", accessor: (r: WellbeingPulseSurveyRecord) => getStaffName(r.conducted_by) },
+    { header: "Method", accessor: (r: WellbeingPulseSurveyRecord) => WELLBEING_PULSE_METHOD_LABEL[r.method] },
+    { header: "Duration (min)", accessor: (r: WellbeingPulseSurveyRecord) => r.duration_minutes },
+    { header: "Feeling Safe", accessor: (r: WellbeingPulseSurveyRecord) => r.scores.feeling_safe },
+    { header: "Feeling Listened To", accessor: (r: WellbeingPulseSurveyRecord) => r.scores.feeling_listened_to },
+    { header: "Friendships", accessor: (r: WellbeingPulseSurveyRecord) => r.scores.friendships },
+    { header: "School/Activities", accessor: (r: WellbeingPulseSurveyRecord) => r.scores.school_activities },
+    { header: "Family/Contact", accessor: (r: WellbeingPulseSurveyRecord) => r.scores.family_contact },
+    { header: "Mood Today", accessor: (r: WellbeingPulseSurveyRecord) => r.scores.mood_today },
+    { header: "Overall Score", accessor: (r: WellbeingPulseSurveyRecord) => r.overall_score.toFixed(1) },
+    { header: "Verbatim Quote", accessor: (r: WellbeingPulseSurveyRecord) => r.verbatim_quote },
+    { header: "Key Themes", accessor: (r: WellbeingPulseSurveyRecord) => r.key_themes.join("; ") },
+    { header: "Staff Observations", accessor: (r: WellbeingPulseSurveyRecord) => r.staff_observations },
+    { header: "Trend", accessor: (r: WellbeingPulseSurveyRecord) => WELLBEING_PULSE_TREND_LABEL[r.trend_vs_last] },
+    { header: "Actions Arising", accessor: (r: WellbeingPulseSurveyRecord) => r.actions_arising.join("; ") },
+    { header: "Follow-Up Needed", accessor: (r: WellbeingPulseSurveyRecord) => r.follow_up_needed ? "Yes" : "No" },
+    { header: "Follow-Up By", accessor: (r: WellbeingPulseSurveyRecord) => r.follow_up_by ? getStaffName(r.follow_up_by) : "" },
   ];
 
   const scoreColor = (n: number) =>
@@ -304,6 +148,16 @@ export default function WellbeingPulseSurveyPage() {
     n >= 8 ? "bg-green-500" :
     n >= 6 ? "bg-blue-500" :
     n >= 4 ? "bg-amber-500" : "bg-red-500";
+
+  if (isLoading) {
+    return (
+      <PageShell title="Wellbeing Pulse Survey" subtitle="Short, frequent check-ins capturing each child's voice — distinct from full assessments">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -317,7 +171,7 @@ export default function WellbeingPulseSurveyPage() {
       }
     >
       <div id="print-area" className="space-y-6">
-        {/* ── stats ─────────────────────────────────────────────── */}
+        {/* ── stats ──────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="rounded-xl border bg-white p-4 flex items-center gap-3">
             <Calendar className="h-5 w-5 text-blue-600" />
@@ -358,7 +212,7 @@ export default function WellbeingPulseSurveyPage() {
           </div>
         </div>
 
-        {/* ── alerts ────────────────────────────────────────────── */}
+        {/* ── alerts ──────────────────────────────────────────────────── */}
         {trendDown > 0 && (
           <div className="rounded-lg border-l-4 border-red-400 bg-red-50 p-4">
             <div className="flex items-start gap-2">
@@ -371,7 +225,7 @@ export default function WellbeingPulseSurveyPage() {
           </div>
         )}
 
-        {/* ── filters ───────────────────────────────────────────── */}
+        {/* ── filters ────────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 items-end">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -398,8 +252,8 @@ export default function WellbeingPulseSurveyPage() {
             <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Trends</SelectItem>
-              {TRENDS.map((t) => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
+              {ALL_TRENDS.map((t) => (
+                <SelectItem key={t} value={t}>{WELLBEING_PULSE_TREND_LABEL[t]}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -407,8 +261,8 @@ export default function WellbeingPulseSurveyPage() {
             <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Methods</SelectItem>
-              {METHODS.map((m) => (
-                <SelectItem key={m} value={m}>{m}</SelectItem>
+              {ALL_METHODS.map((m) => (
+                <SelectItem key={m} value={m}>{WELLBEING_PULSE_METHOD_LABEL[m]}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -427,14 +281,14 @@ export default function WellbeingPulseSurveyPage() {
           </div>
         </div>
 
-        {/* ── list ──────────────────────────────────────────────── */}
+        {/* ── list ───────────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">No pulse surveys match your filters.</div>
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;
-            const trendCfg = TREND_CONFIG[rec.trendVsLast];
+            const trendCfg = TREND_CONFIG[rec.trend_vs_last];
             const TrendIcon = trendCfg.icon;
             return (
               <div key={rec.id} className="rounded-xl border bg-white overflow-hidden">
@@ -443,25 +297,25 @@ export default function WellbeingPulseSurveyPage() {
                   onClick={() => setExpandedId(isExpanded ? null : rec.id)}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <HeartPulse className={cn("h-5 w-5 shrink-0", scoreColor(rec.overallScore))} />
+                    <HeartPulse className={cn("h-5 w-5 shrink-0", scoreColor(rec.overall_score))} />
                     <div className="min-w-0">
                       <p className="font-medium">
-                        {getYPName(rec.youngPerson)} — {rec.date}
+                        {getYPName(rec.child_id)} — {rec.date}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {rec.method} · {rec.durationMinutes} min · {getStaffName(rec.conductedBy)}
+                        {WELLBEING_PULSE_METHOD_LABEL[rec.method]} · {rec.duration_minutes} min · {getStaffName(rec.conducted_by)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={cn("text-sm font-bold tabular-nums", scoreColor(rec.overallScore))}>
-                      {rec.overallScore.toFixed(1)}
+                    <span className={cn("text-sm font-bold tabular-nums", scoreColor(rec.overall_score))}>
+                      {rec.overall_score.toFixed(1)}
                     </span>
                     <Badge className={cn("text-xs gap-1", trendCfg.color)}>
                       <TrendIcon className="h-3 w-3" />
-                      {rec.trendVsLast}
+                      {WELLBEING_PULSE_TREND_LABEL[rec.trend_vs_last]}
                     </Badge>
-                    {rec.followUpNeeded && (
+                    {rec.follow_up_needed && (
                       <Badge className="bg-amber-100 text-amber-800 text-xs">Follow-up</Badge>
                     )}
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -473,15 +327,15 @@ export default function WellbeingPulseSurveyPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Method:</span>{" "}
-                        <Badge className={cn("text-xs", METHOD_COLORS[rec.method])}>{rec.method}</Badge>
+                        <Badge className={cn("text-xs", METHOD_COLORS[rec.method])}>{WELLBEING_PULSE_METHOD_LABEL[rec.method]}</Badge>
                       </div>
-                      <div><span className="text-muted-foreground">Duration:</span> <span className="font-medium">{rec.durationMinutes} min</span></div>
-                      <div><span className="text-muted-foreground">Conducted by:</span> <span className="font-medium">{getStaffName(rec.conductedBy)}</span></div>
+                      <div><span className="text-muted-foreground">Duration:</span> <span className="font-medium">{rec.duration_minutes} min</span></div>
+                      <div><span className="text-muted-foreground">Conducted by:</span> <span className="font-medium">{getStaffName(rec.conducted_by)}</span></div>
                       <div className="flex items-center gap-1">
-                        {rec.followUpNeeded ? (
+                        {rec.follow_up_needed ? (
                           <>
                             <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
-                            <span>Follow-up: <strong>{getStaffName(rec.followUpBy)}</strong></span>
+                            <span>Follow-up: <strong>{getStaffName(rec.follow_up_by)}</strong></span>
                           </>
                         ) : (
                           <>
@@ -496,12 +350,12 @@ export default function WellbeingPulseSurveyPage() {
                     <div className="rounded-lg bg-white border p-4">
                       <p className="text-xs font-medium text-slate-600 mb-3">Dimension Scores</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {DIMENSIONS.map((dim) => {
+                        {ALL_DIMENSIONS.map((dim) => {
                           const v = rec.scores[dim];
                           return (
                             <div key={dim}>
                               <div className="flex justify-between text-xs mb-1">
-                                <span className="text-slate-700">{dim}</span>
+                                <span className="text-slate-700">{WELLBEING_PULSE_DIMENSION_LABEL[dim]}</span>
                                 <span className={cn("font-bold tabular-nums", scoreColor(v))}>{v}/10</span>
                               </div>
                               <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -522,17 +376,17 @@ export default function WellbeingPulseSurveyPage() {
                         <Quote className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-medium text-purple-700 mb-1">Child&apos;s Own Words</p>
-                          <p className="text-sm italic text-purple-900">&ldquo;{rec.verbatimQuote}&rdquo;</p>
+                          <p className="text-sm italic text-purple-900">&ldquo;{rec.verbatim_quote}&rdquo;</p>
                         </div>
                       </div>
                     </div>
 
                     {/* key themes */}
-                    {rec.keyThemes.length > 0 && (
+                    {rec.key_themes.length > 0 && (
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs font-medium text-slate-600 mb-2">Key Themes</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {rec.keyThemes.map((t, i) => (
+                          {rec.key_themes.map((t, i) => (
                             <Badge key={i} className="bg-blue-50 text-blue-700 border border-blue-200 text-xs">
                               {t}
                             </Badge>
@@ -547,17 +401,17 @@ export default function WellbeingPulseSurveyPage() {
                         <MessageCircle className="h-4 w-4 text-slate-500 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-medium text-slate-600 mb-1">Staff Observations</p>
-                          <p className="text-sm">{rec.staffObservations}</p>
+                          <p className="text-sm">{rec.staff_observations}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* actions arising */}
-                    {rec.actionsArising.length > 0 && (
+                    {rec.actions_arising.length > 0 && (
                       <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                         <p className="text-xs font-medium text-amber-800 mb-2">Actions Arising</p>
                         <ul className="text-sm space-y-1">
-                          {rec.actionsArising.map((a, i) => (
+                          {rec.actions_arising.map((a, i) => (
                             <li key={i} className="flex items-start gap-1.5">
                               <span className="text-amber-600 mt-0.5">•</span>
                               <span>{a}</span>
@@ -566,6 +420,14 @@ export default function WellbeingPulseSurveyPage() {
                         </ul>
                       </div>
                     )}
+
+                    {/* smart link panel */}
+                    <SmartLinkPanel
+                      sourceType="wellbeing-pulse-survey-record"
+                      sourceId={rec.id}
+                      childId={rec.child_id}
+                      compact
+                    />
                   </div>
                 )}
               </div>
@@ -573,7 +435,7 @@ export default function WellbeingPulseSurveyPage() {
           })}
         </div>
 
-        {/* ── reg note ──────────────────────────────────────────── */}
+        {/* ── reg note ───────────────────────────────────────────────── */}
         <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">
           <strong>Quality Standards 1 &amp; 7:</strong> The Children&apos;s Homes (England) Regulations 2015
           require homes to ensure children are listened to and that their wishes and feelings are

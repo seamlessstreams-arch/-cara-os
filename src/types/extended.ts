@@ -21280,3 +21280,184 @@ export interface UnannouncedVisitRecord {
   overall_assessment: UnannouncedVisitOverallAssessment;
   follow_up_date: string;
 }
+
+// ── Utility Monitoring ──────────────────────────────────────────────────────
+export type UtilityMonitoringType = "electricity" | "gas" | "water" | "broadband";
+export const UTILITY_MONITORING_TYPE_LABEL: Record<UtilityMonitoringType, string> = { electricity: "Electricity", gas: "Gas", water: "Water", broadband: "Broadband" };
+export interface UtilityMonitoringRecord {
+  id: string;
+  utility_type: UtilityMonitoringType;
+  period: string;
+  meter_reading: number;
+  previous_reading: number;
+  usage: number;
+  unit: string;
+  cost: number;
+  budget_allocation: number;
+  variance: number;
+  supplier: string;
+  contract_end: string;
+  notes: string;
+}
+
+// ── Visitors Feedback ───────────────────────────────────────────────────────
+export type VisitorsFeedbackRole = "reg44" | "social_worker" | "family" | "professional" | "iro" | "other";
+export const VISITORS_FEEDBACK_ROLE_LABEL: Record<VisitorsFeedbackRole, string> = { reg44: "Reg 44 Visitor", social_worker: "Social Worker", family: "Family Member", professional: "Professional", iro: "IRO", other: "Other Visitor" };
+export interface VisitorsFeedbackRecord {
+  id: string;
+  visitor_name: string;
+  visitor_role: VisitorsFeedbackRole;
+  visit_date: string;
+  rating: number;
+  positives: string[];
+  concerns: string[];
+  suggestions: string[];
+  action_taken: string | null;
+  responded_by: string | null;
+  child_related: string | null;
+  notes: string;
+}
+
+// ── Water Hygiene ───────────────────────────────────────────────────────────
+export type WaterHygieneCheckType = "hot_temp" | "cold_temp" | "tmv_check" | "flush" | "showerhead_clean" | "tank_inspection" | "legionella_sample" | "dead_leg_flush" | "calorifier_check";
+export const WATER_HYGIENE_CHECK_TYPE_LABEL: Record<WaterHygieneCheckType, string> = { hot_temp: "Hot Water Temperature", cold_temp: "Cold Water Temperature", tmv_check: "TMV Check", flush: "Outlet Flush", showerhead_clean: "Showerhead Clean & Descale", tank_inspection: "Tank Inspection", legionella_sample: "Legionella Water Sample", dead_leg_flush: "Dead Leg Flush", calorifier_check: "Calorifier Check" };
+export type WaterHygieneLocation = "kitchen_hot" | "kitchen_cold" | "bathroom_1_hot" | "bathroom_1_cold" | "bathroom_2_hot" | "bathroom_2_cold" | "en_suite_hot" | "en_suite_cold" | "utility_hot" | "utility_cold" | "header_tank" | "calorifier" | "bathroom_1_shower" | "bathroom_2_shower";
+export const WATER_HYGIENE_LOCATION_LABEL: Record<WaterHygieneLocation, string> = { kitchen_hot: "Kitchen (Hot)", kitchen_cold: "Kitchen (Cold)", bathroom_1_hot: "Bathroom 1 (Hot)", bathroom_1_cold: "Bathroom 1 (Cold)", bathroom_2_hot: "Bathroom 2 (Hot)", bathroom_2_cold: "Bathroom 2 (Cold)", en_suite_hot: "En-Suite (Hot)", en_suite_cold: "En-Suite (Cold)", utility_hot: "Utility (Hot)", utility_cold: "Utility (Cold)", header_tank: "Header Tank", calorifier: "Calorifier", bathroom_1_shower: "Bathroom 1 (Shower)", bathroom_2_shower: "Bathroom 2 (Shower)" };
+export type WaterHygieneCompliance = "compliant" | "non_compliant" | "action_required" | "remediated";
+export const WATER_HYGIENE_COMPLIANCE_LABEL: Record<WaterHygieneCompliance, string> = { compliant: "Compliant", non_compliant: "Non-Compliant", action_required: "Action Required", remediated: "Remediated" };
+export interface WaterHygieneRecord {
+  id: string;
+  date: string;
+  time: string;
+  checked_by: string;
+  check_type: WaterHygieneCheckType;
+  location: WaterHygieneLocation;
+  temperature: number | null;
+  target_min: number | null;
+  target_max: number | null;
+  compliance: WaterHygieneCompliance;
+  notes: string;
+  action_required: string;
+  action_completed: boolean;
+  action_completed_date: string | null;
+  next_due_date: string;
+}
+
+// ── Wellbeing Pulse Survey ──────────────────────────────────────────────────
+export type WellbeingPulseMethod = "visual_cards" | "one_to_ten_scale" | "conversation" | "drawing" | "emoji_selection" | "written";
+export const WELLBEING_PULSE_METHOD_LABEL: Record<WellbeingPulseMethod, string> = { visual_cards: "Visual Cards", one_to_ten_scale: "1-10 Scale", conversation: "Conversation", drawing: "Drawing", emoji_selection: "Emoji Selection", written: "Written" };
+export type WellbeingPulseTrend = "up" | "stable" | "down" | "first_survey";
+export const WELLBEING_PULSE_TREND_LABEL: Record<WellbeingPulseTrend, string> = { up: "Up", stable: "Stable", down: "Down", first_survey: "First Survey" };
+export type WellbeingPulseDimension = "feeling_safe" | "feeling_listened_to" | "friendships" | "school_activities" | "family_contact" | "mood_today";
+export const WELLBEING_PULSE_DIMENSION_LABEL: Record<WellbeingPulseDimension, string> = { feeling_safe: "Feeling Safe", feeling_listened_to: "Feeling Listened To", friendships: "Friendships", school_activities: "School/Activities", family_contact: "Family/Contact", mood_today: "Mood Today" };
+export interface WellbeingPulseSurveyRecord {
+  id: string;
+  child_id: string;
+  date: string;
+  conducted_by: string;
+  method: WellbeingPulseMethod;
+  duration_minutes: number;
+  scores: Record<WellbeingPulseDimension, number>;
+  overall_score: number;
+  verbatim_quote: string;
+  key_themes: string[];
+  staff_observations: string;
+  trend_vs_last: WellbeingPulseTrend;
+  actions_arising: string[];
+  follow_up_needed: boolean;
+  follow_up_by: string;
+}
+
+// ── Whistleblowing ──────────────────────────────────────────────────────────
+export type WhistleblowingCategory = "safeguarding" | "malpractice" | "health_safety" | "financial" | "bullying" | "data_breach" | "discrimination" | "neglect" | "policy_breach" | "other";
+export const WHISTLEBLOWING_CATEGORY_LABEL: Record<WhistleblowingCategory, string> = { safeguarding: "Safeguarding", malpractice: "Malpractice", health_safety: "Health & Safety", financial: "Financial", bullying: "Bullying", data_breach: "Data Breach", discrimination: "Discrimination", neglect: "Neglect", policy_breach: "Policy Breach", other: "Other" };
+export type WhistleblowingStatus = "received" | "investigating" | "escalated" | "resolved" | "closed_no_action";
+export const WHISTLEBLOWING_STATUS_LABEL: Record<WhistleblowingStatus, string> = { received: "Received", investigating: "Investigating", escalated: "Escalated", resolved: "Resolved", closed_no_action: "Closed (No Action)" };
+export type WhistleblowingSeverity = "low" | "medium" | "high" | "critical";
+export const WHISTLEBLOWING_SEVERITY_LABEL: Record<WhistleblowingSeverity, string> = { low: "Low", medium: "Medium", high: "High", critical: "Critical" };
+export interface WhistleblowingTimeline { date: string; action: string; by: string; }
+export interface WhistleblowingRecord {
+  id: string;
+  reference: string;
+  date_raised: string;
+  raised_by: string;
+  anonymous: boolean;
+  category: WhistleblowingCategory;
+  severity: WhistleblowingSeverity;
+  status: WhistleblowingStatus;
+  subject_of_concern: string;
+  summary: string;
+  detail: string;
+  evidence_provided: string[];
+  assigned_to: string;
+  external_referral: string | null;
+  outcome: string;
+  lessons_learned: string;
+  timeline: WhistleblowingTimeline[];
+  protection_measures: string[];
+}
+
+// ── Whistleblowing Investigations ───────────────────────────────────────────
+export type WBInvestigationConcernType = "practice_concerns" | "safeguarding" | "financial" | "health_safety" | "behaviour" | "discrimination" | "bullying";
+export const WB_INVESTIGATION_CONCERN_TYPE_LABEL: Record<WBInvestigationConcernType, string> = { practice_concerns: "Practice Concerns", safeguarding: "Safeguarding", financial: "Financial", health_safety: "Health & Safety", behaviour: "Behaviour", discrimination: "Discrimination", bullying: "Bullying" };
+export type WBInvestigationReporterCategory = "staff_member" | "anonymous" | "parent" | "professional";
+export const WB_INVESTIGATION_REPORTER_CATEGORY_LABEL: Record<WBInvestigationReporterCategory, string> = { staff_member: "Staff Member", anonymous: "Anonymous", parent: "Parent", professional: "Professional" };
+export type WBInvestigationOutcome = "substantiated" | "partially_substantiated" | "unsubstantiated" | "inconclusive" | "ongoing";
+export const WB_INVESTIGATION_OUTCOME_LABEL: Record<WBInvestigationOutcome, string> = { substantiated: "Substantiated", partially_substantiated: "Partially Substantiated", unsubstantiated: "Unsubstantiated", inconclusive: "Inconclusive", ongoing: "Ongoing" };
+export type WBInvestigationStatus = "active" | "closed";
+export const WB_INVESTIGATION_STATUS_LABEL: Record<WBInvestigationStatus, string> = { active: "Active", closed: "Closed" };
+export interface WBInvestigationStage { stage: string; completed: boolean; completion_date: string; notes: string; }
+export interface WBInvestigationRecord {
+  id: string;
+  date_raised: string;
+  concern_type: WBInvestigationConcernType;
+  summary_of_concern: string;
+  reporter_category: WBInvestigationReporterCategory;
+  reporter_anonymous: boolean;
+  investigation_lead: string;
+  independent: boolean;
+  external_investigator: string;
+  stages_completed: WBInvestigationStage[];
+  evidence_gathered: string[];
+  people_interviewed: number;
+  outcome: WBInvestigationOutcome;
+  findings: string;
+  actions_implemented: string[];
+  policy_review_arising: string;
+  referrals_made: string[];
+  reporter_fed_back: boolean;
+  feedback_date: string;
+  learning_points: string[];
+  status: WBInvestigationStatus;
+  closed_date: string;
+  data_protection_maintained: boolean;
+}
+
+// ── YP Savings ──────────────────────────────────────────────────────────────
+export type YPSavingsTransactionType = "deposit" | "withdrawal" | "birthday_money" | "holiday_allowance" | "savings_interest" | "leaving_care_grant" | "education_grant" | "other";
+export const YP_SAVINGS_TRANSACTION_TYPE_LABEL: Record<YPSavingsTransactionType, string> = { deposit: "Deposit", withdrawal: "Withdrawal", birthday_money: "Birthday Money", holiday_allowance: "Holiday Allowance", savings_interest: "Savings Interest", leaving_care_grant: "Leaving Care Grant", education_grant: "Education Grant", other: "Other" };
+export interface YPSavingsTransaction {
+  id: string;
+  date: string;
+  type: YPSavingsTransactionType;
+  description: string;
+  amount: number;
+  balance: number;
+  recorded_by: string;
+  authorised_by: string | null;
+  receipt_ref: string;
+}
+export interface YPSavingsGoal { goal: string; target: number; current: number; }
+export interface YPSavingsAccountRecord {
+  id: string;
+  child_id: string;
+  account_type: string;
+  provider: string;
+  opened_date: string;
+  current_balance: number;
+  monthly_target: number;
+  transactions: YPSavingsTransaction[];
+  savings_goals: YPSavingsGoal[];
+  child_manages: boolean;
+  notes: string;
+}
