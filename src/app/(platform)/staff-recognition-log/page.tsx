@@ -15,6 +15,7 @@ import {
   Star,
   Users,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -23,213 +24,81 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useStaffRecognitionRecords } from "@/hooks/use-staff-recognition-records";
+import type { StaffRecognitionRecord, StaffRecognitionType, StaffRecognitionRecognisedBy } from "@/types/extended";
+import {
+  STAFF_RECOGNITION_TYPE_LABEL,
+  STAFF_RECOGNITION_RECOGNISED_BY_LABEL,
+  STAFF_RECOGNITION_WAY_MARKED_LABEL,
+} from "@/types/extended";
 
-interface RecognitionEntry {
-  id: string;
-  date: string;
-  staffMember: string;
-  recognitionType: "Above and beyond" | "Quiet excellence" | "Team contribution" | "Child-recognised" | "Anniversary milestone" | "Qualification achieved" | "Wellbeing leadership" | "Innovation" | "Cultural awareness";
-  recognisedBy: "Registered Manager" | "Deputy" | "Peer" | "Child" | "Parent" | "External professional" | "Whole team";
-  recognisedByName: string;
-  whatHappened: string;
-  impactDescription: string;
-  childImpact: string;
-  organisationalImpact: string;
-  wayMarked: ("Verbal recognition" | "Card / handwritten note" | "Team meeting share" | "Wall of awesome" | "Newsletter mention" | "Voucher / token" | "Time off in lieu" | "Bonus")[];
-  monetaryValue: number;
-  publicCelebration: boolean;
-  childContributedNomination: boolean;
-  staffResponse: string;
-  reflectionFromManager: string;
-}
+/* ── local config (colours not serializable) ─────────────────────────────── */
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const TYPE_CLR: Record<StaffRecognitionType, string> = {
+  above_and_beyond: "bg-amber-100 text-amber-800",
+  quiet_excellence: "bg-purple-100 text-purple-800",
+  team_contribution: "bg-blue-100 text-blue-800",
+  child_recognised: "bg-pink-100 text-pink-800",
+  anniversary_milestone: "bg-emerald-100 text-emerald-800",
+  qualification_achieved: "bg-indigo-100 text-indigo-800",
+  wellbeing_leadership: "bg-rose-100 text-rose-800",
+  innovation: "bg-cyan-100 text-cyan-800",
+  cultural_awareness: "bg-amber-100 text-amber-800",
 };
 
-const data: RecognitionEntry[] = [
-  {
-    id: "rec-001",
-    date: d(-3),
-    staffMember: "staff_anna",
-    recognitionType: "Child-recognised",
-    recognisedBy: "Child",
-    recognisedByName: "Casey",
-    whatHappened: "Casey nominated Anna at children's meeting: 'Anna gets it. She knows when I need quiet, when I need a card, when I need her to just sit. She doesn't make me explain.'",
-    impactDescription: "Casey has chosen to formally recognise Anna's care. This is exceptional given Casey's communication profile. Demonstrates the relational depth Anna has built.",
-    childImpact: "Casey feels seen and understood — the gold standard of relational care.",
-    organisationalImpact: "Sets standard for sensory and relational responsiveness. Other staff learning from Anna's approach.",
-    wayMarked: ["Card / handwritten note", "Team meeting share", "Wall of awesome"],
-    monetaryValue: 0,
-    publicCelebration: true,
-    childContributedNomination: true,
-    staffResponse: "Anna teary. Said: 'This is everything. Casey trusting me to be silent is the highest compliment.'",
-    reflectionFromManager: "Anna's quiet excellence with Casey is a masterclass. She's mentoring Mirela informally on similar approaches.",
-  },
-  {
-    id: "rec-002",
-    date: d(-7),
-    staffMember: "staff_lackson",
-    recognitionType: "Above and beyond",
-    recognisedBy: "Registered Manager",
-    recognisedByName: "staff_darren",
-    whatHappened: "Lackson volunteered to drive Alex to inter-club boxing competition on his day off. Stayed throughout, supported Alex through nerves, celebrated the win.",
-    impactDescription: "Boxing identity is one of Alex's strongest protective factors. Lackson's commitment beyond rota strengthened that.",
-    childImpact: "Alex won and described Lackson as 'family'.",
-    organisationalImpact: "Modelling commitment. Inspired team conversation on what 'going beyond' looks like — and recognising it without expecting it.",
-    wayMarked: ["Verbal recognition", "Time off in lieu", "Newsletter mention"],
-    monetaryValue: 0,
-    publicCelebration: true,
-    childContributedNomination: false,
-    staffResponse: "Lackson said: 'Just love watching Alex thrive. Day off well spent.'",
-    reflectionFromManager: "Lackson takes time off in lieu — important to ensure boundaries protected even as we recognise.",
-  },
-  {
-    id: "rec-003",
-    date: d(-12),
-    staffMember: "staff_mirela",
-    recognitionType: "Quiet excellence",
-    recognisedBy: "Peer",
-    recognisedByName: "staff_chervelle",
-    whatHappened: "Chervelle nominated Mirela: 'During the recent crisis with Casey, Mirela held the rest of the home steady — Alex and Jordan didn't even know there was a crisis. That's invisible work, but it's what makes the home work.'",
-    impactDescription: "Mirela protected stability for the other young people during Casey's crisis. This kind of contribution often goes unseen.",
-    childImpact: "Alex and Jordan continued routines undisturbed.",
-    organisationalImpact: "Recognition that team work isn't only the visible response — it's also the holding of normality.",
-    wayMarked: ["Card / handwritten note", "Team meeting share", "Wall of awesome"],
-    monetaryValue: 25,
-    publicCelebration: true,
-    childContributedNomination: false,
-    staffResponse: "Mirela: 'Thank you for noticing. I sometimes feel the quiet work doesn't count.'",
-    reflectionFromManager: "Important culturally — naming invisible work as essential. Mirela now gets a small voucher as token. Quiet excellence noticed.",
-  },
-  {
-    id: "rec-004",
-    date: d(-21),
-    staffMember: "staff_edward",
-    recognitionType: "Innovation",
-    recognisedBy: "Registered Manager",
-    recognisedByName: "staff_darren",
-    whatHappened: "Edward designed and implemented the new visual handover summary template after the handover audit identified gaps. Within 2 weeks of use, handover quality scores rose noticeably.",
-    impactDescription: "Edward turned an audit finding into a practical, sustainable improvement.",
-    childImpact: "Better handovers mean fewer missed details about children — direct impact on care continuity.",
-    organisationalImpact: "Process improvement now embedded. Other homes in the group asking about the template.",
-    wayMarked: ["Verbal recognition", "Team meeting share", "Newsletter mention"],
-    monetaryValue: 0,
-    publicCelebration: true,
-    childContributedNomination: false,
-    staffResponse: "Edward: 'Audit gave us the data. I just put it into something usable.'",
-    reflectionFromManager: "Edward's quiet practical innovation is hugely valuable. Encouraging him to share at sector event.",
-  },
-  {
-    id: "rec-005",
-    date: d(-30),
-    staffMember: "staff_chervelle",
-    recognitionType: "Cultural awareness",
-    recognisedBy: "Child",
-    recognisedByName: "Jordan",
-    whatHappened: "Jordan nominated Chervelle: 'Chervelle gets my background. She doesn't just learn about it from a website — she lives parts of it. I feel seen here.'",
-    impactDescription: "Cultural matching has been transformative for Jordan. Chervelle's lived experience makes a difference.",
-    childImpact: "Identity affirmed. Cultural mentor relationship strong.",
-    organisationalImpact: "Diversity in the team is a strength — children name it themselves. Hiring strategy validated.",
-    wayMarked: ["Card / handwritten note", "Team meeting share", "Wall of awesome", "Newsletter mention"],
-    monetaryValue: 0,
-    publicCelebration: true,
-    childContributedNomination: true,
-    staffResponse: "Chervelle: 'Means everything. I came into care work because of relationships like this.'",
-    reflectionFromManager: "Cultural responsiveness is a core capability. Chervelle exemplifies it.",
-  },
-  {
-    id: "rec-006",
-    date: d(-45),
-    staffMember: "staff_ryan",
-    recognitionType: "Wellbeing leadership",
-    recognisedBy: "Whole team",
-    recognisedByName: "staff_team",
-    whatHappened: "Team nominated Ryan: 'Ryan introduced reflective practice supervision and protected it through scheduling pressure. Has changed how we feel at work.'",
-    impactDescription: "Ryan's championing of reflective practice has meaningfully shifted team wellbeing.",
-    childImpact: "Better-regulated staff = better care for children.",
-    organisationalImpact: "Reflective practice now a feature, not a nice-to-have. Featured in Reg 45 report.",
-    wayMarked: ["Card / handwritten note", "Team meeting share", "Voucher / token"],
-    monetaryValue: 50,
-    publicCelebration: true,
-    childContributedNomination: false,
-    staffResponse: "Ryan: 'Glad it lands. Wellbeing isn't soft — it's the work.'",
-    reflectionFromManager: "Ryan's deputy leadership model is one of the home's strengths. Important to recognise and protect.",
-  },
-  {
-    id: "rec-007",
-    date: d(-60),
-    staffMember: "staff_anna",
-    recognitionType: "Anniversary milestone",
-    recognisedBy: "Registered Manager",
-    recognisedByName: "staff_darren",
-    whatHappened: "5 years at Oak House. Anna's first day was Casey's arrival day. She's been Casey's key worker since.",
-    impactDescription: "5 years is rare in this sector. Anna's continuity is gold for the children.",
-    childImpact: "Casey's primary attachment within the home.",
-    organisationalImpact: "Long service evidences positive workplace. Sector retention models need this.",
-    wayMarked: ["Card / handwritten note", "Team meeting share", "Voucher / token", "Time off in lieu"],
-    monetaryValue: 100,
-    publicCelebration: true,
-    childContributedNomination: false,
-    staffResponse: "Anna emotional. Said: 'Hard to believe. Best decision I ever made.'",
-    reflectionFromManager: "Long service awards matter. Anna's stability is part of why this home works.",
-  },
-];
-
-const typeColour: Record<string, string> = {
-  "Above and beyond": "bg-amber-100 text-amber-800",
-  "Quiet excellence": "bg-purple-100 text-purple-800",
-  "Team contribution": "bg-blue-100 text-blue-800",
-  "Child-recognised": "bg-pink-100 text-pink-800",
-  "Anniversary milestone": "bg-emerald-100 text-emerald-800",
-  "Qualification achieved": "bg-indigo-100 text-indigo-800",
-  "Wellbeing leadership": "bg-rose-100 text-rose-800",
-  "Innovation": "bg-cyan-100 text-cyan-800",
-  "Cultural awareness": "bg-amber-100 text-amber-800",
-};
-
-const exportCols: ExportColumn<RecognitionEntry>[] = [
-  { header: "Date", accessor: (r: RecognitionEntry) => r.date },
-  { header: "Staff Member", accessor: (r: RecognitionEntry) => getStaffName(r.staffMember) },
-  { header: "Type", accessor: (r: RecognitionEntry) => r.recognitionType },
-  { header: "Recognised By", accessor: (r: RecognitionEntry) => r.recognisedBy },
-  { header: "What Happened", accessor: (r: RecognitionEntry) => r.whatHappened },
-  { header: "Marked With", accessor: (r: RecognitionEntry) => r.wayMarked.join("; ") },
-  { header: "Value £", accessor: (r: RecognitionEntry) => `£${r.monetaryValue}` },
-  { header: "Child-Nominated", accessor: (r: RecognitionEntry) => r.childContributedNomination ? "Yes" : "No" },
-];
+/* ── component ────────────────────────────────────────────────────────────── */
 
 export default function StaffRecognitionLogPage() {
+  const { data: records = [], isLoading } = useStaffRecognitionRecords();
   const [filterType, setFilterType] = useState("all");
   const [filterStaff, setFilterStaff] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let items = [...data];
-    if (filterType !== "all") items = items.filter((r) => r.recognitionType === filterType);
-    if (filterStaff !== "all") items = items.filter((r) => r.staffMember === filterStaff);
+    let items = [...records];
+    if (filterType !== "all") items = items.filter((r) => r.recognition_type === filterType);
+    if (filterStaff !== "all") items = items.filter((r) => r.staff_member === filterStaff);
     items.sort((a, b) => {
       switch (sortBy) {
         case "date":
           return b.date.localeCompare(a.date);
         case "type":
-          return a.recognitionType.localeCompare(b.recognitionType);
+          return a.recognition_type.localeCompare(b.recognition_type);
         default:
           return 0;
       }
     });
     return items;
-  }, [filterType, filterStaff, sortBy]);
+  }, [records, filterType, filterStaff, sortBy]);
 
-  const total = data.length;
-  const childRecognised = data.filter((r) => r.childContributedNomination).length;
-  const uniqueStaff = new Set(data.map((r) => r.staffMember)).size;
-  const totalSpend = data.reduce((sum, r) => sum + r.monetaryValue, 0);
+  const total = records.length;
+  const childRecognised = records.filter((r) => r.child_contributed_nomination).length;
+  const uniqueStaff = new Set(records.map((r) => r.staff_member)).size;
+  const totalSpend = records.reduce((sum, r) => sum + r.monetary_value, 0);
 
-  const allStaff = Array.from(new Set(data.map((r) => r.staffMember)));
+  const allStaff = Array.from(new Set(records.map((r) => r.staff_member)));
+
+  const exportCols: ExportColumn<StaffRecognitionRecord>[] = [
+    { header: "Date", accessor: (r: StaffRecognitionRecord) => r.date },
+    { header: "Staff Member", accessor: (r: StaffRecognitionRecord) => getStaffName(r.staff_member) },
+    { header: "Type", accessor: (r: StaffRecognitionRecord) => STAFF_RECOGNITION_TYPE_LABEL[r.recognition_type] },
+    { header: "Recognised By", accessor: (r: StaffRecognitionRecord) => STAFF_RECOGNITION_RECOGNISED_BY_LABEL[r.recognised_by] },
+    { header: "What Happened", accessor: (r: StaffRecognitionRecord) => r.what_happened },
+    { header: "Marked With", accessor: (r: StaffRecognitionRecord) => r.way_marked.map((w) => STAFF_RECOGNITION_WAY_MARKED_LABEL[w]).join("; ") },
+    { header: "Value £", accessor: (r: StaffRecognitionRecord) => `£${r.monetary_value}` },
+    { header: "Child-Nominated", accessor: (r: StaffRecognitionRecord) => r.child_contributed_nomination ? "Yes" : "No" },
+  ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Staff Recognition Log" subtitle="Recognising contributions, milestones, and relational excellence — formally and warmly">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -237,7 +106,7 @@ export default function StaffRecognitionLogPage() {
       subtitle="Recognising contributions, milestones, and relational excellence — formally and warmly"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="staff-recognition-log" />
+          <ExportButton data={records} columns={exportCols} filename="staff-recognition-log" />
           <PrintButton title="Staff Recognition Log" />
         </div>
       }
@@ -275,15 +144,9 @@ export default function StaffRecognitionLogPage() {
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="All Types" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="Above and beyond">Above and Beyond</SelectItem>
-            <SelectItem value="Quiet excellence">Quiet Excellence</SelectItem>
-            <SelectItem value="Team contribution">Team Contribution</SelectItem>
-            <SelectItem value="Child-recognised">Child-Recognised</SelectItem>
-            <SelectItem value="Anniversary milestone">Anniversary Milestone</SelectItem>
-            <SelectItem value="Qualification achieved">Qualification Achieved</SelectItem>
-            <SelectItem value="Wellbeing leadership">Wellbeing Leadership</SelectItem>
-            <SelectItem value="Innovation">Innovation</SelectItem>
-            <SelectItem value="Cultural awareness">Cultural Awareness</SelectItem>
+            {(Object.entries(STAFF_RECOGNITION_TYPE_LABEL) as [StaffRecognitionType, string][]).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={filterStaff} onValueChange={setFilterStaff}>
@@ -320,17 +183,17 @@ export default function StaffRecognitionLogPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Award className="h-5 w-5 text-amber-500 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getStaffName(r.staffMember)} &middot; {r.recognitionType}</p>
+                    <p className="font-medium truncate">{getStaffName(r.staff_member)} &middot; {STAFF_RECOGNITION_TYPE_LABEL[r.recognition_type]}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {r.date} &middot; Recognised by {r.recognisedBy === "Child" ? `child (${r.recognisedByName})` : r.recognisedBy === "Whole team" ? "whole team" : r.recognisedByName.startsWith("staff_") ? getStaffName(r.recognisedByName) : r.recognisedByName}
+                      {r.date} &middot; Recognised by {r.recognised_by === "child" ? `child (${r.recognised_by_name})` : r.recognised_by === "whole_team" ? "whole team" : r.recognised_by_name.startsWith("staff_") ? getStaffName(r.recognised_by_name) : r.recognised_by_name}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", typeColour[r.recognitionType])}>
-                    {r.recognitionType}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", TYPE_CLR[r.recognition_type])}>
+                    {STAFF_RECOGNITION_TYPE_LABEL[r.recognition_type]}
                   </span>
-                  {r.childContributedNomination && (
+                  {r.child_contributed_nomination && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 font-medium flex items-center gap-1">
                       <Heart className="h-3 w-3" />Child
                     </span>
@@ -343,12 +206,12 @@ export default function StaffRecognitionLogPage() {
                 <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
                   <div className="bg-blue-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">What Happened</p>
-                    <p className="text-sm">{r.whatHappened}</p>
+                    <p className="text-sm">{r.what_happened}</p>
                   </div>
 
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Impact</p>
-                    <p className="text-sm">{r.impactDescription}</p>
+                    <p className="text-sm">{r.impact_description}</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -356,43 +219,43 @@ export default function StaffRecognitionLogPage() {
                       <p className="text-xs font-semibold text-pink-800 uppercase tracking-wide mb-1">
                         <Heart className="h-3 w-3 inline mr-1" />Child Impact
                       </p>
-                      <p className="text-sm">{r.childImpact}</p>
+                      <p className="text-sm">{r.child_impact}</p>
                     </div>
                     <div className="bg-emerald-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">
                         <Users className="h-3 w-3 inline mr-1" />Organisational Impact
                       </p>
-                      <p className="text-sm">{r.organisationalImpact}</p>
+                      <p className="text-sm">{r.organisational_impact}</p>
                     </div>
                   </div>
 
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Marked With</p>
                     <div className="flex flex-wrap gap-1">
-                      {r.wayMarked.map((w, i) => (
+                      {r.way_marked.map((w, i) => (
                         <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium flex items-center gap-1">
-                          <Sparkles className="h-3 w-3" />{w}
+                          <Sparkles className="h-3 w-3" />{STAFF_RECOGNITION_WAY_MARKED_LABEL[w]}
                         </span>
                       ))}
                     </div>
-                    {r.monetaryValue > 0 && <p className="text-xs text-emerald-700 mt-2">Token value: £{r.monetaryValue}</p>}
+                    {r.monetary_value > 0 && <p className="text-xs text-emerald-700 mt-2">Token value: £{r.monetary_value}</p>}
                   </div>
 
                   <div className="bg-purple-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-1">Staff Response</p>
-                    <p className="text-sm italic">&ldquo;{r.staffResponse}&rdquo;</p>
+                    <p className="text-sm italic">&ldquo;{r.staff_response}&rdquo;</p>
                   </div>
 
                   <div className="bg-slate-50 rounded-lg p-3 border">
                     <p className="text-xs font-semibold text-slate-800 uppercase tracking-wide mb-1">Manager Reflection</p>
-                    <p className="text-sm">{r.reflectionFromManager}</p>
+                    <p className="text-sm">{r.reflection_from_manager}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span><Star className="h-3 w-3 inline mr-1" />{r.recognitionType}</span>
+                    <span><Star className="h-3 w-3 inline mr-1" />{STAFF_RECOGNITION_TYPE_LABEL[r.recognition_type]}</span>
                     <span>Recognised: {r.date}</span>
-                    {r.publicCelebration && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">Public Celebration</span>}
-                    {r.childContributedNomination && <span className="px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 font-medium">Child Nominated</span>}
+                    {r.public_celebration && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">Public Celebration</span>}
+                    {r.child_contributed_nomination && <span className="px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 font-medium">Child Nominated</span>}
                   </div>
                 </div>
               )}

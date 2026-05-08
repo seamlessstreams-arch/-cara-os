@@ -338,6 +338,12 @@ import type {
   StaffGrievanceRecord,
   StaffHandbookAcknowledgementRecord,
   StaffInductionRecord,
+  StaffMeetingRecord,
+  StaffRecognitionRecord,
+  StaffReflectionRecord,
+  StaffSaferCaringRecord,
+  StaffShadowingRecord,
+  StaffSicknessRecord,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -759,6 +765,12 @@ const store = {
   staffGrievanceRecords: [] as StaffGrievanceRecord[],
   staffHandbookAcknowledgementRecords: [] as StaffHandbookAcknowledgementRecord[],
   staffInductionRecords: [] as StaffInductionRecord[],
+  staffMeetingRecords: [] as StaffMeetingRecord[],
+  staffRecognitionRecords: [] as StaffRecognitionRecord[],
+  staffReflectionRecords: [] as StaffReflectionRecord[],
+  staffSaferCaringRecords: [] as StaffSaferCaringRecord[],
+  staffShadowingRecords: [] as StaffShadowingRecord[],
+  staffSicknessRecords: [] as StaffSicknessRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -9420,6 +9432,96 @@ export const db = {
       if (idx === -1) return null;
       store.staffInductionRecords[idx] = { ...store.staffInductionRecords[idx], ...data };
       return store.staffInductionRecords[idx];
+    },
+  },
+
+  staffMeetingRecords: {
+    getAll: () => store.staffMeetingRecords,
+    create: (data: Omit<StaffMeetingRecord, "id">) => {
+      const record = { ...data, id: generateId("smr_") } as StaffMeetingRecord;
+      store.staffMeetingRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StaffMeetingRecord>) => {
+      const idx = store.staffMeetingRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.staffMeetingRecords[idx] = { ...store.staffMeetingRecords[idx], ...data };
+      return store.staffMeetingRecords[idx];
+    },
+  },
+
+  staffRecognitionRecords: {
+    getAll: () => store.staffRecognitionRecords,
+    create: (data: Omit<StaffRecognitionRecord, "id">) => {
+      const record = { ...data, id: generateId("srr_") } as StaffRecognitionRecord;
+      store.staffRecognitionRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StaffRecognitionRecord>) => {
+      const idx = store.staffRecognitionRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.staffRecognitionRecords[idx] = { ...store.staffRecognitionRecords[idx], ...data };
+      return store.staffRecognitionRecords[idx];
+    },
+  },
+
+  staffReflectionRecords: {
+    getAll: () => store.staffReflectionRecords,
+    create: (data: Omit<StaffReflectionRecord, "id">) => {
+      const record = { ...data, id: generateId("srefr_") } as StaffReflectionRecord;
+      store.staffReflectionRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StaffReflectionRecord>) => {
+      const idx = store.staffReflectionRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.staffReflectionRecords[idx] = { ...store.staffReflectionRecords[idx], ...data };
+      return store.staffReflectionRecords[idx];
+    },
+  },
+
+  staffSaferCaringRecords: {
+    getAll: () => store.staffSaferCaringRecords,
+    create: (data: Omit<StaffSaferCaringRecord, "id">) => {
+      const record = { ...data, id: generateId("sscr_") } as StaffSaferCaringRecord;
+      store.staffSaferCaringRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StaffSaferCaringRecord>) => {
+      const idx = store.staffSaferCaringRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.staffSaferCaringRecords[idx] = { ...store.staffSaferCaringRecords[idx], ...data };
+      return store.staffSaferCaringRecords[idx];
+    },
+  },
+
+  staffShadowingRecords: {
+    getAll: () => store.staffShadowingRecords,
+    create: (data: Omit<StaffShadowingRecord, "id">) => {
+      const record = { ...data, id: generateId("sshr_") } as StaffShadowingRecord;
+      store.staffShadowingRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StaffShadowingRecord>) => {
+      const idx = store.staffShadowingRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.staffShadowingRecords[idx] = { ...store.staffShadowingRecords[idx], ...data };
+      return store.staffShadowingRecords[idx];
+    },
+  },
+
+  staffSicknessRecords: {
+    getAll: () => store.staffSicknessRecords,
+    create: (data: Omit<StaffSicknessRecord, "id">) => {
+      const record = { ...data, id: generateId("sskr_") } as StaffSicknessRecord;
+      store.staffSicknessRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StaffSicknessRecord>) => {
+      const idx = store.staffSicknessRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.staffSicknessRecords[idx] = { ...store.staffSicknessRecords[idx], ...data };
+      return store.staffSicknessRecords[idx];
     },
   },
 };

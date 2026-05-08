@@ -20413,3 +20413,327 @@ export interface StaffInductionRecord {
   overall_status: StaffInductionOverallStatus;
   tasks: StaffInductionTask[];
 }
+
+/* ── staff-meetings ──────────────────────────────────────────────────────── */
+
+export type StaffMeetingType = "team_meeting" | "management" | "clinical" | "safeguarding" | "training_debrief" | "ad_hoc";
+
+export const STAFF_MEETING_TYPE_LABEL: Record<StaffMeetingType, string> = {
+  team_meeting: "Team Meeting",
+  management: "Management",
+  clinical: "Clinical / Formulation",
+  safeguarding: "Safeguarding",
+  training_debrief: "Training Debrief",
+  ad_hoc: "Ad Hoc",
+};
+
+export interface StaffMeetingAction {
+  action: string;
+  owner: string;
+  due_date: string;
+  completed: boolean;
+}
+
+export interface StaffMeetingAgendaItem {
+  topic: string;
+  discussion: string;
+  outcome: string;
+}
+
+export interface StaffMeetingRecord {
+  id: string;
+  date: string;
+  type: StaffMeetingType;
+  title: string;
+  chair: string;
+  attendees: string[];
+  apologies: string[];
+  agenda_items: StaffMeetingAgendaItem[];
+  actions_from_previous: StaffMeetingAction[];
+  new_actions: StaffMeetingAction[];
+  general_notes: string;
+  next_meeting_date: string;
+  duration: number;
+  recorded_by: string;
+  created_at: string;
+}
+
+/* ── staff-recognition-log ───────────────────────────────────────────────── */
+
+export type StaffRecognitionType =
+  | "above_and_beyond"
+  | "quiet_excellence"
+  | "team_contribution"
+  | "child_recognised"
+  | "anniversary_milestone"
+  | "qualification_achieved"
+  | "wellbeing_leadership"
+  | "innovation"
+  | "cultural_awareness";
+
+export const STAFF_RECOGNITION_TYPE_LABEL: Record<StaffRecognitionType, string> = {
+  above_and_beyond: "Above and Beyond",
+  quiet_excellence: "Quiet Excellence",
+  team_contribution: "Team Contribution",
+  child_recognised: "Child-Recognised",
+  anniversary_milestone: "Anniversary Milestone",
+  qualification_achieved: "Qualification Achieved",
+  wellbeing_leadership: "Wellbeing Leadership",
+  innovation: "Innovation",
+  cultural_awareness: "Cultural Awareness",
+};
+
+export type StaffRecognitionRecognisedBy =
+  | "registered_manager"
+  | "deputy"
+  | "peer"
+  | "child"
+  | "parent"
+  | "external_professional"
+  | "whole_team";
+
+export const STAFF_RECOGNITION_RECOGNISED_BY_LABEL: Record<StaffRecognitionRecognisedBy, string> = {
+  registered_manager: "Registered Manager",
+  deputy: "Deputy",
+  peer: "Peer",
+  child: "Child",
+  parent: "Parent",
+  external_professional: "External Professional",
+  whole_team: "Whole Team",
+};
+
+export type StaffRecognitionWayMarked =
+  | "verbal_recognition"
+  | "card_handwritten_note"
+  | "team_meeting_share"
+  | "wall_of_awesome"
+  | "newsletter_mention"
+  | "voucher_token"
+  | "time_off_in_lieu"
+  | "bonus";
+
+export const STAFF_RECOGNITION_WAY_MARKED_LABEL: Record<StaffRecognitionWayMarked, string> = {
+  verbal_recognition: "Verbal Recognition",
+  card_handwritten_note: "Card / Handwritten Note",
+  team_meeting_share: "Team Meeting Share",
+  wall_of_awesome: "Wall of Awesome",
+  newsletter_mention: "Newsletter Mention",
+  voucher_token: "Voucher / Token",
+  time_off_in_lieu: "Time Off in Lieu",
+  bonus: "Bonus",
+};
+
+export interface StaffRecognitionRecord {
+  id: string;
+  date: string;
+  staff_member: string;
+  recognition_type: StaffRecognitionType;
+  recognised_by: StaffRecognitionRecognisedBy;
+  recognised_by_name: string;
+  what_happened: string;
+  impact_description: string;
+  child_impact: string;
+  organisational_impact: string;
+  way_marked: StaffRecognitionWayMarked[];
+  monetary_value: number;
+  public_celebration: boolean;
+  child_contributed_nomination: boolean;
+  staff_response: string;
+  reflection_from_manager: string;
+}
+
+/* ── staff-reflections ───────────────────────────────────────────────────── */
+
+export type StaffReflectionType =
+  | "daily"
+  | "incident"
+  | "training"
+  | "supervision"
+  | "personal_development"
+  | "critical_event"
+  | "positive_practice";
+
+export const STAFF_REFLECTION_TYPE_LABEL: Record<StaffReflectionType, string> = {
+  daily: "Daily Reflection",
+  incident: "Incident Reflection",
+  training: "Training Reflection",
+  supervision: "Post-Supervision",
+  personal_development: "Personal Development",
+  critical_event: "Critical Event",
+  positive_practice: "Positive Practice",
+};
+
+export type StaffReflectionMood = "positive" | "neutral" | "challenging" | "difficult";
+
+export const STAFF_REFLECTION_MOOD_LABEL: Record<StaffReflectionMood, string> = {
+  positive: "Positive",
+  neutral: "Neutral",
+  challenging: "Challenging",
+  difficult: "Difficult",
+};
+
+export interface StaffReflectionRecord {
+  id: string;
+  staff_id: string;
+  date: string;
+  type: StaffReflectionType;
+  mood: StaffReflectionMood;
+  title: string;
+  what_happened: string;
+  what_i_felt: string;
+  what_i_learned: string;
+  what_i_would_do_differently: string;
+  linked_to_yp: string[];
+  linked_incident: string | null;
+  shared_with_manager: boolean;
+  manager_feedback: string;
+  development_goal: string;
+  is_private: boolean;
+}
+
+/* ── staff-safer-caring ──────────────────────────────────────────────────── */
+
+export type StaffSaferCaringPlanStatus = "current" | "review_due";
+
+export const STAFF_SAFER_CARING_PLAN_STATUS_LABEL: Record<StaffSaferCaringPlanStatus, string> = {
+  current: "Current",
+  review_due: "Review Due",
+};
+
+export interface StaffSaferCaringAcknowledgement {
+  signed_date: string;
+  witnessed_by: string;
+}
+
+export interface StaffSaferCaringRecord {
+  id: string;
+  staff_id: string;
+  role: string;
+  signed_date: string;
+  review_date: string;
+  status: StaffSaferCaringPlanStatus;
+  physical_contact_guidance: string;
+  professional_boundaries: string[];
+  social_media_rules: string;
+  lone_working_protocol: string;
+  gift_giving: string;
+  transport: string;
+  personal_information: string;
+  child_specific_considerations: Record<string, string>;
+  acknowledgements: StaffSaferCaringAcknowledgement;
+}
+
+/* ── staff-shadowing-log ─────────────────────────────────────────────────── */
+
+export type StaffShadowingShiftType =
+  | "early"
+  | "late"
+  | "long_day"
+  | "sleep_in"
+  | "wake_night"
+  | "weekend";
+
+export const STAFF_SHADOWING_SHIFT_TYPE_LABEL: Record<StaffShadowingShiftType, string> = {
+  early: "Early",
+  late: "Late",
+  long_day: "Long Day",
+  sleep_in: "Sleep-in",
+  wake_night: "Wake-night",
+  weekend: "Weekend",
+};
+
+export type StaffShadowingReadyStatus = "yes" | "not_yet" | "additional_shadows_needed";
+
+export const STAFF_SHADOWING_READY_STATUS_LABEL: Record<StaffShadowingReadyStatus, string> = {
+  yes: "Yes",
+  not_yet: "Not Yet",
+  additional_shadows_needed: "Additional Shadows Needed",
+};
+
+export interface StaffShadowingRecord {
+  id: string;
+  new_staff: string;
+  new_staff_role: string;
+  shadowed_by: string;
+  date: string;
+  shift_type: StaffShadowingShiftType;
+  hours_shadowed: number;
+  shadow_number: number;
+  total_shadows_required: number;
+  areas_observed: string[];
+  competencies_demonstrated: string[];
+  competencies_developing: string[];
+  observer_feedback: string;
+  new_staff_reflection: string;
+  signed_off: boolean;
+  ready_to_work_solo: StaffShadowingReadyStatus;
+  follow_up_actions: string[];
+  recorded_by: string;
+}
+
+/* ── staff-sickness ──────────────────────────────────────────────────────── */
+
+export type StaffSicknessCategory = "short_term" | "long_term" | "intermittent" | "work_related";
+
+export const STAFF_SICKNESS_CATEGORY_LABEL: Record<StaffSicknessCategory, string> = {
+  short_term: "Short-Term (≤7 days)",
+  long_term: "Long-Term (>7 days)",
+  intermittent: "Intermittent",
+  work_related: "Work-Related",
+};
+
+export type StaffSicknessAbsenceReason =
+  | "cold_flu"
+  | "gastro"
+  | "covid"
+  | "mental_health"
+  | "musculoskeletal"
+  | "surgery"
+  | "family_emergency"
+  | "injury"
+  | "migraine"
+  | "other";
+
+export const STAFF_SICKNESS_ABSENCE_REASON_LABEL: Record<StaffSicknessAbsenceReason, string> = {
+  cold_flu: "Cold / Flu",
+  gastro: "Gastroenteritis",
+  covid: "COVID-19",
+  mental_health: "Mental Health",
+  musculoskeletal: "Musculoskeletal",
+  surgery: "Surgery/Procedure",
+  family_emergency: "Family Emergency",
+  injury: "Injury",
+  migraine: "Migraine/Headache",
+  other: "Other",
+};
+
+export type StaffSicknessRTWStatus = "not_required" | "scheduled" | "completed" | "overdue";
+
+export const STAFF_SICKNESS_RTW_STATUS_LABEL: Record<StaffSicknessRTWStatus, string> = {
+  not_required: "Not Required",
+  scheduled: "Scheduled",
+  completed: "Completed",
+  overdue: "Overdue",
+};
+
+export interface StaffSicknessRecord {
+  id: string;
+  staff_id: string;
+  date_started: string;
+  date_ended: string | null;
+  total_days: number;
+  category: StaffSicknessCategory;
+  reason: StaffSicknessAbsenceReason;
+  reason_detail: string;
+  self_certified: boolean;
+  fit_note: boolean;
+  fit_note_expiry: string | null;
+  cover_arrangements: string;
+  rtw_status: StaffSicknessRTWStatus;
+  rtw_date: string | null;
+  rtw_conducted_by_id: string | null;
+  rtw_outcome: string;
+  occupational_health_referral: boolean;
+  trigger_points: string[];
+  manager_notes: string;
+}
