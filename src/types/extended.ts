@@ -20737,3 +20737,387 @@ export interface StaffSicknessRecord {
   trigger_points: string[];
   manager_notes: string;
 }
+
+/* ── staff-supervision-themes ────────────────────────────────────────────── */
+
+export type StaffSupervisionThemeArea =
+  | "practice"
+  | "wellbeing"
+  | "training"
+  | "communication"
+  | "workload"
+  | "safeguarding"
+  | "reflective";
+
+export const STAFF_SUPERVISION_THEME_AREA_LABEL: Record<StaffSupervisionThemeArea, string> = {
+  practice: "Practice",
+  wellbeing: "Wellbeing",
+  training: "Training",
+  communication: "Communication",
+  workload: "Workload",
+  safeguarding: "Safeguarding",
+  reflective: "Reflective",
+};
+
+export type StaffSupervisionThemeStatus = "emerging" | "active" | "addressed" | "monitoring";
+
+export const STAFF_SUPERVISION_THEME_STATUS_LABEL: Record<StaffSupervisionThemeStatus, string> = {
+  emerging: "Emerging",
+  active: "Active",
+  addressed: "Addressed",
+  monitoring: "Monitoring",
+};
+
+export interface StaffSupervisionThemeRecord {
+  id: string;
+  identified_date: string;
+  theme_area: StaffSupervisionThemeArea;
+  theme_title: string;
+  frequency_across_team: number;
+  staff_affected: string[];
+  description: string;
+  root_cause_analysis: string;
+  organisational_response: string[];
+  training_implications: string[];
+  policy_implications: string[];
+  status: StaffSupervisionThemeStatus;
+  reviewed_by: string;
+  next_review_date: string;
+  anonymous: boolean;
+}
+
+/* ── staff-wellbeing ─────────────────────────────────────────────────────── */
+
+export type StaffWellbeingCheckType =
+  | "monthly_checkin"
+  | "post_incident"
+  | "supervision_wellbeing"
+  | "return_from_absence"
+  | "self_referral"
+  | "manager_concern";
+
+export const STAFF_WELLBEING_CHECK_TYPE_LABEL: Record<StaffWellbeingCheckType, string> = {
+  monthly_checkin: "Monthly Check-in",
+  post_incident: "Post-Incident",
+  supervision_wellbeing: "Supervision Wellbeing",
+  return_from_absence: "Return from Absence",
+  self_referral: "Self-Referral",
+  manager_concern: "Manager Concern",
+};
+
+export interface StaffWellbeingRecord {
+  id: string;
+  staff_id: string;
+  date: string;
+  type: StaffWellbeingCheckType;
+  overall_score: number;
+  workload_score: number;
+  support_score: number;
+  moral_score: number;
+  stressors: string[];
+  positives: string[];
+  support_needed: string;
+  action_agreed: string;
+  follow_up_date: string | null;
+  conducted_by: string;
+  confidential: boolean;
+  notes: string;
+}
+
+/* ── stakeholder-feedback ────────────────────────────────────────────────── */
+
+export type StakeholderFeedbackSource =
+  | "young_person"
+  | "parent_carer"
+  | "social_worker"
+  | "irp"
+  | "school"
+  | "health_professional"
+  | "advocate"
+  | "neighbour"
+  | "other";
+
+export const STAKEHOLDER_FEEDBACK_SOURCE_LABEL: Record<StakeholderFeedbackSource, string> = {
+  young_person: "Young Person",
+  parent_carer: "Parent / Carer",
+  social_worker: "Social Worker",
+  irp: "Independent Reviewing Officer",
+  school: "School / College",
+  health_professional: "Health Professional",
+  advocate: "Advocate",
+  neighbour: "Neighbour / Community",
+  other: "Other",
+};
+
+export type StakeholderFeedbackSentiment = "positive" | "mixed" | "negative";
+
+export const STAKEHOLDER_FEEDBACK_SENTIMENT_LABEL: Record<StakeholderFeedbackSentiment, string> = {
+  positive: "Positive",
+  mixed: "Mixed",
+  negative: "Negative",
+};
+
+export type StakeholderFeedbackMethod =
+  | "survey"
+  | "conversation"
+  | "letter"
+  | "email"
+  | "phone"
+  | "meeting"
+  | "reg44_visit";
+
+export const STAKEHOLDER_FEEDBACK_METHOD_LABEL: Record<StakeholderFeedbackMethod, string> = {
+  survey: "Survey",
+  conversation: "Conversation",
+  letter: "Letter",
+  email: "Email",
+  phone: "Phone Call",
+  meeting: "Meeting",
+  reg44_visit: "Reg 44 Visit",
+};
+
+export type StakeholderFeedbackTheme =
+  | "safety"
+  | "relationships"
+  | "communication"
+  | "activities"
+  | "food"
+  | "environment"
+  | "education"
+  | "health"
+  | "contact"
+  | "complaints"
+  | "praise"
+  | "suggestions";
+
+export const STAKEHOLDER_FEEDBACK_THEME_LABEL: Record<StakeholderFeedbackTheme, string> = {
+  safety: "Safety",
+  relationships: "Relationships",
+  communication: "Communication",
+  activities: "Activities",
+  food: "Food & Meals",
+  environment: "Environment",
+  education: "Education",
+  health: "Health",
+  contact: "Contact Arrangements",
+  complaints: "Complaints",
+  praise: "Praise",
+  suggestions: "Suggestions",
+};
+
+export interface StakeholderFeedbackRecord {
+  id: string;
+  date: string;
+  source: StakeholderFeedbackSource;
+  source_name: string;
+  related_yp: string | null;
+  method: StakeholderFeedbackMethod;
+  sentiment: StakeholderFeedbackSentiment;
+  themes: StakeholderFeedbackTheme[];
+  summary: string;
+  direct_quote: string | null;
+  action_taken: string | null;
+  responded_by: string;
+  response_date: string | null;
+  acknowledged: boolean;
+}
+
+/* ── statutory-checks-summary ────────────────────────────────────────────── */
+
+export type StatutoryCheckComplianceStatus = "compliant" | "due_soon" | "overdue" | "in_progress";
+
+export const STATUTORY_CHECK_COMPLIANCE_STATUS_LABEL: Record<StatutoryCheckComplianceStatus, string> = {
+  compliant: "Compliant",
+  due_soon: "Due Soon",
+  overdue: "Overdue",
+  in_progress: "In Progress",
+};
+
+export type StatutoryCheckCategory = "per_child" | "home_wide" | "workforce" | "environmental" | "financial";
+
+export const STATUTORY_CHECK_CATEGORY_LABEL: Record<StatutoryCheckCategory, string> = {
+  per_child: "Per-child",
+  home_wide: "Home-wide",
+  workforce: "Workforce",
+  environmental: "Environmental",
+  financial: "Financial",
+};
+
+export type StatutoryCheckFrequency =
+  | "monthly"
+  | "quarterly"
+  | "six_monthly"
+  | "annual"
+  | "bi_annual"
+  | "per_child_per_year";
+
+export const STATUTORY_CHECK_FREQUENCY_LABEL: Record<StatutoryCheckFrequency, string> = {
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  six_monthly: "Six-monthly",
+  annual: "Annual",
+  bi_annual: "Bi-annual",
+  per_child_per_year: "Per Child Per Year",
+};
+
+export interface StatutoryCheckRecord {
+  id: string;
+  check_name: string;
+  regulatory_basis: string;
+  category: StatutoryCheckCategory;
+  frequency: StatutoryCheckFrequency;
+  last_completed_date: string;
+  next_due_date: string;
+  compliance_status: StatutoryCheckComplianceStatus;
+  responsible_owner: string;
+  evidence_location: string;
+  children_covered: string;
+  external_reviewer: string;
+  summary: string;
+  recent_observation: string;
+  escalation_criteria: string;
+}
+
+/* ── statutory-visit-log ─────────────────────────────────────────────────── */
+
+export type StatutoryVisitType =
+  | "first_visit"
+  | "first_6_week_review"
+  | "routine_6_weekly"
+  | "quarterly"
+  | "six_monthly"
+  | "pre_lac_review"
+  | "unannounced";
+
+export const STATUTORY_VISIT_TYPE_LABEL: Record<StatutoryVisitType, string> = {
+  first_visit: "First Visit (within 7 days)",
+  first_6_week_review: "First 6-week Review",
+  routine_6_weekly: "Routine 6-weekly",
+  quarterly: "Quarterly",
+  six_monthly: "Six-monthly",
+  pre_lac_review: "Pre-LAC Review",
+  unannounced: "Unannounced",
+};
+
+export type StatutoryVisitChildPresented = "settled" | "anxious" | "withdrawn" | "engaged" | "distressed";
+
+export const STATUTORY_VISIT_CHILD_PRESENTED_LABEL: Record<StatutoryVisitChildPresented, string> = {
+  settled: "Settled",
+  anxious: "Anxious",
+  withdrawn: "Withdrawn",
+  engaged: "Engaged",
+  distressed: "Distressed",
+};
+
+export interface StatutoryVisitActionAgreed {
+  action: string;
+  owner: string;
+  deadline: string;
+}
+
+export interface StatutoryVisitRecord {
+  id: string;
+  child_id: string;
+  date: string;
+  visit_type: StatutoryVisitType;
+  social_worker: string;
+  local_authority: string;
+  duration_minutes: number;
+  saw_child_alone: boolean;
+  alone_time: number;
+  child_wishes_shared: string;
+  home_staff_present: string[];
+  areas_inspected: string[];
+  bedrooms_seen: boolean;
+  records_reviewed: string[];
+  child_presented: StatutoryVisitChildPresented;
+  key_discussions: string[];
+  social_worker_observations: string;
+  actions_agreed: StatutoryVisitActionAgreed[];
+  next_visit_due: string;
+  report_filed_date: string;
+  within_timeframe: boolean;
+}
+
+/* ── subject-access-requests ─────────────────────────────────────────────── */
+
+export type SubjectAccessRequestType =
+  | "subject_access"
+  | "right_to_erasure"
+  | "data_portability"
+  | "rectification"
+  | "restriction"
+  | "objection";
+
+export const SUBJECT_ACCESS_REQUEST_TYPE_LABEL: Record<SubjectAccessRequestType, string> = {
+  subject_access: "Subject Access Request (SAR)",
+  right_to_erasure: "Right to Erasure",
+  data_portability: "Data Portability",
+  rectification: "Rectification",
+  restriction: "Restriction of Processing",
+  objection: "Right to Object",
+};
+
+export type SubjectAccessRequestStatus =
+  | "received"
+  | "identity_verified"
+  | "in_progress"
+  | "redaction"
+  | "completed"
+  | "refused"
+  | "extended";
+
+export const SUBJECT_ACCESS_REQUEST_STATUS_LABEL: Record<SubjectAccessRequestStatus, string> = {
+  received: "Received",
+  identity_verified: "Identity Verified",
+  in_progress: "In Progress",
+  redaction: "Redaction Review",
+  completed: "Completed",
+  refused: "Refused",
+  extended: "Extended",
+};
+
+export type SubjectAccessRequesterType =
+  | "care_leaver"
+  | "parent"
+  | "social_worker"
+  | "young_person"
+  | "staff"
+  | "solicitor"
+  | "other";
+
+export const SUBJECT_ACCESS_REQUESTER_TYPE_LABEL: Record<SubjectAccessRequesterType, string> = {
+  care_leaver: "Care Leaver",
+  parent: "Parent",
+  social_worker: "Social Worker",
+  young_person: "Young Person",
+  staff: "Staff",
+  solicitor: "Solicitor",
+  other: "Other",
+};
+
+export interface SubjectAccessRequestRecord {
+  id: string;
+  date_received: string;
+  deadline_date: string;
+  request_type: SubjectAccessRequestType;
+  requester_name: string;
+  requester_type: SubjectAccessRequesterType;
+  requester_relation: string;
+  data_subject_id: string | null;
+  data_subject_type: "child" | "staff";
+  status: SubjectAccessRequestStatus;
+  identity_verified: boolean;
+  identity_method: string;
+  data_scope: string[];
+  redactions_required: boolean;
+  redaction_categories: string[];
+  third_party_consent: boolean;
+  extension_applied: boolean;
+  extension_reason: string;
+  date_completed: string | null;
+  response_method: string;
+  handled_by_id: string;
+  dpo_consulted: boolean;
+  notes: string;
+}

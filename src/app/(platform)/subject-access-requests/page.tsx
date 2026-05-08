@@ -18,158 +18,49 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
-  Clock, Search, FileText, Lock, Shield,
+  Clock, Search, FileText, Lock, Shield, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { useSubjectAccessRequestRecords } from "@/hooks/use-subject-access-request-records";
+import type {
+  SubjectAccessRequestRecord,
+  SubjectAccessRequestType,
+  SubjectAccessRequestStatus,
+  SubjectAccessRequesterType,
+} from "@/types/extended";
+import {
+  SUBJECT_ACCESS_REQUEST_TYPE_LABEL,
+  SUBJECT_ACCESS_REQUEST_STATUS_LABEL,
+  SUBJECT_ACCESS_REQUESTER_TYPE_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── local config (colours not serializable) ────────────────────────────── */
 
-type RequestType = "subject_access" | "right_to_erasure" | "data_portability" | "rectification" | "restriction" | "objection";
-type RequestStatus = "received" | "identity_verified" | "in_progress" | "redaction" | "completed" | "refused" | "extended";
-type RequesterType = "care_leaver" | "parent" | "social_worker" | "young_person" | "staff" | "solicitor" | "other";
-
-interface SARRecord {
-  id: string;
-  dateReceived: string;
-  deadlineDate: string;
-  requestType: RequestType;
-  requesterName: string;
-  requesterType: RequesterType;
-  requesterRelation: string;
-  dataSubjectId: string | null;
-  dataSubjectType: "child" | "staff";
-  status: RequestStatus;
-  identityVerified: boolean;
-  identityMethod: string;
-  dataScope: string[];
-  redactionsRequired: boolean;
-  redactionCategories: string[];
-  thirdPartyConsent: boolean;
-  extensionApplied: boolean;
-  extensionReason: string;
-  dateCompleted: string | null;
-  responseMethod: string;
-  handledById: string;
-  dpoConsulted: boolean;
-  notes: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const TYPE_LABEL: Record<RequestType, string> = {
-  subject_access: "Subject Access Request (SAR)", right_to_erasure: "Right to Erasure",
-  data_portability: "Data Portability", rectification: "Rectification",
-  restriction: "Restriction of Processing", objection: "Right to Object",
-};
-
-const STATUS_LABEL: Record<RequestStatus, string> = {
-  received: "Received", identity_verified: "Identity Verified", in_progress: "In Progress",
-  redaction: "Redaction Review", completed: "Completed", refused: "Refused", extended: "Extended",
-};
-const STATUS_CLR: Record<RequestStatus, string> = {
-  received: "bg-slate-100 text-slate-700", identity_verified: "bg-blue-100 text-blue-800",
-  in_progress: "bg-amber-100 text-amber-800", redaction: "bg-purple-100 text-purple-800",
-  completed: "bg-green-100 text-green-800", refused: "bg-red-100 text-red-800",
+const STATUS_CLR: Record<SubjectAccessRequestStatus, string> = {
+  received: "bg-slate-100 text-slate-700",
+  identity_verified: "bg-blue-100 text-blue-800",
+  in_progress: "bg-amber-100 text-amber-800",
+  redaction: "bg-purple-100 text-purple-800",
+  completed: "bg-green-100 text-green-800",
+  refused: "bg-red-100 text-red-800",
   extended: "bg-orange-100 text-orange-800",
 };
-const STATUS_BORDER: Record<RequestStatus, string> = {
-  received: "border-l-slate-400", identity_verified: "border-l-blue-400",
-  in_progress: "border-l-amber-400", redaction: "border-l-purple-400",
-  completed: "border-l-green-400", refused: "border-l-red-500", extended: "border-l-orange-400",
+
+const STATUS_BORDER: Record<SubjectAccessRequestStatus, string> = {
+  received: "border-l-slate-400",
+  identity_verified: "border-l-blue-400",
+  in_progress: "border-l-amber-400",
+  redaction: "border-l-purple-400",
+  completed: "border-l-green-400",
+  refused: "border-l-red-500",
+  extended: "border-l-orange-400",
 };
-
-const REQUESTER_LABEL: Record<RequesterType, string> = {
-  care_leaver: "Care Leaver", parent: "Parent/Carer", social_worker: "Social Worker",
-  young_person: "Young Person (Current)", staff: "Staff Member", solicitor: "Solicitor", other: "Other",
-};
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: SARRecord[] = [
-  {
-    id: "sar_001", dateReceived: d(-25), deadlineDate: d(5),
-    requestType: "subject_access", requesterName: "Mark Davies (Alex's birth father)",
-    requesterType: "parent", requesterRelation: "Birth father of Alex Davies",
-    dataSubjectId: "yp_alex", dataSubjectType: "child",
-    status: "redaction",
-    identityVerified: true, identityMethod: "Photographic ID (driving licence) verified by Darren. Parental responsibility confirmed via social worker.",
-    dataScope: ["Daily log entries mentioning Alex", "Incident reports involving Alex", "Contact records", "Education records", "Health records"],
-    redactionsRequired: true,
-    redactionCategories: [
-      "Third-party personal data (other YP names, staff home addresses)",
-      "Information provided in confidence by other professionals",
-      "Risk assessment details where disclosure could cause harm",
-      "Casey and Jordan's personal information in shared incident reports",
-    ],
-    thirdPartyConsent: false, extensionApplied: false, extensionReason: "",
-    dateCompleted: null, responseMethod: "Secure email with password-protected PDF",
-    handledById: "staff_darren", dpoConsulted: true,
-    notes: "Mark requested access to all records relating to Alex for the last 12 months. Identity verified. Social worker (Karen Holding) confirmed parental responsibility. Data collation in progress — significant volume of daily logs. Redaction needed: other YP names must be removed from daily logs and incident reports. DPO (organisation level) consulted on scope and redaction approach. On track to meet 30-day deadline.",
-  },
-  {
-    id: "sar_002", dateReceived: d(-60), deadlineDate: d(-30),
-    requestType: "subject_access", requesterName: "Rachel Thompson (former care leaver)",
-    requesterType: "care_leaver", requesterRelation: "Former resident of Oak House (2019-2022)",
-    dataSubjectId: null, dataSubjectType: "child",
-    status: "completed",
-    identityVerified: true, identityMethod: "Video call identity verification with passport. Former placement confirmed via archived records.",
-    dataScope: ["Full placement file", "Daily logs", "Incident reports", "Care plans", "LAC review minutes", "Photographs", "Correspondence"],
-    redactionsRequired: true,
-    redactionCategories: [
-      "Staff personal contact details",
-      "Other children's names and information",
-      "Professional consultation notes marked confidential",
-      "Court-ordered restricted information",
-    ],
-    thirdPartyConsent: false, extensionApplied: true,
-    extensionReason: "Volume of data required retrieval from archived records (off-site storage). Two-month extension applied under Article 12(3) GDPR — requester notified within 30 days of original request.",
-    dateCompleted: d(-10), responseMethod: "USB drive delivered via recorded delivery to verified address",
-    handledById: "staff_darren", dpoConsulted: true,
-    notes: "Rachel was a resident at Oak House from 2019 to 2022 (age 14-17). Now 20 years old. Requested full access to her file as part of processing her care experience. Extensive records retrieved from archive. Rachel was supported through the process — offered to view records with a worker present or receive them privately. Rachel chose to receive them privately but was given the contact details for an aftercare support worker and counselling service. 847 pages collated, redacted, and provided on encrypted USB. Rachel acknowledged receipt.",
-  },
-  {
-    id: "sar_003", dateReceived: d(-10), deadlineDate: d(20),
-    requestType: "rectification", requesterName: "Jordan (via advocate)",
-    requesterType: "young_person", requesterRelation: "Current resident — request via independent advocate",
-    dataSubjectId: "yp_jordan", dataSubjectType: "child",
-    status: "in_progress",
-    identityVerified: true, identityMethod: "Jordan is a current resident. Advocate verified as authorised representative.",
-    dataScope: ["Specific daily log entry from " + d(-15)],
-    redactionsRequired: false,
-    redactionCategories: [],
-    thirdPartyConsent: false, extensionApplied: false, extensionReason: "",
-    dateCompleted: null, responseMethod: "Verbal explanation and record amendment",
-    handledById: "staff_darren", dpoConsulted: false,
-    notes: "Jordan, supported by their advocate, has requested correction of a daily log entry that states Jordan 'refused to engage with the activity.' Jordan states they did not refuse — they were overwhelmed due to sensory overload and needed to leave the room. Advocate supports this. Under GDPR Article 16, Jordan has the right to rectification. The original log author (Edward) has been consulted and agrees the wording was not reflective of the situation. Record will be amended to read: 'Jordan became overwhelmed due to sensory stimulation and needed space. Staff supported Jordan by offering a quiet alternative.' Original entry will be retained with note of amendment per data retention policy.",
-  },
-  {
-    id: "sar_004", dateReceived: d(-40), deadlineDate: d(-10),
-    requestType: "subject_access", requesterName: "Diane Carter (former staff)",
-    requesterType: "staff", requesterRelation: "Former Residential Care Worker — dismissed following LADO investigation",
-    dataSubjectId: null, dataSubjectType: "staff",
-    status: "completed",
-    identityVerified: true, identityMethod: "Photographic ID (passport) provided via solicitor.",
-    dataScope: ["Personnel file", "Supervision records", "LADO investigation file", "Disciplinary records", "Training records"],
-    redactionsRequired: true,
-    redactionCategories: [
-      "Children's personal data",
-      "Information provided by third parties in confidence",
-      "Internal management discussion notes (legal privilege claimed for some)",
-    ],
-    thirdPartyConsent: false, extensionApplied: false, extensionReason: "",
-    dateCompleted: d(-15), responseMethod: "Secure email via solicitor with encrypted files",
-    handledById: "staff_darren", dpoConsulted: true,
-    notes: "Diane's solicitor submitted a SAR on her behalf following her dismissal. Legal advice obtained from the organisation's solicitor regarding scope, particularly around the LADO investigation file. DPO confirmed that Diane is entitled to her personal data within the investigation file but not to confidential third-party information or legally privileged material. All children's data redacted. Response provided within 30-day deadline. Solicitor acknowledged receipt — no further correspondence to date.",
-  },
-];
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function SubjectAccessRequestsPage() {
-  const [data] = useState(SEED);
+  const { data: records = [], isLoading } = useSubjectAccessRequestRecords();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -177,43 +68,56 @@ export default function SubjectAccessRequestsPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [showNew, setShowNew] = useState(false);
 
+  const today = new Date().toISOString().slice(0, 10);
+
   const filtered = useMemo(() => {
-    let rows = [...data];
+    let rows = [...records];
     if (search) {
       const q = search.toLowerCase();
       rows = rows.filter((r) =>
-        r.requesterName.toLowerCase().includes(q) ||
+        r.requester_name.toLowerCase().includes(q) ||
         r.id.toLowerCase().includes(q) ||
-        (r.dataSubjectId && (r.dataSubjectType === "child" ? getYPName(r.dataSubjectId) : getStaffName(r.dataSubjectId)).toLowerCase().includes(q))
+        (r.data_subject_id && (r.data_subject_type === "child" ? getYPName(r.data_subject_id) : getStaffName(r.data_subject_id)).toLowerCase().includes(q))
       );
     }
     if (filterStatus !== "all") rows = rows.filter((r) => r.status === filterStatus);
-    if (filterType !== "all") rows = rows.filter((r) => r.requestType === filterType);
-    rows.sort((a, b) => sortBy === "newest" ? b.dateReceived.localeCompare(a.dateReceived) : a.dateReceived.localeCompare(b.dateReceived));
+    if (filterType !== "all") rows = rows.filter((r) => r.request_type === filterType);
+    rows.sort((a, b) => sortBy === "newest" ? b.date_received.localeCompare(a.date_received) : a.date_received.localeCompare(b.date_received));
     return rows;
-  }, [data, search, filterStatus, filterType, sortBy]);
+  }, [records, search, filterStatus, filterType, sortBy]);
 
-  const total = data.length;
-  const open = data.filter((r) => !["completed", "refused"].includes(r.status)).length;
-  const completed = data.filter((r) => r.status === "completed").length;
-  const approaching = data.filter((r) => {
+  const total = records.length;
+  const open = records.filter((r) => !["completed", "refused"].includes(r.status)).length;
+  const completed = records.filter((r) => r.status === "completed").length;
+  const approaching = records.filter((r) => {
     if (r.status === "completed" || r.status === "refused") return false;
-    const today = d(0);
-    const sevenDays = d(7);
-    return r.deadlineDate >= today && r.deadlineDate <= sevenDays;
+    const sevenDays = new Date();
+    sevenDays.setDate(sevenDays.getDate() + 7);
+    const sevenDaysStr = sevenDays.toISOString().slice(0, 10);
+    return r.deadline_date >= today && r.deadline_date <= sevenDaysStr;
   }).length;
 
-  const exportCols: ExportColumn<SARRecord>[] = [
-    { header: "ID", accessor: (r: SARRecord) => r.id },
-    { header: "Received", accessor: (r: SARRecord) => r.dateReceived },
-    { header: "Deadline", accessor: (r: SARRecord) => r.deadlineDate },
-    { header: "Type", accessor: (r: SARRecord) => TYPE_LABEL[r.requestType] },
-    { header: "Requester", accessor: (r: SARRecord) => r.requesterName },
-    { header: "Source", accessor: (r: SARRecord) => REQUESTER_LABEL[r.requesterType] },
-    { header: "Status", accessor: (r: SARRecord) => STATUS_LABEL[r.status] },
-    { header: "Completed", accessor: (r: SARRecord) => r.dateCompleted || "Pending" },
-    { header: "DPO Consulted", accessor: (r: SARRecord) => r.dpoConsulted ? "Yes" : "No" },
+  const exportCols: ExportColumn<SubjectAccessRequestRecord>[] = [
+    { header: "ID", accessor: (r: SubjectAccessRequestRecord) => r.id },
+    { header: "Received", accessor: (r: SubjectAccessRequestRecord) => r.date_received },
+    { header: "Deadline", accessor: (r: SubjectAccessRequestRecord) => r.deadline_date },
+    { header: "Type", accessor: (r: SubjectAccessRequestRecord) => SUBJECT_ACCESS_REQUEST_TYPE_LABEL[r.request_type] },
+    { header: "Requester", accessor: (r: SubjectAccessRequestRecord) => r.requester_name },
+    { header: "Source", accessor: (r: SubjectAccessRequestRecord) => SUBJECT_ACCESS_REQUESTER_TYPE_LABEL[r.requester_type] },
+    { header: "Status", accessor: (r: SubjectAccessRequestRecord) => SUBJECT_ACCESS_REQUEST_STATUS_LABEL[r.status] },
+    { header: "Completed", accessor: (r: SubjectAccessRequestRecord) => r.date_completed || "Pending" },
+    { header: "DPO Consulted", accessor: (r: SubjectAccessRequestRecord) => r.dpo_consulted ? "Yes" : "No" },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Subject Access Requests (SARs)" subtitle="GDPR · UK Data Protection Act 2018 · Information Rights">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -222,7 +126,7 @@ export default function SubjectAccessRequestsPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Subject Access Requests" />
-          <ExportButton data={data} columns={exportCols} filename="subject-access-requests" />
+          <ExportButton data={records} columns={exportCols} filename="subject-access-requests" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Request</Button>
         </div>
       }
@@ -256,7 +160,7 @@ export default function SubjectAccessRequestsPage() {
             <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              {(Object.entries(STATUS_LABEL) as [RequestStatus, string][]).map(([k, v]) => (
+              {(Object.entries(SUBJECT_ACCESS_REQUEST_STATUS_LABEL) as [SubjectAccessRequestStatus, string][]).map(([k, v]) => (
                 <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
@@ -265,7 +169,7 @@ export default function SubjectAccessRequestsPage() {
             <SelectTrigger className="w-[180px]"><SelectValue placeholder="Request Type" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              {(Object.entries(TYPE_LABEL) as [RequestType, string][]).map(([k, v]) => (
+              {(Object.entries(SUBJECT_ACCESS_REQUEST_TYPE_LABEL) as [SubjectAccessRequestType, string][]).map(([k, v]) => (
                 <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
@@ -290,22 +194,22 @@ export default function SubjectAccessRequestsPage() {
         <div className="space-y-3">
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
-            const daysRemaining = Math.ceil((new Date(r.deadlineDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+            const daysRemaining = Math.ceil((new Date(r.deadline_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
             return (
               <Card key={r.id} className={cn("border-l-4", STATUS_BORDER[r.status])}>
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : r.id)}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1 flex-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {r.requesterName}
-                        <Badge variant="outline" className={STATUS_CLR[r.status]}>{STATUS_LABEL[r.status]}</Badge>
-                        <Badge variant="outline" className="bg-muted/50">{REQUESTER_LABEL[r.requesterType]}</Badge>
-                        {r.extensionApplied && <Badge variant="outline" className="bg-orange-100 text-orange-800">Extended</Badge>}
+                        {r.requester_name}
+                        <Badge variant="outline" className={STATUS_CLR[r.status]}>{SUBJECT_ACCESS_REQUEST_STATUS_LABEL[r.status]}</Badge>
+                        <Badge variant="outline" className="bg-muted/50">{SUBJECT_ACCESS_REQUESTER_TYPE_LABEL[r.requester_type]}</Badge>
+                        {r.extension_applied && <Badge variant="outline" className="bg-orange-100 text-orange-800">Extended</Badge>}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {TYPE_LABEL[r.requestType]} · Received: {r.dateReceived} · Deadline: {r.deadlineDate}
-                        {r.dataSubjectId && ` · Subject: ${r.dataSubjectType === "child" ? getYPName(r.dataSubjectId) : getStaffName(r.dataSubjectId)}`}
-                        {" "}· Handler: {getStaffName(r.handledById)}
+                        {SUBJECT_ACCESS_REQUEST_TYPE_LABEL[r.request_type]} · Received: {r.date_received} · Deadline: {r.deadline_date}
+                        {r.data_subject_id && ` · Subject: ${r.data_subject_type === "child" ? getYPName(r.data_subject_id) : getStaffName(r.data_subject_id)}`}
+                        {" "}· Handler: {getStaffName(r.handled_by_id)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -324,27 +228,27 @@ export default function SubjectAccessRequestsPage() {
                 {isOpen && (
                   <CardContent className="pt-0 space-y-3 text-sm">
                     {/* identity verification */}
-                    <div className={cn("rounded p-2", r.identityVerified ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200")}>
-                      <p className="font-medium text-xs mb-1">{r.identityVerified ? "✓ Identity Verified" : "✗ Identity NOT Verified"}</p>
-                      <p className="text-xs">{r.identityMethod}</p>
+                    <div className={cn("rounded p-2", r.identity_verified ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200")}>
+                      <p className="font-medium text-xs mb-1">{r.identity_verified ? "✓ Identity Verified" : "✗ Identity NOT Verified"}</p>
+                      <p className="text-xs">{r.identity_method}</p>
                     </div>
 
                     {/* data scope */}
                     <div>
                       <p className="font-medium mb-1">Data Scope Requested</p>
                       <div className="flex flex-wrap gap-1">
-                        {r.dataScope.map((s, i) => (
+                        {r.data_scope.map((s, i) => (
                           <Badge key={i} variant="outline" className="bg-blue-50 text-blue-700 text-xs">{s}</Badge>
                         ))}
                       </div>
                     </div>
 
                     {/* redactions */}
-                    {r.redactionsRequired && (
+                    {r.redactions_required && (
                       <div>
                         <p className="font-medium mb-1">Redaction Categories</p>
                         <ul className="space-y-1">
-                          {r.redactionCategories.map((c, i) => (
+                          {r.redaction_categories.map((c, i) => (
                             <li key={i} className="flex items-start gap-2 text-xs">
                               <Shield className="h-3.5 w-3.5 text-purple-600 shrink-0 mt-0.5" />
                               <span>{c}</span>
@@ -355,10 +259,10 @@ export default function SubjectAccessRequestsPage() {
                     )}
 
                     {/* extension */}
-                    {r.extensionApplied && (
+                    {r.extension_applied && (
                       <div className="bg-orange-50 border border-orange-200 rounded p-2">
                         <p className="font-medium text-xs text-orange-800 mb-1">Extension Applied</p>
-                        <p className="text-xs text-orange-700">{r.extensionReason}</p>
+                        <p className="text-xs text-orange-700">{r.extension_reason}</p>
                       </div>
                     )}
 
@@ -366,19 +270,19 @@ export default function SubjectAccessRequestsPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="bg-muted/40 rounded p-2 text-center">
                         <p className="font-medium text-xs">Received</p>
-                        <p className="text-xs font-bold">{r.dateReceived}</p>
+                        <p className="text-xs font-bold">{r.date_received}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2 text-center">
                         <p className="font-medium text-xs">Deadline</p>
-                        <p className={cn("text-xs font-bold", daysRemaining <= 3 && r.status !== "completed" ? "text-red-700" : "")}>{r.deadlineDate}</p>
+                        <p className={cn("text-xs font-bold", daysRemaining <= 3 && r.status !== "completed" ? "text-red-700" : "")}>{r.deadline_date}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2 text-center">
                         <p className="font-medium text-xs">Completed</p>
-                        <p className="text-xs font-bold">{r.dateCompleted || "Pending"}</p>
+                        <p className="text-xs font-bold">{r.date_completed || "Pending"}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2 text-center">
                         <p className="font-medium text-xs">DPO Consulted</p>
-                        <p className={cn("text-xs font-bold", r.dpoConsulted ? "text-green-700" : "text-slate-500")}>{r.dpoConsulted ? "Yes" : "No"}</p>
+                        <p className={cn("text-xs font-bold", r.dpo_consulted ? "text-green-700" : "text-slate-500")}>{r.dpo_consulted ? "Yes" : "No"}</p>
                       </div>
                     </div>
 
@@ -408,7 +312,7 @@ export default function SubjectAccessRequestsPage() {
               <Label>Requester Type</Label>
               <Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(REQUESTER_LABEL) as [RequesterType, string][]).map(([k, v]) => (
+                  {(Object.entries(SUBJECT_ACCESS_REQUESTER_TYPE_LABEL) as [SubjectAccessRequesterType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
                   ))}
                 </SelectContent>
@@ -418,7 +322,7 @@ export default function SubjectAccessRequestsPage() {
               <Label>Request Type</Label>
               <Select><SelectTrigger><SelectValue placeholder="Select request type" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(TYPE_LABEL) as [RequestType, string][]).map(([k, v]) => (
+                  {(Object.entries(SUBJECT_ACCESS_REQUEST_TYPE_LABEL) as [SubjectAccessRequestType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
                   ))}
                 </SelectContent>

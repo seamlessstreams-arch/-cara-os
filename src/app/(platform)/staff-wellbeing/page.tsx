@@ -3,9 +3,9 @@
 import { useState, useMemo } from "react";
 import {
   HeartPulse, Plus, Search, ArrowUpDown, Filter,
-  AlertTriangle, CheckCircle2, TrendingUp, TrendingDown,
+  AlertTriangle, CheckCircle2, TrendingUp,
   ChevronDown, ChevronUp, Smile, Meh, Frown,
-  Shield, Clock,
+  Clock, Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -19,31 +19,14 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useStaffWellbeingRecords } from "@/hooks/use-staff-wellbeing-records";
+import type { StaffWellbeingRecord, StaffWellbeingCheckType } from "@/types/extended";
+import { STAFF_WELLBEING_CHECK_TYPE_LABEL } from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
+/* ── local config ───────────────────────────────────────────────────── */
 
-/* ── types ───────────────────────────────────────────────────────────── */
-const CHECK_TYPES = [
-  "monthly_checkin", "post_incident", "supervision_wellbeing",
-  "return_from_absence", "self_referral", "manager_concern",
-] as const;
-type CheckType = typeof CHECK_TYPES[number];
-const TYPE_LABELS: Record<CheckType, string> = {
-  monthly_checkin: "Monthly Check-in", post_incident: "Post-Incident",
-  supervision_wellbeing: "Supervision Wellbeing", return_from_absence: "Return from Absence",
-  self_referral: "Self-Referral", manager_concern: "Manager Concern",
-};
-
-const WELLBEING_SCORES = [1, 2, 3, 4, 5] as const;
 const SCORE_LABELS = ["Very Low", "Low", "Moderate", "Good", "Excellent"];
 const SCORE_COLORS = [
   "bg-red-100 text-red-800", "bg-orange-100 text-orange-800",
@@ -51,102 +34,15 @@ const SCORE_COLORS = [
   "bg-green-100 text-green-800",
 ];
 
-interface WellbeingCheck {
-  id: string;
-  staffId: string;
-  date: string;
-  type: CheckType;
-  overallScore: number; // 1-5
-  workloadScore: number;
-  supportScore: number;
-  moralScore: number;
-  stressors: string[];
-  positives: string[];
-  supportNeeded: string;
-  actionAgreed: string;
-  followUpDate: string | null;
-  conductedBy: string;
-  confidential: boolean;
-  notes: string;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: WellbeingCheck[] = [
-  {
-    id: "wb_1", staffId: "staff_anna", date: d(-3), type: "monthly_checkin",
-    overallScore: 4, workloadScore: 3, supportScore: 5, moralScore: 4,
-    stressors: ["Alex's education attendance — feeling responsible", "Workload around PEP meetings"],
-    positives: ["Strong team support", "Jordan's positive feedback", "Good relationship with all YP"],
-    supportNeeded: "Admin support for PEP documentation",
-    actionAgreed: "RM to review PEP admin process — consider template simplification. Anna to attend resilience training next month.",
-    followUpDate: d(27), conductedBy: "staff_darren", confidential: false,
-    notes: "Anna is doing well overall. Slight concern about taking on too much responsibility for Alex's attendance — reminded this is a shared team responsibility.",
-  },
-  {
-    id: "wb_2", staffId: "staff_edward", date: d(-5), type: "post_incident",
-    overallScore: 3, workloadScore: 3, supportScore: 4, moralScore: 3,
-    stressors: ["Restraint incident with Alex — physically and emotionally draining", "Worry about Alex's wellbeing"],
-    positives: ["Team handled incident well together", "Felt supported by RM in immediate aftermath"],
-    supportNeeded: "Debrief with team. Reassurance about restraint appropriateness.",
-    actionAgreed: "Team debrief scheduled. Edward confirmed restraint was proportionate and well-managed. External support line number provided. Follow-up in 2 weeks.",
-    followUpDate: d(9), conductedBy: "staff_darren", confidential: false,
-    notes: "Edward was shaken by the restraint but processed it well. Confirmed he acted appropriately. Monitoring for any delayed impact.",
-  },
-  {
-    id: "wb_3", staffId: "staff_chervelle", date: d(-7), type: "monthly_checkin",
-    overallScore: 5, workloadScore: 4, supportScore: 5, moralScore: 5,
-    stressors: ["None significant at present"],
-    positives: ["Casey's mother sent thank-you card", "Enjoying key work sessions", "Team cohesion strong"],
-    supportNeeded: "None at present — happy and well-supported",
-    actionAgreed: "Continue current support. Chervelle interested in additional therapeutic training — RM to investigate options.",
-    followUpDate: null, conductedBy: "staff_darren", confidential: false,
-    notes: "Chervelle is thriving. High morale, strong relationships with YP and team. Keen to develop skills further — positive sign.",
-  },
-  {
-    id: "wb_4", staffId: "staff_ryan", date: d(-10), type: "monthly_checkin",
-    overallScore: 4, workloadScore: 3, supportScore: 4, moralScore: 4,
-    stressors: ["Deputy role can feel stretched when RM on leave", "Maintenance backlog"],
-    positives: ["Good working relationship with RM", "Enjoys problem-solving aspects of the role", "Team respect"],
-    supportNeeded: "Clarity on delegated authority when RM absent. More budget for maintenance issues.",
-    actionAgreed: "Written delegation framework to be created. Maintenance priorities reviewed — emergency fund discussed. Ryan to attend leadership development workshop in June.",
-    followUpDate: d(20), conductedBy: "staff_darren", confidential: false,
-    notes: "Ryan manages the deputy responsibilities well. Needs clearer structures when RM is absent to reduce anxiety. Leadership development will help.",
-  },
-  {
-    id: "wb_5", staffId: "staff_mirela", date: d(-2), type: "post_incident",
-    overallScore: 3, workloadScore: 4, supportScore: 4, moralScore: 3,
-    stressors: ["Casey's anxiety episode was distressing to witness", "A&E visit was lengthy and tiring", "Personal worry about Casey"],
-    positives: ["Felt hospital staff were responsive", "Casey's mother was supportive and grateful"],
-    supportNeeded: "Debrief about the incident. Reassurance about actions taken.",
-    actionAgreed: "Debrief completed with RM. Mirela confirmed she followed correct protocols. Support line details shared. Follow-up in 1 week.",
-    followUpDate: d(5), conductedBy: "staff_darren", confidential: false,
-    notes: "Mirela was understandably affected by Casey's acute anxiety episode. Handled it professionally. Important to check in at follow-up.",
-  },
-  {
-    id: "wb_6", staffId: "staff_diane", date: d(-14), type: "monthly_checkin",
-    overallScore: 4, workloadScore: 4, supportScore: 4, moralScore: 4,
-    stressors: ["Early starts for sleep-in recovery can be tiring"],
-    positives: ["Enjoys night shifts — finds them rewarding when quiet", "Good rapport with young people in mornings"],
-    supportNeeded: "Consideration of sleep-in frequency — current pattern is fine but don't want to increase",
-    actionAgreed: "Sleep-in rota to remain as current frequency. Diane's preference noted and respected.",
-    followUpDate: null, conductedBy: "staff_darren", confidential: false,
-    notes: "Diane is steady and reliable. No concerns. Good to have noted her preference on sleep-in frequency.",
-  },
-  {
-    id: "wb_7", staffId: "staff_lackson", date: d(-12), type: "monthly_checkin",
-    overallScore: 4, workloadScore: 4, supportScore: 4, moralScore: 5,
-    stressors: ["Occasional challenging behaviour from Alex — manages well but can be draining"],
-    positives: ["Brilliant relationship with Jordan — football sessions are a highlight", "Feels valued by the team"],
-    supportNeeded: "Additional behaviour management training refresh",
-    actionAgreed: "Team-teach refresher booked for next quarter. Lackson to mentor new staff on activity planning.",
-    followUpDate: null, conductedBy: "staff_darren", confidential: false,
-    notes: "Lackson brings positive energy to the team. His relationship with Jordan through sport is excellent. Good mentor potential.",
-  },
-];
+const ScoreIcon = ({ score }: { score: number }) => {
+  if (score >= 4) return <Smile className="h-4 w-4 text-green-600" />;
+  if (score === 3) return <Meh className="h-4 w-4 text-yellow-600" />;
+  return <Frown className="h-4 w-4 text-red-600" />;
+};
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function StaffWellbeingPage() {
-  const [checks] = useState<WellbeingCheck[]>(SEED);
+  const { data: records = [], isLoading } = useStaffWellbeingRecords();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -156,12 +52,12 @@ export default function StaffWellbeingPage() {
   const today = new Date().toISOString().slice(0, 10);
 
   const filtered = useMemo(() => {
-    let list = [...checks];
+    let list = [...records];
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (c) =>
-          getStaffName(c.staffId).toLowerCase().includes(q) ||
+          getStaffName(c.staff_id).toLowerCase().includes(q) ||
           c.notes.toLowerCase().includes(q) ||
           c.stressors.some((s) => s.toLowerCase().includes(q))
       );
@@ -171,41 +67,45 @@ export default function StaffWellbeingPage() {
     list.sort((a, b) => {
       switch (sortBy) {
         case "date": return b.date.localeCompare(a.date);
-        case "score": return a.overallScore - b.overallScore;
-        case "staff": return getStaffName(a.staffId).localeCompare(getStaffName(b.staffId));
+        case "score": return a.overall_score - b.overall_score;
+        case "staff": return getStaffName(a.staff_id).localeCompare(getStaffName(b.staff_id));
         default: return 0;
       }
     });
     return list;
-  }, [checks, search, filterType, sortBy]);
+  }, [records, search, filterType, sortBy]);
 
-  const total = checks.length;
-  const avgScore = checks.length > 0 ? (checks.reduce((s, c) => s + c.overallScore, 0) / checks.length).toFixed(1) : "—";
-  const lowScores = checks.filter((c) => c.overallScore <= 2).length;
-  const pendingFollowUp = checks.filter((c) => c.followUpDate && c.followUpDate <= today).length;
+  const total = records.length;
+  const avgScore = records.length > 0 ? (records.reduce((s, c) => s + c.overall_score, 0) / records.length).toFixed(1) : "—";
+  const lowScores = records.filter((c) => c.overall_score <= 2).length;
+  const pendingFollowUp = records.filter((c) => c.follow_up_date && c.follow_up_date <= today).length;
 
-  const ScoreIcon = ({ score }: { score: number }) => {
-    if (score >= 4) return <Smile className="h-4 w-4 text-green-600" />;
-    if (score === 3) return <Meh className="h-4 w-4 text-yellow-600" />;
-    return <Frown className="h-4 w-4 text-red-600" />;
-  };
-
-  const exportCols: ExportColumn<WellbeingCheck>[] = [
-    { header: "ID", accessor: (r: WellbeingCheck) => r.id },
-    { header: "Staff", accessor: (r: WellbeingCheck) => getStaffName(r.staffId) },
-    { header: "Date", accessor: (r: WellbeingCheck) => r.date },
-    { header: "Type", accessor: (r: WellbeingCheck) => TYPE_LABELS[r.type] },
-    { header: "Overall Score", accessor: (r: WellbeingCheck) => `${r.overallScore}/5` },
-    { header: "Workload", accessor: (r: WellbeingCheck) => `${r.workloadScore}/5` },
-    { header: "Support", accessor: (r: WellbeingCheck) => `${r.supportScore}/5` },
-    { header: "Morale", accessor: (r: WellbeingCheck) => `${r.moralScore}/5` },
-    { header: "Stressors", accessor: (r: WellbeingCheck) => r.stressors.join("; ") },
-    { header: "Positives", accessor: (r: WellbeingCheck) => r.positives.join("; ") },
-    { header: "Support Needed", accessor: (r: WellbeingCheck) => r.supportNeeded },
-    { header: "Action Agreed", accessor: (r: WellbeingCheck) => r.actionAgreed },
-    { header: "Follow-Up", accessor: (r: WellbeingCheck) => r.followUpDate ?? "N/A" },
-    { header: "Conducted By", accessor: (r: WellbeingCheck) => getStaffName(r.conductedBy) },
+  const exportCols: ExportColumn<StaffWellbeingRecord>[] = [
+    { header: "ID", accessor: (r: StaffWellbeingRecord) => r.id },
+    { header: "Staff", accessor: (r: StaffWellbeingRecord) => getStaffName(r.staff_id) },
+    { header: "Date", accessor: (r: StaffWellbeingRecord) => r.date },
+    { header: "Type", accessor: (r: StaffWellbeingRecord) => STAFF_WELLBEING_CHECK_TYPE_LABEL[r.type] },
+    { header: "Overall Score", accessor: (r: StaffWellbeingRecord) => `${r.overall_score}/5` },
+    { header: "Workload", accessor: (r: StaffWellbeingRecord) => `${r.workload_score}/5` },
+    { header: "Support", accessor: (r: StaffWellbeingRecord) => `${r.support_score}/5` },
+    { header: "Morale", accessor: (r: StaffWellbeingRecord) => `${r.moral_score}/5` },
+    { header: "Stressors", accessor: (r: StaffWellbeingRecord) => r.stressors.join("; ") },
+    { header: "Positives", accessor: (r: StaffWellbeingRecord) => r.positives.join("; ") },
+    { header: "Support Needed", accessor: (r: StaffWellbeingRecord) => r.support_needed },
+    { header: "Action Agreed", accessor: (r: StaffWellbeingRecord) => r.action_agreed },
+    { header: "Follow-Up", accessor: (r: StaffWellbeingRecord) => r.follow_up_date ?? "N/A" },
+    { header: "Conducted By", accessor: (r: StaffWellbeingRecord) => getStaffName(r.conducted_by) },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Staff Wellbeing" subtitle="Monitor and support the emotional health and resilience of the team">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -269,8 +169,8 @@ export default function StaffWellbeingPage() {
               <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                {CHECK_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>{TYPE_LABELS[t]}</SelectItem>
+                {(Object.entries(STAFF_WELLBEING_CHECK_TYPE_LABEL) as [StaffWellbeingCheckType, string][]).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -302,20 +202,20 @@ export default function StaffWellbeingPage() {
                   onClick={() => setExpanded(isExpanded ? null : check.id)}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <ScoreIcon score={check.overallScore} />
+                    <ScoreIcon score={check.overall_score} />
                     <div className="min-w-0">
-                      <p className="font-medium">{getStaffName(check.staffId)}</p>
+                      <p className="font-medium">{getStaffName(check.staff_id)}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {check.date} · {TYPE_LABELS[check.type]}
+                        {check.date} · {STAFF_WELLBEING_CHECK_TYPE_LABEL[check.type]}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {check.followUpDate && check.followUpDate <= today && (
+                    {check.follow_up_date && check.follow_up_date <= today && (
                       <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700">Follow-up Due</Badge>
                     )}
-                    <Badge className={cn("text-xs", SCORE_COLORS[check.overallScore - 1])}>
-                      {check.overallScore}/5 — {SCORE_LABELS[check.overallScore - 1]}
+                    <Badge className={cn("text-xs", SCORE_COLORS[check.overall_score - 1])}>
+                      {check.overall_score}/5 — {SCORE_LABELS[check.overall_score - 1]}
                     </Badge>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -326,9 +226,9 @@ export default function StaffWellbeingPage() {
                     {/* scores breakdown */}
                     <div className="grid grid-cols-3 gap-4">
                       {[
-                        { label: "Workload", score: check.workloadScore },
-                        { label: "Support", score: check.supportScore },
-                        { label: "Morale", score: check.moralScore },
+                        { label: "Workload", score: check.workload_score },
+                        { label: "Support", score: check.support_score },
+                        { label: "Morale", score: check.moral_score },
                       ].map((s) => (
                         <div key={s.label} className="rounded-lg border bg-white p-3 text-center">
                           <p className="text-xs text-muted-foreground">{s.label}</p>
@@ -376,18 +276,18 @@ export default function StaffWellbeingPage() {
 
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                       <p className="text-xs font-medium text-blue-700 mb-1">Support Needed</p>
-                      <p className="text-sm">{check.supportNeeded}</p>
+                      <p className="text-sm">{check.support_needed}</p>
                     </div>
 
                     <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                       <p className="text-xs font-medium text-amber-700 mb-1">Action Agreed</p>
-                      <p className="text-sm">{check.actionAgreed}</p>
+                      <p className="text-sm">{check.action_agreed}</p>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                      <div><span className="text-muted-foreground">Conducted By:</span> <span className="font-medium">{getStaffName(check.conductedBy)}</span></div>
-                      {check.followUpDate && (
-                        <div><span className="text-muted-foreground">Follow-Up:</span> <span className={cn("font-medium", check.followUpDate <= today && "text-orange-600")}>{check.followUpDate}</span></div>
+                      <div><span className="text-muted-foreground">Conducted By:</span> <span className="font-medium">{getStaffName(check.conducted_by)}</span></div>
+                      {check.follow_up_date && (
+                        <div><span className="text-muted-foreground">Follow-Up:</span> <span className={cn("font-medium", check.follow_up_date <= today && "text-orange-600")}>{check.follow_up_date}</span></div>
                       )}
                       <div><span className="text-muted-foreground">Confidential:</span> <span className="font-medium">{check.confidential ? "Yes" : "No"}</span></div>
                     </div>

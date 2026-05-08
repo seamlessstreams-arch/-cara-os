@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import {
   MessageSquare, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, Star, ThumbsUp, ThumbsDown,
-  ChevronDown, ChevronUp, Users, Heart,
+  ChevronDown, ChevronUp, Users, Heart, Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -18,155 +18,36 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { useStakeholderFeedbackRecords } from "@/hooks/use-stakeholder-feedback-records";
+import type {
+  StakeholderFeedbackRecord,
+  StakeholderFeedbackSource,
+  StakeholderFeedbackSentiment,
+  StakeholderFeedbackMethod,
+  StakeholderFeedbackTheme,
+} from "@/types/extended";
+import {
+  STAKEHOLDER_FEEDBACK_SOURCE_LABEL,
+  STAKEHOLDER_FEEDBACK_SENTIMENT_LABEL,
+  STAKEHOLDER_FEEDBACK_METHOD_LABEL,
+  STAKEHOLDER_FEEDBACK_THEME_LABEL,
+} from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
+/* ── local config ───────────────────────────────────────────────────── */
 
-/* ── types ───────────────────────────────────────────────────────────── */
-const SOURCES = [
-  "young_person", "parent_carer", "social_worker", "irp",
-  "school", "health_professional", "advocate", "neighbour", "other",
-] as const;
-type Source = typeof SOURCES[number];
-const SOURCE_LABELS: Record<Source, string> = {
-  young_person: "Young Person", parent_carer: "Parent / Carer",
-  social_worker: "Social Worker", irp: "Independent Reviewing Officer",
-  school: "School / College", health_professional: "Health Professional",
-  advocate: "Advocate", neighbour: "Neighbour / Community", other: "Other",
-};
-
-const SENTIMENTS = ["positive", "mixed", "negative"] as const;
-type Sentiment = typeof SENTIMENTS[number];
-const SENTIMENT_COLORS: Record<Sentiment, string> = {
+const SENTIMENT_COLORS: Record<StakeholderFeedbackSentiment, string> = {
   positive: "bg-green-100 text-green-800",
   mixed: "bg-yellow-100 text-yellow-800",
   negative: "bg-red-100 text-red-800",
 };
 
-const METHODS = ["survey", "conversation", "letter", "email", "phone", "meeting", "reg44_visit"] as const;
-type Method = typeof METHODS[number];
-const METHOD_LABELS: Record<Method, string> = {
-  survey: "Survey", conversation: "Conversation", letter: "Letter",
-  email: "Email", phone: "Phone Call", meeting: "Meeting", reg44_visit: "Reg 44 Visit",
-};
-
-const THEMES = [
-  "safety", "relationships", "communication", "activities",
-  "food", "environment", "education", "health", "contact",
-  "complaints", "praise", "suggestions",
-] as const;
-type Theme = typeof THEMES[number];
-const THEME_LABELS: Record<Theme, string> = {
-  safety: "Safety", relationships: "Relationships", communication: "Communication",
-  activities: "Activities", food: "Food & Meals", environment: "Environment",
-  education: "Education", health: "Health", contact: "Contact Arrangements",
-  complaints: "Complaints", praise: "Praise", suggestions: "Suggestions",
-};
-
-interface FeedbackEntry {
-  id: string;
-  date: string;
-  source: Source;
-  sourceName: string;
-  relatedYP: string | null;
-  method: Method;
-  sentiment: Sentiment;
-  themes: Theme[];
-  summary: string;
-  directQuote: string | null;
-  actionTaken: string | null;
-  respondedBy: string;
-  responseDate: string | null;
-  acknowledged: boolean;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: FeedbackEntry[] = [
-  {
-    id: "fb_1", date: d(-3), source: "young_person", sourceName: "Alex",
-    relatedYP: "yp_alex", method: "survey", sentiment: "positive",
-    themes: ["relationships", "activities", "food"],
-    summary: "Quarterly feedback survey. Alex rated overall experience 8/10. Particularly enjoys Friday movie nights and cooking sessions. Said staff 'always listen' when asked about feeling heard. Requested more trips out during weekends.",
-    directQuote: "I like living here. The staff are nice and I feel safe.",
-    actionTaken: "Activity calendar updated to include more weekend outings. Alex's suggestion added to next house meeting agenda.",
-    respondedBy: "staff_anna", responseDate: d(-1), acknowledged: true,
-  },
-  {
-    id: "fb_2", date: d(-7), source: "social_worker", sourceName: "Sarah Mitchell (LA SW)",
-    relatedYP: "yp_jordan", method: "phone", sentiment: "positive",
-    themes: ["safety", "communication", "praise"],
-    summary: "Phone call from Jordan's social worker. Very pleased with progress since placement. Noted excellent communication from the home — always kept informed. Praised the settling-in plan and how staff managed initial anxieties.",
-    directQuote: null,
-    actionTaken: "Positive feedback shared with team. Letter to be added to Reg 45 evidence.",
-    respondedBy: "staff_darren", responseDate: d(-7), acknowledged: true,
-  },
-  {
-    id: "fb_3", date: d(-10), source: "parent_carer", sourceName: "Casey's Mother",
-    relatedYP: "yp_casey", method: "conversation", sentiment: "mixed",
-    themes: ["contact", "communication", "suggestions"],
-    summary: "Casey's mother raised concerns about contact frequency during a visit. Feels she isn't being kept fully updated on Casey's daily life. Acknowledged the home is doing a good job overall but wants more regular phone updates between visits.",
-    directQuote: null,
-    actionTaken: "Agreed to provide weekly written update to mother in addition to contact sessions. Key worker to call mother every Wednesday evening.",
-    respondedBy: "staff_chervelle", responseDate: d(-9), acknowledged: true,
-  },
-  {
-    id: "fb_4", date: d(-14), source: "school", sourceName: "Mrs Taylor (Headteacher)",
-    relatedYP: "yp_alex", method: "email", sentiment: "mixed",
-    themes: ["education", "communication"],
-    summary: "Email from school regarding Alex's attendance, which has dropped to 78%. Acknowledged the home's efforts to encourage attendance but asked for a joint meeting to develop an attendance action plan. Also praised the home for always responding promptly to school communications.",
-    directQuote: null,
-    actionTaken: "PEP meeting arranged. Education attendance plan being co-developed with school.",
-    respondedBy: "staff_darren", responseDate: d(-13), acknowledged: true,
-  },
-  {
-    id: "fb_5", date: d(-5), source: "irp", sourceName: "Independent Visitor",
-    relatedYP: null, method: "reg44_visit", sentiment: "positive",
-    themes: ["environment", "safety", "praise", "relationships"],
-    summary: "Reg 44 visit feedback. Visitor noted the home was clean, warm, and felt like a family home. Spoke with all three young people who all expressed feeling safe. Staff were professional and warm. Minor recommendation about bathroom extractor fan.",
-    directQuote: null,
-    actionTaken: "Bathroom repair scheduled. Positive feedback circulated to team.",
-    respondedBy: "staff_darren", responseDate: d(-4), acknowledged: true,
-  },
-  {
-    id: "fb_6", date: d(-2), source: "young_person", sourceName: "Jordan",
-    relatedYP: "yp_jordan", method: "conversation", sentiment: "positive",
-    themes: ["relationships", "praise", "food"],
-    summary: "Jordan spontaneously told key worker this is the best home they've lived in. Specifically mentioned liking having their own room decorated how they want, and that the food is good. Said they feel staff genuinely care.",
-    directQuote: "This is the best place I've ever lived.",
-    actionTaken: "Recorded and shared with team. Added to Reg 45 evidence as Voice of the Child.",
-    respondedBy: "staff_anna", responseDate: d(-2), acknowledged: true,
-  },
-  {
-    id: "fb_7", date: d(-20), source: "health_professional", sourceName: "Dr Patel (CAMHS)",
-    relatedYP: "yp_casey", method: "meeting", sentiment: "positive",
-    themes: ["health", "communication", "praise"],
-    summary: "CAMHS review meeting. Dr Patel praised the home's consistent approach to supporting Casey's anxiety. Noted the home team's detailed observations are very helpful in planning therapeutic interventions. Recommended continuing current approach.",
-    directQuote: null,
-    actionTaken: "CAMHS recommendations integrated into care plan.",
-    respondedBy: "staff_darren", responseDate: d(-20), acknowledged: true,
-  },
-  {
-    id: "fb_8", date: d(-1), source: "young_person", sourceName: "Casey",
-    relatedYP: "yp_casey", method: "survey", sentiment: "mixed",
-    themes: ["activities", "suggestions", "food"],
-    summary: "Quarterly feedback. Casey rated experience 7/10. Happy with most things but would like more vegetarian options on the menu. Also requested art supplies for their room. Said they sometimes wish it was quieter in the evenings.",
-    directQuote: "I wish we could have more veggie meals.",
-    actionTaken: "Menu planning to include more vegetarian options. Art supplies to be purchased. Evening routine to be discussed at team meeting.",
-    respondedBy: "staff_chervelle", responseDate: null, acknowledged: false,
-  },
-];
+const SENTIMENTS: StakeholderFeedbackSentiment[] = ["positive", "mixed", "negative"];
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function StakeholderFeedbackPage() {
-  const [entries] = useState<FeedbackEntry[]>(SEED);
+  const { data: records = [], isLoading } = useStakeholderFeedbackRecords();
   const [search, setSearch] = useState("");
   const [filterSource, setFilterSource] = useState("all");
   const [filterSentiment, setFilterSentiment] = useState("all");
@@ -175,14 +56,14 @@ export default function StakeholderFeedbackPage() {
   const [showNew, setShowNew] = useState(false);
 
   const filtered = useMemo(() => {
-    let list = [...entries];
+    let list = [...records];
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (e) =>
-          e.sourceName.toLowerCase().includes(q) ||
+          e.source_name.toLowerCase().includes(q) ||
           e.summary.toLowerCase().includes(q) ||
-          (e.directQuote && e.directQuote.toLowerCase().includes(q))
+          (e.direct_quote && e.direct_quote.toLowerCase().includes(q))
       );
     }
     if (filterSource !== "all") list = list.filter((e) => e.source === filterSource);
@@ -197,30 +78,40 @@ export default function StakeholderFeedbackPage() {
       }
     });
     return list;
-  }, [entries, search, filterSource, filterSentiment, sortBy]);
+  }, [records, search, filterSource, filterSentiment, sortBy]);
 
   /* stats */
-  const total = entries.length;
-  const positive = entries.filter((e) => e.sentiment === "positive").length;
-  const negative = entries.filter((e) => e.sentiment === "negative").length;
-  const unacknowledged = entries.filter((e) => !e.acknowledged).length;
+  const total = records.length;
+  const positive = records.filter((e) => e.sentiment === "positive").length;
+  const negative = records.filter((e) => e.sentiment === "negative").length;
+  const unacknowledged = records.filter((e) => !e.acknowledged).length;
 
-  const exportCols: ExportColumn<FeedbackEntry>[] = [
-    { header: "ID", accessor: (r: FeedbackEntry) => r.id },
-    { header: "Date", accessor: (r: FeedbackEntry) => r.date },
-    { header: "Source Type", accessor: (r: FeedbackEntry) => SOURCE_LABELS[r.source] },
-    { header: "Source Name", accessor: (r: FeedbackEntry) => r.sourceName },
-    { header: "Related YP", accessor: (r: FeedbackEntry) => r.relatedYP ? getYPName(r.relatedYP) : "General" },
-    { header: "Method", accessor: (r: FeedbackEntry) => METHOD_LABELS[r.method] },
-    { header: "Sentiment", accessor: (r: FeedbackEntry) => r.sentiment },
-    { header: "Themes", accessor: (r: FeedbackEntry) => r.themes.map((t: Theme) => THEME_LABELS[t]).join(", ") },
-    { header: "Summary", accessor: (r: FeedbackEntry) => r.summary },
-    { header: "Direct Quote", accessor: (r: FeedbackEntry) => r.directQuote ?? "" },
-    { header: "Action Taken", accessor: (r: FeedbackEntry) => r.actionTaken ?? "" },
-    { header: "Responded By", accessor: (r: FeedbackEntry) => getStaffName(r.respondedBy) },
-    { header: "Response Date", accessor: (r: FeedbackEntry) => r.responseDate ?? "Pending" },
-    { header: "Acknowledged", accessor: (r: FeedbackEntry) => r.acknowledged ? "Yes" : "No" },
+  const exportCols: ExportColumn<StakeholderFeedbackRecord>[] = [
+    { header: "ID", accessor: (r: StakeholderFeedbackRecord) => r.id },
+    { header: "Date", accessor: (r: StakeholderFeedbackRecord) => r.date },
+    { header: "Source Type", accessor: (r: StakeholderFeedbackRecord) => STAKEHOLDER_FEEDBACK_SOURCE_LABEL[r.source] },
+    { header: "Source Name", accessor: (r: StakeholderFeedbackRecord) => r.source_name },
+    { header: "Related YP", accessor: (r: StakeholderFeedbackRecord) => r.related_yp ? getYPName(r.related_yp) : "General" },
+    { header: "Method", accessor: (r: StakeholderFeedbackRecord) => STAKEHOLDER_FEEDBACK_METHOD_LABEL[r.method] },
+    { header: "Sentiment", accessor: (r: StakeholderFeedbackRecord) => STAKEHOLDER_FEEDBACK_SENTIMENT_LABEL[r.sentiment] },
+    { header: "Themes", accessor: (r: StakeholderFeedbackRecord) => r.themes.map((t) => STAKEHOLDER_FEEDBACK_THEME_LABEL[t]).join(", ") },
+    { header: "Summary", accessor: (r: StakeholderFeedbackRecord) => r.summary },
+    { header: "Direct Quote", accessor: (r: StakeholderFeedbackRecord) => r.direct_quote ?? "" },
+    { header: "Action Taken", accessor: (r: StakeholderFeedbackRecord) => r.action_taken ?? "" },
+    { header: "Responded By", accessor: (r: StakeholderFeedbackRecord) => getStaffName(r.responded_by) },
+    { header: "Response Date", accessor: (r: StakeholderFeedbackRecord) => r.response_date ?? "Pending" },
+    { header: "Acknowledged", accessor: (r: StakeholderFeedbackRecord) => r.acknowledged ? "Yes" : "No" },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Stakeholder Feedback" subtitle="Feedback from children, families, professionals, and the community">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -284,8 +175,8 @@ export default function StakeholderFeedbackPage() {
               <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Sources</SelectItem>
-                {SOURCES.map((s) => (
-                  <SelectItem key={s} value={s}>{SOURCE_LABELS[s]}</SelectItem>
+                {(Object.entries(STAKEHOLDER_FEEDBACK_SOURCE_LABEL) as [StakeholderFeedbackSource, string][]).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -294,8 +185,8 @@ export default function StakeholderFeedbackPage() {
             <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Sentiments</SelectItem>
-              {SENTIMENTS.map((s) => (
-                <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>
+              {(Object.entries(STAKEHOLDER_FEEDBACK_SENTIMENT_LABEL) as [StakeholderFeedbackSentiment, string][]).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -332,17 +223,17 @@ export default function StakeholderFeedbackPage() {
                       <Users className="h-5 w-5 text-blue-600 shrink-0" />
                     )}
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{entry.sourceName}</p>
+                      <p className="font-medium truncate">{entry.source_name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {entry.date} · {SOURCE_LABELS[entry.source]} · {METHOD_LABELS[entry.method]}
-                        {entry.relatedYP && ` · Re: ${getYPName(entry.relatedYP)}`}
+                        {entry.date} · {STAKEHOLDER_FEEDBACK_SOURCE_LABEL[entry.source]} · {STAKEHOLDER_FEEDBACK_METHOD_LABEL[entry.method]}
+                        {entry.related_yp && ` · Re: ${getYPName(entry.related_yp)}`}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {!entry.acknowledged && <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700">Pending</Badge>}
                     <Badge className={cn("text-xs", SENTIMENT_COLORS[entry.sentiment])}>
-                      {entry.sentiment.charAt(0).toUpperCase() + entry.sentiment.slice(1)}
+                      {STAKEHOLDER_FEEDBACK_SENTIMENT_LABEL[entry.sentiment]}
                     </Badge>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -352,8 +243,8 @@ export default function StakeholderFeedbackPage() {
                   <div className="border-t bg-slate-50 p-4 space-y-4">
                     {/* themes */}
                     <div className="flex flex-wrap gap-1">
-                      {entry.themes.map((t: Theme) => (
-                        <Badge key={t} variant="outline" className="text-xs">{THEME_LABELS[t]}</Badge>
+                      {entry.themes.map((t) => (
+                        <Badge key={t} variant="outline" className="text-xs">{STAKEHOLDER_FEEDBACK_THEME_LABEL[t]}</Badge>
                       ))}
                     </div>
 
@@ -364,28 +255,28 @@ export default function StakeholderFeedbackPage() {
                     </div>
 
                     {/* direct quote */}
-                    {entry.directQuote && (
+                    {entry.direct_quote && (
                       <div className="rounded-lg bg-pink-50 border border-pink-200 p-3">
                         <div className="flex items-center gap-1 mb-1">
                           <Star className="h-4 w-4 text-pink-600" />
                           <p className="text-xs font-medium text-pink-700">Direct Quote</p>
                         </div>
-                        <p className="text-sm italic">&ldquo;{entry.directQuote}&rdquo;</p>
+                        <p className="text-sm italic">&ldquo;{entry.direct_quote}&rdquo;</p>
                       </div>
                     )}
 
                     {/* action taken */}
-                    {entry.actionTaken && (
+                    {entry.action_taken && (
                       <div className="rounded-lg bg-green-50 border border-green-200 p-3">
                         <p className="text-xs font-medium text-green-700 mb-1">Action Taken</p>
-                        <p className="text-sm">{entry.actionTaken}</p>
+                        <p className="text-sm">{entry.action_taken}</p>
                       </div>
                     )}
 
                     {/* response info */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                      <div><span className="text-muted-foreground">Responded By:</span> <span className="font-medium">{getStaffName(entry.respondedBy)}</span></div>
-                      <div><span className="text-muted-foreground">Response Date:</span> <span className="font-medium">{entry.responseDate ?? "Pending"}</span></div>
+                      <div><span className="text-muted-foreground">Responded By:</span> <span className="font-medium">{getStaffName(entry.responded_by)}</span></div>
+                      <div><span className="text-muted-foreground">Response Date:</span> <span className="font-medium">{entry.response_date ?? "Pending"}</span></div>
                       <div><span className="text-muted-foreground">Acknowledged:</span> <span className={cn("font-medium", entry.acknowledged ? "text-green-600" : "text-orange-600")}>{entry.acknowledged ? "Yes" : "No"}</span></div>
                     </div>
                   </div>

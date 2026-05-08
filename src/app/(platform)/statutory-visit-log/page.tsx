@@ -18,57 +18,44 @@ import {
   Search, ChevronDown, ChevronUp, ArrowUpDown, Calendar,
   Clock, AlertTriangle, CheckCircle2, Shield, UserCheck,
   ClipboardList, Eye, Users, FileText, MessageSquare,
-  Home, BookOpen, Heart,
+  Home, BookOpen, Heart, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { useStatutoryVisitRecords } from "@/hooks/use-statutory-visit-records";
+import type {
+  StatutoryVisitRecord,
+  StatutoryVisitType,
+  StatutoryVisitChildPresented,
+  StatutoryVisitActionAgreed,
+} from "@/types/extended";
+import {
+  STATUTORY_VISIT_TYPE_LABEL,
+  STATUTORY_VISIT_CHILD_PRESENTED_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── local config (colours not serializable) ────────────────────────────── */
 
-type VisitType =
-  | "First visit (within 7 days)"
-  | "First 6-week review"
-  | "Routine 6-weekly"
-  | "Quarterly"
-  | "Six-monthly"
-  | "Pre-LAC review"
-  | "Unannounced";
+const PRESENTED_CLR: Record<StatutoryVisitChildPresented, string> = {
+  settled: "bg-green-100 text-green-800",
+  engaged: "bg-emerald-100 text-emerald-800",
+  anxious: "bg-amber-100 text-amber-800",
+  withdrawn: "bg-slate-100 text-slate-700",
+  distressed: "bg-red-100 text-red-800",
+};
 
-type ChildPresented = "Settled" | "Anxious" | "Withdrawn" | "Engaged" | "Distressed";
+const TYPE_CLR: Record<StatutoryVisitType, string> = {
+  first_visit: "bg-purple-100 text-purple-800",
+  first_6_week_review: "bg-indigo-100 text-indigo-800",
+  routine_6_weekly: "bg-blue-100 text-blue-800",
+  quarterly: "bg-cyan-100 text-cyan-800",
+  six_monthly: "bg-teal-100 text-teal-800",
+  pre_lac_review: "bg-violet-100 text-violet-800",
+  unannounced: "bg-rose-100 text-rose-800",
+};
 
-interface ActionAgreed {
-  action: string;
-  owner: string;
-  deadline: string;
-}
-
-interface StatutoryVisit {
-  id: string;
-  youngPerson: string;
-  date: string;
-  visitType: VisitType;
-  socialWorker: string;
-  localAuthority: string;
-  durationMinutes: number;
-  sawChildAlone: boolean;
-  aloneTime: number;
-  childWishesShared: string;
-  homeStaffPresent: string[];
-  areasInspected: string[];
-  bedroomsSeen: boolean;
-  recordsReviewed: string[];
-  childPresented: ChildPresented;
-  keyDiscussions: string[];
-  socialWorkerObservations: string;
-  actionsAgreed: ActionAgreed[];
-  nextVisitDue: string;
-  reportFiledDate: string;
-  withinTimeframe: boolean;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
+type SortOption = "date-desc" | "date-asc" | "due-soonest" | "type" | "child";
 
 const fmt = (iso: string) => {
   if (!iso) return "—";
@@ -76,311 +63,40 @@ const fmt = (iso: string) => {
   return `${day}/${m}/${y}`;
 };
 
-const PRESENTED_CLR: Record<ChildPresented, string> = {
-  "Settled": "bg-green-100 text-green-800",
-  "Engaged": "bg-emerald-100 text-emerald-800",
-  "Anxious": "bg-amber-100 text-amber-800",
-  "Withdrawn": "bg-slate-100 text-slate-700",
-  "Distressed": "bg-red-100 text-red-800",
-};
-
-const TYPE_CLR: Record<VisitType, string> = {
-  "First visit (within 7 days)": "bg-purple-100 text-purple-800",
-  "First 6-week review": "bg-indigo-100 text-indigo-800",
-  "Routine 6-weekly": "bg-blue-100 text-blue-800",
-  "Quarterly": "bg-cyan-100 text-cyan-800",
-  "Six-monthly": "bg-teal-100 text-teal-800",
-  "Pre-LAC review": "bg-violet-100 text-violet-800",
-  "Unannounced": "bg-rose-100 text-rose-800",
-};
-
-type SortOption = "date-desc" | "date-asc" | "due-soonest" | "type" | "child";
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: StatutoryVisit[] = [
-  {
-    id: "sv_1",
-    youngPerson: "yp_alex",
-    date: d(-3),
-    visitType: "Routine 6-weekly",
-    socialWorker: "Jenna Brown",
-    localAuthority: "Birmingham Children's Trust",
-    durationMinutes: 95,
-    sawChildAlone: true,
-    aloneTime: 35,
-    childWishesShared: "Alex would like more contact with his older sister and asked about visiting home for his birthday in three weeks. He is settled and wants to remain at Oak House.",
-    homeStaffPresent: ["staff_darren", "staff_anna"],
-    areasInspected: ["bedroom", "living areas", "kitchen", "outdoor space"],
-    bedroomsSeen: true,
-    recordsReviewed: ["care plan", "PEP", "key working notes", "incident log"],
-    childPresented: "Settled",
-    keyDiscussions: [
-      "Family contact arrangements and birthday plans",
-      "Progress at school and engagement with PEP targets",
-      "Friendships and social activities outside the home",
-      "Any worries or wishes Alex wants reflected in his care plan",
-    ],
-    socialWorkerObservations: "Alex appears settled and well-cared-for. Bedroom is personalised and reflects his interests. Strong, warm relationships observed with staff. Care plan goals are being progressed effectively.",
-    actionsAgreed: [
-      { action: "Arrange supervised contact with sister within 14 days", owner: "Jenna Brown", deadline: d(11) },
-      { action: "Update care plan to include birthday family time", owner: "staff_darren", deadline: d(7) },
-    ],
-    nextVisitDue: d(39),
-    reportFiledDate: d(-1),
-    withinTimeframe: true,
-  },
-  {
-    id: "sv_2",
-    youngPerson: "yp_jordan",
-    date: d(-9),
-    visitType: "Routine 6-weekly",
-    socialWorker: "Mark Thompson",
-    localAuthority: "Solihull MBC",
-    durationMinutes: 80,
-    sawChildAlone: true,
-    aloneTime: 25,
-    childWishesShared: "Jordan shared that he is enjoying the new football club and wants to keep going. He asked whether he could have a phone upgrade for Christmas.",
-    homeStaffPresent: ["staff_ryan"],
-    areasInspected: ["bedroom", "communal lounge", "study area"],
-    bedroomsSeen: true,
-    recordsReviewed: ["care plan", "PEP", "behaviour support plan", "medication records"],
-    childPresented: "Engaged",
-    keyDiscussions: [
-      "PEP progress and EHCP review preparation",
-      "Engagement with football club and social skills development",
-      "Coping strategies and use of behaviour support plan",
-      "Family contact with mum (currently fortnightly)",
-    ],
-    socialWorkerObservations: "Jordan was open, chatty, and clearly proud of recent achievements. Behaviour support plan being implemented consistently with positive impact. Records well-maintained and reflective.",
-    actionsAgreed: [
-      { action: "Confirm EHCP review date with school SENCo", owner: "Mark Thompson", deadline: d(14) },
-    ],
-    nextVisitDue: d(33),
-    reportFiledDate: d(-7),
-    withinTimeframe: true,
-  },
-  {
-    id: "sv_3",
-    youngPerson: "yp_casey",
-    date: d(-14),
-    visitType: "First 6-week review",
-    socialWorker: "Priya Sharma",
-    localAuthority: "Coventry City Council",
-    durationMinutes: 110,
-    sawChildAlone: true,
-    aloneTime: 45,
-    childWishesShared: "Casey said she feels safe at Oak House and likes the staff team. She would like to start drama club and would prefer fewer professionals at her LAC review.",
-    homeStaffPresent: ["staff_darren", "staff_anna"],
-    areasInspected: ["bedroom", "kitchen", "garden", "quiet room"],
-    bedroomsSeen: true,
-    recordsReviewed: ["placement plan", "care plan", "key working notes", "health passport", "PEP"],
-    childPresented: "Settled",
-    keyDiscussions: [
-      "Casey's first six weeks — settling in and forming relationships",
-      "Aspirations and goals — including drama club interest",
-      "Preparation for upcoming LAC review and Casey's preferred format",
-      "Therapy referral progress (CAMHS waitlist)",
-    ],
-    socialWorkerObservations: "Casey has settled remarkably well. Strong attachment forming with key worker. Placement plan goals on track. Casey's voice is clearly evidenced throughout records.",
-    actionsAgreed: [
-      { action: "Source local drama club and complete consent paperwork", owner: "staff_anna", deadline: d(7) },
-      { action: "Chase CAMHS regarding waitlist position", owner: "Priya Sharma", deadline: d(10) },
-      { action: "Plan child-friendly LAC review format with Casey", owner: "staff_darren", deadline: d(20) },
-    ],
-    nextVisitDue: d(28),
-    reportFiledDate: d(-12),
-    withinTimeframe: true,
-  },
-  {
-    id: "sv_4",
-    youngPerson: "yp_alex",
-    date: d(-46),
-    visitType: "Routine 6-weekly",
-    socialWorker: "Jenna Brown",
-    localAuthority: "Birmingham Children's Trust",
-    durationMinutes: 75,
-    sawChildAlone: true,
-    aloneTime: 20,
-    childWishesShared: "Alex was quieter than usual but said he is OK. He raised a concern about a peer at school and asked staff to support him with this.",
-    homeStaffPresent: ["staff_darren"],
-    areasInspected: ["bedroom", "living areas"],
-    bedroomsSeen: true,
-    recordsReviewed: ["care plan", "PEP", "incident log"],
-    childPresented: "Anxious",
-    keyDiscussions: [
-      "School-based peer concern and any safeguarding implications",
-      "Family contact and recent missed phone call from sister",
-      "Sleep and emotional regulation",
-    ],
-    socialWorkerObservations: "Alex appeared subdued. The peer concern at school is being well-managed by Oak House and the school. Staff aware and providing additional emotional support. Recommend tracking mood over coming weeks.",
-    actionsAgreed: [
-      { action: "Schedule key working session focused on peer concern", owner: "staff_anna", deadline: d(-40) },
-      { action: "Liaise with school pastoral lead", owner: "Jenna Brown", deadline: d(-39) },
-    ],
-    nextVisitDue: d(-4),
-    reportFiledDate: d(-43),
-    withinTimeframe: true,
-  },
-  {
-    id: "sv_5",
-    youngPerson: "yp_jordan",
-    date: d(-58),
-    visitType: "Quarterly",
-    socialWorker: "Mark Thompson",
-    localAuthority: "Solihull MBC",
-    durationMinutes: 100,
-    sawChildAlone: false,
-    aloneTime: 0,
-    childWishesShared: "Jordan declined to speak alone with the social worker on this visit, stating he was tired. He said he is happy and has nothing to raise.",
-    homeStaffPresent: ["staff_darren", "staff_ryan"],
-    areasInspected: ["bedroom", "lounge", "kitchen", "garden"],
-    bedroomsSeen: true,
-    recordsReviewed: ["care plan", "PEP", "behaviour support plan", "incident log", "medication records"],
-    childPresented: "Withdrawn",
-    keyDiscussions: [
-      "Three-month placement progress overall",
-      "Education attendance and engagement",
-      "Mum's contact pattern — recent inconsistency",
-      "Jordan's preferences for social worker visit format going forward",
-    ],
-    socialWorkerObservations: "Important note: Jordan declined alone time with SW. This will be reattempted at next visit. Otherwise placement progress is positive. Records up to date and reflective.",
-    actionsAgreed: [
-      { action: "SW to attempt alone time again at next visit and offer alternative settings (e.g. walk)", owner: "Mark Thompson", deadline: d(-15) },
-      { action: "Discuss contact inconsistency with Jordan's mum", owner: "Mark Thompson", deadline: d(-50) },
-    ],
-    nextVisitDue: d(-16),
-    reportFiledDate: d(-55),
-    withinTimeframe: true,
-  },
-  {
-    id: "sv_6",
-    youngPerson: "yp_casey",
-    date: d(-55),
-    visitType: "First visit (within 7 days)",
-    socialWorker: "Priya Sharma",
-    localAuthority: "Coventry City Council",
-    durationMinutes: 130,
-    sawChildAlone: true,
-    aloneTime: 30,
-    childWishesShared: "Casey said the home is bigger than she expected and she likes her bedroom. She is missing her younger brother and would like to know when she can see him.",
-    homeStaffPresent: ["staff_darren", "staff_anna"],
-    areasInspected: ["bedroom", "kitchen", "lounge", "garden", "bathroom"],
-    bedroomsSeen: true,
-    recordsReviewed: ["placement plan", "admission paperwork", "initial care plan"],
-    childPresented: "Anxious",
-    keyDiscussions: [
-      "Initial impressions of Oak House and the staff team",
-      "Sibling contact arrangements — priority for Casey",
-      "Education plan and school transition",
-      "Health needs and outstanding appointments",
-    ],
-    socialWorkerObservations: "Statutory first visit completed within 7 days. Casey understandably anxious but engaged. Welcoming, child-centred environment. Sibling contact must be prioritised.",
-    actionsAgreed: [
-      { action: "Establish sibling contact plan within 14 days", owner: "Priya Sharma", deadline: d(-41) },
-      { action: "Confirm school start date and transport", owner: "staff_darren", deadline: d(-50) },
-      { action: "Book initial health assessment", owner: "staff_anna", deadline: d(-48) },
-    ],
-    nextVisitDue: d(-13),
-    reportFiledDate: d(-52),
-    withinTimeframe: true,
-  },
-  {
-    id: "sv_7",
-    youngPerson: "yp_alex",
-    date: d(-90),
-    visitType: "Six-monthly",
-    socialWorker: "Jenna Brown",
-    localAuthority: "Birmingham Children's Trust",
-    durationMinutes: 120,
-    sawChildAlone: true,
-    aloneTime: 40,
-    childWishesShared: "Alex described feeling settled and proud of his progress at school. He shared that he sometimes worries about his future and what will happen when he turns 16.",
-    homeStaffPresent: ["staff_darren"],
-    areasInspected: ["bedroom", "all communal areas", "garden"],
-    bedroomsSeen: true,
-    recordsReviewed: ["care plan", "PEP", "key working notes", "all incident logs", "health record", "pathway plan draft"],
-    childPresented: "Engaged",
-    keyDiscussions: [
-      "Six-month placement review — progress, stability, identity",
-      "Pathway planning and preparation for adulthood (PfA)",
-      "Long-term family contact arrangements",
-      "Independence skills development",
-    ],
-    socialWorkerObservations: "Alex has made significant progress over six months. Placement is highly stable and well-matched. Pathway planning should now be initiated formally given Alex's age. Strong evidence base across all records.",
-    actionsAgreed: [
-      { action: "Initiate formal pathway plan with leaving care team", owner: "Jenna Brown", deadline: d(-75) },
-      { action: "Begin independence skills programme", owner: "staff_anna", deadline: d(-80) },
-    ],
-    nextVisitDue: d(-48),
-    reportFiledDate: d(-87),
-    withinTimeframe: true,
-  },
-  {
-    id: "sv_8",
-    youngPerson: "yp_casey",
-    date: d(-30),
-    visitType: "Pre-LAC review",
-    socialWorker: "Priya Sharma",
-    localAuthority: "Coventry City Council",
-    durationMinutes: 90,
-    sawChildAlone: true,
-    aloneTime: 30,
-    childWishesShared: "Casey shared her views for the LAC review using a 'My Views' form. Key wishes: stay at Oak House, more frequent sibling contact, and choosing her own clothes budget.",
-    homeStaffPresent: ["staff_darren"],
-    areasInspected: ["bedroom", "lounge"],
-    bedroomsSeen: true,
-    recordsReviewed: ["care plan", "key working notes", "child's views form", "health passport"],
-    childPresented: "Engaged",
-    keyDiscussions: [
-      "Casey's wishes and feelings ahead of LAC review",
-      "Progress against placement plan goals",
-      "Format and attendance for the LAC review meeting",
-      "Sibling contact escalation",
-    ],
-    socialWorkerObservations: "Excellent preparation by the home. Casey clearly knows her rights and feels heard. 'My Views' form completed thoughtfully. Recommend LAC review chair receives this report in advance.",
-    actionsAgreed: [
-      { action: "Submit visit report to IRO before LAC review", owner: "Priya Sharma", deadline: d(-25) },
-      { action: "Set up child-led portion of LAC review", owner: "staff_darren", deadline: d(-23) },
-    ],
-    nextVisitDue: d(12),
-    reportFiledDate: "",
-    withinTimeframe: false,
-  },
-];
-
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function StatutoryVisitLogPage() {
-  const [data] = useState<StatutoryVisit[]>(SEED);
+  const { data: records = [], isLoading } = useStatutoryVisitRecords();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("date-desc");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterChild, setFilterChild] = useState<string>("all");
-  const [filterType, setFilterType] = useState<VisitType | "all">("all");
+  const [filterType, setFilterType] = useState<string>("all");
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
+  const today = new Date().toISOString().slice(0, 10);
+
   /* ── filtered & sorted ─────────────────────────────────────────────────── */
   const processed = useMemo(() => {
-    let result = [...data];
+    let result = [...records];
 
     if (filterChild !== "all") {
-      result = result.filter((v) => v.youngPerson === filterChild);
+      result = result.filter((v) => v.child_id === filterChild);
     }
     if (filterType !== "all") {
-      result = result.filter((v) => v.visitType === filterType);
+      result = result.filter((v) => v.visit_type === filterType);
     }
 
     if (search) {
       const q = search.toLowerCase();
       result = result.filter((v) =>
-        v.socialWorker.toLowerCase().includes(q) ||
-        v.localAuthority.toLowerCase().includes(q) ||
-        v.visitType.toLowerCase().includes(q) ||
-        v.childWishesShared.toLowerCase().includes(q) ||
-        v.socialWorkerObservations.toLowerCase().includes(q) ||
-        v.keyDiscussions.some((k) => k.toLowerCase().includes(q))
+        v.social_worker.toLowerCase().includes(q) ||
+        v.local_authority.toLowerCase().includes(q) ||
+        STATUTORY_VISIT_TYPE_LABEL[v.visit_type].toLowerCase().includes(q) ||
+        v.child_wishes_shared.toLowerCase().includes(q) ||
+        v.social_worker_observations.toLowerCase().includes(q) ||
+        v.key_discussions.some((k) => k.toLowerCase().includes(q))
       );
     }
 
@@ -392,36 +108,36 @@ export default function StatutoryVisitLogPage() {
         result.sort((a, b) => a.date.localeCompare(b.date));
         break;
       case "due-soonest":
-        result.sort((a, b) => a.nextVisitDue.localeCompare(b.nextVisitDue));
+        result.sort((a, b) => a.next_visit_due.localeCompare(b.next_visit_due));
         break;
       case "type":
-        result.sort((a, b) => a.visitType.localeCompare(b.visitType));
+        result.sort((a, b) => a.visit_type.localeCompare(b.visit_type));
         break;
       case "child":
-        result.sort((a, b) => a.youngPerson.localeCompare(b.youngPerson));
+        result.sort((a, b) => a.child_id.localeCompare(b.child_id));
         break;
     }
 
     return result;
-  }, [data, search, sortBy, filterChild, filterType]);
+  }, [records, search, sortBy, filterChild, filterType]);
 
   /* ── summary stats ─────────────────────────────────────────────────────── */
-  const today = d(0);
   const monthStart = today.slice(0, 7) + "-01";
-  const visitsThisMonth = data.filter((v) => v.date >= monthStart).length;
+  const visitsThisMonth = records.filter((v) => v.date >= monthStart).length;
 
-  const aloneCount = data.filter((v) => v.sawChildAlone).length;
-  const alonePct = data.length > 0 ? Math.round((aloneCount / data.length) * 100) : 0;
+  const aloneCount = records.filter((v) => v.saw_child_alone).length;
+  const alonePct = records.length > 0 ? Math.round((aloneCount / records.length) * 100) : 0;
 
-  const onTimeCount = data.filter((v) => v.withinTimeframe).length;
-  const onTimePct = data.length > 0 ? Math.round((onTimeCount / data.length) * 100) : 0;
+  const onTimeCount = records.filter((v) => v.within_timeframe).length;
+  const onTimePct = records.length > 0 ? Math.round((onTimeCount / records.length) * 100) : 0;
 
   // closest next visit due (per young person)
-  const nextDueByChild = ["yp_alex", "yp_jordan", "yp_casey"].map((yp) => {
-    const visits = data.filter((v) => v.youngPerson === yp);
+  const uniqueChildren = [...new Set(records.map((v) => v.child_id))];
+  const nextDueByChild = uniqueChildren.map((yp) => {
+    const visits = records.filter((v) => v.child_id === yp);
     if (visits.length === 0) return null;
     const latest = visits.sort((a, b) => b.date.localeCompare(a.date))[0];
-    return { yp, due: latest.nextVisitDue };
+    return { yp, due: latest.next_visit_due };
   }).filter((x): x is { yp: string; due: string } => x !== null);
 
   const closestDue = nextDueByChild.length > 0
@@ -430,32 +146,42 @@ export default function StatutoryVisitLogPage() {
 
   // overdue / unfiled
   const overdueVisits = nextDueByChild.filter((n) => n.due < today);
-  const unfiledReports = data.filter((v) => !v.reportFiledDate);
-  const declinedAlone = data.filter((v) => !v.sawChildAlone);
+  const unfiledReports = records.filter((v) => !v.report_filed_date);
+  const declinedAlone = records.filter((v) => !v.saw_child_alone);
 
   /* ── export columns ────────────────────────────────────────────────────── */
-  const exportCols: ExportColumn<StatutoryVisit>[] = [
-    { header: "Date", accessor: (r: StatutoryVisit) => r.date },
-    { header: "Young Person", accessor: (r: StatutoryVisit) => getYPName(r.youngPerson) },
-    { header: "Visit Type", accessor: (r: StatutoryVisit) => r.visitType },
-    { header: "Social Worker", accessor: (r: StatutoryVisit) => r.socialWorker },
-    { header: "Local Authority", accessor: (r: StatutoryVisit) => r.localAuthority },
-    { header: "Duration (mins)", accessor: (r: StatutoryVisit) => String(r.durationMinutes) },
-    { header: "Saw Child Alone", accessor: (r: StatutoryVisit) => r.sawChildAlone ? "Yes" : "No" },
-    { header: "Alone Time (mins)", accessor: (r: StatutoryVisit) => String(r.aloneTime) },
-    { header: "Child's Wishes", accessor: (r: StatutoryVisit) => r.childWishesShared },
-    { header: "Home Staff Present", accessor: (r: StatutoryVisit) => r.homeStaffPresent.map((s: string) => getStaffName(s)).join(", ") },
-    { header: "Areas Inspected", accessor: (r: StatutoryVisit) => r.areasInspected.join(", ") },
-    { header: "Bedrooms Seen", accessor: (r: StatutoryVisit) => r.bedroomsSeen ? "Yes" : "No" },
-    { header: "Records Reviewed", accessor: (r: StatutoryVisit) => r.recordsReviewed.join(", ") },
-    { header: "Child Presented", accessor: (r: StatutoryVisit) => r.childPresented },
-    { header: "Key Discussions", accessor: (r: StatutoryVisit) => r.keyDiscussions.join("; ") },
-    { header: "SW Observations", accessor: (r: StatutoryVisit) => r.socialWorkerObservations },
-    { header: "Actions Agreed", accessor: (r: StatutoryVisit) => r.actionsAgreed.map((a: ActionAgreed) => `${a.action} (owner: ${a.owner.startsWith("staff_") ? getStaffName(a.owner) : a.owner}, by ${a.deadline})`).join("; ") },
-    { header: "Next Visit Due", accessor: (r: StatutoryVisit) => r.nextVisitDue },
-    { header: "Report Filed", accessor: (r: StatutoryVisit) => r.reportFiledDate || "Not filed" },
-    { header: "Within Timeframe", accessor: (r: StatutoryVisit) => r.withinTimeframe ? "Yes" : "No" },
+  const exportCols: ExportColumn<StatutoryVisitRecord>[] = [
+    { header: "Date", accessor: (r: StatutoryVisitRecord) => r.date },
+    { header: "Young Person", accessor: (r: StatutoryVisitRecord) => getYPName(r.child_id) },
+    { header: "Visit Type", accessor: (r: StatutoryVisitRecord) => STATUTORY_VISIT_TYPE_LABEL[r.visit_type] },
+    { header: "Social Worker", accessor: (r: StatutoryVisitRecord) => r.social_worker },
+    { header: "Local Authority", accessor: (r: StatutoryVisitRecord) => r.local_authority },
+    { header: "Duration (mins)", accessor: (r: StatutoryVisitRecord) => String(r.duration_minutes) },
+    { header: "Saw Child Alone", accessor: (r: StatutoryVisitRecord) => r.saw_child_alone ? "Yes" : "No" },
+    { header: "Alone Time (mins)", accessor: (r: StatutoryVisitRecord) => String(r.alone_time) },
+    { header: "Child's Wishes", accessor: (r: StatutoryVisitRecord) => r.child_wishes_shared },
+    { header: "Home Staff Present", accessor: (r: StatutoryVisitRecord) => r.home_staff_present.map((s: string) => getStaffName(s)).join(", ") },
+    { header: "Areas Inspected", accessor: (r: StatutoryVisitRecord) => r.areas_inspected.join(", ") },
+    { header: "Bedrooms Seen", accessor: (r: StatutoryVisitRecord) => r.bedrooms_seen ? "Yes" : "No" },
+    { header: "Records Reviewed", accessor: (r: StatutoryVisitRecord) => r.records_reviewed.join(", ") },
+    { header: "Child Presented", accessor: (r: StatutoryVisitRecord) => STATUTORY_VISIT_CHILD_PRESENTED_LABEL[r.child_presented] },
+    { header: "Key Discussions", accessor: (r: StatutoryVisitRecord) => r.key_discussions.join("; ") },
+    { header: "SW Observations", accessor: (r: StatutoryVisitRecord) => r.social_worker_observations },
+    { header: "Actions Agreed", accessor: (r: StatutoryVisitRecord) => r.actions_agreed.map((a: StatutoryVisitActionAgreed) => `${a.action} (owner: ${a.owner.startsWith("staff_") ? getStaffName(a.owner) : a.owner}, by ${a.deadline})`).join("; ") },
+    { header: "Next Visit Due", accessor: (r: StatutoryVisitRecord) => r.next_visit_due },
+    { header: "Report Filed", accessor: (r: StatutoryVisitRecord) => r.report_filed_date || "Not filed" },
+    { header: "Within Timeframe", accessor: (r: StatutoryVisitRecord) => r.within_timeframe ? "Yes" : "No" },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Statutory Visit Log" subtitle="Local authority social worker visits to each child — Care Planning Regulations 2010 and Quality Standard 4">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -522,7 +248,7 @@ export default function StatutoryVisitLogPage() {
                   </p>
                   <ul className="text-xs text-amber-700 mt-1.5 space-y-0.5">
                     {unfiledReports.map((u) => (
-                      <li key={u.id}>· {getYPName(u.youngPerson)} — visit {fmt(u.date)} ({u.socialWorker})</li>
+                      <li key={u.id}>· {getYPName(u.child_id)} — visit {fmt(u.date)} ({u.social_worker})</li>
                     ))}
                   </ul>
                 </CardContent>
@@ -562,25 +288,21 @@ export default function StatutoryVisitLogPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All children</SelectItem>
-              <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-              <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-              <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
+              {uniqueChildren.map((yp) => (
+                <SelectItem key={yp} value={yp}>{getYPName(yp)}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
-          <Select value={filterType} onValueChange={(v) => setFilterType(v as VisitType | "all")}>
+          <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="All visit types" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All visit types</SelectItem>
-              <SelectItem value="First visit (within 7 days)">First visit (within 7 days)</SelectItem>
-              <SelectItem value="First 6-week review">First 6-week review</SelectItem>
-              <SelectItem value="Routine 6-weekly">Routine 6-weekly</SelectItem>
-              <SelectItem value="Quarterly">Quarterly</SelectItem>
-              <SelectItem value="Six-monthly">Six-monthly</SelectItem>
-              <SelectItem value="Pre-LAC review">Pre-LAC review</SelectItem>
-              <SelectItem value="Unannounced">Unannounced</SelectItem>
+              {(Object.entries(STATUTORY_VISIT_TYPE_LABEL) as [StatutoryVisitType, string][]).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
@@ -616,14 +338,14 @@ export default function StatutoryVisitLogPage() {
 
           {processed.map((visit) => {
             const isOpen = expandedId === visit.id;
-            const presentedClr = PRESENTED_CLR[visit.childPresented];
-            const typeClr = TYPE_CLR[visit.visitType];
-            const isOverdue = visit.nextVisitDue < today;
-            const reportLate = !visit.reportFiledDate;
+            const presentedClr = PRESENTED_CLR[visit.child_presented];
+            const typeClr = TYPE_CLR[visit.visit_type];
+            const isOverdue = visit.next_visit_due < today;
+            const reportLate = !visit.report_filed_date;
 
-            const borderClr = !visit.withinTimeframe || reportLate
+            const borderClr = !visit.within_timeframe || reportLate
               ? "border-l-red-500"
-              : !visit.sawChildAlone
+              : !visit.saw_child_alone
               ? "border-l-amber-400"
               : "border-l-green-400";
 
@@ -633,25 +355,25 @@ export default function StatutoryVisitLogPage() {
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {getYPName(visit.youngPerson)}
+                        {getYPName(visit.child_id)}
                         <span className="text-muted-foreground font-normal text-sm">·</span>
                         <span className="text-sm font-normal text-muted-foreground">{fmt(visit.date)}</span>
                         <Badge variant="outline" className={typeClr}>
-                          {visit.visitType}
+                          {STATUTORY_VISIT_TYPE_LABEL[visit.visit_type]}
                         </Badge>
                         <Badge variant="outline" className={presentedClr}>
-                          Presented: {visit.childPresented}
+                          Presented: {STATUTORY_VISIT_CHILD_PRESENTED_LABEL[visit.child_presented]}
                         </Badge>
-                        {visit.sawChildAlone ? (
+                        {visit.saw_child_alone ? (
                           <Badge variant="outline" className="bg-green-100 text-green-800">
-                            <UserCheck className="h-3 w-3 mr-0.5" /> Saw alone {visit.aloneTime}m
+                            <UserCheck className="h-3 w-3 mr-0.5" /> Saw alone {visit.alone_time}m
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="bg-amber-100 text-amber-800">
                             <AlertTriangle className="h-3 w-3 mr-0.5" /> Not seen alone
                           </Badge>
                         )}
-                        {!visit.withinTimeframe && (
+                        {!visit.within_timeframe && (
                           <Badge variant="outline" className="bg-red-100 text-red-800">
                             Out of timeframe
                           </Badge>
@@ -663,8 +385,8 @@ export default function StatutoryVisitLogPage() {
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        SW: {visit.socialWorker} · {visit.localAuthority} · {visit.durationMinutes} mins
-                        {" · "}Next due: <span className={cn(isOverdue && "text-red-600 font-medium")}>{fmt(visit.nextVisitDue)}</span>
+                        SW: {visit.social_worker} · {visit.local_authority} · {visit.duration_minutes} mins
+                        {" · "}Next due: <span className={cn(isOverdue && "text-red-600 font-medium")}>{fmt(visit.next_visit_due)}</span>
                       </p>
                     </div>
                     {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
@@ -678,7 +400,7 @@ export default function StatutoryVisitLogPage() {
                       <p className="font-medium text-purple-800 mb-1 flex items-center gap-1">
                         <Heart className="h-3.5 w-3.5" /> Child&apos;s Wishes &amp; Feelings
                       </p>
-                      <p className="text-purple-700 text-xs">{visit.childWishesShared}</p>
+                      <p className="text-purple-700 text-xs">{visit.child_wishes_shared}</p>
                     </div>
 
                     {/* Areas inspected & bedrooms */}
@@ -688,14 +410,14 @@ export default function StatutoryVisitLogPage() {
                           <Home className="h-3.5 w-3.5" /> Areas Inspected
                         </p>
                         <div className="flex flex-wrap gap-1">
-                          {visit.areasInspected.map((area) => (
+                          {visit.areas_inspected.map((area) => (
                             <Badge key={area} variant="outline" className="text-xs bg-slate-50">
                               {area}
                             </Badge>
                           ))}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Bedroom seen: <span className={cn("font-medium", visit.bedroomsSeen ? "text-green-700" : "text-red-700")}>{visit.bedroomsSeen ? "Yes" : "No"}</span>
+                          Bedroom seen: <span className={cn("font-medium", visit.bedrooms_seen ? "text-green-700" : "text-red-700")}>{visit.bedrooms_seen ? "Yes" : "No"}</span>
                         </p>
                       </div>
                       <div>
@@ -703,7 +425,7 @@ export default function StatutoryVisitLogPage() {
                           <BookOpen className="h-3.5 w-3.5" /> Records Reviewed
                         </p>
                         <div className="flex flex-wrap gap-1">
-                          {visit.recordsReviewed.map((rec) => (
+                          {visit.records_reviewed.map((rec) => (
                             <Badge key={rec} variant="outline" className="text-xs bg-slate-50">
                               {rec}
                             </Badge>
@@ -718,8 +440,8 @@ export default function StatutoryVisitLogPage() {
                         <Users className="h-3.5 w-3.5" /> Home Staff Present
                       </p>
                       <p className="text-muted-foreground">
-                        {visit.homeStaffPresent.length > 0
-                          ? visit.homeStaffPresent.map((s) => getStaffName(s)).join(", ")
+                        {visit.home_staff_present.length > 0
+                          ? visit.home_staff_present.map((s) => getStaffName(s)).join(", ")
                           : "None recorded"}
                       </p>
                     </div>
@@ -730,7 +452,7 @@ export default function StatutoryVisitLogPage() {
                         <MessageSquare className="h-3.5 w-3.5" /> Key Discussions
                       </p>
                       <ul className="space-y-1">
-                        {visit.keyDiscussions.map((kd, i) => (
+                        {visit.key_discussions.map((kd, i) => (
                           <li key={i} className="text-muted-foreground text-xs flex items-start gap-2">
                             <span className="mt-1 h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
                             {kd}
@@ -744,17 +466,17 @@ export default function StatutoryVisitLogPage() {
                       <p className="font-medium text-blue-800 mb-1 flex items-center gap-1">
                         <Eye className="h-3.5 w-3.5" /> Social Worker Observations
                       </p>
-                      <p className="text-blue-700 text-xs">{visit.socialWorkerObservations}</p>
+                      <p className="text-blue-700 text-xs">{visit.social_worker_observations}</p>
                     </div>
 
                     {/* Actions agreed */}
-                    {visit.actionsAgreed.length > 0 && (
+                    {visit.actions_agreed.length > 0 && (
                       <div className="bg-emerald-50 rounded-lg p-3">
                         <p className="font-medium text-emerald-800 mb-2 flex items-center gap-1">
                           <ClipboardList className="h-3.5 w-3.5" /> Actions Agreed
                         </p>
                         <div className="space-y-2">
-                          {visit.actionsAgreed.map((a, i) => (
+                          {visit.actions_agreed.map((a, i) => (
                             <div key={i} className="text-xs bg-white rounded p-2 border border-emerald-100">
                               <p className="text-emerald-900 font-medium">{a.action}</p>
                               <p className="text-emerald-600 mt-1">
@@ -771,17 +493,25 @@ export default function StatutoryVisitLogPage() {
                     <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pt-2 border-t flex-wrap">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
-                        Next visit due: <span className={cn(isOverdue && "text-red-600 font-medium")}>{fmt(visit.nextVisitDue)}</span>
+                        Next visit due: <span className={cn(isOverdue && "text-red-600 font-medium")}>{fmt(visit.next_visit_due)}</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <FileText className="h-3.5 w-3.5" />
-                        Report filed: {visit.reportFiledDate ? fmt(visit.reportFiledDate) : <span className="text-amber-600 font-medium">Not yet filed</span>}
+                        Report filed: {visit.report_filed_date ? fmt(visit.report_filed_date) : <span className="text-amber-600 font-medium">Not yet filed</span>}
                       </span>
                       <span className="flex items-center gap-1">
                         <Shield className="h-3.5 w-3.5" />
-                        Within timeframe: <span className={cn("font-medium", visit.withinTimeframe ? "text-green-700" : "text-red-700")}>{visit.withinTimeframe ? "Yes" : "No"}</span>
+                        Within timeframe: <span className={cn("font-medium", visit.within_timeframe ? "text-green-700" : "text-red-700")}>{visit.within_timeframe ? "Yes" : "No"}</span>
                       </span>
                     </div>
+
+                    {/* SmartLinkPanel — child-level */}
+                    <SmartLinkPanel
+                      sourceType="statutory-visit-record"
+                      sourceId={visit.id}
+                      childId={visit.child_id}
+                      compact
+                    />
                   </CardContent>
                 )}
               </Card>

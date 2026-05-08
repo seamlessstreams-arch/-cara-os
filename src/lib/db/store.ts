@@ -344,6 +344,12 @@ import type {
   StaffSaferCaringRecord,
   StaffShadowingRecord,
   StaffSicknessRecord,
+  StaffSupervisionThemeRecord,
+  StaffWellbeingRecord,
+  StakeholderFeedbackRecord,
+  StatutoryCheckRecord,
+  StatutoryVisitRecord,
+  SubjectAccessRequestRecord,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -771,6 +777,12 @@ const store = {
   staffSaferCaringRecords: [] as StaffSaferCaringRecord[],
   staffShadowingRecords: [] as StaffShadowingRecord[],
   staffSicknessRecords: [] as StaffSicknessRecord[],
+  staffSupervisionThemeRecords: [] as StaffSupervisionThemeRecord[],
+  staffWellbeingRecords: [] as StaffWellbeingRecord[],
+  stakeholderFeedbackRecords: [] as StakeholderFeedbackRecord[],
+  statutoryCheckRecords: [] as StatutoryCheckRecord[],
+  statutoryVisitRecords: [] as StatutoryVisitRecord[],
+  subjectAccessRequestRecords: [] as SubjectAccessRequestRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -9522,6 +9534,96 @@ export const db = {
       if (idx === -1) return null;
       store.staffSicknessRecords[idx] = { ...store.staffSicknessRecords[idx], ...data };
       return store.staffSicknessRecords[idx];
+    },
+  },
+
+  staffSupervisionThemeRecords: {
+    getAll: () => store.staffSupervisionThemeRecords,
+    create: (data: Omit<StaffSupervisionThemeRecord, "id">) => {
+      const record = { ...data, id: generateId("sstr_") } as StaffSupervisionThemeRecord;
+      store.staffSupervisionThemeRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StaffSupervisionThemeRecord>) => {
+      const idx = store.staffSupervisionThemeRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.staffSupervisionThemeRecords[idx] = { ...store.staffSupervisionThemeRecords[idx], ...data };
+      return store.staffSupervisionThemeRecords[idx];
+    },
+  },
+
+  staffWellbeingRecords: {
+    getAll: () => store.staffWellbeingRecords,
+    create: (data: Omit<StaffWellbeingRecord, "id">) => {
+      const record = { ...data, id: generateId("swbr_") } as StaffWellbeingRecord;
+      store.staffWellbeingRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StaffWellbeingRecord>) => {
+      const idx = store.staffWellbeingRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.staffWellbeingRecords[idx] = { ...store.staffWellbeingRecords[idx], ...data };
+      return store.staffWellbeingRecords[idx];
+    },
+  },
+
+  stakeholderFeedbackRecords: {
+    getAll: () => store.stakeholderFeedbackRecords,
+    create: (data: Omit<StakeholderFeedbackRecord, "id">) => {
+      const record = { ...data, id: generateId("sfbr_") } as StakeholderFeedbackRecord;
+      store.stakeholderFeedbackRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StakeholderFeedbackRecord>) => {
+      const idx = store.stakeholderFeedbackRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.stakeholderFeedbackRecords[idx] = { ...store.stakeholderFeedbackRecords[idx], ...data };
+      return store.stakeholderFeedbackRecords[idx];
+    },
+  },
+
+  statutoryCheckRecords: {
+    getAll: () => store.statutoryCheckRecords,
+    create: (data: Omit<StatutoryCheckRecord, "id">) => {
+      const record = { ...data, id: generateId("schr_") } as StatutoryCheckRecord;
+      store.statutoryCheckRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StatutoryCheckRecord>) => {
+      const idx = store.statutoryCheckRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.statutoryCheckRecords[idx] = { ...store.statutoryCheckRecords[idx], ...data };
+      return store.statutoryCheckRecords[idx];
+    },
+  },
+
+  statutoryVisitRecords: {
+    getAll: () => store.statutoryVisitRecords,
+    create: (data: Omit<StatutoryVisitRecord, "id">) => {
+      const record = { ...data, id: generateId("svr_") } as StatutoryVisitRecord;
+      store.statutoryVisitRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<StatutoryVisitRecord>) => {
+      const idx = store.statutoryVisitRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.statutoryVisitRecords[idx] = { ...store.statutoryVisitRecords[idx], ...data };
+      return store.statutoryVisitRecords[idx];
+    },
+  },
+
+  subjectAccessRequestRecords: {
+    getAll: () => store.subjectAccessRequestRecords,
+    create: (data: Omit<SubjectAccessRequestRecord, "id">) => {
+      const record = { ...data, id: generateId("sarr_") } as SubjectAccessRequestRecord;
+      store.subjectAccessRequestRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SubjectAccessRequestRecord>) => {
+      const idx = store.subjectAccessRequestRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.subjectAccessRequestRecords[idx] = { ...store.subjectAccessRequestRecords[idx], ...data };
+      return store.subjectAccessRequestRecords[idx];
     },
   },
 };
