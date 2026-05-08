@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Clock,
   Shield,
+  Loader2,
 } from "lucide-react";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -24,66 +25,17 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useStaffGrievanceRecords } from "@/hooks/use-staff-grievance-records";
+import type { StaffGrievanceRecord } from "@/types/extended";
+import {
+  STAFF_GRIEVANCE_CATEGORY_LABEL,
+  STAFF_GRIEVANCE_STATUS_LABEL,
+  STAFF_GRIEVANCE_SEVERITY_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── local colour maps ────────────────────────────────────────────────── */
 
-type GrievanceCategory = "working_conditions" | "bullying_harassment" | "pay_benefits" | "workload" | "management" | "discrimination" | "health_safety" | "policy_procedure" | "interpersonal" | "other";
-type GrievanceStatus = "informal_raised" | "formal_submitted" | "under_investigation" | "hearing_scheduled" | "resolved" | "appealed" | "withdrawn";
-type Severity = "low" | "medium" | "high" | "critical";
-
-interface TimelineEntry {
-  date: string;
-  action: string;
-  by: string;
-  notes: string;
-}
-
-interface GrievanceRecord {
-  id: string;
-  raisedBy: string;
-  raisedDate: string;
-  category: GrievanceCategory;
-  severity: Severity;
-  status: GrievanceStatus;
-  subject: string;
-  description: string;
-  againstWhom: string | null;
-  informalResolutionAttempted: boolean;
-  informalOutcome: string;
-  formalSubmissionDate: string | null;
-  investigator: string | null;
-  hearingDate: string | null;
-  hearingPanel: string[];
-  outcome: string;
-  appealLodged: boolean;
-  appealDate: string | null;
-  appealOutcome: string;
-  timeline: TimelineEntry[];
-  supportOffered: string[];
-  confidentialityLevel: "standard" | "restricted" | "highly_restricted";
-  tradeUnionRep: string | null;
-  lessonsLearned: string;
-  notes: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const CAT_LABELS: Record<GrievanceCategory, string> = {
-  working_conditions: "Working Conditions", bullying_harassment: "Bullying & Harassment",
-  pay_benefits: "Pay & Benefits", workload: "Workload", management: "Management",
-  discrimination: "Discrimination", health_safety: "Health & Safety",
-  policy_procedure: "Policy & Procedure", interpersonal: "Interpersonal", other: "Other",
-};
-
-const STATUS_LABELS: Record<GrievanceStatus, string> = {
-  informal_raised: "Informal Raised", formal_submitted: "Formal Submitted",
-  under_investigation: "Under Investigation", hearing_scheduled: "Hearing Scheduled",
-  resolved: "Resolved", appealed: "Appealed", withdrawn: "Withdrawn",
-};
-
-const STATUS_COLOURS: Record<GrievanceStatus, string> = {
+const STATUS_COLOURS: Record<string, string> = {
   informal_raised: "bg-blue-100 text-blue-800",
   formal_submitted: "bg-amber-100 text-amber-800",
   under_investigation: "bg-purple-100 text-purple-800",
@@ -93,100 +45,12 @@ const STATUS_COLOURS: Record<GrievanceStatus, string> = {
   withdrawn: "bg-gray-100 text-gray-700",
 };
 
-const SEV_LABELS: Record<Severity, string> = { low: "Low", medium: "Medium", high: "High", critical: "Critical" };
-const SEV_COLOURS: Record<Severity, string> = {
+const SEV_COLOURS: Record<string, string> = {
   low: "bg-green-100 text-green-800", medium: "bg-amber-100 text-amber-800",
   high: "bg-orange-100 text-orange-800", critical: "bg-red-100 text-red-800",
 };
 
-const SEED: GrievanceRecord[] = [
-  {
-    id: "gr1", raisedBy: "staff_edward", raisedDate: d(-45), category: "workload",
-    severity: "medium", status: "resolved", subject: "Excessive consecutive shifts without adequate rest",
-    description: "Staff member reports being scheduled for 5 consecutive 12-hour shifts without the required minimum rest period. This has occurred twice in the past month and is affecting wellbeing and performance.",
-    againstWhom: null, informalResolutionAttempted: true,
-    informalOutcome: "Discussed with deputy manager. Rota was adjusted for the immediate period but the underlying scheduling issue remained.",
-    formalSubmissionDate: d(-38), investigator: "staff_darren", hearingDate: d(-25),
-    hearingPanel: ["staff_darren"], outcome: "Upheld. Rota system updated to enforce minimum 11-hour rest between shifts. Back-to-back limit set at 4 shifts maximum. Retrospective TOIL of 8 hours awarded.",
-    appealLodged: false, appealDate: null, appealOutcome: "",
-    timeline: [
-      { date: d(-45), action: "Informal grievance raised", by: "staff_edward", notes: "Discussed with staff_ryan during supervision" },
-      { date: d(-42), action: "Rota adjusted for current month", by: "staff_ryan", notes: "Short-term fix applied" },
-      { date: d(-38), action: "Formal grievance submitted", by: "staff_edward", notes: "Pattern continued; formal route requested" },
-      { date: d(-30), action: "Investigation commenced", by: "staff_darren", notes: "Rota records reviewed for past 3 months" },
-      { date: d(-25), action: "Grievance hearing held", by: "staff_darren", notes: "Edward attended with union rep" },
-      { date: d(-22), action: "Outcome communicated", by: "staff_darren", notes: "Grievance upheld — systemic fix implemented" },
-    ],
-    supportOffered: ["Access to EAP counselling", "Additional rest day scheduled immediately", "Union representation at hearing"],
-    confidentialityLevel: "standard", tradeUnionRep: "UNISON — Mark Fielding",
-    lessonsLearned: "Rota system lacked automated compliance checking for rest periods. New validation rules added to prevent scheduling breaches.",
-    notes: "Edward expressed satisfaction with the outcome. Monitoring rota compliance for 3 months.",
-  },
-  {
-    id: "gr2", raisedBy: "staff_anna", raisedDate: d(-20), category: "bullying_harassment",
-    severity: "high", status: "under_investigation", subject: "Persistent undermining behaviour from colleague",
-    description: "Staff member reports a pattern of dismissive and undermining behaviour from a colleague during handovers and team meetings, including interrupting, eye-rolling, and contradicting care decisions in front of young people.",
-    againstWhom: "staff_diane", informalResolutionAttempted: true,
-    informalOutcome: "Mediation meeting held but behaviour continued. Agreed to escalate to formal process.",
-    formalSubmissionDate: d(-14), investigator: "staff_darren", hearingDate: null,
-    hearingPanel: [], outcome: "",
-    appealLodged: false, appealDate: null, appealOutcome: "",
-    timeline: [
-      { date: d(-20), action: "Informal concern raised", by: "staff_anna", notes: "Discussed with RM during supervision" },
-      { date: d(-18), action: "Mediation meeting arranged", by: "staff_darren", notes: "Both parties agreed to mediation" },
-      { date: d(-16), action: "Mediation held", by: "staff_darren", notes: "Partial agreement reached but underlying issues remain" },
-      { date: d(-14), action: "Formal grievance submitted", by: "staff_anna", notes: "Continued pattern of behaviour reported" },
-      { date: d(-10), action: "Investigation commenced", by: "staff_darren", notes: "Witnesses being interviewed. Handover notes being reviewed." },
-    ],
-    supportOffered: ["Confidential supervision sessions", "EAP referral offered", "Shift patterns adjusted to minimise overlap during investigation"],
-    confidentialityLevel: "restricted", tradeUnionRep: null,
-    lessonsLearned: "",
-    notes: "Highly sensitive — restricted access. Investigation ongoing. Both staff members receiving support.",
-  },
-  {
-    id: "gr3", raisedBy: "staff_mirela", raisedDate: d(-60), category: "discrimination",
-    severity: "high", status: "resolved", subject: "Concerns about language-related discrimination in team",
-    description: "Staff member reports experiencing comments about their accent during team meetings and feeling excluded from informal conversations. Believes this is affecting professional development opportunities.",
-    againstWhom: null, informalResolutionAttempted: false,
-    informalOutcome: "",
-    formalSubmissionDate: d(-60), investigator: "staff_darren", hearingDate: d(-40),
-    hearingPanel: ["staff_darren"], outcome: "Partially upheld. While no deliberate discrimination found, unconscious bias acknowledged. Team equality and diversity refresher training arranged. Mentoring programme implemented for all staff. Mirela to be actively supported for next development opportunity.",
-    appealLodged: false, appealDate: null, appealOutcome: "",
-    timeline: [
-      { date: d(-60), action: "Formal grievance submitted directly", by: "staff_mirela", notes: "Felt too sensitive for informal route" },
-      { date: d(-55), action: "Investigation commenced", by: "staff_darren", notes: "Confidential interviews with team members" },
-      { date: d(-45), action: "External HR advisor consulted", by: "staff_darren", notes: "To ensure impartial process" },
-      { date: d(-40), action: "Grievance hearing held", by: "staff_darren", notes: "Mirela attended with colleague as support" },
-      { date: d(-37), action: "Outcome communicated", by: "staff_darren", notes: "Written outcome provided" },
-      { date: d(-30), action: "Equality training scheduled", by: "staff_darren", notes: "All staff — mandatory attendance" },
-    ],
-    supportOffered: ["Colleague support at hearing", "Ongoing supervision check-ins", "Professional development plan reviewed", "External counselling offered"],
-    confidentialityLevel: "highly_restricted", tradeUnionRep: null,
-    lessonsLearned: "Highlighted need for regular equality and diversity training refresh. Unconscious bias module added to annual mandatory training. Team culture audit to be conducted annually.",
-    notes: "Mirela reports improvement in team dynamics since training. Follow-up review in 3 months.",
-  },
-  {
-    id: "gr4", raisedBy: "staff_lackson", raisedDate: d(-5), category: "health_safety",
-    severity: "medium", status: "formal_submitted", subject: "Inadequate lone working safety measures",
-    description: "Staff member raises concern that lone working procedures during sleep-in shifts are insufficient. No personal alarm provided, mobile signal is weak in parts of the building, and check-in protocol not consistently followed.",
-    againstWhom: null, informalResolutionAttempted: false,
-    informalOutcome: "",
-    formalSubmissionDate: d(-5), investigator: null, hearingDate: null,
-    hearingPanel: [], outcome: "",
-    appealLodged: false, appealDate: null, appealOutcome: "",
-    timeline: [
-      { date: d(-5), action: "Formal grievance submitted", by: "staff_lackson", notes: "Went direct to formal due to safety concern" },
-      { date: d(-3), action: "Acknowledgment sent", by: "staff_darren", notes: "5-day acknowledgment target met" },
-      { date: d(-2), action: "Immediate safety review initiated", by: "staff_darren", notes: "Personal alarms ordered. WiFi calling enabled on staff phone." },
-    ],
-    supportOffered: ["Immediate safety measures implemented", "Buddy system for sleep-ins pending full review"],
-    confidentialityLevel: "standard", tradeUnionRep: "UNISON — Mark Fielding",
-    lessonsLearned: "",
-    notes: "Interim safety measures in place while full investigation and review conducted. H&S committee to review lone working policy.",
-  },
-];
-
-/* ── flat row for export ─────────────────────────────────────────────── */
+/* ── flat row for export ──────────────────────────────────────────────── */
 
 interface FlatRow {
   raisedBy: string; raisedDate: string; category: string; severity: string;
@@ -212,7 +76,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function StaffGrievancesPage() {
-  const [data] = useState<GrievanceRecord[]>(SEED);
+  const { data: records = [], isLoading } = useStaffGrievanceRecords();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -223,29 +87,29 @@ export default function StaffGrievancesPage() {
 
   /* ── stats ────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
-    const open = data.filter((r) => !["resolved", "withdrawn"].includes(r.status)).length;
-    const resolved = data.filter((r) => r.status === "resolved").length;
-    const highSeverity = data.filter((r) => ["high", "critical"].includes(r.severity) && !["resolved", "withdrawn"].includes(r.status)).length;
+    const open = records.filter((r) => !["resolved", "withdrawn"].includes(r.status)).length;
+    const resolved = records.filter((r) => r.status === "resolved").length;
+    const highSeverity = records.filter((r) => ["high", "critical"].includes(r.severity) && !["resolved", "withdrawn"].includes(r.status)).length;
     const avgResolution = (() => {
-      const res = data.filter((r) => r.status === "resolved");
+      const res = records.filter((r) => r.status === "resolved");
       if (!res.length) return 0;
       const days = res.map((r) => {
-        const start = new Date(r.raisedDate).getTime();
+        const start = new Date(r.raised_date).getTime();
         const end = new Date(r.timeline[r.timeline.length - 1].date).getTime();
         return Math.round((end - start) / 86400000);
       });
       return Math.round(days.reduce((a, b) => a + b, 0) / days.length);
     })();
     return { open, resolved, highSeverity, avgResolution };
-  }, [data]);
+  }, [records]);
 
   /* ── filtered / sorted ────────────────────────────────────────────── */
   const filtered = useMemo(() => {
-    let list = data;
+    let list: StaffGrievanceRecord[] = records;
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) =>
-        getStaffName(r.raisedBy).toLowerCase().includes(q) ||
+        getStaffName(r.raised_by).toLowerCase().includes(q) ||
         r.subject.toLowerCase().includes(q) ||
         r.category.toLowerCase().includes(q)
       );
@@ -253,29 +117,39 @@ export default function StaffGrievancesPage() {
     if (filterStatus !== "all") list = list.filter((r) => r.status === filterStatus);
     const out = [...list];
     switch (sortBy) {
-      case "date":     out.sort((a, b) => b.raisedDate.localeCompare(a.raisedDate)); break;
-      case "severity": out.sort((a, b) => { const o = { critical: 0, high: 1, medium: 2, low: 3 }; return o[a.severity] - o[b.severity]; }); break;
+      case "date":     out.sort((a, b) => b.raised_date.localeCompare(a.raised_date)); break;
+      case "severity": out.sort((a, b) => { const o: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }; return o[a.severity] - o[b.severity]; }); break;
       case "status":   out.sort((a, b) => a.status.localeCompare(b.status)); break;
     }
     return out;
-  }, [data, search, filterStatus, sortBy]);
+  }, [records, search, filterStatus, sortBy]);
 
   /* ── export ───────────────────────────────────────────────────────── */
   const exportData = useMemo<FlatRow[]>(() =>
-    data.map((r) => ({
-      raisedBy: getStaffName(r.raisedBy),
-      raisedDate: r.raisedDate,
-      category: CAT_LABELS[r.category],
-      severity: SEV_LABELS[r.severity],
-      status: STATUS_LABELS[r.status],
+    records.map((r) => ({
+      raisedBy: getStaffName(r.raised_by),
+      raisedDate: r.raised_date,
+      category: STAFF_GRIEVANCE_CATEGORY_LABEL[r.category],
+      severity: STAFF_GRIEVANCE_SEVERITY_LABEL[r.severity],
+      status: STAFF_GRIEVANCE_STATUS_LABEL[r.status],
       subject: r.subject,
-      againstWhom: r.againstWhom ? getStaffName(r.againstWhom) : "N/A",
+      againstWhom: r.against_whom ? getStaffName(r.against_whom) : "N/A",
       investigator: r.investigator ? getStaffName(r.investigator) : "Pending",
-      hearingDate: r.hearingDate ?? "—",
+      hearingDate: r.hearing_date ?? "—",
       outcome: r.outcome || "Pending",
-      confidentiality: r.confidentialityLevel,
+      confidentiality: r.confidentiality_level,
       notes: r.notes,
-    })), [data]);
+    })), [records]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Staff Grievances" subtitle="Confidential grievance procedure — informal resolution through to formal hearing and appeal">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -330,7 +204,7 @@ export default function StaffGrievancesPage() {
           <SelectTrigger className="w-[180px] h-9 text-sm"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            {Object.entries(STAFF_GRIEVANCE_STATUS_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -357,11 +231,11 @@ export default function StaffGrievancesPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <FileWarning className="h-4 w-4 text-gray-400" />
                     <h3 className="font-semibold">{r.subject}</h3>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[r.status])}>{STATUS_LABELS[r.status]}</span>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SEV_COLOURS[r.severity])}>{SEV_LABELS[r.severity]}</span>
-                    {r.confidentialityLevel !== "standard" && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-white flex items-center gap-1"><Shield className="h-3 w-3" />{r.confidentialityLevel.replace("_", " ")}</span>}
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[r.status])}>{STAFF_GRIEVANCE_STATUS_LABEL[r.status]}</span>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SEV_COLOURS[r.severity])}>{STAFF_GRIEVANCE_SEVERITY_LABEL[r.severity]}</span>
+                    {r.confidentiality_level !== "standard" && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-white flex items-center gap-1"><Shield className="h-3 w-3" />{r.confidentiality_level.replace("_", " ")}</span>}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Raised by {getStaffName(r.raisedBy)} · {r.raisedDate} · {CAT_LABELS[r.category]}</p>
+                  <p className="text-xs text-gray-500 mt-1">Raised by {getStaffName(r.raised_by)} · {r.raised_date} · {STAFF_GRIEVANCE_CATEGORY_LABEL[r.category]}</p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
               </button>
@@ -376,17 +250,17 @@ export default function StaffGrievancesPage() {
 
                   {/* key details */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    {r.againstWhom && <div><span className="text-gray-500">Against:</span> <span className="font-medium">{getStaffName(r.againstWhom)}</span></div>}
+                    {r.against_whom && <div><span className="text-gray-500">Against:</span> <span className="font-medium">{getStaffName(r.against_whom)}</span></div>}
                     <div><span className="text-gray-500">Investigator:</span> <span className="font-medium">{r.investigator ? getStaffName(r.investigator) : "Pending"}</span></div>
-                    {r.hearingDate && <div><span className="text-gray-500">Hearing:</span> <span className="font-medium">{r.hearingDate}</span></div>}
-                    {r.tradeUnionRep && <div><span className="text-gray-500">TU Rep:</span> <span className="font-medium">{r.tradeUnionRep}</span></div>}
+                    {r.hearing_date && <div><span className="text-gray-500">Hearing:</span> <span className="font-medium">{r.hearing_date}</span></div>}
+                    {r.trade_union_rep && <div><span className="text-gray-500">TU Rep:</span> <span className="font-medium">{r.trade_union_rep}</span></div>}
                   </div>
 
                   {/* informal resolution */}
-                  {r.informalResolutionAttempted && (
+                  {r.informal_resolution_attempted && (
                     <div className="rounded-md bg-gray-50 p-3">
                       <h4 className="text-xs font-semibold text-gray-500 mb-1">Informal Resolution</h4>
-                      <p className="text-sm">{r.informalOutcome}</p>
+                      <p className="text-sm">{r.informal_outcome}</p>
                     </div>
                   )}
 
@@ -414,20 +288,20 @@ export default function StaffGrievancesPage() {
                   )}
 
                   {/* support offered */}
-                  {r.supportOffered.length > 0 && (
+                  {r.support_offered.length > 0 && (
                     <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
                       <h4 className="text-xs font-semibold text-blue-700 mb-1">Support Offered</h4>
                       <ul className="list-disc list-inside text-sm text-blue-800 space-y-0.5">
-                        {r.supportOffered.map((s, i) => <li key={i}>{s}</li>)}
+                        {r.support_offered.map((s, i) => <li key={i}>{s}</li>)}
                       </ul>
                     </div>
                   )}
 
                   {/* lessons learned */}
-                  {r.lessonsLearned && (
+                  {r.lessons_learned && (
                     <div className="rounded-md bg-purple-50 border border-purple-200 p-3">
                       <h4 className="text-xs font-semibold text-purple-700 mb-1">Lessons Learned</h4>
-                      <p className="text-sm text-purple-800">{r.lessonsLearned}</p>
+                      <p className="text-sm text-purple-800">{r.lessons_learned}</p>
                     </div>
                   )}
 
@@ -469,13 +343,13 @@ export default function StaffGrievancesPage() {
               <div>
                 <label className="text-sm font-medium">Category</label>
                 <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{Object.entries(CAT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                  <SelectContent>{Object.entries(STAFF_GRIEVANCE_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Severity</label>
                 <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{Object.entries(SEV_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                  <SelectContent>{Object.entries(STAFF_GRIEVANCE_SEVERITY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>

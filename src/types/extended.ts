@@ -20187,3 +20187,229 @@ export interface StaffDebriefRecord {
   confidential: boolean;
   notes: string;
 }
+
+// ── staff-disciplinary ───────────────────────────────────────────────────────
+
+export type StaffDisciplinaryCategory = "misconduct" | "gross_misconduct" | "performance" | "attendance" | "policy_breach" | "safeguarding" | "professional_boundaries" | "substance_misuse" | "other";
+export const STAFF_DISCIPLINARY_CATEGORY_LABEL: Record<StaffDisciplinaryCategory, string> = {
+  misconduct: "Misconduct", gross_misconduct: "Gross Misconduct", performance: "Performance",
+  attendance: "Attendance", policy_breach: "Policy Breach", safeguarding: "Safeguarding",
+  professional_boundaries: "Professional Boundaries", substance_misuse: "Substance Misuse", other: "Other",
+};
+
+export type StaffDisciplinaryStage = "informal_warning" | "investigation" | "first_written" | "final_written" | "dismissal_hearing" | "dismissed" | "resigned" | "no_case" | "appeal";
+export const STAFF_DISCIPLINARY_STAGE_LABEL: Record<StaffDisciplinaryStage, string> = {
+  informal_warning: "Informal Warning", investigation: "Investigation",
+  first_written: "First Written Warning", final_written: "Final Written Warning",
+  dismissal_hearing: "Dismissal Hearing", dismissed: "Dismissed",
+  resigned: "Resigned", no_case: "No Case to Answer", appeal: "Appeal",
+};
+
+export type StaffDisciplinarySeverity = "minor" | "serious" | "gross";
+export const STAFF_DISCIPLINARY_SEVERITY_LABEL: Record<StaffDisciplinarySeverity, string> = {
+  minor: "Minor", serious: "Serious", gross: "Gross",
+};
+
+export type StaffDisciplinaryConfidentiality = "standard" | "restricted" | "highly_restricted";
+export const STAFF_DISCIPLINARY_CONFIDENTIALITY_LABEL: Record<StaffDisciplinaryConfidentiality, string> = {
+  standard: "Standard", restricted: "Restricted", highly_restricted: "Highly Restricted",
+};
+
+export interface StaffDisciplinaryTimelineEntry {
+  date: string;
+  action: string;
+  by: string;
+  notes: string;
+}
+
+export interface StaffDisciplinaryRecord {
+  id: string;
+  staff_member: string;
+  date_raised: string;
+  category: StaffDisciplinaryCategory;
+  severity: StaffDisciplinarySeverity;
+  stage: StaffDisciplinaryStage;
+  allegation: string;
+  investigator: string | null;
+  investigation_start_date: string | null;
+  investigation_end_date: string | null;
+  suspended: boolean;
+  suspension_date: string | null;
+  suspension_review_dates: string[];
+  hearing_date: string | null;
+  hearing_panel: string[];
+  outcome: string;
+  sanction_expiry_date: string | null;
+  appeal_lodged: boolean;
+  appeal_date: string | null;
+  appeal_outcome: string;
+  timeline: StaffDisciplinaryTimelineEntry[];
+  support_offered: string[];
+  lado_notified: boolean;
+  dbs_referral: boolean;
+  ofsted_notified: boolean;
+  confidentiality_level: StaffDisciplinaryConfidentiality;
+  trade_union_rep: string | null;
+  lessons_learned: string;
+  notes: string;
+}
+
+// ── staff-exit-interviews ────────────────────────────────────────────────────
+
+export type StaffExitInterviewReason = "dismissed" | "resigned_career" | "resigned_personal" | "resigned_workload" | "retired" | "end_of_contract";
+export const STAFF_EXIT_INTERVIEW_REASON_LABEL: Record<StaffExitInterviewReason, string> = {
+  dismissed: "Dismissed",
+  resigned_career: "Resigned — Career Progression",
+  resigned_personal: "Resigned — Personal/Relocation",
+  resigned_workload: "Resigned — Workload",
+  retired: "Retired",
+  end_of_contract: "End of Contract",
+};
+
+export type StaffExitInterviewStatus = "completed" | "declined" | "pending" | "not_applicable";
+export const STAFF_EXIT_INTERVIEW_STATUS_LABEL: Record<StaffExitInterviewStatus, string> = {
+  completed: "Completed", declined: "Declined", pending: "Pending", not_applicable: "N/A",
+};
+
+export interface StaffExitInterviewRecord {
+  id: string;
+  staff_name: string;
+  reason: StaffExitInterviewReason;
+  interview_date: string;
+  interviewer: string;
+  status: StaffExitInterviewStatus;
+  overall_rating: number | null;
+  positives: string[];
+  improvements: string[];
+  would_recommend: boolean | null;
+  themes: string[];
+  notes: string;
+  confidential: boolean;
+}
+
+// ── staff-grievances ─────────────────────────────────────────────────────────
+
+export type StaffGrievanceCategory = "working_conditions" | "bullying_harassment" | "pay_benefits" | "workload" | "management" | "discrimination" | "health_safety" | "policy_procedure" | "interpersonal" | "other";
+export const STAFF_GRIEVANCE_CATEGORY_LABEL: Record<StaffGrievanceCategory, string> = {
+  working_conditions: "Working Conditions", bullying_harassment: "Bullying & Harassment",
+  pay_benefits: "Pay & Benefits", workload: "Workload", management: "Management",
+  discrimination: "Discrimination", health_safety: "Health & Safety",
+  policy_procedure: "Policy & Procedure", interpersonal: "Interpersonal", other: "Other",
+};
+
+export type StaffGrievanceStatus = "informal_raised" | "formal_submitted" | "under_investigation" | "hearing_scheduled" | "resolved" | "appealed" | "withdrawn";
+export const STAFF_GRIEVANCE_STATUS_LABEL: Record<StaffGrievanceStatus, string> = {
+  informal_raised: "Informal Raised", formal_submitted: "Formal Submitted",
+  under_investigation: "Under Investigation", hearing_scheduled: "Hearing Scheduled",
+  resolved: "Resolved", appealed: "Appealed", withdrawn: "Withdrawn",
+};
+
+export type StaffGrievanceSeverity = "low" | "medium" | "high" | "critical";
+export const STAFF_GRIEVANCE_SEVERITY_LABEL: Record<StaffGrievanceSeverity, string> = {
+  low: "Low", medium: "Medium", high: "High", critical: "Critical",
+};
+
+export type StaffGrievanceConfidentiality = "standard" | "restricted" | "highly_restricted";
+export const STAFF_GRIEVANCE_CONFIDENTIALITY_LABEL: Record<StaffGrievanceConfidentiality, string> = {
+  standard: "Standard", restricted: "Restricted", highly_restricted: "Highly Restricted",
+};
+
+export interface StaffGrievanceTimelineEntry {
+  date: string;
+  action: string;
+  by: string;
+  notes: string;
+}
+
+export interface StaffGrievanceRecord {
+  id: string;
+  raised_by: string;
+  raised_date: string;
+  category: StaffGrievanceCategory;
+  severity: StaffGrievanceSeverity;
+  status: StaffGrievanceStatus;
+  subject: string;
+  description: string;
+  against_whom: string | null;
+  informal_resolution_attempted: boolean;
+  informal_outcome: string;
+  formal_submission_date: string | null;
+  investigator: string | null;
+  hearing_date: string | null;
+  hearing_panel: string[];
+  outcome: string;
+  appeal_lodged: boolean;
+  appeal_date: string | null;
+  appeal_outcome: string;
+  timeline: StaffGrievanceTimelineEntry[];
+  support_offered: string[];
+  confidentiality_level: StaffGrievanceConfidentiality;
+  trade_union_rep: string | null;
+  lessons_learned: string;
+  notes: string;
+}
+
+// ── staff-handbook-acknowledgements ──────────────────────────────────────────
+
+export type StaffHandbookDocumentCategory = "handbook" | "policy" | "procedure" | "briefing" | "training";
+export const STAFF_HANDBOOK_DOCUMENT_CATEGORY_LABEL: Record<StaffHandbookDocumentCategory, string> = {
+  handbook: "Handbook", policy: "Policy", procedure: "Procedure", briefing: "Briefing", training: "Training",
+};
+
+export interface StaffHandbookAcknowledgement {
+  staff_id: string;
+  acknowledged_date: string | null;
+}
+
+export interface StaffHandbookAcknowledgementRecord {
+  id: string;
+  title: string;
+  version: string | null;
+  issued_date: string;
+  required_by: string;
+  issued_by: string;
+  category: StaffHandbookDocumentCategory;
+  acknowledgements: StaffHandbookAcknowledgement[];
+  notes: string;
+}
+
+// ── staff-induction ──────────────────────────────────────────────────────────
+
+export type StaffInductionTaskStatus = "not_started" | "in_progress" | "completed" | "overdue";
+export const STAFF_INDUCTION_TASK_STATUS_LABEL: Record<StaffInductionTaskStatus, string> = {
+  not_started: "Not Started", in_progress: "In Progress", completed: "Completed", overdue: "Overdue",
+};
+
+export type StaffInductionPhase = "pre_start" | "week_1" | "month_1" | "month_3" | "month_6" | "ongoing";
+export const STAFF_INDUCTION_PHASE_LABEL: Record<StaffInductionPhase, string> = {
+  pre_start: "Pre-Start", week_1: "Week 1", month_1: "Month 1",
+  month_3: "Month 3", month_6: "Month 6", ongoing: "Ongoing",
+};
+
+export type StaffInductionOverallStatus = "in_progress" | "completed" | "overdue";
+export const STAFF_INDUCTION_OVERALL_STATUS_LABEL: Record<StaffInductionOverallStatus, string> = {
+  in_progress: "In Progress", completed: "Completed", overdue: "Overdue",
+};
+
+export interface StaffInductionTask {
+  id: string;
+  task: string;
+  phase: StaffInductionPhase;
+  status: StaffInductionTaskStatus;
+  completed_date: string | null;
+  completed_by: string | null;
+  due_date: string;
+  evidence: string;
+  notes: string;
+}
+
+export interface StaffInductionRecord {
+  id: string;
+  staff_id: string;
+  staff_name: string;
+  role: string;
+  start_date: string;
+  induction_lead: string;
+  overall_status: StaffInductionOverallStatus;
+  tasks: StaffInductionTask[];
+}
