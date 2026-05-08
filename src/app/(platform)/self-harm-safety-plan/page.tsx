@@ -1,28 +1,5 @@
 "use client";
 
-// ==============================================================================
-// CORNERSTONE -- SELF-HARM SAFETY PLANS
-//
-// Per-child self-harm safety plans, co-produced with the young person and
-// CAMHS. Built around the Stanley-Brown Safety Plan framework: warning signs,
-// internal coping, distractions, who to contact, professional contacts, means
-// restriction, and reasons to live.
-//
-// Tone: trauma-informed, non-judgemental, hopeful, child-led. The visual
-// styling deliberately avoids alarming colours (no reds for the crisis
-// content) and uses calm teal / sky / rose tones. Plans are dignified, never
-// voyeuristic, and centre the young person's voice.
-//
-// Regulatory framework:
-//   - NICE NG225 (Self-harm: assessment, management and preventing recurrence)
-//   - Working Together to Safeguard Children 2023
-//   - Children's Homes Quality Standards 8 (Protection) + 9 (Leadership)
-//   - Stanley-Brown Safety Planning Intervention
-//   - Mental Capacity Act 2005 / Gillick competence
-//   - CAMHS clinical protocols
-//   - UNCRC Articles 12 (voice) + 24 (health)
-// ==============================================================================
-
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -35,41 +12,16 @@ import {
 } from "@/components/ui/select";
 import {
   Shield, Heart, Phone, ChevronUp, ChevronDown, ArrowUpDown,
-  Search, AlertTriangle, CheckCircle,
+  Search, AlertTriangle, CheckCircle, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { useSelfHarmSafetyPlanRecords } from "@/hooks/use-self-harm-safety-plan-records";
+import type { SelfHarmSafetyPlanRecord, SelfHarmSafetyPlanStatus, SelfHarmSafetyPlanReviewFrequency } from "@/types/extended";
+import { SELF_HARM_SAFETY_PLAN_STATUS_LABEL, SELF_HARM_SAFETY_PLAN_REVIEW_FREQUENCY_LABEL } from "@/types/extended";
 
-// -- Types --------------------------------------------------------------------
-
-interface SafetyPlan {
-  id: string;
-  youngPerson: string;
-  planDate: string;
-  status: "Not currently needed" | "Active — preventive" | "Active — recent incident" | "In review";
-  coProducedWith: string[];
-  warningSignsExternal: string[];
-  warningSignsInternal: string[];
-  earlyTriggers: string[];
-  internalCopingStrategies: string[];
-  socialDistractions: string[];
-  peopleToContact: { name: string; relationship: string; how: string }[];
-  professionalContacts: { name: string; role: string; how: string }[];
-  meansRestrictionAgreed: string[];
-  reasonsToLive: string[];
-  reasonsForHope: string[];
-  childSignedOff: boolean;
-  childSignedDate?: string;
-  professionalsInformed: string[];
-  reviewFrequency: "Weekly" | "Fortnightly" | "Monthly" | "Quarterly" | "After incident";
-  nextReviewDate: string;
-  childVoice: string;
-  staffObservation: string;
-  flagsForReview: string[];
-  keyWorker: string;
-}
-
-// -- Helpers ------------------------------------------------------------------
+/* ── local config ─────────────────────────────────────────────────────── */
 
 const d = (n: number) => {
   const dt = new Date();
@@ -77,282 +29,28 @@ const d = (n: number) => {
   return dt.toISOString().slice(0, 10);
 };
 
-const STATUS_COLOURS: Record<SafetyPlan["status"], string> = {
-  "Not currently needed":      "bg-slate-100 text-slate-700 border border-slate-200",
-  "Active — preventive":       "bg-teal-100 text-teal-800 border border-teal-200",
-  "Active — recent incident":  "bg-rose-100 text-rose-800 border border-rose-200",
-  "In review":                 "bg-sky-100 text-sky-800 border border-sky-200",
+const STATUS_COLOURS: Record<SelfHarmSafetyPlanStatus, string> = {
+  not_currently_needed:      "bg-slate-100 text-slate-700 border border-slate-200",
+  active_preventive:         "bg-teal-100 text-teal-800 border border-teal-200",
+  active_recent_incident:    "bg-rose-100 text-rose-800 border border-rose-200",
+  in_review:                 "bg-sky-100 text-sky-800 border border-sky-200",
 };
 
-const FREQUENCY_COLOURS: Record<SafetyPlan["reviewFrequency"], string> = {
-  "Weekly":          "bg-rose-50 text-rose-700 border border-rose-200",
-  "Fortnightly":     "bg-amber-50 text-amber-800 border border-amber-200",
-  "Monthly":         "bg-teal-50 text-teal-800 border border-teal-200",
-  "Quarterly":       "bg-sky-50 text-sky-800 border border-sky-200",
-  "After incident":  "bg-slate-50 text-slate-700 border border-slate-200",
+const FREQUENCY_COLOURS: Record<SelfHarmSafetyPlanReviewFrequency, string> = {
+  weekly:          "bg-rose-50 text-rose-700 border border-rose-200",
+  fortnightly:     "bg-amber-50 text-amber-800 border border-amber-200",
+  monthly:         "bg-teal-50 text-teal-800 border border-teal-200",
+  quarterly:       "bg-sky-50 text-sky-800 border border-sky-200",
+  after_incident:  "bg-slate-50 text-slate-700 border border-slate-200",
 };
 
-// -- Seed Data ----------------------------------------------------------------
-// Three records. Tone is dignified. Means-restriction language is calm and
-// practical, never sensational.
-
-const SEED: SafetyPlan[] = [
-  // -------------------------------------------------------------------------
-  // Alex -- Active, preventive. Plan supports recovery after a difficult
-  // period around coming out. No recent incident. Co-produced with key worker
-  // Anna and CAMHS therapist Dr Patel.
-  // -------------------------------------------------------------------------
-  {
-    id: "shsp_001",
-    youngPerson: "yp_alex",
-    planDate: d(-42),
-    status: "Active — preventive",
-    coProducedWith: [
-      "Alex (young person, lead)",
-      "Anna Lingolo (key worker)",
-      "Dr Sunita Patel (CAMHS therapist)",
-      "Darren Laville (Registered Manager — sign-off only)",
-    ],
-    warningSignsExternal: [
-      "Withdrawing from the lounge to spend extended time alone in bedroom",
-      "Avoiding meals or eating in room",
-      "Wearing long sleeves in warm weather",
-      "Cancelling planned activities last-minute",
-    ],
-    warningSignsInternal: [
-      "A heavy, numb feeling Alex describes as 'flat'",
-      "Looping thoughts about not belonging or being a burden",
-      "Difficulty sleeping or wanting to sleep all the time",
-      "Feeling disconnected from people who care about Alex",
-    ],
-    earlyTriggers: [
-      "Anniversary dates connected to family rejection",
-      "Online comments or messages that feel hostile",
-      "Anticipating contact from a family member who has been unsupportive",
-      "Being misgendered or having identity questioned",
-    ],
-    internalCopingStrategies: [
-      "Listen to a curated 'lift me' playlist Alex made with key worker",
-      "Cold-water face dip or holding ice cubes (grounding)",
-      "Drawing in the sketchbook kept by the bed",
-      "Box-breathing for two minutes (4-4-4-4)",
-      "Re-read a short letter Alex wrote to themselves on a good day",
-    ],
-    socialDistractions: [
-      "Walk to the local park with the staff dog",
-      "Make a hot chocolate in the kitchen with whoever is on shift",
-      "Join the lounge — sit with others without needing to talk",
-      "Message a trusted friend from the LGBTQ+ youth group",
-    ],
-    peopleToContact: [
-      { name: "Anna Lingolo", relationship: "Key worker", how: "Available on shift; mobile via office line out of hours" },
-      { name: "Chervelle Kinina", relationship: "Trusted staff", how: "Often on sleep-in; happy to be woken if needed" },
-      { name: "Sam (peer mentor)",  relationship: "LGBTQ+ youth group buddy", how: "Phone number saved on Alex's phone" },
-    ],
-    professionalContacts: [
-      { name: "Dr Sunita Patel", role: "CAMHS therapist", how: "Weekly session Wednesdays; CAMHS duty line if urgent" },
-      { name: "CAMHS Crisis Team", role: "Out-of-hours mental health support", how: "Number on fridge and saved in Alex's phone" },
-      { name: "Shout (text 85258)", role: "24/7 text crisis line", how: "Free text from any phone" },
-      { name: "111 option 2", role: "NHS urgent mental health", how: "Phone — if Alex prefers not to text" },
-    ],
-    meansRestrictionAgreed: [
-      "Sharps and razors stored in the locked staff bathroom; Alex requests when needed",
-      "Medication held in the locked clinic cupboard, dispensed at agreed times",
-      "Alex agreed to hand in any item they feel unsafe with — no questions, no shame",
-    ],
-    reasonsToLive: [
-      "Finishing the art portfolio — wants to apply to college next year",
-      "The dog at the home — 'she always knows when I'm having a bad day'",
-      "Plans to visit cousin Maya in the summer",
-      "Wanting to be there for younger LGBTQ+ kids who are where Alex was a year ago",
-    ],
-    reasonsForHope: [
-      "It has been seven months since the last incident — Alex did that",
-      "Therapy is helping; Alex can name feelings now that used to feel unnameable",
-      "The home feels like home — staff are not going anywhere",
-    ],
-    childSignedOff: true,
-    childSignedDate: d(-42),
-    professionalsInformed: [
-      "Karen Holding (Social Worker)",
-      "James Patterson (IRO)",
-      "Derby Alternative Provision (school pastoral lead, with Alex's consent)",
-    ],
-    reviewFrequency: "Monthly",
-    nextReviewDate: d(-2),
-    childVoice:
-      "I helped write this. I wanted it to sound like me, not like a form. The bit I keep coming back to is the reasons-to-live list — Anna made me write it on a good day so I'd believe it on a bad one. It works.",
-    staffObservation:
-      "Alex has shown sustained engagement with therapy and the key-work relationship. Sleep has improved. Alex is increasingly able to ask for support before reaching crisis — a significant shift from earlier this year. Plan remains preventive and hopeful.",
-    flagsForReview: [
-      "Review approaching — schedule with Dr Patel and Anna",
-      "Family contact letter expected next month — anticipate possible trigger",
-    ],
-    keyWorker: "staff_anna",
-  },
-
-  // -------------------------------------------------------------------------
-  // Casey -- Not currently needed, but observation is in place. Trauma-informed
-  // monitoring; would create a plan collaboratively if indicators emerged.
-  // -------------------------------------------------------------------------
-  {
-    id: "shsp_002",
-    youngPerson: "yp_casey",
-    planDate: d(-90),
-    status: "Not currently needed",
-    coProducedWith: [
-      "Casey (young person, consulted)",
-      "Chervelle Kinina (key worker)",
-      "Dr Helen Cartwright (Clinical Psychologist)",
-    ],
-    warningSignsExternal: [
-      "(No active plan — these would be developed with Casey if indicators emerged)",
-    ],
-    warningSignsInternal: [
-      "(No active plan — these would be developed with Casey if indicators emerged)",
-    ],
-    earlyTriggers: [
-      "Trauma anniversaries (held in calendar by key worker, never mentioned aloud unless Casey raises)",
-      "Unexpected raised voices in the home",
-    ],
-    internalCopingStrategies: [
-      "Casey has existing grounding strategies in her behaviour support plan",
-      "Art and weighted blanket are her go-to regulation tools",
-    ],
-    socialDistractions: [
-      "Therapy dog visits",
-      "Baking with key worker",
-    ],
-    peopleToContact: [
-      { name: "Chervelle Kinina", relationship: "Key worker", how: "Casey's primary trusted adult" },
-    ],
-    professionalContacts: [
-      { name: "Dr Helen Cartwright", role: "Clinical Psychologist (trauma specialist)", how: "Twice-weekly therapy currently" },
-      { name: "CAMHS Crisis Team", role: "Out-of-hours mental health support", how: "Number on fridge" },
-    ],
-    meansRestrictionAgreed: [
-      "Standard home practice — sharps stored centrally; no plan-specific restrictions in place",
-    ],
-    reasonsToLive: [
-      "(To be co-produced with Casey if a plan becomes needed)",
-    ],
-    reasonsForHope: [
-      "Casey is engaging well with art therapy and has not shown self-harm indicators",
-      "Trauma-informed environment is supporting recovery",
-    ],
-    childSignedOff: false,
-    professionalsInformed: [
-      "Fiona Brennan (Social Worker) — informed of monitoring approach",
-      "Sarah Mitchell (IRO) — informed at last LAC review",
-    ],
-    reviewFrequency: "Quarterly",
-    nextReviewDate: d(28),
-    childVoice:
-      "Casey has been clear she does not want a 'self-harm plan' written about her right now. She knows she can ask, and we have agreed exactly what 'asking' looks like. We hold this plan lightly and ready.",
-    staffObservation:
-      "Active observation in place via behaviour support plan and daily key-work. No current indicators of self-harm. CAMHS aware. A draft framework exists in the staff team's heads so that, if needed, a plan can be co-produced quickly with Casey rather than to her.",
-    flagsForReview: [
-      "Review at next LAC review or sooner if any indicators emerge",
-    ],
-    keyWorker: "staff_chervelle",
-  },
-
-  // -------------------------------------------------------------------------
-  // Jordan -- Not currently needed, never historically required. Held on file
-  // so the team can evidence that the question was considered.
-  // -------------------------------------------------------------------------
-  {
-    id: "shsp_003",
-    youngPerson: "yp_jordan",
-    planDate: d(-60),
-    status: "Not currently needed",
-    coProducedWith: [
-      "Jordan (young person, consulted briefly and respectfully)",
-      "Anna Lingolo (key worker)",
-    ],
-    warningSignsExternal: [
-      "(No plan in place — never historically required)",
-    ],
-    warningSignsInternal: [
-      "(No plan in place — never historically required)",
-    ],
-    earlyTriggers: [
-      "Sensory overload (handled separately via behaviour support plan)",
-    ],
-    internalCopingStrategies: [
-      "Sensory regulation tools — managed via Jordan's existing care plans",
-    ],
-    socialDistractions: [
-      "Lego, train books, nature walks",
-    ],
-    peopleToContact: [
-      { name: "Anna Lingolo", relationship: "Key worker", how: "Available on shift" },
-      { name: "Mum", relationship: "Family", how: "Phone — supportive contact" },
-    ],
-    professionalContacts: [
-      { name: "Dr Priya Nair", role: "CAMHS Clinical Psychologist", how: "Routine CAMHS contact for ASD support" },
-    ],
-    meansRestrictionAgreed: [
-      "No plan-specific restrictions in place",
-    ],
-    reasonsToLive: [
-      "(Not applicable — no plan needed)",
-    ],
-    reasonsForHope: [
-      "Jordan is settled and well-supported; ASD-informed care plan is meeting needs",
-    ],
-    childSignedOff: false,
-    professionalsInformed: [
-      "Michael Osei (Social Worker) — file note confirming question was considered",
-    ],
-    reviewFrequency: "Quarterly",
-    nextReviewDate: d(45),
-    childVoice:
-      "Jordan was asked, in plain language, whether he ever thought about hurting himself. He said no. The conversation was brief, calm, and respectful. He knows the question is not a one-off and that any adult here will listen.",
-    staffObservation:
-      "No historical self-harm. No current indicators. This record exists to evidence that the question was actively asked and considered, not avoided. Will be revisited routinely as part of CAMHS-aligned check-ins.",
-    flagsForReview: [],
-    keyWorker: "staff_anna",
-  },
-];
-
-// -- Export Columns -----------------------------------------------------------
-
-const EXPORT_COLS: ExportColumn<SafetyPlan>[] = [
-  { header: "Young Person",         accessor: (r: SafetyPlan) => getYPName(r.youngPerson) },
-  { header: "Plan Date",            accessor: (r: SafetyPlan) => r.planDate },
-  { header: "Status",               accessor: (r: SafetyPlan) => r.status },
-  { header: "Co-Produced With",     accessor: (r: SafetyPlan) => r.coProducedWith.join("; ") },
-  { header: "External Warning Signs", accessor: (r: SafetyPlan) => r.warningSignsExternal.join("; ") },
-  { header: "Internal Warning Signs", accessor: (r: SafetyPlan) => r.warningSignsInternal.join("; ") },
-  { header: "Early Triggers",       accessor: (r: SafetyPlan) => r.earlyTriggers.join("; ") },
-  { header: "Internal Coping",      accessor: (r: SafetyPlan) => r.internalCopingStrategies.join("; ") },
-  { header: "Social Distractions",  accessor: (r: SafetyPlan) => r.socialDistractions.join("; ") },
-  { header: "People to Contact",    accessor: (r: SafetyPlan) => r.peopleToContact.map((p) => `${p.name} (${p.relationship})`).join("; ") },
-  { header: "Professional Contacts",accessor: (r: SafetyPlan) => r.professionalContacts.map((p) => `${p.name} (${p.role})`).join("; ") },
-  { header: "Means Restriction",    accessor: (r: SafetyPlan) => r.meansRestrictionAgreed.join("; ") },
-  { header: "Reasons to Live",      accessor: (r: SafetyPlan) => r.reasonsToLive.join("; ") },
-  { header: "Reasons for Hope",     accessor: (r: SafetyPlan) => r.reasonsForHope.join("; ") },
-  { header: "Child Signed Off",     accessor: (r: SafetyPlan) => (r.childSignedOff ? "Yes" : "No") },
-  { header: "Child Signed Date",    accessor: (r: SafetyPlan) => r.childSignedDate ?? "" },
-  { header: "Professionals Informed", accessor: (r: SafetyPlan) => r.professionalsInformed.join("; ") },
-  { header: "Review Frequency",     accessor: (r: SafetyPlan) => r.reviewFrequency },
-  { header: "Next Review Date",     accessor: (r: SafetyPlan) => r.nextReviewDate },
-  { header: "Child Voice",          accessor: (r: SafetyPlan) => r.childVoice },
-  { header: "Staff Observation",    accessor: (r: SafetyPlan) => r.staffObservation },
-  { header: "Flags for Review",     accessor: (r: SafetyPlan) => r.flagsForReview.join("; ") },
-  { header: "Key Worker",           accessor: (r: SafetyPlan) => getStaffName(r.keyWorker) },
-];
-
-// =============================================================================
-// Component
-// =============================================================================
-
-type SortKey = "youngPerson" | "status" | "nextReviewDate" | "planDate";
+type SortKey = "child" | "status" | "nextReviewDate" | "planDate";
 type SortDir = "asc" | "desc";
 
+/* ── component ─────────────────────────────────────────────────────────── */
+
 export default function SelfHarmSafetyPlanPage() {
-  const [plans] = useState<SafetyPlan[]>(SEED);
+  const { data: records = [], isLoading } = useSelfHarmSafetyPlanRecords();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -371,18 +69,17 @@ export default function SelfHarmSafetyPlanPage() {
     }
   };
 
-  // -- Filtering + sorting --
   const filtered = useMemo(() => {
-    let list = [...plans];
+    let list = [...records];
     if (search) {
       const s = search.toLowerCase();
       list = list.filter(
         (p) =>
-          getYPName(p.youngPerson).toLowerCase().includes(s) ||
-          p.status.toLowerCase().includes(s) ||
-          p.coProducedWith.some((c) => c.toLowerCase().includes(s)) ||
-          p.childVoice.toLowerCase().includes(s) ||
-          p.staffObservation.toLowerCase().includes(s),
+          getYPName(p.child_id).toLowerCase().includes(s) ||
+          SELF_HARM_SAFETY_PLAN_STATUS_LABEL[p.status].toLowerCase().includes(s) ||
+          p.co_produced_with.some((c) => c.toLowerCase().includes(s)) ||
+          p.child_voice.toLowerCase().includes(s) ||
+          p.staff_observation.toLowerCase().includes(s),
       );
     }
     if (statusFilter !== "all") {
@@ -392,47 +89,82 @@ export default function SelfHarmSafetyPlanPage() {
       let av: string;
       let bv: string;
       switch (sortKey) {
-        case "youngPerson":
-          av = getYPName(a.youngPerson);
-          bv = getYPName(b.youngPerson);
+        case "child":
+          av = getYPName(a.child_id);
+          bv = getYPName(b.child_id);
           break;
         case "status":
           av = a.status;
           bv = b.status;
           break;
         case "planDate":
-          av = a.planDate;
-          bv = b.planDate;
+          av = a.plan_date;
+          bv = b.plan_date;
           break;
         case "nextReviewDate":
         default:
-          av = a.nextReviewDate;
-          bv = b.nextReviewDate;
+          av = a.next_review_date;
+          bv = b.next_review_date;
           break;
       }
       const cmp = av.localeCompare(bv);
       return sortDir === "asc" ? cmp : -cmp;
     });
     return list;
-  }, [plans, search, statusFilter, sortKey, sortDir]);
+  }, [records, search, statusFilter, sortKey, sortDir]);
 
-  // -- Stats --
   const stats = useMemo(() => {
-    const active = plans.filter(
-      (p) => p.status === "Active — preventive" || p.status === "Active — recent incident",
+    const active = records.filter(
+      (p) => p.status === "active_preventive" || p.status === "active_recent_incident",
     ).length;
-    const inReview = plans.filter((p) => p.status === "In review").length;
-    const coProducedWithChild = plans.filter(
+    const inReview = records.filter((p) => p.status === "in_review").length;
+    const coProducedWithChild = records.filter(
       (p) =>
-        p.childSignedOff ||
-        p.coProducedWith.some((c) => c.toLowerCase().includes("young person")),
+        p.child_signed_off ||
+        p.co_produced_with.some((c) => c.toLowerCase().includes("young person")),
     ).length;
     const horizon = d(14);
-    const dueSoon = plans.filter(
-      (p) => p.nextReviewDate >= today && p.nextReviewDate <= horizon,
+    const dueSoon = records.filter(
+      (p) => p.next_review_date >= today && p.next_review_date <= horizon,
     ).length;
     return { active, inReview, coProducedWithChild, dueSoon };
-  }, [plans, today]);
+  }, [records, today]);
+
+  const exportCols: ExportColumn<SelfHarmSafetyPlanRecord>[] = [
+    { header: "Young Person",         accessor: (r) => getYPName(r.child_id) },
+    { header: "Plan Date",            accessor: (r) => r.plan_date },
+    { header: "Status",               accessor: (r) => SELF_HARM_SAFETY_PLAN_STATUS_LABEL[r.status] },
+    { header: "Co-Produced With",     accessor: (r) => r.co_produced_with.join("; ") },
+    { header: "External Warning Signs", accessor: (r) => r.warning_signs_external.join("; ") },
+    { header: "Internal Warning Signs", accessor: (r) => r.warning_signs_internal.join("; ") },
+    { header: "Early Triggers",       accessor: (r) => r.early_triggers.join("; ") },
+    { header: "Internal Coping",      accessor: (r) => r.internal_coping_strategies.join("; ") },
+    { header: "Social Distractions",  accessor: (r) => r.social_distractions.join("; ") },
+    { header: "People to Contact",    accessor: (r) => r.people_to_contact.map((p) => `${p.name} (${p.relationship})`).join("; ") },
+    { header: "Professional Contacts",accessor: (r) => r.professional_contacts.map((p) => `${p.name} (${p.role})`).join("; ") },
+    { header: "Means Restriction",    accessor: (r) => r.means_restriction_agreed.join("; ") },
+    { header: "Reasons to Live",      accessor: (r) => r.reasons_to_live.join("; ") },
+    { header: "Reasons for Hope",     accessor: (r) => r.reasons_for_hope.join("; ") },
+    { header: "Child Signed Off",     accessor: (r) => (r.child_signed_off ? "Yes" : "No") },
+    { header: "Child Signed Date",    accessor: (r) => r.child_signed_date ?? "" },
+    { header: "Professionals Informed", accessor: (r) => r.professionals_informed.join("; ") },
+    { header: "Review Frequency",     accessor: (r) => SELF_HARM_SAFETY_PLAN_REVIEW_FREQUENCY_LABEL[r.review_frequency] },
+    { header: "Next Review Date",     accessor: (r) => r.next_review_date },
+    { header: "Child Voice",          accessor: (r) => r.child_voice },
+    { header: "Staff Observation",    accessor: (r) => r.staff_observation },
+    { header: "Flags for Review",     accessor: (r) => r.flags_for_review.join("; ") },
+    { header: "Key Worker",           accessor: (r) => getStaffName(r.key_worker) },
+  ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Self-Harm Safety Plans" subtitle="Per-child, co-produced safety plans using the Stanley-Brown framework. Trauma-informed, hopeful, and child-led — never sensational.">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -441,12 +173,12 @@ export default function SelfHarmSafetyPlanPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Self-Harm Safety Plans" />
-          <ExportButton data={filtered} columns={EXPORT_COLS} filename="self-harm-safety-plans" />
+          <ExportButton data={filtered} columns={exportCols} filename="self-harm-safety-plans" />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
-        {/* -- Stat Cards (calm palette) ----------------------------------- */}
+        {/* stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Active plans", value: stats.active, icon: Shield, colour: "text-teal-700" },
@@ -464,7 +196,7 @@ export default function SelfHarmSafetyPlanPage() {
           ))}
         </div>
 
-        {/* -- Tone banner -------------------------------------------------- */}
+        {/* tone banner */}
         <Card className="border-teal-200 bg-teal-50/60">
           <CardContent className="p-4 text-sm text-teal-900">
             <p className="font-medium mb-1">A note on these plans</p>
@@ -478,7 +210,7 @@ export default function SelfHarmSafetyPlanPage() {
           </CardContent>
         </Card>
 
-        {/* -- Filters ------------------------------------------------------ */}
+        {/* filters */}
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -495,10 +227,9 @@ export default function SelfHarmSafetyPlanPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="Active — preventive">Active — preventive</SelectItem>
-              <SelectItem value="Active — recent incident">Active — recent incident</SelectItem>
-              <SelectItem value="In review">In review</SelectItem>
-              <SelectItem value="Not currently needed">Not currently needed</SelectItem>
+              {(Object.keys(SELF_HARM_SAFETY_PLAN_STATUS_LABEL) as SelfHarmSafetyPlanStatus[]).map((k) => (
+                <SelectItem key={k} value={k}>{SELF_HARM_SAFETY_PLAN_STATUS_LABEL[k]}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select
@@ -510,7 +241,7 @@ export default function SelfHarmSafetyPlanPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="nextReviewDate">Sort by next review</SelectItem>
-              <SelectItem value="youngPerson">Sort by young person</SelectItem>
+              <SelectItem value="child">Sort by young person</SelectItem>
               <SelectItem value="status">Sort by status</SelectItem>
               <SelectItem value="planDate">Sort by plan date</SelectItem>
             </SelectContent>
@@ -526,7 +257,7 @@ export default function SelfHarmSafetyPlanPage() {
           </button>
         </div>
 
-        {/* -- Plan Cards --------------------------------------------------- */}
+        {/* plan cards */}
         <div className="space-y-3">
           {filtered.length === 0 && (
             <p className="text-center text-muted-foreground py-8">
@@ -536,20 +267,20 @@ export default function SelfHarmSafetyPlanPage() {
           {filtered.map((plan) => {
             const isExpanded = !!expanded[plan.id];
             const reviewSoon =
-              plan.nextReviewDate >= today && plan.nextReviewDate <= d(14);
-            const reviewOverdue = plan.nextReviewDate < today;
+              plan.next_review_date >= today && plan.next_review_date <= d(14);
+            const reviewOverdue = plan.next_review_date < today;
 
             return (
               <div
                 key={plan.id}
                 className={cn(
                   "rounded-xl border bg-white overflow-hidden",
-                  plan.status === "Active — recent incident" && "border-l-4 border-l-rose-300",
-                  plan.status === "Active — preventive"      && "border-l-4 border-l-teal-300",
-                  plan.status === "In review"                && "border-l-4 border-l-sky-300",
+                  plan.status === "active_recent_incident" && "border-l-4 border-l-rose-300",
+                  plan.status === "active_preventive"      && "border-l-4 border-l-teal-300",
+                  plan.status === "in_review"                && "border-l-4 border-l-sky-300",
                 )}
               >
-                {/* -- Header --------------------------------------------- */}
+                {/* header */}
                 <button
                   className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 transition-colors"
                   onClick={() => toggle(plan.id)}
@@ -558,18 +289,18 @@ export default function SelfHarmSafetyPlanPage() {
                     <Shield className="h-5 w-5 text-teal-600 shrink-0" />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium">{getYPName(plan.youngPerson)}</p>
+                        <p className="font-medium">{getYPName(plan.child_id)}</p>
                         <Badge className={cn("text-xs font-normal", STATUS_COLOURS[plan.status])}>
-                          {plan.status}
+                          {SELF_HARM_SAFETY_PLAN_STATUS_LABEL[plan.status]}
                         </Badge>
-                        {plan.childSignedOff && (
+                        {plan.child_signed_off && (
                           <Badge className="text-xs font-normal bg-rose-50 text-rose-700 border border-rose-200">
                             <Heart className="h-3 w-3 mr-1" />
                             Child signed off
                           </Badge>
                         )}
-                        <Badge className={cn("text-xs font-normal", FREQUENCY_COLOURS[plan.reviewFrequency])}>
-                          Review: {plan.reviewFrequency.toLowerCase()}
+                        <Badge className={cn("text-xs font-normal", FREQUENCY_COLOURS[plan.review_frequency])}>
+                          Review: {SELF_HARM_SAFETY_PLAN_REVIEW_FREQUENCY_LABEL[plan.review_frequency].toLowerCase()}
                         </Badge>
                         {reviewOverdue && (
                           <Badge className="text-xs font-normal bg-amber-100 text-amber-800 border border-amber-200">
@@ -583,83 +314,64 @@ export default function SelfHarmSafetyPlanPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
-                        <span>Plan date: {plan.planDate}</span>
-                        <span>Next review: {plan.nextReviewDate}</span>
-                        <span>Key worker: {getStaffName(plan.keyWorker)}</span>
+                        <span>Plan date: {plan.plan_date}</span>
+                        <span>Next review: {plan.next_review_date}</span>
+                        <span>Key worker: {getStaffName(plan.key_worker)}</span>
                       </div>
                     </div>
                   </div>
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </button>
 
-                {/* -- Expanded ------------------------------------------- */}
+                {/* expanded */}
                 {isExpanded && (
                   <div className="border-t bg-slate-50 p-4 space-y-4">
-                    {/* Co-produced with */}
+                    {/* co-produced with */}
                     <div>
                       <p className="text-xs font-semibold text-slate-700 mb-1">Co-produced with</p>
                       <div className="flex flex-wrap gap-1">
-                        {plan.coProducedWith.map((c) => (
-                          <Badge
-                            key={c}
-                            variant="outline"
-                            className="text-xs bg-white text-slate-700 border-slate-200"
-                          >
-                            {c}
-                          </Badge>
+                        {plan.co_produced_with.map((c) => (
+                          <Badge key={c} variant="outline" className="text-xs bg-white text-slate-700 border-slate-200">{c}</Badge>
                         ))}
                       </div>
                     </div>
 
-                    {/* Step 1 — Warning signs */}
+                    {/* step 1 — warning signs */}
                     <div className="rounded-lg bg-white border border-sky-200 p-3">
-                      <p className="text-xs font-semibold text-sky-800 mb-2">
-                        1. Warning signs (so we notice early — together)
-                      </p>
+                      <p className="text-xs font-semibold text-sky-800 mb-2">1. Warning signs (so we notice early — together)</p>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
                           <p className="text-xs font-medium text-slate-600 mb-1">External (others may notice)</p>
                           <ul className="space-y-1">
-                            {plan.warningSignsExternal.map((w, i) => (
-                              <li key={i} className="text-sm flex gap-1">
-                                <span className="text-sky-400">&#8226;</span>
-                                <span>{w}</span>
-                              </li>
+                            {plan.warning_signs_external.map((w, i) => (
+                              <li key={i} className="text-sm flex gap-1"><span className="text-sky-400">&#8226;</span><span>{w}</span></li>
                             ))}
                           </ul>
                         </div>
                         <div>
                           <p className="text-xs font-medium text-slate-600 mb-1">Internal (how it feels)</p>
                           <ul className="space-y-1">
-                            {plan.warningSignsInternal.map((w, i) => (
-                              <li key={i} className="text-sm flex gap-1">
-                                <span className="text-sky-400">&#8226;</span>
-                                <span>{w}</span>
-                              </li>
+                            {plan.warning_signs_internal.map((w, i) => (
+                              <li key={i} className="text-sm flex gap-1"><span className="text-sky-400">&#8226;</span><span>{w}</span></li>
                             ))}
                           </ul>
                         </div>
                         <div>
                           <p className="text-xs font-medium text-slate-600 mb-1">Early triggers</p>
                           <ul className="space-y-1">
-                            {plan.earlyTriggers.map((t, i) => (
-                              <li key={i} className="text-sm flex gap-1">
-                                <span className="text-sky-400">&#8226;</span>
-                                <span>{t}</span>
-                              </li>
+                            {plan.early_triggers.map((t, i) => (
+                              <li key={i} className="text-sm flex gap-1"><span className="text-sky-400">&#8226;</span><span>{t}</span></li>
                             ))}
                           </ul>
                         </div>
                       </div>
                     </div>
 
-                    {/* Step 2 — Internal coping */}
+                    {/* step 2 — internal coping */}
                     <div className="rounded-lg bg-white border border-teal-200 p-3">
-                      <p className="text-xs font-semibold text-teal-800 mb-2">
-                        2. Things I can do on my own (internal coping)
-                      </p>
+                      <p className="text-xs font-semibold text-teal-800 mb-2">2. Things I can do on my own (internal coping)</p>
                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
-                        {plan.internalCopingStrategies.map((c, i) => (
+                        {plan.internal_coping_strategies.map((c, i) => (
                           <li key={i} className="text-sm flex gap-1">
                             <CheckCircle className="h-3.5 w-3.5 text-teal-500 mt-0.5 shrink-0" />
                             <span>{c}</span>
@@ -668,28 +380,21 @@ export default function SelfHarmSafetyPlanPage() {
                       </ul>
                     </div>
 
-                    {/* Step 3 — Social distractions */}
+                    {/* step 3 — social distractions */}
                     <div className="rounded-lg bg-white border border-teal-200 p-3">
-                      <p className="text-xs font-semibold text-teal-800 mb-2">
-                        3. People and places that take my mind off it
-                      </p>
+                      <p className="text-xs font-semibold text-teal-800 mb-2">3. People and places that take my mind off it</p>
                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
-                        {plan.socialDistractions.map((c, i) => (
-                          <li key={i} className="text-sm flex gap-1">
-                            <span className="text-teal-400">&#8226;</span>
-                            <span>{c}</span>
-                          </li>
+                        {plan.social_distractions.map((c, i) => (
+                          <li key={i} className="text-sm flex gap-1"><span className="text-teal-400">&#8226;</span><span>{c}</span></li>
                         ))}
                       </ul>
                     </div>
 
-                    {/* Step 4 — People to contact */}
+                    {/* step 4 — people to contact */}
                     <div className="rounded-lg bg-white border border-rose-200 p-3">
-                      <p className="text-xs font-semibold text-rose-800 mb-2">
-                        4. People I can reach out to
-                      </p>
+                      <p className="text-xs font-semibold text-rose-800 mb-2">4. People I can reach out to</p>
                       <div className="space-y-2">
-                        {plan.peopleToContact.map((p, i) => (
+                        {plan.people_to_contact.map((p, i) => (
                           <div key={i} className="text-sm flex items-start gap-2">
                             <Heart className="h-3.5 w-3.5 text-rose-400 mt-0.5 shrink-0" />
                             <div>
@@ -701,13 +406,11 @@ export default function SelfHarmSafetyPlanPage() {
                       </div>
                     </div>
 
-                    {/* Step 5 — Professional contacts */}
+                    {/* step 5 — professional contacts */}
                     <div className="rounded-lg bg-white border border-sky-200 p-3">
-                      <p className="text-xs font-semibold text-sky-800 mb-2">
-                        5. Professionals and crisis lines
-                      </p>
+                      <p className="text-xs font-semibold text-sky-800 mb-2">5. Professionals and crisis lines</p>
                       <div className="space-y-2">
-                        {plan.professionalContacts.map((p, i) => (
+                        {plan.professional_contacts.map((p, i) => (
                           <div key={i} className="text-sm flex items-start gap-2">
                             <Phone className="h-3.5 w-3.5 text-sky-500 mt-0.5 shrink-0" />
                             <div>
@@ -719,13 +422,11 @@ export default function SelfHarmSafetyPlanPage() {
                       </div>
                     </div>
 
-                    {/* Step 6 — Means safety (gentle phrasing) */}
+                    {/* step 6 — means safety */}
                     <div className="rounded-lg bg-white border border-slate-200 p-3">
-                      <p className="text-xs font-semibold text-slate-700 mb-2">
-                        6. Keeping the environment safer (agreed together)
-                      </p>
+                      <p className="text-xs font-semibold text-slate-700 mb-2">6. Keeping the environment safer (agreed together)</p>
                       <ul className="space-y-1">
-                        {plan.meansRestrictionAgreed.map((m, i) => (
+                        {plan.means_restriction_agreed.map((m, i) => (
                           <li key={i} className="text-sm flex gap-1">
                             <Shield className="h-3.5 w-3.5 text-slate-500 mt-0.5 shrink-0" />
                             <span>{m}</span>
@@ -734,29 +435,25 @@ export default function SelfHarmSafetyPlanPage() {
                       </ul>
                     </div>
 
-                    {/* Step 7 — Reasons to live (highlighted, dignified) */}
+                    {/* step 7 — reasons to live */}
                     <div className="rounded-xl border-2 border-rose-200 bg-gradient-to-br from-rose-50 to-amber-50 p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Heart className="h-4 w-4 text-rose-500" />
-                        <p className="text-sm font-semibold text-rose-900">
-                          7. Reasons for living
-                        </p>
+                        <p className="text-sm font-semibold text-rose-900">7. Reasons for living</p>
                       </div>
                       <ul className="space-y-1.5">
-                        {plan.reasonsToLive.map((r, i) => (
+                        {plan.reasons_to_live.map((r, i) => (
                           <li key={i} className="text-sm text-rose-900 flex gap-2">
                             <span className="text-rose-400 font-semibold">&#9825;</span>
                             <span>{r}</span>
                           </li>
                         ))}
                       </ul>
-                      {plan.reasonsForHope.length > 0 && (
+                      {plan.reasons_for_hope.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-rose-200/70">
-                          <p className="text-xs font-medium text-rose-800 mb-1">
-                            Reasons for hope right now
-                          </p>
+                          <p className="text-xs font-medium text-rose-800 mb-1">Reasons for hope right now</p>
                           <ul className="space-y-1">
-                            {plan.reasonsForHope.map((r, i) => (
+                            {plan.reasons_for_hope.map((r, i) => (
                               <li key={i} className="text-sm text-rose-900/90 flex gap-2">
                                 <span className="text-rose-400">&#10022;</span>
                                 <span>{r}</span>
@@ -767,46 +464,43 @@ export default function SelfHarmSafetyPlanPage() {
                       )}
                     </div>
 
-                    {/* Child voice (italic) */}
+                    {/* child voice */}
                     <div className="rounded-lg bg-rose-50 border border-rose-200 p-3">
                       <div className="flex items-center gap-1 mb-1">
                         <Heart className="h-4 w-4 text-rose-600" />
                         <p className="text-xs font-semibold text-rose-800">In their own words</p>
                       </div>
-                      <p className="text-sm italic text-rose-900">&ldquo;{plan.childVoice}&rdquo;</p>
-                      {plan.childSignedOff && plan.childSignedDate && (
+                      <p className="text-sm italic text-rose-900">&ldquo;{plan.child_voice}&rdquo;</p>
+                      {plan.child_signed_off && plan.child_signed_date && (
                         <p className="text-xs text-rose-700 mt-1">
-                          Signed off by young person on {plan.childSignedDate}
+                          Signed off by young person on {plan.child_signed_date}
                         </p>
                       )}
                     </div>
 
-                    {/* Staff observation */}
+                    {/* staff observation */}
                     <div className="rounded-lg bg-white border p-3">
                       <p className="text-xs font-semibold text-slate-700 mb-1">Staff observation</p>
-                      <p className="text-sm text-slate-800">{plan.staffObservation}</p>
+                      <p className="text-sm text-slate-800">{plan.staff_observation}</p>
                     </div>
 
-                    {/* Professionals informed + flags */}
+                    {/* professionals informed + flags */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs font-semibold text-slate-700 mb-1">Professionals informed</p>
                         <ul className="space-y-0.5">
-                          {plan.professionalsInformed.map((p, i) => (
-                            <li key={i} className="text-sm flex gap-1">
-                              <span className="text-slate-400">&#8226;</span>
-                              <span>{p}</span>
-                            </li>
+                          {plan.professionals_informed.map((p, i) => (
+                            <li key={i} className="text-sm flex gap-1"><span className="text-slate-400">&#8226;</span><span>{p}</span></li>
                           ))}
                         </ul>
                       </div>
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs font-semibold text-slate-700 mb-1">Flags for next review</p>
-                        {plan.flagsForReview.length === 0 ? (
+                        {plan.flags_for_review.length === 0 ? (
                           <p className="text-sm text-muted-foreground">No flags raised.</p>
                         ) : (
                           <ul className="space-y-0.5">
-                            {plan.flagsForReview.map((f, i) => (
+                            {plan.flags_for_review.map((f, i) => (
                               <li key={i} className="text-sm flex gap-1">
                                 <AlertTriangle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
                                 <span>{f}</span>
@@ -816,6 +510,8 @@ export default function SelfHarmSafetyPlanPage() {
                         )}
                       </div>
                     </div>
+
+                    <SmartLinkPanel sourceType="self-harm-safety-plan" sourceId={plan.id} childId={plan.child_id} compact />
                   </div>
                 )}
               </div>
@@ -823,7 +519,7 @@ export default function SelfHarmSafetyPlanPage() {
           })}
         </div>
 
-        {/* -- Regulatory note --------------------------------------------- */}
+        {/* regulatory note */}
         <div className="rounded-lg bg-sky-50 border border-sky-200 p-4 text-sm text-sky-900">
           <strong>Regulatory framework:</strong>{" "}
           Plans follow the Stanley-Brown Safety Planning Intervention and align with

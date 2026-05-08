@@ -315,6 +315,12 @@ import type {
   RoomSearchRecord,
   RseTrackerRecord,
   SafeTouchProtocolRecord,
+  SafeguardingSupervisionRecord,
+  SaferRecruitmentRecord,
+  SecureStorageRecord,
+  SelfHarmSafetyPlanRecord,
+  SensoryEquipmentRecord,
+  SensoryProfileRecord,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -713,6 +719,12 @@ const store = {
   roomSearchRecords: [] as RoomSearchRecord[],
   rseTrackerRecords: [] as RseTrackerRecord[],
   safeTouchProtocolRecords: [] as SafeTouchProtocolRecord[],
+  safeguardingSupervisionRecords: [] as SafeguardingSupervisionRecord[],
+  saferRecruitmentRecords: [] as SaferRecruitmentRecord[],
+  secureStorageRecords: [] as SecureStorageRecord[],
+  selfHarmSafetyPlanRecords: [] as SelfHarmSafetyPlanRecord[],
+  sensoryEquipmentRecords: [] as SensoryEquipmentRecord[],
+  sensoryProfileRecords: [] as SensoryProfileRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -9022,6 +9034,98 @@ export const db = {
       if (idx === -1) return null;
       store.safeTouchProtocolRecords[idx] = { ...store.safeTouchProtocolRecords[idx], ...data };
       return store.safeTouchProtocolRecords[idx];
+    },
+  },
+
+  safeguardingSupervisionRecords: {
+    getAll: () => store.safeguardingSupervisionRecords,
+    create: (data: Partial<SafeguardingSupervisionRecord>) => {
+      const record = { ...data, id: `sgsr_${Date.now()}` } as SafeguardingSupervisionRecord;
+      store.safeguardingSupervisionRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SafeguardingSupervisionRecord>) => {
+      const idx = store.safeguardingSupervisionRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.safeguardingSupervisionRecords[idx] = { ...store.safeguardingSupervisionRecords[idx], ...data };
+      return store.safeguardingSupervisionRecords[idx];
+    },
+  },
+
+  saferRecruitmentRecords: {
+    getAll: () => store.saferRecruitmentRecords,
+    create: (data: Partial<SaferRecruitmentRecord>) => {
+      const record = { ...data, id: `srr_${Date.now()}` } as SaferRecruitmentRecord;
+      store.saferRecruitmentRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SaferRecruitmentRecord>) => {
+      const idx = store.saferRecruitmentRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.saferRecruitmentRecords[idx] = { ...store.saferRecruitmentRecords[idx], ...data };
+      return store.saferRecruitmentRecords[idx];
+    },
+  },
+
+  secureStorageRecords: {
+    getAll: () => store.secureStorageRecords,
+    create: (data: Partial<SecureStorageRecord>) => {
+      const record = { ...data, id: `ssr_${Date.now()}` } as SecureStorageRecord;
+      store.secureStorageRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SecureStorageRecord>) => {
+      const idx = store.secureStorageRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.secureStorageRecords[idx] = { ...store.secureStorageRecords[idx], ...data };
+      return store.secureStorageRecords[idx];
+    },
+  },
+
+  selfHarmSafetyPlanRecords: {
+    getAll: () => store.selfHarmSafetyPlanRecords,
+    getByChild: (childId: string) => store.selfHarmSafetyPlanRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<SelfHarmSafetyPlanRecord>) => {
+      const record = { ...data, id: `shspr_${Date.now()}` } as SelfHarmSafetyPlanRecord;
+      store.selfHarmSafetyPlanRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SelfHarmSafetyPlanRecord>) => {
+      const idx = store.selfHarmSafetyPlanRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.selfHarmSafetyPlanRecords[idx] = { ...store.selfHarmSafetyPlanRecords[idx], ...data };
+      return store.selfHarmSafetyPlanRecords[idx];
+    },
+  },
+
+  sensoryEquipmentRecords: {
+    getAll: () => store.sensoryEquipmentRecords,
+    create: (data: Partial<SensoryEquipmentRecord>) => {
+      const record = { ...data, id: `ser_${Date.now()}` } as SensoryEquipmentRecord;
+      store.sensoryEquipmentRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SensoryEquipmentRecord>) => {
+      const idx = store.sensoryEquipmentRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.sensoryEquipmentRecords[idx] = { ...store.sensoryEquipmentRecords[idx], ...data };
+      return store.sensoryEquipmentRecords[idx];
+    },
+  },
+
+  sensoryProfileRecords: {
+    getAll: () => store.sensoryProfileRecords,
+    getByChild: (childId: string) => store.sensoryProfileRecords.filter((r) => r.child_id === childId),
+    create: (data: Partial<SensoryProfileRecord>) => {
+      const record = { ...data, id: `spr_${Date.now()}` } as SensoryProfileRecord;
+      store.sensoryProfileRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SensoryProfileRecord>) => {
+      const idx = store.sensoryProfileRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.sensoryProfileRecords[idx] = { ...store.sensoryProfileRecords[idx], ...data };
+      return store.sensoryProfileRecords[idx];
     },
   },
 };

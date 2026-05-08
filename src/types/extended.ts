@@ -19109,3 +19109,459 @@ export interface SafeTouchProtocolRecord {
   staff_briefing_date: string;
   notes: string;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BATCH 55 — safeguarding-supervision, safer-recruitment-tracker,
+   secure-storage, self-harm-safety-plan, sensory-equipment-inventory,
+   sensory-profiles
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── safeguarding-supervision ─────────────────────────────────────────────── */
+
+export interface SafeguardingSupervisionAgreedAction {
+  action: string;
+  owner: string;
+  deadline: string;
+}
+
+export interface SafeguardingSupervisionRecord {
+  id: string;
+  date: string;
+  supervisee: string;
+  supervisor: string;
+  duration_minutes: number;
+  cases_discussed: string[];
+  risk_themes: string[];
+  emotional_impact: string;
+  reflective_questions_explored: string[];
+  actions_agreed: SafeguardingSupervisionAgreedAction[];
+  supervisor_observations: string;
+  parallel_process_noted: string;
+  next_session: string;
+  confidentiality_note: string;
+}
+
+/* ── safer-recruitment-tracker ────────────────────────────────────────────── */
+
+export type SaferRecruitmentStatus =
+  | "applying"
+  | "interviewing"
+  | "references"
+  | "dbs_pending"
+  | "pre_employment_checks"
+  | "onboarding"
+  | "employed"
+  | "withdrawn";
+
+export const SAFER_RECRUITMENT_STATUS_LABEL: Record<SaferRecruitmentStatus, string> = {
+  applying: "Applying",
+  interviewing: "Interviewing",
+  references: "References",
+  dbs_pending: "DBS Pending",
+  pre_employment_checks: "Pre-Employment Checks",
+  onboarding: "Onboarding",
+  employed: "Employed",
+  withdrawn: "Withdrawn",
+};
+
+export type SaferRecruitmentReferenceStatus =
+  | "pending"
+  | "received"
+  | "concerns_raised";
+
+export const SAFER_RECRUITMENT_REFERENCE_STATUS_LABEL: Record<SaferRecruitmentReferenceStatus, string> = {
+  pending: "Pending",
+  received: "Received",
+  concerns_raised: "Concerns Raised",
+};
+
+export type SaferRecruitmentDbsResult =
+  | "clear"
+  | "disclosure_reviewed"
+  | "pending";
+
+export const SAFER_RECRUITMENT_DBS_RESULT_LABEL: Record<SaferRecruitmentDbsResult, string> = {
+  clear: "Clear",
+  disclosure_reviewed: "Disclosure - Reviewed",
+  pending: "Pending",
+};
+
+export interface SaferRecruitmentChecklistItem {
+  name: string;
+  completed: boolean;
+  date: string;
+  notes: string;
+}
+
+export interface SaferRecruitmentReference {
+  referee: string;
+  organisation: string;
+  status: SaferRecruitmentReferenceStatus;
+  date_received: string;
+}
+
+export interface SaferRecruitmentRecord {
+  id: string;
+  candidate_name: string;
+  role_applied_for: string;
+  application_date: string;
+  status: SaferRecruitmentStatus;
+  checklist_items: SaferRecruitmentChecklistItem[];
+  references: SaferRecruitmentReference[];
+  dbs_application_date: string;
+  dbs_result_date: string;
+  dbs_result: SaferRecruitmentDbsResult;
+  interviewers: string[];
+  red_flags_raised: string[];
+  proposed_start_date: string;
+  recruited_by: string;
+}
+
+/* ── secure-storage ───────────────────────────────────────────────────────── */
+
+export type SecureStorageCategory =
+  | "medication"
+  | "documentation"
+  | "valuables"
+  | "keys"
+  | "hazardous"
+  | "electronics"
+  | "confidential"
+  | "cash"
+  | "other";
+
+export const SECURE_STORAGE_CATEGORY_LABEL: Record<SecureStorageCategory, string> = {
+  medication: "Medication",
+  documentation: "Documentation",
+  valuables: "Valuables",
+  keys: "Keys",
+  hazardous: "Hazardous",
+  electronics: "Electronics",
+  confidential: "Confidential",
+  cash: "Cash",
+  other: "Other",
+};
+
+export type SecureStorageLocation =
+  | "office_safe"
+  | "medication_cabinet"
+  | "key_safe"
+  | "filing_cabinet"
+  | "secure_room"
+  | "manager_office"
+  | "staff_room_locker";
+
+export const SECURE_STORAGE_LOCATION_LABEL: Record<SecureStorageLocation, string> = {
+  office_safe: "Office Safe",
+  medication_cabinet: "Medication Cabinet",
+  key_safe: "Key Safe",
+  filing_cabinet: "Filing Cabinet",
+  secure_room: "Secure Room",
+  manager_office: "Manager's Office",
+  staff_room_locker: "Staff Room Locker",
+};
+
+export type SecureStorageAccessLevel =
+  | "rm_only"
+  | "seniors"
+  | "all_staff"
+  | "designated";
+
+export const SECURE_STORAGE_ACCESS_LEVEL_LABEL: Record<SecureStorageAccessLevel, string> = {
+  rm_only: "RM Only",
+  seniors: "Seniors",
+  all_staff: "All Staff",
+  designated: "Designated",
+};
+
+export type SecureStorageItemStatus =
+  | "stored"
+  | "in_use"
+  | "removed"
+  | "disposed";
+
+export const SECURE_STORAGE_ITEM_STATUS_LABEL: Record<SecureStorageItemStatus, string> = {
+  stored: "Stored",
+  in_use: "In Use",
+  removed: "Removed",
+  disposed: "Disposed",
+};
+
+export type SecureStorageAction =
+  | "retrieved"
+  | "returned"
+  | "added"
+  | "checked"
+  | "removed";
+
+export const SECURE_STORAGE_ACTION_LABEL: Record<SecureStorageAction, string> = {
+  retrieved: "Retrieved",
+  returned: "Returned",
+  added: "Added",
+  checked: "Checked",
+  removed: "Removed",
+};
+
+export interface SecureStorageAccessLog {
+  id: string;
+  date: string;
+  time: string;
+  accessed_by: string;
+  action: SecureStorageAction;
+  reason: string;
+  witnessed_by: string | null;
+}
+
+export interface SecureStorageRecord {
+  id: string;
+  name: string;
+  category: SecureStorageCategory;
+  description: string;
+  location: SecureStorageLocation;
+  access_level: SecureStorageAccessLevel;
+  owner: string;
+  added_date: string;
+  added_by: string;
+  last_checked: string;
+  next_check_due: string;
+  status: SecureStorageItemStatus;
+  notes: string;
+  access_log: SecureStorageAccessLog[];
+}
+
+/* ── self-harm-safety-plan ────────────────────────────────────────────────── */
+
+export type SelfHarmSafetyPlanStatus =
+  | "not_currently_needed"
+  | "active_preventive"
+  | "active_recent_incident"
+  | "in_review";
+
+export const SELF_HARM_SAFETY_PLAN_STATUS_LABEL: Record<SelfHarmSafetyPlanStatus, string> = {
+  not_currently_needed: "Not currently needed",
+  active_preventive: "Active — preventive",
+  active_recent_incident: "Active — recent incident",
+  in_review: "In review",
+};
+
+export type SelfHarmSafetyPlanReviewFrequency =
+  | "weekly"
+  | "fortnightly"
+  | "monthly"
+  | "quarterly"
+  | "after_incident";
+
+export const SELF_HARM_SAFETY_PLAN_REVIEW_FREQUENCY_LABEL: Record<SelfHarmSafetyPlanReviewFrequency, string> = {
+  weekly: "Weekly",
+  fortnightly: "Fortnightly",
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  after_incident: "After incident",
+};
+
+export interface SelfHarmSafetyPlanContact {
+  name: string;
+  relationship: string;
+  how: string;
+}
+
+export interface SelfHarmSafetyPlanProfessionalContact {
+  name: string;
+  role: string;
+  how: string;
+}
+
+export interface SelfHarmSafetyPlanRecord {
+  id: string;
+  child_id: string;
+  plan_date: string;
+  status: SelfHarmSafetyPlanStatus;
+  co_produced_with: string[];
+  warning_signs_external: string[];
+  warning_signs_internal: string[];
+  early_triggers: string[];
+  internal_coping_strategies: string[];
+  social_distractions: string[];
+  people_to_contact: SelfHarmSafetyPlanContact[];
+  professional_contacts: SelfHarmSafetyPlanProfessionalContact[];
+  means_restriction_agreed: string[];
+  reasons_to_live: string[];
+  reasons_for_hope: string[];
+  child_signed_off: boolean;
+  child_signed_date: string | null;
+  professionals_informed: string[];
+  review_frequency: SelfHarmSafetyPlanReviewFrequency;
+  next_review_date: string;
+  child_voice: string;
+  staff_observation: string;
+  flags_for_review: string[];
+  key_worker: string;
+}
+
+/* ── sensory-equipment-inventory ──────────────────────────────────────────── */
+
+export type SensoryEquipmentCategory =
+  | "weighted_proprioceptive"
+  | "tactile_fidget"
+  | "visual_lighting"
+  | "auditory"
+  | "vestibular"
+  | "olfactory"
+  | "oral_motor"
+  | "compression"
+  | "calming";
+
+export const SENSORY_EQUIPMENT_CATEGORY_LABEL: Record<SensoryEquipmentCategory, string> = {
+  weighted_proprioceptive: "Weighted/proprioceptive",
+  tactile_fidget: "Tactile/fidget",
+  visual_lighting: "Visual/lighting",
+  auditory: "Auditory",
+  vestibular: "Vestibular",
+  olfactory: "Olfactory",
+  oral_motor: "Oral motor",
+  compression: "Compression",
+  calming: "Calming",
+};
+
+export type SensoryEquipmentLocation =
+  | "sensory_space"
+  | "casey_bedroom"
+  | "lounge_sensory_corner"
+  | "office_sensory_drawer"
+  | "mobile_sensory_bag"
+  | "garden_sensory_area";
+
+export const SENSORY_EQUIPMENT_LOCATION_LABEL: Record<SensoryEquipmentLocation, string> = {
+  sensory_space: "Sensory space",
+  casey_bedroom: "Casey's bedroom",
+  lounge_sensory_corner: "Lounge sensory corner",
+  office_sensory_drawer: "Office sensory drawer",
+  mobile_sensory_bag: "Mobile sensory bag",
+  garden_sensory_area: "Garden sensory area",
+};
+
+export type SensoryEquipmentCondition =
+  | "excellent"
+  | "good"
+  | "worn_replace_soon"
+  | "damaged_out_of_use";
+
+export const SENSORY_EQUIPMENT_CONDITION_LABEL: Record<SensoryEquipmentCondition, string> = {
+  excellent: "Excellent",
+  good: "Good",
+  worn_replace_soon: "Worn — replace soon",
+  damaged_out_of_use: "Damaged — out of use",
+};
+
+export type SensoryEquipmentUseFrequency =
+  | "daily"
+  | "several_times_weekly"
+  | "weekly"
+  | "as_needed";
+
+export const SENSORY_EQUIPMENT_USE_FREQUENCY_LABEL: Record<SensoryEquipmentUseFrequency, string> = {
+  daily: "Daily",
+  several_times_weekly: "Several times weekly",
+  weekly: "Weekly",
+  as_needed: "As needed",
+};
+
+export interface SensoryEquipmentRecord {
+  id: string;
+  item_name: string;
+  category: SensoryEquipmentCategory;
+  location: SensoryEquipmentLocation;
+  assigned_to_child: string;
+  purchase_date: string;
+  condition: SensoryEquipmentCondition;
+  use_frequency: SensoryEquipmentUseFrequency;
+  child_preference: string;
+  purchase_cost: number;
+  replacement_due: string;
+  sensory_profile: string;
+  recommended_by: string;
+  notes: string;
+}
+
+/* ── sensory-profiles ─────────────────────────────────────────────────────── */
+
+export type SensoryDomain =
+  | "visual"
+  | "auditory"
+  | "tactile"
+  | "gustatory"
+  | "olfactory"
+  | "proprioceptive"
+  | "vestibular"
+  | "interoceptive";
+
+export const SENSORY_DOMAIN_LABEL: Record<SensoryDomain, string> = {
+  visual: "Visual",
+  auditory: "Auditory",
+  tactile: "Tactile",
+  gustatory: "Gustatory (Taste)",
+  olfactory: "Olfactory (Smell)",
+  proprioceptive: "Proprioceptive",
+  vestibular: "Vestibular",
+  interoceptive: "Interoceptive",
+};
+
+export type SensoryResponsePattern =
+  | "hyper_responsive"
+  | "hypo_responsive"
+  | "seeking"
+  | "typical";
+
+export const SENSORY_RESPONSE_PATTERN_LABEL: Record<SensoryResponsePattern, string> = {
+  hyper_responsive: "Hyper-responsive",
+  hypo_responsive: "Hypo-responsive",
+  seeking: "Sensory Seeking",
+  typical: "Typical",
+};
+
+export type SensoryProfileStatus =
+  | "active"
+  | "under_review"
+  | "archived";
+
+export const SENSORY_PROFILE_STATUS_LABEL: Record<SensoryProfileStatus, string> = {
+  active: "Active",
+  under_review: "Under Review",
+  archived: "Archived",
+};
+
+export interface SensoryProfileEntry {
+  domain: SensoryDomain;
+  response_pattern: SensoryResponsePattern;
+  triggers: string[];
+  calming: string[];
+  intensity: number;
+  notes: string;
+}
+
+export interface SensoryProfileStrategy {
+  id: string;
+  context: string;
+  strategy: string;
+  effectiveness_rating: number;
+  added_by: string;
+  added_date: string;
+}
+
+export interface SensoryProfileRecord {
+  id: string;
+  child_id: string;
+  status: SensoryProfileStatus;
+  assessed_by: string;
+  assessment_date: string;
+  review_date: string;
+  diagnosis: string[];
+  entries: SensoryProfileEntry[];
+  strategies: SensoryProfileStrategy[];
+  environmental_adaptations: string[];
+  communication_preferences: string[];
+  child_views: string;
+  parent_carer_views: string;
+  professional_input: string;
+  notes: string;
+}
