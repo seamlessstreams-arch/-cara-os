@@ -21121,3 +21121,162 @@ export interface SubjectAccessRequestRecord {
   dpo_consulted: boolean;
   notes: string;
 }
+
+// ── Supervision Matrix ──────────────────────────────────────────────────────
+export type SupervisionMatrixStatus = "current" | "due_soon" | "overdue";
+export const SUPERVISION_MATRIX_STATUS_LABEL: Record<SupervisionMatrixStatus, string> = { current: "Current", due_soon: "Due Soon", overdue: "Overdue" };
+export interface SupervisionMatrixRecord {
+  id: string;
+  supervisee_id: string;
+  supervisor_id: string;
+  frequency: string;
+  last_supervision_date: string;
+  next_supervision_date: string;
+  status: SupervisionMatrixStatus;
+  sessions_this_year: number;
+  notes: string;
+}
+
+// ── Supervision Tracker ─────────────────────────────────────────────────────
+export type SupervisionTrackerComplianceStatus = "compliant" | "due_soon" | "overdue" | "significantly_overdue";
+export const SUPERVISION_TRACKER_COMPLIANCE_STATUS_LABEL: Record<SupervisionTrackerComplianceStatus, string> = { compliant: "Compliant", due_soon: "Due Soon (≤7d)", overdue: "Overdue", significantly_overdue: "Significantly Overdue (>30d)" };
+export interface SupervisionTrackerRecord {
+  id: string;
+  staff_id: string;
+  last_supervision_date: string;
+  next_due_date: string;
+  supervisor_id: string;
+  frequency: string;
+  sessions_this_year: number;
+  sessions_expected_this_year: number;
+  cancelled_by_staff: number;
+  cancelled_by_manager: number;
+  themes: string[];
+  actions_pending: number;
+  notes: string;
+}
+
+// ── Therapeutic Input ───────────────────────────────────────────────────────
+export type TherapeuticInputTherapyType = "camhs" | "play_therapy" | "counselling" | "art_therapy" | "cbt" | "emdr" | "family_therapy" | "speech_language" | "occupational" | "psychotherapy";
+export const THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL: Record<TherapeuticInputTherapyType, string> = { camhs: "CAMHS", play_therapy: "Play Therapy", counselling: "Counselling", art_therapy: "Art Therapy", cbt: "CBT", emdr: "EMDR", family_therapy: "Family Therapy", speech_language: "Speech & Language", occupational: "Occupational Therapy", psychotherapy: "Psychotherapy" };
+export type TherapeuticInputReferralStatus = "pending" | "accepted" | "active" | "on_hold" | "completed" | "discharged" | "declined";
+export const THERAPEUTIC_INPUT_REFERRAL_STATUS_LABEL: Record<TherapeuticInputReferralStatus, string> = { pending: "Pending", accepted: "Accepted", active: "Active", on_hold: "On Hold", completed: "Completed", discharged: "Discharged", declined: "Declined" };
+export type TherapeuticInputEngagement = "excellent" | "good" | "variable" | "reluctant" | "disengaged";
+export const THERAPEUTIC_INPUT_ENGAGEMENT_LABEL: Record<TherapeuticInputEngagement, string> = { excellent: "Excellent", good: "Good", variable: "Variable", reluctant: "Reluctant", disengaged: "Disengaged" };
+export interface TherapeuticInputSession {
+  date: string;
+  attended: boolean;
+  summary: string;
+  engagement: TherapeuticInputEngagement;
+  home_actions: string[];
+}
+export interface TherapeuticInputRecord {
+  id: string;
+  child_id: string;
+  therapy_type: TherapeuticInputTherapyType;
+  provider: string;
+  therapist: string;
+  referral_date: string;
+  start_date: string | null;
+  frequency: string;
+  status: TherapeuticInputReferralStatus;
+  referral_reason: string;
+  goals: string[];
+  recent_sessions: TherapeuticInputSession[];
+  waiting_weeks: number | null;
+  home_key_worker: string;
+  consent: string;
+  next_appointment: string | null;
+  review_date: string | null;
+  progress_notes: string;
+}
+
+// ── Transition Planning ─────────────────────────────────────────────────────
+export type TransitionPlanningArea = "independent_living" | "education_employment" | "financial" | "health_wellbeing" | "housing" | "relationships" | "legal_rights" | "identity";
+export const TRANSITION_PLANNING_AREA_LABEL: Record<TransitionPlanningArea, string> = { independent_living: "Independent Living", education_employment: "Education & Employment", financial: "Financial Capability", health_wellbeing: "Health & Wellbeing", housing: "Housing", relationships: "Relationships & Networks", legal_rights: "Legal Rights & Entitlements", identity: "Identity & Culture" };
+export type TransitionPlanningGoalStatus = "not_started" | "in_progress" | "on_track" | "at_risk" | "achieved" | "paused";
+export const TRANSITION_PLANNING_GOAL_STATUS_LABEL: Record<TransitionPlanningGoalStatus, string> = { not_started: "Not Started", in_progress: "In Progress", on_track: "On Track", at_risk: "At Risk", achieved: "Achieved", paused: "Paused" };
+export interface TransitionPlanningRecord {
+  id: string;
+  child_id: string;
+  area: TransitionPlanningArea;
+  goal: string;
+  description: string;
+  status: TransitionPlanningGoalStatus;
+  target_date: string;
+  start_date: string;
+  key_worker: string;
+  actions: string[];
+  progress: string;
+  percent_complete: number;
+  review_date: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Transport Log ───────────────────────────────────────────────────────────
+export type TransportLogPurpose = "school_run" | "appointment" | "contact_visit" | "activity" | "emergency" | "respite_transport" | "court" | "other";
+export const TRANSPORT_LOG_PURPOSE_LABEL: Record<TransportLogPurpose, string> = { school_run: "School Run", appointment: "Appointment", contact_visit: "Contact Visit", activity: "Activity", emergency: "Emergency", respite_transport: "Respite Transport", court: "Court", other: "Other" };
+export type TransportLogBehaviour = "calm" | "unsettled" | "distressed" | "aggressive" | "mixed";
+export const TRANSPORT_LOG_BEHAVIOUR_LABEL: Record<TransportLogBehaviour, string> = { calm: "Calm", unsettled: "Unsettled", distressed: "Distressed", aggressive: "Aggressive", mixed: "Mixed" };
+export type TransportLogStatus = "completed" | "in_progress" | "cancelled" | "incident_reported";
+export const TRANSPORT_LOG_STATUS_LABEL: Record<TransportLogStatus, string> = { completed: "Completed", in_progress: "In Progress", cancelled: "Cancelled", incident_reported: "Incident Reported" };
+export interface TransportLogPassenger {
+  young_person_id: string;
+  seatbelt_worn: boolean;
+  booster_seat: boolean;
+}
+export interface TransportLogRecord {
+  id: string;
+  date: string;
+  driver: string;
+  driver_licence_checked: boolean;
+  vehicle: string;
+  vehicle_checked: boolean;
+  passengers: TransportLogPassenger[];
+  additional_staff: string[];
+  purpose: TransportLogPurpose;
+  destination: string;
+  departure_time: string;
+  arrival_time: string;
+  return_time: string | null;
+  mileage_start: number;
+  mileage_end: number;
+  route_taken: string;
+  incident_during_journey: boolean;
+  incident_details: string | null;
+  behaviour_during_journey: TransportLogBehaviour;
+  behaviour_notes: string;
+  fuel_added: boolean;
+  fuel_amount: number | null;
+  fuel_cost: number | null;
+  notes: string;
+  status: TransportLogStatus;
+}
+
+// ── Unannounced Visits ──────────────────────────────────────────────────────
+export type UnannouncedVisitType = "ri_monitoring" | "management_spot_check" | "external_professional" | "ofsted";
+export const UNANNOUNCED_VISIT_TYPE_LABEL: Record<UnannouncedVisitType, string> = { ri_monitoring: "RI Monitoring", management_spot_check: "Management Spot Check", external_professional: "External Professional", ofsted: "Ofsted" };
+export type UnannouncedVisitOverallAssessment = "good" | "requires_attention" | "immediate_action_needed";
+export const UNANNOUNCED_VISIT_OVERALL_ASSESSMENT_LABEL: Record<UnannouncedVisitOverallAssessment, string> = { good: "Good", requires_attention: "Requires Attention", immediate_action_needed: "Immediate Action Needed" };
+export interface UnannouncedVisitActionRequired {
+  description: string;
+  owner: string;
+  deadline: string;
+}
+export interface UnannouncedVisitRecord {
+  id: string;
+  date: string;
+  time_of_visit: string;
+  visit_type: UnannouncedVisitType;
+  visitor: string;
+  areas_inspected: string[];
+  children_spoken_to: string[];
+  staff_on_duty: string[];
+  findings: string;
+  positive_observations: string[];
+  concerns: string[];
+  actions_required: UnannouncedVisitActionRequired[];
+  overall_assessment: UnannouncedVisitOverallAssessment;
+  follow_up_date: string;
+}

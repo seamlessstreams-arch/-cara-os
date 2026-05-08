@@ -350,6 +350,12 @@ import type {
   StatutoryCheckRecord,
   StatutoryVisitRecord,
   SubjectAccessRequestRecord,
+  SupervisionMatrixRecord,
+  SupervisionTrackerRecord,
+  TherapeuticInputRecord,
+  TransitionPlanningRecord,
+  TransportLogRecord,
+  UnannouncedVisitRecord,
 } from "@/types/extended";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
@@ -783,6 +789,12 @@ const store = {
   statutoryCheckRecords: [] as StatutoryCheckRecord[],
   statutoryVisitRecords: [] as StatutoryVisitRecord[],
   subjectAccessRequestRecords: [] as SubjectAccessRequestRecord[],
+  supervisionMatrixRecords: [] as SupervisionMatrixRecord[],
+  supervisionTrackerRecords: [] as SupervisionTrackerRecord[],
+  therapeuticInputRecords: [] as TherapeuticInputRecord[],
+  transitionPlanningRecords: [] as TransitionPlanningRecord[],
+  transportLogRecords: [] as TransportLogRecord[],
+  unannouncedVisitRecords: [] as UnannouncedVisitRecord[],
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -9624,6 +9636,96 @@ export const db = {
       if (idx === -1) return null;
       store.subjectAccessRequestRecords[idx] = { ...store.subjectAccessRequestRecords[idx], ...data };
       return store.subjectAccessRequestRecords[idx];
+    },
+  },
+
+  supervisionMatrixRecords: {
+    getAll: () => store.supervisionMatrixRecords,
+    create: (data: Omit<SupervisionMatrixRecord, "id">) => {
+      const record = { ...data, id: generateId("smr_") } as SupervisionMatrixRecord;
+      store.supervisionMatrixRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SupervisionMatrixRecord>) => {
+      const idx = store.supervisionMatrixRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.supervisionMatrixRecords[idx] = { ...store.supervisionMatrixRecords[idx], ...data };
+      return store.supervisionMatrixRecords[idx];
+    },
+  },
+
+  supervisionTrackerRecords: {
+    getAll: () => store.supervisionTrackerRecords,
+    create: (data: Omit<SupervisionTrackerRecord, "id">) => {
+      const record = { ...data, id: generateId("str_") } as SupervisionTrackerRecord;
+      store.supervisionTrackerRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<SupervisionTrackerRecord>) => {
+      const idx = store.supervisionTrackerRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.supervisionTrackerRecords[idx] = { ...store.supervisionTrackerRecords[idx], ...data };
+      return store.supervisionTrackerRecords[idx];
+    },
+  },
+
+  therapeuticInputRecords: {
+    getAll: () => store.therapeuticInputRecords,
+    create: (data: Omit<TherapeuticInputRecord, "id">) => {
+      const record = { ...data, id: generateId("tir_") } as TherapeuticInputRecord;
+      store.therapeuticInputRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<TherapeuticInputRecord>) => {
+      const idx = store.therapeuticInputRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.therapeuticInputRecords[idx] = { ...store.therapeuticInputRecords[idx], ...data };
+      return store.therapeuticInputRecords[idx];
+    },
+  },
+
+  transitionPlanningRecords: {
+    getAll: () => store.transitionPlanningRecords,
+    create: (data: Omit<TransitionPlanningRecord, "id">) => {
+      const record = { ...data, id: generateId("tpr_") } as TransitionPlanningRecord;
+      store.transitionPlanningRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<TransitionPlanningRecord>) => {
+      const idx = store.transitionPlanningRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.transitionPlanningRecords[idx] = { ...store.transitionPlanningRecords[idx], ...data };
+      return store.transitionPlanningRecords[idx];
+    },
+  },
+
+  transportLogRecords: {
+    getAll: () => store.transportLogRecords,
+    create: (data: Omit<TransportLogRecord, "id">) => {
+      const record = { ...data, id: generateId("tlr_") } as TransportLogRecord;
+      store.transportLogRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<TransportLogRecord>) => {
+      const idx = store.transportLogRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.transportLogRecords[idx] = { ...store.transportLogRecords[idx], ...data };
+      return store.transportLogRecords[idx];
+    },
+  },
+
+  unannouncedVisitRecords: {
+    getAll: () => store.unannouncedVisitRecords,
+    create: (data: Omit<UnannouncedVisitRecord, "id">) => {
+      const record = { ...data, id: generateId("uvr_") } as UnannouncedVisitRecord;
+      store.unannouncedVisitRecords.push(record);
+      return record;
+    },
+    update: (id: string, data: Partial<UnannouncedVisitRecord>) => {
+      const idx = store.unannouncedVisitRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.unannouncedVisitRecords[idx] = { ...store.unannouncedVisitRecords[idx], ...data };
+      return store.unannouncedVisitRecords[idx];
     },
   },
 };

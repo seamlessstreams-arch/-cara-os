@@ -10,42 +10,36 @@ import { Input } from "@/components/ui/input";
 import {
   Search, ChevronDown, ChevronUp, ArrowUpDown, Calendar,
   Clock, AlertTriangle, CheckCircle2, Shield, Moon,
-  ClipboardList, Eye, Users,
+  ClipboardList, Eye, Users, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useUnannouncedVisitRecords } from "@/hooks/use-unannounced-visit-records";
+import type {
+  UnannouncedVisitRecord,
+  UnannouncedVisitType,
+  UnannouncedVisitOverallAssessment,
+  UnannouncedVisitActionRequired,
+} from "@/types/extended";
+import {
+  UNANNOUNCED_VISIT_TYPE_LABEL,
+  UNANNOUNCED_VISIT_OVERALL_ASSESSMENT_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── local config ─────────────────────────────────────────────────────────── */
 
-type VisitType = "RI Monitoring" | "Management Spot Check" | "External Professional" | "Ofsted";
-type OverallAssessment = "Good" | "Requires attention" | "Immediate action needed";
+const ASSESSMENT_CLR: Record<UnannouncedVisitOverallAssessment, string> = {
+  good: "bg-green-100 text-green-800",
+  requires_attention: "bg-amber-100 text-amber-800",
+  immediate_action_needed: "bg-red-100 text-red-800",
+};
 
-interface ActionRequired {
-  description: string;
-  owner: string;
-  deadline: string;
-}
-
-interface UnannouncedVisit {
-  id: string;
-  date: string;
-  timeOfVisit: string;
-  visitType: VisitType;
-  visitor: string;
-  areasInspected: string[];
-  childrenSpokenTo: string[];
-  staffOnDuty: string[];
-  findings: string;
-  positiveObservations: string[];
-  concerns: string[];
-  actionsRequired: ActionRequired[];
-  overallAssessment: OverallAssessment;
-  followUpDate: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
+const TYPE_CLR: Record<UnannouncedVisitType, string> = {
+  ri_monitoring: "bg-purple-100 text-purple-800",
+  management_spot_check: "bg-blue-100 text-blue-800",
+  external_professional: "bg-indigo-100 text-indigo-800",
+  ofsted: "bg-rose-100 text-rose-800",
+};
 
 const fmt = (iso: string) => {
   const [y, m, day] = iso.split("-");
@@ -57,238 +51,43 @@ const isNightVisit = (time: string): boolean => {
   return hour >= 22 || hour < 6;
 };
 
-const ASSESSMENT_CLR: Record<OverallAssessment, string> = {
-  "Good": "bg-green-100 text-green-800",
-  "Requires attention": "bg-amber-100 text-amber-800",
-  "Immediate action needed": "bg-red-100 text-red-800",
-};
-
-const TYPE_CLR: Record<VisitType, string> = {
-  "RI Monitoring": "bg-purple-100 text-purple-800",
-  "Management Spot Check": "bg-blue-100 text-blue-800",
-  "External Professional": "bg-indigo-100 text-indigo-800",
-  "Ofsted": "bg-rose-100 text-rose-800",
-};
-
 type SortOption = "date-desc" | "date-asc" | "type" | "assessment";
 
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: UnannouncedVisit[] = [
-  {
-    id: "uv_1",
-    date: d(-5),
-    timeOfVisit: "22:30",
-    visitType: "RI Monitoring",
-    visitor: "staff_darren",
-    areasInspected: ["night routines", "staffing levels", "security checks", "sleep logs"],
-    childrenSpokenTo: ["Casey", "Alex"],
-    staffOnDuty: ["staff_edward", "staff_mirela"],
-    findings: "Night routines are calm and consistent. Both children were settled by 22:00. Staff completed all security checks on time. Sleep logs up to date.",
-    positiveObservations: [
-      "Staff demonstrated warm, nurturing interactions during bedtime routines",
-      "Home was quiet, calm, and felt settled — children clearly feel safe",
-      "Security checklist completed thoroughly with no omissions",
-    ],
-    concerns: [],
-    actionsRequired: [],
-    overallAssessment: "Good",
-    followUpDate: d(25),
-  },
-  {
-    id: "uv_2",
-    date: d(-12),
-    timeOfVisit: "08:15",
-    visitType: "Management Spot Check",
-    visitor: "staff_ryan",
-    areasInspected: ["morning routines", "breakfast provision", "school preparation", "medication administration"],
-    childrenSpokenTo: ["Casey", "Alex", "Jordan"],
-    staffOnDuty: ["staff_anna", "staff_chervelle"],
-    findings: "Morning routines are well-structured. All children were up, dressed, and ready for school on time. Breakfast choices were varied and healthy. Medication administered correctly with proper recording.",
-    positiveObservations: [
-      "Staff were proactive in encouraging independence during morning routines",
-      "Breakfast area was clean and welcoming with good food options",
-      "Medication double-checked and counter-signed appropriately",
-    ],
-    concerns: [
-      "One child's school bag was not packed the evening before, causing minor morning rush",
-    ],
-    actionsRequired: [
-      { description: "Remind staff to prompt evening bag-packing as part of bedtime routine", owner: "staff_anna", deadline: d(-10) },
-    ],
-    overallAssessment: "Good",
-    followUpDate: d(18),
-  },
-  {
-    id: "uv_3",
-    date: d(-21),
-    timeOfVisit: "02:45",
-    visitType: "RI Monitoring",
-    visitor: "staff_darren",
-    areasInspected: ["night waking checks", "lone working practice", "building security", "fire safety"],
-    childrenSpokenTo: [],
-    staffOnDuty: ["staff_lackson"],
-    findings: "Night waking check conducted — all children asleep and settled. Single staff member on sleep-in was awake and alert. All doors and windows secure. Fire panel checked and clear.",
-    positiveObservations: [
-      "Staff member fully alert and engaged in productive tasks between checks",
-      "Building security was excellent — all entry points confirmed locked",
-      "Night check records were accurate and contemporaneous",
-    ],
-    concerns: [],
-    actionsRequired: [],
-    overallAssessment: "Good",
-    followUpDate: d(9),
-  },
-  {
-    id: "uv_4",
-    date: d(-30),
-    timeOfVisit: "14:00",
-    visitType: "External Professional",
-    visitor: "Sarah Mitchell (IRO)",
-    areasInspected: ["care planning", "child participation", "placement stability", "key working records"],
-    childrenSpokenTo: ["Casey"],
-    staffOnDuty: ["staff_darren", "staff_anna", "staff_edward"],
-    findings: "Casey's care plan is being implemented well. Key working sessions are regular and child-centred. Casey reports feeling settled and happy. Placement stability is strong.",
-    positiveObservations: [
-      "Key working records are detailed, reflective, and include the child's voice",
-      "Casey was able to articulate her goals and felt listened to by staff",
-      "Care plan objectives are being met consistently with clear evidence",
-    ],
-    concerns: [],
-    actionsRequired: [],
-    overallAssessment: "Good",
-    followUpDate: d(30),
-  },
-  {
-    id: "uv_5",
-    date: d(-38),
-    timeOfVisit: "23:15",
-    visitType: "Management Spot Check",
-    visitor: "staff_darren",
-    areasInspected: ["night staffing", "incident response readiness", "medication storage", "CCTV functioning"],
-    childrenSpokenTo: [],
-    staffOnDuty: ["staff_chervelle", "staff_lackson"],
-    findings: "Night staffing at expected levels. Both staff alert and positioned appropriately. Medication cabinet locked and secure. CCTV recording across all external areas. Incident folder accessible and up to date.",
-    positiveObservations: [
-      "Staff were well-prepared and could articulate the evening's events clearly",
-      "Incident response folder was immediately accessible and staff knew its location",
-      "CCTV system fully operational with no blind spots identified",
-    ],
-    concerns: [],
-    actionsRequired: [],
-    overallAssessment: "Good",
-    followUpDate: d(-8),
-  },
-  {
-    id: "uv_6",
-    date: d(-45),
-    timeOfVisit: "16:30",
-    visitType: "Management Spot Check",
-    visitor: "staff_ryan",
-    areasInspected: ["after-school environment", "activities provision", "safeguarding display", "visitor log"],
-    childrenSpokenTo: ["Alex", "Jordan"],
-    staffOnDuty: ["staff_edward", "staff_anna", "staff_mirela"],
-    findings: "After-school period was lively and well-managed. Children engaged in activities. Safeguarding information is clearly displayed. Visitor log is being completed but one entry was unsigned.",
-    positiveObservations: [
-      "Children were relaxed and enjoying structured free time with staff engagement",
-      "Safeguarding posters are child-friendly and prominently displayed",
-      "Activities were varied and matched children's interests",
-    ],
-    concerns: [
-      "Visitor log had one unsigned entry from earlier that day — a professional visit",
-    ],
-    actionsRequired: [
-      { description: "Staff to ensure all visitors sign out before leaving — add prompt to front door checklist", owner: "staff_edward", deadline: d(-40) },
-    ],
-    overallAssessment: "Requires attention",
-    followUpDate: d(-15),
-  },
-  {
-    id: "uv_7",
-    date: d(-60),
-    timeOfVisit: "04:00",
-    visitType: "RI Monitoring",
-    visitor: "staff_darren",
-    areasInspected: ["overnight environment", "staff wakefulness", "fire exits", "temperature checks"],
-    childrenSpokenTo: [],
-    staffOnDuty: ["staff_mirela"],
-    findings: "Fire exits clear and accessible. Building temperature appropriate. Staff member was awake but the night log had not been updated since 01:00, creating a gap in records.",
-    positiveObservations: [
-      "Fire exits completely clear with no obstructions",
-      "Building temperature comfortable throughout — thermostat appropriately set",
-    ],
-    concerns: [
-      "Night log not updated between 01:00 and 04:00 — 3-hour gap in recording",
-      "Staff member could not confirm whether 02:00 check on children had been completed",
-    ],
-    actionsRequired: [
-      { description: "Implement hourly prompts for night log completion — consider a timer/alarm system", owner: "staff_darren", deadline: d(-50) },
-      { description: "Supervision session with staff member to address recording expectations", owner: "staff_ryan", deadline: d(-53) },
-    ],
-    overallAssessment: "Immediate action needed",
-    followUpDate: d(-45),
-  },
-  {
-    id: "uv_8",
-    date: d(-75),
-    timeOfVisit: "10:45",
-    visitType: "Ofsted",
-    visitor: "Helen Carter (Ofsted Inspector)",
-    areasInspected: ["safeguarding practice", "staff files", "children's records", "quality of care", "leadership"],
-    childrenSpokenTo: ["Casey", "Alex", "Jordan"],
-    staffOnDuty: ["staff_darren", "staff_ryan", "staff_anna", "staff_edward"],
-    findings: "Monitoring visit as part of ongoing regulatory framework. Inspector reviewed safeguarding processes, staff safer recruitment files, and children's care records. Leadership and management were observed to be effective.",
-    positiveObservations: [
-      "Safeguarding culture is strong — staff demonstrated good awareness and confidence",
-      "Safer recruitment files are compliant and well-organised",
-      "Children spoke positively about their care and relationships with staff",
-      "Leadership demonstrates reflective practice and continuous improvement",
-    ],
-    concerns: [
-      "One staff file was missing an updated DBS renewal confirmation letter — DBS itself valid but admin gap",
-    ],
-    actionsRequired: [
-      { description: "Obtain and file the DBS renewal confirmation letter for the identified staff member", owner: "staff_darren", deadline: d(-65) },
-    ],
-    overallAssessment: "Good",
-    followUpDate: d(-30),
-  },
-];
-
-/* ── page ──────────────────────────────────────────────────────────────────── */
+/* ── page ─────────────────────────────────────────────────────────────────── */
 
 export default function UnannouncedVisitsLogPage() {
-  const [data] = useState<UnannouncedVisit[]>(SEED);
+  const { data: records = [], isLoading } = useUnannouncedVisitRecords();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("date-desc");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [filterType, setFilterType] = useState<VisitType | "all">("all");
+  const [filterType, setFilterType] = useState<UnannouncedVisitType | "all">("all");
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
+  const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
+
   /* ── filtered & sorted ─────────────────────────────────────────────────── */
   const processed = useMemo(() => {
-    let result = [...data];
+    let result = [...records];
 
-    // filter by type
     if (filterType !== "all") {
-      result = result.filter((v) => v.visitType === filterType);
+      result = result.filter((v) => v.visit_type === filterType);
     }
 
-    // search
     if (search) {
       const q = search.toLowerCase();
       result = result.filter((v) =>
         v.findings.toLowerCase().includes(q) ||
-        v.visitType.toLowerCase().includes(q) ||
+        UNANNOUNCED_VISIT_TYPE_LABEL[v.visit_type].toLowerCase().includes(q) ||
         v.visitor.toLowerCase().includes(q) ||
-        v.areasInspected.some((a) => a.toLowerCase().includes(q)) ||
-        v.positiveObservations.some((o) => o.toLowerCase().includes(q)) ||
+        v.areas_inspected.some((a) => a.toLowerCase().includes(q)) ||
+        v.positive_observations.some((o) => o.toLowerCase().includes(q)) ||
         v.concerns.some((c) => c.toLowerCase().includes(q))
       );
     }
 
-    // sort
+    const ASSESSMENT_ORDER: Record<UnannouncedVisitOverallAssessment, number> = { immediate_action_needed: 0, requires_attention: 1, good: 2 };
+
     switch (sortBy) {
       case "date-desc":
         result.sort((a, b) => b.date.localeCompare(a.date));
@@ -297,49 +96,58 @@ export default function UnannouncedVisitsLogPage() {
         result.sort((a, b) => a.date.localeCompare(b.date));
         break;
       case "type":
-        result.sort((a, b) => a.visitType.localeCompare(b.visitType));
+        result.sort((a, b) => a.visit_type.localeCompare(b.visit_type));
         break;
       case "assessment":
-        const order: Record<OverallAssessment, number> = { "Immediate action needed": 0, "Requires attention": 1, "Good": 2 };
-        result.sort((a, b) => order[a.overallAssessment] - order[b.overallAssessment]);
+        result.sort((a, b) => ASSESSMENT_ORDER[a.overall_assessment] - ASSESSMENT_ORDER[b.overall_assessment]);
         break;
     }
 
     return result;
-  }, [data, search, sortBy, filterType]);
+  }, [records, search, sortBy, filterType]);
 
   /* ── summary stats ─────────────────────────────────────────────────────── */
   const now = new Date();
   const quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1).toISOString().slice(0, 10);
 
-  const visitsThisQuarter = data.filter((v) => v.date >= quarterStart).length;
-  const nightVisits = data.filter((v) => isNightVisit(v.timeOfVisit)).length;
-  const outstandingActions = data.reduce(
-    (sum, v) => sum + v.actionsRequired.filter((a) => a.deadline >= d(0) || a.deadline >= d(-7)).length,
+  const visitsThisQuarter = records.filter((v) => v.date >= quarterStart).length;
+  const nightVisits = records.filter((v) => isNightVisit(v.time_of_visit)).length;
+  const outstandingActions = records.reduce(
+    (sum, v) => sum + v.actions_required.filter((a) => a.deadline >= d(0) || a.deadline >= d(-7)).length,
     0
   );
   const assessmentBreakdown = {
-    good: data.filter((v) => v.overallAssessment === "Good").length,
-    attention: data.filter((v) => v.overallAssessment === "Requires attention").length,
-    immediate: data.filter((v) => v.overallAssessment === "Immediate action needed").length,
+    good: records.filter((v) => v.overall_assessment === "good").length,
+    attention: records.filter((v) => v.overall_assessment === "requires_attention").length,
+    immediate: records.filter((v) => v.overall_assessment === "immediate_action_needed").length,
   };
 
   /* ── export columns ────────────────────────────────────────────────────── */
-  const exportCols: ExportColumn<UnannouncedVisit>[] = [
-    { header: "Date", accessor: (r: UnannouncedVisit) => r.date },
-    { header: "Time", accessor: (r: UnannouncedVisit) => r.timeOfVisit },
-    { header: "Visit Type", accessor: (r: UnannouncedVisit) => r.visitType },
-    { header: "Visitor", accessor: (r: UnannouncedVisit) => r.visitor.startsWith("staff_") ? getStaffName(r.visitor) : r.visitor },
-    { header: "Areas Inspected", accessor: (r: UnannouncedVisit) => r.areasInspected.join(", ") },
-    { header: "Children Spoken To", accessor: (r: UnannouncedVisit) => r.childrenSpokenTo.join(", ") },
-    { header: "Staff On Duty", accessor: (r: UnannouncedVisit) => r.staffOnDuty.map((s: string) => getStaffName(s)).join(", ") },
-    { header: "Findings", accessor: (r: UnannouncedVisit) => r.findings },
-    { header: "Positive Observations", accessor: (r: UnannouncedVisit) => r.positiveObservations.join("; ") },
-    { header: "Concerns", accessor: (r: UnannouncedVisit) => r.concerns.join("; ") },
-    { header: "Actions Required", accessor: (r: UnannouncedVisit) => r.actionsRequired.map((a: ActionRequired) => a.description).join("; ") },
-    { header: "Overall Assessment", accessor: (r: UnannouncedVisit) => r.overallAssessment },
-    { header: "Follow-Up Date", accessor: (r: UnannouncedVisit) => r.followUpDate },
+  const exportCols: ExportColumn<UnannouncedVisitRecord>[] = [
+    { header: "Date", accessor: (r: UnannouncedVisitRecord) => r.date },
+    { header: "Time", accessor: (r: UnannouncedVisitRecord) => r.time_of_visit },
+    { header: "Visit Type", accessor: (r: UnannouncedVisitRecord) => UNANNOUNCED_VISIT_TYPE_LABEL[r.visit_type] },
+    { header: "Visitor", accessor: (r: UnannouncedVisitRecord) => r.visitor.startsWith("staff_") ? getStaffName(r.visitor) : r.visitor },
+    { header: "Areas Inspected", accessor: (r: UnannouncedVisitRecord) => r.areas_inspected.join(", ") },
+    { header: "Children Spoken To", accessor: (r: UnannouncedVisitRecord) => r.children_spoken_to.join(", ") },
+    { header: "Staff On Duty", accessor: (r: UnannouncedVisitRecord) => r.staff_on_duty.map((s: string) => getStaffName(s)).join(", ") },
+    { header: "Findings", accessor: (r: UnannouncedVisitRecord) => r.findings },
+    { header: "Positive Observations", accessor: (r: UnannouncedVisitRecord) => r.positive_observations.join("; ") },
+    { header: "Concerns", accessor: (r: UnannouncedVisitRecord) => r.concerns.join("; ") },
+    { header: "Actions Required", accessor: (r: UnannouncedVisitRecord) => r.actions_required.map((a: UnannouncedVisitActionRequired) => a.description).join("; ") },
+    { header: "Overall Assessment", accessor: (r: UnannouncedVisitRecord) => UNANNOUNCED_VISIT_OVERALL_ASSESSMENT_LABEL[r.overall_assessment] },
+    { header: "Follow-Up Date", accessor: (r: UnannouncedVisitRecord) => r.follow_up_date },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Unannounced Visits Log" subtitle="Management, RI, and external oversight visits — demonstrating active monitoring under Regulation 44/45">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -387,13 +195,12 @@ export default function UnannouncedVisitsLogPage() {
           <select
             className="border rounded-md px-3 py-2 text-sm bg-background"
             value={filterType}
-            onChange={(e) => setFilterType(e.target.value as VisitType | "all")}
+            onChange={(e) => setFilterType(e.target.value as UnannouncedVisitType | "all")}
           >
             <option value="all">All visit types</option>
-            <option value="RI Monitoring">RI Monitoring</option>
-            <option value="Management Spot Check">Management Spot Check</option>
-            <option value="External Professional">External Professional</option>
-            <option value="Ofsted">Ofsted</option>
+            {(Object.entries(UNANNOUNCED_VISIT_TYPE_LABEL) as [UnannouncedVisitType, string][]).map(([k, v]) => (
+              <option key={k} value={k}>{v}</option>
+            ))}
           </select>
 
           <div className="flex items-center gap-1.5">
@@ -426,12 +233,12 @@ export default function UnannouncedVisitsLogPage() {
 
           {processed.map((visit) => {
             const isOpen = expandedId === visit.id;
-            const assessmentClr = ASSESSMENT_CLR[visit.overallAssessment];
-            const typeClr = TYPE_CLR[visit.visitType];
-            const isNight = isNightVisit(visit.timeOfVisit);
-            const borderClr = visit.overallAssessment === "Immediate action needed"
+            const assessmentClr = ASSESSMENT_CLR[visit.overall_assessment];
+            const typeClr = TYPE_CLR[visit.visit_type];
+            const isNight = isNightVisit(visit.time_of_visit);
+            const borderClr = visit.overall_assessment === "immediate_action_needed"
               ? "border-l-red-500"
-              : visit.overallAssessment === "Requires attention"
+              : visit.overall_assessment === "requires_attention"
               ? "border-l-amber-400"
               : "border-l-green-400";
 
@@ -441,20 +248,20 @@ export default function UnannouncedVisitsLogPage() {
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {fmt(visit.date)} at {visit.timeOfVisit}
+                        {fmt(visit.date)} at {visit.time_of_visit}
                         {isNight && <Moon className="h-3.5 w-3.5 text-indigo-500" />}
                         <Badge variant="outline" className={typeClr}>
-                          {visit.visitType}
+                          {UNANNOUNCED_VISIT_TYPE_LABEL[visit.visit_type]}
                         </Badge>
                         <Badge variant="outline" className={assessmentClr}>
-                          {visit.overallAssessment}
+                          {UNANNOUNCED_VISIT_OVERALL_ASSESSMENT_LABEL[visit.overall_assessment]}
                         </Badge>
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
                         {visit.visitor.startsWith("staff_") ? getStaffName(visit.visitor) : visit.visitor}
                         {" · "}
-                        {visit.areasInspected.length} area{visit.areasInspected.length !== 1 ? "s" : ""} inspected
-                        {visit.childrenSpokenTo.length > 0 && ` · ${visit.childrenSpokenTo.length} child${visit.childrenSpokenTo.length !== 1 ? "ren" : ""} spoken to`}
+                        {visit.areas_inspected.length} area{visit.areas_inspected.length !== 1 ? "s" : ""} inspected
+                        {visit.children_spoken_to.length > 0 && ` · ${visit.children_spoken_to.length} child${visit.children_spoken_to.length !== 1 ? "ren" : ""} spoken to`}
                       </p>
                     </div>
                     {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
@@ -469,7 +276,7 @@ export default function UnannouncedVisitsLogPage() {
                         <ClipboardList className="h-3.5 w-3.5" /> Areas Inspected
                       </p>
                       <div className="flex flex-wrap gap-1">
-                        {visit.areasInspected.map((area) => (
+                        {visit.areas_inspected.map((area) => (
                           <Badge key={area} variant="outline" className="text-xs bg-slate-50">
                             {area}
                           </Badge>
@@ -483,15 +290,15 @@ export default function UnannouncedVisitsLogPage() {
                         <Users className="h-3.5 w-3.5" /> Staff on Duty
                       </p>
                       <p className="text-muted-foreground">
-                        {visit.staffOnDuty.map((s) => getStaffName(s)).join(", ")}
+                        {visit.staff_on_duty.map((s) => getStaffName(s)).join(", ")}
                       </p>
                     </div>
 
                     {/* Children spoken to */}
-                    {visit.childrenSpokenTo.length > 0 && (
+                    {visit.children_spoken_to.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">Children Spoken To</p>
-                        <p className="text-muted-foreground">{visit.childrenSpokenTo.join(", ")}</p>
+                        <p className="text-muted-foreground">{visit.children_spoken_to.join(", ")}</p>
                       </div>
                     )}
 
@@ -502,13 +309,13 @@ export default function UnannouncedVisitsLogPage() {
                     </div>
 
                     {/* Positive observations */}
-                    {visit.positiveObservations.length > 0 && (
+                    {visit.positive_observations.length > 0 && (
                       <div className="bg-green-50 rounded-lg p-3">
                         <p className="font-medium text-green-800 mb-2 flex items-center gap-1">
                           <CheckCircle2 className="h-3.5 w-3.5" /> Positive Observations
                         </p>
                         <ul className="space-y-1">
-                          {visit.positiveObservations.map((obs, i) => (
+                          {visit.positive_observations.map((obs, i) => (
                             <li key={i} className="text-green-700 text-xs flex items-start gap-2">
                               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />
                               {obs}
@@ -536,13 +343,13 @@ export default function UnannouncedVisitsLogPage() {
                     )}
 
                     {/* Actions required */}
-                    {visit.actionsRequired.length > 0 && (
+                    {visit.actions_required.length > 0 && (
                       <div className="bg-blue-50 rounded-lg p-3">
                         <p className="font-medium text-blue-800 mb-2 flex items-center gap-1">
                           <ClipboardList className="h-3.5 w-3.5" /> Actions Required
                         </p>
                         <div className="space-y-2">
-                          {visit.actionsRequired.map((action, i) => (
+                          {visit.actions_required.map((action, i) => (
                             <div key={i} className="text-xs bg-white rounded p-2 border border-blue-100">
                               <p className="text-blue-900 font-medium">{action.description}</p>
                               <p className="text-blue-600 mt-1">
@@ -558,7 +365,7 @@ export default function UnannouncedVisitsLogPage() {
                     {/* Follow-up */}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1 border-t">
                       <Clock className="h-3.5 w-3.5" />
-                      Follow-up due: {fmt(visit.followUpDate)}
+                      Follow-up due: {fmt(visit.follow_up_date)}
                     </div>
                   </CardContent>
                 )}

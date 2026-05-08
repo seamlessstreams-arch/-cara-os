@@ -1,13 +1,5 @@
 "use client";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — TRANSPORT LOG
-// Records all journeys transporting young people — driver details, vehicle,
-// mileage, purpose, incidents during transport. Regulation 12 compliance,
-// insurance tracking, driver licence check records. Essential for audit trail
-// and safeguarding during transport.
-// ══════════════════════════════════════════════════════════════════════════════
-
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -26,71 +18,50 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  Car, CheckCircle2, Clock, MapPin,
+  Car, CheckCircle2, Clock, MapPin, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { useTransportLogRecords } from "@/hooks/use-transport-log-records";
+import { useCreateTransportLogRecord } from "@/hooks/use-transport-log-records";
+import type {
+  TransportLogRecord,
+  TransportLogPurpose,
+  TransportLogBehaviour,
+  TransportLogStatus,
+} from "@/types/extended";
+import {
+  TRANSPORT_LOG_PURPOSE_LABEL,
+  TRANSPORT_LOG_BEHAVIOUR_LABEL,
+  TRANSPORT_LOG_STATUS_LABEL,
+} from "@/types/extended";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Local config ────────────────────────────────────────────────────────────
 
-type Purpose = "school_run" | "appointment" | "contact_visit" | "activity" | "emergency" | "respite_transport" | "court" | "other";
-type Behaviour = "calm" | "unsettled" | "distressed" | "aggressive" | "mixed";
-type Status = "completed" | "in_progress" | "cancelled" | "incident_reported";
-
-interface TransportEntry {
-  id: string;
-  date: string;
-  driver: string;
-  driverLicenceChecked: boolean;
-  vehicle: string;
-  vehicleChecked: boolean;
-  passengers: { youngPersonId: string; seatbeltWorn: boolean; boosterSeat: boolean }[];
-  additionalStaff: string[];
-  purpose: Purpose;
-  destination: string;
-  departureTime: string;
-  arrivalTime: string;
-  returnTime: string | null;
-  mileageStart: number;
-  mileageEnd: number;
-  routeTaken: string;
-  incidentDuringJourney: boolean;
-  incidentDetails: string | null;
-  behaviourDuringJourney: Behaviour;
-  behaviourNotes: string;
-  fuelAdded: boolean;
-  fuelAmount: number | null;
-  fuelCost: number | null;
-  notes: string;
-  status: Status;
-}
-
-// ── Config ───────────────────────────────────────────────────────────────────
-
-const PURPOSE_META: Record<Purpose, { label: string; colour: string }> = {
-  school_run:         { label: "School Run",         colour: "bg-blue-100 text-blue-700" },
-  appointment:        { label: "Appointment",        colour: "bg-purple-100 text-purple-700" },
-  contact_visit:      { label: "Contact Visit",      colour: "bg-teal-100 text-teal-700" },
-  activity:           { label: "Activity",           colour: "bg-green-100 text-green-700" },
-  emergency:          { label: "Emergency",          colour: "bg-red-100 text-red-700" },
-  respite_transport:  { label: "Respite Transport",  colour: "bg-indigo-100 text-indigo-700" },
-  court:              { label: "Court",              colour: "bg-gray-100 text-gray-700" },
-  other:              { label: "Other",              colour: "bg-slate-100 text-slate-700" },
+const PURPOSE_META: Record<TransportLogPurpose, { colour: string }> = {
+  school_run:         { colour: "bg-blue-100 text-blue-700" },
+  appointment:        { colour: "bg-purple-100 text-purple-700" },
+  contact_visit:      { colour: "bg-teal-100 text-teal-700" },
+  activity:           { colour: "bg-green-100 text-green-700" },
+  emergency:          { colour: "bg-red-100 text-red-700" },
+  respite_transport:  { colour: "bg-indigo-100 text-indigo-700" },
+  court:              { colour: "bg-gray-100 text-gray-700" },
+  other:              { colour: "bg-slate-100 text-slate-700" },
 };
 
-const BEHAVIOUR_META: Record<Behaviour, { label: string; colour: string }> = {
-  calm:       { label: "Calm",       colour: "bg-green-100 text-green-700" },
-  unsettled:  { label: "Unsettled",  colour: "bg-yellow-100 text-yellow-700" },
-  distressed: { label: "Distressed", colour: "bg-red-100 text-red-700" },
-  aggressive: { label: "Aggressive", colour: "bg-red-100 text-red-800" },
-  mixed:      { label: "Mixed",      colour: "bg-amber-100 text-amber-700" },
+const BEHAVIOUR_META: Record<TransportLogBehaviour, { colour: string }> = {
+  calm:       { colour: "bg-green-100 text-green-700" },
+  unsettled:  { colour: "bg-yellow-100 text-yellow-700" },
+  distressed: { colour: "bg-red-100 text-red-700" },
+  aggressive: { colour: "bg-red-100 text-red-800" },
+  mixed:      { colour: "bg-amber-100 text-amber-700" },
 };
 
-const STATUS_META: Record<Status, { label: string; colour: string }> = {
-  completed:         { label: "Completed",         colour: "bg-green-100 text-green-700" },
-  in_progress:       { label: "In Progress",       colour: "bg-blue-100 text-blue-700" },
-  cancelled:         { label: "Cancelled",         colour: "bg-gray-100 text-gray-700" },
-  incident_reported: { label: "Incident Reported", colour: "bg-red-100 text-red-700" },
+const STATUS_META: Record<TransportLogStatus, { colour: string }> = {
+  completed:         { colour: "bg-green-100 text-green-700" },
+  in_progress:       { colour: "bg-blue-100 text-blue-700" },
+  cancelled:         { colour: "bg-gray-100 text-gray-700" },
+  incident_reported: { colour: "bg-red-100 text-red-700" },
 };
 
 const VEHICLES = [
@@ -98,123 +69,11 @@ const VEHICLES = [
   "VW Caddy - KY71 XYZ",
 ];
 
-// ── Seed Data ────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const SEED: TransportEntry[] = [
-  {
-    id: "trn_001", date: d(-1), driver: "staff_anna", driverLicenceChecked: true,
-    vehicle: "Ford Transit - KY69 ABC", vehicleChecked: true,
-    passengers: [{ youngPersonId: "yp_alex", seatbeltWorn: true, boosterSeat: false }],
-    additionalStaff: [],
-    purpose: "school_run", destination: "Broadfield Academy",
-    departureTime: "08:15", arrivalTime: "08:35", returnTime: "08:55",
-    mileageStart: 45230, mileageEnd: 45238.4,
-    routeTaken: "Oak House > A52 > Broadfield Academy > return same route",
-    incidentDuringJourney: false, incidentDetails: null,
-    behaviourDuringJourney: "calm", behaviourNotes: "Alex was relaxed, listened to music on the way. No concerns.",
-    fuelAdded: false, fuelAmount: null, fuelCost: null,
-    notes: "Routine morning school run. Arrived on time.",
-    status: "completed",
-  },
-  {
-    id: "trn_002", date: d(-2), driver: "staff_ryan", driverLicenceChecked: true,
-    vehicle: "VW Caddy - KY71 XYZ", vehicleChecked: true,
-    passengers: [{ youngPersonId: "yp_jordan", seatbeltWorn: true, boosterSeat: false }],
-    additionalStaff: [],
-    purpose: "appointment", destination: "CAMHS - Royal Derby Hospital",
-    departureTime: "13:30", arrivalTime: "14:00", returnTime: "15:45",
-    mileageStart: 31200, mileageEnd: 31225.2,
-    routeTaken: "Oak House > A38 > Royal Derby Hospital > return via A52",
-    incidentDuringJourney: false, incidentDetails: null,
-    behaviourDuringJourney: "unsettled",
-    behaviourNotes: "Jordan was quiet on the way there. On the return journey became unsettled — fidgeting, asking repeated questions about when next appointment would be. Staff provided reassurance.",
-    fuelAdded: false, fuelAmount: null, fuelCost: null,
-    notes: "CAMHS review appointment. Jordan engaged well with clinician. Unsettled on return journey but no escalation.",
-    status: "completed",
-  },
-  {
-    id: "trn_003", date: d(-3), driver: "staff_darren", driverLicenceChecked: true,
-    vehicle: "Ford Transit - KY69 ABC", vehicleChecked: true,
-    passengers: [{ youngPersonId: "yp_casey", seatbeltWorn: true, boosterSeat: false }],
-    additionalStaff: ["staff_chervelle"],
-    purpose: "contact_visit", destination: "Derby Family Centre",
-    departureTime: "10:00", arrivalTime: "10:25", returnTime: "12:40",
-    mileageStart: 45210, mileageEnd: 45226.6,
-    routeTaken: "Oak House > Uttoxeter Road > Derby Family Centre > return same route",
-    incidentDuringJourney: false, incidentDetails: null,
-    behaviourDuringJourney: "mixed",
-    behaviourNotes: "Casey was excited on the way to contact but became tearful on the return. Chervelle sat in the back and provided emotional support. Casey settled after 10 minutes.",
-    fuelAdded: false, fuelAmount: null, fuelCost: null,
-    notes: "Supervised contact session with birth mother. Two staff present as per care plan. Casey required support post-contact.",
-    status: "completed",
-  },
-  {
-    id: "trn_004", date: d(-4), driver: "staff_edward", driverLicenceChecked: true,
-    vehicle: "VW Caddy - KY71 XYZ", vehicleChecked: true,
-    passengers: [
-      { youngPersonId: "yp_alex", seatbeltWorn: true, boosterSeat: false },
-      { youngPersonId: "yp_jordan", seatbeltWorn: true, boosterSeat: false },
-    ],
-    additionalStaff: ["staff_anna"],
-    purpose: "activity", destination: "INTU Derby - Odeon Cinema",
-    departureTime: "14:00", arrivalTime: "14:25", returnTime: "17:30",
-    mileageStart: 31170, mileageEnd: 31200.2,
-    routeTaken: "Oak House > A52 > INTU Derby > return via ring road",
-    incidentDuringJourney: false, incidentDetails: null,
-    behaviourDuringJourney: "calm",
-    behaviourNotes: "Both young people were in good spirits. Chatted happily about the film on the way back. No concerns.",
-    fuelAdded: true, fuelAmount: 38, fuelCost: 45.20,
-    notes: "Cinema trip as weekend activity. Fuel added at Tesco petrol station on return. Receipt kept for petty cash.",
-    status: "completed",
-  },
-  {
-    id: "trn_005", date: d(-1), driver: "staff_darren", driverLicenceChecked: true,
-    vehicle: "Ford Transit - KY69 ABC", vehicleChecked: false,
-    passengers: [{ youngPersonId: "yp_casey", seatbeltWorn: true, boosterSeat: false }],
-    additionalStaff: [],
-    purpose: "emergency", destination: "Royal Derby Hospital A&E",
-    departureTime: "21:10", arrivalTime: "21:25", returnTime: null,
-    mileageStart: 45238.4, mileageEnd: 45252,
-    routeTaken: "Oak House > A38 > Royal Derby Hospital A&E (quickest route)",
-    incidentDuringJourney: true,
-    incidentDetails: "Casey attempted to open the passenger door while the vehicle was in motion on the A38. Door was child-locked. Staff pulled over safely and provided verbal reassurance. Casey was crying and repeatedly stating 'I want to go home.' Journey resumed after 5 minutes when Casey was calmer. Incident reported to on-call manager immediately.",
-    behaviourDuringJourney: "distressed",
-    behaviourNotes: "Casey was highly distressed throughout the journey. Crying, shouting, and attempted to open the door. Required constant verbal reassurance. Staff maintained calm throughout.",
-    fuelAdded: false, fuelAmount: null, fuelCost: null,
-    notes: "Emergency trip following Casey reporting severe stomach pain. Pre-journey vehicle check not completed due to urgency. On-call manager (Ryan) notified. Social worker informed the following morning.",
-    status: "incident_reported",
-  },
-];
-
-// ── Export Columns ───────────────────────────────────────────────────────────
-
-const EXPORT_COLS: ExportColumn<TransportEntry>[] = [
-  { header: "ID",                accessor: (r: TransportEntry) => r.id },
-  { header: "Date",              accessor: (r: TransportEntry) => r.date },
-  { header: "Driver",            accessor: (r: TransportEntry) => getStaffName(r.driver) },
-  { header: "Vehicle",           accessor: (r: TransportEntry) => r.vehicle },
-  { header: "Purpose",           accessor: (r: TransportEntry) => PURPOSE_META[r.purpose].label },
-  { header: "Destination",       accessor: (r: TransportEntry) => r.destination },
-  { header: "Passengers",        accessor: (r: TransportEntry) => r.passengers.map(p => getYPName(p.youngPersonId)).join(", ") },
-  { header: "Departure",         accessor: (r: TransportEntry) => r.departureTime },
-  { header: "Arrival",           accessor: (r: TransportEntry) => r.arrivalTime },
-  { header: "Return",            accessor: (r: TransportEntry) => r.returnTime || "N/A" },
-  { header: "Mileage (Total)",   accessor: (r: TransportEntry) => (r.mileageEnd - r.mileageStart).toFixed(1) },
-  { header: "Behaviour",         accessor: (r: TransportEntry) => BEHAVIOUR_META[r.behaviourDuringJourney].label },
-  { header: "Incident",          accessor: (r: TransportEntry) => r.incidentDuringJourney ? "Yes" : "No" },
-  { header: "Status",            accessor: (r: TransportEntry) => STATUS_META[r.status].label },
-];
-
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function TransportLogPage() {
-  const [entries, setEntries] = useState<TransportEntry[]>(SEED);
+  const { data: records = [], isLoading } = useTransportLogRecords();
+  const createMutation = useCreateTransportLogRecord();
   const [search, setSearch] = useState("");
   const [purposeFilter, setPurposeFilter] = useState("all");
   const [vehicleFilter, setVehicleFilter] = useState("all");
@@ -228,7 +87,7 @@ export default function TransportLogPage() {
   const [nDate, setNDate] = useState("");
   const [nDriver, setNDriver] = useState("");
   const [nVehicle, setNVehicle] = useState("");
-  const [nPurpose, setNPurpose] = useState<Purpose | "">("");
+  const [nPurpose, setNPurpose] = useState<TransportLogPurpose | "">("");
   const [nDestination, setNDestination] = useState("");
   const [nPassengers, setNPassengers] = useState("");
   const [nDepartureTime, setNDepartureTime] = useState("");
@@ -236,17 +95,17 @@ export default function TransportLogPage() {
   const [nMileageStart, setNMileageStart] = useState("");
   const [nMileageEnd, setNMileageEnd] = useState("");
   const [nRoute, setNRoute] = useState("");
-  const [nBehaviour, setNBehaviour] = useState<Behaviour | "">("");
+  const [nBehaviour, setNBehaviour] = useState<TransportLogBehaviour | "">("");
   const [nBehaviourNotes, setNBehaviourNotes] = useState("");
   const [nNotes, setNNotes] = useState("");
 
   // ── derived lists ──────────────────────────────────────────────────────────
-  const driverIds = useMemo(() => [...new Set(entries.map(e => e.driver))], [entries]);
-  const vehicleNames = useMemo(() => [...new Set(entries.map(e => e.vehicle))], [entries]);
+  const driverIds = useMemo(() => [...new Set(records.map(e => e.driver))], [records]);
+  const vehicleNames = useMemo(() => [...new Set(records.map(e => e.vehicle))], [records]);
 
   // ── filtering & sorting ────────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    let list = [...entries];
+    let list = [...records];
     if (purposeFilter !== "all") list = list.filter(e => e.purpose === purposeFilter);
     if (vehicleFilter !== "all") list = list.filter(e => e.vehicle === vehicleFilter);
     if (driverFilter !== "all") list = list.filter(e => e.driver === driverFilter);
@@ -256,29 +115,29 @@ export default function TransportLogPage() {
       list = list.filter(e =>
         e.destination.toLowerCase().includes(q) ||
         getStaffName(e.driver).toLowerCase().includes(q) ||
-        e.passengers.some(p => getYPName(p.youngPersonId).toLowerCase().includes(q)) ||
+        e.passengers.some(p => getYPName(p.young_person_id).toLowerCase().includes(q)) ||
         e.vehicle.toLowerCase().includes(q) ||
         e.notes.toLowerCase().includes(q)
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "newest": return b.date.localeCompare(a.date) || b.departureTime.localeCompare(a.departureTime);
-        case "oldest": return a.date.localeCompare(b.date) || a.departureTime.localeCompare(b.departureTime);
-        case "mileage": return (b.mileageEnd - b.mileageStart) - (a.mileageEnd - a.mileageStart);
+        case "newest": return b.date.localeCompare(a.date) || b.departure_time.localeCompare(a.departure_time);
+        case "oldest": return a.date.localeCompare(b.date) || a.departure_time.localeCompare(b.departure_time);
+        case "mileage": return (b.mileage_end - b.mileage_start) - (a.mileage_end - a.mileage_start);
         default: return 0;
       }
     });
     return list;
-  }, [entries, search, purposeFilter, vehicleFilter, driverFilter, statusFilter, sortBy]);
+  }, [records, search, purposeFilter, vehicleFilter, driverFilter, statusFilter, sortBy]);
 
   // ── summary stats ──────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-    const thisMonth = entries.filter(e => e.date >= monthStart);
-    const totalMileage = thisMonth.reduce((sum, e) => sum + (e.mileageEnd - e.mileageStart), 0);
-    const incidents = thisMonth.filter(e => e.incidentDuringJourney).length;
+    const thisMonth = records.filter(e => e.date >= monthStart);
+    const totalMileage = thisMonth.reduce((sum, e) => sum + (e.mileage_end - e.mileage_start), 0);
+    const incidents = thisMonth.filter(e => e.incident_during_journey).length;
     const daysInMonth = now.getDate();
     const avgPerDay = daysInMonth > 0 ? (thisMonth.length / daysInMonth).toFixed(1) : "0";
     return {
@@ -287,67 +146,83 @@ export default function TransportLogPage() {
       incidents,
       avgPerDay,
     };
-  }, [entries]);
+  }, [records]);
 
   // ── vehicle summaries ──────────────────────────────────────────────────────
   const vehicleSummaries = useMemo(() => {
     const map = new Map<string, { journeys: number; mileage: number; fuelCost: number; lastCheck: string }>();
-    entries.forEach(e => {
+    records.forEach(e => {
       const cur = map.get(e.vehicle) || { journeys: 0, mileage: 0, fuelCost: 0, lastCheck: "—" };
       cur.journeys++;
-      cur.mileage += e.mileageEnd - e.mileageStart;
-      if (e.fuelCost) cur.fuelCost += e.fuelCost;
-      if (e.vehicleChecked && (cur.lastCheck === "—" || e.date > cur.lastCheck)) cur.lastCheck = e.date;
+      cur.mileage += e.mileage_end - e.mileage_start;
+      if (e.fuel_cost) cur.fuelCost += e.fuel_cost;
+      if (e.vehicle_checked && (cur.lastCheck === "—" || e.date > cur.lastCheck)) cur.lastCheck = e.date;
       map.set(e.vehicle, cur);
     });
     return map;
-  }, [entries]);
+  }, [records]);
 
   // ── monthly mileage by vehicle ─────────────────────────────────────────────
   const monthlyMileage = useMemo(() => {
     const map = new Map<string, number>();
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-    entries.filter(e => e.date >= monthStart).forEach(e => {
+    records.filter(e => e.date >= monthStart).forEach(e => {
       const cur = map.get(e.vehicle) || 0;
-      map.set(e.vehicle, cur + (e.mileageEnd - e.mileageStart));
+      map.set(e.vehicle, cur + (e.mileage_end - e.mileage_start));
     });
     return map;
-  }, [entries]);
+  }, [records]);
+
+  // ── export columns ────────────────────────────────────────────────────────
+  const EXPORT_COLS: ExportColumn<TransportLogRecord>[] = [
+    { header: "ID",                accessor: (r: TransportLogRecord) => r.id },
+    { header: "Date",              accessor: (r: TransportLogRecord) => r.date },
+    { header: "Driver",            accessor: (r: TransportLogRecord) => getStaffName(r.driver) },
+    { header: "Vehicle",           accessor: (r: TransportLogRecord) => r.vehicle },
+    { header: "Purpose",           accessor: (r: TransportLogRecord) => TRANSPORT_LOG_PURPOSE_LABEL[r.purpose] },
+    { header: "Destination",       accessor: (r: TransportLogRecord) => r.destination },
+    { header: "Passengers",        accessor: (r: TransportLogRecord) => r.passengers.map(p => getYPName(p.young_person_id)).join(", ") },
+    { header: "Departure",         accessor: (r: TransportLogRecord) => r.departure_time },
+    { header: "Arrival",           accessor: (r: TransportLogRecord) => r.arrival_time },
+    { header: "Return",            accessor: (r: TransportLogRecord) => r.return_time || "N/A" },
+    { header: "Mileage (Total)",   accessor: (r: TransportLogRecord) => (r.mileage_end - r.mileage_start).toFixed(1) },
+    { header: "Behaviour",         accessor: (r: TransportLogRecord) => TRANSPORT_LOG_BEHAVIOUR_LABEL[r.behaviour_during_journey] },
+    { header: "Incident",          accessor: (r: TransportLogRecord) => r.incident_during_journey ? "Yes" : "No" },
+    { header: "Status",            accessor: (r: TransportLogRecord) => TRANSPORT_LOG_STATUS_LABEL[r.status] },
+  ];
 
   // ── create handler ─────────────────────────────────────────────────────────
   const handleCreate = () => {
     if (!nDriver || !nVehicle || !nPurpose || !nDestination || !nDepartureTime) return;
-    const entry: TransportEntry = {
-      id: `trn_${Date.now()}`,
+    createMutation.mutate({
       date: nDate || new Date().toISOString().slice(0, 10),
       driver: nDriver,
-      driverLicenceChecked: true,
+      driver_licence_checked: true,
       vehicle: nVehicle,
-      vehicleChecked: true,
+      vehicle_checked: true,
       passengers: nPassengers
-        ? nPassengers.split(",").map(id => ({ youngPersonId: id.trim(), seatbeltWorn: true, boosterSeat: false }))
+        ? nPassengers.split(",").map(id => ({ young_person_id: id.trim(), seatbelt_worn: true, booster_seat: false }))
         : [],
-      additionalStaff: [],
-      purpose: nPurpose as Purpose,
+      additional_staff: [],
+      purpose: nPurpose as TransportLogPurpose,
       destination: nDestination,
-      departureTime: nDepartureTime,
-      arrivalTime: nArrivalTime || nDepartureTime,
-      returnTime: null,
-      mileageStart: parseFloat(nMileageStart) || 0,
-      mileageEnd: parseFloat(nMileageEnd) || 0,
-      routeTaken: nRoute,
-      incidentDuringJourney: false,
-      incidentDetails: null,
-      behaviourDuringJourney: (nBehaviour as Behaviour) || "calm",
-      behaviourNotes: nBehaviourNotes,
-      fuelAdded: false,
-      fuelAmount: null,
-      fuelCost: null,
+      departure_time: nDepartureTime,
+      arrival_time: nArrivalTime || nDepartureTime,
+      return_time: null,
+      mileage_start: parseFloat(nMileageStart) || 0,
+      mileage_end: parseFloat(nMileageEnd) || 0,
+      route_taken: nRoute,
+      incident_during_journey: false,
+      incident_details: null,
+      behaviour_during_journey: (nBehaviour as TransportLogBehaviour) || "calm",
+      behaviour_notes: nBehaviourNotes,
+      fuel_added: false,
+      fuel_amount: null,
+      fuel_cost: null,
       notes: nNotes,
       status: "completed",
-    };
-    setEntries(prev => [entry, ...prev]);
+    });
     setShowNew(false);
     setNDate(""); setNDriver(""); setNVehicle(""); setNPurpose("");
     setNDestination(""); setNPassengers(""); setNDepartureTime("");
@@ -356,7 +231,17 @@ export default function TransportLogPage() {
   };
 
   // ── helpers ────────────────────────────────────────────────────────────────
-  const mileageTotal = (e: TransportEntry) => (e.mileageEnd - e.mileageStart).toFixed(1);
+  const mileageTotal = (e: TransportLogRecord) => (e.mileage_end - e.mileage_start).toFixed(1);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Transport Log" subtitle="Journey records, mileage tracking & safeguarding during transport">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -406,22 +291,10 @@ export default function TransportLogPage() {
               </CardHeader>
               <CardContent className="px-4 pb-3">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                  <div>
-                    <p className="text-muted-foreground">Journeys</p>
-                    <p className="font-semibold">{data.journeys}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Total Mileage</p>
-                    <p className="font-semibold">{data.mileage.toFixed(1)} mi</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Fuel Costs</p>
-                    <p className="font-semibold">{data.fuelCost > 0 ? `£${data.fuelCost.toFixed(2)}` : "—"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Last Pre-Journey Check</p>
-                    <p className="font-semibold">{data.lastCheck}</p>
-                  </div>
+                  <div><p className="text-muted-foreground">Journeys</p><p className="font-semibold">{data.journeys}</p></div>
+                  <div><p className="text-muted-foreground">Total Mileage</p><p className="font-semibold">{data.mileage.toFixed(1)} mi</p></div>
+                  <div><p className="text-muted-foreground">Fuel Costs</p><p className="font-semibold">{data.fuelCost > 0 ? `£${data.fuelCost.toFixed(2)}` : "—"}</p></div>
+                  <div><p className="text-muted-foreground">Last Pre-Journey Check</p><p className="font-semibold">{data.lastCheck}</p></div>
                 </div>
               </CardContent>
             </Card>
@@ -432,19 +305,14 @@ export default function TransportLogPage() {
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[200px] max-w-xs">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search journeys..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-9 h-9"
-            />
+            <Input placeholder="Search journeys..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
           </div>
           <Select value={purposeFilter} onValueChange={setPurposeFilter}>
             <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Purpose" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Purposes</SelectItem>
-              {(Object.entries(PURPOSE_META) as [Purpose, { label: string }][]).map(([k, v]) => (
-                <SelectItem key={k} value={k}>{v.label}</SelectItem>
+              {(Object.entries(TRANSPORT_LOG_PURPOSE_LABEL) as [TransportLogPurpose, string][]).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -466,8 +334,8 @@ export default function TransportLogPage() {
             <SelectTrigger className="w-[160px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              {(Object.entries(STATUS_META) as [Status, { label: string }][]).map(([k, v]) => (
-                <SelectItem key={k} value={k}>{v.label}</SelectItem>
+              {(Object.entries(TRANSPORT_LOG_STATUS_LABEL) as [TransportLogStatus, string][]).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -501,31 +369,27 @@ export default function TransportLogPage() {
           {filtered.map(entry => {
             const isOpen = expandedId === entry.id;
             const pm = PURPOSE_META[entry.purpose];
-            const bm = BEHAVIOUR_META[entry.behaviourDuringJourney];
+            const bm = BEHAVIOUR_META[entry.behaviour_during_journey];
             const sm = STATUS_META[entry.status];
-            const isIncident = entry.incidentDuringJourney;
+            const isIncident = entry.incident_during_journey;
             const borderColour = isIncident ? "border-l-red-500" : entry.status === "in_progress" ? "border-l-blue-400" : "border-l-green-400";
 
             return (
-              <div
-                key={entry.id}
-                className={cn("rounded-lg border bg-card overflow-hidden border-l-4", borderColour)}
-              >
-                {/* ── Header row ────────────────────────────────────────────── */}
+              <div key={entry.id} className={cn("rounded-lg border bg-card overflow-hidden border-l-4", borderColour)}>
                 <button
                   onClick={() => setExpandedId(isOpen ? null : entry.id)}
                   className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <Badge className={cn("text-xs", pm.colour)}>{pm.label}</Badge>
-                      <Badge className={cn("text-xs", sm.colour)}>{sm.label}</Badge>
+                      <Badge className={cn("text-xs", pm.colour)}>{TRANSPORT_LOG_PURPOSE_LABEL[entry.purpose]}</Badge>
+                      <Badge className={cn("text-xs", sm.colour)}>{TRANSPORT_LOG_STATUS_LABEL[entry.status]}</Badge>
                       {isIncident && <Badge variant="destructive" className="text-xs">Incident</Badge>}
                     </div>
                     <p className="font-medium text-sm">{entry.destination}</p>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1 flex-wrap">
                       <span>{entry.date}</span>
-                      <span>{entry.departureTime} — {entry.arrivalTime}</span>
+                      <span>{entry.departure_time} — {entry.arrival_time}</span>
                       <span className="flex items-center gap-1"><Car className="h-3 w-3" />{entry.vehicle.split(" - ")[1]}</span>
                       <span>Driver: {getStaffName(entry.driver)}</span>
                       <span>{mileageTotal(entry)} mi</span>
@@ -534,107 +398,88 @@ export default function TransportLogPage() {
                   {isOpen ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
                 </button>
 
-                {/* ── Expanded content ──────────────────────────────────────── */}
                 {isOpen && (
                   <div className="border-t px-4 py-3 space-y-4 bg-muted/30 text-sm">
-
-                    {/* Passengers */}
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Passengers</p>
                       <div className="flex flex-wrap gap-2">
                         {entry.passengers.map((p, i) => (
                           <div key={i} className="flex items-center gap-1.5 text-xs border rounded px-2 py-1 bg-background">
-                            <span className="font-medium">{getYPName(p.youngPersonId)}</span>
-                            {p.seatbeltWorn && <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 px-1">Seatbelt</Badge>}
-                            {p.boosterSeat && <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 px-1">Booster</Badge>}
+                            <span className="font-medium">{getYPName(p.young_person_id)}</span>
+                            {p.seatbelt_worn && <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 px-1">Seatbelt</Badge>}
+                            {p.booster_seat && <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 px-1">Booster</Badge>}
                           </div>
                         ))}
                       </div>
-                      {entry.additionalStaff.length > 0 && (
+                      {entry.additional_staff.length > 0 && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Additional staff: {entry.additionalStaff.map(id => getStaffName(id)).join(", ")}
+                          Additional staff: {entry.additional_staff.map(id => getStaffName(id)).join(", ")}
                         </p>
                       )}
                     </div>
 
-                    {/* Route & Mileage */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Route Taken</p>
-                        <p className="text-xs">{entry.routeTaken}</p>
+                        <p className="text-xs">{entry.route_taken}</p>
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Mileage</p>
                         <div className="flex items-center gap-3 text-xs">
-                          <span>Start: {entry.mileageStart.toLocaleString()}</span>
+                          <span>Start: {entry.mileage_start.toLocaleString()}</span>
                           <span className="text-muted-foreground">→</span>
-                          <span>End: {entry.mileageEnd.toLocaleString()}</span>
+                          <span>End: {entry.mileage_end.toLocaleString()}</span>
                           <Badge variant="outline" className="text-xs font-semibold">{mileageTotal(entry)} miles</Badge>
                         </div>
                       </div>
                     </div>
 
-                    {/* Times */}
                     <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Departure</p>
-                        <p className="text-xs">{entry.departureTime}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Arrival</p>
-                        <p className="text-xs">{entry.arrivalTime}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Return</p>
-                        <p className="text-xs">{entry.returnTime || "Not recorded"}</p>
-                      </div>
+                      <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Departure</p><p className="text-xs">{entry.departure_time}</p></div>
+                      <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Arrival</p><p className="text-xs">{entry.arrival_time}</p></div>
+                      <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Return</p><p className="text-xs">{entry.return_time || "Not recorded"}</p></div>
                     </div>
 
-                    {/* Behaviour */}
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Behaviour During Journey</p>
                       <div className="flex items-center gap-2 mb-1">
-                        <Badge className={cn("text-xs", bm.colour)}>{bm.label}</Badge>
+                        <Badge className={cn("text-xs", bm.colour)}>{TRANSPORT_LOG_BEHAVIOUR_LABEL[entry.behaviour_during_journey]}</Badge>
                       </div>
-                      {entry.behaviourNotes && <p className="text-xs">{entry.behaviourNotes}</p>}
+                      {entry.behaviour_notes && <p className="text-xs">{entry.behaviour_notes}</p>}
                     </div>
 
-                    {/* Incident section */}
                     {isIncident && (
                       <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                         <p className="text-xs font-semibold text-red-800 uppercase mb-1">Incident During Journey</p>
-                        <p className="text-xs text-red-900">{entry.incidentDetails}</p>
+                        <p className="text-xs text-red-900">{entry.incident_details}</p>
                       </div>
                     )}
 
-                    {/* Fuel section */}
-                    {entry.fuelAdded && (
+                    {entry.fuel_added && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <p className="text-xs font-semibold text-blue-800 uppercase mb-1">Fuel Added</p>
                         <div className="flex items-center gap-4 text-xs text-blue-900">
-                          {entry.fuelAmount && <span>{entry.fuelAmount}L</span>}
-                          {entry.fuelCost && <span>£{entry.fuelCost.toFixed(2)}</span>}
+                          {entry.fuel_amount && <span>{entry.fuel_amount}L</span>}
+                          {entry.fuel_cost && <span>£{entry.fuel_cost.toFixed(2)}</span>}
                         </div>
                       </div>
                     )}
 
-                    {/* Pre-journey checks */}
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center gap-1.5 text-xs">
-                        {entry.driverLicenceChecked
+                        {entry.driver_licence_checked
                           ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
                           : <Filter className="h-3.5 w-3.5 text-red-600" />}
                         <span>Driver licence checked</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-xs">
-                        {entry.vehicleChecked
+                        {entry.vehicle_checked
                           ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
                           : <Filter className="h-3.5 w-3.5 text-red-600" />}
                         <span>Pre-journey vehicle check</span>
                       </div>
                     </div>
 
-                    {/* Notes */}
                     {entry.notes && (
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Notes</p>
@@ -675,7 +520,7 @@ export default function TransportLogPage() {
                   ))}
                   <tr className="font-semibold">
                     <td className="py-2 pr-4">Total</td>
-                    <td className="py-2 px-4 text-right">{entries.length}</td>
+                    <td className="py-2 px-4 text-right">{records.length}</td>
                     <td className="py-2 px-4 text-right">{stats.totalMileage} mi</td>
                     <td className="py-2 pl-4 text-right">
                       £{[...vehicleSummaries.values()].reduce((s, v) => s + v.fuelCost, 0).toFixed(2)}
@@ -742,11 +587,11 @@ export default function TransportLogPage() {
               </div>
               <div>
                 <Label className="text-sm font-medium mb-1 block">Purpose *</Label>
-                <Select value={nPurpose} onValueChange={v => setNPurpose(v as Purpose)}>
+                <Select value={nPurpose} onValueChange={v => setNPurpose(v as TransportLogPurpose)}>
                   <SelectTrigger><SelectValue placeholder="Select purpose" /></SelectTrigger>
                   <SelectContent>
-                    {(Object.entries(PURPOSE_META) as [Purpose, { label: string }][]).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                    {(Object.entries(TRANSPORT_LOG_PURPOSE_LABEL) as [TransportLogPurpose, string][]).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -798,11 +643,11 @@ export default function TransportLogPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-sm font-medium mb-1 block">Behaviour</Label>
-                <Select value={nBehaviour} onValueChange={v => setNBehaviour(v as Behaviour)}>
+                <Select value={nBehaviour} onValueChange={v => setNBehaviour(v as TransportLogBehaviour)}>
                   <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
-                    {(Object.entries(BEHAVIOUR_META) as [Behaviour, { label: string }][]).map(([k, v]) => (
-                      <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                    {(Object.entries(TRANSPORT_LOG_BEHAVIOUR_LABEL) as [TransportLogBehaviour, string][]).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>{v}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

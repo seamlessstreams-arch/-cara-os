@@ -7,180 +7,75 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { useTransitionPlanningRecords } from "@/hooks/use-transition-planning-records";
+import type {
+  TransitionPlanningRecord,
+  TransitionPlanningArea,
+  TransitionPlanningGoalStatus,
+} from "@/types/extended";
+import {
+  TRANSITION_PLANNING_AREA_LABEL,
+  TRANSITION_PLANNING_GOAL_STATUS_LABEL,
+} from "@/types/extended";
 import {
   ArrowRightLeft, ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   GraduationCap, Home, Briefcase, Heart, Shield, Wallet, Users,
-  AlertTriangle, CheckCircle2, Clock, Target, Calendar
+  AlertTriangle, CheckCircle2, Clock, Target, Calendar, Loader2,
 } from "lucide-react";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-type TransitionArea = "independent_living" | "education_employment" | "financial" | "health_wellbeing" | "housing" | "relationships" | "legal_rights" | "identity";
-type GoalStatus = "not_started" | "in_progress" | "on_track" | "at_risk" | "achieved" | "paused";
-
-interface TransitionGoal {
-  id: string;
-  youngPersonId: string;
-  area: TransitionArea;
-  goal: string;
-  description: string;
-  status: GoalStatus;
-  targetDate: string;
-  startDate: string;
-  keyWorker: string;
-  actions: string[];
-  progress: string;
-  percentComplete: number;
-  reviewDate: string;
-  notes: string;
-  createdAt: string;
-}
-
-// ── Constants ────────────────────────────────────────────────────────────────
-const AREA_META: Record<TransitionArea, { label: string; icon: React.ReactNode; color: string }> = {
-  independent_living:     { label: "Independent Living",     icon: <Home className="h-4 w-4" />,           color: "bg-blue-100 text-blue-800" },
-  education_employment:   { label: "Education & Employment", icon: <GraduationCap className="h-4 w-4" />,  color: "bg-purple-100 text-purple-800" },
-  financial:              { label: "Financial Capability",   icon: <Wallet className="h-4 w-4" />,         color: "bg-green-100 text-green-800" },
-  health_wellbeing:       { label: "Health & Wellbeing",     icon: <Heart className="h-4 w-4" />,          color: "bg-pink-100 text-pink-800" },
-  housing:                { label: "Housing",                icon: <Home className="h-4 w-4" />,           color: "bg-amber-100 text-amber-800" },
-  relationships:          { label: "Relationships & Networks", icon: <Users className="h-4 w-4" />,       color: "bg-indigo-100 text-indigo-800" },
-  legal_rights:           { label: "Legal Rights & Entitlements", icon: <Shield className="h-4 w-4" />,   color: "bg-slate-100 text-slate-800" },
-  identity:               { label: "Identity & Culture",     icon: <Target className="h-4 w-4" />,        color: "bg-rose-100 text-rose-800" },
+// ── Local config ────────────────────────────────────────────────────────────
+const AREA_META: Record<TransitionPlanningArea, { icon: React.ReactNode; color: string }> = {
+  independent_living:     { icon: <Home className="h-4 w-4" />,           color: "bg-blue-100 text-blue-800" },
+  education_employment:   { icon: <GraduationCap className="h-4 w-4" />,  color: "bg-purple-100 text-purple-800" },
+  financial:              { icon: <Wallet className="h-4 w-4" />,         color: "bg-green-100 text-green-800" },
+  health_wellbeing:       { icon: <Heart className="h-4 w-4" />,          color: "bg-pink-100 text-pink-800" },
+  housing:                { icon: <Home className="h-4 w-4" />,           color: "bg-amber-100 text-amber-800" },
+  relationships:          { icon: <Users className="h-4 w-4" />,          color: "bg-indigo-100 text-indigo-800" },
+  legal_rights:           { icon: <Shield className="h-4 w-4" />,         color: "bg-slate-100 text-slate-800" },
+  identity:               { icon: <Target className="h-4 w-4" />,         color: "bg-rose-100 text-rose-800" },
 };
 
-const STATUS_META: Record<GoalStatus, { label: string; color: string }> = {
-  not_started: { label: "Not Started",  color: "bg-gray-100 text-gray-700" },
-  in_progress: { label: "In Progress",  color: "bg-blue-100 text-blue-700" },
-  on_track:    { label: "On Track",     color: "bg-green-100 text-green-700" },
-  at_risk:     { label: "At Risk",      color: "bg-red-100 text-red-700" },
-  achieved:    { label: "Achieved",     color: "bg-emerald-100 text-emerald-700" },
-  paused:      { label: "Paused",       color: "bg-amber-100 text-amber-700" },
+const STATUS_META: Record<TransitionPlanningGoalStatus, { color: string }> = {
+  not_started: { color: "bg-gray-100 text-gray-700" },
+  in_progress: { color: "bg-blue-100 text-blue-700" },
+  on_track:    { color: "bg-green-100 text-green-700" },
+  at_risk:     { color: "bg-red-100 text-red-700" },
+  achieved:    { color: "bg-emerald-100 text-emerald-700" },
+  paused:      { color: "bg-amber-100 text-amber-700" },
 };
 
-// ── Seed data ────────────────────────────────────────────────────────────────
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
-const SEED: TransitionGoal[] = [
-  {
-    id: "tg_001", youngPersonId: "yp_alex", area: "independent_living",
-    goal: "Learn to cook five basic meals independently",
-    description: "Alex to plan, shop for, and cook five different meals without adult assistance as part of independence skills building.",
-    status: "in_progress", targetDate: d(60), startDate: d(-30), keyWorker: "staff_darren",
-    actions: ["Weekly cooking session with key worker", "Create meal plan for the week", "Practice food hygiene independently", "Budget for weekly shop"],
-    progress: "Has mastered pasta dishes and basic stir-fry. Working on oven meals next.", percentComplete: 40,
-    reviewDate: d(14), notes: "Alex showing real enthusiasm for cooking. Wants to try baking too.", createdAt: d(-30),
-  },
-  {
-    id: "tg_002", youngPersonId: "yp_alex", area: "financial",
-    goal: "Open and manage a bank account",
-    description: "Support Alex to open a current account, understand online banking, set up savings, and manage a budget.",
-    status: "on_track", targetDate: d(30), startDate: d(-45), keyWorker: "staff_darren",
-    actions: ["Visit bank to open account", "Set up online banking app", "Create weekly budget spreadsheet", "Practise paying bills online"],
-    progress: "Account opened. Alex is using the app daily and tracking spending.", percentComplete: 70,
-    reviewDate: d(7), notes: "Making excellent progress. Saved £45 this month from pocket money.", createdAt: d(-45),
-  },
-  {
-    id: "tg_003", youngPersonId: "yp_alex", area: "education_employment",
-    goal: "Complete college application for September intake",
-    description: "Support with researching courses, writing personal statement, and attending open days.",
-    status: "at_risk", targetDate: d(21), startDate: d(-60), keyWorker: "staff_ryan",
-    actions: ["Research three potential courses", "Attend open day at Derby College", "Draft personal statement", "Submit UCAS/college application"],
-    progress: "Attended one open day but hasn't started personal statement. Deadline approaching.", percentComplete: 25,
-    reviewDate: d(3), notes: "Needs additional support with personal statement. Reluctant to engage this week.", createdAt: d(-60),
-  },
-  {
-    id: "tg_004", youngPersonId: "yp_jordan", area: "health_wellbeing",
-    goal: "Register with GP and manage own health appointments",
-    description: "Jordan to independently manage GP registration, book appointments, and attend without escort.",
-    status: "achieved", targetDate: d(-10), startDate: d(-90), keyWorker: "staff_anna",
-    actions: ["Register at local GP surgery", "Book and attend routine check-up", "Learn to order repeat prescriptions", "Attend appointments independently"],
-    progress: "All actions completed. Jordan registered, attended two appointments solo.", percentComplete: 100,
-    reviewDate: d(30), notes: "Excellent achievement. Jordan confident managing health needs.", createdAt: d(-90),
-  },
-  {
-    id: "tg_005", youngPersonId: "yp_jordan", area: "housing",
-    goal: "Understand housing options and complete housing application",
-    description: "Explore supported accommodation, council housing, and private renting options for when Jordan turns 18.",
-    status: "in_progress", targetDate: d(90), startDate: d(-20), keyWorker: "staff_ryan",
-    actions: ["Visit two supported accommodation providers", "Meet with leaving care PA", "Complete housing needs assessment", "Start housing register application"],
-    progress: "Visited one provider. Meeting with PA scheduled for next week.", percentComplete: 30,
-    reviewDate: d(10), notes: "Jordan anxious about moving on. Extra emotional support needed around this topic.", createdAt: d(-20),
-  },
-  {
-    id: "tg_006", youngPersonId: "yp_jordan", area: "relationships",
-    goal: "Build positive peer support network",
-    description: "Support Jordan to develop healthy friendships and community connections outside of the home.",
-    status: "on_track", targetDate: d(60), startDate: d(-40), keyWorker: "staff_anna",
-    actions: ["Join a community group or club", "Maintain contact with positive school friends", "Attend youth group weekly", "Identify a trusted adult outside the home"],
-    progress: "Joined local football club. Attending regularly. Made two new friends.", percentComplete: 60,
-    reviewDate: d(14), notes: "Real positive engagement. Coach gives excellent feedback.", createdAt: d(-40),
-  },
-  {
-    id: "tg_007", youngPersonId: "yp_casey", area: "independent_living",
-    goal: "Manage personal laundry routine",
-    description: "Casey to wash, dry, and put away own clothes independently on a weekly schedule.",
-    status: "not_started", targetDate: d(45), startDate: d(0), keyWorker: "staff_chervelle",
-    actions: ["Learn to sort laundry", "Use washing machine independently", "Iron basic items", "Maintain weekly routine"],
-    progress: "", percentComplete: 0,
-    reviewDate: d(14), notes: "Starting next week. Casey has agreed to give it a go.", createdAt: d(0),
-  },
-  {
-    id: "tg_008", youngPersonId: "yp_casey", area: "legal_rights",
-    goal: "Understand rights as a care leaver",
-    description: "Ensure Casey knows entitlements under the Children (Leaving Care) Act 2000 and local offer.",
-    status: "in_progress", targetDate: d(30), startDate: d(-14), keyWorker: "staff_darren",
-    actions: ["Key work session on leaving care rights", "Review local authority local offer document", "Meet with advocacy service", "Create personal entitlements checklist"],
-    progress: "Completed first key work session. Casey has a copy of the local offer.", percentComplete: 35,
-    reviewDate: d(7), notes: "Casey engaged well. Asked good questions about housing deposit support.", createdAt: d(-14),
-  },
-  {
-    id: "tg_009", youngPersonId: "yp_casey", area: "identity",
-    goal: "Explore cultural identity and heritage",
-    description: "Support Casey to learn about and celebrate their cultural heritage and personal identity.",
-    status: "in_progress", targetDate: d(60), startDate: d(-21), keyWorker: "staff_chervelle",
-    actions: ["Life story session focused on heritage", "Research family cultural background", "Cook traditional family recipes", "Create identity scrapbook"],
-    progress: "Started scrapbook. Had a meaningful conversation about family traditions.", percentComplete: 25,
-    reviewDate: d(14), notes: "Very personal work — Casey needs space to lead the pace.", createdAt: d(-21),
-  },
-  {
-    id: "tg_010", youngPersonId: "yp_alex", area: "independent_living",
-    goal: "Travel independently using public transport",
-    description: "Alex to plan and complete journeys using buses and trains without staff support.",
-    status: "on_track", targetDate: d(30), startDate: d(-35), keyWorker: "staff_darren",
-    actions: ["Learn to read bus timetables", "Plan a journey using Google Maps", "Complete a bus journey with staff shadowing", "Complete a solo journey and report back"],
-    progress: "Completed two shadowed journeys. Planning first solo trip to Derby city centre.", percentComplete: 65,
-    reviewDate: d(7), notes: "Confident on familiar routes. Needs practice with unfamiliar journeys.", createdAt: d(-35),
-  },
-];
-
 // ── Export columns ───────────────────────────────────────────────────────────
-const EXPORT_COLS: ExportColumn<TransitionGoal>[] = [
-  { header: "ID",            accessor: (r: TransitionGoal) => r.id },
-  { header: "Young Person",  accessor: (r: TransitionGoal) => getYPName(r.youngPersonId) },
-  { header: "Area",          accessor: (r: TransitionGoal) => AREA_META[r.area].label },
-  { header: "Goal",          accessor: (r: TransitionGoal) => r.goal },
-  { header: "Description",   accessor: (r: TransitionGoal) => r.description },
-  { header: "Status",        accessor: (r: TransitionGoal) => STATUS_META[r.status].label },
-  { header: "% Complete",    accessor: (r: TransitionGoal) => String(r.percentComplete) },
-  { header: "Target Date",   accessor: (r: TransitionGoal) => r.targetDate },
-  { header: "Start Date",    accessor: (r: TransitionGoal) => r.startDate },
-  { header: "Review Date",   accessor: (r: TransitionGoal) => r.reviewDate },
-  { header: "Key Worker",    accessor: (r: TransitionGoal) => getStaffName(r.keyWorker) },
-  { header: "Actions",       accessor: (r: TransitionGoal) => r.actions.join("; ") },
-  { header: "Progress",      accessor: (r: TransitionGoal) => r.progress },
-  { header: "Notes",         accessor: (r: TransitionGoal) => r.notes },
-  { header: "Created",       accessor: (r: TransitionGoal) => r.createdAt },
+const EXPORT_COLS: ExportColumn<TransitionPlanningRecord>[] = [
+  { header: "ID",            accessor: (r: TransitionPlanningRecord) => r.id },
+  { header: "Young Person",  accessor: (r: TransitionPlanningRecord) => getYPName(r.child_id) },
+  { header: "Area",          accessor: (r: TransitionPlanningRecord) => TRANSITION_PLANNING_AREA_LABEL[r.area] },
+  { header: "Goal",          accessor: (r: TransitionPlanningRecord) => r.goal },
+  { header: "Description",   accessor: (r: TransitionPlanningRecord) => r.description },
+  { header: "Status",        accessor: (r: TransitionPlanningRecord) => TRANSITION_PLANNING_GOAL_STATUS_LABEL[r.status] },
+  { header: "% Complete",    accessor: (r: TransitionPlanningRecord) => String(r.percent_complete) },
+  { header: "Target Date",   accessor: (r: TransitionPlanningRecord) => r.target_date },
+  { header: "Start Date",    accessor: (r: TransitionPlanningRecord) => r.start_date },
+  { header: "Review Date",   accessor: (r: TransitionPlanningRecord) => r.review_date },
+  { header: "Key Worker",    accessor: (r: TransitionPlanningRecord) => getStaffName(r.key_worker) },
+  { header: "Actions",       accessor: (r: TransitionPlanningRecord) => r.actions.join("; ") },
+  { header: "Progress",      accessor: (r: TransitionPlanningRecord) => r.progress },
+  { header: "Notes",         accessor: (r: TransitionPlanningRecord) => r.notes },
+  { header: "Created",       accessor: (r: TransitionPlanningRecord) => r.created_at },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function TransitionPlanningPage() {
-  const [goals, setGoals] = useState<TransitionGoal[]>(SEED);
+  const { data: records = [], isLoading } = useTransitionPlanningRecords();
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, { status: TransitionPlanningGoalStatus; percent_complete: number }>>({});
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [areaFilter, setAreaFilter] = useState("all");
@@ -191,8 +86,17 @@ export default function TransitionPlanningPage() {
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
+  // merge overrides on top of fetched records
+  const goals = useMemo(() => {
+    return records.map((r) => {
+      const ov = statusOverrides[r.id];
+      if (ov) return { ...r, status: ov.status, percent_complete: ov.percent_complete };
+      return r;
+    });
+  }, [records, statusOverrides]);
+
   const children = useMemo(() => {
-    const ids = [...new Set(goals.map((g) => g.youngPersonId))];
+    const ids = [...new Set(goals.map((g) => g.child_id))];
     return ids.map((id) => ({ id, name: getYPName(id) }));
   }, [goals]);
 
@@ -202,17 +106,17 @@ export default function TransitionPlanningPage() {
       const s = search.toLowerCase();
       list = list.filter((g) => g.goal.toLowerCase().includes(s) || g.description.toLowerCase().includes(s) || g.progress.toLowerCase().includes(s));
     }
-    if (childFilter !== "all") list = list.filter((g) => g.youngPersonId === childFilter);
+    if (childFilter !== "all") list = list.filter((g) => g.child_id === childFilter);
     if (areaFilter !== "all") list = list.filter((g) => g.area === areaFilter);
     if (statusFilter !== "all") list = list.filter((g) => g.status === statusFilter);
 
     list.sort((a, b) => {
       switch (sortBy) {
-        case "target":   return a.targetDate.localeCompare(b.targetDate);
-        case "area":     return AREA_META[a.area].label.localeCompare(AREA_META[b.area].label);
+        case "target":   return a.target_date.localeCompare(b.target_date);
+        case "area":     return TRANSITION_PLANNING_AREA_LABEL[a.area].localeCompare(TRANSITION_PLANNING_AREA_LABEL[b.area]);
         case "status":   return a.status.localeCompare(b.status);
-        case "progress": return b.percentComplete - a.percentComplete;
-        case "child":    return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
+        case "progress": return b.percent_complete - a.percent_complete;
+        case "child":    return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         default:         return 0;
       }
     });
@@ -224,21 +128,31 @@ export default function TransitionPlanningPage() {
     const total = goals.length;
     const achieved = goals.filter((g) => g.status === "achieved").length;
     const atRisk = goals.filter((g) => g.status === "at_risk").length;
-    const avgProgress = total > 0 ? Math.round(goals.reduce((s, g) => s + g.percentComplete, 0) / total) : 0;
-    const overdue = goals.filter((g) => g.targetDate < d(0) && g.status !== "achieved").length;
+    const avgProgress = total > 0 ? Math.round(goals.reduce((s, g) => s + g.percent_complete, 0) / total) : 0;
+    const overdue = goals.filter((g) => g.target_date < d(0) && g.status !== "achieved").length;
     return { total, achieved, atRisk, avgProgress, overdue };
   }, [goals]);
 
   // ── Per-child progress ────────────────────────────────────────────────────
   const childProgress = useMemo(() => {
     return children.map((c) => {
-      const cg = goals.filter((g) => g.youngPersonId === c.id);
-      const avg = cg.length > 0 ? Math.round(cg.reduce((s, g) => s + g.percentComplete, 0) / cg.length) : 0;
+      const cg = goals.filter((g) => g.child_id === c.id);
+      const avg = cg.length > 0 ? Math.round(cg.reduce((s, g) => s + g.percent_complete, 0) / cg.length) : 0;
       const achieved = cg.filter((g) => g.status === "achieved").length;
       const atRisk = cg.filter((g) => g.status === "at_risk").length;
       return { ...c, total: cg.length, avg, achieved, atRisk };
     });
   }, [children, goals]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Transition Planning" subtitle="Pathway planning for independence — tracking goals across all life areas">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -325,14 +239,14 @@ export default function TransitionPlanningPage() {
             <SelectTrigger className="w-[180px]"><SelectValue placeholder="Area" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Areas</SelectItem>
-              {Object.entries(AREA_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+              {(Object.entries(TRANSITION_PLANNING_AREA_LABEL) as [TransitionPlanningArea, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              {Object.entries(STATUS_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+              {(Object.entries(TRANSITION_PLANNING_GOAL_STATUS_LABEL) as [TransitionPlanningGoalStatus, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
             </SelectContent>
           </Select>
           <div className="flex items-center gap-1">
@@ -357,29 +271,29 @@ export default function TransitionPlanningPage() {
             const open = !!expanded[g.id];
             const areaM = AREA_META[g.area];
             const statusM = STATUS_META[g.status];
-            const overdue = g.targetDate < d(0) && g.status !== "achieved";
+            const overdue = g.target_date < d(0) && g.status !== "achieved";
             return (
               <Card key={g.id} className={cn("border-l-4", g.status === "achieved" ? "border-l-emerald-500" : g.status === "at_risk" ? "border-l-red-500" : g.status === "on_track" ? "border-l-green-500" : "border-l-blue-400")}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between cursor-pointer" onClick={() => toggle(g.id)}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <Badge className={cn("text-xs", areaM.color)}>{areaM.icon}<span className="ml-1">{areaM.label}</span></Badge>
-                        <Badge className={cn("text-xs", statusM.color)}>{statusM.label}</Badge>
+                        <Badge className={cn("text-xs", areaM.color)}>{areaM.icon}<span className="ml-1">{TRANSITION_PLANNING_AREA_LABEL[g.area]}</span></Badge>
+                        <Badge className={cn("text-xs", statusM.color)}>{TRANSITION_PLANNING_GOAL_STATUS_LABEL[g.status]}</Badge>
                         {overdue && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
                       </div>
                       <p className="font-semibold">{g.goal}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                        <span>{getYPName(g.youngPersonId)}</span>
-                        <span>Key Worker: {getStaffName(g.keyWorker)}</span>
-                        <span>Target: {g.targetDate}</span>
+                        <span>{getYPName(g.child_id)}</span>
+                        <span>Key Worker: {getStaffName(g.key_worker)}</span>
+                        <span>Target: {g.target_date}</span>
                       </div>
                       {/* Progress bar */}
                       <div className="flex items-center gap-2 mt-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div className={cn("h-2 rounded-full transition-all", g.percentComplete >= 80 ? "bg-emerald-500" : g.percentComplete >= 50 ? "bg-blue-500" : g.percentComplete >= 25 ? "bg-amber-500" : "bg-gray-400")} style={{ width: `${g.percentComplete}%` }} />
+                          <div className={cn("h-2 rounded-full transition-all", g.percent_complete >= 80 ? "bg-emerald-500" : g.percent_complete >= 50 ? "bg-blue-500" : g.percent_complete >= 25 ? "bg-amber-500" : "bg-gray-400")} style={{ width: `${g.percent_complete}%` }} />
                         </div>
-                        <span className="text-xs font-medium w-8 text-right">{g.percentComplete}%</span>
+                        <span className="text-xs font-medium w-8 text-right">{g.percent_complete}%</span>
                       </div>
                     </div>
                     {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
@@ -404,10 +318,10 @@ export default function TransitionPlanningPage() {
                         </div>
                       )}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div><p className="text-xs text-muted-foreground">Started</p><p className="font-medium">{g.startDate}</p></div>
-                        <div><p className="text-xs text-muted-foreground">Target</p><p className="font-medium">{g.targetDate}</p></div>
-                        <div><p className="text-xs text-muted-foreground">Next Review</p><p className="font-medium">{g.reviewDate}</p></div>
-                        <div><p className="text-xs text-muted-foreground">Key Worker</p><p className="font-medium">{getStaffName(g.keyWorker)}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Started</p><p className="font-medium">{g.start_date}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Target</p><p className="font-medium">{g.target_date}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Next Review</p><p className="font-medium">{g.review_date}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Key Worker</p><p className="font-medium">{getStaffName(g.key_worker)}</p></div>
                       </div>
                       {g.notes && (
                         <div>
@@ -417,11 +331,12 @@ export default function TransitionPlanningPage() {
                       )}
                       {g.status !== "achieved" && (
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => setGoals((prev) => prev.map((x) => x.id === g.id ? { ...x, status: "on_track" } : x))}>Mark On Track</Button>
-                          <Button size="sm" variant="outline" className="text-red-600" onClick={() => setGoals((prev) => prev.map((x) => x.id === g.id ? { ...x, status: "at_risk" } : x))}>Flag At Risk</Button>
-                          <Button size="sm" variant="default" onClick={() => setGoals((prev) => prev.map((x) => x.id === g.id ? { ...x, status: "achieved", percentComplete: 100 } : x))}>Mark Achieved</Button>
+                          <Button size="sm" variant="outline" onClick={() => setStatusOverrides((prev) => ({ ...prev, [g.id]: { status: "on_track", percent_complete: g.percent_complete } }))}>Mark On Track</Button>
+                          <Button size="sm" variant="outline" className="text-red-600" onClick={() => setStatusOverrides((prev) => ({ ...prev, [g.id]: { status: "at_risk", percent_complete: g.percent_complete } }))}>Flag At Risk</Button>
+                          <Button size="sm" variant="default" onClick={() => setStatusOverrides((prev) => ({ ...prev, [g.id]: { status: "achieved", percent_complete: 100 } }))}>Mark Achieved</Button>
                         </div>
                       )}
+                      <SmartLinkPanel sourceType="transition-planning-record" sourceId={g.id} childId={g.child_id} compact />
                     </div>
                   )}
                 </CardContent>
@@ -455,7 +370,7 @@ export default function TransitionPlanningPage() {
             <div>
               <label className="text-sm font-medium">Life Area</label>
               <Select><SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
-                <SelectContent>{Object.entries(AREA_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+                <SelectContent>{(Object.entries(TRANSITION_PLANNING_AREA_LABEL) as [TransitionPlanningArea, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
