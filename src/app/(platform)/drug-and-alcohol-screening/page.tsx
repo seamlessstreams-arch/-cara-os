@@ -14,266 +14,48 @@ import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, ShieldAlert, HeartHandshake, Calendar, Activity,
   Lock, BookOpen, Sparkles, Lightbulb, Eye, Users, ClipboardList,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-
-/* ── types ─────────────────────────────────────────────────────────────────── */
-
-type ScreeningTool = "CRAFFT" | "Internal Brief Screen" | "Conversation-based" | "AUDIT-C (older)";
-type RiskLevel =
-  | "No identified risk"
-  | "Awareness only"
-  | "Low risk"
-  | "Medium risk"
-  | "High risk"
-  | "Active concern";
-
-interface SubstanceScreening {
-  id: string;
-  youngPerson: string;
-  screeningDate: string;
-  conductedBy: string;
-  screeningTool: ScreeningTool;
-  riskLevel: RiskLevel;
-  substancesIdentified: string[];
-  contextOfUse: string;
-  peerInfluences: string;
-  familyHistory: string;
-  educationProvided: string[];
-  harmReductionApproach: string[];
-  professionalSupportInPlace: string[];
-  childInsight: string;
-  childMotivation: string;
-  warningSignsToWatch: string[];
-  reviewSchedule: string;
-  escalationCriteria: string[];
-  nextScreeningDate: string;
-  confidentialityFraming: string;
-  sharedWithSocialWorker: boolean;
-  sharedWithCAMHS: boolean;
-  childAuthored: boolean;
-}
+import type { SubstanceScreening, ScreeningTool, SubstanceRiskLevel } from "@/types/extended";
+import { SCREENING_TOOL_LABEL, SUBSTANCE_RISK_LEVEL_LABEL } from "@/types/extended";
+import { useSubstanceScreenings } from "@/hooks/use-substance-screenings";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const RISK_CLR: Record<SubstanceRiskLevel, string> = {
+  no_identified_risk: "bg-green-100 text-green-800",
+  awareness_only: "bg-emerald-100 text-emerald-800",
+  low_risk: "bg-yellow-100 text-yellow-800",
+  medium_risk: "bg-amber-100 text-amber-800",
+  high_risk: "bg-orange-100 text-orange-800",
+  active_concern: "bg-red-100 text-red-800",
+};
+const RISK_BORDER: Record<SubstanceRiskLevel, string> = {
+  no_identified_risk: "border-l-green-400",
+  awareness_only: "border-l-emerald-400",
+  low_risk: "border-l-yellow-400",
+  medium_risk: "border-l-amber-500",
+  high_risk: "border-l-orange-500",
+  active_concern: "border-l-red-600",
 };
 
-const RISK_CLR: Record<RiskLevel, string> = {
-  "No identified risk": "bg-green-100 text-green-800",
-  "Awareness only": "bg-emerald-100 text-emerald-800",
-  "Low risk": "bg-yellow-100 text-yellow-800",
-  "Medium risk": "bg-amber-100 text-amber-800",
-  "High risk": "bg-orange-100 text-orange-800",
-  "Active concern": "bg-red-100 text-red-800",
-};
-const RISK_BORDER: Record<RiskLevel, string> = {
-  "No identified risk": "border-l-green-400",
-  "Awareness only": "border-l-emerald-400",
-  "Low risk": "border-l-yellow-400",
-  "Medium risk": "border-l-amber-500",
-  "High risk": "border-l-orange-500",
-  "Active concern": "border-l-red-600",
-};
-
-const RISK_ORDER: RiskLevel[] = [
-  "Active concern",
-  "High risk",
-  "Medium risk",
-  "Low risk",
-  "Awareness only",
-  "No identified risk",
-];
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: SubstanceScreening[] = [
-  {
-    id: "das_1",
-    youngPerson: "yp_alex",
-    screeningDate: d(-21),
-    conductedBy: "staff_darren",
-    screeningTool: "CRAFFT",
-    riskLevel: "Low risk",
-    substancesIdentified: [],
-    contextOfUse:
-      "No identified substance use. Alex (13) reports curiosity after seeing older peers at school vaping. Conversation prompted by Alex asking what 'getting high' feels like during a key work session. No exposure or experimentation reported. Awareness work proactive, not reactive.",
-    peerInfluences:
-      "Two older boys at school (Year 11) vape openly outside the gates. Alex describes them as 'cool' but has not been offered anything. Football peer group is protective — none use substances and the coach is firm on this. No older associates outside school have been linked to substance use.",
-    familyHistory:
-      "Birth mother has a history of alcohol misuse (currently in recovery, 18 months sober). Alex is aware of this in age-appropriate terms. Birth father — no known substance issues. Alex has expressed worry about 'ending up like mum' which has been gently explored.",
-    educationProvided: [
-      "Age-appropriate conversation about why people use substances and what they actually do to a developing brain",
-      "FRANK website explored together — Alex chose what topics to read",
-      "Discussion of vaping risks (nicotine addiction, lung development) using NHS resources",
-      "Talked about the difference between curiosity and pressure — both are normal",
-      "Reassurance that asking questions is welcome and won't trigger consequences",
-    ],
-    harmReductionApproach: [
-      "Open-door policy: Alex can talk to any staff member without judgement, at any time",
-      "No moralising or scare tactics — facts presented honestly",
-      "Acknowledged that experimentation can happen and explained how to stay safe if it ever did (never alone, tell someone, know what you're taking)",
-      "Reinforced that disclosure will not result in punishment",
-    ],
-    professionalSupportInPlace: [
-      "Key worker (Darren) — fortnightly 1:1 sessions",
-      "School pastoral lead aware and providing reinforcement",
-      "GP aware of family history (recorded for context only)",
-    ],
-    childInsight:
-      "Alex shows good awareness — can articulate why young brains are more vulnerable, understands the link between his mum's experience and his own potential risk. Says 'I just want to know stuff so I can make my own choice.' This maturity is a real strength.",
-    childMotivation:
-      "Strongly motivated by football and his goal to play at academy level. Identifies fitness, focus, and 'not letting the team down' as reasons he wouldn't want to use substances. Also motivated by not wanting to worry his birth mother in her recovery.",
-    warningSignsToWatch: [
-      "Withdrawal from football or fitness routines",
-      "New unexplained money or possessions",
-      "Changes in friendship group toward older or unknown peers",
-      "Mood changes, particularly low mood or unusual irritability",
-      "Loss of appetite or sleep changes outside known patterns",
-    ],
-    reviewSchedule:
-      "Brief check-in at every fortnightly key work session. Full re-screen at 6 months unless concerns arise. Conversation kept light and embedded — not framed as a 'screening' to Alex.",
-    escalationCriteria: [
-      "Any disclosure or evidence of substance use, however minor",
-      "Smell of substances on clothing or in room",
-      "Items found (vape, lighter, rolling papers, unknown medication)",
-      "Behavioural shifts matching warning signs",
-      "Disclosure from peers or school",
-    ],
-    nextScreeningDate: d(160),
-    confidentialityFraming:
-      "Explained to Alex that conversations are private between him and key worker, but that we share with social worker if there's a safety concern. Alex understood and agreed. Framed as 'we look after you, not police you.'",
-    sharedWithSocialWorker: true,
-    sharedWithCAMHS: false,
-    childAuthored: false,
-  },
-  {
-    id: "das_2",
-    youngPerson: "yp_jordan",
-    screeningDate: d(-14),
-    conductedBy: "staff_anna",
-    screeningTool: "Conversation-based",
-    riskLevel: "Low risk",
-    substancesIdentified: [],
-    contextOfUse:
-      "No identified personal use. Jordan (13) lives in an area where cannabis use is visible — older teens smoke at the local park and shopfronts. Has reported smelling it 'all the time.' One older boy on the estate offered Jordan 'a try' approximately 3 weeks ago. Jordan declined and disclosed this voluntarily to Anna the next day.",
-    peerInfluences:
-      "The community context is the primary risk factor. Jordan's school peer group is mixed — some friends have older siblings who use cannabis. Jordan's closest friend at the home (resident peer) is a protective influence. No identified peer using substances directly with Jordan.",
-    familyHistory:
-      "Birth father — known historical cannabis and alcohol use, currently unknown status. Birth mother — no known substance issues. Older sibling (separately placed) had substance-related incidents at age 16. Family history discussed openly with Jordan in an age-appropriate way.",
-    educationProvided: [
-      "Cannabis facts session — what it is, how it affects developing brains, why under-18 use is higher risk",
-      "Discussion of how to refuse offers without losing face — practised phrases together",
-      "Talked about why people offer substances (sometimes belonging, sometimes selling, sometimes both)",
-      "Used Talk to FRANK and Mind cannabis resources",
-      "Acknowledged Jordan made an excellent decision in declining and disclosing",
-    ],
-    harmReductionApproach: [
-      "Strong praise for the disclosure — reinforced trust",
-      "Honest about what cannabis does (good and bad) so Jordan trusts the information",
-      "Discussed safety strategies for the local area — who to walk with, places to avoid after dark",
-      "Reassured Jordan that being offered does not mean he did anything wrong",
-      "Made clear that future disclosures, including any experimentation, will be met with support not punishment",
-    ],
-    professionalSupportInPlace: [
-      "Key worker (Anna) — weekly check-in for 4 weeks, then fortnightly",
-      "Social worker informed of community context and protective response",
-      "Local Young People's Drug & Alcohol Service contact details on file (not yet engaged — would only refer if concerns escalate)",
-    ],
-    childInsight:
-      "Jordan articulated clearly: 'I don't want to mess my head up, and I saw what it did to my brother.' Has insight into family pattern. Worried about looking 'soft' when refusing but practised responses helped. Recognises the local area is a risk and is willing to talk about it.",
-    childMotivation:
-      "Wants to do well in school — has a strong interest in coding and wants to study computer science. Sees substances as a threat to focus. Also motivated by not following his older brother's path and protecting his relationship with the home.",
-    warningSignsToWatch: [
-      "New friendships with older teens from the estate",
-      "Unexplained absences or coming home late",
-      "Smell of cannabis on clothes, hair, or in bedroom",
-      "Red eyes, lethargy, or unexplained appetite changes",
-      "Money missing or unexplained cash",
-      "Reduced engagement with school or coding activities",
-    ],
-    reviewSchedule:
-      "Weekly check-in for 4 weeks following the disclosure, then fortnightly within key work. Full re-screen at 3 months given community context, then 6-monthly if stable.",
-    escalationCriteria: [
-      "Any further offers or attempts to involve Jordan",
-      "Any evidence of use",
-      "Identification of who offered — to inform community safeguarding response",
-      "Disengagement from protective activities (school, peer group at home)",
-      "Mental health changes",
-    ],
-    nextScreeningDate: d(76),
-    confidentialityFraming:
-      "Anna explained that anything Jordan shares stays between us unless safety is at risk. Specifically discussed that telling us about being offered was the right call and would not get him in trouble. Jordan agreed information could be shared with social worker as supportive context.",
-    sharedWithSocialWorker: true,
-    sharedWithCAMHS: false,
-    childAuthored: true,
-  },
-  {
-    id: "das_3",
-    youngPerson: "yp_casey",
-    screeningDate: d(-7),
-    conductedBy: "staff_ryan",
-    screeningTool: "Internal Brief Screen",
-    riskLevel: "No identified risk",
-    substancesIdentified: [],
-    contextOfUse:
-      "No identified substance use, exposure, or curiosity. Screening completed for completeness as part of routine health and wellbeing review. Casey reports no exposure to substances at school, home, or in the community. Conversation handled briefly and respectfully — Casey was reassured that this is asked of every young person, not because of any specific concern.",
-    peerInfluences:
-      "Peer group is age-appropriate and protective. School friends are engaged with school clubs and sport. No older associates of concern. Resident peer group at the home is supportive. Casey describes feeling safe in their friendships.",
-    familyHistory:
-      "No known substance use in immediate birth family. Casey has been informed in age-appropriate terms that this is a question we ask everyone for context, and that no concern is implied. Family record confirms no relevant history.",
-    educationProvided: [
-      "Light-touch awareness conversation — what to do if ever offered something",
-      "Confirmed Casey knows who to talk to (key worker, any staff, school nurse)",
-      "Brief mention of Talk to FRANK as a resource if curious",
-      "No detailed substance education delivered — would not be developmentally appropriate without identified need",
-    ],
-    harmReductionApproach: [
-      "Affirmed Casey's strong existing protective factors",
-      "Made clear the door is always open if anything ever comes up",
-      "No alarmist messaging — kept tone neutral and routine",
-    ],
-    professionalSupportInPlace: [
-      "Key worker (Ryan) — weekly key work session covers wellbeing holistically",
-      "School pastoral lead — strong relationship",
-      "Routine GP and school nurse contact",
-    ],
-    childInsight:
-      "Casey is clear about not having any interest or curiosity at this stage. Was a little puzzled at being asked at first but understood once it was framed as routine. Felt comfortable saying 'no' clearly without elaboration, which is healthy.",
-    childMotivation:
-      "Strong identity around school, drama club, and friendships. Talks about wanting to 'just be a kid' — this is taken as healthy. No specific anti-substance motivation needed at this stage; baseline wellbeing is strong.",
-    warningSignsToWatch: [
-      "Significant changes in friendship group",
-      "Withdrawal from drama club or other valued activities",
-      "Mood changes outside known baseline",
-      "New unexplained items or money",
-      "Late returns or unexplained absences",
-    ],
-    reviewSchedule:
-      "Embedded in weekly key work — no formal screening unless triggered. Full re-screen at 12 months as part of annual health review.",
-    escalationCriteria: [
-      "Any disclosure, exposure, or offer",
-      "Any change in friendship group toward higher-risk peers",
-      "Any items found",
-      "Any safeguarding referral mentioning substance context",
-    ],
-    nextScreeningDate: d(358),
-    confidentialityFraming:
-      "Ryan briefly explained that we ask every young person about this as part of looking after them, that what they share stays with us unless safety is at risk, and that the conversation does not change how Casey is seen. Casey accepted this calmly.",
-    sharedWithSocialWorker: true,
-    sharedWithCAMHS: false,
-    childAuthored: false,
-  },
+const RISK_ORDER: SubstanceRiskLevel[] = [
+  "active_concern",
+  "high_risk",
+  "medium_risk",
+  "low_risk",
+  "awareness_only",
+  "no_identified_risk",
 ];
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function DrugAndAlcoholScreeningPage() {
-  const [data] = useState(SEED);
+  const { data: queryData, isLoading } = useSubstanceScreenings();
+  const data = queryData?.data ?? [];
   const [search, setSearch] = useState("");
   const [filterRisk, setFilterRisk] = useState("all");
   const [filterChild, setFilterChild] = useState("all");
@@ -287,16 +69,16 @@ export default function DrugAndAlcoholScreeningPage() {
 
   const filtered = useMemo(() => {
     let rows = data.filter((r) => {
-      if (filterRisk !== "all" && r.riskLevel !== filterRisk) return false;
-      if (filterChild !== "all" && r.youngPerson !== filterChild) return false;
-      if (filterTool !== "all" && r.screeningTool !== filterTool) return false;
+      if (filterRisk !== "all" && r.risk_level !== filterRisk) return false;
+      if (filterChild !== "all" && r.child_id !== filterChild) return false;
+      if (filterTool !== "all" && r.screening_tool !== filterTool) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.contextOfUse.toLowerCase().includes(q) ||
-          r.peerInfluences.toLowerCase().includes(q) ||
-          r.screeningTool.toLowerCase().includes(q)
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          r.context_of_use.toLowerCase().includes(q) ||
+          r.peer_influences.toLowerCase().includes(q) ||
+          SCREENING_TOOL_LABEL[r.screening_tool].toLowerCase().includes(q)
         );
       }
       return true;
@@ -304,13 +86,13 @@ export default function DrugAndAlcoholScreeningPage() {
     rows = [...rows].sort((a, b) => {
       switch (sortBy) {
         case "date-desc":
-          return b.screeningDate.localeCompare(a.screeningDate);
+          return b.screening_date.localeCompare(a.screening_date);
         case "date-asc":
-          return a.screeningDate.localeCompare(b.screeningDate);
+          return a.screening_date.localeCompare(b.screening_date);
         case "risk":
-          return RISK_ORDER.indexOf(a.riskLevel) - RISK_ORDER.indexOf(b.riskLevel);
+          return RISK_ORDER.indexOf(a.risk_level) - RISK_ORDER.indexOf(b.risk_level);
         case "review":
-          return a.nextScreeningDate.localeCompare(b.nextScreeningDate);
+          return a.next_screening_date.localeCompare(b.next_screening_date);
         default:
           return 0;
       }
@@ -328,70 +110,70 @@ export default function DrugAndAlcoholScreeningPage() {
 
   const activeScreenings = data.length;
   const atRisk = data.filter((r) =>
-    ["Low risk", "Medium risk", "High risk", "Active concern"].includes(r.riskLevel),
+    (["low_risk", "medium_risk", "high_risk", "active_concern"] as SubstanceRiskLevel[]).includes(r.risk_level),
   ).length;
-  const screenedLast90 = data.filter((r) => new Date(r.screeningDate) >= ninetyDaysAgo).length;
+  const screenedLast90 = data.filter((r) => new Date(r.screening_date) >= ninetyDaysAgo).length;
   const reviewsDue30 = data.filter((r) => {
-    const next = new Date(r.nextScreeningDate);
+    const next = new Date(r.next_screening_date);
     return next >= today && next <= thirtyDaysAhead;
   }).length;
 
   /* ── export ──────────────────────────────────────────────────────────────── */
 
   const exportCols: ExportColumn<SubstanceScreening>[] = [
-    { header: "Date", accessor: (r: SubstanceScreening) => r.screeningDate },
-    { header: "Child", accessor: (r: SubstanceScreening) => getYPName(r.youngPerson) },
-    { header: "Screening Tool", accessor: (r: SubstanceScreening) => r.screeningTool },
-    { header: "Risk Level", accessor: (r: SubstanceScreening) => r.riskLevel },
+    { header: "Date", accessor: (r: SubstanceScreening) => r.screening_date },
+    { header: "Child", accessor: (r: SubstanceScreening) => getYPName(r.child_id) },
+    { header: "Screening Tool", accessor: (r: SubstanceScreening) => SCREENING_TOOL_LABEL[r.screening_tool] },
+    { header: "Risk Level", accessor: (r: SubstanceScreening) => SUBSTANCE_RISK_LEVEL_LABEL[r.risk_level] },
     {
       header: "Substances Identified",
       accessor: (r: SubstanceScreening) =>
-        r.substancesIdentified.length ? r.substancesIdentified.join(", ") : "None",
+        r.substances_identified.length ? r.substances_identified.join(", ") : "None",
     },
-    { header: "Context", accessor: (r: SubstanceScreening) => r.contextOfUse },
-    { header: "Peer Influences", accessor: (r: SubstanceScreening) => r.peerInfluences },
-    { header: "Family History", accessor: (r: SubstanceScreening) => r.familyHistory },
+    { header: "Context", accessor: (r: SubstanceScreening) => r.context_of_use },
+    { header: "Peer Influences", accessor: (r: SubstanceScreening) => r.peer_influences },
+    { header: "Family History", accessor: (r: SubstanceScreening) => r.family_history },
     {
       header: "Education Provided",
-      accessor: (r: SubstanceScreening) => r.educationProvided.join("; "),
+      accessor: (r: SubstanceScreening) => r.education_provided.join("; "),
     },
     {
       header: "Harm Reduction",
-      accessor: (r: SubstanceScreening) => r.harmReductionApproach.join("; "),
+      accessor: (r: SubstanceScreening) => r.harm_reduction_approach.join("; "),
     },
     {
       header: "Professional Support",
-      accessor: (r: SubstanceScreening) => r.professionalSupportInPlace.join("; "),
+      accessor: (r: SubstanceScreening) => r.professional_support_in_place.join("; "),
     },
-    { header: "Child Insight", accessor: (r: SubstanceScreening) => r.childInsight },
-    { header: "Child Motivation", accessor: (r: SubstanceScreening) => r.childMotivation },
+    { header: "Child Insight", accessor: (r: SubstanceScreening) => r.child_insight },
+    { header: "Child Motivation", accessor: (r: SubstanceScreening) => r.child_motivation },
     {
       header: "Warning Signs",
-      accessor: (r: SubstanceScreening) => r.warningSignsToWatch.join("; "),
+      accessor: (r: SubstanceScreening) => r.warning_signs_to_watch.join("; "),
     },
-    { header: "Review Schedule", accessor: (r: SubstanceScreening) => r.reviewSchedule },
+    { header: "Review Schedule", accessor: (r: SubstanceScreening) => r.review_schedule },
     {
       header: "Escalation Criteria",
-      accessor: (r: SubstanceScreening) => r.escalationCriteria.join("; "),
+      accessor: (r: SubstanceScreening) => r.escalation_criteria.join("; "),
     },
-    { header: "Next Screening", accessor: (r: SubstanceScreening) => r.nextScreeningDate },
+    { header: "Next Screening", accessor: (r: SubstanceScreening) => r.next_screening_date },
     {
       header: "Confidentiality Framing",
-      accessor: (r: SubstanceScreening) => r.confidentialityFraming,
+      accessor: (r: SubstanceScreening) => r.confidentiality_framing,
     },
     {
       header: "Shared with SW",
-      accessor: (r: SubstanceScreening) => (r.sharedWithSocialWorker ? "Yes" : "No"),
+      accessor: (r: SubstanceScreening) => (r.shared_with_social_worker ? "Yes" : "No"),
     },
     {
       header: "Shared with CAMHS",
-      accessor: (r: SubstanceScreening) => (r.sharedWithCAMHS ? "Yes" : "No"),
+      accessor: (r: SubstanceScreening) => (r.shared_with_camhs ? "Yes" : "No"),
     },
     {
       header: "Child Authored",
-      accessor: (r: SubstanceScreening) => (r.childAuthored ? "Yes" : "No"),
+      accessor: (r: SubstanceScreening) => (r.child_authored ? "Yes" : "No"),
     },
-    { header: "Conducted By", accessor: (r: SubstanceScreening) => getStaffName(r.conductedBy) },
+    { header: "Conducted By", accessor: (r: SubstanceScreening) => getStaffName(r.conducted_by) },
   ];
 
   /* ── render ──────────────────────────────────────────────────────────────── */
@@ -411,6 +193,9 @@ export default function DrugAndAlcoholScreeningPage() {
         </div>
       }
     >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+      ) : (
       <div id="print-area">
         {/* ── stat strip ───────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -485,9 +270,9 @@ export default function DrugAndAlcoholScreeningPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Risk Levels</SelectItem>
-              {(Object.keys(RISK_CLR) as RiskLevel[]).map((k) => (
+              {(Object.keys(RISK_CLR) as SubstanceRiskLevel[]).map((k) => (
                 <SelectItem key={k} value={k}>
-                  {k}
+                  {SUBSTANCE_RISK_LEVEL_LABEL[k]}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -511,10 +296,10 @@ export default function DrugAndAlcoholScreeningPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Tools</SelectItem>
-              <SelectItem value="CRAFFT">CRAFFT</SelectItem>
-              <SelectItem value="Internal Brief Screen">Internal Brief Screen</SelectItem>
-              <SelectItem value="Conversation-based">Conversation-based</SelectItem>
-              <SelectItem value="AUDIT-C (older)">AUDIT-C (older)</SelectItem>
+              <SelectItem value="crafft">{SCREENING_TOOL_LABEL.crafft}</SelectItem>
+              <SelectItem value="internal_brief_screen">{SCREENING_TOOL_LABEL.internal_brief_screen}</SelectItem>
+              <SelectItem value="conversation_based">{SCREENING_TOOL_LABEL.conversation_based}</SelectItem>
+              <SelectItem value="audit_c_older">{SCREENING_TOOL_LABEL.audit_c_older}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -536,27 +321,27 @@ export default function DrugAndAlcoholScreeningPage() {
           {filtered.map((r) => {
             const open = expandedId === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", RISK_BORDER[r.riskLevel])}>
+              <Card key={r.id} className={cn("border-l-4", RISK_BORDER[r.risk_level])}>
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {getYPName(r.youngPerson)}
-                        <Badge variant="outline" className={RISK_CLR[r.riskLevel]}>
-                          {r.riskLevel}
+                        {getYPName(r.child_id)}
+                        <Badge variant="outline" className={RISK_CLR[r.risk_level]}>
+                          {SUBSTANCE_RISK_LEVEL_LABEL[r.risk_level]}
                         </Badge>
                         <Badge variant="outline" className="bg-slate-100 text-slate-800">
-                          {r.screeningTool}
+                          {SCREENING_TOOL_LABEL[r.screening_tool]}
                         </Badge>
-                        {r.childAuthored && (
+                        {r.child_authored && (
                           <Badge variant="outline" className="bg-violet-100 text-violet-800">
                             Child contributed
                           </Badge>
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Screened: {r.screeningDate} · Conducted by: {getStaffName(r.conductedBy)} ·
-                        Next review: {r.nextScreeningDate}
+                        Screened: {r.screening_date} · Conducted by: {getStaffName(r.conducted_by)} ·
+                        Next review: {r.next_screening_date}
                       </p>
                     </div>
                     {open ? (
@@ -571,9 +356,9 @@ export default function DrugAndAlcoholScreeningPage() {
                     {/* substances identified */}
                     <div>
                       <p className="font-medium mb-1">Substances Identified</p>
-                      {r.substancesIdentified.length ? (
+                      {r.substances_identified.length ? (
                         <div className="flex flex-wrap gap-1">
-                          {r.substancesIdentified.map((s, i) => (
+                          {r.substances_identified.map((s, i) => (
                             <Badge key={i} variant="outline" className="bg-amber-50 text-amber-800">
                               {s}
                             </Badge>
@@ -589,7 +374,7 @@ export default function DrugAndAlcoholScreeningPage() {
                     {/* context */}
                     <div>
                       <p className="font-medium mb-1">Context</p>
-                      <p className="text-muted-foreground text-xs">{r.contextOfUse}</p>
+                      <p className="text-muted-foreground text-xs">{r.context_of_use}</p>
                     </div>
 
                     {/* peer & family */}
@@ -598,13 +383,13 @@ export default function DrugAndAlcoholScreeningPage() {
                         <p className="font-medium text-amber-800 mb-1 flex items-center gap-1">
                           <Users className="h-3.5 w-3.5" /> Peer Influences
                         </p>
-                        <p className="text-amber-700 text-xs">{r.peerInfluences}</p>
+                        <p className="text-amber-700 text-xs">{r.peer_influences}</p>
                       </div>
                       <div className="bg-blue-50 rounded-lg p-3">
                         <p className="font-medium text-blue-800 mb-1 flex items-center gap-1">
                           <Users className="h-3.5 w-3.5" /> Family History
                         </p>
-                        <p className="text-blue-700 text-xs">{r.familyHistory}</p>
+                        <p className="text-blue-700 text-xs">{r.family_history}</p>
                       </div>
                     </div>
 
@@ -615,7 +400,7 @@ export default function DrugAndAlcoholScreeningPage() {
                           <BookOpen className="h-3.5 w-3.5" /> Education Provided
                         </p>
                         <ul className="space-y-1">
-                          {r.educationProvided.map((e, i) => (
+                          {r.education_provided.map((e, i) => (
                             <li
                               key={i}
                               className="text-xs text-emerald-700 flex items-start gap-1"
@@ -630,7 +415,7 @@ export default function DrugAndAlcoholScreeningPage() {
                           <HeartHandshake className="h-3.5 w-3.5" /> Harm Reduction Approach
                         </p>
                         <ul className="space-y-1">
-                          {r.harmReductionApproach.map((h, i) => (
+                          {r.harm_reduction_approach.map((h, i) => (
                             <li key={i} className="text-xs text-teal-700 flex items-start gap-1">
                               <span className="shrink-0 mt-0.5">•</span> {h}
                             </li>
@@ -643,7 +428,7 @@ export default function DrugAndAlcoholScreeningPage() {
                     <div>
                       <p className="font-medium mb-2">Professional Support in Place</p>
                       <div className="flex flex-wrap gap-1">
-                        {r.professionalSupportInPlace.map((p, i) => (
+                        {r.professional_support_in_place.map((p, i) => (
                           <Badge key={i} variant="outline" className="bg-muted/40 text-xs">
                             {p}
                           </Badge>
@@ -657,13 +442,13 @@ export default function DrugAndAlcoholScreeningPage() {
                         <p className="font-medium text-violet-800 mb-1 flex items-center gap-1">
                           <Lightbulb className="h-3.5 w-3.5" /> Child&apos;s Insight
                         </p>
-                        <p className="text-violet-700 text-xs">{r.childInsight}</p>
+                        <p className="text-violet-700 text-xs">{r.child_insight}</p>
                       </div>
                       <div className="bg-fuchsia-50 rounded-lg p-3">
                         <p className="font-medium text-fuchsia-800 mb-1 flex items-center gap-1">
                           <Sparkles className="h-3.5 w-3.5" /> Child&apos;s Motivation
                         </p>
-                        <p className="text-fuchsia-700 text-xs">{r.childMotivation}</p>
+                        <p className="text-fuchsia-700 text-xs">{r.child_motivation}</p>
                       </div>
                     </div>
 
@@ -673,7 +458,7 @@ export default function DrugAndAlcoholScreeningPage() {
                         <Eye className="h-3.5 w-3.5" /> Warning Signs to Watch
                       </p>
                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                        {r.warningSignsToWatch.map((w, i) => (
+                        {r.warning_signs_to_watch.map((w, i) => (
                           <li key={i} className="text-xs text-yellow-800 flex items-start gap-1">
                             <span className="shrink-0 mt-0.5">•</span> {w}
                           </li>
@@ -685,14 +470,14 @@ export default function DrugAndAlcoholScreeningPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="font-medium mb-1">Review Schedule</p>
-                        <p className="text-muted-foreground text-xs">{r.reviewSchedule}</p>
+                        <p className="text-muted-foreground text-xs">{r.review_schedule}</p>
                       </div>
                       <div className="bg-orange-50 rounded-lg p-3">
                         <p className="font-medium text-orange-800 mb-2 flex items-center gap-1">
                           <ShieldAlert className="h-3.5 w-3.5" /> Escalation Criteria
                         </p>
                         <ul className="space-y-1">
-                          {r.escalationCriteria.map((esc, i) => (
+                          {r.escalation_criteria.map((esc, i) => (
                             <li
                               key={i}
                               className="text-xs text-orange-700 flex items-start gap-1"
@@ -709,7 +494,7 @@ export default function DrugAndAlcoholScreeningPage() {
                       <p className="font-medium text-indigo-800 mb-1 flex items-center gap-1">
                         <Lock className="h-3.5 w-3.5" /> Confidentiality Framing
                       </p>
-                      <p className="text-indigo-700 text-xs">{r.confidentialityFraming}</p>
+                      <p className="text-indigo-700 text-xs">{r.confidentiality_framing}</p>
                     </div>
 
                     {/* sharing */}
@@ -717,27 +502,30 @@ export default function DrugAndAlcoholScreeningPage() {
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Shared with Social Worker</p>
                         <p className="text-xs text-muted-foreground">
-                          {r.sharedWithSocialWorker ? "Yes" : "No"}
+                          {r.shared_with_social_worker ? "Yes" : "No"}
                         </p>
                       </div>
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Shared with CAMHS</p>
                         <p className="text-xs text-muted-foreground">
-                          {r.sharedWithCAMHS ? "Yes" : "No"}
+                          {r.shared_with_camhs ? "Yes" : "No"}
                         </p>
                       </div>
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Child Contributed to Record</p>
                         <p className="text-xs text-muted-foreground">
-                          {r.childAuthored ? "Yes" : "No"}
+                          {r.child_authored ? "Yes" : "No"}
                         </p>
                       </div>
                     </div>
 
+                    {/* smart link panel */}
+                    <SmartLinkPanel sourceType="substance_screening" sourceId={r.id} childId={r.child_id} compact />
+
                     {/* footer */}
                     <div className="flex justify-between items-center pt-2 border-t text-xs text-muted-foreground">
-                      <span>Conducted by: {getStaffName(r.conductedBy)}</span>
-                      <span>Next screening: {r.nextScreeningDate}</span>
+                      <span>Conducted by: {getStaffName(r.conducted_by)}</span>
+                      <span>Next screening: {r.next_screening_date}</span>
                     </div>
                   </CardContent>
                 )}
@@ -762,6 +550,7 @@ export default function DrugAndAlcoholScreeningPage() {
           </p>
         </div>
       </div>
+      )}
     </PageShell>
   );
 }

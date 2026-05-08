@@ -12,6 +12,7 @@ import {
   CheckCircle2, AlertTriangle, Clock, BookOpen, ChevronDown, ChevronUp,
   Scale, ShieldCheck, Calendar, User, Flag, FileText,
 } from "lucide-react";
+import { toast } from "sonner";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -29,30 +30,29 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import {
+  useComplaintOutcomeRecords,
+  useCreateComplaintOutcomeRecord,
+} from "@/hooks/use-complaint-outcome-records";
+import type {
+  ComplaintOutcomeRecord,
+  ComplaintOutcome,
+  ComplaintSource,
+  ComplaintTheme,
+} from "@/types/extended";
+import {
+  COMPLAINT_OUTCOME_LABEL,
+  COMPLAINT_SOURCE_LABEL,
+  COMPLAINT_THEME_LABEL,
+} from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ── types ───────────────────────────────────────────────────────────── */
-const OUTCOMES = [
-  "upheld", "partially_upheld", "not_upheld", "withdrawn", "ongoing",
-] as const;
-type ComplaintOutcome = typeof OUTCOMES[number];
-const OUTCOME_LABELS: Record<ComplaintOutcome, string> = {
-  upheld: "Upheld",
-  partially_upheld: "Partially Upheld",
-  not_upheld: "Not Upheld",
-  withdrawn: "Withdrawn",
-  ongoing: "Ongoing",
-};
+/* ── local colour maps ──────────────────────────────────────────────── */
 const OUTCOME_COLOUR: Record<ComplaintOutcome, string> = {
   upheld: "bg-red-50 text-red-700 border-red-200",
   partially_upheld: "bg-amber-50 text-amber-700 border-amber-200",
   not_upheld: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  inconclusive: "bg-slate-50 text-slate-600 border-slate-200",
   withdrawn: "bg-slate-50 text-slate-500 border-slate-200",
   ongoing: "bg-blue-50 text-blue-700 border-blue-200",
 };
@@ -60,162 +60,17 @@ const OUTCOME_CARD_BORDER: Record<ComplaintOutcome, string> = {
   upheld: "border-l-red-400",
   partially_upheld: "border-l-amber-400",
   not_upheld: "border-l-emerald-400",
+  inconclusive: "border-l-slate-300",
   withdrawn: "border-l-slate-300",
   ongoing: "border-l-blue-400",
 };
 
-const SOURCES = [
-  "child", "parent_carer", "social_worker", "professional", "staff", "anonymous",
-] as const;
-type Source = typeof SOURCES[number];
-const SOURCE_LABELS: Record<Source, string> = {
-  child: "Young Person",
-  parent_carer: "Parent / Carer",
-  social_worker: "Social Worker",
-  professional: "Professional",
-  staff: "Staff Member",
-  anonymous: "Anonymous",
-};
-
-const THEMES = [
-  "care_quality", "staff_conduct", "environment", "food", "activities",
-  "communication", "privacy", "medication", "other",
-] as const;
-type Theme = typeof THEMES[number];
-const THEME_LABELS: Record<Theme, string> = {
-  care_quality: "Care Quality",
-  staff_conduct: "Staff Conduct",
-  environment: "Environment",
-  food: "Food",
-  activities: "Activities",
-  communication: "Communication",
-  privacy: "Privacy",
-  medication: "Medication",
-  other: "Other",
-};
-
-interface ComplaintOutcomeRecord {
-  id: string;
-  complaintDate: string;
-  complainant: string;
-  source: Source;
-  theme: Theme;
-  outcome: ComplaintOutcome;
-  investigatedBy: string;
-  dateResolved: string | null;
-  responseTimeDays: number;
-  youngPersonId: string | null;
-  summary: string;
-  findings: string;
-  lessonsLearned: string;
-  practiceChanges: string[];
-  complainantSatisfied: boolean | null;
-  escalated: boolean;
-  escalatedTo: string | null;
-  ofstedNotified: boolean;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: ComplaintOutcomeRecord[] = [
-  {
-    id: "co_1",
-    complaintDate: d(-42),
-    complainant: "Casey T",
-    source: "child",
-    theme: "privacy",
-    outcome: "upheld",
-    investigatedBy: "staff_darren",
-    dateResolved: d(-28),
-    responseTimeDays: 14,
-    youngPersonId: "yp_casey",
-    summary: "Casey complained that a member of staff entered her bedroom without knocking during the evening. She felt her privacy was not respected and that this should not happen.",
-    findings: "CCTV corridor footage confirmed staff entered Casey's room without knocking at 20:47. The staff member acknowledged this in a reflective discussion and accepted the finding. Casey's right to privacy in her own room is clearly set out in the Children's Guide and the home's Statement of Purpose.",
-    lessonsLearned: "All staff must knock and wait for a response before entering a young person's bedroom, except in an emergency or where there is an immediate safeguarding concern. The expectation must be reinforced in supervision and team meetings.",
-    practiceChanges: [
-      "Privacy protocol re-issued to all staff with sign-off sheet",
-      "Privacy reminder added to shift handover checklist",
-      "Topic covered in next team meeting with reflective exercise",
-    ],
-    complainantSatisfied: true,
-    escalated: false,
-    escalatedTo: null,
-    ofstedNotified: false,
-  },
-  {
-    id: "co_2",
-    complaintDate: d(-35),
-    complainant: "Mr W (Alex's birth father)",
-    source: "parent_carer",
-    theme: "communication",
-    outcome: "partially_upheld",
-    investigatedBy: "staff_ryan",
-    dateResolved: d(-14),
-    responseTimeDays: 21,
-    youngPersonId: "yp_alex",
-    summary: "Alex's birth father complained that he was not informed when Alex attended A&E following a minor sports injury. He said he should have been contacted the same day regardless of the outcome.",
-    findings: "Investigation confirmed Alex attended A&E on the date in question for a sprained wrist sustained during football. The injury was minor, Alex was discharged the same evening, and the social worker was notified the following morning. Mr W was informed two days later. The delegated authority matrix did not explicitly require same-day notification to birth parents for non-emergency A&E attendances, but the complaint highlighted a gap in communication expectations.",
-    lessonsLearned: "Where a young person attends hospital for any reason, all individuals with parental responsibility or significant contact should be informed within 24 hours unless there is a safeguarding reason not to. The delegated authority matrix should be updated to reflect this.",
-    practiceChanges: [
-      "Delegated authority matrix updated to include 24-hour notification requirement for hospital attendances",
-      "Communication protocol flowchart created and displayed in the office",
-    ],
-    complainantSatisfied: true,
-    escalated: false,
-    escalatedTo: null,
-    ofstedNotified: false,
-  },
-  {
-    id: "co_3",
-    complaintDate: d(-56),
-    complainant: "Jordan M",
-    source: "child",
-    theme: "food",
-    outcome: "not_upheld",
-    investigatedBy: "staff_anna",
-    dateResolved: d(-38),
-    responseTimeDays: 18,
-    youngPersonId: "yp_jordan",
-    summary: "Jordan complained that the food at the home lacks variety and that the same meals are repeated too often. He said he would like more choice and input into what is cooked.",
-    findings: "A review of the four-week menu plan showed 22 distinct main meals across the cycle, with options for halal, vegetarian, and allergy-appropriate alternatives. The menu is reviewed monthly and young people are invited to contribute suggestions at house meetings. Jordan had attended two of the last four house meetings but had not raised the issue there. While the complaint was not upheld on the basis that reasonable variety exists, Jordan's feedback was valued and a menu review was conducted as a result.",
-    lessonsLearned: "Even where a complaint is not upheld, the young person's voice must be acknowledged and acted upon where reasonable. Menu reviews should actively seek individual preferences outside of house meetings to ensure all young people feel heard.",
-    practiceChanges: [
-      "Individual food preference questionnaire introduced for all young people quarterly",
-      "Monthly 'choice night' added to the menu where each young person picks a meal in rotation",
-    ],
-    complainantSatisfied: null,
-    escalated: false,
-    escalatedTo: null,
-    ofstedNotified: false,
-  },
-  {
-    id: "co_4",
-    complaintDate: d(-21),
-    complainant: "Anonymous",
-    source: "anonymous",
-    theme: "staff_conduct",
-    outcome: "partially_upheld",
-    investigatedBy: "staff_darren",
-    dateResolved: d(-7),
-    responseTimeDays: 14,
-    youngPersonId: null,
-    summary: "An anonymous complaint was received stating that staff were observed using personal mobile phones during shift, including while supervising young people in communal areas.",
-    findings: "An investigation including review of CCTV in communal areas over a two-week sample period identified two occasions where staff appeared to be using personal phones in the lounge while young people were present. Both staff members were spoken to individually. One instance was confirmed as checking a work-related message on a personal device; the other was personal use. The home's phone policy permits brief essential use only and requires phones to be kept in the office during direct care duties.",
-    lessonsLearned: "The existing phone policy is adequate but compliance needs reinforcing. Staff must model appropriate phone use and understand that young people notice and may feel undervalued if staff are distracted by devices.",
-    practiceChanges: [
-      "Phone policy re-issued to all staff with updated acknowledgement form",
-      "Phone storage box introduced in the office for shift use",
-      "Topic addressed in supervision with both identified staff members",
-    ],
-    complainantSatisfied: null,
-    escalated: false,
-    escalatedTo: null,
-    ofstedNotified: false,
-  },
-];
-
 /* ── component ───────────────────────────────────────────────────────── */
 export default function ComplaintsOutcomesPage() {
-  const [entries] = useState<ComplaintOutcomeRecord[]>(SEED);
+  const { data, isLoading } = useComplaintOutcomeRecords();
+  const entries = data?.data ?? [];
+  const createMutation = useCreateComplaintOutcomeRecord();
+
   const [search, setSearch] = useState("");
   const [filterOutcome, setFilterOutcome] = useState("all");
   const [filterSource, setFilterSource] = useState("all");
@@ -224,8 +79,52 @@ export default function ComplaintsOutcomesPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
 
+  /* ── create-form state ─────────────────────────────────────────── */
+  const [newComplaintDate, setNewComplaintDate] = useState("");
+  const [newComplainant, setNewComplainant] = useState("");
+  const [newSource, setNewSource] = useState<ComplaintSource | "">("");
+  const [newTheme, setNewTheme] = useState<ComplaintTheme | "">("");
+  const [newSummary, setNewSummary] = useState("");
+
+  const resetForm = () => {
+    setNewComplaintDate("");
+    setNewComplainant("");
+    setNewSource("");
+    setNewTheme("");
+    setNewSummary("");
+  };
+
+  const handleCreate = () => {
+    if (!newComplaintDate || !newComplainant || !newSource || !newTheme || !newSummary) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    createMutation.mutate(
+      {
+        complaint_date: newComplaintDate,
+        complainant: newComplainant,
+        source: newSource as ComplaintSource,
+        theme: newTheme as ComplaintTheme,
+        summary: newSummary,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Complaint outcome recorded");
+          resetForm();
+          setShowNew(false);
+        },
+        onError: () => {
+          toast.error("Failed to record complaint outcome");
+        },
+      }
+    );
+  };
+
+  /* ── loading state ─────────────────────────────────────────────── */
+  if (isLoading) return <PageShell title="Complaints Outcomes" subtitle="Investigation outcomes, learning points, practice changes, and response timescales"><div /></PageShell>;
+
   /* ── filtering & sorting ────────────────────────────────────────── */
-  const filtered = useMemo(() => {
+  const filtered = (() => {
     let list = [...entries];
     if (search) {
       const q = search.toLowerCase();
@@ -234,7 +133,7 @@ export default function ComplaintsOutcomesPage() {
           e.complainant.toLowerCase().includes(q) ||
           e.summary.toLowerCase().includes(q) ||
           e.findings.toLowerCase().includes(q) ||
-          e.lessonsLearned.toLowerCase().includes(q)
+          e.lessons_learned.toLowerCase().includes(q)
       );
     }
     if (filterOutcome !== "all") list = list.filter((e) => e.outcome === filterOutcome);
@@ -243,14 +142,14 @@ export default function ComplaintsOutcomesPage() {
 
     list.sort((a, b) => {
       switch (sortBy) {
-        case "date": return b.complaintDate.localeCompare(a.complaintDate);
+        case "date": return b.complaint_date.localeCompare(a.complaint_date);
         case "outcome": return a.outcome.localeCompare(b.outcome);
-        case "response": return a.responseTimeDays - b.responseTimeDays;
+        case "response": return a.response_time_days - b.response_time_days;
         default: return 0;
       }
     });
     return list;
-  }, [entries, search, filterOutcome, filterSource, filterTheme, sortBy]);
+  })();
 
   /* ── stats ──────────────────────────────────────────────────────── */
   const total = entries.length;
@@ -258,30 +157,30 @@ export default function ComplaintsOutcomesPage() {
     (e) => e.outcome === "upheld" || e.outcome === "partially_upheld"
   ).length;
   const avgResponse = entries.length > 0
-    ? Math.round(entries.reduce((sum, e) => sum + e.responseTimeDays, 0) / entries.length)
+    ? Math.round(entries.reduce((sum, e) => sum + e.response_time_days, 0) / entries.length)
     : 0;
-  const lessonsCount = entries.filter((e) => e.lessonsLearned.trim().length > 0).length;
+  const lessonsCount = entries.filter((e) => e.lessons_learned.trim().length > 0).length;
 
   /* ── export columns ─────────────────────────────────────────────── */
   const exportCols: ExportColumn<ComplaintOutcomeRecord>[] = [
     { header: "ID", accessor: (r: ComplaintOutcomeRecord) => r.id },
-    { header: "Complaint Date", accessor: (r: ComplaintOutcomeRecord) => r.complaintDate },
+    { header: "Complaint Date", accessor: (r: ComplaintOutcomeRecord) => r.complaint_date },
     { header: "Complainant", accessor: (r: ComplaintOutcomeRecord) => r.complainant },
-    { header: "Source", accessor: (r: ComplaintOutcomeRecord) => SOURCE_LABELS[r.source] },
-    { header: "Theme", accessor: (r: ComplaintOutcomeRecord) => THEME_LABELS[r.theme] },
-    { header: "Outcome", accessor: (r: ComplaintOutcomeRecord) => OUTCOME_LABELS[r.outcome] },
-    { header: "Investigated By", accessor: (r: ComplaintOutcomeRecord) => getStaffName(r.investigatedBy) },
-    { header: "Date Resolved", accessor: (r: ComplaintOutcomeRecord) => r.dateResolved ?? "" },
-    { header: "Response Time (Days)", accessor: (r: ComplaintOutcomeRecord) => r.responseTimeDays },
-    { header: "Young Person", accessor: (r: ComplaintOutcomeRecord) => r.youngPersonId ? getYPName(r.youngPersonId) : "" },
+    { header: "Source", accessor: (r: ComplaintOutcomeRecord) => COMPLAINT_SOURCE_LABEL[r.source] },
+    { header: "Theme", accessor: (r: ComplaintOutcomeRecord) => COMPLAINT_THEME_LABEL[r.theme] },
+    { header: "Outcome", accessor: (r: ComplaintOutcomeRecord) => COMPLAINT_OUTCOME_LABEL[r.outcome] },
+    { header: "Investigated By", accessor: (r: ComplaintOutcomeRecord) => getStaffName(r.investigated_by) },
+    { header: "Date Resolved", accessor: (r: ComplaintOutcomeRecord) => r.date_resolved ?? "" },
+    { header: "Response Time (Days)", accessor: (r: ComplaintOutcomeRecord) => r.response_time_days },
+    { header: "Young Person", accessor: (r: ComplaintOutcomeRecord) => r.child_id ? getYPName(r.child_id) : "" },
     { header: "Summary", accessor: (r: ComplaintOutcomeRecord) => r.summary },
     { header: "Findings", accessor: (r: ComplaintOutcomeRecord) => r.findings },
-    { header: "Lessons Learned", accessor: (r: ComplaintOutcomeRecord) => r.lessonsLearned },
-    { header: "Practice Changes", accessor: (r: ComplaintOutcomeRecord) => r.practiceChanges.join("; ") },
-    { header: "Complainant Satisfied", accessor: (r: ComplaintOutcomeRecord) => r.complainantSatisfied === null ? "Pending" : r.complainantSatisfied ? "Yes" : "No" },
+    { header: "Lessons Learned", accessor: (r: ComplaintOutcomeRecord) => r.lessons_learned },
+    { header: "Practice Changes", accessor: (r: ComplaintOutcomeRecord) => r.practice_changes.join("; ") },
+    { header: "Complainant Satisfied", accessor: (r: ComplaintOutcomeRecord) => r.complainant_satisfied === null ? "Pending" : r.complainant_satisfied ? "Yes" : "No" },
     { header: "Escalated", accessor: (r: ComplaintOutcomeRecord) => r.escalated ? "Yes" : "No" },
-    { header: "Escalated To", accessor: (r: ComplaintOutcomeRecord) => r.escalatedTo ?? "" },
-    { header: "Ofsted Notified", accessor: (r: ComplaintOutcomeRecord) => r.ofstedNotified ? "Yes" : "No" },
+    { header: "Escalated To", accessor: (r: ComplaintOutcomeRecord) => r.escalated_to ?? "" },
+    { header: "Ofsted Notified", accessor: (r: ComplaintOutcomeRecord) => r.ofsted_notified ? "Yes" : "No" },
   ];
 
   return (
@@ -334,8 +233,8 @@ export default function ComplaintsOutcomesPage() {
               <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Outcomes</SelectItem>
-                {OUTCOMES.map((o) => (
-                  <SelectItem key={o} value={o}>{OUTCOME_LABELS[o]}</SelectItem>
+                {Object.entries(COMPLAINT_OUTCOME_LABEL).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -344,8 +243,8 @@ export default function ComplaintsOutcomesPage() {
             <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Sources</SelectItem>
-              {SOURCES.map((s) => (
-                <SelectItem key={s} value={s}>{SOURCE_LABELS[s]}</SelectItem>
+              {Object.entries(COMPLAINT_SOURCE_LABEL).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -353,8 +252,8 @@ export default function ComplaintsOutcomesPage() {
             <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Themes</SelectItem>
-              {THEMES.map((t) => (
-                <SelectItem key={t} value={t}>{THEME_LABELS[t]}</SelectItem>
+              {Object.entries(COMPLAINT_THEME_LABEL).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -381,7 +280,7 @@ export default function ComplaintsOutcomesPage() {
           )}
           {filtered.map((entry) => {
             const isExpanded = expanded === entry.id;
-            const withinTarget = entry.responseTimeDays <= 28;
+            const withinTarget = entry.response_time_days <= 28;
             return (
               <div
                 key={entry.id}
@@ -401,10 +300,10 @@ export default function ComplaintsOutcomesPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium">{entry.complainant}</p>
                         <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", OUTCOME_COLOUR[entry.outcome])}>
-                          {OUTCOME_LABELS[entry.outcome]}
+                          {COMPLAINT_OUTCOME_LABEL[entry.outcome]}
                         </Badge>
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                          {THEME_LABELS[entry.theme]}
+                          {COMPLAINT_THEME_LABEL[entry.theme]}
                         </Badge>
                         {!withinTarget && entry.outcome !== "ongoing" && (
                           <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-700 border-red-200">
@@ -413,8 +312,8 @@ export default function ComplaintsOutcomesPage() {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {entry.complaintDate} · {SOURCE_LABELS[entry.source]} · {entry.responseTimeDays} day response
-                        {entry.youngPersonId ? ` · Re: ${getYPName(entry.youngPersonId)}` : ""}
+                        {entry.complaint_date} · {COMPLAINT_SOURCE_LABEL[entry.source]} · {entry.response_time_days} day response
+                        {entry.child_id ? ` · Re: ${getYPName(entry.child_id)}` : ""}
                       </p>
                     </div>
                   </div>
@@ -424,7 +323,7 @@ export default function ComplaintsOutcomesPage() {
                         Escalated
                       </Badge>
                     )}
-                    {entry.ofstedNotified && (
+                    {entry.ofsted_notified && (
                       <Badge variant="outline" className="text-[10px] bg-violet-50 text-violet-700 border-violet-200">
                         Ofsted Notified
                       </Badge>
@@ -468,18 +367,18 @@ export default function ComplaintsOutcomesPage() {
                         <BookOpen className="h-4 w-4 text-teal-600" />
                         <p className="text-xs font-semibold text-teal-700 uppercase tracking-wide">Lessons Learned</p>
                       </div>
-                      <p className="text-sm text-slate-700">{entry.lessonsLearned}</p>
+                      <p className="text-sm text-slate-700">{entry.lessons_learned}</p>
                     </div>
 
                     {/* practice changes */}
-                    {entry.practiceChanges.length > 0 && (
+                    {entry.practice_changes.length > 0 && (
                       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                         <div className="flex items-center gap-2 mb-2">
                           <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                           <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">Practice Changes Implemented</p>
                         </div>
                         <ul className="space-y-1.5">
-                          {entry.practiceChanges.map((change, i) => (
+                          {entry.practice_changes.map((change, i) => (
                             <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
                               <span className="text-emerald-500 mt-0.5 shrink-0">-</span>
                               {change}
@@ -493,41 +392,51 @@ export default function ComplaintsOutcomesPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Investigated By:</span>{" "}
-                        <span className="font-medium">{getStaffName(entry.investigatedBy)}</span>
+                        <span className="font-medium">{getStaffName(entry.investigated_by)}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Date Resolved:</span>{" "}
-                        <span className="font-medium">{entry.dateResolved ?? "Pending"}</span>
+                        <span className="font-medium">{entry.date_resolved ?? "Pending"}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Response Time:</span>{" "}
                         <span className={cn("font-medium", withinTarget ? "text-emerald-600" : "text-red-600")}>
-                          {entry.responseTimeDays} days {withinTarget ? "(within target)" : "(exceeded target)"}
+                          {entry.response_time_days} days {withinTarget ? "(within target)" : "(exceeded target)"}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Complainant Satisfied:</span>{" "}
                         <span className={cn(
                           "font-medium",
-                          entry.complainantSatisfied === true ? "text-emerald-600" :
-                          entry.complainantSatisfied === false ? "text-red-600" : "text-slate-500"
+                          entry.complainant_satisfied === true ? "text-emerald-600" :
+                          entry.complainant_satisfied === false ? "text-red-600" : "text-slate-500"
                         )}>
-                          {entry.complainantSatisfied === null ? "Pending" : entry.complainantSatisfied ? "Yes" : "No"}
+                          {entry.complainant_satisfied === null ? "Pending" : entry.complainant_satisfied ? "Yes" : "No"}
                         </span>
                       </div>
-                      {entry.youngPersonId && (
+                      {entry.child_id && (
                         <div>
                           <span className="text-muted-foreground">Young Person:</span>{" "}
-                          <span className="font-medium">{getYPName(entry.youngPersonId)}</span>
+                          <span className="font-medium">{getYPName(entry.child_id)}</span>
                         </div>
                       )}
                       {entry.escalated && (
                         <div>
                           <span className="text-muted-foreground">Escalated To:</span>{" "}
-                          <span className="font-medium">{entry.escalatedTo ?? "N/A"}</span>
+                          <span className="font-medium">{entry.escalated_to ?? "N/A"}</span>
                         </div>
                       )}
                     </div>
+
+                    {/* smart link panel */}
+                    {entry.child_id && (
+                      <SmartLinkPanel
+                        sourceType="complaint-outcome"
+                        sourceId={entry.id}
+                        childId={entry.child_id}
+                        compact
+                      />
+                    )}
                   </div>
                 )}
               </div>
@@ -547,19 +456,69 @@ export default function ComplaintsOutcomesPage() {
         </div>
       </div>
 
-      {/* ── new outcome dialog (placeholder) ────────────────────── */}
-      <Dialog open={showNew} onOpenChange={setShowNew}>
+      {/* ── new outcome dialog ─────────────────────────────────────── */}
+      <Dialog open={showNew} onOpenChange={(open) => { setShowNew(open); if (!open) resetForm(); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Record Complaint Outcome</DialogTitle>
           </DialogHeader>
-          <div className="py-6 text-center text-muted-foreground text-sm">
-            <ClipboardCheck className="h-10 w-10 mx-auto mb-3 text-indigo-300" />
-            <p>Full form will capture complaint details, investigation</p>
-            <p>findings, outcome, lessons learned, and practice changes.</p>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="new-complaint-date">Complaint Date</Label>
+              <Input
+                id="new-complaint-date"
+                type="date"
+                value={newComplaintDate}
+                onChange={(e) => setNewComplaintDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-complainant">Complainant</Label>
+              <Input
+                id="new-complainant"
+                placeholder="Name of complainant"
+                value={newComplainant}
+                onChange={(e) => setNewComplainant(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Source</Label>
+              <Select value={newSource} onValueChange={(v) => setNewSource(v as ComplaintSource)}>
+                <SelectTrigger><SelectValue placeholder="Select source" /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(COMPLAINT_SOURCE_LABEL).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Theme</Label>
+              <Select value={newTheme} onValueChange={(v) => setNewTheme(v as ComplaintTheme)}>
+                <SelectTrigger><SelectValue placeholder="Select theme" /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(COMPLAINT_THEME_LABEL).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-summary">Summary</Label>
+              <Textarea
+                id="new-summary"
+                placeholder="Brief summary of the complaint..."
+                rows={3}
+                value={newSummary}
+                onChange={(e) => setNewSummary(e.target.value)}
+              />
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Close</Button>
+            <Button variant="outline" onClick={() => { setShowNew(false); resetForm(); }}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createMutation.isPending}>
+              {createMutation.isPending ? "Saving..." : "Save"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

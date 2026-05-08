@@ -15,186 +15,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-
-/* ── types ─────────────────────────────────────────────────────────────────── */
-
-interface ContinencePlan {
-  id: string;
-  youngPerson: string;
-  planDate: string;
-  presentation:
-    | "Nocturnal enuresis"
-    | "Daytime wetting"
-    | "Encopresis (soiling)"
-    | "Mixed"
-    | "Post-trauma onset"
-    | "Developmental — being patient"
-    | "Resolving"
-    | "Resolved";
-  presentationDuration: string;
-  triggersLinks: string[];
-  productsInUse: string[];
-  bedProtectionInUse: string[];
-  fluidPlan: string[];
-  toiletingRoutines: string[];
-  alarmTherapy?: string;
-  medication?: string;
-  externalSupportEngaged: { service: string; clinician: string; frequency: string }[];
-  childLanguageUsed: string;
-  privacyMeasures: string[];
-  laundryRoutine: string[];
-  staffDoStrategies: string[];
-  staffDoNotStrategies: string[];
-  progressNotes: string[];
-  childVoice: string;
-  staffObservation: string;
-  reviewDate: string;
-  keyWorker: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: ContinencePlan[] = [
-  {
-    id: "ccsp_001",
-    youngPerson: "yp_casey",
-    planDate: d(-30),
-    presentation: "Post-trauma onset",
-    presentationDuration: "Nocturnal enuresis — 14 months since coming into care; pre-care history unclear",
-    triggersLinks: [
-      "Onset coincided with placement move and disclosure work",
-      "Worse on nights following contact with birth family",
-      "Worse when Anna (key worker) is on annual leave",
-      "Sometimes worse after vivid dreams or nightmares",
-      "Not related to fluid volume or constipation (ruled out by paediatric continence nurse)",
-    ],
-    productsInUse: [
-      "DryNites pyjama pants (size 8–15) — Casey calls these 'night pants'",
-      "Stocked discreetly in lined ottoman at the foot of Casey's bed",
-      "Fresh pack rotated weekly so supply is never visibly low",
-      "Spare pack in Anna's locked key-worker cabinet",
-      "Never stored in shared bathroom or communal cupboard",
-    ],
-    bedProtectionInUse: [
-      "Full waterproof mattress protector (machine-washable, fitted)",
-      "Brolly Sheet (waterproof tuck-in pad) layered UNDER the fitted sheet — invisible when bed is made",
-      "Spare bedding set folded in Casey's wardrobe so a quick change can be done independently if she wakes",
-      "Two duvet sets in rotation — never any visible difference between 'wet night' and 'dry night' bedding",
-    ],
-    fluidPlan: [
-      "Front-loaded fluid intake: aim 6–8 drinks across the day, majority before 4pm (per NICE NG111)",
-      "NO fluid restriction overnight — NICE explicitly advises against this; Casey may drink water freely if thirsty",
-      "Last large drink with evening meal at 5:30pm; small water by bed permitted",
-      "Avoid caffeine and fizzy drinks (bladder irritants) — offer squash, milk, water",
-      "Track fluid pattern in shared health notes if a wetter week — never ask Casey to log it herself",
-    ],
-    toiletingRoutines: [
-      "Casey uses the toilet as part of bedtime wind-down at 9pm (own bathroom, door closed, never prompted in front of others)",
-      "Optional second 'sleepy wee' offered by Anna or Edward only — quietly, near the door, never announced",
-      "On waking, Casey goes straight to her own bathroom — change of pants/pyjamas if needed available in her drawer",
-      "No 'lifting' (waking the child to wee at night) — NICE NG111 advises against unless child requests it; Casey has not",
-    ],
-    alarmTherapy:
-      "Stay-dry pad-and-bell alarm (Malem) trialled for 8 weeks (months 6–8 of placement) — paused after Casey reported it was making her anxious and disrupting sleep. Paediatric continence nurse agreed pause. Will revisit only if Casey asks or if pattern remains after trauma work concludes.",
-    medication:
-      "No medication currently. Desmopressin (DesmoMelt) considered by paediatric continence service but deferred — preference is to allow trauma-informed approach time to work first. Reviewable at next consultant appointment.",
-    externalSupportEngaged: [
-      { service: "Paediatric Continence Service — Northgate Children's Hospital", clinician: "Nurse Specialist Priya Shah", frequency: "Every 3 months — next " + d(45) },
-      { service: "ERIC (The Children's Bowel & Bladder Charity) — Helpline & online chat", clinician: "Various advisors; resources accessed by Anna", frequency: "Ad hoc, used by Anna for guidance" },
-      { service: "GP — Northgate Health Centre", clinician: "Dr Helena Marsh", frequency: "Annually or as needed; aware of plan" },
-      { service: "Casey's therapist — trauma-focused CBT", clinician: "Dr Iona Rees (private, LA-funded)", frequency: "Weekly; aware enuresis is trauma-linked" },
-    ],
-    childLanguageUsed:
-      "Casey calls her pull-ups 'night pants'. She refers to wet nights as 'a tricky one'. Staff use ONLY Casey's words — never 'accident', 'wet the bed', 'dirty', 'soiled', or any clinical term in front of her or in her hearing.",
-    privacyMeasures: [
-      "ONLY Anna (key worker) and Edward (deputy/co-key worker) handle laundry, product stocking and bedding changes",
-      "All other staff are aware Casey has a plan but NOT the detail — strictly need-to-know",
-      "Bedding changes done in the morning AFTER Casey has left for school, or BEFORE she wakes if a weekend",
-      "Soiled bedding placed straight into a closed laundry bag in Casey's room, carried to utility — never paraded through the home",
-      "Casey's bedroom door always closed when changing bedding; never discussed in communal areas",
-      "Other young people in the home have NEVER been told — this is Casey's information to share if and when she chooses",
-      "Visitors, agency staff and inspectors are not briefed unless operationally essential",
-      "Plan stored in encrypted health folder, not on the open key-worker shelf",
-    ],
-    laundryRoutine: [
-      "Wet bedding goes straight in washing machine on a 60°C cotton cycle, separately from communal laundry",
-      "Anna or Edward run the cycle BEFORE Casey wakes (weekends) or while she is at school (weekdays)",
-      "Spare set always made up on the bed within 30 minutes — Casey's bed is always presented as 'made and ready'",
-      "Mattress protector wiped with antibac and air-dried in Casey's room with door closed",
-      "Pull-ups disposed of in a lidded nappy-bin in Casey's bathroom (changed daily by key worker)",
-      "Laundry never left visible in shared utility — moved to dryer/airer immediately",
-    ],
-    staffDoStrategies: [
-      "Greet Casey each morning the same way regardless of whether the night was dry or wet",
-      "Use Casey's language ('night pants', 'tricky night') if she raises it",
-      "If she mentions it, respond calmly: 'Thanks for telling me. All sorted.' — then change the subject to her day",
-      "Make sure 'night pants' are always restocked BEFORE the pack is empty (Anna checks every Sunday)",
-      "Praise effort and bravery in unrelated areas — never tie praise to a 'dry night'",
-      "Read ERIC and NICE NG111 guidance during induction — refresh annually",
-      "If Casey raises shame, reflect back: 'Lots of children your age have this. It's not your fault. Your body will get there.'",
-    ],
-    staffDoNotStrategies: [
-      "NEVER use a sticker chart, star chart, or reward system tied to dry nights — NICE advises against and it shifts blame onto the child",
-      "NEVER restrict fluids overnight",
-      "NEVER wake Casey to use the toilet ('lifting') unless she has explicitly asked",
-      "NEVER discuss the plan in front of other young people, in the kitchen, or where it could be overheard",
-      "NEVER use the words 'wet', 'accident', 'dirty', 'soiled', 'baby', or 'big girl now' in any context related to this",
-      "NEVER show frustration, sigh, or react when changing bedding — even subtle expressions are felt",
-      "NEVER strip the bed in front of Casey",
-      "NEVER mention this in handover meetings where non-essential staff are present",
-    ],
-    progressNotes: [
-      d(-180) + " — Plan started; 6 wet nights in 7 (baseline)",
-      d(-120) + " — Average 4 wet nights in 7; Casey first used the phrase 'night pants' herself",
-      d(-90) + " — Alarm trial started",
-      d(-60) + " — Alarm trial paused at Casey's request; she said 'it makes me feel scared'",
-      d(-30) + " — Average 3 wet nights in 7; longer dry stretches around weekends with Anna on shift",
-      d(-7) + " — First dry week in 14 months (7 consecutive dry nights). Not mentioned to Casey to avoid pressure on the next week",
-    ],
-    childVoice:
-      "I don't really like talking about it. Anna says it's just my body still figuring stuff out, and that lots of people my age have it. The night pants are okay because they don't feel like nappies. I like that nobody else knows. I want to go on the residential next term and I'm a bit worried about it but Anna said we'd sort it.",
-    staffObservation:
-      "Casey's enuresis is clearly trauma-linked — onset coincided with arrival into care and pattern tracks emotional regulation rather than fluids or bladder function (ruled out clinically). Recent dry stretch is encouraging but we are deliberately not flagging it to Casey; pressure is the enemy here. The most important thing this plan does is preserve Casey's dignity. She has chosen to disclose to no one in the home, and that choice is held. Pre-emptive work needed for school residential next term — Anna to liaise discreetly with school nurse and trip lead. Plan to be reviewed in 90 days or sooner at Casey's request.",
-    reviewDate: d(60),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "ccsp_002",
-    youngPerson: "yp_alex",
-    planDate: d(-365),
-    presentation: "Resolved",
-    presentationDuration: "Not applicable — no current presentation",
-    triggersLinks: ["Not applicable"],
-    productsInUse: ["Not applicable"],
-    bedProtectionInUse: ["Standard mattress protector retained as routine household practice — not specific to Alex"],
-    fluidPlan: ["Standard household fluid offers — 6–8 drinks across the day"],
-    toiletingRoutines: ["Standard household routines — independent"],
-    externalSupportEngaged: [],
-    childLanguageUsed: "Not applicable",
-    privacyMeasures: [
-      "Plan retained on file as 'closed' — not actively in use",
-      "No current need-to-know briefing",
-    ],
-    laundryRoutine: ["Standard household laundry — not applicable"],
-    staffDoStrategies: ["No active strategies required"],
-    staffDoNotStrategies: ["Do not raise historic continence issues unless Alex initiates"],
-    progressNotes: [d(-365) + " — Plan closed; no presentation for 12+ months"],
-    childVoice: "Not applicable — no current concerns raised by Alex.",
-    staffObservation:
-      "Plan retained for completeness only. Alex has had no continence-related concerns during placement. File closed and stored per retention policy.",
-    reviewDate: d(180),
-    keyWorker: "staff_marcus",
-  },
-];
-
-/* ── page ──────────────────────────────────────────────────────────────────── */
+import type { ContinencePlan, ContinencePresentation } from "@/types/extended";
+import { CONTINENCE_PRESENTATION_LABEL } from "@/types/extended";
+import { useContinencePlans } from "@/hooks/use-continence-plans";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 export default function ChildContinenceSupportPlanPage() {
-  const [data] = useState(SEED);
+  const { data: res, isLoading } = useContinencePlans();
+  const data = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterPresentation, setFilterPresentation] = useState("all");
@@ -205,51 +33,66 @@ export default function ChildContinenceSupportPlanPage() {
     if (search) {
       const q = search.toLowerCase();
       rows = rows.filter((r) =>
-        getYPName(r.youngPerson).toLowerCase().includes(q) ||
-        r.presentation.toLowerCase().includes(q) ||
-        r.presentationDuration.toLowerCase().includes(q),
+        getYPName(r.child_id).toLowerCase().includes(q) ||
+        CONTINENCE_PRESENTATION_LABEL[r.presentation].toLowerCase().includes(q) ||
+        r.presentation_duration.toLowerCase().includes(q),
       );
     }
     if (filterPresentation !== "all") rows = rows.filter((r) => r.presentation === filterPresentation);
     rows.sort((a, b) =>
       sortBy === "newest"
-        ? b.planDate.localeCompare(a.planDate)
-        : a.planDate.localeCompare(b.planDate),
+        ? b.plan_date.localeCompare(a.plan_date)
+        : a.plan_date.localeCompare(b.plan_date),
     );
     return rows;
   }, [data, search, filterPresentation, sortBy]);
 
-  const activePlans = data.filter((r) => r.presentation !== "Resolved").length;
-  const postTrauma = data.filter((r) => r.presentation === "Post-trauma onset").length;
-  const externalEngaged = data.filter((r) => r.externalSupportEngaged.length > 0).length;
-  const today = d(0);
-  const ninetyDays = d(90);
-  const reviewsDue90 = data.filter((r) => r.reviewDate >= today && r.reviewDate <= ninetyDays).length;
+  const activePlans = data.filter((r) => r.presentation !== "resolved").length;
+  const postTrauma = data.filter((r) => r.presentation === "post_trauma_onset").length;
+  const externalEngaged = data.filter((r) => r.external_support_engaged.length > 0).length;
+  const today = new Date().toISOString().slice(0, 10);
+  const ninetyDaysDate = new Date();
+  ninetyDaysDate.setDate(ninetyDaysDate.getDate() + 90);
+  const ninetyDays = ninetyDaysDate.toISOString().slice(0, 10);
+  const reviewsDue90 = data.filter((r) => r.review_date >= today && r.review_date <= ninetyDays).length;
 
   const exportCols: ExportColumn<ContinencePlan>[] = [
-    { header: "Young Person", accessor: (r: ContinencePlan) => getYPName(r.youngPerson) },
-    { header: "Plan Date", accessor: (r: ContinencePlan) => r.planDate },
-    { header: "Presentation", accessor: (r: ContinencePlan) => r.presentation },
-    { header: "Duration", accessor: (r: ContinencePlan) => r.presentationDuration },
-    { header: "Triggers / Links", accessor: (r: ContinencePlan) => r.triggersLinks.join("; ") },
-    { header: "Products In Use", accessor: (r: ContinencePlan) => r.productsInUse.join("; ") },
-    { header: "Bed Protection", accessor: (r: ContinencePlan) => r.bedProtectionInUse.join("; ") },
-    { header: "Fluid Plan", accessor: (r: ContinencePlan) => r.fluidPlan.join("; ") },
-    { header: "Toileting Routines", accessor: (r: ContinencePlan) => r.toiletingRoutines.join("; ") },
-    { header: "Alarm Therapy", accessor: (r: ContinencePlan) => r.alarmTherapy ?? "—" },
+    { header: "Young Person", accessor: (r: ContinencePlan) => getYPName(r.child_id) },
+    { header: "Plan Date", accessor: (r: ContinencePlan) => r.plan_date },
+    { header: "Presentation", accessor: (r: ContinencePlan) => CONTINENCE_PRESENTATION_LABEL[r.presentation] },
+    { header: "Duration", accessor: (r: ContinencePlan) => r.presentation_duration },
+    { header: "Triggers / Links", accessor: (r: ContinencePlan) => r.triggers_links.join("; ") },
+    { header: "Products In Use", accessor: (r: ContinencePlan) => r.products_in_use.join("; ") },
+    { header: "Bed Protection", accessor: (r: ContinencePlan) => r.bed_protection_in_use.join("; ") },
+    { header: "Fluid Plan", accessor: (r: ContinencePlan) => r.fluid_plan.join("; ") },
+    { header: "Toileting Routines", accessor: (r: ContinencePlan) => r.toileting_routines.join("; ") },
+    { header: "Alarm Therapy", accessor: (r: ContinencePlan) => r.alarm_therapy ?? "—" },
     { header: "Medication", accessor: (r: ContinencePlan) => r.medication ?? "—" },
-    { header: "External Support", accessor: (r: ContinencePlan) => r.externalSupportEngaged.map((e) => `${e.service} (${e.clinician}, ${e.frequency})`).join("; ") },
-    { header: "Child Language", accessor: (r: ContinencePlan) => r.childLanguageUsed },
-    { header: "Privacy Measures", accessor: (r: ContinencePlan) => r.privacyMeasures.join("; ") },
-    { header: "Laundry Routine", accessor: (r: ContinencePlan) => r.laundryRoutine.join("; ") },
-    { header: "Staff DO", accessor: (r: ContinencePlan) => r.staffDoStrategies.join("; ") },
-    { header: "Staff DO NOT", accessor: (r: ContinencePlan) => r.staffDoNotStrategies.join("; ") },
-    { header: "Progress Notes", accessor: (r: ContinencePlan) => r.progressNotes.join("; ") },
-    { header: "Child Voice", accessor: (r: ContinencePlan) => r.childVoice },
-    { header: "Staff Observation", accessor: (r: ContinencePlan) => r.staffObservation },
-    { header: "Review Date", accessor: (r: ContinencePlan) => r.reviewDate },
-    { header: "Key Worker", accessor: (r: ContinencePlan) => getStaffName(r.keyWorker) },
+    { header: "External Support", accessor: (r: ContinencePlan) => r.external_support_engaged.map((e) => `${e.service} (${e.clinician}, ${e.frequency})`).join("; ") },
+    { header: "Child Language", accessor: (r: ContinencePlan) => r.child_language_used },
+    { header: "Privacy Measures", accessor: (r: ContinencePlan) => r.privacy_measures.join("; ") },
+    { header: "Laundry Routine", accessor: (r: ContinencePlan) => r.laundry_routine.join("; ") },
+    { header: "Staff DO", accessor: (r: ContinencePlan) => r.staff_do_strategies.join("; ") },
+    { header: "Staff DO NOT", accessor: (r: ContinencePlan) => r.staff_do_not_strategies.join("; ") },
+    { header: "Progress Notes", accessor: (r: ContinencePlan) => r.progress_notes.join("; ") },
+    { header: "Child Voice", accessor: (r: ContinencePlan) => r.child_voice },
+    { header: "Staff Observation", accessor: (r: ContinencePlan) => r.staff_observation },
+    { header: "Review Date", accessor: (r: ContinencePlan) => r.review_date },
+    { header: "Key Worker", accessor: (r: ContinencePlan) => getStaffName(r.key_worker) },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Child Continence Support Plan"
+        subtitle="Per-child, dignity-led continence support · NICE NG111 · NICE CG99 · ERIC framework · UNCRC Art. 12, 16, 24"
+      >
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -294,14 +137,14 @@ export default function ChildContinenceSupportPlanPage() {
             <SelectTrigger className="w-[230px]"><SelectValue placeholder="Presentation" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Presentations</SelectItem>
-              <SelectItem value="Nocturnal enuresis">Nocturnal enuresis</SelectItem>
-              <SelectItem value="Daytime wetting">Daytime wetting</SelectItem>
-              <SelectItem value="Encopresis (soiling)">Encopresis (soiling)</SelectItem>
-              <SelectItem value="Mixed">Mixed</SelectItem>
-              <SelectItem value="Post-trauma onset">Post-trauma onset</SelectItem>
-              <SelectItem value="Developmental — being patient">Developmental — being patient</SelectItem>
-              <SelectItem value="Resolving">Resolving</SelectItem>
-              <SelectItem value="Resolved">Resolved</SelectItem>
+              <SelectItem value="nocturnal_enuresis">Nocturnal enuresis</SelectItem>
+              <SelectItem value="daytime_wetting">Daytime wetting</SelectItem>
+              <SelectItem value="encopresis">Encopresis (soiling)</SelectItem>
+              <SelectItem value="mixed">Mixed</SelectItem>
+              <SelectItem value="post_trauma_onset">Post-trauma onset</SelectItem>
+              <SelectItem value="developmental">Developmental — being patient</SelectItem>
+              <SelectItem value="resolving">Resolving</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -319,9 +162,9 @@ export default function ChildContinenceSupportPlanPage() {
         <div className="space-y-3">
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
-            const borderClr = r.presentation === "Resolved"
+            const borderClr = r.presentation === "resolved"
               ? "border-l-slate-300"
-              : r.presentation === "Resolving"
+              : r.presentation === "resolving"
                 ? "border-l-teal-300"
                 : "border-l-sky-400";
             return (
@@ -330,19 +173,19 @@ export default function ChildContinenceSupportPlanPage() {
                   <div className="flex items-start justify-between">
                     <div className="space-y-1 flex-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {getYPName(r.youngPerson)}
-                        <Badge variant="outline" className="bg-sky-100 text-sky-800">{r.presentation}</Badge>
-                        {r.externalSupportEngaged.length > 0 && (
+                        {getYPName(r.child_id)}
+                        <Badge variant="outline" className="bg-sky-100 text-sky-800">{CONTINENCE_PRESENTATION_LABEL[r.presentation]}</Badge>
+                        {r.external_support_engaged.length > 0 && (
                           <Badge variant="outline" className="bg-teal-50 text-teal-700">External support engaged</Badge>
                         )}
-                        {r.alarmTherapy && (
+                        {r.alarm_therapy && (
                           <Badge variant="outline" className="bg-sky-50 text-sky-700">Alarm trialled</Badge>
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Plan: {r.planDate} · Key worker: {getStaffName(r.keyWorker)} · Review: {r.reviewDate}
+                        Plan: {r.plan_date} · Key worker: {getStaffName(r.key_worker)} · Review: {r.review_date}
                       </p>
-                      <p className="text-xs text-muted-foreground italic">{r.presentationDuration}</p>
+                      <p className="text-xs text-muted-foreground italic">{r.presentation_duration}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -355,7 +198,7 @@ export default function ChildContinenceSupportPlanPage() {
                     <div>
                       <p className="font-medium mb-1">Triggers / Links</p>
                       <ul className="space-y-0.5">
-                        {r.triggersLinks.map((t, i) => (
+                        {r.triggers_links.map((t, i) => (
                           <li key={i} className="text-xs text-muted-foreground">• {t}</li>
                         ))}
                       </ul>
@@ -365,7 +208,7 @@ export default function ChildContinenceSupportPlanPage() {
                       <div className="rounded p-2 border border-sky-200 bg-sky-50">
                         <p className="text-xs font-semibold text-sky-900 mb-1">Products In Use</p>
                         <ul className="space-y-0.5">
-                          {r.productsInUse.map((p, i) => (
+                          {r.products_in_use.map((p, i) => (
                             <li key={i} className="text-xs text-sky-900">• {p}</li>
                           ))}
                         </ul>
@@ -373,7 +216,7 @@ export default function ChildContinenceSupportPlanPage() {
                       <div className="rounded p-2 border border-teal-200 bg-teal-50">
                         <p className="text-xs font-semibold text-teal-900 mb-1">Bed Protection</p>
                         <ul className="space-y-0.5">
-                          {r.bedProtectionInUse.map((b, i) => (
+                          {r.bed_protection_in_use.map((b, i) => (
                             <li key={i} className="text-xs text-teal-900">• {b}</li>
                           ))}
                         </ul>
@@ -384,7 +227,7 @@ export default function ChildContinenceSupportPlanPage() {
                       <div className="rounded p-2 border border-sky-200 bg-sky-50/60">
                         <p className="text-xs font-semibold text-sky-900 mb-1">Fluid Plan</p>
                         <ul className="space-y-0.5">
-                          {r.fluidPlan.map((f, i) => (
+                          {r.fluid_plan.map((f, i) => (
                             <li key={i} className="text-xs text-sky-900">• {f}</li>
                           ))}
                         </ul>
@@ -392,7 +235,7 @@ export default function ChildContinenceSupportPlanPage() {
                       <div className="rounded p-2 border border-teal-200 bg-teal-50/60">
                         <p className="text-xs font-semibold text-teal-900 mb-1">Toileting Routines</p>
                         <ul className="space-y-0.5">
-                          {r.toiletingRoutines.map((t, i) => (
+                          {r.toileting_routines.map((t, i) => (
                             <li key={i} className="text-xs text-teal-900">• {t}</li>
                           ))}
                         </ul>
@@ -403,7 +246,7 @@ export default function ChildContinenceSupportPlanPage() {
                       <div className="rounded p-2 border bg-muted/30">
                         <p className="text-xs font-semibold mb-1">Alarm Therapy</p>
                         <p className="text-xs text-muted-foreground">
-                          {r.alarmTherapy ?? "Not currently in use"}
+                          {r.alarm_therapy ?? "Not currently in use"}
                         </p>
                       </div>
                       <div className="rounded p-2 border bg-muted/30">
@@ -414,11 +257,11 @@ export default function ChildContinenceSupportPlanPage() {
                       </div>
                     </div>
 
-                    {r.externalSupportEngaged.length > 0 && (
+                    {r.external_support_engaged.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">External Support Engaged</p>
                         <div className="space-y-1">
-                          {r.externalSupportEngaged.map((e, i) => (
+                          {r.external_support_engaged.map((e, i) => (
                             <div key={i} className="border rounded p-2 text-xs">
                               <p className="font-semibold">{e.service}</p>
                               <p className="text-muted-foreground">{e.clinician} · {e.frequency}</p>
@@ -430,7 +273,7 @@ export default function ChildContinenceSupportPlanPage() {
 
                     <div className="rounded p-2 border border-sky-300 bg-sky-50">
                       <p className="text-xs font-semibold text-sky-900 mb-1">Child&apos;s Own Language</p>
-                      <p className="text-xs text-sky-900">{r.childLanguageUsed}</p>
+                      <p className="text-xs text-sky-900">{r.child_language_used}</p>
                     </div>
 
                     <div className="rounded p-3 border-2 border-teal-400 bg-teal-50">
@@ -438,7 +281,7 @@ export default function ChildContinenceSupportPlanPage() {
                         <Shield className="h-3.5 w-3.5" /> Privacy Measures — strictly upheld
                       </p>
                       <ul className="space-y-1">
-                        {r.privacyMeasures.map((m, i) => (
+                        {r.privacy_measures.map((m, i) => (
                           <li key={i} className="text-xs text-teal-900">• {m}</li>
                         ))}
                       </ul>
@@ -447,7 +290,7 @@ export default function ChildContinenceSupportPlanPage() {
                     <div className="rounded p-2 border border-sky-200 bg-sky-50/40">
                       <p className="text-xs font-semibold text-sky-900 mb-1">Laundry Routine</p>
                       <ul className="space-y-0.5">
-                        {r.laundryRoutine.map((l, i) => (
+                        {r.laundry_routine.map((l, i) => (
                           <li key={i} className="text-xs text-sky-900">• {l}</li>
                         ))}
                       </ul>
@@ -457,7 +300,7 @@ export default function ChildContinenceSupportPlanPage() {
                       <div className="rounded p-2 border border-teal-300 bg-teal-50">
                         <p className="text-xs font-semibold text-teal-900 mb-1">Staff DO</p>
                         <ul className="space-y-0.5">
-                          {r.staffDoStrategies.map((s, i) => (
+                          {r.staff_do_strategies.map((s, i) => (
                             <li key={i} className="text-xs text-teal-900">• {s}</li>
                           ))}
                         </ul>
@@ -465,18 +308,18 @@ export default function ChildContinenceSupportPlanPage() {
                       <div className="rounded p-2 border border-slate-300 bg-slate-50">
                         <p className="text-xs font-semibold text-slate-900 mb-1">Staff DO NOT</p>
                         <ul className="space-y-0.5">
-                          {r.staffDoNotStrategies.map((s, i) => (
+                          {r.staff_do_not_strategies.map((s, i) => (
                             <li key={i} className="text-xs text-slate-800">• {s}</li>
                           ))}
                         </ul>
                       </div>
                     </div>
 
-                    {r.progressNotes.length > 0 && (
+                    {r.progress_notes.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">Progress Notes</p>
                         <ul className="space-y-0.5">
-                          {r.progressNotes.map((p, i) => (
+                          {r.progress_notes.map((p, i) => (
                             <li key={i} className="text-xs text-muted-foreground">• {p}</li>
                           ))}
                         </ul>
@@ -485,17 +328,19 @@ export default function ChildContinenceSupportPlanPage() {
 
                     <div className="bg-purple-50 border border-purple-200 rounded p-2">
                       <p className="font-medium text-xs text-purple-800 mb-1">Child&apos;s Voice</p>
-                      <p className="text-xs text-purple-700 italic">&ldquo;{r.childVoice}&rdquo;</p>
+                      <p className="text-xs text-purple-700 italic">&ldquo;{r.child_voice}&rdquo;</p>
                     </div>
 
                     <div className="bg-sky-50 border border-sky-200 rounded p-2">
                       <p className="font-medium text-xs text-sky-800 mb-1">Staff Observation</p>
-                      <p className="text-xs text-sky-700">{r.staffObservation}</p>
+                      <p className="text-xs text-sky-700">{r.staff_observation}</p>
                     </div>
 
                     <div className="text-xs text-muted-foreground border-t pt-2">
-                      Plan logged by {getStaffName("staff_darren")} · Reviewed with {getStaffName(r.keyWorker)} · Next review: {r.reviewDate}
+                      Plan logged by {getStaffName("staff_darren")} · Reviewed with {getStaffName(r.key_worker)} · Next review: {r.review_date}
                     </div>
+
+                    <SmartLinkPanel sourceType="continence-plan" sourceId={r.id} childId={r.child_id} compact />
                   </CardContent>
                 )}
               </Card>

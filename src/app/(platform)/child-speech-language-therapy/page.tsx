@@ -4,8 +4,16 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
+import { useSaltRecords } from "@/hooks/use-salt-records";
+import type { SaltRecord, SaltStatus, SaltGoalStatus } from "@/types/extended";
+import {
+  SALT_AREA_LABEL,
+  SALT_STATUS_LABEL,
+  SALT_GOAL_STATUS_LABEL,
+} from "@/types/extended";
 import {
   MessageCircle,
   Mic,
@@ -16,6 +24,7 @@ import {
   Search,
   Sparkles,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -25,175 +34,50 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface SaltRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  area:
-    | "Articulation"
-    | "Phonology"
-    | "Receptive language"
-    | "Expressive language"
-    | "Pragmatic / social communication"
-    | "Voice"
-    | "Stammer / fluency"
-    | "Selective mutism"
-    | "AAC (alternative communication)"
-    | "Literacy linked";
-  status: "Awaiting referral" | "Assessed — no SaLT needed" | "Active" | "Maintenance / monitoring" | "Discharged";
-  saltService: string;
-  saltClinician?: string;
-  startDate?: string;
-  goals: { goal: string; baselineDate: string; targetDate?: string; status: "Achieved" | "On track" | "Slow progress" | "Not started" }[];
-  strategiesUsed: string[];
-  toolsResources: string[];
-  homeProgrammeFrequency?: string;
-  homeProgrammeWhoSupports: string[];
-  schoolInvolvement: string[];
-  hearingClearance: boolean;
-  bilingualConsiderations?: string;
-  childComfortDiscussingComm: 1 | 2 | 3 | 4 | 5;
-  flagsConcerns: string[];
-  childVoice: string;
-  staffObservation: string;
-  nextAppointment?: string;
-  reviewDate: string;
-  keyWorker: string;
-}
+const exportCols: ExportColumn<SaltRecord>[] = [
+  { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+  { header: "Recorded", accessor: (r) => r.recorded_date },
+  { header: "Area", accessor: (r) => SALT_AREA_LABEL[r.area] },
+  { header: "Status", accessor: (r) => SALT_STATUS_LABEL[r.status] },
+  { header: "Service", accessor: (r) => r.salt_service },
+  { header: "Clinician", accessor: (r) => r.salt_clinician ?? "—" },
+  { header: "Started", accessor: (r) => r.start_date ?? "—" },
+  { header: "Goals achieved", accessor: (r) => `${r.goals.filter((g) => g.status === "achieved").length}/${r.goals.length}` },
+  { header: "Hearing cleared", accessor: (r) => r.hearing_clearance ? "Yes" : "No" },
+  { header: "Home Frequency", accessor: (r) => r.home_programme_frequency ?? "—" },
+  { header: "Bilingual notes", accessor: (r) => r.bilingual_considerations ?? "—" },
+  { header: "Child comfort 1-5", accessor: (r) => `${r.child_comfort_discussing_comm}` },
+  { header: "Child Voice", accessor: (r) => r.child_voice },
+  { header: "Next appt", accessor: (r) => r.next_appointment ?? "—" },
+  { header: "Review", accessor: (r) => r.review_date },
+  { header: "Key Worker", accessor: (r) => getStaffName(r.key_worker) },
+];
 
-const d = (n: number) => {
+const statusColour: Record<SaltStatus, string> = {
+  awaiting_referral: "bg-amber-100 text-amber-800 border-amber-200",
+  assessed_no_salt_needed: "bg-slate-100 text-slate-800 border-slate-200",
+  active: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  maintenance_monitoring: "bg-blue-100 text-blue-800 border-blue-200",
+  discharged: "bg-slate-100 text-slate-800 border-slate-200",
+};
+
+const goalStatusColour: Record<SaltGoalStatus, string> = {
+  achieved: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  on_track: "bg-blue-100 text-blue-800 border-blue-200",
+  slow_progress: "bg-amber-100 text-amber-800 border-amber-200",
+  not_started: "bg-slate-100 text-slate-800 border-slate-200",
+};
+
+const dFromNow = (n: number) => {
   const dt = new Date();
   dt.setDate(dt.getDate() + n);
   return dt.toISOString().slice(0, 10);
 };
 
-const records: SaltRecord[] = [
-  {
-    id: "salt_001",
-    youngPerson: "yp_casey",
-    recordedDate: d(-30),
-    area: "Pragmatic / social communication",
-    status: "Active",
-    saltService: "Community Children's Speech & Language Therapy (NHS)",
-    saltClinician: "Naomi Thackeray (HCPC reg)",
-    startDate: d(-180),
-    goals: [
-      { goal: "Increase use of repair strategies (e.g., 'I didn't get that, can you say again?')", baselineDate: d(-180), targetDate: d(60), status: "On track" },
-      { goal: "Recognise and respond to non-literal language (idioms, sarcasm) in age-appropriate contexts", baselineDate: d(-180), targetDate: d(120), status: "Slow progress" },
-      { goal: "Use 5-stage 'social problem-solving' visual sequence for peer disagreement", baselineDate: d(-150), targetDate: d(30), status: "Achieved" },
-      { goal: "Lengthen turn-taking in conversation from 3 turns to 6+ turns", baselineDate: d(-90), targetDate: d(90), status: "On track" },
-    ],
-    strategiesUsed: [
-      "Visual schedule for conversation turns",
-      "Comic strip conversations (Carol Gray)",
-      "Social Stories (Carol Gray) for predictable difficult situations",
-      "Modelling of repair phrases by Anna",
-      "Video-self-modelling using consented short clips",
-    ],
-    toolsResources: [
-      "Naomi's bespoke 'How to ask for help' booklet",
-      "Visual prompt cards stored in Casey's bedroom drawer",
-      "Conversation cube (sensory-friendly)",
-      "Time Timer for turn-taking practice",
-    ],
-    homeProgrammeFrequency: "10-15 minutes, 3x weekly",
-    homeProgrammeWhoSupports: [
-      "Anna (primary)",
-      "Edward (alternate weeks)",
-      "Casey self-leads when motivated",
-    ],
-    schoolInvolvement: [
-      "School SENCO has copy of Naomi's care plan",
-      "TA does 1x weekly 5-min booster session at lunch",
-      "Class teacher uses repair phrase modelling consistently",
-      "Casey has visual prompt card in pencil case",
-    ],
-    hearingClearance: true,
-    bilingualConsiderations: "English mother tongue. Some BSL signs picked up via Ellie's cousin Mia — positively integrated.",
-    childComfortDiscussingComm: 4,
-    flagsConcerns: [
-      "Watch for masking — Casey can present as more communicatively confident at school than at home",
-    ],
-    childVoice:
-      "I don't always know when people are joking. The card helps. I asked Anna to slow down twice this week and she did — that worked. I like Naomi because she doesn't talk down to me.",
-    staffObservation:
-      "Steady, child-led progress. Naomi's pragmatic communication focus aligns well with Casey's autistic profile (see autism-support-plan). Repair strategies used spontaneously 4 times this week — a real shift. Continuing weekly home practice with Anna.",
-    nextAppointment: d(14),
-    reviewDate: d(60),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "salt_002",
-    youngPerson: "yp_alex",
-    recordedDate: d(-60),
-    area: "Voice",
-    status: "Maintenance / monitoring",
-    saltService: "CAMHS gender-aware SaLT (private referral via local authority leaving care fund)",
-    saltClinician: "Rebecca Wallis (HCPC, gender-aware specialism)",
-    startDate: d(-240),
-    goals: [
-      { goal: "Voice care during puberty — vocal hygiene", baselineDate: d(-240), targetDate: d(120), status: "Achieved" },
-      { goal: "If Alex chooses, voice-coaching introduction (no pressure, child-led timing)", baselineDate: d(-240), status: "Not started" },
-    ],
-    strategiesUsed: [
-      "Vocal hygiene basics (hydration, no shouting, no whispering)",
-      "Information-only sessions about voice options for non-binary young people",
-    ],
-    toolsResources: [
-      "Rebecca's age-appropriate explainer pack on voice + identity",
-    ],
-    homeProgrammeFrequency: "Self-led — Alex chooses pace",
-    homeProgrammeWhoSupports: ["Anna available if Alex wants to talk"],
-    schoolInvolvement: [],
-    hearingClearance: true,
-    bilingualConsiderations: "English only.",
-    childComfortDiscussingComm: 5,
-    flagsConcerns: [],
-    childVoice:
-      "I'm not into voice coaching right now. Maybe later, maybe not. I like that Rebecca told me my voice is mine and that's enough. Just nice to know the option exists.",
-    staffObservation:
-      "Watchful waiting model. Alex empowered with information, no expectation. Rebecca's affirming approach has been valuable. Maintenance review only — Alex will indicate if more is wanted.",
-    nextAppointment: d(180),
-    reviewDate: d(180),
-    keyWorker: "staff_anna",
-  },
-];
-
-const exportCols: ExportColumn<SaltRecord>[] = [
-  { header: "Young Person", accessor: (r: SaltRecord) => getYPName(r.youngPerson) },
-  { header: "Recorded", accessor: (r: SaltRecord) => r.recordedDate },
-  { header: "Area", accessor: (r: SaltRecord) => r.area },
-  { header: "Status", accessor: (r: SaltRecord) => r.status },
-  { header: "Service", accessor: (r: SaltRecord) => r.saltService },
-  { header: "Clinician", accessor: (r: SaltRecord) => r.saltClinician ?? "—" },
-  { header: "Started", accessor: (r: SaltRecord) => r.startDate ?? "—" },
-  { header: "Goals achieved", accessor: (r: SaltRecord) => `${r.goals.filter((g) => g.status === "Achieved").length}/${r.goals.length}` },
-  { header: "Hearing cleared", accessor: (r: SaltRecord) => (r.hearingClearance ? "Yes" : "No") },
-  { header: "Home Frequency", accessor: (r: SaltRecord) => r.homeProgrammeFrequency ?? "—" },
-  { header: "Bilingual notes", accessor: (r: SaltRecord) => r.bilingualConsiderations ?? "—" },
-  { header: "Child comfort 1-5", accessor: (r: SaltRecord) => `${r.childComfortDiscussingComm}` },
-  { header: "Child Voice", accessor: (r: SaltRecord) => r.childVoice },
-  { header: "Next appt", accessor: (r: SaltRecord) => r.nextAppointment ?? "—" },
-  { header: "Review", accessor: (r: SaltRecord) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: SaltRecord) => getStaffName(r.keyWorker) },
-];
-
-const statusColour: Record<SaltRecord["status"], string> = {
-  "Awaiting referral": "bg-amber-100 text-amber-800 border-amber-200",
-  "Assessed — no SaLT needed": "bg-slate-100 text-slate-800 border-slate-200",
-  Active: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "Maintenance / monitoring": "bg-blue-100 text-blue-800 border-blue-200",
-  Discharged: "bg-slate-100 text-slate-800 border-slate-200",
-};
-
-const goalStatusColour: Record<SaltRecord["goals"][number]["status"], string> = {
-  Achieved: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "On track": "bg-blue-100 text-blue-800 border-blue-200",
-  "Slow progress": "bg-amber-100 text-amber-800 border-amber-200",
-  "Not started": "bg-slate-100 text-slate-800 border-slate-200",
-};
-
 export default function ChildSpeechLanguageTherapyPage() {
+  const { data: res, isLoading } = useSaltRecords();
+  const records = useMemo(() => res?.data ?? [], [res]);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "name" | "status" | "review">("date");
@@ -203,27 +87,37 @@ export default function ChildSpeechLanguageTherapyPage() {
     let r = records.filter((rec) => {
       const matchesSearch =
         !search ||
-        getYPName(rec.youngPerson).toLowerCase().includes(search.toLowerCase()) ||
-        rec.area.toLowerCase().includes(search.toLowerCase());
+        getYPName(rec.child_id).toLowerCase().includes(search.toLowerCase()) ||
+        SALT_AREA_LABEL[rec.area].toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === "all" || rec.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
     r = [...r].sort((a, b) => {
-      if (sortBy === "name") return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+      if (sortBy === "name") return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
       if (sortBy === "status") return a.status.localeCompare(b.status);
-      if (sortBy === "review") return a.reviewDate.localeCompare(b.reviewDate);
-      return b.recordedDate.localeCompare(a.recordedDate);
+      if (sortBy === "review") return a.review_date.localeCompare(b.review_date);
+      return b.recorded_date.localeCompare(a.recorded_date);
     });
     return r;
-  }, [search, statusFilter, sortBy]);
+  }, [records, search, statusFilter, sortBy]);
 
   const stats = useMemo(() => {
-    const active = records.filter((r) => r.status === "Active").length;
-    const goalsAchieved = records.reduce((acc, r) => acc + r.goals.filter((g) => g.status === "Achieved").length, 0);
-    const homeProgrammeRunning = records.filter((r) => r.homeProgrammeFrequency).length;
-    const reviewsDue = records.filter((r) => r.reviewDate <= d(60)).length;
+    const active = records.filter((r) => r.status === "active").length;
+    const goalsAchieved = records.reduce((acc, r) => acc + r.goals.filter((g) => g.status === "achieved").length, 0);
+    const homeProgrammeRunning = records.filter((r) => r.home_programme_frequency).length;
+    const reviewsDue = records.filter((r) => r.review_date <= dFromNow(60)).length;
     return { active, goalsAchieved, homeProgrammeRunning, reviewsDue };
-  }, []);
+  }, [records]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Speech & Language Therapy" subtitle="Loading...">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -284,11 +178,9 @@ export default function ChildSpeechLanguageTherapyPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="Active">Active</SelectItem>
-            <SelectItem value="Awaiting referral">Awaiting referral</SelectItem>
-            <SelectItem value="Maintenance / monitoring">Maintenance / monitoring</SelectItem>
-            <SelectItem value="Assessed — no SaLT needed">No SaLT needed</SelectItem>
-            <SelectItem value="Discharged">Discharged</SelectItem>
+            {Object.entries(SALT_STATUS_LABEL).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
@@ -316,19 +208,17 @@ export default function ChildSpeechLanguageTherapyPage() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-semibold text-slate-900">{getYPName(r.youngPerson)}</span>
-                    <span className="text-slate-700">{r.area}</span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", statusColour[r.status])}>
-                      {r.status}
-                    </span>
-                    {r.saltClinician ? (
+                    <span className="font-semibold text-slate-900">{getYPName(r.child_id)}</span>
+                    <span className="text-slate-700">{SALT_AREA_LABEL[r.area]}</span>
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", statusColour[r.status])}>{SALT_STATUS_LABEL[r.status]}</span>
+                    {r.salt_clinician ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-slate-100 text-slate-700 border-slate-200">
-                        <Mic className="h-3 w-3 inline mr-1" />{r.saltClinician}
+                        <Mic className="h-3 w-3 inline mr-1" />{r.salt_clinician}
                       </span>
                     ) : null}
                   </div>
                   <div className="text-sm text-slate-600">
-                    Recorded {r.recordedDate} · Review {r.reviewDate} · {getStaffName(r.keyWorker)}
+                    Recorded {r.recorded_date} · Review {r.review_date} · {getStaffName(r.key_worker)}
                   </div>
                 </div>
                 {isOpen ? <ChevronUp className="h-5 w-5 text-slate-400" /> : <ChevronDown className="h-5 w-5 text-slate-400" />}
@@ -338,11 +228,11 @@ export default function ChildSpeechLanguageTherapyPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Child Voice</div>
-                      <p className="text-sm text-slate-700 italic">&ldquo;{r.childVoice}&rdquo;</p>
+                      <p className="text-sm text-slate-700 italic">&ldquo;{r.child_voice}&rdquo;</p>
                     </div>
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Staff Observation</div>
-                      <p className="text-sm text-slate-700">{r.staffObservation}</p>
+                      <p className="text-sm text-slate-700">{r.staff_observation}</p>
                     </div>
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Goals</div>
@@ -351,10 +241,10 @@ export default function ChildSpeechLanguageTherapyPage() {
                           <div key={i} className="flex items-start justify-between gap-3 text-sm">
                             <div className="flex-1">
                               <div className="text-slate-800">{g.goal}</div>
-                              <div className="text-xs text-slate-500">Baseline {g.baselineDate}{g.targetDate ? ` · target ${g.targetDate}` : ""}</div>
+                              <div className="text-xs text-slate-500">Baseline {g.baseline_date}{g.target_date ? ` · target ${g.target_date}` : ""}</div>
                             </div>
                             <span className={cn("text-xs px-2 py-0.5 rounded-full border shrink-0", goalStatusColour[g.status])}>
-                              {g.status}
+                              {SALT_GOAL_STATUS_LABEL[g.status]}
                             </span>
                           </div>
                         ))}
@@ -363,7 +253,7 @@ export default function ChildSpeechLanguageTherapyPage() {
                     <div className="rounded-md border border-slate-200 bg-white p-3">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Strategies used</div>
                       <ul className="text-sm text-slate-700 space-y-1">
-                        {r.strategiesUsed.map((s, i) => (
+                        {r.strategies_used.map((s, i) => (
                           <li key={i} className="flex gap-2"><span className="text-slate-400">·</span><span>{s}</span></li>
                         ))}
                       </ul>
@@ -371,30 +261,30 @@ export default function ChildSpeechLanguageTherapyPage() {
                     <div className="rounded-md border border-slate-200 bg-white p-3">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Tools & resources</div>
                       <ul className="text-sm text-slate-700 space-y-1">
-                        {r.toolsResources.map((s, i) => (
+                        {r.tools_resources.map((s, i) => (
                           <li key={i} className="flex gap-2"><span className="text-slate-400">·</span><span>{s}</span></li>
                         ))}
                       </ul>
                     </div>
-                    {r.homeProgrammeFrequency ? (
+                    {r.home_programme_frequency ? (
                       <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
                         <div className="text-xs font-semibold text-emerald-700 uppercase mb-2">Home programme</div>
                         <div className="text-sm text-emerald-900 space-y-1">
-                          <div><span className="text-emerald-700">Frequency:</span> {r.homeProgrammeFrequency}</div>
+                          <div><span className="text-emerald-700">Frequency:</span> {r.home_programme_frequency}</div>
                           <div><span className="text-emerald-700">Supported by:</span></div>
                           <ul className="space-y-0.5 ml-1">
-                            {r.homeProgrammeWhoSupports.map((s, i) => (
+                            {r.home_programme_who_supports.map((s, i) => (
                               <li key={i} className="flex gap-2"><span>·</span><span>{s}</span></li>
                             ))}
                           </ul>
                         </div>
                       </div>
                     ) : null}
-                    {r.schoolInvolvement.length ? (
+                    {r.school_involvement.length ? (
                       <div className="rounded-md border border-blue-200 bg-blue-50 p-3">
                         <div className="text-xs font-semibold text-blue-800 uppercase mb-2">School involvement</div>
                         <ul className="text-sm text-blue-900 space-y-1">
-                          {r.schoolInvolvement.map((s, i) => (
+                          {r.school_involvement.map((s, i) => (
                             <li key={i} className="flex gap-2"><span>·</span><span>{s}</span></li>
                           ))}
                         </ul>
@@ -403,26 +293,29 @@ export default function ChildSpeechLanguageTherapyPage() {
                     <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Context</div>
                       <div className="grid grid-cols-2 gap-3 text-sm text-slate-700">
-                        <div><span className="text-slate-500">Hearing cleared:</span> {r.hearingClearance ? "Yes" : "No"}</div>
-                        <div><span className="text-slate-500">Child comfort 1-5:</span> {r.childComfortDiscussingComm}</div>
-                        {r.bilingualConsiderations ? (
-                          <div className="col-span-2"><span className="text-slate-500">Bilingual:</span> {r.bilingualConsiderations}</div>
+                        <div><span className="text-slate-500">Hearing cleared:</span> {r.hearing_clearance ? "Yes" : "No"}</div>
+                        <div><span className="text-slate-500">Child comfort 1-5:</span> {r.child_comfort_discussing_comm}</div>
+                        {r.bilingual_considerations ? (
+                          <div className="col-span-2"><span className="text-slate-500">Bilingual:</span> {r.bilingual_considerations}</div>
                         ) : null}
-                        {r.nextAppointment ? (
-                          <div><span className="text-slate-500">Next appt:</span> {r.nextAppointment}</div>
+                        {r.next_appointment ? (
+                          <div><span className="text-slate-500">Next appt:</span> {r.next_appointment}</div>
                         ) : null}
                       </div>
                     </div>
-                    {r.flagsConcerns.length ? (
+                    {r.flags_concerns.length ? (
                       <div className="rounded-md border border-amber-200 bg-amber-50 p-3 lg:col-span-2">
                         <div className="text-xs font-semibold text-amber-800 uppercase mb-2">Flags / concerns</div>
                         <ul className="text-sm text-amber-900 space-y-1">
-                          {r.flagsConcerns.map((f, i) => (
+                          {r.flags_concerns.map((f, i) => (
                             <li key={i} className="flex gap-2"><span>!</span><span>{f}</span></li>
                           ))}
                         </ul>
                       </div>
                     ) : null}
+                    <div className="lg:col-span-2">
+                      <SmartLinkPanel sourceType="salt-records" sourceId={r.id} childId={r.child_id} compact />
+                    </div>
                   </div>
                 </div>
               ) : null}

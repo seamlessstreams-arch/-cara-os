@@ -14,6 +14,7 @@ import {
   GraduationCap,
   HandHelping,
   FileCheck2,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -23,50 +24,10 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-type SessionType =
-  | "Assessment"
-  | "Direct intervention"
-  | "Consultation"
-  | "Review"
-  | "Sensory diet planning"
-  | "Equipment recommendation"
-  | "Training to staff";
-
-interface OtRecommendation {
-  area: string;
-  recommendation: string;
-  frequency: string;
-  equipment: string;
-  staffSupportLevel: string;
-}
-
-interface OtRecord {
-  id: string;
-  youngPerson: string;
-  assessmentDate: string;
-  ot_name: string;
-  otOrganisation: string;
-  sessionType: SessionType;
-  durationMinutes: number;
-  location: string;
-  focusAreas: string[];
-  assessmentTools: string[];
-  findings: string;
-  sensoryProfile: string;
-  recommendations: OtRecommendation[];
-  sensoryDiet: string[];
-  equipmentProvided: string[];
-  staffTraining: string;
-  homePracticeAdvised: string[];
-  childResponse: string;
-  familyInformedDate: string;
-  progressNotedSinceLast: string;
-  nextReviewDate: string;
-  reportProvided: boolean;
-}
+import { useOccupationalTherapyRecords } from "@/hooks/use-occupational-therapy-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type { OccupationalTherapyRecord, OtSessionType, OtRecommendation } from "@/types/extended";
+import { OT_SESSION_TYPE_LABEL } from "@/types/extended";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -76,283 +37,82 @@ const d = (n: number) => {
   return dt.toISOString().slice(0, 10);
 };
 
-const SESSION_TYPE_COLOURS: Record<SessionType, string> = {
-  "Assessment": "bg-blue-100 text-blue-800",
-  "Direct intervention": "bg-green-100 text-green-800",
-  "Consultation": "bg-purple-100 text-purple-800",
-  "Review": "bg-amber-100 text-amber-800",
-  "Sensory diet planning": "bg-pink-100 text-pink-800",
-  "Equipment recommendation": "bg-cyan-100 text-cyan-800",
-  "Training to staff": "bg-indigo-100 text-indigo-800",
+const SESSION_TYPE_COLOURS: Record<OtSessionType, string> = {
+  assessment: "bg-blue-100 text-blue-800",
+  direct_intervention: "bg-green-100 text-green-800",
+  consultation: "bg-purple-100 text-purple-800",
+  review: "bg-amber-100 text-amber-800",
+  sensory_diet_planning: "bg-pink-100 text-pink-800",
+  equipment_recommendation: "bg-cyan-100 text-cyan-800",
+  training_to_staff: "bg-indigo-100 text-indigo-800",
 };
 
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const SEED: OtRecord[] = [
-  {
-    id: "ot1",
-    youngPerson: "yp_casey",
-    assessmentDate: d(-95),
-    ot_name: "Marcia Field",
-    otOrganisation: "NHS Children's OT — North West",
-    sessionType: "Assessment",
-    durationMinutes: 90,
-    location: "Oak House — Casey's bedroom and lounge",
-    focusAreas: [
-      "Sensory processing (full profile)",
-      "Self-regulation",
-      "Fine motor skills",
-      "Daily living skills",
-    ],
-    assessmentTools: [
-      "Sensory Profile 2 (Caregiver + Child)",
-      "Bruininks-Oseretsky Test of Motor Proficiency (BOT-2 screen)",
-      "Clinical observation in home environment",
-      "Interview with key worker",
-    ],
-    findings:
-      "Casey presents with a sensory profile consistent with ASD — significant sensory seeking in vestibular and proprioceptive domains, hypo-responsive auditory processing, and tactile seeking behaviours. Fine motor skills age-appropriate. Self-regulation difficulties most evident during transitions and unstructured time. Strengths include strong physical coordination, motivation for movement-based activities, and capacity to self-soothe with tactile input.",
-    sensoryProfile:
-      "Seeking: vestibular (high), proprioceptive (high), tactile (moderate). Hypo-responsive: auditory (moderate). Typical: visual, gustatory, olfactory. Interoceptive awareness developing — Casey often does not recognise tiredness or thirst cues.",
-    recommendations: [
-      { area: "Daily routine", recommendation: "Embed structured movement breaks every 60–90 minutes during awake hours", frequency: "Throughout day", equipment: "Trampoline, climbing frame", staffSupportLevel: "Prompted, independent participation" },
-      { area: "Transitions", recommendation: "Provide proprioceptive 'heavy work' before known transitions (carrying laundry basket, pushing shopping trolley)", frequency: "Pre-transition", equipment: "Weighted laundry basket", staffSupportLevel: "Staff-led prompt" },
-      { area: "Bedtime", recommendation: "10 minutes of calming tactile input followed by deep pressure (weighted blanket)", frequency: "Nightly", equipment: "Weighted blanket 4kg, soft brush", staffSupportLevel: "Staff to supervise weighted blanket use" },
-      { area: "Auditory engagement", recommendation: "Pair verbal instructions with light tactile prompt (touch on shoulder with consent) and visual cue", frequency: "All instructions", equipment: "Visual schedule cards", staffSupportLevel: "All staff" },
-    ],
-    sensoryDiet: [
-      "Morning: 20-minute outdoor activity (run, cycle, or trampoline) before breakfast",
-      "Mid-morning: 5-minute movement break — wall push-ups or chair push-ups",
-      "Pre-lunch: heavy work task — help carry shopping or move chairs",
-      "Afternoon: structured sport or swimming where possible",
-      "Pre-homework: 10 minutes trampoline",
-      "Pre-bedtime: warm bath, soft blanket wrap, weighted blanket on bed",
-    ],
-    equipmentProvided: [
-      "Weighted blanket (4kg, single bed)",
-      "Outdoor trampoline (already in garden — confirmed suitable)",
-      "Sensory box: stress balls, putty, textured fidgets",
-      "Soft body brush for pre-bath tactile routine",
-    ],
-    staffTraining:
-      "Initial training delivered to all key staff (Anna, Darren, Edward) on sensory profile interpretation, safe weighted blanket use (15-minute supervised periods), and recognising sensory dysregulation versus behavioural communication.",
-    homePracticeAdvised: [
-      "Continue trampoline access daily",
-      "Avoid removing movement opportunities as a sanction — Casey needs movement to self-regulate",
-      "Pre-warn Casey of any change with at least 10 minutes notice plus visual cue",
-      "Track sleep/wake patterns for 4 weeks to share at review",
-    ],
-    childResponse:
-      "Casey engaged well with the assessment. Enjoyed the movement-based parts. Said the trampoline 'helps my brain feel quiet'. Asked thoughtful questions about why the OT was there.",
-    familyInformedDate: d(-93),
-    progressNotedSinceLast: "First OT input — baseline established.",
-    nextReviewDate: d(-5),
-    reportProvided: true,
-  },
-  {
-    id: "ot2",
-    youngPerson: "yp_casey",
-    assessmentDate: d(-40),
-    ot_name: "Marcia Field",
-    otOrganisation: "NHS Children's OT — North West",
-    sessionType: "Direct intervention",
-    durationMinutes: 60,
-    location: "Oak House — sensory room and garden",
-    focusAreas: [
-      "Modulation strategies",
-      "Building tolerance for unstructured time",
-      "Practising self-prompts for sensory diet",
-    ],
-    assessmentTools: [
-      "Clinical observation",
-      "Casey's self-rated regulation scale (0–5 'engine speed')",
-    ],
-    findings:
-      "Casey now reliably uses 'engine speed' language to describe own regulation state. Independently requested trampoline twice during session when feeling 'too fast'. Tolerated 12 minutes of quiet drawing — a meaningful gain from baseline 4 minutes. Tactile defensiveness around new textures emerging that wasn't apparent at first assessment — flagged for monitoring.",
-    sensoryProfile:
-      "Updated: vestibular seeking unchanged. Tactile profile shifting — increased reactivity to unfamiliar textures (new clothing, certain food). Proprioceptive seeking remains protective.",
-    recommendations: [
-      { area: "Self-regulation language", recommendation: "Continue using 'engine speed' (Alert Program) language across all settings", frequency: "Throughout day", equipment: "Engine speed visual on bedroom wall", staffSupportLevel: "All staff to model and prompt" },
-      { area: "New textures", recommendation: "Introduce new clothing/foods gradually — first explore by sight, then touch fingertips, then wear/taste briefly", frequency: "As needed", equipment: "—", staffSupportLevel: "1:1 staff support during introduction" },
-      { area: "Quiet time tolerance", recommendation: "Build quiet activity stamina by 2 minutes weekly — currently at 12, target 25 over 6 weeks", frequency: "Daily quiet block", equipment: "Visual timer, drawing materials", staffSupportLevel: "Staff seated nearby, low-demand presence" },
-    ],
-    sensoryDiet: [
-      "No major changes — current diet working well",
-      "Add: fingertip-textures activity 3× weekly (rice tray, beans, fabric scraps) to build tactile tolerance",
-      "Add: short 'quiet drawing' session with visual timer post-trampoline",
-    ],
-    equipmentProvided: [
-      "Engine speed visual aid (laminated, bedroom wall)",
-      "Visual timer (already in home)",
-      "Tactile exploration tray with mixed textures",
-    ],
-    staffTraining:
-      "Refresher delivered on Alert Program language. New guidance on graded texture introduction — written one-page summary left on file.",
-    homePracticeAdvised: [
-      "Use engine speed check-ins at meals and before bed",
-      "Don't force texture exposure — graded exploration only",
-      "Praise Casey's use of self-regulation language",
-    ],
-    childResponse:
-      "Casey proud to show OT the 'engine speed' chart and described own state accurately. Engaged willingly throughout. Asked when next visit would be.",
-    familyInformedDate: d(-39),
-    progressNotedSinceLast:
-      "Significant gain in self-awareness and regulation language. Quiet activity tolerance tripled. New tactile defensiveness noted — being monitored.",
-    nextReviewDate: d(20),
-    reportProvided: true,
-  },
-  {
-    id: "ot3",
-    youngPerson: "yp_casey",
-    assessmentDate: d(-12),
-    ot_name: "Marcia Field",
-    otOrganisation: "NHS Children's OT — North West",
-    sessionType: "Training to staff",
-    durationMinutes: 75,
-    location: "Oak House — staff office",
-    focusAreas: [
-      "Sensory diet implementation review",
-      "Recognising co-regulation needs vs behaviour",
-      "Adjusting sensory diet during school holidays",
-    ],
-    assessmentTools: ["Staff feedback questionnaire", "Sensory diet log review"],
-    findings:
-      "Staff implementing sensory diet consistently — log shows 92% adherence over the last 6 weeks. Confidence varies between team members; less experienced staff benefit from concrete scripts. Sensory diet needs slight adjustment during unstructured holiday periods to prevent dysregulation in late afternoons.",
-    sensoryProfile: "No new profile data — review based on existing assessment.",
-    recommendations: [
-      { area: "Holiday adjustments", recommendation: "Add a second outdoor movement block at 3pm during non-school days to prevent late-afternoon dysregulation", frequency: "Holidays / weekends", equipment: "Existing equipment", staffSupportLevel: "Whole team" },
-      { area: "Staff scripts", recommendation: "Use OT-provided one-page scripts for offering sensory choices (4 phrasing options for less experienced staff)", frequency: "As needed", equipment: "Printed scripts in office", staffSupportLevel: "Staff training tool" },
-      { area: "Recording", recommendation: "Continue 5-minute daily sensory log entry — useful for upcoming statutory review", frequency: "Daily", equipment: "Existing log book", staffSupportLevel: "Key worker shift" },
-    ],
-    sensoryDiet: [
-      "Existing diet retained",
-      "School holidays only: add 3pm 20-minute outdoor block",
-      "Existing sensory diet to be printed laminated for fridge",
-    ],
-    equipmentProvided: ["Laminated sensory diet schedule", "Staff scripts pack (one-page)"],
-    staffTraining:
-      "Full team session covering sensory diet rationale, holiday adjustments, scripts, and a Q&A on five real scenarios from the past month. Anna and Darren co-led discussion of Casey's progress.",
-    homePracticeAdvised: [
-      "Continue sensory diet as adjusted",
-      "Bring sensory log to next OT review",
-      "Flag any sleep regression promptly",
-    ],
-    childResponse: "Not present — staff training session.",
-    familyInformedDate: d(-10),
-    progressNotedSinceLast:
-      "Implementation strong. Staff confidence improving. No regression.",
-    nextReviewDate: d(50),
-    reportProvided: false,
-  },
-  {
-    id: "ot4",
-    youngPerson: "yp_alex",
-    assessmentDate: d(-25),
-    ot_name: "Helen Iqbal",
-    otOrganisation: "Independent OT (commissioned via CAMHS)",
-    sessionType: "Sensory diet planning",
-    durationMinutes: 60,
-    location: "Oak House — Alex's bedroom",
-    focusAreas: [
-      "Sensory regulation around ADHD",
-      "Pre-homework regulation routine",
-      "Bedtime wind-down",
-    ],
-    assessmentTools: [
-      "Adolescent/Adult Sensory Profile (self-report)",
-      "Clinical interview with Alex",
-      "Bedroom environmental review",
-    ],
-    findings:
-      "Alex's sensory profile aligns with ADHD — high proprioceptive seeking, auditory hyper-responsivity to unpredictable sound, tactile seeking via fidget tools. Alex articulate about own regulation needs and motivated to use strategies. Strong protective factor: Alex actively self-advocates for sensory accommodations at school. Areas for development: structured pre-homework regulation routine (currently inconsistent) and electronics-free wind-down before sleep.",
-    sensoryProfile:
-      "Proprioceptive seeking (high), auditory hyper-responsive (moderate-high), tactile seeking (moderate). Visual, gustatory, olfactory, vestibular all within typical range.",
-    recommendations: [
-      { area: "Pre-homework", recommendation: "30-minute structured movement block (gym, run, or wall climbing) before any homework attempt — non-negotiable", frequency: "Every homework session", equipment: "Existing gym equipment in garage", staffSupportLevel: "Prompt only — Alex independent" },
-      { area: "Homework setup", recommendation: "Weighted lap pad, fidget on desk, noise-cancelling headphones with low instrumental music", frequency: "All homework", equipment: "Lap pad, fidget set, headphones", staffSupportLevel: "Self-managed" },
-      { area: "Bedtime wind-down", recommendation: "60 minutes pre-sleep: phone in bedroom dock (not in bed), 15-minute warm shower, weighted blanket on bed, dim lighting only", frequency: "Nightly", equipment: "Phone dock, weighted blanket (existing)", staffSupportLevel: "Staff to support phone dock routine" },
-    ],
-    sensoryDiet: [
-      "Morning: 10 minutes movement (skipping or push-ups) before school",
-      "After school: 30 minutes outdoor activity before homework",
-      "Homework breaks every 25 minutes — 5-minute movement",
-      "Pre-bed: dimming lights from 9pm, electronics off by 9:30pm, weighted blanket",
-    ],
-    equipmentProvided: [
-      "Weighted lap pad (2kg)",
-      "Fidget set (varied textures)",
-      "Phone bedside dock (to stop in-bed scrolling)",
-    ],
-    staffTraining:
-      "Brief verbal handover with Anna and Darren — emphasis on the non-negotiable nature of pre-homework movement and not framing it as a 'reward' to be removed.",
-    homePracticeAdvised: [
-      "Protect pre-homework movement block — even on busy evenings",
-      "Phone dock to be respected — Alex agreed in principle",
-      "Note any sleep onset improvements over 4 weeks",
-    ],
-    childResponse:
-      "Alex engaged constructively, especially with the homework recommendations. Initially resistant to the bedtime phone change but accepted a 4-week trial. Said the OT 'actually got it' and 'didn't talk down'.",
-    familyInformedDate: d(-23),
-    progressNotedSinceLast: "First OT input for Alex — baseline established.",
-    nextReviewDate: d(35),
-    reportProvided: true,
-  },
+const SESSION_TYPES: OtSessionType[] = [
+  "assessment",
+  "direct_intervention",
+  "consultation",
+  "review",
+  "sensory_diet_planning",
+  "equipment_recommendation",
+  "training_to_staff",
 ];
 
 /* ── flat row for export ───────────────────────────────────────────────── */
 
 interface FlatRow {
-  youngPerson: string;
-  assessmentDate: string;
-  otName: string;
-  otOrganisation: string;
-  sessionType: string;
-  durationMinutes: string;
+  child_id: string;
+  assessment_date: string;
+  ot_name: string;
+  ot_organisation: string;
+  session_type: string;
+  duration_minutes: string;
   location: string;
-  focusAreas: string;
-  assessmentTools: string;
+  focus_areas: string;
+  assessment_tools: string;
   findings: string;
-  sensoryProfile: string;
+  sensory_profile: string;
   recommendations: string;
-  sensoryDiet: string;
-  equipmentProvided: string;
-  staffTraining: string;
-  homePracticeAdvised: string;
-  childResponse: string;
-  familyInformedDate: string;
-  progressNotedSinceLast: string;
-  nextReviewDate: string;
-  reportProvided: string;
+  sensory_diet: string;
+  equipment_provided: string;
+  staff_training: string;
+  home_practice_advised: string;
+  child_response: string;
+  family_informed_date: string;
+  progress_noted_since_last: string;
+  next_review_date: string;
+  report_provided: string;
 }
 
 const EXPORT_COLS: ExportColumn<FlatRow>[] = [
-  { header: "Young Person",          accessor: (r: FlatRow) => r.youngPerson },
-  { header: "Assessment Date",       accessor: (r: FlatRow) => r.assessmentDate },
-  { header: "OT Name",               accessor: (r: FlatRow) => r.otName },
-  { header: "Organisation",          accessor: (r: FlatRow) => r.otOrganisation },
-  { header: "Session Type",          accessor: (r: FlatRow) => r.sessionType },
-  { header: "Duration (mins)",       accessor: (r: FlatRow) => r.durationMinutes },
+  { header: "Young Person",          accessor: (r: FlatRow) => r.child_id },
+  { header: "Assessment Date",       accessor: (r: FlatRow) => r.assessment_date },
+  { header: "OT Name",               accessor: (r: FlatRow) => r.ot_name },
+  { header: "Organisation",          accessor: (r: FlatRow) => r.ot_organisation },
+  { header: "Session Type",          accessor: (r: FlatRow) => r.session_type },
+  { header: "Duration (mins)",       accessor: (r: FlatRow) => r.duration_minutes },
   { header: "Location",              accessor: (r: FlatRow) => r.location },
-  { header: "Focus Areas",           accessor: (r: FlatRow) => r.focusAreas },
-  { header: "Assessment Tools",      accessor: (r: FlatRow) => r.assessmentTools },
+  { header: "Focus Areas",           accessor: (r: FlatRow) => r.focus_areas },
+  { header: "Assessment Tools",      accessor: (r: FlatRow) => r.assessment_tools },
   { header: "Findings",              accessor: (r: FlatRow) => r.findings },
-  { header: "Sensory Profile",       accessor: (r: FlatRow) => r.sensoryProfile },
+  { header: "Sensory Profile",       accessor: (r: FlatRow) => r.sensory_profile },
   { header: "Recommendations",       accessor: (r: FlatRow) => r.recommendations },
-  { header: "Sensory Diet",          accessor: (r: FlatRow) => r.sensoryDiet },
-  { header: "Equipment Provided",    accessor: (r: FlatRow) => r.equipmentProvided },
-  { header: "Staff Training",        accessor: (r: FlatRow) => r.staffTraining },
-  { header: "Home Practice Advised", accessor: (r: FlatRow) => r.homePracticeAdvised },
-  { header: "Child Response",        accessor: (r: FlatRow) => r.childResponse },
-  { header: "Family Informed",       accessor: (r: FlatRow) => r.familyInformedDate },
-  { header: "Progress Since Last",   accessor: (r: FlatRow) => r.progressNotedSinceLast },
-  { header: "Next Review",           accessor: (r: FlatRow) => r.nextReviewDate },
-  { header: "Report Provided",       accessor: (r: FlatRow) => r.reportProvided },
+  { header: "Sensory Diet",          accessor: (r: FlatRow) => r.sensory_diet },
+  { header: "Equipment Provided",    accessor: (r: FlatRow) => r.equipment_provided },
+  { header: "Staff Training",        accessor: (r: FlatRow) => r.staff_training },
+  { header: "Home Practice Advised", accessor: (r: FlatRow) => r.home_practice_advised },
+  { header: "Child Response",        accessor: (r: FlatRow) => r.child_response },
+  { header: "Family Informed",       accessor: (r: FlatRow) => r.family_informed_date },
+  { header: "Progress Since Last",   accessor: (r: FlatRow) => r.progress_noted_since_last },
+  { header: "Next Review",           accessor: (r: FlatRow) => r.next_review_date },
+  { header: "Report Provided",       accessor: (r: FlatRow) => r.report_provided },
 ];
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function OccupationalTherapyRecordsPage() {
-  const [data] = useState<OtRecord[]>(SEED);
+  const { data: res, isLoading } = useOccupationalTherapyRecords();
+  const data: OccupationalTherapyRecord[] = res?.data ?? [];
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterChild, setFilterChild] = useState("all");
@@ -369,20 +129,20 @@ export default function OccupationalTherapyRecordsPage() {
 
     const childrenWithActiveOT = new Set(
       data
-        .filter((r) => r.assessmentDate >= ninetyDaysAgo)
-        .map((r) => r.youngPerson)
+        .filter((r) => r.assessment_date >= ninetyDaysAgo)
+        .map((r) => r.child_id)
     ).size;
 
     const sessionsThisQuarter = data.filter(
-      (r) => r.assessmentDate >= ninetyDaysAgo
+      (r) => r.assessment_date >= ninetyDaysAgo
     ).length;
 
     const reviewsDue = data.filter(
-      (r) => r.nextReviewDate <= today
+      (r) => r.next_review_date <= today
     ).length;
 
     const equipmentInPlace = data.reduce(
-      (s, r) => s + r.equipmentProvided.length,
+      (s, r) => s + r.equipment_provided.length,
       0
     );
 
@@ -396,29 +156,29 @@ export default function OccupationalTherapyRecordsPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
+          getYPName(r.child_id).toLowerCase().includes(q) ||
           r.ot_name.toLowerCase().includes(q) ||
           r.findings.toLowerCase().includes(q) ||
-          r.focusAreas.some((f) => f.toLowerCase().includes(q))
+          r.focus_areas.some((f) => f.toLowerCase().includes(q))
       );
     }
-    if (filterChild !== "all") list = list.filter((r) => r.youngPerson === filterChild);
-    if (filterSession !== "all") list = list.filter((r) => r.sessionType === filterSession);
+    if (filterChild !== "all") list = list.filter((r) => r.child_id === filterChild);
+    if (filterSession !== "all") list = list.filter((r) => r.session_type === filterSession);
 
     const out = [...list];
     switch (sortBy) {
       case "date_desc":
-        out.sort((a, b) => b.assessmentDate.localeCompare(a.assessmentDate));
+        out.sort((a, b) => b.assessment_date.localeCompare(a.assessment_date));
         break;
       case "date_asc":
-        out.sort((a, b) => a.assessmentDate.localeCompare(b.assessmentDate));
+        out.sort((a, b) => a.assessment_date.localeCompare(b.assessment_date));
         break;
       case "review":
-        out.sort((a, b) => a.nextReviewDate.localeCompare(b.nextReviewDate));
+        out.sort((a, b) => a.next_review_date.localeCompare(b.next_review_date));
         break;
       case "child":
         out.sort((a, b) =>
-          getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson))
+          getYPName(a.child_id).localeCompare(getYPName(b.child_id))
         );
         break;
     }
@@ -429,45 +189,49 @@ export default function OccupationalTherapyRecordsPage() {
   const exportData = useMemo<FlatRow[]>(
     () =>
       data.map((r) => ({
-        youngPerson: getYPName(r.youngPerson),
-        assessmentDate: r.assessmentDate,
-        otName: r.ot_name,
-        otOrganisation: r.otOrganisation,
-        sessionType: r.sessionType,
-        durationMinutes: String(r.durationMinutes),
+        child_id: getYPName(r.child_id),
+        assessment_date: r.assessment_date,
+        ot_name: r.ot_name,
+        ot_organisation: r.ot_organisation,
+        session_type: OT_SESSION_TYPE_LABEL[r.session_type],
+        duration_minutes: String(r.duration_minutes),
         location: r.location,
-        focusAreas: r.focusAreas.join("; "),
-        assessmentTools: r.assessmentTools.join("; "),
+        focus_areas: r.focus_areas.join("; "),
+        assessment_tools: r.assessment_tools.join("; "),
         findings: r.findings,
-        sensoryProfile: r.sensoryProfile,
+        sensory_profile: r.sensory_profile,
         recommendations: r.recommendations
           .map(
             (rec) =>
-              `${rec.area} — ${rec.recommendation} (Freq: ${rec.frequency}; Equip: ${rec.equipment}; Support: ${rec.staffSupportLevel})`
+              `${rec.area} — ${rec.recommendation} (Freq: ${rec.frequency}; Equip: ${rec.equipment}; Support: ${rec.staff_support_level})`
           )
           .join(" | "),
-        sensoryDiet: r.sensoryDiet.join("; "),
-        equipmentProvided: r.equipmentProvided.join("; "),
-        staffTraining: r.staffTraining,
-        homePracticeAdvised: r.homePracticeAdvised.join("; "),
-        childResponse: r.childResponse,
-        familyInformedDate: r.familyInformedDate,
-        progressNotedSinceLast: r.progressNotedSinceLast,
-        nextReviewDate: r.nextReviewDate,
-        reportProvided: r.reportProvided ? "Yes" : "No",
+        sensory_diet: r.sensory_diet.join("; "),
+        equipment_provided: r.equipment_provided.join("; "),
+        staff_training: r.staff_training,
+        home_practice_advised: r.home_practice_advised.join("; "),
+        child_response: r.child_response,
+        family_informed_date: r.family_informed_date,
+        progress_noted_since_last: r.progress_noted_since_last,
+        next_review_date: r.next_review_date,
+        report_provided: r.report_provided ? "Yes" : "No",
       })),
     [data]
   );
 
-  const SESSION_TYPES: SessionType[] = [
-    "Assessment",
-    "Direct intervention",
-    "Consultation",
-    "Review",
-    "Sensory diet planning",
-    "Equipment recommendation",
-    "Training to staff",
-  ];
+  /* ── loading state ───────────────────────────────────────────────── */
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Occupational Therapy Records"
+        subtitle="OT input per child — assessments, recommendations, sensory diets and progress (QS 7)"
+      >
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -542,7 +306,7 @@ export default function OccupationalTherapyRecordsPage() {
           <SelectContent>
             <SelectItem value="all">All session types</SelectItem>
             {SESSION_TYPES.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+              <SelectItem key={t} value={t}>{OT_SESSION_TYPE_LABEL[t]}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -571,7 +335,7 @@ export default function OccupationalTherapyRecordsPage() {
 
         {filtered.map((r) => {
           const open = expandedId === r.id;
-          const reviewOverdue = r.nextReviewDate <= d(0);
+          const reviewOverdue = r.next_review_date <= d(0);
 
           return (
             <div key={r.id} className="rounded-lg border bg-white">
@@ -582,11 +346,11 @@ export default function OccupationalTherapyRecordsPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Activity className="h-4 w-4 text-gray-400" />
-                    <h3 className="font-semibold">{getYPName(r.youngPerson)}</h3>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SESSION_TYPE_COLOURS[r.sessionType])}>
-                      {r.sessionType}
+                    <h3 className="font-semibold">{getYPName(r.child_id)}</h3>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SESSION_TYPE_COLOURS[r.session_type])}>
+                      {OT_SESSION_TYPE_LABEL[r.session_type]}
                     </span>
-                    {r.reportProvided && (
+                    {r.report_provided && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                         <FileCheck2 className="h-3 w-3" /> Report on file
                       </span>
@@ -598,7 +362,7 @@ export default function OccupationalTherapyRecordsPage() {
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {r.assessmentDate} · {r.ot_name} ({r.otOrganisation}) · {r.durationMinutes} mins · {r.location}
+                    {r.assessment_date} · {r.ot_name} ({r.ot_organisation}) · {r.duration_minutes} mins · {r.location}
                   </p>
                 </div>
                 {open
@@ -610,10 +374,10 @@ export default function OccupationalTherapyRecordsPage() {
                 <div className="border-t px-4 pb-4 space-y-4">
                   {/* meta row */}
                   <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div><span className="text-gray-500">Date:</span> <span className="font-medium">{r.assessmentDate}</span></div>
-                    <div><span className="text-gray-500">Duration:</span> <span className="font-medium">{r.durationMinutes} mins</span></div>
-                    <div><span className="text-gray-500">Family informed:</span> <span className="font-medium">{r.familyInformedDate}</span></div>
-                    <div><span className="text-gray-500">Next review:</span> <span className={cn("font-medium", reviewOverdue ? "text-red-600" : "")}>{r.nextReviewDate}</span></div>
+                    <div><span className="text-gray-500">Date:</span> <span className="font-medium">{r.assessment_date}</span></div>
+                    <div><span className="text-gray-500">Duration:</span> <span className="font-medium">{r.duration_minutes} mins</span></div>
+                    <div><span className="text-gray-500">Family informed:</span> <span className="font-medium">{r.family_informed_date}</span></div>
+                    <div><span className="text-gray-500">Next review:</span> <span className={cn("font-medium", reviewOverdue ? "text-red-600" : "")}>{r.next_review_date}</span></div>
                   </div>
 
                   {/* focus areas + tools */}
@@ -621,13 +385,13 @@ export default function OccupationalTherapyRecordsPage() {
                     <div className="rounded-md bg-gray-50 p-3">
                       <h4 className="text-xs font-semibold text-gray-500 mb-1">Focus Areas</h4>
                       <ul className="list-disc list-inside text-sm space-y-0.5">
-                        {r.focusAreas.map((f, i) => <li key={i}>{f}</li>)}
+                        {r.focus_areas.map((f, i) => <li key={i}>{f}</li>)}
                       </ul>
                     </div>
                     <div className="rounded-md bg-gray-50 p-3">
                       <h4 className="text-xs font-semibold text-gray-500 mb-1">Assessment Tools</h4>
                       <ul className="list-disc list-inside text-sm space-y-0.5">
-                        {r.assessmentTools.map((t, i) => <li key={i}>{t}</li>)}
+                        {r.assessment_tools.map((t, i) => <li key={i}>{t}</li>)}
                       </ul>
                     </div>
                   </div>
@@ -639,10 +403,10 @@ export default function OccupationalTherapyRecordsPage() {
                   </div>
 
                   {/* sensory profile */}
-                  {r.sensoryProfile && (
+                  {r.sensory_profile && (
                     <div className="rounded-md bg-purple-50 border border-purple-200 p-3">
                       <h4 className="text-xs font-semibold text-purple-700 mb-1">Sensory Profile</h4>
-                      <p className="text-sm text-purple-900">{r.sensoryProfile}</p>
+                      <p className="text-sm text-purple-900">{r.sensory_profile}</p>
                     </div>
                   )}
 
@@ -668,7 +432,7 @@ export default function OccupationalTherapyRecordsPage() {
                                 <td className="px-3 py-2">{rec.recommendation}</td>
                                 <td className="px-3 py-2 text-gray-600">{rec.frequency}</td>
                                 <td className="px-3 py-2 text-gray-600">{rec.equipment}</td>
-                                <td className="px-3 py-2 text-gray-600">{rec.staffSupportLevel}</td>
+                                <td className="px-3 py-2 text-gray-600">{rec.staff_support_level}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -679,67 +443,70 @@ export default function OccupationalTherapyRecordsPage() {
 
                   {/* sensory diet + equipment */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {r.sensoryDiet.length > 0 && (
+                    {r.sensory_diet.length > 0 && (
                       <div className="rounded-md bg-pink-50 border border-pink-200 p-3">
                         <h4 className="text-xs font-semibold text-pink-700 mb-1">Sensory Diet</h4>
                         <ul className="list-disc list-inside text-sm text-pink-900 space-y-0.5">
-                          {r.sensoryDiet.map((s, i) => <li key={i}>{s}</li>)}
+                          {r.sensory_diet.map((s, i) => <li key={i}>{s}</li>)}
                         </ul>
                       </div>
                     )}
-                    {r.equipmentProvided.length > 0 && (
+                    {r.equipment_provided.length > 0 && (
                       <div className="rounded-md bg-cyan-50 border border-cyan-200 p-3">
                         <h4 className="text-xs font-semibold text-cyan-700 mb-1 flex items-center gap-1">
                           <Wrench className="h-3 w-3" /> Equipment Provided
                         </h4>
                         <ul className="list-disc list-inside text-sm text-cyan-900 space-y-0.5">
-                          {r.equipmentProvided.map((e, i) => <li key={i}>{e}</li>)}
+                          {r.equipment_provided.map((e, i) => <li key={i}>{e}</li>)}
                         </ul>
                       </div>
                     )}
                   </div>
 
                   {/* staff training */}
-                  {r.staffTraining && (
+                  {r.staff_training && (
                     <div className="rounded-md bg-indigo-50 border border-indigo-200 p-3">
                       <h4 className="text-xs font-semibold text-indigo-700 mb-1 flex items-center gap-1">
                         <GraduationCap className="h-3 w-3" /> Staff Training
                       </h4>
-                      <p className="text-sm text-indigo-900">{r.staffTraining}</p>
+                      <p className="text-sm text-indigo-900">{r.staff_training}</p>
                     </div>
                   )}
 
                   {/* home practice */}
-                  {r.homePracticeAdvised.length > 0 && (
+                  {r.home_practice_advised.length > 0 && (
                     <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
                       <h4 className="text-xs font-semibold text-blue-700 mb-1 flex items-center gap-1">
                         <HandHelping className="h-3 w-3" /> Home Practice Advised
                       </h4>
                       <ul className="list-disc list-inside text-sm text-blue-900 space-y-0.5">
-                        {r.homePracticeAdvised.map((h, i) => <li key={i}>{h}</li>)}
+                        {r.home_practice_advised.map((h, i) => <li key={i}>{h}</li>)}
                       </ul>
                     </div>
                   )}
 
                   {/* child response + progress */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {r.childResponse && (
+                    {r.child_response && (
                       <div className="rounded-md bg-amber-50 border border-amber-200 p-3">
                         <h4 className="text-xs font-semibold text-amber-700 mb-1">Child&apos;s Response</h4>
-                        <p className="text-sm text-amber-900">{r.childResponse}</p>
+                        <p className="text-sm text-amber-900">{r.child_response}</p>
                       </div>
                     )}
-                    {r.progressNotedSinceLast && (
+                    {r.progress_noted_since_last && (
                       <div className="rounded-md bg-green-50 border border-green-200 p-3">
                         <h4 className="text-xs font-semibold text-green-700 mb-1">Progress Since Last</h4>
-                        <p className="text-sm text-green-900">{r.progressNotedSinceLast}</p>
+                        <p className="text-sm text-green-900">{r.progress_noted_since_last}</p>
                       </div>
                     )}
                   </div>
 
+                  {/* smart link panel */}
+                  <SmartLinkPanel sourceType="occupational-therapy-records" sourceId={r.id} childId={r.child_id} compact />
+
                   {/* logged-by */}
                   <div className="text-xs text-gray-400 pt-2 border-t">
-                    Coordinated by {getStaffName("staff_anna")} · Reviewed by {getStaffName("staff_darren")} · Report on file: {r.reportProvided ? "yes" : "no"}
+                    Coordinated by {getStaffName("staff_anna")} · Reviewed by {getStaffName("staff_darren")} · Report on file: {r.report_provided ? "yes" : "no"}
                   </div>
                 </div>
               )}

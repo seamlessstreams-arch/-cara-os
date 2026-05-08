@@ -16,32 +16,10 @@ import { cn } from "@/lib/utils";
 import {
   Moon, Sun, Search, ArrowUpDown, ChevronUp, ChevronDown, Plus,
   AlertTriangle, CheckCircle2, Clock, Users, Pill, ShieldAlert,
-  Phone, BedDouble, Eye, FileText, Sparkles, Bell,
+  Phone, BedDouble, Eye, FileText, Sparkles, Bell, Loader2,
 } from "lucide-react";
-
-// ── Types ──────────────────────────────────────────────────────────────────
-
-interface NightHandover {
-  id: string;
-  date: string;                                   // YYYY-MM-DD (the night that started)
-  eveningStaff: string;                           // staff ID (handing over to night)
-  nightStaff: string;                             // staff ID (sleep-in / waking night)
-  handoverTime: string;                           // HH:mm (evening → night)
-  childrenAtHome: string[];                       // yp IDs present overnight
-  childrenSleeping: Record<string, string>;       // yp ID → bedtime HH:mm
-  childrenAwake: string;                          // free-text: who was awake / why
-  medicationGiven: boolean;                       // evening meds administered before handover
-  medicationDue: string;                          // any meds due during the night
-  riskBriefing: string[];                         // top risk items the night staff need to know
-  specificConcerns: Record<string, string>;       // yp ID → concern text
-  nightChecksRequired: Record<string, string>;    // yp ID → frequency, e.g. "Every 30 mins"
-  expectedReturns: string;                        // anyone expected back during the night
-  emergencyContacts: string;                      // on-call manager, OOH, etc.
-  morningWakeTime: string;                        // HH:mm
-  morningStaff: string;                           // staff ID receiving handover at wake
-  nightEvents: string[];                          // what actually happened overnight
-  morningHandoverComplete: boolean;
-}
+import { useNightStaffHandovers } from "@/hooks/use-night-staff-handovers";
+import type { NightStaffHandover } from "@/types/extended";
 
 // ── Date helper (relative) ─────────────────────────────────────────────────
 
@@ -51,249 +29,27 @@ const d = (offset: number) => {
   return dt.toISOString().slice(0, 10);
 };
 
-// ── Seed records ───────────────────────────────────────────────────────────
-
-const SEED: NightHandover[] = [
-  {
-    id: "nh_001",
-    date: d(-1),
-    eveningStaff: "staff_anna",
-    nightStaff: "staff_ryan",
-    handoverTime: "22:15",
-    childrenAtHome: ["yp_alex", "yp_jordan", "yp_casey"],
-    childrenSleeping: { yp_alex: "22:00", yp_jordan: "22:30", yp_casey: "21:45" },
-    childrenAwake: "All settled by 22:45.",
-    medicationGiven: true,
-    medicationDue: "None overnight.",
-    riskBriefing: [
-      "Jordan presented as low after family contact call — monitor for nightmares.",
-      "Casey using new sensory weighted blanket, check breathing if visibly restless.",
-    ],
-    specificConcerns: {
-      yp_jordan: "Low mood post-contact. Wants door slightly open. Reassure if wakes.",
-    },
-    nightChecksRequired: {
-      yp_alex: "Every 60 mins",
-      yp_jordan: "Every 30 mins",
-      yp_casey: "Every 60 mins",
-    },
-    expectedReturns: "None.",
-    emergencyContacts: "On-call: Darren (RM) 07700 900111. OOH EDT: 0300 999 1234.",
-    morningWakeTime: "07:00",
-    morningStaff: "staff_chervelle",
-    nightEvents: [
-      "Jordan woke at 02:10 distressed — used grounding script, settled by 02:35.",
-      "Routine 30-min checks all in order.",
-    ],
-    morningHandoverComplete: true,
-  },
-  {
-    id: "nh_002",
-    date: d(-2),
-    eveningStaff: "staff_chervelle",
-    nightStaff: "staff_edward",
-    handoverTime: "22:00",
-    childrenAtHome: ["yp_alex", "yp_jordan", "yp_casey"],
-    childrenSleeping: { yp_alex: "22:15", yp_jordan: "22:00", yp_casey: "21:30" },
-    childrenAwake: "Alex reading until 22:30 — agreed and recorded.",
-    medicationGiven: true,
-    medicationDue: "Casey: PRN inhaler available if required.",
-    riskBriefing: [
-      "Casey mild cold — observe breathing during checks.",
-    ],
-    specificConcerns: {
-      yp_casey: "Cold symptoms. Inhaler in locked cupboard, key on board.",
-    },
-    nightChecksRequired: {
-      yp_alex: "Every 60 mins",
-      yp_jordan: "Every 60 mins",
-      yp_casey: "Every 30 mins",
-    },
-    expectedReturns: "None.",
-    emergencyContacts: "On-call: Darren (RM) 07700 900111.",
-    morningWakeTime: "07:00",
-    morningStaff: "staff_anna",
-    nightEvents: [
-      "Quiet night. All checks completed and logged.",
-    ],
-    morningHandoverComplete: true,
-  },
-  {
-    id: "nh_003",
-    date: d(-3),
-    eveningStaff: "staff_anna",
-    nightStaff: "staff_lackson",
-    handoverTime: "22:30",
-    childrenAtHome: ["yp_alex", "yp_jordan"],
-    childrenSleeping: { yp_alex: "22:00", yp_jordan: "22:45" },
-    childrenAwake: "Jordan settled at 22:45 after late phone call from sister.",
-    medicationGiven: true,
-    medicationDue: "None overnight.",
-    riskBriefing: [
-      "Casey at planned family overnight contact — not in home.",
-      "Front door alarm reactivated at 22:30.",
-    ],
-    specificConcerns: {},
-    nightChecksRequired: {
-      yp_alex: "Every 60 mins",
-      yp_jordan: "Every 60 mins",
-    },
-    expectedReturns: "Casey returning approx 10:00 tomorrow (not overnight).",
-    emergencyContacts: "On-call: Darren (RM) 07700 900111.",
-    morningWakeTime: "07:00",
-    morningStaff: "staff_mirela",
-    nightEvents: [
-      "Uneventful night.",
-    ],
-    morningHandoverComplete: true,
-  },
-  {
-    id: "nh_004",
-    date: d(-4),
-    eveningStaff: "staff_mirela",
-    nightStaff: "staff_ryan",
-    handoverTime: "22:00",
-    childrenAtHome: ["yp_alex", "yp_jordan", "yp_casey"],
-    childrenSleeping: { yp_alex: "22:30", yp_jordan: "22:00", yp_casey: "21:45" },
-    childrenAwake: "All settled.",
-    medicationGiven: true,
-    medicationDue: "None overnight.",
-    riskBriefing: [
-      "Alex finished college exam — may want early breakfast.",
-    ],
-    specificConcerns: {},
-    nightChecksRequired: {
-      yp_alex: "Every 60 mins",
-      yp_jordan: "Every 60 mins",
-      yp_casey: "Every 60 mins",
-    },
-    expectedReturns: "None.",
-    emergencyContacts: "On-call: Darren (RM) 07700 900111.",
-    morningWakeTime: "06:30",
-    morningStaff: "staff_chervelle",
-    nightEvents: [
-      "Smoke alarm test at 23:00 — all units functional.",
-      "All checks completed.",
-    ],
-    morningHandoverComplete: true,
-  },
-  {
-    id: "nh_005",
-    date: d(-5),
-    eveningStaff: "staff_edward",
-    nightStaff: "staff_lackson",
-    handoverTime: "22:00",
-    childrenAtHome: ["yp_alex", "yp_jordan", "yp_casey"],
-    childrenSleeping: { yp_alex: "22:00", yp_jordan: "22:30", yp_casey: "21:30" },
-    childrenAwake: "Casey took 20 mins to settle — used calming routine.",
-    medicationGiven: true,
-    medicationDue: "Jordan: morning dose 07:30 — leave blister pack on counter.",
-    riskBriefing: [
-      "Heightened safeguarding awareness — stranger reported in lane earlier.",
-      "Police aware. Front gate locked.",
-    ],
-    specificConcerns: {
-      yp_casey: "Anxious about news. Reassure if wakes. Door open inch.",
-      yp_jordan: "Asked about door alarm — confirmed it is set.",
-    },
-    nightChecksRequired: {
-      yp_alex: "Every 30 mins",
-      yp_jordan: "Every 30 mins",
-      yp_casey: "Every 30 mins",
-    },
-    expectedReturns: "None.",
-    emergencyContacts: "On-call: Darren (RM) 07700 900111. Police 101 (ref 24/0987).",
-    morningWakeTime: "07:00",
-    morningStaff: "staff_anna",
-    nightEvents: [
-      "External light tripped at 01:20 — fox on driveway, confirmed via CCTV.",
-      "Casey woke at 03:00 anxious — reassured, settled by 03:20.",
-      "All 30-min checks completed and signed.",
-    ],
-    morningHandoverComplete: true,
-  },
-  {
-    id: "nh_006",
-    date: d(-6),
-    eveningStaff: "staff_chervelle",
-    nightStaff: "staff_edward",
-    handoverTime: "22:15",
-    childrenAtHome: ["yp_jordan", "yp_casey"],
-    childrenSleeping: { yp_jordan: "22:15", yp_casey: "21:45" },
-    childrenAwake: "Both settled.",
-    medicationGiven: true,
-    medicationDue: "None overnight.",
-    riskBriefing: [
-      "Alex on planned overnight respite at maternal aunt's — not in home.",
-    ],
-    specificConcerns: {},
-    nightChecksRequired: {
-      yp_jordan: "Every 60 mins",
-      yp_casey: "Every 60 mins",
-    },
-    expectedReturns: "Alex returning approx 17:00 tomorrow (not overnight).",
-    emergencyContacts: "On-call: Darren (RM) 07700 900111.",
-    morningWakeTime: "07:30",
-    morningStaff: "staff_mirela",
-    nightEvents: [
-      "Quiet night, no disturbances.",
-    ],
-    morningHandoverComplete: true,
-  },
-  {
-    id: "nh_007",
-    date: d(0),
-    eveningStaff: "staff_anna",
-    nightStaff: "staff_ryan",
-    handoverTime: "22:00",
-    childrenAtHome: ["yp_alex", "yp_jordan", "yp_casey"],
-    childrenSleeping: { yp_alex: "22:00", yp_jordan: "22:30", yp_casey: "21:45" },
-    childrenAwake: "All settled by 22:45.",
-    medicationGiven: true,
-    medicationDue: "Alex: PRN paracetamol available (headache earlier).",
-    riskBriefing: [
-      "Casey LAC review tomorrow — may be anxious.",
-      "Jordan recently raised concerns about a peer at school — listening ear if wakes.",
-    ],
-    specificConcerns: {
-      yp_jordan: "May want to talk if wakes. Use active listening — do NOT problem-solve at night.",
-      yp_casey: "Wants night light on. Confirm review time at breakfast.",
-    },
-    nightChecksRequired: {
-      yp_alex: "Every 60 mins",
-      yp_jordan: "Every 30 mins",
-      yp_casey: "Every 30 mins",
-    },
-    expectedReturns: "None.",
-    emergencyContacts: "On-call: Darren (RM) 07700 900111. OOH EDT: 0300 999 1234.",
-    morningWakeTime: "07:00",
-    morningStaff: "staff_chervelle",
-    nightEvents: [],
-    morningHandoverComplete: false,
-  },
-];
-
 // ── Export columns ─────────────────────────────────────────────────────────
 
-const EXPORT_COLS: ExportColumn<NightHandover>[] = [
-  { header: "Date", accessor: (r: NightHandover) => r.date },
-  { header: "Handover Time", accessor: (r: NightHandover) => r.handoverTime },
-  { header: "Evening Staff", accessor: (r: NightHandover) => getStaffName(r.eveningStaff) },
-  { header: "Night Staff", accessor: (r: NightHandover) => getStaffName(r.nightStaff) },
-  { header: "Morning Staff", accessor: (r: NightHandover) => getStaffName(r.morningStaff) },
-  { header: "Wake Time", accessor: (r: NightHandover) => r.morningWakeTime },
-  { header: "Children in Home", accessor: (r: NightHandover) => r.childrenAtHome.map(getYPName).join(", ") },
-  { header: "Medication Given", accessor: (r: NightHandover) => (r.medicationGiven ? "Yes" : "No") },
-  { header: "Medication Due Overnight", accessor: (r: NightHandover) => r.medicationDue },
-  { header: "Risk Briefing", accessor: (r: NightHandover) => r.riskBriefing.join(" | ") },
-  { header: "Specific Concerns", accessor: (r: NightHandover) =>
-      Object.entries(r.specificConcerns).map(([id, c]) => `${getYPName(id)}: ${c}`).join(" | ") },
-  { header: "Night Checks", accessor: (r: NightHandover) =>
-      Object.entries(r.nightChecksRequired).map(([id, f]) => `${getYPName(id)}: ${f}`).join(" | ") },
-  { header: "Expected Returns", accessor: (r: NightHandover) => r.expectedReturns },
-  { header: "Emergency Contacts", accessor: (r: NightHandover) => r.emergencyContacts },
-  { header: "Night Events", accessor: (r: NightHandover) => r.nightEvents.join(" | ") },
-  { header: "Morning Handover Complete", accessor: (r: NightHandover) => (r.morningHandoverComplete ? "Yes" : "No") },
+const EXPORT_COLS: ExportColumn<NightStaffHandover>[] = [
+  { header: "Date", accessor: (r: NightStaffHandover) => r.date },
+  { header: "Handover Time", accessor: (r: NightStaffHandover) => r.handover_time },
+  { header: "Evening Staff", accessor: (r: NightStaffHandover) => getStaffName(r.evening_staff) },
+  { header: "Night Staff", accessor: (r: NightStaffHandover) => getStaffName(r.night_staff) },
+  { header: "Morning Staff", accessor: (r: NightStaffHandover) => getStaffName(r.morning_staff) },
+  { header: "Wake Time", accessor: (r: NightStaffHandover) => r.morning_wake_time },
+  { header: "Children in Home", accessor: (r: NightStaffHandover) => r.children_at_home.map(getYPName).join(", ") },
+  { header: "Medication Given", accessor: (r: NightStaffHandover) => (r.medication_given ? "Yes" : "No") },
+  { header: "Medication Due Overnight", accessor: (r: NightStaffHandover) => r.medication_due },
+  { header: "Risk Briefing", accessor: (r: NightStaffHandover) => r.risk_briefing.join(" | ") },
+  { header: "Specific Concerns", accessor: (r: NightStaffHandover) =>
+      Object.entries(r.specific_concerns).map(([id, c]) => `${getYPName(id)}: ${c}`).join(" | ") },
+  { header: "Night Checks", accessor: (r: NightStaffHandover) =>
+      Object.entries(r.night_checks_required).map(([id, f]) => `${getYPName(id)}: ${f}`).join(" | ") },
+  { header: "Expected Returns", accessor: (r: NightStaffHandover) => r.expected_returns },
+  { header: "Emergency Contacts", accessor: (r: NightStaffHandover) => r.emergency_contacts },
+  { header: "Night Events", accessor: (r: NightStaffHandover) => r.night_events.join(" | ") },
+  { header: "Morning Handover Complete", accessor: (r: NightStaffHandover) => (r.morning_handover_complete ? "Yes" : "No") },
 ];
 
 // ── Sort options ───────────────────────────────────────────────────────────
@@ -303,7 +59,9 @@ type SortKey = "date_desc" | "date_asc" | "events" | "concerns";
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default function NightStaffHandoverPage() {
-  const [records] = useState<NightHandover[]>(SEED);
+  const { data: res, isLoading } = useNightStaffHandovers();
+  const records: NightStaffHandover[] = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [staffFilter, setStaffFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortKey>("date_desc");
@@ -317,31 +75,31 @@ export default function NightStaffHandoverPage() {
       list = list.filter((r) => {
         const hay = [
           r.date,
-          getStaffName(r.eveningStaff),
-          getStaffName(r.nightStaff),
-          getStaffName(r.morningStaff),
-          r.childrenAtHome.map(getYPName).join(" "),
-          r.childrenAwake,
-          r.medicationDue,
-          r.riskBriefing.join(" "),
-          Object.entries(r.specificConcerns).map(([id, c]) => `${getYPName(id)} ${c}`).join(" "),
-          r.expectedReturns,
-          r.emergencyContacts,
-          r.nightEvents.join(" "),
+          getStaffName(r.evening_staff),
+          getStaffName(r.night_staff),
+          getStaffName(r.morning_staff),
+          r.children_at_home.map(getYPName).join(" "),
+          r.children_awake,
+          r.medication_due,
+          r.risk_briefing.join(" "),
+          Object.entries(r.specific_concerns).map(([id, c]) => `${getYPName(id)} ${c}`).join(" "),
+          r.expected_returns,
+          r.emergency_contacts,
+          r.night_events.join(" "),
         ].join(" ").toLowerCase();
         return hay.includes(q);
       });
     }
     if (staffFilter !== "all") {
       list = list.filter(
-        (r) => r.nightStaff === staffFilter || r.eveningStaff === staffFilter || r.morningStaff === staffFilter,
+        (r) => r.night_staff === staffFilter || r.evening_staff === staffFilter || r.morning_staff === staffFilter,
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
         case "date_asc":  return a.date.localeCompare(b.date);
-        case "events":    return b.nightEvents.length - a.nightEvents.length;
-        case "concerns":  return Object.keys(b.specificConcerns).length - Object.keys(a.specificConcerns).length;
+        case "events":    return b.night_events.length - a.night_events.length;
+        case "concerns":  return Object.keys(b.specific_concerns).length - Object.keys(a.specific_concerns).length;
         case "date_desc":
         default:          return b.date.localeCompare(a.date);
       }
@@ -354,12 +112,12 @@ export default function NightStaffHandoverPage() {
     const weekAgo = d(-7);
     const thisWeek = records.filter((r) => r.date >= weekAgo).length;
     const activeConcerns = records.reduce(
-      (n, r) => n + Object.keys(r.specificConcerns).length, 0,
+      (n, r) => n + Object.keys(r.specific_concerns).length, 0,
     );
     const avgChildren = records.length > 0
-      ? (records.reduce((a, r) => a + r.childrenAtHome.length, 0) / records.length).toFixed(1)
+      ? (records.reduce((a, r) => a + r.children_at_home.length, 0) / records.length).toFixed(1)
       : "0";
-    const eventNights = records.filter((r) => r.nightEvents.length > 0).length;
+    const eventNights = records.filter((r) => r.night_events.length > 0).length;
     return { thisWeek, activeConcerns, avgChildren, eventNights };
   }, [records]);
 
@@ -370,19 +128,21 @@ export default function NightStaffHandoverPage() {
   }, [records]);
 
   const incompleteMorning = useMemo(
-    () => records.filter((r) => !r.morningHandoverComplete && r.date < d(0)),
+    () => records.filter((r) => !r.morning_handover_complete && r.date < d(0)),
     [records],
   );
 
   const allStaffIds = useMemo(() => {
     const set = new Set<string>();
     records.forEach((r) => {
-      set.add(r.eveningStaff);
-      set.add(r.nightStaff);
-      set.add(r.morningStaff);
+      set.add(r.evening_staff);
+      set.add(r.night_staff);
+      set.add(r.morning_staff);
     });
     return Array.from(set);
   }, [records]);
+
+  if (isLoading) return <PageShell title="Night Staff Handover" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -503,8 +263,8 @@ export default function NightStaffHandoverPage() {
 
           {filtered.map((r) => {
             const open = expandedId === r.id;
-            const hasEvents = r.nightEvents.length > 0;
-            const concernCount = Object.keys(r.specificConcerns).length;
+            const hasEvents = r.night_events.length > 0;
+            const concernCount = Object.keys(r.specific_concerns).length;
             const isToday = r.date === d(0);
 
             return (
@@ -536,7 +296,7 @@ export default function NightStaffHandoverPage() {
                         {hasEvents && (
                           <Badge className="bg-rose-100 text-rose-800 text-xs">
                             <Bell className="h-3 w-3 mr-1" />
-                            {r.nightEvents.length} event{r.nightEvents.length === 1 ? "" : "s"}
+                            {r.night_events.length} event{r.night_events.length === 1 ? "" : "s"}
                           </Badge>
                         )}
                         {concernCount > 0 && (
@@ -545,7 +305,7 @@ export default function NightStaffHandoverPage() {
                             {concernCount} concern{concernCount === 1 ? "" : "s"}
                           </Badge>
                         )}
-                        {!r.morningHandoverComplete ? (
+                        {!r.morning_handover_complete ? (
                           <Badge variant="outline" className="text-xs text-amber-700 border-amber-300">
                             Morning handover pending
                           </Badge>
@@ -557,23 +317,23 @@ export default function NightStaffHandoverPage() {
                         )}
                       </div>
                       <p className="font-semibold">
-                        {getStaffName(r.eveningStaff)} <span className="text-muted-foreground font-normal">→</span>{" "}
-                        {getStaffName(r.nightStaff)} <span className="text-muted-foreground font-normal">→</span>{" "}
-                        {getStaffName(r.morningStaff)}
+                        {getStaffName(r.evening_staff)} <span className="text-muted-foreground font-normal">→</span>{" "}
+                        {getStaffName(r.night_staff)} <span className="text-muted-foreground font-normal">→</span>{" "}
+                        {getStaffName(r.morning_staff)}
                       </p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1 flex-wrap">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> Handover {r.handoverTime}
+                          <Clock className="h-3 w-3" /> Handover {r.handover_time}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Sun className="h-3 w-3" /> Wake {r.morningWakeTime}
+                          <Sun className="h-3 w-3" /> Wake {r.morning_wake_time}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Users className="h-3 w-3" /> {r.childrenAtHome.length} in home
+                          <Users className="h-3 w-3" /> {r.children_at_home.length} in home
                         </span>
                         <span className="flex items-center gap-1">
                           <Pill className="h-3 w-3" />
-                          {r.medicationGiven ? "Evening meds done" : "Evening meds outstanding"}
+                          {r.medication_given ? "Evening meds done" : "Evening meds outstanding"}
                         </span>
                       </div>
                     </div>
@@ -586,13 +346,13 @@ export default function NightStaffHandoverPage() {
                   {open && (
                     <div className="mt-4 space-y-4 border-t pt-4 text-sm">
                       {/* Risk briefing */}
-                      {r.riskBriefing.length > 0 && (
+                      {r.risk_briefing.length > 0 && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1 flex items-center gap-1">
                             <ShieldAlert className="h-3.5 w-3.5" /> Risk Briefing
                           </p>
                           <ul className="list-disc list-inside space-y-1 text-rose-900 bg-rose-50 border border-rose-100 rounded-lg p-3">
-                            {r.riskBriefing.map((item, i) => <li key={i}>{item}</li>)}
+                            {r.risk_briefing.map((item, i) => <li key={i}>{item}</li>)}
                           </ul>
                         </div>
                       )}
@@ -603,10 +363,10 @@ export default function NightStaffHandoverPage() {
                           <BedDouble className="h-3.5 w-3.5" /> Children in Home Tonight
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                          {r.childrenAtHome.map((id) => {
-                            const bedtime = r.childrenSleeping[id];
-                            const concern = r.specificConcerns[id];
-                            const checkFreq = r.nightChecksRequired[id];
+                          {r.children_at_home.map((id) => {
+                            const bedtime = r.children_sleeping[id];
+                            const concern = r.specific_concerns[id];
+                            const checkFreq = r.night_checks_required[id];
                             return (
                               <div key={id} className="rounded-lg border bg-slate-50 p-3 space-y-1">
                                 <p className="font-semibold text-slate-900">{getYPName(id)}</p>
@@ -639,19 +399,19 @@ export default function NightStaffHandoverPage() {
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                             <Eye className="h-3 w-3" /> Children Awake
                           </p>
-                          <p>{r.childrenAwake || "—"}</p>
+                          <p>{r.children_awake || "—"}</p>
                         </div>
                         <div className="rounded-lg border p-3">
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                             <Pill className="h-3 w-3" /> Medication Due Overnight
                           </p>
-                          <p>{r.medicationDue || "None"}</p>
+                          <p>{r.medication_due || "None"}</p>
                         </div>
                         <div className="rounded-lg border p-3">
                           <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                             <Clock className="h-3 w-3" /> Expected Returns
                           </p>
-                          <p>{r.expectedReturns || "None"}</p>
+                          <p>{r.expected_returns || "None"}</p>
                         </div>
                       </div>
 
@@ -660,7 +420,7 @@ export default function NightStaffHandoverPage() {
                         <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
                           <Phone className="h-3 w-3" /> Emergency Contacts
                         </p>
-                        <p className="font-mono text-xs">{r.emergencyContacts}</p>
+                        <p className="font-mono text-xs">{r.emergency_contacts}</p>
                       </div>
 
                       {/* Night events */}
@@ -668,13 +428,13 @@ export default function NightStaffHandoverPage() {
                         <p className="font-medium text-muted-foreground mb-1 flex items-center gap-1">
                           <Bell className="h-3.5 w-3.5" /> Night Events
                         </p>
-                        {r.nightEvents.length === 0 ? (
+                        {r.night_events.length === 0 ? (
                           <p className="text-xs text-muted-foreground italic">
                             {isToday ? "No events recorded yet." : "Quiet night — no events."}
                           </p>
                         ) : (
                           <ul className="list-disc list-inside space-y-1">
-                            {r.nightEvents.map((e, i) => <li key={i}>{e}</li>)}
+                            {r.night_events.map((e, i) => <li key={i}>{e}</li>)}
                           </ul>
                         )}
                       </div>
@@ -682,10 +442,10 @@ export default function NightStaffHandoverPage() {
                       {/* Footer summary */}
                       <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground border-t">
                         <span>
-                          Handover at {r.handoverTime} from {getStaffName(r.eveningStaff)} to {getStaffName(r.nightStaff)}.
-                          Wake {r.morningWakeTime} — handover to {getStaffName(r.morningStaff)}.
+                          Handover at {r.handover_time} from {getStaffName(r.evening_staff)} to {getStaffName(r.night_staff)}.
+                          Wake {r.morning_wake_time} — handover to {getStaffName(r.morning_staff)}.
                         </span>
-                        {r.morningHandoverComplete ? (
+                        {r.morning_handover_complete ? (
                           <span className="text-emerald-700 flex items-center gap-1">
                             <CheckCircle2 className="h-3 w-3" /> Morning handover signed off
                           </span>

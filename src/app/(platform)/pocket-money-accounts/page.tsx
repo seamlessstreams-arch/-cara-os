@@ -29,61 +29,17 @@ import {
   Wallet, Plus, Search, ArrowUpDown, Receipt,
   TrendingUp, TrendingDown, PoundSterling, Gift,
   ShoppingCart, Globe, Sparkles, AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type TransactionType = "credit" | "debit";
-
-type Category =
-  | "weekly_allowance"
-  | "birthday_gift"
-  | "savings_transfer"
-  | "chore_bonus"
-  | "purchase_shop"
-  | "purchase_online"
-  | "activity_cost"
-  | "lost"
-  | "adjustment";
-
-interface PocketMoneyAccount {
-  id: string;
-  date: string;
-  youngPersonId: string;
-  transactionType: TransactionType;
-  category: Category;
-  amount: number;
-  runningBalance: number;
-  description: string;
-  receiptRef: string;
-  authorisedBy: string;
-  witnessedBy: string | null;
-  notes: string;
-}
+import { usePocketMoneyAccounts, useCreatePocketMoneyAccount } from "@/hooks/use-pocket-money-accounts";
+import type { PocketMoneyAccount, PocketMoneyAccountTxType, PocketMoneyAccountCategory } from "@/types/extended";
+import { POCKET_MONEY_ACCOUNT_CATEGORY_LABEL } from "@/types/extended";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const CATEGORY_LABELS: Record<Category, string> = {
-  weekly_allowance: "Weekly Allowance",
-  birthday_gift: "Birthday Gift",
-  savings_transfer: "Savings Transfer",
-  chore_bonus: "Chore Bonus",
-  purchase_shop: "Shop Purchase",
-  purchase_online: "Online Purchase",
-  activity_cost: "Activity Cost",
-  lost: "Lost",
-  adjustment: "Adjustment",
-};
-
-const CATEGORY_ICONS: Record<Category, React.ElementType> = {
+const CATEGORY_ICONS: Record<PocketMoneyAccountCategory, React.ElementType> = {
   weekly_allowance: PoundSterling,
   birthday_gift: Gift,
   savings_transfer: TrendingUp,
@@ -101,50 +57,20 @@ const ALLOWANCE_RATES: Record<string, number> = {
   yp_casey: 15,
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const SEED: PocketMoneyAccount[] = [
-  // ── Alex — £15/week, balance ~£32 ──────────────────────────────────────────
-  { id: "pma_001", date: d(-21), youngPersonId: "yp_alex", transactionType: "credit",  category: "weekly_allowance", amount: 15.00, runningBalance: 15.00, description: "Weekly allowance",                   receiptRef: "",          authorisedBy: "staff_darren",    witnessedBy: "staff_anna",      notes: "" },
-  { id: "pma_002", date: d(-18), youngPersonId: "yp_alex", transactionType: "debit",   category: "purchase_shop",    amount: 3.50,  runningBalance: 11.50, description: "Sweets from corner shop",             receiptRef: "REC-A001",  authorisedBy: "staff_ryan",      witnessedBy: null,              notes: "Receipt in file" },
-  { id: "pma_003", date: d(-14), youngPersonId: "yp_alex", transactionType: "credit",  category: "weekly_allowance", amount: 15.00, runningBalance: 26.50, description: "Weekly allowance",                   receiptRef: "",          authorisedBy: "staff_darren",    witnessedBy: "staff_edward",    notes: "" },
-  { id: "pma_004", date: d(-10), youngPersonId: "yp_alex", transactionType: "debit",   category: "purchase_shop",    amount: 2.99,  runningBalance: 23.51, description: "Football magazine",                   receiptRef: "REC-A002",  authorisedBy: "staff_lackson",   witnessedBy: null,              notes: "" },
-  { id: "pma_005", date: d(-7),  youngPersonId: "yp_alex", transactionType: "credit",  category: "weekly_allowance", amount: 15.00, runningBalance: 38.51, description: "Weekly allowance",                   receiptRef: "",          authorisedBy: "staff_darren",    witnessedBy: "staff_mirela",    notes: "" },
-  { id: "pma_006", date: d(-5),  youngPersonId: "yp_alex", transactionType: "debit",   category: "purchase_shop",    amount: 4.50,  runningBalance: 34.01, description: "Football stickers (2 packs)",         receiptRef: "REC-A003",  authorisedBy: "staff_anna",      witnessedBy: null,              notes: "Alex saving stickers for album" },
-  { id: "pma_007", date: d(-3),  youngPersonId: "yp_alex", transactionType: "credit",  category: "chore_bonus",      amount: 2.00,  runningBalance: 36.01, description: "Helped tidy communal lounge",         receiptRef: "",          authorisedBy: "staff_ryan",      witnessedBy: "staff_edward",    notes: "Voluntary — great initiative" },
-  { id: "pma_008", date: d(-1),  youngPersonId: "yp_alex", transactionType: "debit",   category: "purchase_online",  amount: 3.99,  runningBalance: 32.02, description: "Robux top-up (online gaming)",        receiptRef: "REC-A004",  authorisedBy: "staff_darren",    witnessedBy: null,              notes: "Supervised purchase" },
-
-  // ── Jordan — £12/week (age-based), balance ~£18 ────────────────────────────
-  { id: "pma_009", date: d(-14), youngPersonId: "yp_jordan", transactionType: "credit",  category: "weekly_allowance", amount: 12.00, runningBalance: 12.00, description: "Weekly allowance",                  receiptRef: "",          authorisedBy: "staff_darren",    witnessedBy: "staff_chervelle", notes: "" },
-  { id: "pma_010", date: d(-11), youngPersonId: "yp_jordan", transactionType: "credit",  category: "birthday_gift",   amount: 20.00, runningBalance: 32.00, description: "Birthday money from grandparent",    receiptRef: "",          authorisedBy: "staff_darren",    witnessedBy: "staff_ryan",      notes: "Card and cash received — logged in gifts register" },
-  { id: "pma_011", date: d(-9),  youngPersonId: "yp_jordan", transactionType: "debit",   category: "purchase_shop",   amount: 8.99,  runningBalance: 23.01, description: "Lego minifig blind bag x3",           receiptRef: "REC-J001",  authorisedBy: "staff_anna",      witnessedBy: null,              notes: "" },
-  { id: "pma_012", date: d(-7),  youngPersonId: "yp_jordan", transactionType: "credit",  category: "weekly_allowance", amount: 12.00, runningBalance: 35.01, description: "Weekly allowance",                  receiptRef: "",          authorisedBy: "staff_darren",    witnessedBy: "staff_lackson",   notes: "" },
-  { id: "pma_013", date: d(-2),  youngPersonId: "yp_jordan", transactionType: "debit",   category: "activity_cost",   amount: 6.50,  runningBalance: 28.51, description: "Swimming session entry fee",          receiptRef: "REC-J002",  authorisedBy: "staff_chervelle", witnessedBy: null,             notes: "Part of weekly activity plan" },
-  { id: "pma_014", date: d(0),   youngPersonId: "yp_jordan", transactionType: "debit",   category: "purchase_shop",   amount: 10.50, runningBalance: 18.01, description: "Snacks and drink at cinema",          receiptRef: "REC-J003",  authorisedBy: "staff_ryan",      witnessedBy: null,              notes: "" },
-
-  // ── Casey — £15/week, balance ~£45 ─────────────────────────────────────────
-  { id: "pma_015", date: d(-14), youngPersonId: "yp_casey", transactionType: "credit",  category: "weekly_allowance", amount: 15.00, runningBalance: 22.00, description: "Weekly allowance",                   receiptRef: "",          authorisedBy: "staff_darren",    witnessedBy: "staff_mirela",    notes: "" },
-  { id: "pma_016", date: d(-12), youngPersonId: "yp_casey", transactionType: "debit",   category: "purchase_shop",    amount: 6.50,  runningBalance: 15.50, description: "Art supplies — watercolour set",      receiptRef: "REC-C001",  authorisedBy: "staff_anna",      witnessedBy: null,              notes: "For Casey's art project" },
-  { id: "pma_017", date: d(-7),  youngPersonId: "yp_casey", transactionType: "credit",  category: "weekly_allowance", amount: 15.00, runningBalance: 30.50, description: "Weekly allowance",                   receiptRef: "",          authorisedBy: "staff_darren",    witnessedBy: "staff_edward",    notes: "" },
-  { id: "pma_018", date: d(-4),  youngPersonId: "yp_casey", transactionType: "debit",   category: "purchase_online",  amount: 7.99,  runningBalance: 22.51, description: "Phone case from Amazon",              receiptRef: "REC-C002",  authorisedBy: "staff_darren",    witnessedBy: null,              notes: "Supervised online purchase — Casey chose design" },
-  { id: "pma_019", date: d(-1),  youngPersonId: "yp_casey", transactionType: "credit",  category: "savings_transfer", amount: 5.00,  runningBalance: 27.51, description: "Transfer from savings (Casey request)", receiptRef: "",        authorisedBy: "staff_darren",    witnessedBy: "staff_ryan",      notes: "Casey asked to move savings for planned purchase" },
-  { id: "pma_020", date: d(0),   youngPersonId: "yp_casey", transactionType: "credit",  category: "weekly_allowance", amount: 15.00, runningBalance: 42.51, description: "Weekly allowance",                   receiptRef: "",          authorisedBy: "staff_darren",    witnessedBy: "staff_anna",      notes: "" },
-];
-
 // ── Export Columns ────────────────────────────────────────────────────────────
 
 const EXPORT_COLS: ExportColumn<PocketMoneyAccount>[] = [
-  { header: "Date",           accessor: (r: PocketMoneyAccount) => r.date },
-  { header: "Young Person",   accessor: (r: PocketMoneyAccount) => getYPName(r.youngPersonId) },
-  { header: "Type",           accessor: (r: PocketMoneyAccount) => r.transactionType === "credit" ? "Credit" : "Debit" },
-  { header: "Category",       accessor: (r: PocketMoneyAccount) => CATEGORY_LABELS[r.category] },
-  { header: "Amount",         accessor: (r: PocketMoneyAccount) => `£${r.amount.toFixed(2)}` },
-  { header: "Running Balance",accessor: (r: PocketMoneyAccount) => `£${r.runningBalance.toFixed(2)}` },
-  { header: "Description",    accessor: (r: PocketMoneyAccount) => r.description },
-  { header: "Receipt Ref",    accessor: (r: PocketMoneyAccount) => r.receiptRef || "—" },
-  { header: "Authorised By",  accessor: (r: PocketMoneyAccount) => getStaffName(r.authorisedBy) },
-  { header: "Witnessed By",   accessor: (r: PocketMoneyAccount) => r.witnessedBy ? getStaffName(r.witnessedBy) : "—" },
-  { header: "Notes",          accessor: (r: PocketMoneyAccount) => r.notes },
+  { header: "Date",           accessor: (r) => r.date },
+  { header: "Young Person",   accessor: (r) => getYPName(r.child_id) },
+  { header: "Type",           accessor: (r) => r.transaction_type === "credit" ? "Credit" : "Debit" },
+  { header: "Category",       accessor: (r) => POCKET_MONEY_ACCOUNT_CATEGORY_LABEL[r.category] },
+  { header: "Amount",         accessor: (r) => `£${r.amount.toFixed(2)}` },
+  { header: "Running Balance",accessor: (r) => `£${r.running_balance.toFixed(2)}` },
+  { header: "Description",    accessor: (r) => r.description },
+  { header: "Receipt Ref",    accessor: (r) => r.receipt_ref || "—" },
+  { header: "Authorised By",  accessor: (r) => getStaffName(r.authorised_by) },
+  { header: "Witnessed By",   accessor: (r) => r.witnessed_by ? getStaffName(r.witnessed_by) : "—" },
+  { header: "Notes",          accessor: (r) => r.notes },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -152,12 +78,13 @@ const EXPORT_COLS: ExportColumn<PocketMoneyAccount>[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function PocketMoneyAccountsPage() {
-  const [transactions, setTransactions] = useState<PocketMoneyAccount[]>(SEED);
+  const { data = [], isLoading } = usePocketMoneyAccounts();
+  const createTx = useCreatePocketMoneyAccount();
   const [showNew, setShowNew] = useState(false);
 
   // Filters
   const [childFilter, setChildFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState<TransactionType | "all">("all");
+  const [typeFilter, setTypeFilter] = useState<PocketMoneyAccountTxType | "all">("all");
   const [sortDir, setSortDir] = useState<"newest" | "oldest">("newest");
   const [search, setSearch] = useState("");
 
@@ -169,15 +96,15 @@ export default function PocketMoneyAccountsPage() {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
 
     return ypIds.map((id) => {
-      const txs = transactions.filter((t) => t.youngPersonId === id);
+      const txs = data.filter((t) => t.child_id === id);
       // Current balance is the running balance of the most recent transaction
       const sorted = [...txs].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
-      const currentBalance = sorted[0]?.runningBalance ?? 0;
+      const currentBalance = sorted[0]?.running_balance ?? 0;
 
       // Monthly totals
       const monthTxs = txs.filter((t) => t.date >= monthStart);
-      const creditsThisMonth = monthTxs.filter((t) => t.transactionType === "credit").reduce((s, t) => s + t.amount, 0);
-      const debitsThisMonth = monthTxs.filter((t) => t.transactionType === "debit").reduce((s, t) => s + t.amount, 0);
+      const creditsThisMonth = monthTxs.filter((t) => t.transaction_type === "credit").reduce((s, t) => s + t.amount, 0);
+      const debitsThisMonth = monthTxs.filter((t) => t.transaction_type === "debit").reduce((s, t) => s + t.amount, 0);
 
       return {
         id,
@@ -189,22 +116,22 @@ export default function PocketMoneyAccountsPage() {
         transactionCount: txs.length,
       };
     });
-  }, [transactions]);
+  }, [data]);
 
   // ── Filtered transaction list ───────────────────────────────────────────────
 
   const filtered = useMemo(() => {
-    let list = [...transactions];
+    let list = [...data];
 
-    if (childFilter !== "all") list = list.filter((t) => t.youngPersonId === childFilter);
-    if (typeFilter !== "all") list = list.filter((t) => t.transactionType === typeFilter);
+    if (childFilter !== "all") list = list.filter((t) => t.child_id === childFilter);
+    if (typeFilter !== "all") list = list.filter((t) => t.transaction_type === typeFilter);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (t) =>
           t.description.toLowerCase().includes(q) ||
           t.notes.toLowerCase().includes(q) ||
-          CATEGORY_LABELS[t.category].toLowerCase().includes(q)
+          POCKET_MONEY_ACCOUNT_CATEGORY_LABEL[t.category].toLowerCase().includes(q)
       );
     }
 
@@ -214,13 +141,23 @@ export default function PocketMoneyAccountsPage() {
     });
 
     return list;
-  }, [transactions, childFilter, typeFilter, search, sortDir]);
+  }, [data, childFilter, typeFilter, search, sortDir]);
 
   // ── New transaction handler ────────────────────────────────────────────────
 
-  function handleNewTransaction(tx: PocketMoneyAccount) {
-    setTransactions((prev) => [...prev, tx]);
+  function handleNewTransaction(tx: Partial<PocketMoneyAccount>) {
+    createTx.mutate(tx as Partial<PocketMoneyAccount>);
     setShowNew(false);
+  }
+
+  if (isLoading) {
+    return (
+      <PageShell title="Pocket Money Accounts" subtitle="Individual running-balance ledgers — credits, debits, and receipt tracking">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -307,7 +244,7 @@ export default function PocketMoneyAccountsPage() {
               <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TransactionType | "all")}>
+          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as PocketMoneyAccountTxType | "all")}>
             <SelectTrigger className="w-[160px] h-9 text-sm">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
@@ -339,7 +276,7 @@ export default function PocketMoneyAccountsPage() {
           )}
 
           {filtered.map((tx) => {
-            const isCredit = tx.transactionType === "credit";
+            const isCredit = tx.transaction_type === "credit";
             const CatIcon = CATEGORY_ICONS[tx.category];
 
             return (
@@ -372,7 +309,7 @@ export default function PocketMoneyAccountsPage() {
                 {/* Young person */}
                 <div className="w-[90px] flex-shrink-0">
                   <Badge variant="outline" className="text-[10px]">
-                    {getYPName(tx.youngPersonId)}
+                    {getYPName(tx.child_id)}
                   </Badge>
                 </div>
 
@@ -383,16 +320,16 @@ export default function PocketMoneyAccountsPage() {
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[10px] text-muted-foreground">
-                      {CATEGORY_LABELS[tx.category]}
+                      {POCKET_MONEY_ACCOUNT_CATEGORY_LABEL[tx.category]}
                     </span>
-                    {tx.receiptRef && (
+                    {tx.receipt_ref && (
                       <Badge className="bg-slate-100 text-slate-600 border-slate-200 text-[9px] px-1.5 py-0">
                         <Receipt className="h-2.5 w-2.5 mr-0.5" />
-                        {tx.receiptRef}
+                        {tx.receipt_ref}
                       </Badge>
                     )}
                     <span className="text-[10px] text-muted-foreground">
-                      Auth: {getStaffName(tx.authorisedBy)}
+                      Auth: {getStaffName(tx.authorised_by)}
                     </span>
                   </div>
                 </div>
@@ -409,7 +346,7 @@ export default function PocketMoneyAccountsPage() {
 
                 {/* Running balance */}
                 <div className="text-xs text-muted-foreground tabular-nums flex-shrink-0 w-[70px] text-right">
-                  £{tx.runningBalance.toFixed(2)}
+                  £{tx.running_balance.toFixed(2)}
                 </div>
               </div>
             );
@@ -432,7 +369,7 @@ export default function PocketMoneyAccountsPage() {
         open={showNew}
         onClose={() => setShowNew(false)}
         onSubmit={handleNewTransaction}
-        transactions={transactions}
+        transactions={data}
       />
     </PageShell>
   );
@@ -450,12 +387,12 @@ function NewTransactionDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  onSubmit: (tx: PocketMoneyAccount) => void;
+  onSubmit: (tx: Partial<PocketMoneyAccount>) => void;
   transactions: PocketMoneyAccount[];
 }) {
-  const [youngPersonId, setYoungPersonId] = useState("yp_alex");
-  const [transactionType, setTransactionType] = useState<TransactionType>("credit");
-  const [category, setCategory] = useState<Category>("weekly_allowance");
+  const [childId, setChildId] = useState("yp_alex");
+  const [transactionType, setTransactionType] = useState<PocketMoneyAccountTxType>("credit");
+  const [category, setCategory] = useState<PocketMoneyAccountCategory>("weekly_allowance");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [receiptRef, setReceiptRef] = useState("");
@@ -463,8 +400,8 @@ function NewTransactionDialog({
   const [witnessedBy, setWitnessedBy] = useState("");
   const [notes, setNotes] = useState("");
 
-  const creditCategories: Category[] = ["weekly_allowance", "birthday_gift", "savings_transfer", "chore_bonus", "adjustment"];
-  const debitCategories: Category[] = ["purchase_shop", "purchase_online", "activity_cost", "lost", "adjustment"];
+  const creditCategories: PocketMoneyAccountCategory[] = ["weekly_allowance", "birthday_gift", "savings_transfer", "chore_bonus", "adjustment"];
+  const debitCategories: PocketMoneyAccountCategory[] = ["purchase_shop", "purchase_online", "activity_cost", "lost", "adjustment"];
   const availableCategories = transactionType === "credit" ? creditCategories : debitCategories;
 
   function handleSubmit() {
@@ -473,25 +410,24 @@ function NewTransactionDialog({
     const parsedAmount = parseFloat(amount);
     // Calculate new running balance from child's latest transaction
     const childTxs = transactions
-      .filter((t) => t.youngPersonId === youngPersonId)
+      .filter((t) => t.child_id === childId)
       .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
-    const lastBalance = childTxs[0]?.runningBalance ?? 0;
+    const lastBalance = childTxs[0]?.running_balance ?? 0;
     const newBalance = transactionType === "credit"
       ? lastBalance + parsedAmount
       : lastBalance - parsedAmount;
 
-    const tx: PocketMoneyAccount = {
-      id: `pma_local_${Date.now()}`,
-      date: d(0),
-      youngPersonId,
-      transactionType,
+    const tx: Partial<PocketMoneyAccount> = {
+      date: new Date().toISOString().slice(0, 10),
+      child_id: childId,
+      transaction_type: transactionType,
       category,
       amount: parsedAmount,
-      runningBalance: Math.round(newBalance * 100) / 100,
+      running_balance: Math.round(newBalance * 100) / 100,
       description: description.trim(),
-      receiptRef: receiptRef.trim(),
-      authorisedBy,
-      witnessedBy: witnessedBy || null,
+      receipt_ref: receiptRef.trim(),
+      authorised_by: authorisedBy,
+      witnessed_by: witnessedBy || null,
       notes: notes.trim(),
     };
 
@@ -518,7 +454,7 @@ function NewTransactionDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Young Person</Label>
-              <Select value={youngPersonId} onValueChange={setYoungPersonId}>
+              <Select value={childId} onValueChange={setChildId}>
                 <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
@@ -529,7 +465,7 @@ function NewTransactionDialog({
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Type</Label>
-              <Select value={transactionType} onValueChange={(v) => { setTransactionType(v as TransactionType); setCategory(v === "credit" ? "weekly_allowance" : "purchase_shop"); }}>
+              <Select value={transactionType} onValueChange={(v) => { setTransactionType(v as PocketMoneyAccountTxType); setCategory(v === "credit" ? "weekly_allowance" : "purchase_shop"); }}>
                 <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="credit">Credit</SelectItem>
@@ -542,11 +478,11 @@ function NewTransactionDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-xs">Category</Label>
-              <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
+              <Select value={category} onValueChange={(v) => setCategory(v as PocketMoneyAccountCategory)}>
                 <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {availableCategories.map((c) => (
-                    <SelectItem key={c} value={c}>{CATEGORY_LABELS[c]}</SelectItem>
+                    <SelectItem key={c} value={c}>{POCKET_MONEY_ACCOUNT_CATEGORY_LABEL[c]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

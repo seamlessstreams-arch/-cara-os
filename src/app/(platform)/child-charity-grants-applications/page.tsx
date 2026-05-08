@@ -24,271 +24,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type {
+  CharityGrantRecord,
+  CharityGrantCategory,
+  CharityGrantStatus,
+} from "@/types/extended";
+import {
+  CHARITY_GRANT_CATEGORY_LABEL,
+  CHARITY_GRANT_STATUS_LABEL,
+} from "@/types/extended";
+import { useCharityGrantRecords } from "@/hooks/use-charity-grant-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-interface GrantRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  charityName: string;
-  grantPurpose: string;
-  category:
-    | "Education"
-    | "Recreation / hobbies"
-    | "Therapy / wellbeing"
-    | "Sports equipment"
-    | "Music / arts"
-    | "Driving lessons"
-    | "IT / tech"
-    | "Travel / experience"
-    | "Family support"
-    | "Other";
-  applicationDate: string;
-  applicationStatus:
-    | "Drafted"
-    | "Submitted"
-    | "Under review"
-    | "Awarded"
-    | "Declined"
-    | "Partial award"
-    | "Withdrawn";
-  amountRequested: number;
-  amountAwarded?: number;
-  decisionDate?: string;
-  itemsFunded: string[];
-  evidenceProvidedToCharity: string[];
-  childInvolvedInApplication: boolean;
-  childAcknowledgementSent: boolean;
-  followUpReportRequired: boolean;
-  followUpReportDate?: string;
-  childVoice: string;
-  staffObservation: string;
-  recordedBy: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const STATUS_META: Record<CharityGrantStatus, { label: string; colour: string }> = {
+  drafted: { label: "Drafted", colour: "bg-gray-100 text-gray-700" },
+  submitted: { label: "Submitted", colour: "bg-blue-100 text-blue-700" },
+  under_review: { label: "Under review", colour: "bg-indigo-100 text-indigo-700" },
+  awarded: { label: "Awarded", colour: "bg-emerald-100 text-emerald-700" },
+  declined: { label: "Declined", colour: "bg-red-100 text-red-700" },
+  partial_award: { label: "Partial award", colour: "bg-amber-100 text-amber-700" },
+  withdrawn: { label: "Withdrawn", colour: "bg-stone-100 text-stone-700" },
 };
 
-const SEED: GrantRecord[] = [
-  {
-    id: "grant_001",
-    youngPerson: getYPName("yp_jordan"),
-    recordedDate: d(-65),
-    charityName: "Buttle UK",
-    grantPurpose:
-      "Football boots and goalkeeper gloves to enable Jordan to attend Highfields Academy football training sessions and weekend league matches with proper kit.",
-    category: "Sports equipment",
-    applicationDate: d(-90),
-    applicationStatus: "Awarded",
-    amountRequested: 400,
-    amountAwarded: 400,
-    decisionDate: d(-72),
-    itemsFunded: [
-      "Adidas Predator goalkeeper gloves (size 8)",
-      "Nike Phantom GX football boots (size 7)",
-      "Goalkeeper jersey and padded shorts",
-      "Kit bag and water bottle",
-    ],
-    evidenceProvidedToCharity: [
-      "Cover letter from Registered Manager",
-      "Confirmation of looked-after status from Nottinghamshire CC",
-      "Quote / receipts from JD Sports",
-      "Letter of support from Highfields Academy PE department",
-    ],
-    childInvolvedInApplication: true,
-    childAcknowledgementSent: true,
-    followUpReportRequired: true,
-    followUpReportDate: d(120),
-    childVoice:
-      "I felt proper for the first time turning up to training in my own gloves. The other kids said the gear looked sick. I'm gonna keep them clean and write Buttle a thank you with a photo.",
-    staffObservation:
-      "Jordan has worn the kit to every training session since it arrived. Coach reports significant lift in confidence in goal. Thank-you photo and short note posted to Buttle UK on Jordan's behalf with consent.",
-    recordedBy: getStaffName("staff_anna"),
-  },
-  {
-    id: "grant_002",
-    youngPerson: getYPName("yp_alex"),
-    recordedDate: d(-50),
-    charityName: "Coram Voice",
-    grantPurpose:
-      "Fees for an 8-week creative writing and spoken-word poetry workshop run by a local arts collective. Alex has expressed an interest in writing as a way to process feelings about contact with mum.",
-    category: "Music / arts",
-    applicationDate: d(-75),
-    applicationStatus: "Awarded",
-    amountRequested: 250,
-    amountAwarded: 250,
-    decisionDate: d(-58),
-    itemsFunded: [
-      "8-week poetry workshop fees",
-      "Notebook and pen set",
-      "Travel costs to and from venue",
-    ],
-    evidenceProvidedToCharity: [
-      "Pathway Plan extract showing creative interest goal",
-      "Workshop provider invoice",
-      "Key worker letter of support",
-    ],
-    childInvolvedInApplication: true,
-    childAcknowledgementSent: true,
-    followUpReportRequired: false,
-    childVoice:
-      "Writing it out helps me when I can't say things out loud. The Wednesday group is the bit of the week I actually look forward to.",
-    staffObservation:
-      "Alex has attended every session. Has shared two poems in key work — one about home, one about his brother. Marked improvement in emotional regulation post-session days. Funding fully spent and acquittal sent.",
-    recordedBy: getStaffName("staff_edward"),
-  },
-  {
-    id: "grant_003",
-    youngPerson: getYPName("yp_alex"),
-    recordedDate: d(-30),
-    charityName: "Lift the Limit",
-    grantPurpose:
-      "Boxing kit upgrade — gloves, hand wraps, gum shield and gym membership top-up for Alex's local non-contact boxing club, which the team uses as a positive regulation outlet.",
-    category: "Sports equipment",
-    applicationDate: d(-48),
-    applicationStatus: "Awarded",
-    amountRequested: 180,
-    amountAwarded: 180,
-    decisionDate: d(-35),
-    itemsFunded: [
-      "12oz training gloves",
-      "Hand wraps (2 pairs)",
-      "Custom-fit gum shield",
-      "3-month gym membership extension",
-    ],
-    evidenceProvidedToCharity: [
-      "Coach's letter confirming attendance",
-      "Receipts from boxing supplier",
-      "Risk assessment confirming non-contact training only",
-    ],
-    childInvolvedInApplication: true,
-    childAcknowledgementSent: true,
-    followUpReportRequired: false,
-    childVoice:
-      "When I go boxing I'm not thinking about anything else. The new gloves don't smash up my hands like the loaner ones did.",
-    staffObservation:
-      "Boxing remains a strong protective factor for Alex. Attendance averaging 3 nights/week. Coach reports excellent discipline. Kit in active use.",
-    recordedBy: getStaffName("staff_lackson"),
-  },
-  {
-    id: "grant_004",
-    youngPerson: getYPName("yp_casey"),
-    recordedDate: d(-40),
-    charityName: "Family Fund",
-    grantPurpose:
-      "Sensory regulation kit to support Casey's sleep disturbance and sensory needs identified in the OT assessment — weighted blanket, lap pad and tactile fidget kit.",
-    category: "Therapy / wellbeing",
-    applicationDate: d(-62),
-    applicationStatus: "Awarded",
-    amountRequested: 500,
-    amountAwarded: 500,
-    decisionDate: d(-45),
-    itemsFunded: [
-      "7kg cotton weighted blanket (single)",
-      "2kg lap pad for daytime regulation",
-      "Tactile fidget kit (chewable, putty, textured rings)",
-      "Blackout blind for bedroom window",
-    ],
-    evidenceProvidedToCharity: [
-      "OT sensory assessment report",
-      "GP letter confirming sleep disturbance",
-      "Receipts from Sensory Direct",
-      "Confirmation of looked-after status from Derbyshire CC",
-    ],
-    childInvolvedInApplication: true,
-    childAcknowledgementSent: true,
-    followUpReportRequired: true,
-    followUpReportDate: d(80),
-    childVoice:
-      "The heavy blanket actually helps. I don't fight my bed as much. The squishy thing in my hand at the table stops me picking my arms.",
-    staffObservation:
-      "Demonstrable reduction in night-time disturbance since blanket introduced — sleep log shows average 6.4 hrs vs prior 4.1 hrs. Casey self-reaches for fidget kit during stressful moments. Excellent outcome from this grant.",
-    recordedBy: getStaffName("staff_chervelle"),
-  },
-  {
-    id: "grant_005",
-    youngPerson: getYPName("yp_casey"),
-    recordedDate: d(-12),
-    charityName: "Buttle UK",
-    grantPurpose:
-      "Laptop for Year 7 transition to Allestree Woodlands — required for homework, online learning platforms and to reduce stigma of being the only child in class without a personal device.",
-    category: "IT / tech",
-    applicationDate: d(-18),
-    applicationStatus: "Submitted",
-    amountRequested: 600,
-    itemsFunded: [
-      "Mid-range laptop suitable for school workload",
-      "Protective laptop case",
-      "Microsoft 365 student licence (12 months)",
-    ],
-    evidenceProvidedToCharity: [
-      "School letter confirming Year 7 device expectation",
-      "Pathway Plan / Education section extract",
-      "Two device quotes (Currys and Argos)",
-      "Confirmation of looked-after status from Derbyshire CC",
-    ],
-    childInvolvedInApplication: true,
-    childAcknowledgementSent: false,
-    followUpReportRequired: true,
-    childVoice:
-      "I don't want to be the only one in class who can't do their homework on a laptop. I picked the silver one because it doesn't look babyish.",
-    staffObservation:
-      "Application submitted via Buttle UK online portal. Acknowledgement received. Decision typically within 4–6 weeks. Education Lead has flagged this as a priority for September transition readiness.",
-    recordedBy: getStaffName("staff_diane"),
-  },
-];
+const CATEGORIES = Object.keys(CHARITY_GRANT_CATEGORY_LABEL) as CharityGrantCategory[];
 
-/* ── constants ─────────────────────────────────────────────────────────── */
-
-const STATUS_META: Record<
-  GrantRecord["applicationStatus"],
-  { label: string; colour: string }
-> = {
-  Drafted: { label: "Drafted", colour: "bg-gray-100 text-gray-700" },
-  Submitted: { label: "Submitted", colour: "bg-blue-100 text-blue-700" },
-  "Under review": {
-    label: "Under review",
-    colour: "bg-indigo-100 text-indigo-700",
-  },
-  Awarded: { label: "Awarded", colour: "bg-emerald-100 text-emerald-700" },
-  Declined: { label: "Declined", colour: "bg-red-100 text-red-700" },
-  "Partial award": {
-    label: "Partial award",
-    colour: "bg-amber-100 text-amber-700",
-  },
-  Withdrawn: { label: "Withdrawn", colour: "bg-stone-100 text-stone-700" },
-};
-
-const CATEGORIES: GrantRecord["category"][] = [
-  "Education",
-  "Recreation / hobbies",
-  "Therapy / wellbeing",
-  "Sports equipment",
-  "Music / arts",
-  "Driving lessons",
-  "IT / tech",
-  "Travel / experience",
-  "Family support",
-  "Other",
-];
-
-const CATEGORY_COLOUR: Record<GrantRecord["category"], string> = {
-  Education: "bg-blue-100 text-blue-700",
-  "Recreation / hobbies": "bg-amber-100 text-amber-800",
-  "Therapy / wellbeing": "bg-teal-100 text-teal-800",
-  "Sports equipment": "bg-emerald-100 text-emerald-800",
-  "Music / arts": "bg-purple-100 text-purple-700",
-  "Driving lessons": "bg-orange-100 text-orange-800",
-  "IT / tech": "bg-slate-100 text-slate-700",
-  "Travel / experience": "bg-sky-100 text-sky-800",
-  "Family support": "bg-rose-100 text-rose-700",
-  Other: "bg-gray-100 text-gray-700",
+const CATEGORY_COLOUR: Record<CharityGrantCategory, string> = {
+  education: "bg-blue-100 text-blue-700",
+  recreation_hobbies: "bg-amber-100 text-amber-800",
+  therapy_wellbeing: "bg-teal-100 text-teal-800",
+  sports_equipment: "bg-emerald-100 text-emerald-800",
+  music_arts: "bg-purple-100 text-purple-700",
+  driving_lessons: "bg-orange-100 text-orange-800",
+  it_tech: "bg-slate-100 text-slate-700",
+  travel_experience: "bg-sky-100 text-sky-800",
+  family_support: "bg-rose-100 text-rose-700",
+  other: "bg-gray-100 text-gray-700",
 };
 
 const gbp = (n: number) =>
@@ -298,10 +68,9 @@ const gbp = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-/* ── component ─────────────────────────────────────────────────────────── */
-
 export default function ChildCharityGrantsApplicationsPage() {
-  const [data] = useState<GrantRecord[]>(SEED);
+  const { data: res, isLoading } = useCharityGrantRecords();
+  const data = res?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -313,20 +82,20 @@ export default function ChildCharityGrantsApplicationsPage() {
     const ytdAwarded = data
       .filter(
         (r) =>
-          r.amountAwarded &&
-          r.decisionDate &&
-          new Date(r.decisionDate) >= yearStart
+          r.amount_awarded &&
+          r.decision_date &&
+          new Date(r.decision_date) >= yearStart
       )
-      .reduce((s, r) => s + (r.amountAwarded ?? 0), 0);
+      .reduce((s, r) => s + (r.amount_awarded ?? 0), 0);
 
     const open = data.filter((r) =>
-      ["Drafted", "Submitted", "Under review"].includes(r.applicationStatus)
+      ["drafted", "submitted", "under_review"].includes(r.application_status)
     ).length;
 
-    const charitiesUsed = new Set(data.map((r) => r.charityName)).size;
+    const charitiesUsed = new Set(data.map((r) => r.charity_name)).size;
 
     const pending = data.filter((r) =>
-      ["Submitted", "Under review"].includes(r.applicationStatus)
+      ["submitted", "under_review"].includes(r.application_status)
     ).length;
 
     return { ytdAwarded, open, charitiesUsed, pending };
@@ -335,92 +104,105 @@ export default function ChildCharityGrantsApplicationsPage() {
   const filtered = useMemo(() => {
     let list = [...data];
     if (statusFilter !== "all")
-      list = list.filter((r) => r.applicationStatus === statusFilter);
+      list = list.filter((r) => r.application_status === statusFilter);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          r.youngPerson.toLowerCase().includes(q) ||
-          r.charityName.toLowerCase().includes(q) ||
-          r.grantPurpose.toLowerCase().includes(q) ||
-          r.category.toLowerCase().includes(q) ||
-          r.itemsFunded.some((i) => i.toLowerCase().includes(q))
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          r.charity_name.toLowerCase().includes(q) ||
+          r.grant_purpose.toLowerCase().includes(q) ||
+          CHARITY_GRANT_CATEGORY_LABEL[r.category].toLowerCase().includes(q) ||
+          r.items_funded.some((i) => i.toLowerCase().includes(q))
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
         case "amount":
-          return (b.amountAwarded ?? 0) - (a.amountAwarded ?? 0);
+          return (b.amount_awarded ?? 0) - (a.amount_awarded ?? 0);
         case "yp":
-          return a.youngPerson.localeCompare(b.youngPerson);
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "charity":
-          return a.charityName.localeCompare(b.charityName);
+          return a.charity_name.localeCompare(b.charity_name);
         default:
-          return b.applicationDate.localeCompare(a.applicationDate);
+          return b.application_date.localeCompare(a.application_date);
       }
     });
     return list;
   }, [data, statusFilter, search, sortBy]);
 
-  const exportCols: ExportColumn<GrantRecord>[] = [
-    { header: "Young Person", accessor: (r: GrantRecord) => r.youngPerson },
-    { header: "Charity", accessor: (r: GrantRecord) => r.charityName },
-    { header: "Category", accessor: (r: GrantRecord) => r.category },
-    { header: "Purpose", accessor: (r: GrantRecord) => r.grantPurpose },
+  const exportCols: ExportColumn<CharityGrantRecord>[] = [
+    { header: "Young Person", accessor: (r: CharityGrantRecord) => getYPName(r.child_id) },
+    { header: "Charity", accessor: (r: CharityGrantRecord) => r.charity_name },
+    { header: "Category", accessor: (r: CharityGrantRecord) => CHARITY_GRANT_CATEGORY_LABEL[r.category] },
+    { header: "Purpose", accessor: (r: CharityGrantRecord) => r.grant_purpose },
     {
       header: "Application Date",
-      accessor: (r: GrantRecord) => r.applicationDate,
+      accessor: (r: CharityGrantRecord) => r.application_date,
     },
     {
       header: "Status",
-      accessor: (r: GrantRecord) => r.applicationStatus,
+      accessor: (r: CharityGrantRecord) => STATUS_META[r.application_status].label,
     },
     {
       header: "Amount Requested (GBP)",
-      accessor: (r: GrantRecord) => String(r.amountRequested),
+      accessor: (r: CharityGrantRecord) => String(r.amount_requested),
     },
     {
       header: "Amount Awarded (GBP)",
-      accessor: (r: GrantRecord) =>
-        r.amountAwarded != null ? String(r.amountAwarded) : "",
+      accessor: (r: CharityGrantRecord) =>
+        r.amount_awarded != null ? String(r.amount_awarded) : "",
     },
     {
       header: "Decision Date",
-      accessor: (r: GrantRecord) => r.decisionDate ?? "",
+      accessor: (r: CharityGrantRecord) => r.decision_date ?? "",
     },
     {
       header: "Items Funded",
-      accessor: (r: GrantRecord) => r.itemsFunded.join("; "),
+      accessor: (r: CharityGrantRecord) => r.items_funded.join("; "),
     },
     {
       header: "Evidence Provided",
-      accessor: (r: GrantRecord) => r.evidenceProvidedToCharity.join("; "),
+      accessor: (r: CharityGrantRecord) => r.evidence_provided_to_charity.join("; "),
     },
     {
       header: "Child Involved",
-      accessor: (r: GrantRecord) =>
-        r.childInvolvedInApplication ? "Yes" : "No",
+      accessor: (r: CharityGrantRecord) =>
+        r.child_involved_in_application ? "Yes" : "No",
     },
     {
       header: "Acknowledgement Sent",
-      accessor: (r: GrantRecord) => (r.childAcknowledgementSent ? "Yes" : "No"),
+      accessor: (r: CharityGrantRecord) => (r.child_acknowledgement_sent ? "Yes" : "No"),
     },
     {
       header: "Follow-up Required",
-      accessor: (r: GrantRecord) => (r.followUpReportRequired ? "Yes" : "No"),
+      accessor: (r: CharityGrantRecord) => (r.follow_up_report_required ? "Yes" : "No"),
     },
     {
       header: "Follow-up Date",
-      accessor: (r: GrantRecord) => r.followUpReportDate ?? "",
+      accessor: (r: CharityGrantRecord) => r.follow_up_report_date ?? "",
     },
-    { header: "Child Voice", accessor: (r: GrantRecord) => r.childVoice },
+    { header: "Child Voice", accessor: (r: CharityGrantRecord) => r.child_voice },
     {
       header: "Staff Observation",
-      accessor: (r: GrantRecord) => r.staffObservation,
+      accessor: (r: CharityGrantRecord) => r.staff_observation,
     },
-    { header: "Recorded By", accessor: (r: GrantRecord) => r.recordedBy },
-    { header: "Recorded Date", accessor: (r: GrantRecord) => r.recordedDate },
+    { header: "Recorded By", accessor: (r: CharityGrantRecord) => getStaffName(r.recorded_by) },
+    { header: "Recorded Date", accessor: (r: CharityGrantRecord) => r.recorded_date },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Charity Grants & Applications"
+        subtitle="Per-child charity grant applications, decisions and items funded — Buttle UK, Family Fund, Coram Voice, Lift the Limit, Princess Royal Trust, BBC Children in Need"
+      >
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -438,7 +220,6 @@ export default function ChildCharityGrantsApplicationsPage() {
       }
     >
       <div id="print-area" className="space-y-6">
-        {/* stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             {
@@ -477,7 +258,6 @@ export default function ChildCharityGrantsApplicationsPage() {
           ))}
         </div>
 
-        {/* filters */}
         <div className="flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -496,7 +276,7 @@ export default function ChildCharityGrantsApplicationsPage() {
               <SelectItem value="all">All Statuses</SelectItem>
               {Object.keys(STATUS_META).map((k) => (
                 <SelectItem key={k} value={k}>
-                  {k}
+                  {STATUS_META[k as CharityGrantStatus].label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -516,7 +296,6 @@ export default function ChildCharityGrantsApplicationsPage() {
           </div>
         </div>
 
-        {/* records */}
         {filtered.map((rec) => {
           const isOpen = expanded === rec.id;
           return (
@@ -534,17 +313,17 @@ export default function ChildCharityGrantsApplicationsPage() {
                   </div>
                   <div className="text-left">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold">{rec.youngPerson}</h3>
+                      <h3 className="font-semibold">{getYPName(rec.child_id)}</h3>
                       <span className="text-sm text-muted-foreground">
-                        — {rec.charityName}
+                        — {rec.charity_name}
                       </span>
                       <span
                         className={cn(
                           "rounded-full px-2 py-0.5 text-xs font-medium",
-                          STATUS_META[rec.applicationStatus].colour
+                          STATUS_META[rec.application_status].colour
                         )}
                       >
-                        {STATUS_META[rec.applicationStatus].label}
+                        {STATUS_META[rec.application_status].label}
                       </span>
                       <span
                         className={cn(
@@ -552,19 +331,19 @@ export default function ChildCharityGrantsApplicationsPage() {
                           CATEGORY_COLOUR[rec.category]
                         )}
                       >
-                        {rec.category}
+                        {CHARITY_GRANT_CATEGORY_LABEL[rec.category]}
                       </span>
-                      {rec.amountAwarded != null && (
+                      {rec.amount_awarded != null && (
                         <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-xs font-medium text-emerald-800">
-                          Awarded {gbp(rec.amountAwarded)}
+                          Awarded {gbp(rec.amount_awarded)}
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Applied {rec.applicationDate} · Requested{" "}
-                      {gbp(rec.amountRequested)}
-                      {rec.decisionDate
-                        ? ` · Decision ${rec.decisionDate}`
+                      Applied {rec.application_date} · Requested{" "}
+                      {gbp(rec.amount_requested)}
+                      {rec.decision_date
+                        ? ` · Decision ${rec.decision_date}`
                         : ""}
                     </p>
                   </div>
@@ -581,37 +360,37 @@ export default function ChildCharityGrantsApplicationsPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div>
                       <span className="text-muted-foreground">Charity:</span>{" "}
-                      {rec.charityName}
+                      {rec.charity_name}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Status:</span>{" "}
-                      {rec.applicationStatus}
+                      {STATUS_META[rec.application_status].label}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Requested:</span>{" "}
-                      {gbp(rec.amountRequested)}
+                      {gbp(rec.amount_requested)}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Awarded:</span>{" "}
-                      {rec.amountAwarded != null
-                        ? gbp(rec.amountAwarded)
+                      {rec.amount_awarded != null
+                        ? gbp(rec.amount_awarded)
                         : "—"}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Applied:</span>{" "}
-                      {rec.applicationDate}
+                      {rec.application_date}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Decision:</span>{" "}
-                      {rec.decisionDate ?? "Pending"}
+                      {rec.decision_date ?? "Pending"}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Recorded by:</span>{" "}
-                      {rec.recordedBy}
+                      {getStaffName(rec.recorded_by)}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Recorded:</span>{" "}
-                      {rec.recordedDate}
+                      {rec.recorded_date}
                     </div>
                   </div>
 
@@ -619,7 +398,7 @@ export default function ChildCharityGrantsApplicationsPage() {
                     <h4 className="text-sm font-semibold text-teal-800 mb-1">
                       Grant Purpose
                     </h4>
-                    <p className="text-sm text-teal-900">{rec.grantPurpose}</p>
+                    <p className="text-sm text-teal-900">{rec.grant_purpose}</p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-3">
@@ -629,7 +408,7 @@ export default function ChildCharityGrantsApplicationsPage() {
                         Funded
                       </h4>
                       <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                        {rec.itemsFunded.map((i, idx) => (
+                        {rec.items_funded.map((i, idx) => (
                           <li key={idx}>{i}</li>
                         ))}
                       </ul>
@@ -640,7 +419,7 @@ export default function ChildCharityGrantsApplicationsPage() {
                         Provided to Charity
                       </h4>
                       <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                        {rec.evidenceProvidedToCharity.map((i, idx) => (
+                        {rec.evidence_provided_to_charity.map((i, idx) => (
                           <li key={idx}>{i}</li>
                         ))}
                       </ul>
@@ -653,7 +432,7 @@ export default function ChildCharityGrantsApplicationsPage() {
                         Child involved
                       </p>
                       <p className="font-medium">
-                        {rec.childInvolvedInApplication ? "Yes" : "No"}
+                        {rec.child_involved_in_application ? "Yes" : "No"}
                       </p>
                     </div>
                     <div className="rounded-md border bg-white p-2">
@@ -661,7 +440,7 @@ export default function ChildCharityGrantsApplicationsPage() {
                         Acknowledgement sent
                       </p>
                       <p className="font-medium">
-                        {rec.childAcknowledgementSent ? "Yes" : "Not yet"}
+                        {rec.child_acknowledgement_sent ? "Yes" : "Not yet"}
                       </p>
                     </div>
                     <div className="rounded-md border bg-white p-2">
@@ -669,7 +448,7 @@ export default function ChildCharityGrantsApplicationsPage() {
                         Follow-up required
                       </p>
                       <p className="font-medium">
-                        {rec.followUpReportRequired ? "Yes" : "No"}
+                        {rec.follow_up_report_required ? "Yes" : "No"}
                       </p>
                     </div>
                     <div className="rounded-md border bg-white p-2">
@@ -677,7 +456,7 @@ export default function ChildCharityGrantsApplicationsPage() {
                         Follow-up date
                       </p>
                       <p className="font-medium">
-                        {rec.followUpReportDate ?? "—"}
+                        {rec.follow_up_report_date ?? "—"}
                       </p>
                     </div>
                   </div>
@@ -687,7 +466,7 @@ export default function ChildCharityGrantsApplicationsPage() {
                       <Heart className="h-4 w-4" /> Child&apos;s Voice
                     </h4>
                     <p className="text-sm text-pink-900 italic">
-                      &ldquo;{rec.childVoice}&rdquo;
+                      &ldquo;{rec.child_voice}&rdquo;
                     </p>
                   </div>
 
@@ -696,9 +475,11 @@ export default function ChildCharityGrantsApplicationsPage() {
                       Staff Observation
                     </h4>
                     <p className="text-sm text-amber-950">
-                      {rec.staffObservation}
+                      {rec.staff_observation}
                     </p>
                   </div>
+
+                  <SmartLinkPanel sourceType="charity-grant-record" sourceId={rec.id} childId={rec.child_id} compact />
                 </div>
               )}
             </div>
@@ -739,6 +520,3 @@ export default function ChildCharityGrantsApplicationsPage() {
     </PageShell>
   );
 }
-
-/* keep CATEGORIES referenced so tree-shaking won't strip the type list */
-export const _categories = CATEGORIES;

@@ -22,42 +22,23 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useCreateHealthRecord } from "@/hooks/use-health-records";
+import { useHealthRecords, useCreateHealthRecord } from "@/hooks/use-health-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import type { HealthRecordEntry, HealthRecordType, HealthRecordStatus } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Plus, Stethoscope,
-  CheckCircle2, AlertTriangle, Clock, User, Calendar,
+  AlertTriangle, Clock, User, Calendar,
   ChevronDown, ChevronUp, Shield, Heart, Brain, Eye,
-  Pill, Syringe, FileText, Activity, Loader2,
+  Syringe, FileText, Activity, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type RecordType = "health_assessment" | "immunisation" | "allergy" | "condition" | "referral" | "dental" | "optical" | "mental_health" | "growth" | "other";
-type RecordStatus = "current" | "resolved" | "monitoring" | "referred" | "overdue";
-
-interface HealthRecord {
-  id: string;
-  child_id: string;
-  date: string;
-  type: RecordType;
-  title: string;
-  details: string;
-  professional: string;
-  status: RecordStatus;
-  follow_up_date: string | null;
-  outcome: string | null;
-  recorded_by: string;
-  created_at: string;
-}
-
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<RecordType, { label: string; colour: string; icon: React.ElementType }> = {
+const TYPE_CONFIG: Record<HealthRecordType, { label: string; colour: string; icon: React.ElementType }> = {
   health_assessment: { label: "Health Assessment", colour: "bg-blue-100 text-blue-700",     icon: Stethoscope },
   immunisation:      { label: "Immunisation",      colour: "bg-emerald-100 text-emerald-700", icon: Syringe   },
   allergy:           { label: "Allergy",           colour: "bg-red-100 text-red-700",       icon: AlertTriangle },
@@ -70,7 +51,7 @@ const TYPE_CONFIG: Record<RecordType, { label: string; colour: string; icon: Rea
   other:             { label: "Other",             colour: "bg-gray-100 text-gray-600",     icon: FileText    },
 };
 
-const STATUS_CONFIG: Record<RecordStatus, { label: string; colour: string }> = {
+const STATUS_CONFIG: Record<HealthRecordStatus, { label: string; colour: string }> = {
   current:    { label: "Current",    colour: "bg-blue-100 text-blue-700"   },
   resolved:   { label: "Resolved",   colour: "bg-green-100 text-green-700" },
   monitoring: { label: "Monitoring", colour: "bg-amber-100 text-amber-700" },
@@ -78,102 +59,15 @@ const STATUS_CONFIG: Record<RecordStatus, { label: string; colour: string }> = {
   overdue:    { label: "Overdue",    colour: "bg-red-100 text-red-700"     },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: HealthRecord[] = [
-  {
-    id: "hr_001", child_id: "yp_alex", date: d(-30), type: "health_assessment",
-    title: "Initial Health Assessment",
-    details: "Comprehensive health assessment completed within 20 days of placement. General health good. BMI within normal range. Immunisations up to date. Dental: some decay noted — dental appointment booked. Eyesight: normal. Hearing: normal. CAMHS referral recommended due to emotional regulation difficulties.",
-    professional: "Dr. S. Patel (GP)", status: "current",
-    follow_up_date: d(150), outcome: "Dental referral made. CAMHS referral submitted. Health action plan created.",
-    recorded_by: "staff_darren", created_at: d(-30) + "T10:00:00Z",
-  },
-  {
-    id: "hr_002", child_id: "yp_jordan", date: d(-60), type: "allergy",
-    title: "Penicillin Allergy — documented",
-    details: "Known allergy to Penicillin documented from referral paperwork. Allergic reaction: rash and swelling. GP confirmed allergy. Allergy band provided. All staff briefed. School nurse notified. Alternative antibiotics noted in health plan.",
-    professional: "Dr. A. Khan (GP)", status: "current",
-    follow_up_date: null, outcome: "Allergy documented in health plan, MAR, and school records. EpiPen not required — reaction is mild.",
-    recorded_by: "staff_anna", created_at: d(-60) + "T09:00:00Z",
-  },
-  {
-    id: "hr_003", child_id: "yp_casey", date: d(-14), type: "mental_health",
-    title: "CAMHS Review — anxiety management",
-    details: "CAMHS review session. Casey reports improved sleep over the past two weeks following sleep hygiene strategies. Anxiety levels reduced but still present around school transitions. Therapist recommends continuing current approach.",
-    professional: "Dr. H. Williams (CAMHS)", status: "monitoring",
-    follow_up_date: d(42), outcome: "Continue current strategies. Next review in 6 weeks. No medication change.",
-    recorded_by: "staff_chervelle", created_at: d(-14) + "T14:00:00Z",
-  },
-  {
-    id: "hr_004", child_id: "yp_casey", date: d(-7), type: "optical",
-    title: "Eye test — prescription change",
-    details: "Annual eye test at Specsavers. Slight prescription change detected. Casey has been reporting headaches during reading which is consistent with eye strain. New glasses ordered.",
-    professional: "Specsavers Optometrist", status: "current",
-    follow_up_date: d(3), outcome: "New glasses ordered. 7-10 day wait. Headaches expected to resolve.",
-    recorded_by: "staff_diane", created_at: d(-7) + "T13:30:00Z",
-  },
-  {
-    id: "hr_005", child_id: "yp_jordan", date: d(-90), type: "immunisation",
-    title: "Flu vaccination",
-    details: "Annual flu vaccination administered at school by school nurse. Jordan consented. No adverse reaction reported. Observed for 15 minutes post-vaccination.",
-    professional: "School Nurse", status: "resolved",
-    follow_up_date: null, outcome: "Vaccination recorded on health record. No side effects.",
-    recorded_by: "staff_anna", created_at: d(-90) + "T11:00:00Z",
-  },
-  {
-    id: "hr_006", child_id: "yp_alex", date: d(-20), type: "referral",
-    title: "CAMHS Referral — emotional regulation",
-    details: "Referral submitted to Derby CAMHS for emotional regulation assessment. Referral includes history of physical interventions, self-harm risk, and trauma background. Priority assessment requested given safeguarding context.",
-    professional: "Dr. S. Patel (GP)", status: "referred",
-    follow_up_date: d(10), outcome: "Referral accepted. Initial assessment booked — see appointments.",
-    recorded_by: "staff_darren", created_at: d(-20) + "T10:00:00Z",
-  },
-  {
-    id: "hr_007", child_id: "yp_casey", date: d(-120), type: "dental",
-    title: "Dental check-up — routine",
-    details: "6-monthly dental check-up. No new cavities. Good oral hygiene. One small filling from previous visit holding well. Next check-up in 6 months.",
-    professional: "Mr. Ahmed (Dentist)", status: "resolved",
-    follow_up_date: d(60), outcome: "Good dental health. Next check-up booked.",
-    recorded_by: "staff_chervelle", created_at: d(-120) + "T10:00:00Z",
-  },
-  {
-    id: "hr_008", child_id: "yp_alex", date: d(-45), type: "condition",
-    title: "Asthma — mild, controlled",
-    details: "Pre-existing asthma documented from referral. Mild, well-controlled with salbutamol inhaler PRN. No hospital admissions. Triggers: cold weather, exercise. Asthma plan in place.",
-    professional: "Dr. S. Patel (GP)", status: "current",
-    follow_up_date: d(90), outcome: "Inhaler available at home and school. Asthma plan reviewed annually.",
-    recorded_by: "staff_darren", created_at: d(-45) + "T09:00:00Z",
-  },
-  {
-    id: "hr_009", child_id: "yp_jordan", date: d(-10), type: "growth",
-    title: "Height & weight check",
-    details: "Routine height and weight check. Jordan: Height 152cm (50th percentile), Weight 43kg (45th percentile). BMI within healthy range. Growth tracking normal. No concerns.",
-    professional: "School Nurse", status: "resolved",
-    follow_up_date: d(180), outcome: "Growth within normal parameters. Next check in 6 months.",
-    recorded_by: "staff_anna", created_at: d(-10) + "T11:00:00Z",
-  },
-  {
-    id: "hr_010", child_id: "yp_casey", date: d(-2), type: "condition",
-    title: "Sleep disturbance — ongoing monitoring",
-    details: "Casey continues to experience intermittent sleep difficulties. Current approach: consistent bedtime routine, no screens 1hr before bed, calm environment. GP reviewed — no medication change. CAMHS monitoring.",
-    professional: "Dr. L. Chen (GP)", status: "monitoring",
-    follow_up_date: d(90), outcome: "Continue current sleep hygiene approach. Monitor and review at next GP appointment.",
-    recorded_by: "staff_chervelle", created_at: d(-2) + "T09:00:00Z",
-  },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function HealthRecordsPage() {
   const { currentUser } = useAuthContext();
+  const { data: response, isLoading } = useHealthRecords();
   const createRecord = useCreateHealthRecord();
 
-  const [entries, setEntries] = useState<HealthRecord[]>(SEED);
+  const records = response?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -185,21 +79,21 @@ export default function HealthRecordsPage() {
 
   // new form
   const [nChild, setNChild] = useState("");
-  const [nType, setNType] = useState<RecordType | "">("");
+  const [nType, setNType] = useState<HealthRecordType | "">("");
   const [nTitle, setNTitle] = useState("");
   const [nDetails, setNDetails] = useState("");
   const [nProfessional, setNProfessional] = useState("");
   const [nOutcome, setNOutcome] = useState("");
 
-  const childIds = useMemo(() => [...new Set(entries.map(e => e.child_id))], [entries]);
+  const childIds = useMemo(() => [...new Set(records.map(e => e.child_id))], [records]);
 
   /* ── filtering ──────────────────────────────────────────────────────────── */
   const filtered = useMemo(() => {
-    let list = [...entries];
+    let list = [...records];
     if (tab === "active") list = list.filter(e => e.status === "current" || e.status === "monitoring" || e.status === "overdue");
-    if (tab === "referrals") list = list.filter(e => e.type === "referral" || e.status === "referred");
+    if (tab === "referrals") list = list.filter(e => e.record_type === "referral" || e.status === "referred");
     if (childFilter !== "all") list = list.filter(e => e.child_id === childFilter);
-    if (typeFilter !== "all") list = list.filter(e => e.type === typeFilter);
+    if (typeFilter !== "all") list = list.filter(e => e.record_type === typeFilter);
     if (statusFilter !== "all") list = list.filter(e => e.status === statusFilter);
     if (search) {
       const q = search.toLowerCase();
@@ -212,75 +106,87 @@ export default function HealthRecordsPage() {
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "newest": return b.created_at.localeCompare(a.created_at);
-        case "oldest": return a.created_at.localeCompare(b.created_at);
+        case "newest": return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+        case "oldest": return (a.created_at ?? "").localeCompare(b.created_at ?? "");
         case "child":  return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
-        case "type":   return a.type.localeCompare(b.type);
+        case "type":   return a.record_type.localeCompare(b.record_type);
         default: return 0;
       }
     });
     return list;
-  }, [entries, search, childFilter, typeFilter, statusFilter, sortBy, tab]);
+  }, [records, search, childFilter, typeFilter, statusFilter, sortBy, tab]);
 
   /* ── stats ──────────────────────────────────────────────────────────────── */
   const stats = useMemo(() => ({
-    total: entries.length,
-    active: entries.filter(e => e.status === "current" || e.status === "monitoring").length,
-    referrals: entries.filter(e => e.type === "referral" || e.status === "referred").length,
-    overdue: entries.filter(e => e.follow_up_date && e.follow_up_date < todayStr() && e.status !== "resolved").length,
-    allergies: entries.filter(e => e.type === "allergy").length,
-  }), [entries]);
+    total: records.length,
+    active: records.filter(e => e.status === "current" || e.status === "monitoring").length,
+    referrals: records.filter(e => e.record_type === "referral" || e.status === "referred").length,
+    overdue: records.filter(e => e.follow_up_date && e.follow_up_date < todayStr() && e.status !== "resolved").length,
+    allergies: records.filter(e => e.record_type === "allergy").length,
+  }), [records]);
 
   /* ── per-child health summary ──────────────────────────────────────────── */
   const childHealth = useMemo(() => {
     const map = new Map<string, { conditions: number; allergies: number; overdue: number }>();
-    entries.forEach(e => {
+    records.forEach(e => {
       const cur = map.get(e.child_id) || { conditions: 0, allergies: 0, overdue: 0 };
-      if (e.type === "condition" && e.status === "current") cur.conditions++;
-      if (e.type === "allergy") cur.allergies++;
+      if (e.record_type === "condition" && e.status === "current") cur.conditions++;
+      if (e.record_type === "allergy") cur.allergies++;
       if (e.follow_up_date && e.follow_up_date < todayStr() && e.status !== "resolved") cur.overdue++;
       map.set(e.child_id, cur);
     });
     return map;
-  }, [entries]);
+  }, [records]);
 
   /* ── export ─────────────────────────────────────────────────────────────── */
-  const exportCols: ExportColumn<HealthRecord>[] = [
-    { header: "ID", accessor: r => r.id },
-    { header: "Child", accessor: r => getYPName(r.child_id) },
-    { header: "Date", accessor: r => r.date },
-    { header: "Type", accessor: r => TYPE_CONFIG[r.type].label },
-    { header: "Title", accessor: r => r.title },
-    { header: "Details", accessor: r => r.details },
-    { header: "Professional", accessor: r => r.professional },
-    { header: "Status", accessor: r => STATUS_CONFIG[r.status].label },
-    { header: "Follow-up Date", accessor: r => r.follow_up_date || "" },
-    { header: "Outcome", accessor: r => r.outcome || "" },
-    { header: "Recorded By", accessor: r => getStaffName(r.recorded_by) },
+  const exportCols: ExportColumn<HealthRecordEntry>[] = [
+    { header: "ID", accessor: (r: HealthRecordEntry) => r.id },
+    { header: "Child", accessor: (r: HealthRecordEntry) => getYPName(r.child_id) },
+    { header: "Date", accessor: (r: HealthRecordEntry) => r.date },
+    { header: "Type", accessor: (r: HealthRecordEntry) => TYPE_CONFIG[r.record_type].label },
+    { header: "Title", accessor: (r: HealthRecordEntry) => r.title },
+    { header: "Details", accessor: (r: HealthRecordEntry) => r.details },
+    { header: "Professional", accessor: (r: HealthRecordEntry) => r.professional },
+    { header: "Status", accessor: (r: HealthRecordEntry) => STATUS_CONFIG[r.status].label },
+    { header: "Follow-up Date", accessor: (r: HealthRecordEntry) => r.follow_up_date ?? "" },
+    { header: "Outcome", accessor: (r: HealthRecordEntry) => r.outcome ?? "" },
+    { header: "Recorded By", accessor: (r: HealthRecordEntry) => getStaffName(r.staff_id) },
   ];
 
   /* ── create ─────────────────────────────────────────────────────────────── */
   const handleCreate = () => {
     if (!nChild || !nType || !nTitle || !nDetails) return;
-    const entry: HealthRecord = {
-      id: `hr_${Date.now()}`,
-      child_id: nChild,
-      date: todayStr(),
-      type: nType as RecordType,
-      title: nTitle,
-      details: nDetails,
-      professional: nProfessional,
-      status: nType === "referral" ? "referred" : "current",
-      follow_up_date: null,
-      outcome: nOutcome || null,
-      recorded_by: currentUser?.id || "staff_darren",
-      created_at: new Date().toISOString(),
-    };
-    setEntries(prev => [entry, ...prev]);
-    createRecord.mutate({ child_id: nChild, record_type: nType as "appointment" | "assessment" | "immunisation" | "allergy" | "action_plan" | "medication_change", title: nTitle, date: todayStr(), provider: nProfessional, notes: nDetails, staff_id: currentUser?.id || "staff_darren", status: "scheduled" }, { onSuccess: () => toast.success("Health record saved"), onError: () => toast.error("Failed to save record") });
+    createRecord.mutate(
+      {
+        child_id: nChild,
+        date: todayStr(),
+        record_type: nType as HealthRecordType,
+        title: nTitle,
+        details: nDetails,
+        professional: nProfessional,
+        status: nType === "referral" ? "referred" : "current",
+        follow_up_date: null,
+        outcome: nOutcome || null,
+        staff_id: currentUser?.id || "staff_darren",
+      },
+      {
+        onSuccess: () => toast.success("Health record saved"),
+        onError: () => toast.error("Failed to save record"),
+      },
+    );
     setShowNew(false);
     setNChild(""); setNType(""); setNTitle(""); setNDetails(""); setNProfessional(""); setNOutcome("");
   };
+
+  if (isLoading) {
+    return (
+      <PageShell title="Health Records" subtitle="Medical history, assessments, and health action plans">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -352,7 +258,7 @@ export default function HealthRecordsPage() {
       {/* ── Tabs ──────────────────────────────────────────────────────────────── */}
       <div className="flex gap-1 mb-4 border-b">
         {([
-          { key: "all", label: "All Records", count: entries.length },
+          { key: "all", label: "All Records", count: records.length },
           { key: "active", label: "Active / Monitoring", count: stats.active },
           { key: "referrals", label: "Referrals", count: stats.referrals },
         ] as const).map(t => (
@@ -387,7 +293,7 @@ export default function HealthRecordsPage() {
           <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {(Object.entries(TYPE_CONFIG) as [RecordType, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(TYPE_CONFIG) as [HealthRecordType, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -396,7 +302,7 @@ export default function HealthRecordsPage() {
           <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {(Object.entries(STATUS_CONFIG) as [RecordStatus, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(STATUS_CONFIG) as [HealthRecordStatus, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -431,7 +337,7 @@ export default function HealthRecordsPage() {
 
         {filtered.map(entry => {
           const isOpen = expandedId === entry.id;
-          const tc = TYPE_CONFIG[entry.type];
+          const tc = TYPE_CONFIG[entry.record_type];
           const sc = STATUS_CONFIG[entry.status];
           const Icon = tc.icon;
           const isOverdue = entry.follow_up_date && entry.follow_up_date < todayStr() && entry.status !== "resolved";
@@ -480,7 +386,7 @@ export default function HealthRecordsPage() {
                   <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />{entry.professional}</span>
                     <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{formatDate(entry.date)}</span>
-                    <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />Logged by: {getStaffName(entry.recorded_by)}</span>
+                    <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />Logged by: {getStaffName(entry.staff_id)}</span>
                     {entry.follow_up_date && (
                       <span className={cn("flex items-center gap-1", isOverdue && "text-red-600 font-medium")}>
                         <Clock className="h-3.5 w-3.5" />Follow-up: {formatDate(entry.follow_up_date)}
@@ -527,10 +433,10 @@ export default function HealthRecordsPage() {
             </div>
             <div>
               <label htmlFor="hr-type" className="text-sm font-medium mb-1 block">Record Type *</label>
-              <Select value={nType} onValueChange={v => setNType(v as RecordType)}>
+              <Select value={nType} onValueChange={v => setNType(v as HealthRecordType)}>
                 <SelectTrigger id="hr-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(TYPE_CONFIG) as [RecordType, { label: string }][]).map(([k, v]) => (
+                  {(Object.entries(TYPE_CONFIG) as [HealthRecordType, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
                   ))}
                 </SelectContent>

@@ -20,197 +20,14 @@ import {
   AlertTriangle,
   CheckCircle2,
   ArrowUpDown,
+  Loader2,
 } from "lucide-react";
-
-/* ─── date helper ─── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ─── types ─── */
-interface HouseRule {
-  id: string;
-  category: "boundaries" | "routines" | "respect" | "safety" | "community" | "technology" | "visitors";
-  title: string;
-  description: string;
-  rationale: string;
-  agreedDate: string;
-  reviewDate: string;
-  status: "active" | "under_review" | "amended";
-  childFriendlyVersion: string;
-  youngPeopleConsulted: string[];
-  amendments: { date: string; change: string; reason: string }[];
-  consequences: string;
-  linkedToRight: string;
-}
-
-/* ─── seed data ─── */
-const rules: HouseRule[] = [
-  {
-    id: "hr_001",
-    category: "routines",
-    title: "Bedtime & Morning Routines",
-    description: "School nights: in rooms by 9pm (under 14) or 9:30pm (14+). Lights out by 10pm/10:30pm. Weekends: 30 minutes later. Wake-up at 7am school days.",
-    rationale: "Consistent sleep supports emotional regulation, physical health and educational attainment. Sleep assessments inform individual variations.",
-    agreedDate: d(-180),
-    reviewDate: d(30),
-    status: "active",
-    childFriendlyVersion: "We have set bedtimes because good sleep helps you feel better, learn more, and manage big feelings. Weekends are a bit more relaxed.",
-    youngPeopleConsulted: ["yp_alex", "yp_jordan", "yp_casey"],
-    amendments: [
-      { date: d(-60), change: "Weekend extension from 15min to 30min later", reason: "Young people requested and demonstrated responsible use of later times." },
-    ],
-    consequences: "Supportive reminder first. If repeated difficulty, 1:1 discussion about barriers to sleep. Never punitive — always explore why.",
-    linkedToRight: "UNCRC Article 31 — Right to rest and leisure",
-  },
-  {
-    id: "hr_002",
-    category: "respect",
-    title: "Respect for Each Other & Staff",
-    description: "We speak kindly and respectfully. No name-calling, bullying, or intimidation. We listen when others are talking. We respect personal space and belongings.",
-    rationale: "Everyone deserves to feel safe and valued. Respectful communication builds trust and helps the home feel like a family.",
-    agreedDate: d(-180),
-    reviewDate: d(30),
-    status: "active",
-    childFriendlyVersion: "We treat each other the way we'd like to be treated. If you're upset, staff will help you find words — shouting or name-calling hurts everyone.",
-    youngPeopleConsulted: ["yp_alex", "yp_jordan", "yp_casey"],
-    amendments: [],
-    consequences: "Restorative conversation. If persistent, explore underlying causes. Consider mediation between young people. Record on behaviour log if significant.",
-    linkedToRight: "UNCRC Article 19 — Right to be safe from harm",
-  },
-  {
-    id: "hr_003",
-    category: "safety",
-    title: "No Violence or Threatening Behaviour",
-    description: "Physical aggression, threats of violence, or damage to property is not acceptable. Staff will always try to de-escalate and understand what's driving the behaviour.",
-    rationale: "Everyone must feel physically safe. Violence is often communication of unmet need — we address the need, not just the behaviour.",
-    agreedDate: d(-180),
-    reviewDate: d(30),
-    status: "active",
-    childFriendlyVersion: "Hitting, kicking, or breaking things isn't OK — but we know sometimes you feel overwhelmed. Staff are here to help you find safer ways to express big feelings.",
-    youngPeopleConsulted: ["yp_alex", "yp_jordan", "yp_casey"],
-    amendments: [],
-    consequences: "Immediate de-escalation. TCI approach if needed. Post-incident debrief. Restorative justice where appropriate. Serious incidents reported to placing authority.",
-    linkedToRight: "UNCRC Article 19 — Right to be safe from harm",
-  },
-  {
-    id: "hr_004",
-    category: "technology",
-    title: "Phone & Internet Use",
-    description: "Wi-Fi available until bedtime. No phones at mealtimes or during family time (7-8pm). Age-appropriate content filters in place. Staff may check devices with consent if safeguarding concern arises.",
-    rationale: "Technology is important for social connection and learning. Boundaries protect from online risks while respecting privacy and independence.",
-    agreedDate: d(-150),
-    reviewDate: d(30),
-    status: "amended",
-    childFriendlyVersion: "Your phone is yours but we ask you to put it away at meals and during family time so we can connect face-to-face. Wi-Fi goes off at bedtime to help you sleep.",
-    youngPeopleConsulted: ["yp_alex", "yp_casey"],
-    amendments: [
-      { date: d(-90), change: "Added 'family time' phone-free window", reason: "House meeting agreement — young people felt phones distracted from group activities." },
-      { date: d(-30), change: "Extended Wi-Fi cut-off by 30min on weekends", reason: "Consistent with bedtime extension. Casey requested for gaming sessions." },
-    ],
-    consequences: "Reminder first. If phone misuse affects sleep or safety, individual plan created. Never confiscation without discussion and clear return time.",
-    linkedToRight: "UNCRC Article 16 — Right to privacy; Article 17 — Right to information",
-  },
-  {
-    id: "hr_005",
-    category: "community",
-    title: "Shared Spaces & Tidying Up",
-    description: "Communal areas kept tidy after use. Kitchen cleaned after snacks. Bedrooms tidied daily (staff support available). Laundry day is Tuesday & Friday.",
-    rationale: "A clean, organised home helps everyone feel calm and respected. Learning to maintain your space builds independence skills.",
-    agreedDate: d(-180),
-    reviewDate: d(30),
-    status: "active",
-    childFriendlyVersion: "We all share this home so we all help look after it. If you make a mess, clean it up — staff will help if you need it. Your room is your space but we ask you to keep it reasonably tidy.",
-    youngPeopleConsulted: ["yp_alex", "yp_jordan", "yp_casey"],
-    amendments: [
-      { date: d(-45), change: "Changed laundry from Mon/Thu to Tue/Fri", reason: "Jordan had after-school activity on Mondays making it difficult." },
-    ],
-    consequences: "Supportive prompts and help offered. Chore rota ensures fairness. If neglected, 1:1 chat about barriers. Never forced — explore reluctance therapeutically.",
-    linkedToRight: "UNCRC Article 27 — Right to a good standard of living",
-  },
-  {
-    id: "hr_006",
-    category: "visitors",
-    title: "Visitors to the Home",
-    description: "Friends can visit with 24h notice and staff agreement. Visits in communal areas. All visitors sign in. Overnight stays considered on individual basis with placing authority agreement.",
-    rationale: "Socialisation and friendships are vital. Visitor protocols keep everyone safe while supporting healthy relationships.",
-    agreedDate: d(-180),
-    reviewDate: d(30),
-    status: "active",
-    childFriendlyVersion: "Your friends are welcome here! Just let staff know the day before so we can make sure it works for everyone. Friends hang out in the lounge or garden, not bedrooms.",
-    youngPeopleConsulted: ["yp_alex", "yp_casey"],
-    amendments: [],
-    consequences: "Unannounced visitors politely asked to arrange for another time. If visitor causes concern, risk-assessed before future visits.",
-    linkedToRight: "UNCRC Article 15 — Right to meet with friends and join groups",
-  },
-  {
-    id: "hr_007",
-    category: "boundaries",
-    title: "Leaving the Home & Whereabouts",
-    description: "Tell staff where you're going, who with, and expected return time. Under 14s must have staff agreement. Over 14s have graduated freedoms based on risk assessment. Always take your phone.",
-    rationale: "We need to know you're safe — not to control you. Freedoms increase as trust builds. This mirrors parental responsibility.",
-    agreedDate: d(-180),
-    reviewDate: d(30),
-    status: "active",
-    childFriendlyVersion: "Let staff know where you're going and when you'll be back — just like any family. The more trust you build, the more freedom you get. Always take your phone so we can check you're OK.",
-    youngPeopleConsulted: ["yp_alex", "yp_jordan", "yp_casey"],
-    amendments: [],
-    consequences: "Late return: welfare check call. If uncontactable, missing from care protocol after agreed timeframe. Graduated freedoms may be reviewed if persistent.",
-    linkedToRight: "UNCRC Article 3 — Best interests; Article 5 — Parental guidance appropriate to evolving capacities",
-  },
-  {
-    id: "hr_008",
-    category: "boundaries",
-    title: "Substances — Alcohol, Drugs & Smoking",
-    description: "No alcohol or illegal drugs in the home. Smoking/vaping not permitted inside. Designated outdoor area for over-16s who smoke. Staff will always offer harm reduction support.",
-    rationale: "Substance use harms developing brains and bodies. We don't judge but we do protect. Harm reduction is our approach — not punishment.",
-    agreedDate: d(-180),
-    reviewDate: d(30),
-    status: "under_review",
-    childFriendlyVersion: "Drugs and alcohol aren't allowed here because they can seriously harm you. If you're struggling with substances, we'll help without judging. Smoking is outside only.",
-    youngPeopleConsulted: ["yp_casey"],
-    amendments: [
-      { date: d(-10), change: "Under review: considering vaping policy update", reason: "Increasing vape use — consulting with young people and health professionals about proportionate response." },
-    ],
-    consequences: "Confiscation of substances (safety). 1:1 discussion. Referral to substance misuse support if needed. Never exclusion — always support.",
-    linkedToRight: "UNCRC Article 33 — Right to protection from harmful drugs",
-  },
-  {
-    id: "hr_009",
-    category: "routines",
-    title: "Mealtimes & Food",
-    description: "Breakfast 7:30-8am. Dinner together at 5:30pm. Snacks available in kitchen. Dietary needs/preferences always accommodated. Young people help plan weekly menu.",
-    rationale: "Eating together builds family bonds. Regular meals support physical and emotional health. Choice and involvement develop independence.",
-    agreedDate: d(-180),
-    reviewDate: d(30),
-    status: "active",
-    childFriendlyVersion: "We eat dinner together because it's nice to share that time. You help choose what we eat each week. Snacks are always available — you never need to go hungry here.",
-    youngPeopleConsulted: ["yp_alex", "yp_jordan", "yp_casey"],
-    amendments: [],
-    consequences: "No consequences for missing meals — food is always available. If eating patterns concern, gentle exploration with key worker. Referral to CAMHS if disordered eating suspected.",
-    linkedToRight: "UNCRC Article 24 — Right to good food and clean water",
-  },
-  {
-    id: "hr_010",
-    category: "respect",
-    title: "Privacy & Personal Space",
-    description: "Staff knock before entering bedrooms. Personal possessions respected. Diaries/journals are private. Staff only search rooms with RM authorisation and young person informed.",
-    rationale: "Privacy is a fundamental right. Your bedroom is your safe space. We only ever override privacy for genuine safety concerns — never casually.",
-    agreedDate: d(-180),
-    reviewDate: d(30),
-    status: "active",
-    childFriendlyVersion: "Your room is YOUR space. Staff will always knock. Your private things (like diaries) will never be read. We only ever look in your room if we're really worried about your safety — and we'll always tell you.",
-    youngPeopleConsulted: ["yp_alex", "yp_jordan", "yp_casey"],
-    amendments: [],
-    consequences: "N/A — this rule protects young people from staff overreach. Staff breach of privacy is a disciplinary matter.",
-    linkedToRight: "UNCRC Article 16 — Right to privacy",
-  },
-];
+import type { HouseRule, HouseRuleCategory } from "@/types/extended";
+import { HOUSE_RULE_STATUS_LABEL } from "@/types/extended";
+import { useHouseRules } from "@/hooks/use-house-rules";
 
 /* ─── category meta ─── */
-const categoryConfig: Record<string, { label: string; color: string; icon: typeof BookOpen }> = {
+const categoryConfig: Record<HouseRuleCategory, { label: string; color: string; icon: typeof BookOpen }> = {
   boundaries: { label: "Boundaries", color: "bg-blue-100 text-blue-800", icon: Shield },
   routines: { label: "Routines", color: "bg-purple-100 text-purple-800", icon: Clock },
   respect: { label: "Respect", color: "bg-pink-100 text-pink-800", icon: Heart },
@@ -222,24 +39,34 @@ const categoryConfig: Record<string, { label: string; color: string; icon: typeo
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<HouseRule>[] = [
-  { header: "Rule", accessor: (r: HouseRule) => r.title },
-  { header: "Category", accessor: (r: HouseRule) => categoryConfig[r.category]?.label ?? r.category },
-  { header: "Status", accessor: (r: HouseRule) => r.status.replace("_", " ") },
-  { header: "Agreed", accessor: (r: HouseRule) => r.agreedDate },
-  { header: "Review Due", accessor: (r: HouseRule) => r.reviewDate },
-  { header: "Description", accessor: (r: HouseRule) => r.description },
-  { header: "Child-Friendly Version", accessor: (r: HouseRule) => r.childFriendlyVersion },
-  { header: "Rationale", accessor: (r: HouseRule) => r.rationale },
-  { header: "Linked Right", accessor: (r: HouseRule) => r.linkedToRight },
-  { header: "Amendments", accessor: (r: HouseRule) => r.amendments.length.toString() },
+  { header: "Rule", accessor: (r) => r.title },
+  { header: "Category", accessor: (r) => categoryConfig[r.category]?.label ?? r.category },
+  { header: "Status", accessor: (r) => HOUSE_RULE_STATUS_LABEL[r.status] },
+  { header: "Agreed", accessor: (r) => r.agreed_date },
+  { header: "Review Due", accessor: (r) => r.review_date },
+  { header: "Description", accessor: (r) => r.description },
+  { header: "Child-Friendly Version", accessor: (r) => r.child_friendly_version },
+  { header: "Rationale", accessor: (r) => r.rationale },
+  { header: "Linked Right", accessor: (r) => r.linked_to_right },
+  { header: "Amendments", accessor: (r) => r.amendments.length.toString() },
 ];
 
 /* ─── component ─── */
 export default function HouseRulesPage() {
+  const { data: raw, isLoading } = useHouseRules();
+  const rules = useMemo(() => raw?.data ?? [], [raw]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("category");
+
+  if (isLoading) {
+    return (
+      <PageShell title="House Rules & Boundaries" subtitle="Loading…">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </PageShell>
+    );
+  }
 
   /* ─── computed ─── */
   const filtered = useMemo(() => {
@@ -251,7 +78,7 @@ export default function HouseRulesPage() {
         case "category":
           return a.category.localeCompare(b.category);
         case "review":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         case "title":
           return a.title.localeCompare(b.title);
         default:
@@ -259,7 +86,7 @@ export default function HouseRulesPage() {
       }
     });
     return list;
-  }, [filterCategory, filterStatus, sortBy]);
+  }, [rules, filterCategory, filterStatus, sortBy]);
 
   const stats = useMemo(() => {
     const active = rules.filter((r) => r.status === "active").length;
@@ -267,7 +94,7 @@ export default function HouseRulesPage() {
     const amended = rules.filter((r) => r.status === "amended").length;
     const totalAmendments = rules.reduce((sum, r) => sum + r.amendments.length, 0);
     return { active, underReview, amended, totalAmendments };
-  }, []);
+  }, [rules]);
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
@@ -420,41 +247,35 @@ export default function HouseRulesPage() {
 
               {expanded && (
                 <CardContent className="pt-0 pb-4 space-y-4">
-                  {/* description */}
                   <div>
                     <p className="text-sm font-medium text-foreground mb-1">The Rule</p>
                     <p className="text-sm text-muted-foreground">{rule.description}</p>
                   </div>
 
-                  {/* child-friendly version */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <p className="text-sm font-medium text-blue-800 mb-1">Child-Friendly Version</p>
-                    <p className="text-sm text-blue-700">{rule.childFriendlyVersion}</p>
+                    <p className="text-sm text-blue-700">{rule.child_friendly_version}</p>
                   </div>
 
-                  {/* rationale */}
                   <div>
                     <p className="text-sm font-medium text-foreground mb-1">Why We Have This Rule</p>
                     <p className="text-sm text-muted-foreground">{rule.rationale}</p>
                   </div>
 
-                  {/* consequences */}
                   <div>
                     <p className="text-sm font-medium text-foreground mb-1">What Happens If Broken</p>
                     <p className="text-sm text-muted-foreground">{rule.consequences}</p>
                   </div>
 
-                  {/* linked right */}
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm text-blue-700 font-medium">{rule.linkedToRight}</span>
+                    <span className="text-sm text-blue-700 font-medium">{rule.linked_to_right}</span>
                   </div>
 
-                  {/* consulted */}
                   <div>
                     <p className="text-sm font-medium text-foreground mb-1">Young People Consulted</p>
                     <div className="flex flex-wrap gap-1">
-                      {rule.youngPeopleConsulted.map((ypId) => (
+                      {rule.young_people_consulted.map((ypId) => (
                         <Badge key={ypId} variant="outline" className="text-xs">
                           {getYPName(ypId)}
                         </Badge>
@@ -462,7 +283,6 @@ export default function HouseRulesPage() {
                     </div>
                   </div>
 
-                  {/* amendments */}
                   {rule.amendments.length > 0 && (
                     <div>
                       <p className="text-sm font-medium text-foreground mb-2">Amendment History</p>
@@ -480,15 +300,14 @@ export default function HouseRulesPage() {
                     </div>
                   )}
 
-                  {/* dates */}
                   <div className="grid grid-cols-2 gap-4 pt-2 border-t">
                     <div>
                       <p className="text-xs text-muted-foreground">Agreed</p>
-                      <p className="text-sm font-medium">{rule.agreedDate}</p>
+                      <p className="text-sm font-medium">{rule.agreed_date}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Next Review</p>
-                      <p className="text-sm font-medium">{rule.reviewDate}</p>
+                      <p className="text-sm font-medium">{rule.review_date}</p>
                     </div>
                   </div>
                 </CardContent>

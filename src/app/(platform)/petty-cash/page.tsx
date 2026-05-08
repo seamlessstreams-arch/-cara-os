@@ -19,29 +19,12 @@ import {
   Wallet, Calendar, Receipt, TrendingDown, TrendingUp,
   AlertTriangle, CheckCircle2, Clock
 } from "lucide-react";
+import type { PettyCashEntry, PettyCashTransactionType, PettyCashCategory } from "@/types/extended";
+import { PETTY_CASH_TRANSACTION_TYPE_LABEL, PETTY_CASH_CATEGORY_LABEL } from "@/types/extended";
+import { usePettyCashEntries } from "@/hooks/use-petty-cash-entries";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-type TransactionType = "withdrawal" | "top_up" | "refund";
-type Category = "food" | "activities" | "transport" | "clothing" | "personal_care" | "education" | "household" | "emergency" | "other";
-
-interface PettyCashEntry {
-  id: string;
-  date: string;
-  type: TransactionType;
-  category: Category;
-  amount: number;
-  description: string;
-  receiptRef: string;
-  receiptAttached: boolean;
-  youngPersonId: string;
-  authorisedBy: string;
-  recordedBy: string;
-  notes: string;
-  balanceAfter: number;
-  createdAt: string;
-}
-
-const CATEGORY_META: Record<Category, { label: string; color: string }> = {
+// ── Category UI metadata ────────────────────────────────────────────────────
+const CATEGORY_META: Record<PettyCashCategory, { label: string; color: string }> = {
   food:          { label: "Food & Groceries",  color: "bg-green-100 text-green-800" },
   activities:    { label: "Activities",        color: "bg-blue-100 text-blue-800" },
   transport:     { label: "Transport",         color: "bg-purple-100 text-purple-800" },
@@ -53,42 +36,28 @@ const CATEGORY_META: Record<Category, { label: string; color: string }> = {
   other:         { label: "Other",             color: "bg-gray-100 text-gray-800" },
 };
 
-// ── Seed data ────────────────────────────────────────────────────────────────
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const SEED: PettyCashEntry[] = [
-  { id: "pc_001", date: d(0), type: "withdrawal", category: "food", amount: 24.50, description: "Weekly grocery shop — fruit, milk, bread, snacks", receiptRef: "REC-0123", receiptAttached: true, youngPersonId: "", authorisedBy: "staff_darren", recordedBy: "staff_anna", notes: "", balanceAfter: 175.50, createdAt: d(0) },
-  { id: "pc_002", date: d(-1), type: "withdrawal", category: "activities", amount: 18.00, description: "Bowling trip — 3 games for Alex, Jordan, Casey", receiptRef: "REC-0122", receiptAttached: true, youngPersonId: "", authorisedBy: "staff_ryan", recordedBy: "staff_ryan", notes: "All three YP attended. Great outing.", balanceAfter: 200.00, createdAt: d(-1) },
-  { id: "pc_003", date: d(-2), type: "withdrawal", category: "transport", amount: 6.80, description: "Bus fares for Jordan to football training", receiptRef: "", receiptAttached: false, youngPersonId: "yp_jordan", authorisedBy: "staff_ryan", recordedBy: "staff_chervelle", notes: "No receipt — cash fares on bus.", balanceAfter: 218.00, createdAt: d(-2) },
-  { id: "pc_004", date: d(-3), type: "withdrawal", category: "personal_care", amount: 12.99, description: "Toiletries for Casey — shower gel, deodorant, hair products", receiptRef: "REC-0121", receiptAttached: true, youngPersonId: "yp_casey", authorisedBy: "staff_darren", recordedBy: "staff_chervelle", notes: "Casey chose their own products.", balanceAfter: 224.80, createdAt: d(-3) },
-  { id: "pc_005", date: d(-3), type: "withdrawal", category: "food", amount: 12.50, description: "Taco night ingredients — mince, wraps, salsa, guacamole", receiptRef: "REC-0120", receiptAttached: true, youngPersonId: "", authorisedBy: "staff_ryan", recordedBy: "staff_ryan", notes: "Jordan's house meeting request.", balanceAfter: 237.79, createdAt: d(-3) },
-  { id: "pc_006", date: d(-5), type: "withdrawal", category: "education", amount: 8.50, description: "Art supplies for Casey — sketchbook, coloured pencils", receiptRef: "REC-0119", receiptAttached: true, youngPersonId: "yp_casey", authorisedBy: "staff_darren", recordedBy: "staff_anna", notes: "Linked to identity work.", balanceAfter: 250.29, createdAt: d(-5) },
-  { id: "pc_007", date: d(-7), type: "top_up", category: "other", amount: 200.00, description: "Weekly petty cash top-up from main account", receiptRef: "TFR-0089", receiptAttached: true, youngPersonId: "", authorisedBy: "staff_darren", recordedBy: "staff_darren", notes: "Standard weekly top-up.", balanceAfter: 258.79, createdAt: d(-7) },
-  { id: "pc_008", date: d(-7), type: "withdrawal", category: "household", amount: 15.99, description: "Light bulbs, cleaning products, bin bags", receiptRef: "REC-0118", receiptAttached: true, youngPersonId: "", authorisedBy: "staff_anna", recordedBy: "staff_anna", notes: "", balanceAfter: 58.79, createdAt: d(-7) },
-  { id: "pc_009", date: d(-8), type: "withdrawal", category: "clothing", amount: 25.00, description: "School shoes for Alex — old pair worn out", receiptRef: "REC-0117", receiptAttached: true, youngPersonId: "yp_alex", authorisedBy: "staff_darren", recordedBy: "staff_darren", notes: "Taken from clothing allowance budget.", balanceAfter: 74.78, createdAt: d(-8) },
-  { id: "pc_010", date: d(-10), type: "withdrawal", category: "emergency", amount: 5.00, description: "Emergency taxi fare for Jordan — missed school bus", receiptRef: "", receiptAttached: false, youngPersonId: "yp_jordan", authorisedBy: "staff_anna", recordedBy: "staff_anna", notes: "Jordan overslept. Taxi used to avoid absence.", balanceAfter: 99.78, createdAt: d(-10) },
-];
-
 // ── Export ────────────────────────────────────────────────────────────────────
 const EXPORT_COLS: ExportColumn<PettyCashEntry>[] = [
   { header: "ID",            accessor: (r: PettyCashEntry) => r.id },
   { header: "Date",          accessor: (r: PettyCashEntry) => r.date },
-  { header: "Type",          accessor: (r: PettyCashEntry) => r.type === "top_up" ? "Top Up" : r.type === "refund" ? "Refund" : "Withdrawal" },
+  { header: "Type",          accessor: (r: PettyCashEntry) => PETTY_CASH_TRANSACTION_TYPE_LABEL[r.type] },
   { header: "Category",      accessor: (r: PettyCashEntry) => CATEGORY_META[r.category].label },
   { header: "Amount",        accessor: (r: PettyCashEntry) => `£${r.amount.toFixed(2)}` },
   { header: "Description",   accessor: (r: PettyCashEntry) => r.description },
-  { header: "Receipt Ref",   accessor: (r: PettyCashEntry) => r.receiptRef || "—" },
-  { header: "Receipt",       accessor: (r: PettyCashEntry) => r.receiptAttached ? "Yes" : "No" },
-  { header: "Young Person",  accessor: (r: PettyCashEntry) => r.youngPersonId ? getYPName(r.youngPersonId) : "General" },
-  { header: "Authorised By", accessor: (r: PettyCashEntry) => getStaffName(r.authorisedBy) },
-  { header: "Recorded By",   accessor: (r: PettyCashEntry) => getStaffName(r.recordedBy) },
-  { header: "Balance After", accessor: (r: PettyCashEntry) => `£${r.balanceAfter.toFixed(2)}` },
+  { header: "Receipt Ref",   accessor: (r: PettyCashEntry) => r.receipt_ref || "—" },
+  { header: "Receipt",       accessor: (r: PettyCashEntry) => r.receipt_attached ? "Yes" : "No" },
+  { header: "Young Person",  accessor: (r: PettyCashEntry) => r.child_id ? getYPName(r.child_id) : "General" },
+  { header: "Authorised By", accessor: (r: PettyCashEntry) => getStaffName(r.authorised_by) },
+  { header: "Recorded By",   accessor: (r: PettyCashEntry) => getStaffName(r.recorded_by) },
+  { header: "Balance After", accessor: (r: PettyCashEntry) => `£${r.balance_after.toFixed(2)}` },
   { header: "Notes",         accessor: (r: PettyCashEntry) => r.notes },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function PettyCashPage() {
-  const [entries, setEntries] = useState<PettyCashEntry[]>(SEED);
+  const { data: res, isLoading } = usePettyCashEntries();
+  const records = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [tab, setTab] = useState("all");
@@ -99,7 +68,7 @@ export default function PettyCashPage() {
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   const filtered = useMemo(() => {
-    let list = [...entries];
+    let list = [...records];
     if (search) {
       const s = search.toLowerCase();
       list = list.filter((e) => e.description.toLowerCase().includes(s) || e.notes.toLowerCase().includes(s));
@@ -117,15 +86,16 @@ export default function PettyCashPage() {
       }
     });
     return list;
-  }, [entries, search, categoryFilter, tab, sortBy]);
+  }, [records, search, categoryFilter, tab, sortBy]);
 
   const stats = useMemo(() => {
-    const currentBalance = entries[0]?.balanceAfter || 0;
-    const weekSpend = entries.filter((e) => e.type === "withdrawal" && e.date >= d(-7)).reduce((a, e) => a + e.amount, 0);
-    const missingReceipts = entries.filter((e) => e.type === "withdrawal" && !e.receiptAttached).length;
-    const totalEntries = entries.length;
+    const currentBalance = records[0]?.balance_after || 0;
+    const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+    const weekSpend = records.filter((e) => e.type === "withdrawal" && e.date >= sevenDaysAgo).reduce((a, e) => a + e.amount, 0);
+    const missingReceipts = records.filter((e) => e.type === "withdrawal" && !e.receipt_attached).length;
+    const totalEntries = records.length;
     return { currentBalance, weekSpend, missingReceipts, totalEntries };
-  }, [entries]);
+  }, [records]);
 
   return (
     <PageShell
@@ -139,6 +109,8 @@ export default function PettyCashPage() {
         </div>
       }
     >
+      {isLoading && <p className="text-center py-12 text-muted-foreground">Loading…</p>}
+
       <div id="print-area" className="space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
@@ -226,12 +198,12 @@ export default function PettyCashPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="font-medium text-sm truncate">{e.description}</p>
-                          {!e.receiptAttached && e.type === "withdrawal" && <Badge variant="outline" className="text-xs text-red-600 border-red-200">No receipt</Badge>}
+                          {!e.receipt_attached && e.type === "withdrawal" && <Badge variant="outline" className="text-xs text-red-600 border-red-200">No receipt</Badge>}
                         </div>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           <span>{e.date}</span>
                           <Badge className={cn("text-xs", CATEGORY_META[e.category].color)}>{CATEGORY_META[e.category].label}</Badge>
-                          {e.youngPersonId && <span>{getYPName(e.youngPersonId)}</span>}
+                          {e.child_id && <span>{getYPName(e.child_id)}</span>}
                         </div>
                       </div>
                     </div>
@@ -246,10 +218,10 @@ export default function PettyCashPage() {
                   {open && (
                     <div className="mt-3 pt-2 border-t text-xs space-y-2">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div><p className="text-muted-foreground">Authorised</p><p className="font-medium">{getStaffName(e.authorisedBy)}</p></div>
-                        <div><p className="text-muted-foreground">Recorded</p><p className="font-medium">{getStaffName(e.recordedBy)}</p></div>
-                        <div><p className="text-muted-foreground">Receipt Ref</p><p className="font-medium">{e.receiptRef || "—"}</p></div>
-                        <div><p className="text-muted-foreground">Balance After</p><p className="font-medium">£{e.balanceAfter.toFixed(2)}</p></div>
+                        <div><p className="text-muted-foreground">Authorised</p><p className="font-medium">{getStaffName(e.authorised_by)}</p></div>
+                        <div><p className="text-muted-foreground">Recorded</p><p className="font-medium">{getStaffName(e.recorded_by)}</p></div>
+                        <div><p className="text-muted-foreground">Receipt Ref</p><p className="font-medium">{e.receipt_ref || "—"}</p></div>
+                        <div><p className="text-muted-foreground">Balance After</p><p className="font-medium">£{e.balance_after.toFixed(2)}</p></div>
                       </div>
                       {e.notes && <p className="italic text-muted-foreground">{e.notes}</p>}
                     </div>

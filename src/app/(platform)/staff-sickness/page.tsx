@@ -18,123 +18,32 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
-  Clock, Search, UserMinus, Calendar, Activity,
+  Clock, Search, UserMinus, Calendar, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useStaffSicknessRecords } from "@/hooks/use-staff-sickness-records";
+import type {
+  StaffSicknessRecord,
+  StaffSicknessCategory,
+  StaffSicknessAbsenceReason,
+  StaffSicknessRTWStatus,
+} from "@/types/extended";
+import {
+  STAFF_SICKNESS_CATEGORY_LABEL,
+  STAFF_SICKNESS_ABSENCE_REASON_LABEL,
+  STAFF_SICKNESS_RTW_STATUS_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── local config (colours not serializable) ─────────────────────────────── */
 
-type SicknessCategory = "short_term" | "long_term" | "intermittent" | "work_related";
-type AbsenceReason = "cold_flu" | "gastro" | "covid" | "mental_health" | "musculoskeletal" | "surgery" | "family_emergency" | "injury" | "migraine" | "other";
-type RTWStatus = "not_required" | "scheduled" | "completed" | "overdue";
+const CAT_CLR: Record<StaffSicknessCategory, string> = { short_term: "bg-blue-100 text-blue-800", long_term: "bg-red-100 text-red-800", intermittent: "bg-amber-100 text-amber-800", work_related: "bg-purple-100 text-purple-800" };
+const RTW_CLR: Record<StaffSicknessRTWStatus, string> = { not_required: "bg-slate-100 text-slate-700", scheduled: "bg-blue-100 text-blue-800", completed: "bg-green-100 text-green-800", overdue: "bg-red-100 text-red-800" };
 
-interface SicknessRecord {
-  id: string;
-  staffId: string;
-  dateStarted: string;
-  dateEnded: string | null;
-  totalDays: number;
-  category: SicknessCategory;
-  reason: AbsenceReason;
-  reasonDetail: string;
-  selfCertified: boolean;
-  fitNote: boolean;
-  fitNoteExpiry: string | null;
-  coverArrangements: string;
-  rtwStatus: RTWStatus;
-  rtwDate: string | null;
-  rtwConductedById: string | null;
-  rtwOutcome: string;
-  occupationalHealthReferral: boolean;
-  triggerPoints: string[];
-  managerNotes: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const CAT_LABEL: Record<SicknessCategory, string> = { short_term: "Short-Term (≤7 days)", long_term: "Long-Term (>7 days)", intermittent: "Intermittent", work_related: "Work-Related" };
-const CAT_CLR: Record<SicknessCategory, string> = { short_term: "bg-blue-100 text-blue-800", long_term: "bg-red-100 text-red-800", intermittent: "bg-amber-100 text-amber-800", work_related: "bg-purple-100 text-purple-800" };
-
-const REASON_LABEL: Record<AbsenceReason, string> = {
-  cold_flu: "Cold / Flu", gastro: "Gastroenteritis", covid: "COVID-19",
-  mental_health: "Mental Health", musculoskeletal: "Musculoskeletal", surgery: "Surgery/Procedure",
-  family_emergency: "Family Emergency", injury: "Injury", migraine: "Migraine/Headache", other: "Other",
-};
-
-const RTW_LABEL: Record<RTWStatus, string> = { not_required: "Not Required", scheduled: "Scheduled", completed: "Completed", overdue: "Overdue" };
-const RTW_CLR: Record<RTWStatus, string> = { not_required: "bg-slate-100 text-slate-700", scheduled: "bg-blue-100 text-blue-800", completed: "bg-green-100 text-green-800", overdue: "bg-red-100 text-red-800" };
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: SicknessRecord[] = [
-  {
-    id: "sick_001", staffId: "staff_edward", dateStarted: d(-5), dateEnded: d(-2), totalDays: 3,
-    category: "short_term", reason: "gastro", reasonDetail: "Vomiting and diarrhoea — 48-hour rule applied before return to work.",
-    selfCertified: true, fitNote: false, fitNoteExpiry: null,
-    coverArrangements: "Day 1 & 2: Marcus Thompson (CareStaff Solutions agency). Day 3: Ryan covered with overtime. All shifts filled — no gap in care.",
-    rtwStatus: "completed", rtwDate: d(-1), rtwConductedById: "staff_darren",
-    rtwOutcome: "Edward confirmed symptoms fully resolved. 48 hours symptom-free before returning. No ongoing concerns. Discussed hand hygiene re-awareness. RTW form completed and filed.",
-    occupationalHealthReferral: false,
-    triggerPoints: [],
-    managerNotes: "Edward's third sickness absence this year (previous: 1 day cold in Jan, 2 days back pain in March). Total: 6 days in 5 months. Approaching Bradford Factor trigger point. Discussed pattern in RTW — no underlying concerns identified. Edward is aware of the trigger threshold.",
-  },
-  {
-    id: "sick_002", staffId: "staff_lackson", dateStarted: d(-21), dateEnded: d(-21), totalDays: 1,
-    category: "short_term", reason: "migraine",
-    reasonDetail: "Called in at 19:30 (30 mins before waking night shift). Severe migraine with visual disturbance. Unable to work safely.",
-    selfCertified: true, fitNote: false, fitNoteExpiry: null,
-    coverArrangements: "Emergency agency cover arranged — James Whitfield (NightOwl Staffing). Ryan attended for first 2 hours to brief and support.",
-    rtwStatus: "completed", rtwDate: d(-20), rtwConductedById: "staff_ryan",
-    rtwOutcome: "Lackson confirmed migraine resolved. Has a history of occasional migraines (1-2 per year). GP aware. No referral needed. Discussed late notice — Lackson acknowledged difficulty but explained sudden onset. No disciplinary concern.",
-    occupationalHealthReferral: false,
-    triggerPoints: [],
-    managerNotes: "First sickness absence for Lackson this year. Late call-off required emergency agency cover. Lackson was apologetic and understanding of the impact. Ryan conducted RTW sensitively. No pattern of concern. Lackson's GP manages his migraines with preventive medication.",
-  },
-  {
-    id: "sick_003", staffId: "staff_anna", dateStarted: d(-90), dateEnded: d(-76), totalDays: 14,
-    category: "long_term", reason: "mental_health",
-    reasonDetail: "Stress and anxiety related to workload and emotional impact of Casey's LADO referral. GP recommended 2 weeks off with phased return.",
-    selfCertified: false, fitNote: true, fitNoteExpiry: d(-76),
-    coverArrangements: "Anna's key working sessions redistributed to Chervelle and Ryan. Agency cover used for 6 of the 14 shifts. Remaining shifts covered by existing team with adjusted rota.",
-    rtwStatus: "completed", rtwDate: d(-75), rtwConductedById: "staff_darren",
-    rtwOutcome: "Phased return plan agreed: Week 1 — 3 shifts (no waking nights), Week 2 — 4 shifts (regular pattern), Week 3 onwards — full duties. Anna reported feeling much better. Counselling arranged through employee assistance programme (6 sessions). Clinical supervision frequency increased to fortnightly for 2 months. Key working for Casey transferred to Chervelle during phased return.",
-    occupationalHealthReferral: true,
-    triggerPoints: ["Occupational health referral completed", "Counselling provision confirmed"],
-    managerNotes: "Anna's absence was directly linked to the emotional impact of the LADO referral (allegation against her). This was a significant contributor to her stress alongside general workload. The allegation was subsequently found to be unsubstantiated but the process was understandably distressing. Anna was well-supported throughout — regular welfare calls during absence, no pressure to return early. Phased return worked well. Anna is now back to full duties and engaging well in clinical supervision. EAP counselling ongoing.",
-  },
-  {
-    id: "sick_004", staffId: "staff_ryan", dateStarted: d(-45), dateEnded: d(-44), totalDays: 2,
-    category: "short_term", reason: "cold_flu",
-    reasonDetail: "Heavy cold with fever. GP advised rest and fluids. Not COVID (negative LFT).",
-    selfCertified: true, fitNote: false, fitNoteExpiry: null,
-    coverArrangements: "Day 1: Darren covered Ryan's deputy duties. Day 2: Chervelle led the shift with agency support (Marcus Thompson). No supervision sessions needed rescheduling.",
-    rtwStatus: "completed", rtwDate: d(-43), rtwConductedById: "staff_darren",
-    rtwOutcome: "Ryan confirmed symptoms resolved. LFT negative on both days. No ongoing issues. RTW brief and straightforward.",
-    occupationalHealthReferral: false,
-    triggerPoints: [],
-    managerNotes: "Ryan's first sickness absence in 14 months. No concerns about pattern. Ryan is reliable and the absence was genuine. Cover arrangements worked smoothly.",
-  },
-  {
-    id: "sick_005", staffId: "staff_mirela", dateStarted: d(-10), dateEnded: d(-8), totalDays: 2,
-    category: "short_term", reason: "injury",
-    reasonDetail: "Twisted ankle during commute to work (fell on icy pavement). Attended A&E — X-ray confirmed soft tissue injury, no fracture. Advised rest for 48 hours.",
-    selfCertified: true, fitNote: false, fitNoteExpiry: null,
-    coverArrangements: "Both shifts covered by existing team (Chervelle and Edward with adjusted rotas). No agency required.",
-    rtwStatus: "completed", rtwDate: d(-7), rtwConductedById: "staff_ryan",
-    rtwOutcome: "Mirela confirmed ankle significantly improved. Wearing supportive boot for 1 week. Can mobilise around the home. Agreed to avoid any activities requiring running/stairs for first week back. Workplace risk assessment completed — no adaptation needed beyond phased physical activity.",
-    occupationalHealthReferral: false,
-    triggerPoints: [],
-    managerNotes: "Mirela is still in probation — first sickness absence. Injury was clearly accidental and not work-related. A&E documentation provided. Mirela was keen to return as soon as possible. Ryan conducted RTW with compassion and ensured Mirela wasn't pushing herself too hard during recovery. No concerns.",
-  },
-];
-
-/* ── page ──────────────────────────────────────────────────────────────────── */
+/* ── component ────────────────────────────────────────────────────────────── */
 
 export default function StaffSicknessPage() {
-  const [data] = useState(SEED);
+  const { data: records = [], isLoading } = useStaffSicknessRecords();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -143,36 +52,46 @@ export default function StaffSicknessPage() {
   const [showNew, setShowNew] = useState(false);
 
   const filtered = useMemo(() => {
-    let rows = [...data];
+    let rows = [...records];
     if (search) {
       const q = search.toLowerCase();
       rows = rows.filter((r) =>
-        getStaffName(r.staffId).toLowerCase().includes(q) ||
-        REASON_LABEL[r.reason].toLowerCase().includes(q)
+        getStaffName(r.staff_id).toLowerCase().includes(q) ||
+        STAFF_SICKNESS_ABSENCE_REASON_LABEL[r.reason].toLowerCase().includes(q)
       );
     }
     if (filterCategory !== "all") rows = rows.filter((r) => r.category === filterCategory);
-    if (filterRTW !== "all") rows = rows.filter((r) => r.rtwStatus === filterRTW);
-    rows.sort((a, b) => sortBy === "newest" ? b.dateStarted.localeCompare(a.dateStarted) : a.dateStarted.localeCompare(b.dateStarted));
+    if (filterRTW !== "all") rows = rows.filter((r) => r.rtw_status === filterRTW);
+    rows.sort((a, b) => sortBy === "newest" ? b.date_started.localeCompare(a.date_started) : a.date_started.localeCompare(b.date_started));
     return rows;
-  }, [data, search, filterCategory, filterRTW, sortBy]);
+  }, [records, search, filterCategory, filterRTW, sortBy]);
 
-  const totalAbsences = data.length;
-  const totalDays = data.reduce((s, r) => s + r.totalDays, 0);
-  const currentlyOff = data.filter((r) => r.dateEnded === null).length;
-  const rtwOverdue = data.filter((r) => r.rtwStatus === "overdue").length;
+  const totalAbsences = records.length;
+  const totalDays = records.reduce((s, r) => s + r.total_days, 0);
+  const currentlyOff = records.filter((r) => r.date_ended === null).length;
+  const rtwOverdue = records.filter((r) => r.rtw_status === "overdue").length;
 
-  const exportCols: ExportColumn<SicknessRecord>[] = [
-    { header: "Staff", accessor: (r: SicknessRecord) => getStaffName(r.staffId) },
-    { header: "Start", accessor: (r: SicknessRecord) => r.dateStarted },
-    { header: "End", accessor: (r: SicknessRecord) => r.dateEnded || "Ongoing" },
-    { header: "Days", accessor: (r: SicknessRecord) => String(r.totalDays) },
-    { header: "Category", accessor: (r: SicknessRecord) => CAT_LABEL[r.category] },
-    { header: "Reason", accessor: (r: SicknessRecord) => REASON_LABEL[r.reason] },
-    { header: "Fit Note", accessor: (r: SicknessRecord) => r.fitNote ? "Yes" : "No" },
-    { header: "RTW Status", accessor: (r: SicknessRecord) => RTW_LABEL[r.rtwStatus] },
-    { header: "OH Referral", accessor: (r: SicknessRecord) => r.occupationalHealthReferral ? "Yes" : "No" },
+  const exportCols: ExportColumn<StaffSicknessRecord>[] = [
+    { header: "Staff", accessor: (r: StaffSicknessRecord) => getStaffName(r.staff_id) },
+    { header: "Start", accessor: (r: StaffSicknessRecord) => r.date_started },
+    { header: "End", accessor: (r: StaffSicknessRecord) => r.date_ended || "Ongoing" },
+    { header: "Days", accessor: (r: StaffSicknessRecord) => String(r.total_days) },
+    { header: "Category", accessor: (r: StaffSicknessRecord) => STAFF_SICKNESS_CATEGORY_LABEL[r.category] },
+    { header: "Reason", accessor: (r: StaffSicknessRecord) => STAFF_SICKNESS_ABSENCE_REASON_LABEL[r.reason] },
+    { header: "Fit Note", accessor: (r: StaffSicknessRecord) => r.fit_note ? "Yes" : "No" },
+    { header: "RTW Status", accessor: (r: StaffSicknessRecord) => STAFF_SICKNESS_RTW_STATUS_LABEL[r.rtw_status] },
+    { header: "OH Referral", accessor: (r: StaffSicknessRecord) => r.occupational_health_referral ? "Yes" : "No" },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Staff Sickness & Return to Work" subtitle="Absence Management · Wellbeing · Workforce Planning">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -181,7 +100,7 @@ export default function StaffSicknessPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Sickness Record" />
-          <ExportButton data={data} columns={exportCols} filename="staff-sickness" />
+          <ExportButton data={records} columns={exportCols} filename="staff-sickness" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Absence</Button>
         </div>
       }
@@ -215,7 +134,7 @@ export default function StaffSicknessPage() {
             <SelectTrigger className="w-[180px]"><SelectValue placeholder="Category" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {(Object.entries(CAT_LABEL) as [SicknessCategory, string][]).map(([k, v]) => (
+              {(Object.entries(STAFF_SICKNESS_CATEGORY_LABEL) as [StaffSicknessCategory, string][]).map(([k, v]) => (
                 <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
@@ -224,7 +143,7 @@ export default function StaffSicknessPage() {
             <SelectTrigger className="w-[160px]"><SelectValue placeholder="RTW Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All RTW</SelectItem>
-              {(Object.entries(RTW_LABEL) as [RTWStatus, string][]).map(([k, v]) => (
+              {(Object.entries(STAFF_SICKNESS_RTW_STATUS_LABEL) as [StaffSicknessRTWStatus, string][]).map(([k, v]) => (
                 <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
@@ -239,23 +158,23 @@ export default function StaffSicknessPage() {
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", r.dateEnded === null ? "border-l-red-500" : r.totalDays > 7 ? "border-l-amber-400" : "border-l-green-400")}>
+              <Card key={r.id} className={cn("border-l-4", r.date_ended === null ? "border-l-red-500" : r.total_days > 7 ? "border-l-amber-400" : "border-l-green-400")}>
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : r.id)}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1 flex-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {getStaffName(r.staffId)}
-                        <Badge variant="outline" className={CAT_CLR[r.category]}>{CAT_LABEL[r.category]}</Badge>
-                        <Badge variant="outline" className={RTW_CLR[r.rtwStatus]}>{RTW_LABEL[r.rtwStatus]}</Badge>
-                        {r.occupationalHealthReferral && <Badge variant="outline" className="bg-purple-100 text-purple-800">OH Referral</Badge>}
+                        {getStaffName(r.staff_id)}
+                        <Badge variant="outline" className={CAT_CLR[r.category]}>{STAFF_SICKNESS_CATEGORY_LABEL[r.category]}</Badge>
+                        <Badge variant="outline" className={RTW_CLR[r.rtw_status]}>{STAFF_SICKNESS_RTW_STATUS_LABEL[r.rtw_status]}</Badge>
+                        {r.occupational_health_referral && <Badge variant="outline" className="bg-purple-100 text-purple-800">OH Referral</Badge>}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {REASON_LABEL[r.reason]} · {r.dateStarted} → {r.dateEnded || "Ongoing"} · {r.totalDays} day(s)
-                        {r.fitNote && " · Fit Note"} {r.selfCertified && " · Self-Cert"}
+                        {STAFF_SICKNESS_ABSENCE_REASON_LABEL[r.reason]} · {r.date_started} → {r.date_ended || "Ongoing"} · {r.total_days} day(s)
+                        {r.fit_note && " · Fit Note"} {r.self_certified && " · Self-Cert"}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold">{r.totalDays}d</span>
+                      <span className="text-lg font-bold">{r.total_days}d</span>
                       {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>
                   </div>
@@ -266,33 +185,33 @@ export default function StaffSicknessPage() {
                     {/* reason detail */}
                     <div>
                       <p className="font-medium mb-1">Absence Details</p>
-                      <p className="text-muted-foreground text-xs">{r.reasonDetail}</p>
+                      <p className="text-muted-foreground text-xs">{r.reason_detail}</p>
                     </div>
 
                     {/* cover */}
                     <div className="bg-blue-50 border border-blue-200 rounded p-2">
                       <p className="font-medium text-xs text-blue-800 mb-1">Cover Arrangements</p>
-                      <p className="text-xs text-blue-700">{r.coverArrangements}</p>
+                      <p className="text-xs text-blue-700">{r.cover_arrangements}</p>
                     </div>
 
                     {/* RTW */}
-                    {r.rtwOutcome && (
+                    {r.rtw_outcome && (
                       <div className="bg-green-50 border border-green-200 rounded p-2">
                         <p className="font-medium text-xs text-green-800 mb-1">Return to Work Interview</p>
                         <p className="text-xs text-green-700">
-                          {r.rtwDate && `Date: ${r.rtwDate}`}
-                          {r.rtwConductedById && ` · Conducted by: ${getStaffName(r.rtwConductedById)}`}
+                          {r.rtw_date && `Date: ${r.rtw_date}`}
+                          {r.rtw_conducted_by_id && ` · Conducted by: ${getStaffName(r.rtw_conducted_by_id)}`}
                         </p>
-                        <p className="text-xs text-green-700 mt-1">{r.rtwOutcome}</p>
+                        <p className="text-xs text-green-700 mt-1">{r.rtw_outcome}</p>
                       </div>
                     )}
 
                     {/* trigger points */}
-                    {r.triggerPoints.length > 0 && (
+                    {r.trigger_points.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">Trigger Points / Actions</p>
                         <div className="flex flex-wrap gap-1">
-                          {r.triggerPoints.map((t, i) => (
+                          {r.trigger_points.map((t, i) => (
                             <Badge key={i} variant="outline" className="bg-amber-50 text-amber-700 text-xs">{t}</Badge>
                           ))}
                         </div>
@@ -303,24 +222,24 @@ export default function StaffSicknessPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="bg-muted/40 rounded p-2 text-center">
                         <p className="font-medium text-xs">Self-Certified</p>
-                        <p className="text-xs font-bold">{r.selfCertified ? "Yes" : "No"}</p>
+                        <p className="text-xs font-bold">{r.self_certified ? "Yes" : "No"}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2 text-center">
                         <p className="font-medium text-xs">Fit Note</p>
-                        <p className="text-xs font-bold">{r.fitNote ? `Yes (exp: ${r.fitNoteExpiry})` : "N/A"}</p>
+                        <p className="text-xs font-bold">{r.fit_note ? `Yes (exp: ${r.fit_note_expiry})` : "N/A"}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2 text-center">
                         <p className="font-medium text-xs">OH Referral</p>
-                        <p className="text-xs font-bold">{r.occupationalHealthReferral ? "Yes" : "No"}</p>
+                        <p className="text-xs font-bold">{r.occupational_health_referral ? "Yes" : "No"}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2 text-center">
                         <p className="font-medium text-xs">Duration</p>
-                        <p className="text-xs font-bold">{r.totalDays} day(s)</p>
+                        <p className="text-xs font-bold">{r.total_days} day(s)</p>
                       </div>
                     </div>
 
                     {/* manager notes */}
-                    <div><p className="font-medium mb-1">Manager Notes</p><p className="text-muted-foreground text-xs">{r.managerNotes}</p></div>
+                    <div><p className="font-medium mb-1">Manager Notes</p><p className="text-muted-foreground text-xs">{r.manager_notes}</p></div>
                   </CardContent>
                 )}
               </Card>
@@ -359,7 +278,7 @@ export default function StaffSicknessPage() {
               <Label>Reason</Label>
               <Select><SelectTrigger><SelectValue placeholder="Select reason" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(REASON_LABEL) as [AbsenceReason, string][]).map(([k, v]) => (
+                  {(Object.entries(STAFF_SICKNESS_ABSENCE_REASON_LABEL) as [StaffSicknessAbsenceReason, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
                   ))}
                 </SelectContent>

@@ -13,11 +13,11 @@ import {
   AlertTriangle,
   Circle,
   ShieldCheck,
-  Shield,
   XCircle,
   Award,
   Users,
   BarChart3,
+  Loader2,
 } from "lucide-react";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -32,32 +32,18 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useStaffCompetencyRecords } from "@/hooks/use-staff-competency-records";
+import type { StaffCompetencyRecord, StaffCompetencyLevel } from "@/types/extended";
+import { STAFF_COMPETENCY_LEVEL_LABEL } from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── local config ─────────────────────────────────────────────────────── */
 
-type CompetencyLevel = "competent" | "developing" | "not_assessed" | "expired";
-
-interface CompetencyEntry {
-  id: string;
-  area: string;
-  level: CompetencyLevel;
-  assessedDate: string | null;
-  assessedBy: string | null;
-  expiryDate: string | null;
-  notes: string;
-}
-
-interface StaffCompetency {
-  id: string;
-  staffId: string;
-  staffName: string;
-  role: string;
-  entries: CompetencyEntry[];
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
+const LEVEL_META: Record<StaffCompetencyLevel, { label: string; colour: string; icon: typeof CheckCircle2 }> = {
+  competent:    { label: "Competent",     colour: "bg-green-100 text-green-700",  icon: CheckCircle2 },
+  developing:   { label: "Developing",    colour: "bg-blue-100 text-blue-700",    icon: Clock },
+  not_assessed: { label: "Not Assessed",  colour: "bg-gray-100 text-gray-700",    icon: Circle },
+  expired:      { label: "Expired",       colour: "bg-red-100 text-red-700",      icon: XCircle },
+};
 
 const COMPETENCY_AREAS = [
   "Safeguarding (Level 3)",
@@ -72,97 +58,10 @@ const COMPETENCY_AREAS = [
   "Exploitation Awareness",
 ] as const;
 
-const SEED: StaffCompetency[] = [
-  {
-    id: "sc1", staffId: "staff_ryan", staffName: "Ryan Forsythe", role: "Deputy Manager",
-    entries: [
-      { id: "sc1-1", area: "Safeguarding (Level 3)", level: "competent", assessedDate: d(-90), assessedBy: "staff_darren", expiryDate: d(275), notes: "Level 3 safeguarding assessed. Strong understanding of thresholds and referral pathways." },
-      { id: "sc1-2", area: "Medication Administration", level: "competent", assessedDate: d(-60), assessedBy: "staff_darren", expiryDate: d(305), notes: "Observed three rounds. Accurate and methodical." },
-      { id: "sc1-3", area: "TCI/Restraint", level: "competent", assessedDate: d(-45), assessedBy: "staff_darren", expiryDate: d(320), notes: "Team Teach refresher completed. Practical competency demonstrated." },
-      { id: "sc1-4", area: "First Aid", level: "competent", assessedDate: d(-120), assessedBy: "staff_darren", expiryDate: d(245), notes: "3-day First Aid at Work certificate valid." },
-      { id: "sc1-5", area: "Fire Safety", level: "competent", assessedDate: d(-30), assessedBy: "staff_darren", expiryDate: null, notes: "Led fire drill. Full procedural knowledge confirmed." },
-      { id: "sc1-6", area: "Record Keeping", level: "competent", assessedDate: d(-50), assessedBy: "staff_darren", expiryDate: null, notes: "Consistent high-quality daily logs and reports." },
-      { id: "sc1-7", area: "Key Working", level: "competent", assessedDate: d(-70), assessedBy: "staff_darren", expiryDate: null, notes: "Effective key working relationship with all YP. Person-centred approach evident." },
-      { id: "sc1-8", area: "Lone Working", level: "competent", assessedDate: d(-80), assessedBy: "staff_darren", expiryDate: null, notes: "Lone working risk assessment completed and signed off." },
-      { id: "sc1-9", area: "ASD Awareness", level: "competent", assessedDate: d(-40), assessedBy: "staff_darren", expiryDate: null, notes: "ASD awareness training completed. Good understanding of sensory needs and communication adaptations." },
-      { id: "sc1-10", area: "Exploitation Awareness", level: "competent", assessedDate: d(-55), assessedBy: "staff_darren", expiryDate: null, notes: "CE/CSE awareness training completed. Can identify indicators and knows NRM referral process." },
-    ],
-  },
-  {
-    id: "sc2", staffId: "staff_anna", staffName: "Anna Lingolo", role: "Residential Care Worker",
-    entries: [
-      { id: "sc2-1", area: "Safeguarding (Level 3)", level: "competent", assessedDate: d(-85), assessedBy: "staff_darren", expiryDate: d(280), notes: "Safeguarding competent. Strong disclosure handling demonstrated." },
-      { id: "sc2-2", area: "Medication Administration", level: "competent", assessedDate: d(-75), assessedBy: "staff_ryan", expiryDate: d(290), notes: "Competent across all MAR procedures. PRN protocol understood." },
-      { id: "sc2-3", area: "TCI/Restraint", level: "competent", assessedDate: d(-50), assessedBy: "staff_darren", expiryDate: d(315), notes: "Team Teach refresher passed. De-escalation skills strong." },
-      { id: "sc2-4", area: "First Aid", level: "competent", assessedDate: d(-100), assessedBy: "staff_darren", expiryDate: d(265), notes: "Emergency First Aid certificate valid." },
-      { id: "sc2-5", area: "Fire Safety", level: "competent", assessedDate: d(-35), assessedBy: "staff_ryan", expiryDate: null, notes: "Participated in fire drill. Evacuation procedure fully understood." },
-      { id: "sc2-6", area: "Record Keeping", level: "competent", assessedDate: d(-55), assessedBy: "staff_darren", expiryDate: null, notes: "Recording practice is detailed and timely." },
-      { id: "sc2-7", area: "Key Working", level: "competent", assessedDate: d(-65), assessedBy: "staff_darren", expiryDate: null, notes: "Key worker for Jordan. Good relationship built." },
-      { id: "sc2-8", area: "Lone Working", level: "competent", assessedDate: d(-70), assessedBy: "staff_ryan", expiryDate: null, notes: "Lone working assessment completed. Note: LADO restrictions may affect some unsupervised tasks — review with RM." },
-      { id: "sc2-9", area: "ASD Awareness", level: "developing", assessedDate: d(-20), assessedBy: "staff_darren", expiryDate: null, notes: "Attended introductory session. Needs further practical observation with ASD-specific scenarios. Booked onto advanced module." },
-      { id: "sc2-10", area: "Exploitation Awareness", level: "competent", assessedDate: d(-60), assessedBy: "staff_darren", expiryDate: null, notes: "Good awareness of CE/CSE indicators. Contributed well to contextual safeguarding mapping." },
-    ],
-  },
-  {
-    id: "sc3", staffId: "staff_chervelle", staffName: "Chervelle Kinina", role: "Residential Care Worker",
-    entries: [
-      { id: "sc3-1", area: "Safeguarding (Level 3)", level: "competent", assessedDate: d(-70), assessedBy: "staff_darren", expiryDate: d(295), notes: "Level 3 safeguarding assessed. Clear on thresholds." },
-      { id: "sc3-2", area: "Medication Administration", level: "competent", assessedDate: d(-65), assessedBy: "staff_ryan", expiryDate: d(300), notes: "Competent. Observed administering all routes correctly." },
-      { id: "sc3-3", area: "TCI/Restraint", level: "competent", assessedDate: d(-40), assessedBy: "staff_darren", expiryDate: d(325), notes: "Team Teach certified. Used holds appropriately during recent incident." },
-      { id: "sc3-4", area: "First Aid", level: "competent", assessedDate: d(-110), assessedBy: "staff_darren", expiryDate: d(255), notes: "First Aid at Work certificate valid." },
-      { id: "sc3-5", area: "Fire Safety", level: "competent", assessedDate: d(-25), assessedBy: "staff_ryan", expiryDate: null, notes: "Fire warden trained. Can lead evacuation." },
-      { id: "sc3-6", area: "Record Keeping", level: "competent", assessedDate: d(-45), assessedBy: "staff_darren", expiryDate: null, notes: "Consistently thorough. Good narrative recording style." },
-      { id: "sc3-7", area: "Key Working", level: "competent", assessedDate: d(-50), assessedBy: "staff_darren", expiryDate: null, notes: "Key worker for Casey. Building strong therapeutic relationship." },
-      { id: "sc3-8", area: "Lone Working", level: "developing", assessedDate: d(-15), assessedBy: "staff_ryan", expiryDate: null, notes: "Initial assessment completed. Needs two further observed lone shifts before full sign-off. Scheduled for next fortnight." },
-      { id: "sc3-9", area: "ASD Awareness", level: "competent", assessedDate: d(-30), assessedBy: "staff_darren", expiryDate: null, notes: "Completed ASD awareness module. Applied learning well with sensory-sensitive YP." },
-      { id: "sc3-10", area: "Exploitation Awareness", level: "competent", assessedDate: d(-35), assessedBy: "staff_darren", expiryDate: null, notes: "Specialist knowledge. Completed multi-agency exploitation awareness course. Leads contextual safeguarding mapping." },
-    ],
-  },
-  {
-    id: "sc4", staffId: "staff_edward", staffName: "Edward Fitzpatrick", role: "Residential Care Worker",
-    entries: [
-      { id: "sc4-1", area: "Safeguarding (Level 3)", level: "competent", assessedDate: d(-95), assessedBy: "staff_darren", expiryDate: d(270), notes: "Safeguarding competent. Good understanding of disclosure protocol." },
-      { id: "sc4-2", area: "Medication Administration", level: "expired", assessedDate: d(-380), assessedBy: "staff_ryan", expiryDate: d(-15), notes: "Competency expired. Re-assessment required before resuming medication rounds. Booked for re-assessment next week." },
-      { id: "sc4-3", area: "TCI/Restraint", level: "developing", assessedDate: d(-10), assessedBy: "staff_darren", expiryDate: null, notes: "Attended refresher but practical component needs repeat. Some hesitation in hold transitions. Booked for follow-up session." },
-      { id: "sc4-4", area: "First Aid", level: "expired", assessedDate: d(-400), assessedBy: "staff_darren", expiryDate: d(-35), notes: "Certificate expired. Must complete renewal before next shift pattern. Course booked." },
-      { id: "sc4-5", area: "Fire Safety", level: "competent", assessedDate: d(-40), assessedBy: "staff_ryan", expiryDate: null, notes: "Fire safety knowledge confirmed during drill." },
-      { id: "sc4-6", area: "Record Keeping", level: "developing", assessedDate: d(-20), assessedBy: "staff_darren", expiryDate: null, notes: "Improving but entries still lack sufficient detail. Action plan in place — supervised recording practice." },
-      { id: "sc4-7", area: "Key Working", level: "competent", assessedDate: d(-60), assessedBy: "staff_darren", expiryDate: null, notes: "Key worker for Alex. Good rapport established." },
-      { id: "sc4-8", area: "Lone Working", level: "developing", assessedDate: d(-25), assessedBy: "staff_ryan", expiryDate: null, notes: "Not yet fully signed off. Needs more experience before lone shift approval." },
-      { id: "sc4-9", area: "ASD Awareness", level: "developing", assessedDate: d(-15), assessedBy: "staff_darren", expiryDate: null, notes: "Attended introductory session. Needs to demonstrate practical application." },
-      { id: "sc4-10", area: "Exploitation Awareness", level: "developing", assessedDate: d(-18), assessedBy: "staff_darren", expiryDate: null, notes: "Basic awareness confirmed. Needs multi-agency course completion for full sign-off." },
-    ],
-  },
-  {
-    id: "sc5", staffId: "staff_mirela", staffName: "Mirela Tshawa Kalongo", role: "Residential Care Worker",
-    entries: [
-      { id: "sc5-1", area: "Safeguarding (Level 3)", level: "competent", assessedDate: d(-19), assessedBy: "staff_darren", expiryDate: d(346), notes: "Completed Level 3 safeguarding during induction. Score 92%. Good understanding demonstrated." },
-      { id: "sc5-2", area: "Medication Administration", level: "not_assessed", assessedDate: null, assessedBy: null, expiryDate: null, notes: "Awaiting competency assessment. Currently observing medication rounds only — not administering independently." },
-      { id: "sc5-3", area: "TCI/Restraint", level: "not_assessed", assessedDate: null, assessedBy: null, expiryDate: null, notes: "PRICE training course booked. Cannot participate in physical interventions until certified." },
-      { id: "sc5-4", area: "First Aid", level: "competent", assessedDate: d(-21), assessedBy: "staff_darren", expiryDate: d(344), notes: "Emergency First Aid certificate obtained during induction week." },
-      { id: "sc5-5", area: "Fire Safety", level: "competent", assessedDate: d(-18), assessedBy: "staff_ryan", expiryDate: null, notes: "Participated in live fire drill on third day. Procedure understood." },
-      { id: "sc5-6", area: "Record Keeping", level: "developing", assessedDate: d(-10), assessedBy: "staff_darren", expiryDate: null, notes: "Learning recording standards. Entries reviewed daily by senior. Quality improving." },
-      { id: "sc5-7", area: "Key Working", level: "not_assessed", assessedDate: null, assessedBy: null, expiryDate: null, notes: "Not yet assigned as primary key worker. Supporting Jordan as secondary worker." },
-      { id: "sc5-8", area: "Lone Working", level: "not_assessed", assessedDate: null, assessedBy: null, expiryDate: null, notes: "Cannot complete until all shadow shifts are done. Still in induction period." },
-      { id: "sc5-9", area: "ASD Awareness", level: "not_assessed", assessedDate: null, assessedBy: null, expiryDate: null, notes: "Module scheduled for month 3 of induction." },
-      { id: "sc5-10", area: "Exploitation Awareness", level: "not_assessed", assessedDate: null, assessedBy: null, expiryDate: null, notes: "Training booked as part of induction programme." },
-    ],
-  },
-];
-
-/* ── constants ─────────────────────────────────────────────────────────── */
-
-const LEVEL_META: Record<CompetencyLevel, { label: string; colour: string; icon: typeof CheckCircle2 }> = {
-  competent:    { label: "Competent",     colour: "bg-green-100 text-green-700",  icon: CheckCircle2 },
-  developing:   { label: "Developing",    colour: "bg-blue-100 text-blue-700",    icon: Clock },
-  not_assessed: { label: "Not Assessed",  colour: "bg-gray-100 text-gray-700",    icon: Circle },
-  expired:      { label: "Expired",       colour: "bg-red-100 text-red-700",      icon: XCircle },
-};
-
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function StaffCompetencyPage() {
-  const [data] = useState<StaffCompetency[]>(SEED);
+  const { data: records = [], isLoading } = useStaffCompetencyRecords();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterLevel, setFilterLevel] = useState("all");
@@ -172,7 +71,7 @@ export default function StaffCompetencyPage() {
   /* ── stats ────────────────────────────────────────────────────────────── */
 
   const stats = useMemo(() => {
-    const allEntries = data.flatMap((s) => s.entries);
+    const allEntries = records.flatMap((s) => s.entries);
     const total = allEntries.length;
     const competent = allEntries.filter((e) => e.level === "competent").length;
     const developing = allEntries.filter((e) => e.level === "developing").length;
@@ -180,47 +79,47 @@ export default function StaffCompetencyPage() {
     const expired = allEntries.filter((e) => e.level === "expired").length;
 
     const expiringSoon = allEntries.filter((e) => {
-      if (!e.expiryDate || e.level === "expired") return false;
-      const days = Math.ceil((new Date(e.expiryDate).getTime() - Date.now()) / 86400000);
+      if (!e.expiry_date || e.level === "expired") return false;
+      const days = Math.ceil((new Date(e.expiry_date).getTime() - Date.now()) / 86400000);
       return days > 0 && days <= 90;
     }).length;
 
     const compliancePct = total > 0 ? Math.round((competent / total) * 100) : 0;
-    const fullyCompetent = data.filter((s) => s.entries.every((e) => e.level === "competent")).length;
+    const fullyCompetent = records.filter((s) => s.entries.every((e) => e.level === "competent")).length;
 
     return { total, competent, developing, notAssessed, expired, expiringSoon, compliancePct, fullyCompetent };
-  }, [data]);
+  }, [records]);
 
   /* ── alerts ───────────────────────────────────────────────────────────── */
 
   const alerts = useMemo(() => {
     const items: { staffName: string; area: string; type: "expired" | "expiring"; expiryDate: string }[] = [];
-    data.forEach((s) => {
+    records.forEach((s) => {
       s.entries.forEach((e) => {
         if (e.level === "expired") {
-          items.push({ staffName: s.staffName, area: e.area, type: "expired", expiryDate: e.expiryDate || "" });
-        } else if (e.expiryDate) {
-          const days = Math.ceil((new Date(e.expiryDate).getTime() - Date.now()) / 86400000);
+          items.push({ staffName: s.staff_name, area: e.area, type: "expired", expiryDate: e.expiry_date || "" });
+        } else if (e.expiry_date) {
+          const days = Math.ceil((new Date(e.expiry_date).getTime() - Date.now()) / 86400000);
           if (days > 0 && days <= 90) {
-            items.push({ staffName: s.staffName, area: e.area, type: "expiring", expiryDate: e.expiryDate });
+            items.push({ staffName: s.staff_name, area: e.area, type: "expiring", expiryDate: e.expiry_date });
           }
         }
       });
     });
     return items;
-  }, [data]);
+  }, [records]);
 
   /* ── filter + sort ────────────────────────────────────────────────────── */
 
   const filtered = useMemo(() => {
-    let list = [...data];
+    let list = [...records];
     if (filterLevel !== "all") {
       list = list.filter((s) => s.entries.some((e) => e.level === filterLevel));
     }
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((s) =>
-        s.staffName.toLowerCase().includes(q) ||
+        s.staff_name.toLowerCase().includes(q) ||
         s.role.toLowerCase().includes(q) ||
         s.entries.some((e) => e.area.toLowerCase().includes(q))
       );
@@ -228,8 +127,8 @@ export default function StaffCompetencyPage() {
     list.sort((a, b) => {
       switch (sortBy) {
         case "compliance": {
-          const aPct = a.entries.filter((e) => e.level === "competent").length / a.entries.length;
-          const bPct = b.entries.filter((e) => e.level === "competent").length / b.entries.length;
+          const aPct = a.entries.length > 0 ? a.entries.filter((e) => e.level === "competent").length / a.entries.length : 0;
+          const bPct = b.entries.length > 0 ? b.entries.filter((e) => e.level === "competent").length / b.entries.length : 0;
           return aPct - bPct;
         }
         case "issues": {
@@ -237,35 +136,45 @@ export default function StaffCompetencyPage() {
           const bIssues = b.entries.filter((e) => e.level === "expired" || e.level === "not_assessed").length;
           return bIssues - aIssues;
         }
-        default: return a.staffName.localeCompare(b.staffName);
+        default: return a.staff_name.localeCompare(b.staff_name);
       }
     });
     return list;
-  }, [data, filterLevel, search, sortBy]);
+  }, [records, filterLevel, search, sortBy]);
 
   /* ── export ───────────────────────────────────────────────────────────── */
 
-  const exportData = useMemo(() => data.flatMap((s) => s.entries.map((e) => ({
-    staffName: s.staffName,
+  const exportData = useMemo(() => records.flatMap((s) => s.entries.map((e) => ({
+    staffName: s.staff_name,
     role: s.role,
     area: e.area,
-    level: LEVEL_META[e.level].label,
-    assessedDate: e.assessedDate || "",
-    assessedBy: e.assessedBy ? getStaffName(e.assessedBy) : "",
-    expiryDate: e.expiryDate || "",
+    level: STAFF_COMPETENCY_LEVEL_LABEL[e.level],
+    assessedDate: e.assessed_date || "",
+    assessedBy: e.assessed_by ? getStaffName(e.assessed_by) : "",
+    expiryDate: e.expiry_date || "",
     notes: e.notes,
-  }))), [data]);
+  }))), [records]);
 
   const exportCols: ExportColumn<typeof exportData[number]>[] = [
-    { header: "Staff Name",    accessor: (r: typeof exportData[number]) => r.staffName },
-    { header: "Role",          accessor: (r: typeof exportData[number]) => r.role },
-    { header: "Competency",    accessor: (r: typeof exportData[number]) => r.area },
-    { header: "Level",         accessor: (r: typeof exportData[number]) => r.level },
-    { header: "Assessed",      accessor: (r: typeof exportData[number]) => r.assessedDate },
-    { header: "Assessed By",   accessor: (r: typeof exportData[number]) => r.assessedBy },
-    { header: "Expiry",        accessor: (r: typeof exportData[number]) => r.expiryDate },
-    { header: "Notes",         accessor: (r: typeof exportData[number]) => r.notes },
+    { header: "Staff Name",    accessor: (r) => r.staffName },
+    { header: "Role",          accessor: (r) => r.role },
+    { header: "Competency",    accessor: (r) => r.area },
+    { header: "Level",         accessor: (r) => r.level },
+    { header: "Assessed",      accessor: (r) => r.assessedDate },
+    { header: "Assessed By",   accessor: (r) => r.assessedBy },
+    { header: "Expiry",        accessor: (r) => r.expiryDate },
+    { header: "Notes",         accessor: (r) => r.notes },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Staff Competency Assessments" subtitle="Reg 32/33 — skills sign-offs, practical competency checks, and professional development benchmarks">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -293,7 +202,7 @@ export default function StaffCompetencyPage() {
             { l: "Not Assessed",     v: stats.notAssessed, icon: Circle, c: "text-gray-500" },
             { l: "Expired",          v: stats.expired, icon: XCircle, c: stats.expired > 0 ? "text-red-600" : "text-gray-400" },
             { l: "Expiring Soon",    v: stats.expiringSoon, icon: AlertTriangle, c: stats.expiringSoon > 0 ? "text-amber-600" : "text-gray-400" },
-            { l: "Fully Competent",  v: `${stats.fullyCompetent}/${data.length}`, icon: Award, c: "text-green-600" },
+            { l: "Fully Competent",  v: `${stats.fullyCompetent}/${records.length}`, icon: Award, c: "text-green-600" },
             { l: "Compliance",       v: `${stats.compliancePct}%`, icon: BarChart3, c: stats.compliancePct >= 80 ? "text-green-600" : stats.compliancePct >= 60 ? "text-amber-600" : "text-red-600" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
@@ -369,10 +278,9 @@ export default function StaffCompetencyPage() {
             <SelectTrigger className="w-[160px]"><SelectValue placeholder="Level" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Levels</SelectItem>
-              <SelectItem value="competent">Competent</SelectItem>
-              <SelectItem value="developing">Developing</SelectItem>
-              <SelectItem value="not_assessed">Not Assessed</SelectItem>
-              <SelectItem value="expired">Expired</SelectItem>
+              {(Object.keys(STAFF_COMPETENCY_LEVEL_LABEL) as StaffCompetencyLevel[]).map((k) => (
+                <SelectItem key={k} value={k}>{STAFF_COMPETENCY_LEVEL_LABEL[k]}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <div className="flex items-center gap-1 text-sm">
@@ -409,13 +317,13 @@ export default function StaffCompetencyPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map((staff) => {
+                  {records.map((staff) => {
                     const comp = staff.entries.filter((e) => e.level === "competent").length;
-                    const pct = Math.round((comp / staff.entries.length) * 100);
+                    const pct = staff.entries.length > 0 ? Math.round((comp / staff.entries.length) * 100) : 0;
                     return (
                       <tr key={staff.id} className="border-b hover:bg-gray-50/50">
                         <td className="py-2 px-4 sticky left-0 bg-white z-10">
-                          <div className="text-xs font-medium">{staff.staffName}</div>
+                          <div className="text-xs font-medium">{staff.staff_name}</div>
                           <div className="text-[10px] text-muted-foreground">{staff.role}</div>
                         </td>
                         {COMPETENCY_AREAS.map((area) => {
@@ -451,7 +359,7 @@ export default function StaffCompetencyPage() {
         {filtered.map((staff) => {
           const comp = staff.entries.filter((e) => e.level === "competent").length;
           const total = staff.entries.length;
-          const pct = Math.round((comp / total) * 100);
+          const pct = total > 0 ? Math.round((comp / total) * 100) : 0;
           const hasExpired = staff.entries.some((e) => e.level === "expired");
           const hasDeveloping = staff.entries.some((e) => e.level === "developing");
           const hasNotAssessed = staff.entries.some((e) => e.level === "not_assessed");
@@ -466,7 +374,7 @@ export default function StaffCompetencyPage() {
                   <ShieldCheck className={cn("h-5 w-5", pct === 100 ? "text-green-600" : pct >= 70 ? "text-amber-500" : "text-red-500")} />
                   <div className="text-left">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold">{staff.staffName}</h3>
+                      <h3 className="font-semibold">{staff.staff_name}</h3>
                       <span className="text-xs text-muted-foreground">{staff.role}</span>
                       {hasExpired && <Badge variant="destructive" className="text-[10px] h-5">Expired</Badge>}
                       {hasDeveloping && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-700">Developing</span>}
@@ -490,7 +398,7 @@ export default function StaffCompetencyPage() {
                     const meta = LEVEL_META[entry.level];
                     const Icon = meta.icon;
                     const isExpired = entry.level === "expired";
-                    const isExpiring = entry.expiryDate && entry.level !== "expired" && Math.ceil((new Date(entry.expiryDate).getTime() - Date.now()) / 86400000) <= 90 && Math.ceil((new Date(entry.expiryDate).getTime() - Date.now()) / 86400000) > 0;
+                    const isExpiring = entry.expiry_date && entry.level !== "expired" && Math.ceil((new Date(entry.expiry_date).getTime() - Date.now()) / 86400000) <= 90 && Math.ceil((new Date(entry.expiry_date).getTime() - Date.now()) / 86400000) > 0;
 
                     return (
                       <div key={entry.id} className={cn(
@@ -508,16 +416,16 @@ export default function StaffCompetencyPage() {
                             <div>
                               <p className="text-sm font-medium">{entry.area}</p>
                               {entry.notes && <p className="text-xs text-muted-foreground mt-0.5 italic">{entry.notes}</p>}
-                              {entry.assessedBy && entry.assessedDate && (
-                                <p className="text-xs text-muted-foreground mt-0.5">Assessed by {getStaffName(entry.assessedBy)} on {entry.assessedDate}</p>
+                              {entry.assessed_by && entry.assessed_date && (
+                                <p className="text-xs text-muted-foreground mt-0.5">Assessed by {getStaffName(entry.assessed_by)} on {entry.assessed_date}</p>
                               )}
                             </div>
                           </div>
                           <div className="text-right flex-shrink-0">
                             <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", meta.colour)}>{meta.label}</span>
-                            {entry.expiryDate && (
+                            {entry.expiry_date && (
                               <p className={cn("text-xs mt-0.5", isExpired ? "text-red-600 font-medium" : isExpiring ? "text-amber-600" : "text-muted-foreground")}>
-                                {isExpired ? "Expired" : "Expires"}: {entry.expiryDate}
+                                {isExpired ? "Expired" : "Expires"}: {entry.expiry_date}
                               </p>
                             )}
                           </div>
@@ -567,13 +475,14 @@ export default function StaffCompetencyPage() {
                 <option key={area} value={area}>{area}</option>
               ))}
             </select>
-            <select className="rounded border px-3 py-2 text-sm">
-              <option value="">Competency level...</option>
-              <option value="competent">Competent</option>
-              <option value="developing">Developing</option>
-              <option value="not_assessed">Not Assessed</option>
-              <option value="expired">Expired</option>
-            </select>
+            <Select>
+              <SelectTrigger><SelectValue placeholder="Competency level..." /></SelectTrigger>
+              <SelectContent>
+                {(Object.keys(STAFF_COMPETENCY_LEVEL_LABEL) as StaffCompetencyLevel[]).map((k) => (
+                  <SelectItem key={k} value={k}>{STAFF_COMPETENCY_LEVEL_LABEL[k]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <input type="date" className="rounded border px-3 py-2 text-sm" />
             <select className="rounded border px-3 py-2 text-sm">
               <option value="">Assessed by...</option>

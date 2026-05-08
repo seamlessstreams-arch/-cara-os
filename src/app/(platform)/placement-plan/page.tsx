@@ -24,33 +24,15 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { usePlacementObjectives, useCreatePlacementObjective } from "@/hooks/use-placement-objectives";
+import type { PlacementObjective, ObjectiveArea, PlacementObjectiveStatus } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Plus, Target, CheckCircle2,
   AlertTriangle, Clock, User, Calendar, ChevronDown,
   ChevronUp, Shield, TrendingUp, ListChecks, FileText,
   Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type ObjectiveArea = "health" | "education" | "emotional_wellbeing" | "identity" | "family_social" | "social_presentation" | "self_care" | "stability";
-type ObjectiveStatus = "on_track" | "some_progress" | "no_progress" | "achieved" | "not_started" | "at_risk";
-
-interface PlacementObjective {
-  id: string;
-  child_id: string;
-  area: ObjectiveArea;
-  title: string;
-  description: string;
-  target: string;
-  current_status: ObjectiveStatus;
-  responsible: string;
-  start_date: string;
-  review_date: string;
-  progress_notes: string;
-  last_updated: string;
-  created_at: string;
-}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -65,7 +47,7 @@ const AREA_CONFIG: Record<ObjectiveArea, { label: string; colour: string }> = {
   stability:           { label: "Placement Stability", colour: "bg-orange-100 text-orange-700" },
 };
 
-const STATUS_CONFIG: Record<ObjectiveStatus, { label: string; colour: string }> = {
+const STATUS_CONFIG: Record<PlacementObjectiveStatus, { label: string; colour: string }> = {
   on_track:      { label: "On Track",      colour: "bg-green-100 text-green-700" },
   some_progress: { label: "Some Progress", colour: "bg-amber-100 text-amber-700" },
   no_progress:   { label: "No Progress",   colour: "bg-red-100 text-red-700" },
@@ -74,121 +56,15 @@ const STATUS_CONFIG: Record<ObjectiveStatus, { label: string; colour: string }> 
   at_risk:       { label: "At Risk",       colour: "bg-red-100 text-red-800" },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: PlacementObjective[] = [
-  {
-    id: "po_001", child_id: "yp_alex", area: "emotional_wellbeing",
-    title: "Develop healthy coping strategies when distressed",
-    description: "Alex to develop at least three identified coping strategies for managing anger and frustration without resorting to physical aggression or self-harm.",
-    target: "Use calm room or identified strategy before physical escalation in 80% of incidents by next review.",
-    current_status: "some_progress", responsible: "staff_edward",
-    start_date: d(-120), review_date: d(14),
-    progress_notes: "Alex has been using the calm room more frequently. Two out of last five incidents de-escalated without PI. Play therapy ongoing. CAMHS referral accepted.",
-    last_updated: d(-3), created_at: d(-120) + "T09:00:00Z",
-  },
-  {
-    id: "po_002", child_id: "yp_alex", area: "education",
-    title: "Improve school attendance to 90%+",
-    description: "Support Alex to attend school consistently and engage with the curriculum. Address morning refusal patterns.",
-    target: "Achieve 90% attendance by end of term. Reduce unauthorised absences to zero.",
-    current_status: "at_risk", responsible: "staff_edward",
-    start_date: d(-120), review_date: d(14),
-    progress_notes: "Attendance currently at 76%. Morning refusal pattern linked to difficult evenings. Reintegration meeting after exclusion planned. Emergency PEP held — EHCP assessment referral in progress.",
-    last_updated: d(-5), created_at: d(-120) + "T09:00:00Z",
-  },
-  {
-    id: "po_003", child_id: "yp_alex", area: "family_social",
-    title: "Maintain positive family contact",
-    description: "Support Alex to have regular, positive contact with family members in line with the contact plan.",
-    target: "Weekly phone calls and monthly supervised visits maintained without significant distress.",
-    current_status: "some_progress", responsible: "staff_edward",
-    start_date: d(-120), review_date: d(14),
-    progress_notes: "Phone calls happening but some cause significant distress. Considering pre-call preparation and post-call debrief routine. Two incidents directly linked to difficult family calls.",
-    last_updated: d(-7), created_at: d(-120) + "T09:00:00Z",
-  },
-  {
-    id: "po_004", child_id: "yp_jordan", area: "education",
-    title: "Achieve expected progress in Maths",
-    description: "Jordan to reach expected attainment level in Mathematics through additional support and tutoring.",
-    target: "Achieve Grade 4 equivalent by end of academic year. Weekly 1:1 tutoring sessions.",
-    current_status: "on_track", responsible: "staff_anna",
-    start_date: d(-90), review_date: d(56),
-    progress_notes: "1:1 maths tutoring started. PEP review confirmed improvement. Recent assessment scored 72%. Confidence growing. Teacher reports improved concentration.",
-    last_updated: d(-7), created_at: d(-90) + "T09:00:00Z",
-  },
-  {
-    id: "po_005", child_id: "yp_jordan", area: "self_care",
-    title: "Develop morning routine independence",
-    description: "Jordan to complete morning routine (wash, dress, breakfast, school prep) independently without staff prompting.",
-    target: "Complete full morning routine independently for 5 consecutive school days.",
-    current_status: "on_track", responsible: "staff_anna",
-    start_date: d(-60), review_date: d(30),
-    progress_notes: "Excellent progress. Jordan completed 3 consecutive days independently last week. Token reward system working well — approaching 20-token goal. Positive reinforcement from house meeting.",
-    last_updated: d(-7), created_at: d(-60) + "T09:00:00Z",
-  },
-  {
-    id: "po_006", child_id: "yp_jordan", area: "identity",
-    title: "Explore cultural identity and heritage",
-    description: "Support Jordan to learn about and celebrate their cultural heritage. Ensure diverse representation in home environment.",
-    target: "Participate in at least two cultural activities per term. Life story work to include heritage exploration.",
-    current_status: "on_track", responsible: "staff_anna",
-    start_date: d(-90), review_date: d(56),
-    progress_notes: "Jordan attended a Caribbean cooking workshop. Life story book started with key worker. Cultural resources ordered for bedroom. Jordan engaged and curious.",
-    last_updated: d(-14), created_at: d(-90) + "T09:00:00Z",
-  },
-  {
-    id: "po_007", child_id: "yp_casey", area: "health",
-    title: "Improve sleep quality and routine",
-    description: "Address Casey's intermittent sleep difficulties through consistent bedtime routine and professional support.",
-    target: "Achieve consistent 8+ hours sleep at least 5 nights per week. Reduce night-time waking.",
-    current_status: "some_progress", responsible: "staff_chervelle",
-    start_date: d(-75), review_date: d(20),
-    progress_notes: "Sleep hygiene strategies in place: no screens 1hr before bed, consistent routine, calming environment. CAMHS reports some improvement. GP reviewed — no medication change. Monitoring continues.",
-    last_updated: d(-2), created_at: d(-75) + "T09:00:00Z",
-  },
-  {
-    id: "po_008", child_id: "yp_casey", area: "social_presentation",
-    title: "Build positive peer relationships",
-    description: "Support Casey to develop and maintain healthy friendships both within the home and at school.",
-    target: "Regular positive social activities. Participate in at least one extracurricular club. Invite a friend to the home.",
-    current_status: "on_track", responsible: "staff_chervelle",
-    start_date: d(-75), review_date: d(20),
-    progress_notes: "Casey selected for school debate team — brilliant achievement. Has been helping visiting young people feel welcome. Two friendships at school developing well. Planning to invite a school friend over.",
-    last_updated: d(-1), created_at: d(-75) + "T09:00:00Z",
-  },
-  {
-    id: "po_009", child_id: "yp_casey", area: "education",
-    title: "Achieve Grade 5+ in English and Maths GCSEs",
-    description: "Support Casey's academic progress through consistent attendance, homework support, and celebration of achievement.",
-    target: "Grade 5+ in English Language and Mathematics at GCSE.",
-    current_status: "on_track", responsible: "staff_chervelle",
-    start_date: d(-75), review_date: d(20),
-    progress_notes: "English mock: Grade 5 achieved — significant improvement from Grade 3. Maths progressing. Teacher feedback positive. Homework routine established. Casey motivated and engaged.",
-    last_updated: d(-5), created_at: d(-75) + "T09:00:00Z",
-  },
-  {
-    id: "po_010", child_id: "yp_alex", area: "stability",
-    title: "Maintain placement stability at Oak House",
-    description: "Ensure Alex feels safe, settled, and sees Oak House as home. Address any disruption risks proactively.",
-    target: "Placement maintained. Alex reports feeling safe and settled. No placement breakdown risk.",
-    current_status: "some_progress", responsible: "staff_darren",
-    start_date: d(-120), review_date: d(14),
-    progress_notes: "Placement is challenging but stable. Recent incidents have tested boundaries but Alex continues to express wanting to stay. Relationship with key worker is strong. Multi-agency support in place.",
-    last_updated: d(-3), created_at: d(-120) + "T09:00:00Z",
-  },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function PlacementPlanPage() {
   const { currentUser } = useAuthContext();
 
-  const [entries, setEntries] = useState<PlacementObjective[]>(SEED);
+  const { data: res, isLoading } = usePlacementObjectives();
+  const createMut = useCreatePlacementObjective();
+  const entries = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [areaFilter, setAreaFilter] = useState("all");
@@ -279,8 +155,7 @@ export default function PlacementPlanPage() {
   /* ── create ─────────────────────────────────────────────────────────────── */
   const handleCreate = () => {
     if (!nChild || !nArea || !nTitle || !nDesc || !nTarget) return;
-    const entry: PlacementObjective = {
-      id: `po_${Date.now()}`,
+    createMut.mutate({
       child_id: nChild,
       area: nArea as ObjectiveArea,
       title: nTitle,
@@ -289,15 +164,24 @@ export default function PlacementPlanPage() {
       current_status: "not_started",
       responsible: currentUser?.id || "staff_darren",
       start_date: todayStr(),
-      review_date: d(90),
+      review_date: (() => { const dt = new Date(); dt.setDate(dt.getDate() + 90); return dt.toISOString().slice(0, 10); })(),
       progress_notes: "",
       last_updated: todayStr(),
-      created_at: new Date().toISOString(),
-    };
-    setEntries(prev => [entry, ...prev]);
+    });
     setShowNew(false);
     setNChild(""); setNArea(""); setNTitle(""); setNDesc(""); setNTarget("");
   };
+
+  /* ── loading state ──────────────────────────────────────────────────────── */
+  if (isLoading) {
+    return (
+      <PageShell title="Placement Plans" subtitle="Objectives, targets, and progress tracking">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -416,7 +300,7 @@ export default function PlacementPlanPage() {
           <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {(Object.entries(STATUS_CONFIG) as [ObjectiveStatus, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(STATUS_CONFIG) as [PlacementObjectiveStatus, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -502,6 +386,7 @@ export default function PlacementPlanPage() {
                     <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />Started: {formatDate(entry.start_date)}</span>
                     <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Updated: {formatDate(entry.last_updated)}</span>
                   </div>
+                  <SmartLinkPanel sourceType="placement-objective" sourceId={entry.id} childId={entry.child_id} compact />
                 </div>
               )}
             </div>

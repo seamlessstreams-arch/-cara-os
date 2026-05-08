@@ -13,6 +13,7 @@ import {
   Network,
   ArrowDownLeft,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -22,293 +23,50 @@ import { getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useRegulatoryCorrespondenceLetters } from "@/hooks/use-regulatory-correspondence-letters";
+import type {
+  RegulatoryCorrespondenceLetter,
+  RegulatoryCorrespondenceRegulator,
+  RegulatoryCorrespondenceDirection,
+  RegulatoryCorrespondenceUrgency,
+  RegulatoryCorrespondenceStatus,
+  RegulatoryCorrespondenceConfidentiality,
+} from "@/types/extended";
+import {
+  REGULATORY_CORRESPONDENCE_REGULATOR_LABEL,
+  REGULATORY_CORRESPONDENCE_DIRECTION_LABEL,
+  REGULATORY_CORRESPONDENCE_URGENCY_LABEL,
+  REGULATORY_CORRESPONDENCE_STATUS_LABEL,
+  REGULATORY_CORRESPONDENCE_CONFIDENTIALITY_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── local colour maps ────────────────────────────────────────────── */
 
-type Regulator =
-  | "Local Authority — Riverside"
-  | "Local Authority — Valley"
-  | "Local Authority — Hillside"
-  | "Ofsted (link to Ofsted log)"
-  | "ICO"
-  | "HMRC"
-  | "HSE"
-  | "Planning Authority"
-  | "Environmental Health"
-  | "Fire Authority"
-  | "ICB / NHS Partner"
-  | "DfE";
-
-type Direction = "Incoming" | "Outgoing";
-type Urgency = "Routine" | "Standard" | "Urgent";
-type LetterStatus = "Open" | "Closed" | "Pending action" | "Awaiting reply";
-type Confidentiality = "Standard" | "Sensitive" | "Restricted";
-
-interface RegulatoryLetter {
-  id: string;
-  dateSent: string;
-  dateReceived: string;
-  regulator: Regulator;
-  direction: Direction;
-  reference: string;
-  subject: string;
-  summary: string;
-  ourResponse: string;
-  documentsAttached: string[];
-  responseRequired: boolean;
-  responseDeadline: string;
-  responseSent: boolean;
-  actionsAgreed: string[];
-  urgency: Urgency;
-  status: LetterStatus;
-  confidentialityLevel: Confidentiality;
-  recordedBy: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const SEED: RegulatoryLetter[] = [
-  {
-    id: "reg1",
-    dateSent: d(-21),
-    dateReceived: d(-20),
-    regulator: "Local Authority — Riverside",
-    direction: "Incoming",
-    reference: "RIV/CH/2026/0118",
-    subject: "Quality of care query — placement of YP-A and SW request for additional information on key working records",
-    summary: "Riverside LA's Independent Reviewing Officer wrote following the most recent statutory review of YP-A. The IRO requested clarity on how key working sessions are recorded and shared with the social worker, and asked for a copy of the home's key worker policy alongside the last three months of session summaries for YP-A. The letter also queried how the home evidences participation by the young person in shaping their care plan.",
-    ourResponse: "RM responded within 5 working days enclosing the key worker policy (v3.2), three months of redacted session summaries for YP-A, and a covering note describing the participation framework used at Oak House (advocacy entitlement, monthly children's meeting minutes, individual one-page profiles). Offered an in-person meeting if further assurance was needed.",
-    documentsAttached: ["Key Worker Policy v3.2", "Session Summaries (Feb–Apr 2026, redacted)", "Participation Framework Summary", "YP-A One-Page Profile"],
-    responseRequired: true,
-    responseDeadline: d(-7),
-    responseSent: true,
-    actionsAgreed: [
-      "RM to share future key working summaries direct to SW within 7 days of session",
-      "Copy of next children's meeting minutes to be CC'd to IRO",
-      "IRO confirmed no further action required and noted improvements positively",
-    ],
-    urgency: "Standard",
-    status: "Closed",
-    confidentialityLevel: "Sensitive",
-    recordedBy: "staff_darren",
-  },
-  {
-    id: "reg2",
-    dateSent: d(-95),
-    dateReceived: d(-92),
-    regulator: "ICO",
-    direction: "Incoming",
-    reference: "ICO/Z3041122/2026",
-    subject: "Acknowledgement of annual data protection fee renewal and registration confirmation as data controller",
-    summary: "ICO confirmed receipt of the annual data protection fee for Oak House Children's Home Ltd and re-issued the registration certificate as a data controller for the period commencing the renewal date. The letter included reminders on the duty to report personal data breaches within 72 hours and signposted to the ICO accountability framework self-assessment.",
-    ourResponse: "Registration certificate filed in the company governance binder and uploaded to the platform's policy library. RM confirmed the breach reporting flow with all team leaders at the next team meeting and re-circulated the data protection one-pager. ICO accountability framework self-assessment scheduled into the audit calendar for Q3.",
-    documentsAttached: ["ICO Registration Certificate 2026–2027", "Receipt of Annual Fee"],
-    responseRequired: false,
-    responseDeadline: "—",
-    responseSent: false,
-    actionsAgreed: [
-      "Certificate filed and accessible to all SLT",
-      "Breach reporting flow re-briefed at team meeting",
-      "Q3 ICO accountability framework self-assessment booked",
-    ],
-    urgency: "Routine",
-    status: "Closed",
-    confidentialityLevel: "Standard",
-    recordedBy: "staff_darren",
-  },
-  {
-    id: "reg3",
-    dateSent: d(-12),
-    dateReceived: d(-10),
-    regulator: "Fire Authority",
-    direction: "Incoming",
-    reference: "FRS/INS/2026/0442",
-    subject: "Confirmation of annual fire safety audit visit and pre-visit information request",
-    summary: "Fire and Rescue Service Protection Team confirmed the date of the annual fire safety audit visit and requested pre-visit documentation: the current Fire Risk Assessment, evacuation plan, fire drill records (last 12 months), staff training register, and PEEPs for any young person or staff member with reduced mobility. Visit will include a walk-around inspection and a discussion with the Responsible Person.",
-    ourResponse: "RM, as Responsible Person, acknowledged the letter the same day and dispatched the requested documentation pack ahead of the visit. Pre-visit walk-through completed by RM and Maintenance Lead — no defects noted. Visit confirmed in the diary and team briefed.",
-    documentsAttached: ["Fire Risk Assessment v2026.1", "Evacuation Plan", "Fire Drill Log 2025–2026", "Staff Fire Training Register", "PEEPs (current)"],
-    responseRequired: true,
-    responseDeadline: d(2),
-    responseSent: true,
-    actionsAgreed: [
-      "Pre-visit pack sent to FRS Protection Team",
-      "Internal walk-through completed; no defects",
-      "Team briefed on visit format and likely questions",
-    ],
-    urgency: "Standard",
-    status: "Awaiting reply",
-    confidentialityLevel: "Standard",
-    recordedBy: "staff_darren",
-  },
-  {
-    id: "reg4",
-    dateSent: d(-60),
-    dateReceived: d(-58),
-    regulator: "Environmental Health",
-    direction: "Incoming",
-    reference: "EH/FH/2026/0231",
-    subject: "Food hygiene rating outcome — 5 stars (Very Good) following unannounced inspection",
-    summary: "Environmental Health Officer confirmed the outcome of the unannounced food hygiene inspection at Oak House. The home was awarded the maximum 5-star rating (Very Good) across all three assessment areas: hygienic food handling, cleanliness and condition of facilities, and confidence in management. The EHO noted particular strengths in temperature monitoring records and allergen management, and made no recommendations.",
-    ourResponse: "RM circulated the rating to the staff team and shared the news with the children at the next house meeting (with their consent). Certificate displayed at the entrance as required. A copy of the report was also shared with the responsible individual and placed in the next quarterly governance report.",
-    documentsAttached: ["Food Hygiene Rating Certificate (5 Stars)", "Inspection Report"],
-    responseRequired: false,
-    responseDeadline: "—",
-    responseSent: false,
-    actionsAgreed: [
-      "Certificate displayed at home entrance",
-      "Rating shared with staff team and children",
-      "Outcome reported to RI and included in governance pack",
-    ],
-    urgency: "Routine",
-    status: "Closed",
-    confidentialityLevel: "Standard",
-    recordedBy: "staff_ryan",
-  },
-  {
-    id: "reg5",
-    dateSent: d(-40),
-    dateReceived: d(-37),
-    regulator: "Planning Authority",
-    direction: "Incoming",
-    reference: "PA/2026/00874/FUL",
-    subject: "Grant of full planning permission for proposed garden room / therapeutic activity building",
-    summary: "Local Planning Authority granted full planning permission for the proposed single-storey garden room to be used as a therapeutic activity space for the children. Permission is subject to standard conditions including completion within three years, materials to match existing dwelling, and compliance with submitted landscaping scheme. No further regulatory consents required, though Building Regulations approval will follow separately.",
-    ourResponse: "RM and RI confirmed receipt and instructed the architect to proceed with detailed Building Regulations submission. Decision notice filed and shared with finance for capital project records. Children involved in selecting the internal layout and planned use through the children's meeting.",
-    documentsAttached: ["Decision Notice PA/2026/00874/FUL", "Approved Plans", "Conditions Schedule"],
-    responseRequired: false,
-    responseDeadline: "—",
-    responseSent: false,
-    actionsAgreed: [
-      "Architect instructed to submit Building Regs application",
-      "Decision notice filed with capital project papers",
-      "Children consulted on layout and intended use",
-    ],
-    urgency: "Routine",
-    status: "Closed",
-    confidentialityLevel: "Standard",
-    recordedBy: "staff_darren",
-  },
-  {
-    id: "reg6",
-    dateSent: d(-8),
-    dateReceived: d(-6),
-    regulator: "ICB / NHS Partner",
-    direction: "Incoming",
-    reference: "ICB/CHI/2026/0098",
-    subject: "Designated Nurse for Looked After Children — partnership letter and offer of joint working session",
-    summary: "The Designated Nurse for Looked After Children at the Integrated Care Board wrote to introduce herself following a recent change in post and to offer a joint working session with the home covering: timely Initial and Review Health Assessments, immunisations, dental access, and the new pathway for emotional wellbeing checks (SDQs) shared with the LAC nurse team. Letter also asked the home to confirm its named health link.",
-    ourResponse: "RM responded within two working days welcoming the offer, confirmed the named health link at the home, and proposed three possible dates for the joint working session. Information shared with the team that day. No outstanding RHA or IHA actions identified.",
-    documentsAttached: ["Health Link Confirmation Letter", "Health Assessment Tracker (current)"],
-    responseRequired: true,
-    responseDeadline: d(7),
-    responseSent: true,
-    actionsAgreed: [
-      "Three dates proposed for joint working session",
-      "Named health link confirmed in writing",
-      "Team briefed on new SDQ pathway with LAC nurse team",
-    ],
-    urgency: "Standard",
-    status: "Pending action",
-    confidentialityLevel: "Standard",
-    recordedBy: "staff_darren",
-  },
-  {
-    id: "reg7",
-    dateSent: d(-30),
-    dateReceived: d(-28),
-    regulator: "HSE",
-    direction: "Incoming",
-    reference: "HSE/RIDDOR/2026/0117",
-    subject: "Acknowledgement of RIDDOR report — staff member slip injury (over-7-day incapacity)",
-    summary: "HSE acknowledged receipt of the RIDDOR report submitted following a staff slip injury that resulted in an over-7-day incapacity. Acknowledgement confirmed the report has been logged on the HSE database and that no further action is required at this stage unless additional information emerges. The letter signposted to HSE guidance on slips, trips and falls and the duty to keep an internal record of the investigation.",
-    ourResponse: "Acknowledgement filed with the original RIDDOR report and the internal investigation record. Lessons-learned summary completed by RM with the staff team and added to the H&S induction pack. Floor surface checked, additional non-slip matting installed at the identified location.",
-    documentsAttached: ["HSE Acknowledgement Email", "RIDDOR F2508", "Internal Investigation Record", "Lessons Learned Summary"],
-    responseRequired: false,
-    responseDeadline: "—",
-    responseSent: false,
-    actionsAgreed: [
-      "Investigation record filed with RIDDOR submission",
-      "Non-slip matting installed at identified hazard",
-      "Lessons learned added to H&S induction pack",
-    ],
-    urgency: "Standard",
-    status: "Closed",
-    confidentialityLevel: "Sensitive",
-    recordedBy: "staff_ryan",
-  },
-  {
-    id: "reg8",
-    dateSent: d(-3),
-    dateReceived: d(-2),
-    regulator: "DfE",
-    direction: "Incoming",
-    reference: "DfE/CONS/2026/CHR-08",
-    subject: "Invitation to respond to national consultation on Children's Homes Regulations and proposed reforms to Quality Standards",
-    summary: "Department for Education wrote to all registered children's homes inviting responses to a national consultation on proposed reforms to the Children's Homes (England) Regulations 2015, including potential changes to Quality Standards 7 (Health) and 13 (Leadership and Management). The consultation runs for 12 weeks and includes specific questions on workforce, registration of managers, and governance reporting.",
-    ourResponse: "RM circulated the consultation pack to RI, deputy and team leaders. Response will be drafted with input from the children (where appropriate, on the questions about their experience) and submitted before the deadline. RM also flagged the consultation to the regional managers' network for collective response.",
-    documentsAttached: ["DfE Consultation Letter", "Consultation Document (full)", "Easy-Read Summary for Children"],
-    responseRequired: true,
-    responseDeadline: d(81),
-    responseSent: false,
-    actionsAgreed: [
-      "Consultation pack circulated internally",
-      "Children to be consulted on relevant questions via house meeting",
-      "Draft response to be reviewed by RI before submission",
-      "Network response flagged to regional managers' group",
-    ],
-    urgency: "Routine",
-    status: "Open",
-    confidentialityLevel: "Standard",
-    recordedBy: "staff_darren",
-  },
-];
-
-/* ── constants ─────────────────────────────────────────────────────────── */
-
-const REGULATORS: Regulator[] = [
-  "Local Authority — Riverside",
-  "Local Authority — Valley",
-  "Local Authority — Hillside",
-  "Ofsted (link to Ofsted log)",
-  "ICO",
-  "HMRC",
-  "HSE",
-  "Planning Authority",
-  "Environmental Health",
-  "Fire Authority",
-  "ICB / NHS Partner",
-  "DfE",
-];
-
-const DIRECTIONS: Direction[] = ["Incoming", "Outgoing"];
-const URGENCIES: Urgency[] = ["Routine", "Standard", "Urgent"];
-const STATUSES: LetterStatus[] = ["Open", "Closed", "Pending action", "Awaiting reply"];
-
-const STATUS_META: Record<LetterStatus, { colour: string }> = {
-  "Open":            { colour: "bg-blue-100 text-blue-700" },
-  "Closed":          { colour: "bg-gray-100 text-gray-700" },
-  "Pending action":  { colour: "bg-amber-100 text-amber-700" },
-  "Awaiting reply":  { colour: "bg-indigo-100 text-indigo-700" },
+const STATUS_META: Record<RegulatoryCorrespondenceStatus, { colour: string }> = {
+  open:            { colour: "bg-blue-100 text-blue-700" },
+  closed:          { colour: "bg-gray-100 text-gray-700" },
+  pending_action:  { colour: "bg-amber-100 text-amber-700" },
+  awaiting_reply:  { colour: "bg-indigo-100 text-indigo-700" },
 };
 
-const URGENCY_META: Record<Urgency, { colour: string }> = {
-  "Routine":  { colour: "bg-gray-100 text-gray-700" },
-  "Standard": { colour: "bg-blue-100 text-blue-700" },
-  "Urgent":   { colour: "bg-red-100 text-red-700" },
+const URGENCY_META: Record<RegulatoryCorrespondenceUrgency, { colour: string }> = {
+  routine:  { colour: "bg-gray-100 text-gray-700" },
+  standard: { colour: "bg-blue-100 text-blue-700" },
+  urgent:   { colour: "bg-red-100 text-red-700" },
 };
 
-const CONF_META: Record<Confidentiality, { colour: string }> = {
-  "Standard":   { colour: "bg-gray-100 text-gray-700" },
-  "Sensitive":  { colour: "bg-amber-100 text-amber-700" },
-  "Restricted": { colour: "bg-red-100 text-red-700" },
+const CONF_META: Record<RegulatoryCorrespondenceConfidentiality, { colour: string }> = {
+  standard_conf: { colour: "bg-gray-100 text-gray-700" },
+  sensitive:     { colour: "bg-amber-100 text-amber-700" },
+  restricted:    { colour: "bg-red-100 text-red-700" },
 };
 
-/* ── component ─────────────────────────────────────────────────────────── */
+const URGENCY_ORDER: RegulatoryCorrespondenceUrgency[] = ["routine", "standard", "urgent"];
+
+/* ── component ────────────────────────────────────────────────────── */
 
 export default function RegulatoryCorrespondenceTrackerPage() {
-  const [data] = useState<RegulatoryLetter[]>(SEED);
+  const { data: records = [], isLoading } = useRegulatoryCorrespondenceLetters();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -317,19 +75,19 @@ export default function RegulatoryCorrespondenceTrackerPage() {
   const [sortBy, setSortBy] = useState("date");
 
   const stats = useMemo(() => {
-    const active = data.filter((r) => r.status === "Open" || r.status === "Pending action" || r.status === "Awaiting reply").length;
-    const awaiting = data.filter((r) => r.responseRequired && !r.responseSent).length;
+    const active = records.filter((r) => r.status === "open" || r.status === "pending_action" || r.status === "awaiting_reply").length;
+    const awaiting = records.filter((r) => r.response_required && !r.response_sent).length;
     const thisYear = new Date().getFullYear();
-    const yearCount = data.filter((r) => {
-      const ref = r.dateReceived || r.dateSent;
+    const yearCount = records.filter((r) => {
+      const ref = r.date_received || r.date_sent;
       return ref && new Date(ref).getFullYear() === thisYear;
     }).length;
-    const distinctRegulators = new Set(data.map((r) => r.regulator)).size;
+    const distinctRegulators = new Set(records.map((r) => r.regulator)).size;
     return { active, awaiting, yearCount, distinctRegulators };
-  }, [data]);
+  }, [records]);
 
   const filtered = useMemo(() => {
-    let list = [...data];
+    let list = [...records];
     if (filterStatus !== "all") list = list.filter((r) => r.status === filterStatus);
     if (filterRegulator !== "all") list = list.filter((r) => r.regulator === filterRegulator);
     if (filterDirection !== "all") list = list.filter((r) => r.direction === filterDirection);
@@ -339,40 +97,50 @@ export default function RegulatoryCorrespondenceTrackerPage() {
         r.subject.toLowerCase().includes(q) ||
         r.summary.toLowerCase().includes(q) ||
         r.reference.toLowerCase().includes(q) ||
-        r.regulator.toLowerCase().includes(q),
+        REGULATORY_CORRESPONDENCE_REGULATOR_LABEL[r.regulator].toLowerCase().includes(q),
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "urgency":    return URGENCIES.indexOf(b.urgency) - URGENCIES.indexOf(a.urgency);
-        case "regulator":  return a.regulator.localeCompare(b.regulator);
-        case "deadline":   return (a.responseDeadline || "9999").localeCompare(b.responseDeadline || "9999");
+        case "urgency":    return URGENCY_ORDER.indexOf(b.urgency) - URGENCY_ORDER.indexOf(a.urgency);
+        case "regulator":  return REGULATORY_CORRESPONDENCE_REGULATOR_LABEL[a.regulator].localeCompare(REGULATORY_CORRESPONDENCE_REGULATOR_LABEL[b.regulator]);
+        case "deadline":   return (a.response_deadline || "9999").localeCompare(b.response_deadline || "9999");
         case "status":     return a.status.localeCompare(b.status);
-        default:           return (b.dateReceived || b.dateSent).localeCompare(a.dateReceived || a.dateSent);
+        default:           return (b.date_received || b.date_sent).localeCompare(a.date_received || a.date_sent);
       }
     });
     return list;
-  }, [data, filterStatus, filterRegulator, filterDirection, search, sortBy]);
+  }, [records, filterStatus, filterRegulator, filterDirection, search, sortBy]);
 
-  const exportCols: ExportColumn<RegulatoryLetter>[] = [
-    { header: "Date Sent",         accessor: (r: RegulatoryLetter) => r.dateSent },
-    { header: "Date Received",     accessor: (r: RegulatoryLetter) => r.dateReceived },
-    { header: "Regulator",         accessor: (r: RegulatoryLetter) => r.regulator },
-    { header: "Direction",         accessor: (r: RegulatoryLetter) => r.direction },
-    { header: "Reference",         accessor: (r: RegulatoryLetter) => r.reference },
-    { header: "Subject",           accessor: (r: RegulatoryLetter) => r.subject },
-    { header: "Summary",           accessor: (r: RegulatoryLetter) => r.summary },
-    { header: "Our Response",      accessor: (r: RegulatoryLetter) => r.ourResponse },
-    { header: "Documents",         accessor: (r: RegulatoryLetter) => r.documentsAttached.join("; ") },
-    { header: "Response Required", accessor: (r: RegulatoryLetter) => r.responseRequired ? "Yes" : "No" },
-    { header: "Response Deadline", accessor: (r: RegulatoryLetter) => r.responseDeadline },
-    { header: "Response Sent",     accessor: (r: RegulatoryLetter) => r.responseSent ? "Yes" : "No" },
-    { header: "Actions Agreed",    accessor: (r: RegulatoryLetter) => r.actionsAgreed.join("; ") },
-    { header: "Urgency",           accessor: (r: RegulatoryLetter) => r.urgency },
-    { header: "Status",            accessor: (r: RegulatoryLetter) => r.status },
-    { header: "Confidentiality",   accessor: (r: RegulatoryLetter) => r.confidentialityLevel },
-    { header: "Recorded By",       accessor: (r: RegulatoryLetter) => getStaffName(r.recordedBy) },
+  const exportCols: ExportColumn<RegulatoryCorrespondenceLetter>[] = [
+    { header: "Date Sent",         accessor: (r) => r.date_sent },
+    { header: "Date Received",     accessor: (r) => r.date_received },
+    { header: "Regulator",         accessor: (r) => REGULATORY_CORRESPONDENCE_REGULATOR_LABEL[r.regulator] },
+    { header: "Direction",         accessor: (r) => REGULATORY_CORRESPONDENCE_DIRECTION_LABEL[r.direction] },
+    { header: "Reference",         accessor: (r) => r.reference },
+    { header: "Subject",           accessor: (r) => r.subject },
+    { header: "Summary",           accessor: (r) => r.summary },
+    { header: "Our Response",      accessor: (r) => r.our_response },
+    { header: "Documents",         accessor: (r) => r.documents_attached.join("; ") },
+    { header: "Response Required", accessor: (r) => r.response_required ? "Yes" : "No" },
+    { header: "Response Deadline", accessor: (r) => r.response_deadline },
+    { header: "Response Sent",     accessor: (r) => r.response_sent ? "Yes" : "No" },
+    { header: "Actions Agreed",    accessor: (r) => r.actions_agreed.join("; ") },
+    { header: "Urgency",           accessor: (r) => REGULATORY_CORRESPONDENCE_URGENCY_LABEL[r.urgency] },
+    { header: "Status",            accessor: (r) => REGULATORY_CORRESPONDENCE_STATUS_LABEL[r.status] },
+    { header: "Confidentiality",   accessor: (r) => REGULATORY_CORRESPONDENCE_CONFIDENTIALITY_LABEL[r.confidentiality_level] },
+    { header: "Recorded By",       accessor: (r) => getStaffName(r.recorded_by) },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Regulatory Correspondence Tracker" subtitle="Quality Standard 13 (Leadership and Management) — written correspondence with all regulators and statutory partners">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -380,7 +148,7 @@ export default function RegulatoryCorrespondenceTrackerPage() {
       subtitle="Quality Standard 13 (Leadership and Management) — written correspondence with all regulators and statutory partners"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="regulatory-correspondence" />
+          <ExportButton data={records} columns={exportCols} filename="regulatory-correspondence" />
           <PrintButton title="Regulatory Correspondence Tracker" />
         </div>
       }
@@ -415,21 +183,27 @@ export default function RegulatoryCorrespondenceTrackerPage() {
             <SelectTrigger className="w-[170px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {(Object.keys(REGULATORY_CORRESPONDENCE_STATUS_LABEL) as RegulatoryCorrespondenceStatus[]).map((k) => (
+                <SelectItem key={k} value={k}>{REGULATORY_CORRESPONDENCE_STATUS_LABEL[k]}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={filterRegulator} onValueChange={setFilterRegulator}>
             <SelectTrigger className="w-[230px]"><SelectValue placeholder="Regulator" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Regulators</SelectItem>
-              {REGULATORS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+              {(Object.keys(REGULATORY_CORRESPONDENCE_REGULATOR_LABEL) as RegulatoryCorrespondenceRegulator[]).map((k) => (
+                <SelectItem key={k} value={k}>{REGULATORY_CORRESPONDENCE_REGULATOR_LABEL[k]}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={filterDirection} onValueChange={setFilterDirection}>
             <SelectTrigger className="w-[150px]"><SelectValue placeholder="Direction" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Directions</SelectItem>
-              {DIRECTIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              {(Object.keys(REGULATORY_CORRESPONDENCE_DIRECTION_LABEL) as RegulatoryCorrespondenceDirection[]).map((k) => (
+                <SelectItem key={k} value={k}>{REGULATORY_CORRESPONDENCE_DIRECTION_LABEL[k]}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <div className="flex items-center gap-1 text-sm">
@@ -458,29 +232,29 @@ export default function RegulatoryCorrespondenceTrackerPage() {
                 <Mailbox className="h-5 w-5 text-brand" />
                 <div className="text-left">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{rec.regulator}</h3>
+                    <h3 className="font-semibold">{REGULATORY_CORRESPONDENCE_REGULATOR_LABEL[rec.regulator]}</h3>
                     <span className="text-sm text-muted-foreground">— {rec.reference}</span>
-                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center gap-1", rec.direction === "Incoming" ? "bg-sky-100 text-sky-700" : "bg-emerald-100 text-emerald-700")}>
-                      {rec.direction === "Incoming"
+                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium inline-flex items-center gap-1", rec.direction === "incoming" ? "bg-sky-100 text-sky-700" : "bg-emerald-100 text-emerald-700")}>
+                      {rec.direction === "incoming"
                         ? <ArrowDownLeft className="h-3 w-3" />
                         : <ArrowUpRight className="h-3 w-3" />}
-                      {rec.direction}
+                      {REGULATORY_CORRESPONDENCE_DIRECTION_LABEL[rec.direction]}
                     </span>
                     <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_META[rec.status].colour)}>
-                      {rec.status}
+                      {REGULATORY_CORRESPONDENCE_STATUS_LABEL[rec.status]}
                     </span>
                     <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", URGENCY_META[rec.urgency].colour)}>
-                      {rec.urgency}
+                      {REGULATORY_CORRESPONDENCE_URGENCY_LABEL[rec.urgency]}
                     </span>
-                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", CONF_META[rec.confidentialityLevel].colour)}>
-                      {rec.confidentialityLevel}
+                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", CONF_META[rec.confidentiality_level].colour)}>
+                      {REGULATORY_CORRESPONDENCE_CONFIDENTIALITY_LABEL[rec.confidentiality_level]}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {rec.subject}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Sent {rec.dateSent} · Received {rec.dateReceived} · Logged by {getStaffName(rec.recordedBy)}
+                    Sent {rec.date_sent} · Received {rec.date_received} · Logged by {getStaffName(rec.recorded_by)}
                   </p>
                 </div>
               </div>
@@ -490,14 +264,14 @@ export default function RegulatoryCorrespondenceTrackerPage() {
             {expandedId === rec.id && (
               <div className="border-t p-4 space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Date Sent:</span> {rec.dateSent}</div>
-                  <div><span className="text-muted-foreground">Date Received:</span> {rec.dateReceived}</div>
-                  <div><span className="text-muted-foreground">Direction:</span> {rec.direction}</div>
+                  <div><span className="text-muted-foreground">Date Sent:</span> {rec.date_sent}</div>
+                  <div><span className="text-muted-foreground">Date Received:</span> {rec.date_received}</div>
+                  <div><span className="text-muted-foreground">Direction:</span> {REGULATORY_CORRESPONDENCE_DIRECTION_LABEL[rec.direction]}</div>
                   <div><span className="text-muted-foreground">Reference:</span> {rec.reference}</div>
-                  <div><span className="text-muted-foreground">Response Required:</span> {rec.responseRequired ? "Yes" : "No"}</div>
-                  <div><span className="text-muted-foreground">Response Deadline:</span> {rec.responseDeadline}</div>
-                  <div><span className="text-muted-foreground">Response Sent:</span> {rec.responseSent ? "Yes" : "No"}</div>
-                  <div><span className="text-muted-foreground">Confidentiality:</span> {rec.confidentialityLevel}</div>
+                  <div><span className="text-muted-foreground">Response Required:</span> {rec.response_required ? "Yes" : "No"}</div>
+                  <div><span className="text-muted-foreground">Response Deadline:</span> {rec.response_deadline}</div>
+                  <div><span className="text-muted-foreground">Response Sent:</span> {rec.response_sent ? "Yes" : "No"}</div>
+                  <div><span className="text-muted-foreground">Confidentiality:</span> {REGULATORY_CORRESPONDENCE_CONFIDENTIALITY_LABEL[rec.confidentiality_level]}</div>
                 </div>
 
                 <div className="rounded-lg bg-gray-50 p-3">
@@ -512,23 +286,23 @@ export default function RegulatoryCorrespondenceTrackerPage() {
 
                 <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
                   <h4 className="text-sm font-semibold text-emerald-800 mb-1">Our Response</h4>
-                  <p className="text-sm text-emerald-900">{rec.ourResponse}</p>
+                  <p className="text-sm text-emerald-900">{rec.our_response}</p>
                 </div>
 
-                {rec.documentsAttached.length > 0 && (
+                {rec.documents_attached.length > 0 && (
                   <div className="rounded-lg bg-indigo-50 border border-indigo-200 p-3">
                     <h4 className="text-sm font-semibold text-indigo-800 mb-1">Documents Attached / Referenced</h4>
                     <ul className="list-disc pl-5 text-sm text-indigo-900 space-y-0.5">
-                      {rec.documentsAttached.map((doc, i) => <li key={i}>{doc}</li>)}
+                      {rec.documents_attached.map((doc, i) => <li key={i}>{doc}</li>)}
                     </ul>
                   </div>
                 )}
 
-                {rec.actionsAgreed.length > 0 && (
+                {rec.actions_agreed.length > 0 && (
                   <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                     <h4 className="text-sm font-semibold text-amber-800 mb-1">Actions Agreed / Outcomes</h4>
                     <ul className="list-disc pl-5 text-sm text-amber-900 space-y-0.5">
-                      {rec.actionsAgreed.map((a, i) => <li key={i}>{a}</li>)}
+                      {rec.actions_agreed.map((a, i) => <li key={i}>{a}</li>)}
                     </ul>
                   </div>
                 )}

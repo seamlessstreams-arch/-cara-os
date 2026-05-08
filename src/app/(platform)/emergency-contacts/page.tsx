@@ -24,38 +24,20 @@ import {
 import {
   Phone, User, Building, Shield, Heart, AlertTriangle,
   Clock, Calendar, Edit2, Plus, Stethoscope, GraduationCap,
-  UserCheck, Baby, CheckCircle2, Info,
+  UserCheck, Baby, CheckCircle2, Info, Loader2,
 } from "lucide-react";
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { toast } from "sonner";
+import type { EmergencyChildContact, EmergencyContactRole } from "@/types/extended";
+import { EMERGENCY_CONTACT_ROLE_LABEL } from "@/types/extended";
+import {
+  useEmergencyChildContacts,
+  useCreateEmergencyChildContact,
+  useUpdateEmergencyChildContact,
+} from "@/hooks/use-emergency-child-contacts";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-type ContactRole =
-  | "social_worker"
-  | "iro"
-  | "parent_carer"
-  | "school"
-  | "gp"
-  | "dentist"
-  | "camhs"
-  | "other";
-
-interface ChildContact {
-  id: string;
-  role: ContactRole;
-  name: string;
-  organisation?: string;
-  phone: string;
-  secondaryPhone?: string;
-  email?: string;
-  notes?: string;
-}
-
-interface ChildContactCard {
-  childId: string;
-  contacts: ChildContact[];
-}
 
 interface HomeContact {
   id: string;
@@ -75,7 +57,7 @@ interface OnCallEntry {
 
 // ── Role config ───────────────────────────────────────────────────────────────
 
-const ROLE_CONFIG: Record<ContactRole, { label: string; icon: React.ElementType; colour: string }> = {
+const ROLE_CONFIG: Record<EmergencyContactRole, { label: string; icon: React.ElementType; colour: string }> = {
   social_worker:  { label: "Social Worker",  icon: Shield,         colour: "bg-blue-100 text-blue-700" },
   iro:            { label: "IRO",            icon: UserCheck,      colour: "bg-purple-100 text-purple-700" },
   parent_carer:   { label: "Parent / Carer", icon: Heart,          colour: "bg-pink-100 text-pink-700" },
@@ -130,46 +112,6 @@ const HOME_CONTACTS: HomeContact[] = [
   { id: "hc_012", label: "Childline",                  number: "0800 1111",          description: "Confidential helpline for children — display for YP",      category: "local_service", available: "24/7" },
 ];
 
-// ── Seed: Per-child contacts ──────────────────────────────────────────────────
-
-const CHILD_CONTACTS: ChildContactCard[] = [
-  {
-    childId: "yp_alex",
-    contacts: [
-      { id: "cc_a1", role: "social_worker",  name: "Karen Holding",     organisation: "Derby City Council",     phone: "01332 641 700", email: "karen.holding@derby.gov.uk", notes: "Available Mon–Fri 9–5. Out of hours: EDT." },
-      { id: "cc_a2", role: "iro",            name: "David Peters",      organisation: "Derby City Council",     phone: "01332 641 800", email: "david.peters@derby.gov.uk" },
-      { id: "cc_a3", role: "parent_carer",   name: "Mark (Birth Father)", organisation: "",                     phone: "07XXX XXXXXX", notes: "Supervised contact only — see contact plan" },
-      { id: "cc_a4", role: "school",         name: "Oakfield Academy",  organisation: "DSL: Mrs Patterson",     phone: "01332 600 200", email: "office@oakfield.derby.sch.uk", notes: "DSL: Mrs Patterson — direct line 01332 600 201" },
-      { id: "cc_a5", role: "gp",             name: "Dr Mehta",          organisation: "Elm Street Surgery",     phone: "01332 500 100" },
-      { id: "cc_a6", role: "dentist",        name: "Mr Singh",          organisation: "High Street Dental",     phone: "01332 550 200" },
-    ],
-  },
-  {
-    childId: "yp_jordan",
-    contacts: [
-      { id: "cc_j1", role: "social_worker",  name: "Michael Osei",        organisation: "Nottinghamshire CC",     phone: "0115 977 3100", email: "michael.osei@nottscc.gov.uk", notes: "Prefers email contact initially" },
-      { id: "cc_j2", role: "iro",            name: "Sarah Williams",      organisation: "Nottinghamshire CC",     phone: "0115 977 3200", email: "sarah.williams@nottscc.gov.uk" },
-      { id: "cc_j3", role: "parent_carer",   name: "Mother",              organisation: "",                       phone: "—",             notes: "Contact via SW only — no direct contact with home" },
-      { id: "cc_j4", role: "school",         name: "Oakfield Academy",    organisation: "DSL: Mrs Patterson",     phone: "01332 600 200", email: "office@oakfield.derby.sch.uk" },
-      { id: "cc_j5", role: "gp",             name: "Dr Mehta",            organisation: "Elm Street Surgery",     phone: "01332 500 100", notes: "Penicillin allergy on file" },
-      { id: "cc_j6", role: "dentist",        name: "Mr Singh",            organisation: "High Street Dental",     phone: "01332 550 200" },
-      { id: "cc_j7", role: "camhs",          name: "Dr Amara Okonkwo",    organisation: "Derby CAMHS",            phone: "01332 623 700", email: "a.okonkwo@derbycamhs.nhs.uk", notes: "Fortnightly sessions — next review in 4 weeks" },
-    ],
-  },
-  {
-    childId: "yp_casey",
-    contacts: [
-      { id: "cc_c1", role: "social_worker",  name: "Fiona Brennan",       organisation: "Derbyshire CC",          phone: "01629 533 190", email: "fiona.brennan@derbyshire.gov.uk" },
-      { id: "cc_c2", role: "iro",            name: "James Cooper",        organisation: "Derbyshire CC",          phone: "01629 533 200", email: "james.cooper@derbyshire.gov.uk" },
-      { id: "cc_c3", role: "parent_carer",   name: "Margaret (Grandmother)", organisation: "",                    phone: "07XXX XXXXXX", notes: "Approved family contact — unsupervised visits agreed" },
-      { id: "cc_c4", role: "school",         name: "City College",        organisation: "DSL: Mr Ahmed",          phone: "01332 600 400", email: "office@citycollege.derby.sch.uk" },
-      { id: "cc_c5", role: "gp",             name: "Dr Mehta",            organisation: "Elm Street Surgery",     phone: "01332 500 100", notes: "Manages medication reviews — nut allergy on file" },
-      { id: "cc_c6", role: "dentist",        name: "Overdue",             organisation: "Community Dental Referral", phone: "01332 340 131", notes: "Awaiting community dental referral — chase monthly" },
-      { id: "cc_c7", role: "camhs",          name: "Dr Patterson",        organisation: "Derby CAMHS",            phone: "01332 623 700", email: "r.patterson@derbycamhs.nhs.uk", notes: "Managing anxiety — 6-weekly reviews" },
-    ],
-  },
-];
-
 // ── Seed: On-call rota ────────────────────────────────────────────────────────
 
 const ON_CALL_ROTA: OnCallEntry[] = [
@@ -192,14 +134,21 @@ const NEXT_REVIEW   = d(18);
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function EmergencyContactsPage() {
-  const [editingContact, setEditingContact] = useState<ChildContact | null>(null);
+  // ── React Query ────────────────────────────────────────────────────────────
+  const query = useEmergencyChildContacts();
+  const createMutation = useCreateEmergencyChildContact();
+  const updateMutation = useUpdateEmergencyChildContact();
+  const contacts = query.data?.data ?? [];
+  const childIds = [...new Set(contacts.map((c) => c.child_id))];
+
+  const [editingContact, setEditingContact] = useState<EmergencyChildContact | null>(null);
   const [editingChildId, setEditingChildId] = useState<string | null>(null);
   const [addingForChild, setAddingForChild] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Form state for add/edit dialog
   const [formName, setFormName] = useState("");
-  const [formRole, setFormRole] = useState<ContactRole>("other");
+  const [formRole, setFormRole] = useState<EmergencyContactRole>("other");
   const [formOrg, setFormOrg] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formEmail, setFormEmail] = useState("");
@@ -209,7 +158,7 @@ export default function EmergencyContactsPage() {
 
   // ── Dialog handlers ─────────────────────────────────────────────────────────
 
-  function openEditDialog(contact: ChildContact, childId: string) {
+  function openEditDialog(contact: EmergencyChildContact, childId: string) {
     setEditingContact(contact);
     setEditingChildId(childId);
     setAddingForChild(null);
@@ -235,8 +184,35 @@ export default function EmergencyContactsPage() {
     setDialogOpen(true);
   }
 
-  function handleSave() {
-    // In production this would persist — for now just close
+  async function handleSave() {
+    try {
+      if (editingContact) {
+        await updateMutation.mutateAsync({
+          id: editingContact.id,
+          child_id: editingChildId!,
+          role: formRole,
+          name: formName,
+          organisation: formOrg || undefined,
+          phone: formPhone,
+          email: formEmail || undefined,
+          notes: formNotes || undefined,
+        });
+        toast.success("Contact updated");
+      } else if (addingForChild) {
+        await createMutation.mutateAsync({
+          child_id: addingForChild,
+          role: formRole,
+          name: formName,
+          organisation: formOrg || undefined,
+          phone: formPhone,
+          email: formEmail || undefined,
+          notes: formNotes || undefined,
+        });
+        toast.success("Contact added");
+      }
+    } catch {
+      toast.error("Failed to save contact");
+    }
     setDialogOpen(false);
     setEditingContact(null);
     setEditingChildId(null);
@@ -245,7 +221,7 @@ export default function EmergencyContactsPage() {
 
   // ── Render helpers ──────────────────────────────────────────────────────────
 
-  function renderContactRow(c: ChildContact, childId: string) {
+  function renderContactRow(c: EmergencyChildContact, childId: string) {
     const cfg = ROLE_CONFIG[c.role];
     const Icon = cfg.icon;
     const isDentistOverdue = c.role === "dentist" && c.name.toLowerCase() === "overdue";
@@ -299,6 +275,20 @@ export default function EmergencyContactsPage() {
   // ══════════════════════════════════════════════════════════════════════════════
   // RENDER
   // ══════════════════════════════════════════════════════════════════════════════
+
+  if (query.isLoading) {
+    return (
+      <PageShell
+        title="Emergency Contacts Board"
+        subtitle="Key contacts for Oak House — print and display in office"
+        showQuickCreate={false}
+      >
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -413,10 +403,11 @@ export default function EmergencyContactsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {CHILD_CONTACTS.map((child) => {
-              const name = getYPName(child.childId);
+            {childIds.map((childId) => {
+              const name = getYPName(childId);
+              const childContacts = contacts.filter((c) => c.child_id === childId);
               return (
-                <Card key={child.childId} className="flex flex-col">
+                <Card key={childId} className="flex flex-col">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
@@ -428,7 +419,7 @@ export default function EmergencyContactsPage() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => openAddDialog(child.childId)}
+                        onClick={() => openAddDialog(childId)}
                         title="Add contact"
                       >
                         <Plus className="h-3.5 w-3.5" />
@@ -437,7 +428,7 @@ export default function EmergencyContactsPage() {
                   </CardHeader>
                   <CardContent className="flex-1 pt-0">
                     <div className="divide-y divide-slate-100">
-                      {child.contacts.map((c) => renderContactRow(c, child.childId))}
+                      {childContacts.map((c) => renderContactRow(c, childId))}
                     </div>
                   </CardContent>
                 </Card>
@@ -548,7 +539,7 @@ export default function EmergencyContactsPage() {
             <div>
               <label className="text-xs font-medium text-slate-700 mb-1 block">Role</label>
               <div className="grid grid-cols-4 gap-1.5">
-                {(Object.keys(ROLE_CONFIG) as ContactRole[]).map((role) => (
+                {(Object.keys(ROLE_CONFIG) as EmergencyContactRole[]).map((role) => (
                   <button
                     key={role}
                     type="button"

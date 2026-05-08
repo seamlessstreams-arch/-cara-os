@@ -14,37 +14,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import type { TrackedDocument, DocExpiryCategory, DocExpiryStatus } from "@/types/extended";
+import { DOC_EXPIRY_CATEGORY_LABEL, DOC_EXPIRY_STATUS_LABEL } from "@/types/extended";
+import { useTrackedDocuments } from "@/hooks/use-tracked-documents";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, AlertOctagon, Shield, ShieldCheck,
   CheckCircle2, Clock, Calendar, FileText, Car, Flame,
-  ClipboardCheck, User, BookOpen,
+  ClipboardCheck, User, BookOpen, Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type DocumentCategory = "staff_compliance" | "home_compliance" | "policy_review" | "vehicle" | "equipment";
-type DocumentStatus = "current" | "expiring_soon" | "overdue" | "renewed";
-
-interface TrackedDocument {
-  id: string;
-  title: string;
-  category: DocumentCategory;
-  relatedTo: string | null;
-  issuedDate: string | null;
-  expiryDate: string;
-  renewalLeadTime: number;
-  status: DocumentStatus;
-  renewalOwner: string;
-  notes: string;
-  lastRenewed: string | null;
-}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const CATEGORY_CONFIG: Record<DocumentCategory, { label: string; colour: string; icon: typeof FileText }> = {
+const CATEGORY_CONFIG: Record<DocExpiryCategory, { label: string; colour: string; icon: typeof FileText }> = {
   staff_compliance: { label: "Staff Compliance", colour: "bg-blue-100 text-blue-700", icon: User },
   home_compliance:  { label: "Home Compliance",  colour: "bg-purple-100 text-purple-700", icon: ShieldCheck },
   policy_review:    { label: "Policy Review",    colour: "bg-indigo-100 text-indigo-700", icon: BookOpen },
@@ -52,22 +36,16 @@ const CATEGORY_CONFIG: Record<DocumentCategory, { label: string; colour: string;
   equipment:        { label: "Equipment",        colour: "bg-green-100 text-green-700", icon: Flame },
 };
 
-const STATUS_CONFIG: Record<DocumentStatus, { label: string; colour: string }> = {
+const STATUS_CONFIG: Record<DocExpiryStatus, { label: string; colour: string }> = {
   current:       { label: "Current",       colour: "bg-green-100 text-green-700" },
   expiring_soon: { label: "Expiring Soon", colour: "bg-amber-100 text-amber-700" },
   overdue:       { label: "Overdue",       colour: "bg-red-100 text-red-700" },
   renewed:       { label: "Renewed",       colour: "bg-blue-100 text-blue-700" },
 };
 
-// ── Date Helper ───────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
 // ── Status Logic ──────────────────────────────────────────────────────────────
 
-function computeStatus(expiryDate: string): DocumentStatus {
+function computeStatus(expiryDate: string): DocExpiryStatus {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const expiry = new Date(expiryDate);
@@ -78,216 +56,7 @@ function computeStatus(expiryDate: string): DocumentStatus {
   return "current";
 }
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const SEED_DOCUMENTS: TrackedDocument[] = [
-  // Staff Compliance — DBS Checks
-  {
-    id: "doc_001",
-    title: "DBS Enhanced Check",
-    category: "staff_compliance",
-    relatedTo: "staff_darren",
-    issuedDate: d(-365),
-    expiryDate: d(365),
-    renewalLeadTime: 90,
-    status: "current",
-    renewalOwner: "staff_darren",
-    notes: "3-yearly renewal cycle. DBS Update Service registered.",
-    lastRenewed: d(-365),
-  },
-  {
-    id: "doc_002",
-    title: "DBS Enhanced Check",
-    category: "staff_compliance",
-    relatedTo: "staff_ryan",
-    issuedDate: d(-200),
-    expiryDate: d(895),
-    renewalLeadTime: 90,
-    status: "current",
-    renewalOwner: "staff_ryan",
-    notes: "3-yearly renewal cycle. DBS Update Service registered.",
-    lastRenewed: d(-200),
-  },
-  {
-    id: "doc_003",
-    title: "DBS Enhanced Check",
-    category: "staff_compliance",
-    relatedTo: "staff_mirela",
-    issuedDate: d(-60),
-    expiryDate: d(1035),
-    renewalLeadTime: 90,
-    status: "current",
-    renewalOwner: "staff_mirela",
-    notes: "3-yearly renewal cycle. DBS Update Service registered.",
-    lastRenewed: d(-60),
-  },
-  // Staff Compliance — Training Certificates
-  {
-    id: "doc_004",
-    title: "First Aid Certificate",
-    category: "staff_compliance",
-    relatedTo: "staff_ryan",
-    issuedDate: d(-305),
-    expiryDate: d(60),
-    renewalLeadTime: 30,
-    status: "current",
-    renewalOwner: "staff_ryan",
-    notes: "3-day FAW course. Renewal booked with training provider.",
-    lastRenewed: d(-305),
-  },
-  {
-    id: "doc_005",
-    title: "First Aid Certificate",
-    category: "staff_compliance",
-    relatedTo: "staff_anna",
-    issuedDate: d(-15),
-    expiryDate: d(350),
-    renewalLeadTime: 30,
-    status: "current",
-    renewalOwner: "staff_anna",
-    notes: "3-day FAW course. Recently renewed.",
-    lastRenewed: d(-15),
-  },
-  {
-    id: "doc_006",
-    title: "TCI Certification",
-    category: "staff_compliance",
-    relatedTo: "staff_edward",
-    issuedDate: d(-351),
-    expiryDate: d(14),
-    renewalLeadTime: 30,
-    status: "expiring_soon",
-    renewalOwner: "staff_darren",
-    notes: "Annual refresher required. Training date being arranged.",
-    lastRenewed: d(-351),
-  },
-  {
-    id: "doc_007",
-    title: "TCI Certification",
-    category: "staff_compliance",
-    relatedTo: "staff_lackson",
-    issuedDate: d(-372),
-    expiryDate: d(-7),
-    renewalLeadTime: 30,
-    status: "overdue",
-    renewalOwner: "staff_darren",
-    notes: "OVERDUE — Staff member must not conduct physical interventions until refresher completed. Booked for next available date.",
-    lastRenewed: d(-372),
-  },
-  // Home Compliance
-  {
-    id: "doc_008",
-    title: "Employer's Liability Insurance",
-    category: "home_compliance",
-    relatedTo: null,
-    issuedDate: d(-275),
-    expiryDate: d(90),
-    renewalLeadTime: 60,
-    status: "current",
-    renewalOwner: "staff_darren",
-    notes: "Annual policy. Certificate displayed in office as required.",
-    lastRenewed: d(-275),
-  },
-  {
-    id: "doc_009",
-    title: "Vehicle MOT (Minibus)",
-    category: "vehicle",
-    relatedTo: null,
-    issuedDate: d(-335),
-    expiryDate: d(30),
-    renewalLeadTime: 30,
-    status: "expiring_soon",
-    renewalOwner: "staff_ryan",
-    notes: "Annual MOT. Booked at local garage. Minibus reg: OAK 1X.",
-    lastRenewed: d(-335),
-  },
-  {
-    id: "doc_010",
-    title: "Vehicle Insurance",
-    category: "vehicle",
-    relatedTo: null,
-    issuedDate: d(-245),
-    expiryDate: d(120),
-    renewalLeadTime: 30,
-    status: "current",
-    renewalOwner: "staff_darren",
-    notes: "Comprehensive cover. All named drivers confirmed.",
-    lastRenewed: d(-245),
-  },
-  {
-    id: "doc_011",
-    title: "Fire Extinguisher Service",
-    category: "equipment",
-    relatedTo: null,
-    issuedDate: d(-320),
-    expiryDate: d(45),
-    renewalLeadTime: 30,
-    status: "current",
-    renewalOwner: "staff_darren",
-    notes: "Annual service by certified contractor. 6 extinguishers across home.",
-    lastRenewed: d(-320),
-  },
-  {
-    id: "doc_012",
-    title: "Gas Safety Certificate",
-    category: "home_compliance",
-    relatedTo: null,
-    issuedDate: d(-165),
-    expiryDate: d(200),
-    renewalLeadTime: 60,
-    status: "current",
-    renewalOwner: "staff_darren",
-    notes: "Annual CP12 certificate. Gas Safe registered engineer.",
-    lastRenewed: d(-165),
-  },
-  {
-    id: "doc_013",
-    title: "PAT Testing",
-    category: "equipment",
-    relatedTo: null,
-    issuedDate: d(-379),
-    expiryDate: d(-14),
-    renewalLeadTime: 30,
-    status: "overdue",
-    renewalOwner: "staff_darren",
-    notes: "OVERDUE — Annual portable appliance testing. Contractor being chased. High-risk items isolated until tested.",
-    lastRenewed: d(-379),
-  },
-  // Policy Review
-  {
-    id: "doc_014",
-    title: "Safeguarding Policy",
-    category: "policy_review",
-    relatedTo: null,
-    issuedDate: d(-344),
-    expiryDate: d(21),
-    renewalLeadTime: 30,
-    status: "expiring_soon",
-    renewalOwner: "staff_darren",
-    notes: "Annual review. Draft updated, awaiting RI sign-off.",
-    lastRenewed: d(-344),
-  },
-  {
-    id: "doc_015",
-    title: "Behaviour Management Policy",
-    category: "policy_review",
-    relatedTo: null,
-    issuedDate: d(-290),
-    expiryDate: d(75),
-    renewalLeadTime: 30,
-    status: "current",
-    renewalOwner: "staff_darren",
-    notes: "Annual review. Last reviewed following TCI refresher training.",
-    lastRenewed: d(-290),
-  },
-];
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
 
 function daysUntil(iso: string): number {
   const today = new Date();
@@ -302,10 +71,11 @@ function daysUntil(iso: string): number {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function DocumentExpiryTrackerPage() {
-  const [documents] = useState<TrackedDocument[]>(SEED_DOCUMENTS);
+  const { data: queryData, isLoading } = useTrackedDocuments();
+  const documents = queryData?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = useState<DocumentCategory | "all">("all");
-  const [filterStatus, setFilterStatus] = useState<DocumentStatus | "all">("all");
+  const [filterCategory, setFilterCategory] = useState<DocExpiryCategory | "all">("all");
+  const [filterStatus, setFilterStatus] = useState<DocExpiryStatus | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"expiry" | "category">("expiry");
 
@@ -324,13 +94,13 @@ export default function DocumentExpiryTrackerPage() {
       const q = searchQuery.toLowerCase();
       results = results.filter(doc =>
         doc.title.toLowerCase().includes(q) ||
-        (doc.relatedTo && getStaffName(doc.relatedTo).toLowerCase().includes(q)) ||
+        (doc.related_to && getStaffName(doc.related_to).toLowerCase().includes(q)) ||
         doc.notes.toLowerCase().includes(q)
       );
     }
 
     if (sortBy === "expiry") {
-      results.sort((a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime());
+      results.sort((a, b) => new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime());
     } else {
       results.sort((a, b) => a.category.localeCompare(b.category));
     }
@@ -354,17 +124,30 @@ export default function DocumentExpiryTrackerPage() {
     { header: "ID", accessor: (r: TrackedDocument) => r.id },
     { header: "Title", accessor: (r: TrackedDocument) => r.title },
     { header: "Category", accessor: (r: TrackedDocument) => CATEGORY_CONFIG[r.category].label },
-    { header: "Related To", accessor: (r: TrackedDocument) => r.relatedTo ? getStaffName(r.relatedTo) : "N/A" },
-    { header: "Issued Date", accessor: (r: TrackedDocument) => r.issuedDate || "N/A" },
-    { header: "Expiry Date", accessor: (r: TrackedDocument) => r.expiryDate },
-    { header: "Days Until Expiry", accessor: (r: TrackedDocument) => daysUntil(r.expiryDate).toString() },
+    { header: "Related To", accessor: (r: TrackedDocument) => r.related_to ? getStaffName(r.related_to) : "N/A" },
+    { header: "Issued Date", accessor: (r: TrackedDocument) => r.issued_date || "N/A" },
+    { header: "Expiry Date", accessor: (r: TrackedDocument) => r.expiry_date },
+    { header: "Days Until Expiry", accessor: (r: TrackedDocument) => daysUntil(r.expiry_date).toString() },
     { header: "Status", accessor: (r: TrackedDocument) => STATUS_CONFIG[r.status].label },
-    { header: "Renewal Owner", accessor: (r: TrackedDocument) => getStaffName(r.renewalOwner) },
+    { header: "Renewal Owner", accessor: (r: TrackedDocument) => getStaffName(r.renewal_owner) },
     { header: "Notes", accessor: (r: TrackedDocument) => r.notes },
-    { header: "Last Renewed", accessor: (r: TrackedDocument) => r.lastRenewed || "N/A" },
+    { header: "Last Renewed", accessor: (r: TrackedDocument) => r.last_renewed || "N/A" },
   ];
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Document Expiry Tracker"
+        subtitle="Track and manage expiry dates for all critical compliance documents"
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -423,7 +206,7 @@ export default function DocumentExpiryTrackerPage() {
           <Filter className="h-4 w-4 text-muted-foreground" />
           <select
             value={filterCategory}
-            onChange={e => setFilterCategory(e.target.value as DocumentCategory | "all")}
+            onChange={e => setFilterCategory(e.target.value as DocExpiryCategory | "all")}
             className="rounded-md border bg-background px-2 py-1.5 text-sm"
           >
             <option value="all">All Categories</option>
@@ -437,7 +220,7 @@ export default function DocumentExpiryTrackerPage() {
 
         <select
           value={filterStatus}
-          onChange={e => setFilterStatus(e.target.value as DocumentStatus | "all")}
+          onChange={e => setFilterStatus(e.target.value as DocExpiryStatus | "all")}
           className="rounded-md border bg-background px-2 py-1.5 text-sm"
         >
           <option value="all">All Statuses</option>
@@ -469,7 +252,7 @@ export default function DocumentExpiryTrackerPage() {
           const isOpen = expandedId === doc.id;
           const cc = CATEGORY_CONFIG[doc.category];
           const sc = STATUS_CONFIG[doc.status];
-          const days = daysUntil(doc.expiryDate);
+          const days = daysUntil(doc.expiry_date);
           const IconComp = cc.icon;
 
           return (
@@ -485,16 +268,16 @@ export default function DocumentExpiryTrackerPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm">{doc.title}</span>
-                    {doc.relatedTo && (
+                    {doc.related_to && (
                       <Badge variant="outline" className="text-xs">
                         <User className="h-3 w-3 mr-0.5" />
-                        {getStaffName(doc.relatedTo)}
+                        {getStaffName(doc.related_to)}
                       </Badge>
                     )}
                     <Badge variant="outline" className={cn("text-xs", sc.colour)}>{sc.label}</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Expires: {formatDate(doc.expiryDate)}
+                    Expires: {formatDate(doc.expiry_date)}
                     {" · "}
                     {days < 0
                       ? <span className="text-red-600 font-semibold">{Math.abs(days)} days overdue</span>
@@ -503,7 +286,7 @@ export default function DocumentExpiryTrackerPage() {
                         : <span>{days} days remaining</span>
                     }
                     {" · "}
-                    Owner: {getStaffName(doc.renewalOwner)}
+                    Owner: {getStaffName(doc.renewal_owner)}
                   </p>
                 </div>
                 {isOpen ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
@@ -518,18 +301,18 @@ export default function DocumentExpiryTrackerPage() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Renewal Lead Time</p>
-                      <p className="text-sm">{doc.renewalLeadTime} days</p>
+                      <p className="text-sm">{doc.renewal_lead_time} days</p>
                     </div>
-                    {doc.issuedDate && (
+                    {doc.issued_date && (
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Issued Date</p>
-                        <p className="text-sm">{formatDate(doc.issuedDate)}</p>
+                        <p className="text-sm">{formatDate(doc.issued_date)}</p>
                       </div>
                     )}
-                    {doc.lastRenewed && (
+                    {doc.last_renewed && (
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Last Renewed</p>
-                        <p className="text-sm">{formatDate(doc.lastRenewed)}</p>
+                        <p className="text-sm">{formatDate(doc.last_renewed)}</p>
                       </div>
                     )}
                   </div>
@@ -540,9 +323,9 @@ export default function DocumentExpiryTrackerPage() {
                     </div>
                   )}
                   <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-                    <span><Calendar className="inline h-3.5 w-3.5 mr-0.5" />Expiry: {formatDate(doc.expiryDate)}</span>
-                    <span><User className="inline h-3.5 w-3.5 mr-0.5" />Owner: {getStaffName(doc.renewalOwner)}</span>
-                    <span><Clock className="inline h-3.5 w-3.5 mr-0.5" />Lead time: {doc.renewalLeadTime}d</span>
+                    <span><Calendar className="inline h-3.5 w-3.5 mr-0.5" />Expiry: {formatDate(doc.expiry_date)}</span>
+                    <span><User className="inline h-3.5 w-3.5 mr-0.5" />Owner: {getStaffName(doc.renewal_owner)}</span>
+                    <span><Clock className="inline h-3.5 w-3.5 mr-0.5" />Lead time: {doc.renewal_lead_time}d</span>
                   </div>
                 </div>
               )}

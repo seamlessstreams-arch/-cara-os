@@ -15,6 +15,7 @@ import {
   ArrowUpDown,
   Search,
   Award,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -23,169 +24,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// ── types ───────────────────────────────────────────────────────────────────
-interface LaundryRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  overallStage:
-    | "Stage 1 — Observed"
-    | "Stage 2 — Did with staff"
-    | "Stage 3 — Did with prompts"
-    | "Stage 4 — Did independently"
-    | "Stage 5 — Manages own laundry routine";
-  skills: { name: string; level: "Not yet" | "Learning" | "Confident" | "Independent" }[];
-  routineFrequency: string;
-  ownsBasket: boolean;
-  knowsCareSymbols: boolean;
-  ironCompetent: boolean;
-  challengesNoted: string[];
-  childVoice: string;
-  staffObservation: string;
-  nextSkill: string;
-  reviewDate: string;
-  keyWorker: string;
-}
-
-// ── seed data ───────────────────────────────────────────────────────────────
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const data: LaundryRecord[] = [
-  {
-    id: "lsc-001",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-5),
-    overallStage: "Stage 4 — Did independently",
-    skills: [
-      { name: "Sorts whites, colours, darks", level: "Independent" },
-      { name: "Reads care labels & symbols", level: "Confident" },
-      { name: "Uses washing machine (cycle, detergent, dose)", level: "Independent" },
-      { name: "Uses tumble dryer or air-dries", level: "Independent" },
-      { name: "Irons school shirts", level: "Confident" },
-      { name: "Folds and puts away clothes", level: "Independent" },
-      { name: "Manages weekly routine without prompts", level: "Confident" },
-    ],
-    routineFrequency: "Weekly — Sunday afternoon, self-led",
-    ownsBasket: true,
-    knowsCareSymbols: true,
-    ironCompetent: true,
-    challengesNoted: [
-      "Occasionally leaves wash in machine overnight — not a safety issue",
-    ],
-    childVoice:
-      "I like doing my own washing — means I always have my football kit ready. I'd rather do it myself than have someone in my room going through my stuff.",
-    staffObservation:
-      "Jordan has built a strong, predictable routine. Irons own school shirts to a high standard. Linked to Pathway Plan independence outcomes — preparing well for semi-independent living at 17/18.",
-    nextSkill:
-      "Introduce hand-washing delicates and reading symbols on more technical fabrics (sportswear with mesh panels).",
-    reviewDate: d(28),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "lsc-002",
-    youngPerson: "yp_alex",
-    recordedDate: d(-9),
-    overallStage: "Stage 3 — Did with prompts",
-    skills: [
-      { name: "Sorts whites, colours, darks", level: "Confident" },
-      { name: "Reads care labels & symbols", level: "Learning" },
-      { name: "Uses washing machine (cycle, detergent, dose)", level: "Confident" },
-      { name: "Uses tumble dryer or air-dries", level: "Confident" },
-      { name: "Irons clothes safely", level: "Learning" },
-      { name: "Folds and puts away clothes", level: "Confident" },
-      { name: "Manages weekly routine without prompts", level: "Learning" },
-    ],
-    routineFrequency: "Twice weekly with verbal prompt from staff",
-    ownsBasket: true,
-    knowsCareSymbols: false,
-    ironCompetent: false,
-    challengesNoted: [
-      "Wary of hot iron — linked to historic trauma involving heat",
-      "Needs prompt to begin routine; once started, completes well",
-    ],
-    childVoice:
-      "I can do most of it now. The iron still scares me a bit. Edward is showing me slowly and I'm getting there.",
-    staffObservation:
-      "Alex makes steady, real progress. Trauma-informed approach to ironing — never forced, always paced by Alex. Confidence growing week on week. Practising on tea towels first before clothing.",
-    nextSkill:
-      "Continue graded ironing exposure with Edward. Add care-symbol flashcards to bedroom door for daily exposure.",
-    reviewDate: d(14),
-    keyWorker: "staff_edward",
-  },
-  {
-    id: "lsc-003",
-    youngPerson: "yp_casey",
-    recordedDate: d(-12),
-    overallStage: "Stage 2 — Did with staff",
-    skills: [
-      { name: "Sorts whites, colours, darks", level: "Learning" },
-      { name: "Reads care labels & symbols", level: "Not yet" },
-      { name: "Uses washing machine (cycle, detergent, dose)", level: "Learning" },
-      { name: "Uses tumble dryer or air-dries", level: "Learning" },
-      { name: "Irons clothes safely", level: "Not yet" },
-      { name: "Folds and puts away clothes", level: "Confident" },
-      { name: "Manages weekly routine without prompts", level: "Not yet" },
-    ],
-    routineFrequency: "Alongside Anna every Saturday morning",
-    ownsBasket: true,
-    knowsCareSymbols: false,
-    ironCompetent: false,
-    challengesNoted: [
-      "Sorts colours using visual chart on laundry-room wall",
-      "Runs machine alongside Anna — selects cycle from picture guide",
-      "Folding and putting away is a real strength — meticulous and proud of own drawers",
-      "No iron use yet — age-appropriate; not a current goal",
-    ],
-    childVoice:
-      "I like folding because my drawers look really nice. The machine is loud but Anna shows me which buttons.",
-    staffObservation:
-      "Casey is at the right developmental stage. Visual supports work well. Folding and putting away is a genuine strength worth celebrating. Building a positive identity around laundry as a calm, satisfying activity.",
-    nextSkill:
-      "Introduce reading the temperature symbol (one symbol at a time). Begin teaching detergent dosing.",
-    reviewDate: d(7),
-    keyWorker: "staff_anna",
-  },
-];
+import type {
+  LaundrySelfCareRecord,
+  LaundryStage,
+  LaundrySkillLevel,
+} from "@/types/extended";
+import {
+  LAUNDRY_STAGE_LABEL,
+  LAUNDRY_SKILL_LEVEL_LABEL,
+} from "@/types/extended";
+import { useLaundrySelfCareRecords } from "@/hooks/use-laundry-self-care-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
-function stageColour(stage: LaundryRecord["overallStage"]): string {
-  if (stage.startsWith("Stage 5")) return "bg-emerald-100 text-emerald-800";
-  if (stage.startsWith("Stage 4")) return "bg-teal-100 text-teal-800";
-  if (stage.startsWith("Stage 3")) return "bg-sky-100 text-sky-800";
-  if (stage.startsWith("Stage 2")) return "bg-blue-100 text-blue-800";
-  return "bg-slate-100 text-slate-800";
+function stageColour(stage: LaundryStage): string {
+  switch (stage) {
+    case "stage_5_manages_own_routine": return "bg-emerald-100 text-emerald-800";
+    case "stage_4_did_independently": return "bg-teal-100 text-teal-800";
+    case "stage_3_did_with_prompts": return "bg-sky-100 text-sky-800";
+    case "stage_2_did_with_staff": return "bg-blue-100 text-blue-800";
+    default: return "bg-slate-100 text-slate-800";
+  }
 }
 
-function levelColour(level: LaundryRecord["skills"][number]["level"]): string {
+function levelColour(level: LaundrySkillLevel): string {
   switch (level) {
-    case "Independent":
-      return "bg-emerald-100 text-emerald-800";
-    case "Confident":
-      return "bg-teal-100 text-teal-800";
-    case "Learning":
-      return "bg-sky-100 text-sky-800";
-    default:
-      return "bg-slate-100 text-slate-700";
+    case "independent": return "bg-emerald-100 text-emerald-800";
+    case "confident": return "bg-teal-100 text-teal-800";
+    case "learning": return "bg-sky-100 text-sky-800";
+    default: return "bg-slate-100 text-slate-700";
   }
 }
 
 // ── export columns ──────────────────────────────────────────────────────────
-const exportCols: ExportColumn<LaundryRecord>[] = [
-  { header: "Young Person", accessor: (r: LaundryRecord) => getYPName(r.youngPerson) },
-  { header: "Recorded", accessor: (r: LaundryRecord) => r.recordedDate },
-  { header: "Stage", accessor: (r: LaundryRecord) => r.overallStage },
-  { header: "Routine", accessor: (r: LaundryRecord) => r.routineFrequency },
-  { header: "Owns Basket", accessor: (r: LaundryRecord) => (r.ownsBasket ? "Yes" : "No") },
-  { header: "Knows Care Symbols", accessor: (r: LaundryRecord) => (r.knowsCareSymbols ? "Yes" : "No") },
-  { header: "Iron Competent", accessor: (r: LaundryRecord) => (r.ironCompetent ? "Yes" : "No") },
-  { header: "Next Skill", accessor: (r: LaundryRecord) => r.nextSkill },
-  { header: "Review Date", accessor: (r: LaundryRecord) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: LaundryRecord) => getStaffName(r.keyWorker) },
+const exportCols: ExportColumn<LaundrySelfCareRecord>[] = [
+  { header: "Young Person", accessor: (r: LaundrySelfCareRecord) => getYPName(r.child_id) },
+  { header: "Recorded", accessor: (r: LaundrySelfCareRecord) => r.recorded_date },
+  { header: "Stage", accessor: (r: LaundrySelfCareRecord) => LAUNDRY_STAGE_LABEL[r.overall_stage] },
+  { header: "Routine", accessor: (r: LaundrySelfCareRecord) => r.routine_frequency },
+  { header: "Owns Basket", accessor: (r: LaundrySelfCareRecord) => (r.owns_basket ? "Yes" : "No") },
+  { header: "Knows Care Symbols", accessor: (r: LaundrySelfCareRecord) => (r.knows_care_symbols ? "Yes" : "No") },
+  { header: "Iron Competent", accessor: (r: LaundrySelfCareRecord) => (r.iron_competent ? "Yes" : "No") },
+  { header: "Next Skill", accessor: (r: LaundrySelfCareRecord) => r.next_skill },
+  { header: "Review Date", accessor: (r: LaundrySelfCareRecord) => r.review_date },
+  { header: "Key Worker", accessor: (r: LaundrySelfCareRecord) => getStaffName(r.key_worker) },
 ];
 
 // ── component ───────────────────────────────────────────────────────────────
@@ -195,45 +77,57 @@ export default function ChildLaundrySelfCarePage() {
   const [sortBy, setSortBy] = useState("name");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const { data: queryData, isLoading } = useLaundrySelfCareRecords();
+  const items = queryData?.data ?? [];
+
   const filtered = useMemo(() => {
-    let items = [...data];
-    if (stageFilter !== "all") items = items.filter((r) => r.overallStage === stageFilter);
+    let list = [...items];
+    if (stageFilter !== "all") list = list.filter((r) => r.overall_stage === stageFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
-      items = items.filter(
+      list = list.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.overallStage.toLowerCase().includes(q) ||
-          r.nextSkill.toLowerCase().includes(q),
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          LAUNDRY_STAGE_LABEL[r.overall_stage].toLowerCase().includes(q) ||
+          r.next_skill.toLowerCase().includes(q),
       );
     }
 
-    items.sort((a, b) => {
+    list.sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "stage":
-          return a.overallStage.localeCompare(b.overallStage);
+          return a.overall_stage.localeCompare(b.overall_stage);
         case "review":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         default:
           return 0;
       }
     });
-    return items;
-  }, [search, stageFilter, sortBy]);
+    return list;
+  }, [items, search, stageFilter, sortBy]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   // ── stats ─────────────────────────────────────────────────────────────────
-  const childrenWithRoutine = data.filter(
-    (r) => !r.overallStage.startsWith("Stage 1"),
+  const childrenWithRoutine = items.filter(
+    (r) => r.overall_stage !== "stage_1_observed",
   ).length;
-  const fullyIndependent = data.filter(
-    (r) => r.overallStage.startsWith("Stage 4") || r.overallStage.startsWith("Stage 5"),
+  const fullyIndependent = items.filter(
+    (r) => r.overall_stage === "stage_4_did_independently" || r.overall_stage === "stage_5_manages_own_routine",
   ).length;
-  const promptsNeeded = data.filter(
-    (r) => r.overallStage.startsWith("Stage 2") || r.overallStage.startsWith("Stage 3"),
+  const promptsNeeded = items.filter(
+    (r) => r.overall_stage === "stage_2_did_with_staff" || r.overall_stage === "stage_3_did_with_prompts",
   ).length;
-  const reviewsDue = data.filter((r) => r.reviewDate <= d(14)).length;
+  const fourteenDaysOut = (() => { const dt = new Date(); dt.setDate(dt.getDate() + 14); return dt.toISOString().slice(0, 10); })();
+  const reviewsDue = items.filter((r) => r.review_date <= fourteenDaysOut).length;
 
   return (
     <PageShell
@@ -241,7 +135,7 @@ export default function ChildLaundrySelfCarePage() {
       subtitle="Per-child laundry independence — sorting, machine use, drying, ironing, folding. Co-produced with each young person; linked to Pathway Plans for over-16s."
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="laundry-self-care" />
+          <ExportButton data={items} columns={exportCols} filename="laundry-self-care" />
           <PrintButton title="Laundry Self-Care" />
         </div>
       }
@@ -294,13 +188,9 @@ export default function ChildLaundrySelfCarePage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Stages</SelectItem>
-            <SelectItem value="Stage 1 — Observed">Stage 1 — Observed</SelectItem>
-            <SelectItem value="Stage 2 — Did with staff">Stage 2 — Did with staff</SelectItem>
-            <SelectItem value="Stage 3 — Did with prompts">Stage 3 — Did with prompts</SelectItem>
-            <SelectItem value="Stage 4 — Did independently">Stage 4 — Did independently</SelectItem>
-            <SelectItem value="Stage 5 — Manages own laundry routine">
-              Stage 5 — Manages own routine
-            </SelectItem>
+            {Object.entries(LAUNDRY_STAGE_LABEL).map(([key, label]) => (
+              <SelectItem key={key} value={key}>{label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -337,9 +227,9 @@ export default function ChildLaundrySelfCarePage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Shirt className="h-5 w-5 text-sky-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(rec.youngPerson)}</p>
+                    <p className="font-medium truncate">{getYPName(rec.child_id)}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Routine: {rec.routineFrequency} &middot; Recorded {rec.recordedDate}
+                      Routine: {rec.routine_frequency} &middot; Recorded {rec.recorded_date}
                     </p>
                   </div>
                 </div>
@@ -347,17 +237,17 @@ export default function ChildLaundrySelfCarePage() {
                   <span
                     className={cn(
                       "text-xs px-2 py-0.5 rounded-full font-medium",
-                      stageColour(rec.overallStage),
+                      stageColour(rec.overall_stage),
                     )}
                   >
-                    {rec.overallStage}
+                    {LAUNDRY_STAGE_LABEL[rec.overall_stage]}
                   </span>
-                  {rec.ownsBasket && (
+                  {rec.owns_basket && (
                     <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-teal-100 text-teal-800">
                       Own Basket
                     </span>
                   )}
-                  {rec.knowsCareSymbols && (
+                  {rec.knows_care_symbols && (
                     <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-sky-100 text-sky-800">
                       Knows Symbols
                     </span>
@@ -391,7 +281,7 @@ export default function ChildLaundrySelfCarePage() {
                               levelColour(s.level),
                             )}
                           >
-                            {s.level}
+                            {LAUNDRY_SKILL_LEVEL_LABEL[s.level]}
                           </span>
                         </div>
                       ))}
@@ -404,7 +294,7 @@ export default function ChildLaundrySelfCarePage() {
                       <WashingMachine className="h-4 w-4 text-sky-600" />
                       <div>
                         <p className="text-xs font-medium">Routine</p>
-                        <p className="text-xs text-muted-foreground">{rec.routineFrequency}</p>
+                        <p className="text-xs text-muted-foreground">{rec.routine_frequency}</p>
                       </div>
                     </div>
                     <div className="bg-white rounded-lg p-2 border flex items-center gap-2">
@@ -412,7 +302,7 @@ export default function ChildLaundrySelfCarePage() {
                       <div>
                         <p className="text-xs font-medium">Iron Competent</p>
                         <p className="text-xs text-muted-foreground">
-                          {rec.ironCompetent ? "Yes" : "Not yet"}
+                          {rec.iron_competent ? "Yes" : "Not yet"}
                         </p>
                       </div>
                     </div>
@@ -421,7 +311,7 @@ export default function ChildLaundrySelfCarePage() {
                       <div>
                         <p className="text-xs font-medium">Care Symbols</p>
                         <p className="text-xs text-muted-foreground">
-                          {rec.knowsCareSymbols ? "Confident" : "Learning"}
+                          {rec.knows_care_symbols ? "Confident" : "Learning"}
                         </p>
                       </div>
                     </div>
@@ -432,7 +322,7 @@ export default function ChildLaundrySelfCarePage() {
                     <p className="text-xs font-semibold text-sky-800 uppercase tracking-wide mb-1">
                       Child&apos;s Voice
                     </p>
-                    <p className="text-sm italic text-sky-900">&ldquo;{rec.childVoice}&rdquo;</p>
+                    <p className="text-sm italic text-sky-900">&ldquo;{rec.child_voice}&rdquo;</p>
                   </div>
 
                   {/* staff observation */}
@@ -440,17 +330,17 @@ export default function ChildLaundrySelfCarePage() {
                     <p className="text-xs font-semibold text-teal-800 uppercase tracking-wide mb-1">
                       Staff Observation
                     </p>
-                    <p className="text-sm text-teal-900">{rec.staffObservation}</p>
+                    <p className="text-sm text-teal-900">{rec.staff_observation}</p>
                   </div>
 
                   {/* challenges */}
-                  {rec.challengesNoted.length > 0 && (
+                  {rec.challenges_noted.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                         Challenges &amp; Notes
                       </p>
                       <ul className="space-y-1">
-                        {rec.challengesNoted.map((c, i) => (
+                        {rec.challenges_noted.map((c, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-amber-600 mt-0.5">•</span>
                             <span>{c}</span>
@@ -465,14 +355,16 @@ export default function ChildLaundrySelfCarePage() {
                     <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">
                       Next Skill
                     </p>
-                    <p className="text-sm text-emerald-900">{rec.nextSkill}</p>
+                    <p className="text-sm text-emerald-900">{rec.next_skill}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span>Recorded: {rec.recordedDate}</span>
-                    <span>Review: {rec.reviewDate}</span>
-                    <span>Key Worker: {getStaffName(rec.keyWorker)}</span>
+                    <span>Recorded: {rec.recorded_date}</span>
+                    <span>Review: {rec.review_date}</span>
+                    <span>Key Worker: {getStaffName(rec.key_worker)}</span>
                   </div>
+
+                  <SmartLinkPanel sourceType="laundry_self_care" sourceId={rec.id} childId={rec.child_id} compact />
                 </div>
               )}
             </div>

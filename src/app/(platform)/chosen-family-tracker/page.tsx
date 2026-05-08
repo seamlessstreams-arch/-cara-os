@@ -4,8 +4,16 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
+import { useChosenFamilyRecords } from "@/hooks/use-chosen-family-records";
+import type { ChosenFamilyRecord } from "@/types/extended";
+import {
+  CHOSEN_FAMILY_RELATIONSHIP_LABEL,
+  CHOSEN_FAMILY_CONTACT_FREQUENCY_LABEL,
+  CHOSEN_FAMILY_IMPORTANCE_LABEL,
+} from "@/types/extended";
 import {
   Heart,
   Users,
@@ -16,6 +24,7 @@ import {
   Search,
   Star,
   Shield,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -25,369 +34,103 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface ChosenFamilyRecord {
-  id: string;
-  youngPerson: string;
-  personName: string;
-  relationship:
-    | "Mentor"
-    | "Coach"
-    | "Teacher"
-    | "Faith leader"
-    | "Neighbour"
-    | "Family friend"
-    | "Ex foster carer"
-    | "Grandparent figure"
-    | "Older friend"
-    | "Sports/club leader"
-    | "Other significant adult";
-  howMet: string;
-  yearsKnown: number;
-  contactFrequency:
-    | "Daily"
-    | "Weekly"
-    | "Monthly"
-    | "Quarterly"
-    | "Annually"
-    | "As needed";
-  contactType: string[];
-  importanceToChild:
-    | "Significant"
-    | "Very significant"
-    | "Like family"
-    | "Central figure";
-  rolePlayed: string[];
-  safeguardingChecked: boolean;
-  safeguardingCheckDate?: string;
-  childInitiatedRelationship: boolean;
-  reciprocal: boolean;
-  childVoice: string;
-  staffObservation: string;
-  riskFactors: string[];
-  protectiveFactors: string[];
-  reviewDate: string;
-  keyWorker: string;
-}
-
-const data: ChosenFamilyRecord[] = [
-  {
-    id: "cf-001",
-    youngPerson: "yp_jordan",
-    personName: "Imam Yusuf Rahman",
-    relationship: "Faith leader",
-    howMet:
-      "Jordan started attending Friday prayers at the local mosque shortly after admission. Imam Yusuf welcomed him warmly and has supported his faith journey ever since.",
-    yearsKnown: 4,
-    contactFrequency: "Weekly",
-    contactType: ["In person at mosque", "Phone calls", "Youth group"],
-    importanceToChild: "Central figure",
-    rolePlayed: [
-      "Spiritual guide",
-      "Cultural anchor",
-      "Father figure",
-      "Moral counsel",
-      "Community connector",
-    ],
-    safeguardingChecked: true,
-    safeguardingCheckDate: "2025-09-12",
-    childInitiatedRelationship: true,
-    reciprocal: true,
-    childVoice:
-      "Imam Yusuf gets it. When my mum's in prison and the world's loud, the mosque is quiet and he just lets me be. He's family — proper family.",
-    staffObservation:
-      "Jordan is markedly settled after Friday prayers. The Imam phones the home if Jordan misses two weeks. Genuine pastoral care, fully appropriate boundaries.",
-    riskFactors: [],
-    protectiveFactors: [
-      "Cultural and religious continuity",
-      "Stable adult presence",
-      "Community belonging",
-      "Routine anchor",
-      "Source of identity",
-    ],
-    reviewDate: "2026-09-12",
-    keyWorker: "staff_chervelle",
-  },
-  {
-    id: "cf-002",
-    youngPerson: "yp_jordan",
-    personName: "Coach Mike Thompson",
-    relationship: "Sports/club leader",
-    howMet:
-      "Jordan joined the Saturday football club aged 12. Coach Mike spotted his ability and stuck with him through the chaotic first year.",
-    yearsKnown: 3,
-    contactFrequency: "Weekly",
-    contactType: ["Training sessions", "Match days", "Club WhatsApp group"],
-    importanceToChild: "Very significant",
-    rolePlayed: [
-      "Mentor",
-      "Positive male role model",
-      "Believer in him",
-      "Discipline through encouragement",
-    ],
-    safeguardingChecked: true,
-    safeguardingCheckDate: "2025-08-04",
-    childInitiatedRelationship: false,
-    reciprocal: true,
-    childVoice:
-      "Mike never gave up on me even when I was being a div. He came to my Year 9 awards. No one else did.",
-    staffObservation:
-      "FA-checked, club has full safeguarding policy. Mike attended Jordan's PEP last term as a positive adult voice. Excellent boundaries.",
-    riskFactors: [],
-    protectiveFactors: [
-      "Physical activity",
-      "Team belonging",
-      "Adult outside care system",
-      "Recognition of progress",
-    ],
-    reviewDate: "2026-08-04",
-    keyWorker: "staff_chervelle",
-  },
-  {
-    id: "cf-003",
-    youngPerson: "yp_alex",
-    personName: "Khalid Mahmood (Boxing Coach)",
-    relationship: "Coach",
-    howMet:
-      "Alex was referred to the boxing club via the school PE teacher as a positive outlet. Khalid runs the gym, ex-amateur champion, mentors several looked-after children.",
-    yearsKnown: 2,
-    contactFrequency: "Weekly",
-    contactType: [
-      "Twice-weekly training",
-      "Pre-fight preparation",
-      "Phone check-ins between sessions",
-    ],
-    importanceToChild: "Very significant",
-    rolePlayed: [
-      "Coach",
-      "Mentor",
-      "Discipline anchor",
-      "Source of self-belief",
-      "Calm in crisis",
-    ],
-    safeguardingChecked: true,
-    safeguardingCheckDate: "2025-07-22",
-    childInitiatedRelationship: false,
-    reciprocal: true,
-    childVoice:
-      "Khalid says I'm allowed to be angry but not allowed to be lazy with it. He's straight with me and that means more than people who tiptoe.",
-    staffObservation:
-      "DBS verified, gym has insurance and safeguarding lead. Khalid called staff once when Alex disclosed a worry mid-session — handled it impeccably. Trusted partner.",
-    riskFactors: [
-      "Boxing environment requires careful framing for a child with anger history — actively managed and going well",
-    ],
-    protectiveFactors: [
-      "Channelled physical outlet",
-      "Mentorship from same heritage",
-      "Routine three times a week",
-      "Adult who keeps showing up",
-    ],
-    reviewDate: "2026-07-22",
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "cf-004",
-    youngPerson: "yp_alex",
-    personName: "Ms Hassan (English teacher)",
-    relationship: "Teacher",
-    howMet:
-      "Year 9 English teacher. Spotted Alex's writing ability and started recommending books. Their email correspondence is now into its second year.",
-    yearsKnown: 2,
-    contactFrequency: "Weekly",
-    contactType: [
-      "School lessons",
-      "Weekly email about books",
-      "Lunch club Tuesdays",
-    ],
-    importanceToChild: "Significant",
-    rolePlayed: [
-      "Encourager",
-      "Intellectual mentor",
-      "Person who believes he is clever",
-      "Safe adult at school",
-    ],
-    safeguardingChecked: true,
-    safeguardingCheckDate: "2025-09-01",
-    childInitiatedRelationship: false,
-    reciprocal: true,
-    childVoice:
-      "She told me I write like someone who's read more than I have. I don't think anyone's said something like that to me before.",
-    staffObservation:
-      "School email correspondence is appropriate, monitored via school systems. Ms Hassan attends Alex's PEPs. The first adult in education to consistently see his strengths.",
-    riskFactors: [],
-    protectiveFactors: [
-      "Educational engagement",
-      "Identity as 'clever kid' rather than 'difficult kid'",
-      "Safe adult during school day",
-    ],
-    reviewDate: "2026-09-01",
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "cf-005",
-    youngPerson: "yp_casey",
-    personName: "Linda Reeves (best friend Ellie's mum)",
-    relationship: "Family friend",
-    howMet:
-      "Casey and Ellie became best friends at school. Linda made a point of including Casey from the start — sleepovers, dinners, family outings.",
-    yearsKnown: 2,
-    contactFrequency: "Weekly",
-    contactType: [
-      "Tea at theirs after school",
-      "Weekend visits",
-      "Texts to staff to coordinate",
-      "Birthdays and Sunday lunches",
-    ],
-    importanceToChild: "Like family",
-    rolePlayed: [
-      "Surrogate mum figure",
-      "Warmth and ordinariness",
-      "Keeps a spare hoodie of Casey's",
-      "Includes Casey in family celebrations",
-    ],
-    safeguardingChecked: true,
-    safeguardingCheckDate: "2025-06-18",
-    childInitiatedRelationship: true,
-    reciprocal: true,
-    childVoice:
-      "Linda just... folds me in. I don't have to be anything different at hers. She knows my order at the chippy.",
-    staffObservation:
-      "Linda has visited the home, met staff, completed safer-recruitment style chat with RM. Genuinely lovely woman, strong protective factor for Casey. Ellie's house is a regular safe place.",
-    riskFactors: [],
-    protectiveFactors: [
-      "Stable peer + adult relationship combined",
-      "Experience of ordinary family life",
-      "Sense of being chosen and wanted",
-      "Belonging beyond the home",
-    ],
-    reviewDate: "2026-06-18",
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "cf-006",
-    youngPerson: "yp_casey",
-    personName: "Mrs Patel (next-door neighbour)",
-    relationship: "Neighbour",
-    howMet:
-      "Mrs Patel has lived next door for over twenty years. She introduced herself to Casey on day three and has since become a quiet, steady presence.",
-    yearsKnown: 1,
-    contactFrequency: "Weekly",
-    contactType: [
-      "Weekly tea visits",
-      "Garden chats",
-      "Helps with Casey's plants",
-      "Cards on important days",
-    ],
-    importanceToChild: "Very significant",
-    rolePlayed: [
-      "Grandma figure",
-      "Calm presence",
-      "Cultural conversation (food, festivals)",
-      "Steady weekly ritual",
-    ],
-    safeguardingChecked: true,
-    safeguardingCheckDate: "2025-05-10",
-    childInitiatedRelationship: false,
-    reciprocal: true,
-    childVoice:
-      "Mrs Patel doesn't ask me hard questions. She just makes proper chai and tells me about her grandkids in Leicester. It's the easiest hour of my week.",
-    staffObservation:
-      "Long-term neighbour, references via the community. Casey visits with a member of staff aware. Tea visits are a fixed Wednesday ritual Casey looks forward to. Mrs Patel sent a card after Casey's grandad Tom died.",
-    riskFactors: [],
-    protectiveFactors: [
-      "Continuity through bereavement",
-      "Intergenerational relationship",
-      "Cultural exchange and warmth",
-      "Predictable weekly comfort",
-    ],
-    reviewDate: "2026-05-10",
-    keyWorker: "staff_anna",
-  },
-];
-
 const relationshipColour: Record<string, string> = {
-  Mentor: "bg-purple-100 text-purple-800",
-  Coach: "bg-amber-100 text-amber-800",
-  Teacher: "bg-blue-100 text-blue-800",
-  "Faith leader": "bg-emerald-100 text-emerald-800",
-  Neighbour: "bg-rose-100 text-rose-800",
-  "Family friend": "bg-pink-100 text-pink-800",
-  "Ex foster carer": "bg-indigo-100 text-indigo-800",
-  "Grandparent figure": "bg-orange-100 text-orange-800",
-  "Older friend": "bg-cyan-100 text-cyan-800",
-  "Sports/club leader": "bg-yellow-100 text-yellow-800",
-  "Other significant adult": "bg-slate-100 text-slate-800",
+  mentor: "bg-purple-100 text-purple-800",
+  coach: "bg-amber-100 text-amber-800",
+  teacher: "bg-blue-100 text-blue-800",
+  faith_leader: "bg-emerald-100 text-emerald-800",
+  neighbour: "bg-rose-100 text-rose-800",
+  family_friend: "bg-pink-100 text-pink-800",
+  ex_foster_carer: "bg-indigo-100 text-indigo-800",
+  grandparent_figure: "bg-orange-100 text-orange-800",
+  older_friend: "bg-cyan-100 text-cyan-800",
+  sports_club_leader: "bg-yellow-100 text-yellow-800",
+  other_significant_adult: "bg-slate-100 text-slate-800",
 };
 
 const importanceColour: Record<string, string> = {
-  Significant: "bg-rose-50 text-rose-700 border border-rose-200",
-  "Very significant": "bg-rose-100 text-rose-800 border border-rose-300",
-  "Like family": "bg-purple-100 text-purple-800 border border-purple-300",
-  "Central figure": "bg-amber-100 text-amber-900 border border-amber-300",
+  significant: "bg-rose-50 text-rose-700 border border-rose-200",
+  very_significant: "bg-rose-100 text-rose-800 border border-rose-300",
+  like_family: "bg-purple-100 text-purple-800 border border-purple-300",
+  central_figure: "bg-amber-100 text-amber-900 border border-amber-300",
 };
 
 const exportCols: ExportColumn<ChosenFamilyRecord>[] = [
-  { header: "Young Person", accessor: (r: ChosenFamilyRecord) => getYPName(r.youngPerson) },
-  { header: "Person", accessor: (r: ChosenFamilyRecord) => r.personName },
-  { header: "Relationship", accessor: (r: ChosenFamilyRecord) => r.relationship },
-  { header: "Years Known", accessor: (r: ChosenFamilyRecord) => r.yearsKnown },
-  { header: "Frequency", accessor: (r: ChosenFamilyRecord) => r.contactFrequency },
-  { header: "Importance", accessor: (r: ChosenFamilyRecord) => r.importanceToChild },
-  { header: "Safeguarding Checked", accessor: (r: ChosenFamilyRecord) => r.safeguardingChecked ? "Yes" : "No" },
-  { header: "Safeguarding Date", accessor: (r: ChosenFamilyRecord) => r.safeguardingCheckDate ?? "—" },
-  { header: "Child Initiated", accessor: (r: ChosenFamilyRecord) => r.childInitiatedRelationship ? "Yes" : "No" },
-  { header: "Reciprocal", accessor: (r: ChosenFamilyRecord) => r.reciprocal ? "Yes" : "No" },
-  { header: "Review Date", accessor: (r: ChosenFamilyRecord) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: ChosenFamilyRecord) => getStaffName(r.keyWorker) },
+  { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+  { header: "Person", accessor: (r) => r.person_name },
+  { header: "Relationship", accessor: (r) => CHOSEN_FAMILY_RELATIONSHIP_LABEL[r.relationship] },
+  { header: "Years Known", accessor: (r) => r.years_known },
+  { header: "Frequency", accessor: (r) => CHOSEN_FAMILY_CONTACT_FREQUENCY_LABEL[r.contact_frequency] },
+  { header: "Importance", accessor: (r) => CHOSEN_FAMILY_IMPORTANCE_LABEL[r.importance_to_child] },
+  { header: "Safeguarding Checked", accessor: (r) => r.safeguarding_checked ? "Yes" : "No" },
+  { header: "Safeguarding Date", accessor: (r) => r.safeguarding_check_date ?? "—" },
+  { header: "Child Initiated", accessor: (r) => r.child_initiated_relationship ? "Yes" : "No" },
+  { header: "Reciprocal", accessor: (r) => r.reciprocal ? "Yes" : "No" },
+  { header: "Review Date", accessor: (r) => r.review_date },
+  { header: "Key Worker", accessor: (r) => getStaffName(r.key_worker) },
 ];
 
 export default function ChosenFamilyTrackerPage() {
+  const { data: res, isLoading } = useChosenFamilyRecords();
+  const records = useMemo(() => res?.data ?? [], [res]);
+
   const [search, setSearch] = useState("");
   const [filterRel, setFilterRel] = useState("all");
   const [sortBy, setSortBy] = useState("importance");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let items = [...data];
+    let items = [...records];
     if (search.trim()) {
       const q = search.toLowerCase();
       items = items.filter(
         (r) =>
-          r.personName.toLowerCase().includes(q) ||
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.relationship.toLowerCase().includes(q) ||
-          r.howMet.toLowerCase().includes(q),
+          r.person_name.toLowerCase().includes(q) ||
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          CHOSEN_FAMILY_RELATIONSHIP_LABEL[r.relationship].toLowerCase().includes(q) ||
+          r.how_met.toLowerCase().includes(q),
       );
     }
     if (filterRel !== "all") items = items.filter((r) => r.relationship === filterRel);
 
     const importanceRank: Record<string, number> = {
-      "Central figure": 4,
-      "Like family": 3,
-      "Very significant": 2,
-      Significant: 1,
+      central_figure: 4,
+      like_family: 3,
+      very_significant: 2,
+      significant: 1,
     };
 
     items.sort((a, b) => {
       switch (sortBy) {
         case "importance":
-          return (importanceRank[b.importanceToChild] ?? 0) - (importanceRank[a.importanceToChild] ?? 0);
+          return (importanceRank[b.importance_to_child] ?? 0) - (importanceRank[a.importance_to_child] ?? 0);
         case "years":
-          return b.yearsKnown - a.yearsKnown;
+          return b.years_known - a.years_known;
         case "child":
-          return a.youngPerson.localeCompare(b.youngPerson);
+          return a.child_id.localeCompare(b.child_id);
         case "review":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         default:
           return 0;
       }
     });
     return items;
-  }, [search, filterRel, sortBy]);
+  }, [records, search, filterRel, sortBy]);
 
-  const total = data.length;
-  const centralFigures = data.filter((r) => r.importanceToChild === "Central figure" || r.importanceToChild === "Like family").length;
-  const safeguarded = data.filter((r) => r.safeguardingChecked).length;
-  const weeklyOrMore = data.filter((r) => r.contactFrequency === "Daily" || r.contactFrequency === "Weekly").length;
+  const total = records.length;
+  const centralFigures = records.filter((r) => r.importance_to_child === "central_figure" || r.importance_to_child === "like_family").length;
+  const safeguarded = records.filter((r) => r.safeguarding_checked).length;
+  const weeklyOrMore = records.filter((r) => r.contact_frequency === "daily" || r.contact_frequency === "weekly").length;
+
+  if (isLoading) {
+    return (
+      <PageShell title="Chosen Family Tracker" subtitle="Loading...">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -395,7 +138,7 @@ export default function ChosenFamilyTrackerPage() {
       subtitle="Significant non-family adults in each child's life — chosen family is real family"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="chosen-family-tracker" />
+          <ExportButton data={records} columns={exportCols} filename="chosen-family-tracker" />
           <PrintButton title="Chosen Family" />
         </div>
       }
@@ -450,17 +193,9 @@ export default function ChosenFamilyTrackerPage() {
           <SelectTrigger className="w-[200px]"><SelectValue placeholder="All Relationships" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Relationships</SelectItem>
-            <SelectItem value="Mentor">Mentor</SelectItem>
-            <SelectItem value="Coach">Coach</SelectItem>
-            <SelectItem value="Teacher">Teacher</SelectItem>
-            <SelectItem value="Faith leader">Faith leader</SelectItem>
-            <SelectItem value="Neighbour">Neighbour</SelectItem>
-            <SelectItem value="Family friend">Family friend</SelectItem>
-            <SelectItem value="Ex foster carer">Ex foster carer</SelectItem>
-            <SelectItem value="Grandparent figure">Grandparent figure</SelectItem>
-            <SelectItem value="Older friend">Older friend</SelectItem>
-            <SelectItem value="Sports/club leader">Sports/club leader</SelectItem>
-            <SelectItem value="Other significant adult">Other significant adult</SelectItem>
+            {Object.entries(CHOSEN_FAMILY_RELATIONSHIP_LABEL).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -491,24 +226,24 @@ export default function ChosenFamilyTrackerPage() {
                   <Heart className="h-5 w-5 text-rose-600 shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">
-                      {getYPName(r.youngPerson)} &mdash; {r.personName}
+                      {getYPName(r.child_id)} &mdash; {r.person_name}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {r.yearsKnown} {r.yearsKnown === 1 ? "year" : "years"} known &middot; {r.contactFrequency.toLowerCase()} contact &middot; key worker {getStaffName(r.keyWorker)}
+                      {r.years_known} {r.years_known === 1 ? "year" : "years"} known &middot; {CHOSEN_FAMILY_CONTACT_FREQUENCY_LABEL[r.contact_frequency].toLowerCase()} contact &middot; key worker {getStaffName(r.key_worker)}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3 flex-wrap justify-end">
                   <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", relationshipColour[r.relationship])}>
-                    {r.relationship}
+                    {CHOSEN_FAMILY_RELATIONSHIP_LABEL[r.relationship]}
                   </span>
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-100 text-slate-700">
-                    {r.contactFrequency}
+                    {CHOSEN_FAMILY_CONTACT_FREQUENCY_LABEL[r.contact_frequency]}
                   </span>
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", importanceColour[r.importanceToChild])}>
-                    {r.importanceToChild}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", importanceColour[r.importance_to_child])}>
+                    {CHOSEN_FAMILY_IMPORTANCE_LABEL[r.importance_to_child]}
                   </span>
-                  {r.safeguardingChecked && (
+                  {r.safeguarding_checked && (
                     <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-100 text-emerald-800 inline-flex items-center gap-1">
                       <Shield className="h-3 w-3" />Safeguarded
                     </span>
@@ -522,14 +257,14 @@ export default function ChosenFamilyTrackerPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-rose-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-rose-800 uppercase tracking-wide mb-1">How They Met</p>
-                      <p className="text-sm">{r.howMet}</p>
+                      <p className="text-sm">{r.how_met}</p>
                     </div>
                     <div className="bg-amber-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
                         <Star className="h-3 w-3 inline mr-1" />Role Played in Child&apos;s Life
                       </p>
                       <ul className="text-sm space-y-0.5">
-                        {r.rolePlayed.map((role, i) => (
+                        {r.role_played.map((role, i) => (
                           <li key={i}>&middot; {role}</li>
                         ))}
                       </ul>
@@ -538,12 +273,12 @@ export default function ChosenFamilyTrackerPage() {
 
                   <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
                     <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-1">Child&apos;s Voice — Why This Person Matters</p>
-                    <p className="text-sm italic text-purple-900">&ldquo;{r.childVoice}&rdquo;</p>
+                    <p className="text-sm italic text-purple-900">&ldquo;{r.child_voice}&rdquo;</p>
                   </div>
 
                   <div className="bg-blue-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Staff Observation</p>
-                    <p className="text-sm">{r.staffObservation}</p>
+                    <p className="text-sm">{r.staff_observation}</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -552,7 +287,7 @@ export default function ChosenFamilyTrackerPage() {
                         <Phone className="h-3 w-3 inline mr-1" />Contact Types
                       </p>
                       <ul className="text-sm space-y-0.5">
-                        {r.contactType.map((c, i) => (
+                        {r.contact_type.map((c, i) => (
                           <li key={i}>&middot; {c}</li>
                         ))}
                       </ul>
@@ -562,8 +297,8 @@ export default function ChosenFamilyTrackerPage() {
                         <Shield className="h-3 w-3 inline mr-1" />Safeguarding
                       </p>
                       <p className="text-sm">
-                        {r.safeguardingChecked
-                          ? `Checked ${r.safeguardingCheckDate ?? ""} — appropriate boundaries verified`
+                        {r.safeguarding_checked
+                          ? `Checked ${r.safeguarding_check_date ?? ""} — appropriate boundaries verified`
                           : "Not yet checked — to be progressed"}
                       </p>
                     </div>
@@ -572,9 +307,9 @@ export default function ChosenFamilyTrackerPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-emerald-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Protective Factors</p>
-                      {r.protectiveFactors.length > 0 ? (
+                      {r.protective_factors.length > 0 ? (
                         <ul className="text-sm space-y-0.5">
-                          {r.protectiveFactors.map((p, i) => (
+                          {r.protective_factors.map((p, i) => (
                             <li key={i}>&middot; {p}</li>
                           ))}
                         </ul>
@@ -584,9 +319,9 @@ export default function ChosenFamilyTrackerPage() {
                     </div>
                     <div className="bg-orange-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-orange-800 uppercase tracking-wide mb-1">Risk Factors</p>
-                      {r.riskFactors.length > 0 ? (
+                      {r.risk_factors.length > 0 ? (
                         <ul className="text-sm space-y-0.5">
-                          {r.riskFactors.map((rf, i) => (
+                          {r.risk_factors.map((rf, i) => (
                             <li key={i}>&middot; {rf}</li>
                           ))}
                         </ul>
@@ -597,19 +332,22 @@ export default function ChosenFamilyTrackerPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 pt-2 border-t">
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", r.childInitiatedRelationship ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-700")}>
-                      {r.childInitiatedRelationship ? "Child sought this relationship" : "Adult-introduced, child embraced"}
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", r.child_initiated_relationship ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-700")}>
+                      {r.child_initiated_relationship ? "Child sought this relationship" : "Adult-introduced, child embraced"}
                     </span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", r.reciprocal ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800")}>
                       {r.reciprocal ? "Reciprocal relationship" : "One-sided — monitor"}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-800">
-                      Next review: {r.reviewDate}
+                      Next review: {r.review_date}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-100 text-slate-700">
-                      Key worker: {getStaffName(r.keyWorker)}
+                      Key worker: {getStaffName(r.key_worker)}
                     </span>
                   </div>
+
+                  {/* smart link panel */}
+                  <SmartLinkPanel sourceType="chosen-family-records" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               )}
             </div>

@@ -20,74 +20,31 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate, todayStr, daysFromNow } from "@/lib/utils";
+import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { usePocketMoneyTransactions, useCreatePocketMoneyTransaction } from "@/hooks/use-pocket-money-transactions";
+import type { PocketMoneyTransaction, PocketMoneyTransactionType } from "@/types/extended";
 import {
   Wallet, Search, Filter, ArrowUpDown, X, Plus,
   TrendingUp, TrendingDown, PiggyBank, Receipt,
   Calendar, User, ChevronDown, ChevronUp,
   ShoppingBag, Banknote, ArrowDownLeft, ArrowUpRight,
+  Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type TransactionType = "allowance" | "spending" | "savings_deposit" | "savings_withdrawal" | "gift" | "earnings" | "refund";
-
-interface PocketMoneyTransaction {
-  id: string;
-  child_id: string;
-  date: string;
-  type: TransactionType;
-  amount: number;          // always positive — direction determined by type
-  description: string;
-  category: string;
-  receipt_held: boolean;
-  approved_by: string;
-  notes: string | null;
-  created_at: string;
-}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function isIncome(t: TransactionType): boolean {
+function isIncome(t: PocketMoneyTransactionType): boolean {
   return t === "allowance" || t === "gift" || t === "earnings" || t === "refund" || t === "savings_withdrawal";
 }
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const today = todayStr();
-
-const SEED_TRANSACTIONS: PocketMoneyTransaction[] = [
-  // Alex
-  { id: "pm_001", child_id: "yp_alex",   date: today,           type: "allowance",          amount: 15.00, description: "Weekly pocket money",                 category: "allowance",  receipt_held: false, approved_by: "staff_darren",  notes: null, created_at: `${today}T09:00:00Z` },
-  { id: "pm_002", child_id: "yp_alex",   date: today,           type: "spending",           amount: 4.50,  description: "Snacks from corner shop",             category: "food",       receipt_held: true,  approved_by: "staff_ryan",    notes: "Receipt in file", created_at: `${today}T15:30:00Z` },
-  { id: "pm_003", child_id: "yp_alex",   date: daysFromNow(-1), type: "savings_deposit",    amount: 5.00,  description: "Saving towards new headphones",       category: "savings",    receipt_held: false, approved_by: "staff_darren",  notes: "Alex chose to save this week", created_at: `${daysFromNow(-1)}T10:00:00Z` },
-  { id: "pm_004", child_id: "yp_alex",   date: daysFromNow(-3), type: "spending",           amount: 8.99,  description: "Phone case from Amazon",              category: "personal",   receipt_held: true,  approved_by: "staff_anna",    notes: null, created_at: `${daysFromNow(-3)}T14:00:00Z` },
-  { id: "pm_005", child_id: "yp_alex",   date: daysFromNow(-7), type: "allowance",          amount: 15.00, description: "Weekly pocket money",                 category: "allowance",  receipt_held: false, approved_by: "staff_darren",  notes: null, created_at: `${daysFromNow(-7)}T09:00:00Z` },
-  { id: "pm_006", child_id: "yp_alex",   date: daysFromNow(-7), type: "spending",           amount: 12.00, description: "Cinema trip with staff",              category: "activities", receipt_held: true,  approved_by: "staff_lackson", notes: "Includes popcorn", created_at: `${daysFromNow(-7)}T18:00:00Z` },
-
-  // Casey
-  { id: "pm_007", child_id: "yp_casey",  date: today,           type: "allowance",          amount: 15.00, description: "Weekly pocket money",                 category: "allowance",  receipt_held: false, approved_by: "staff_darren",  notes: null, created_at: `${today}T09:00:00Z` },
-  { id: "pm_008", child_id: "yp_casey",  date: daysFromNow(-2), type: "spending",           amount: 6.50,  description: "Art supplies — paint and brushes",    category: "creative",   receipt_held: true,  approved_by: "staff_anna",    notes: "For Casey's art project", created_at: `${daysFromNow(-2)}T11:00:00Z` },
-  { id: "pm_009", child_id: "yp_casey",  date: daysFromNow(-4), type: "gift",               amount: 20.00, description: "Birthday money from aunt",            category: "gift",       receipt_held: false, approved_by: "staff_darren",  notes: "Card from aunt — kept in Casey's file", created_at: `${daysFromNow(-4)}T14:00:00Z` },
-  { id: "pm_010", child_id: "yp_casey",  date: daysFromNow(-5), type: "savings_deposit",    amount: 10.00, description: "Saving towards concert tickets",      category: "savings",    receipt_held: false, approved_by: "staff_darren",  notes: null, created_at: `${daysFromNow(-5)}T10:00:00Z` },
-  { id: "pm_011", child_id: "yp_casey",  date: daysFromNow(-7), type: "allowance",          amount: 15.00, description: "Weekly pocket money",                 category: "allowance",  receipt_held: false, approved_by: "staff_darren",  notes: null, created_at: `${daysFromNow(-7)}T09:00:00Z` },
-
-  // Jordan
-  { id: "pm_012", child_id: "yp_jordan", date: today,           type: "allowance",          amount: 15.00, description: "Weekly pocket money",                 category: "allowance",  receipt_held: false, approved_by: "staff_darren",  notes: null, created_at: `${today}T09:00:00Z` },
-  { id: "pm_013", child_id: "yp_jordan", date: daysFromNow(-1), type: "spending",           amount: 3.20,  description: "Bus fare to town",                   category: "transport",  receipt_held: false, approved_by: "staff_chervelle", notes: null, created_at: `${daysFromNow(-1)}T13:00:00Z` },
-  { id: "pm_014", child_id: "yp_jordan", date: daysFromNow(-2), type: "earnings",           amount: 10.00, description: "Helped neighbour with gardening",     category: "earnings",   receipt_held: false, approved_by: "staff_darren",  notes: "Jordan asked to do this — encouraged independence", created_at: `${daysFromNow(-2)}T17:00:00Z` },
-  { id: "pm_015", child_id: "yp_jordan", date: daysFromNow(-3), type: "savings_deposit",    amount: 10.00, description: "Saving for driving lessons fund",     category: "savings",    receipt_held: false, approved_by: "staff_darren",  notes: "Part of Jordan's independence plan", created_at: `${daysFromNow(-3)}T10:00:00Z` },
-  { id: "pm_016", child_id: "yp_jordan", date: daysFromNow(-6), type: "spending",           amount: 7.50,  description: "New book — GCSE revision guide",     category: "education",  receipt_held: true,  approved_by: "staff_lackson", notes: null, created_at: `${daysFromNow(-6)}T16:00:00Z` },
-  { id: "pm_017", child_id: "yp_jordan", date: daysFromNow(-7), type: "allowance",          amount: 15.00, description: "Weekly pocket money",                 category: "allowance",  receipt_held: false, approved_by: "staff_darren",  notes: null, created_at: `${daysFromNow(-7)}T09:00:00Z` },
-];
-
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<TransactionType, { label: string; icon: React.ElementType; color: string; bg: string; border: string; direction: "in" | "out" }> = {
+const TYPE_CONFIG: Record<PocketMoneyTransactionType, { label: string; icon: React.ElementType; color: string; bg: string; border: string; direction: "in" | "out" }> = {
   allowance:           { label: "Allowance",        icon: Banknote,       color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", direction: "in"  },
   spending:            { label: "Spending",          icon: ShoppingBag,    color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200",     direction: "out" },
   savings_deposit:     { label: "Savings In",        icon: PiggyBank,      color: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200",    direction: "out" },
@@ -164,10 +121,13 @@ function TransactionRow({ tx }: { tx: PocketMoneyTransaction }) {
       </div>
 
       {expanded && (
-        <div className="border-t px-3 pb-3 pt-2 text-[10px] text-slate-400 flex items-center gap-4">
-          <span>Category: {CATEGORY_LABELS[tx.category] ?? tx.category}</span>
-          <span>Approved by: {getStaffName(tx.approved_by)}</span>
-          {tx.notes && <span className="text-slate-600 italic">{tx.notes}</span>}
+        <div className="border-t px-3 pb-3 pt-2 space-y-2">
+          <div className="text-[10px] text-slate-400 flex items-center gap-4">
+            <span>Category: {CATEGORY_LABELS[tx.category] ?? tx.category}</span>
+            <span>Approved by: {getStaffName(tx.approved_by)}</span>
+            {tx.notes && <span className="text-slate-600 italic">{tx.notes}</span>}
+          </div>
+          <SmartLinkPanel sourceType="pocket_money_transaction" sourceId={tx.id} childId={tx.child_id} compact />
         </div>
       )}
     </div>
@@ -183,11 +143,11 @@ function NewTransactionDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  onSubmit: (tx: PocketMoneyTransaction) => void;
+  onSubmit: (tx: Partial<PocketMoneyTransaction>) => void;
 }) {
   const { currentUser } = useAuthContext();
   const [childId, setChildId] = useState("yp_alex");
-  const [type, setType] = useState<TransactionType>("spending");
+  const [type, setType] = useState<PocketMoneyTransactionType>("spending");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("other");
@@ -196,9 +156,7 @@ function NewTransactionDialog({
 
   function handleSubmit() {
     if (!amount || !description.trim()) return;
-    const now = new Date().toISOString();
-    const tx: PocketMoneyTransaction = {
-      id: `pm_local_${Date.now()}`,
+    const tx: Partial<PocketMoneyTransaction> = {
       child_id: childId,
       date: todayStr(),
       type,
@@ -208,7 +166,6 @@ function NewTransactionDialog({
       receipt_held: receiptHeld,
       approved_by: currentUser?.id ?? "staff_darren",
       notes: notes.trim() || null,
-      created_at: now,
     };
     onSubmit(tx);
     onClose();
@@ -240,10 +197,10 @@ function NewTransactionDialog({
             </div>
             <div>
               <label className="text-[11px] font-medium text-slate-600 mb-1 block">Type</label>
-              <Select value={type} onValueChange={(v) => setType(v as TransactionType)}>
+              <Select value={type} onValueChange={(v) => setType(v as PocketMoneyTransactionType)}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(TYPE_CONFIG) as TransactionType[]).map((t) => (
+                  {(Object.keys(TYPE_CONFIG) as PocketMoneyTransactionType[]).map((t) => (
                     <SelectItem key={t} value={t}>{TYPE_CONFIG[t].label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -299,11 +256,12 @@ function NewTransactionDialog({
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function PocketMoneyPage() {
-  const [transactions, setTransactions] = useState<PocketMoneyTransaction[]>(SEED_TRANSACTIONS);
+  const { data = [], isLoading } = usePocketMoneyTransactions();
+  const createTx = useCreatePocketMoneyTransaction();
   const [showNew, setShowNew] = useState(false);
 
   const [childFilter, setChildFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState<TransactionType | "all">("all");
+  const [typeFilter, setTypeFilter] = useState<PocketMoneyTransactionType | "all">("all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("date");
 
@@ -311,7 +269,7 @@ export default function PocketMoneyPage() {
   const balances = useMemo(() => {
     const ypIds = ["yp_alex", "yp_casey", "yp_jordan"];
     return ypIds.map((id) => {
-      const txs = transactions.filter((t) => t.child_id === id);
+      const txs = data.filter((t) => t.child_id === id);
       let wallet = 0;
       let savings = 0;
       txs.forEach((t) => {
@@ -324,11 +282,11 @@ export default function PocketMoneyPage() {
       const totalOut = txs.filter((t) => !isIncome(t.type)).reduce((s, t) => s + t.amount, 0);
       return { id, name: getYPName(id), wallet: Math.max(0, wallet), savings, totalIn, totalOut, txCount: txs.length };
     });
-  }, [transactions]);
+  }, [data]);
 
   // Filtered + sorted
   const filtered = useMemo(() => {
-    let list = [...transactions];
+    let list = [...data];
 
     if (childFilter !== "all") list = list.filter((t) => t.child_id === childFilter);
     if (typeFilter !== "all") list = list.filter((t) => t.type === typeFilter);
@@ -350,11 +308,21 @@ export default function PocketMoneyPage() {
     }
 
     return list;
-  }, [transactions, childFilter, typeFilter, search, sortBy]);
+  }, [data, childFilter, typeFilter, search, sortBy]);
 
   const totalWallet = balances.reduce((s, b) => s + b.wallet, 0);
   const totalSavings = balances.reduce((s, b) => s + b.savings, 0);
   const hasFilters = search || childFilter !== "all" || typeFilter !== "all";
+
+  if (isLoading) {
+    return (
+      <PageShell title="Pocket Money & Savings" subtitle="Financial records for each young person">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -402,8 +370,8 @@ export default function PocketMoneyPage() {
         {[
           { label: "Total in Wallets",   value: `£${totalWallet.toFixed(2)}`,  color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
           { label: "Total Savings",      value: `£${totalSavings.toFixed(2)}`, color: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-200"    },
-          { label: "Transactions",       value: transactions.length,           color: "text-slate-700",   bg: "bg-slate-50",   border: "border-slate-200"   },
-          { label: "Receipts on File",   value: transactions.filter((t) => t.receipt_held).length, color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-200" },
+          { label: "Transactions",       value: data.length,           color: "text-slate-700",   bg: "bg-slate-50",   border: "border-slate-200"   },
+          { label: "Receipts on File",   value: data.filter((t) => t.receipt_held).length, color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-200" },
         ].map((s) => (
           <div key={s.label} className={cn("rounded-lg border p-3 text-center", s.bg, s.border)}>
             <div className={cn("text-xl font-bold", s.color)}>{s.value}</div>
@@ -428,11 +396,11 @@ export default function PocketMoneyPage() {
             <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TransactionType | "all")}>
+        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as PocketMoneyTransactionType | "all")}>
           <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All types</SelectItem>
-            {(Object.keys(TYPE_CONFIG) as TransactionType[]).map((t) => (
+            {(Object.keys(TYPE_CONFIG) as PocketMoneyTransactionType[]).map((t) => (
               <SelectItem key={t} value={t}>{TYPE_CONFIG[t].label}</SelectItem>
             ))}
           </SelectContent>
@@ -472,7 +440,7 @@ export default function PocketMoneyPage() {
       )}
 
       <div className="text-center text-[10px] text-slate-400 mt-6">
-        Showing {filtered.length} of {transactions.length} transaction{transactions.length !== 1 ? "s" : ""}
+        Showing {filtered.length} of {data.length} transaction{data.length !== 1 ? "s" : ""}
       </div>
 
       {/* ── Regulatory Note ───────────────────────────────────────────────── */}
@@ -492,7 +460,7 @@ export default function PocketMoneyPage() {
         </div>
       </div>
 
-      <NewTransactionDialog open={showNew} onClose={() => setShowNew(false)} onSubmit={(tx) => setTransactions((prev) => [tx, ...prev])} />
+      <NewTransactionDialog open={showNew} onClose={() => setShowNew(false)} onSubmit={(tx) => createTx.mutate(tx as Partial<PocketMoneyTransaction>)} />
     </PageShell>
   );
 }

@@ -13,49 +13,26 @@ import {
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, GraduationCap, CalendarCheck, UserX, Target,
+  Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, daysFromNow } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-
-/* ── types ─────────────────────────────────────────────────────────────────── */
-
-type Provision = "school" | "college" | "PRU" | "AP" | "EOTAS";
-type Session = "AM" | "PM" | "Full Day";
-type AttendanceCode = "/" | "\\" | "L" | "U" | "N" | "O" | "I" | "M" | "E";
-
-interface AttendanceRecord {
-  id: string;
-  date: string;
-  youngPerson: string;
-  provision: Provision;
-  session: Session;
-  attendanceCode: AttendanceCode;
-  codeMeaning: string;
-  arrivalTime: string;
-  departureTime: string;
-  reason: string;
-  authorisedAbsence: boolean;
-  interventionsUsed: string[];
-  recordedBy: string;
-  notes: string;
-}
+import type { EduAttendanceRecord, EduProvision, EduSession, EduAttendanceCode } from "@/types/extended";
+import { EDU_PROVISION_LABEL, EDU_SESSION_LABEL } from "@/types/extended";
+import { useEduAttendanceRecords } from "@/hooks/use-edu-attendance-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const PROVISION_LABEL: Record<Provision, string> = {
-  school: "School", college: "College", PRU: "PRU", AP: "Alternative Provision", EOTAS: "EOTAS",
-};
-const PROVISION_CLR: Record<Provision, string> = {
+const PROVISION_CLR: Record<EduProvision, string> = {
   school: "bg-blue-100 text-blue-800",
   college: "bg-indigo-100 text-indigo-800",
-  PRU: "bg-amber-100 text-amber-800",
-  AP: "bg-purple-100 text-purple-800",
-  EOTAS: "bg-orange-100 text-orange-800",
+  pru: "bg-amber-100 text-amber-800",
+  ap: "bg-purple-100 text-purple-800",
+  eotas: "bg-orange-100 text-orange-800",
 };
 
-const CODE_CLR: Record<AttendanceCode, string> = {
+const CODE_CLR: Record<EduAttendanceCode, string> = {
   "/": "bg-green-100 text-green-800",
   "\\": "bg-green-100 text-green-800",
   "L": "bg-amber-100 text-amber-800",
@@ -67,7 +44,7 @@ const CODE_CLR: Record<AttendanceCode, string> = {
   "N": "bg-red-100 text-red-800",
 };
 
-const CODE_OPTIONS: { code: AttendanceCode; meaning: string }[] = [
+const CODE_OPTIONS: { code: EduAttendanceCode; meaning: string }[] = [
   { code: "/", meaning: "Present (AM)" },
   { code: "\\", meaning: "Present (PM)" },
   { code: "L", meaning: "Late (before register closed)" },
@@ -79,7 +56,7 @@ const CODE_OPTIONS: { code: AttendanceCode; meaning: string }[] = [
   { code: "N", meaning: "Reason not yet provided" },
 ];
 
-const BORDER_CODE: Record<AttendanceCode, string> = {
+const BORDER_CODE: Record<EduAttendanceCode, string> = {
   "/": "border-l-green-500",
   "\\": "border-l-green-500",
   "L": "border-l-amber-500",
@@ -91,206 +68,14 @@ const BORDER_CODE: Record<AttendanceCode, string> = {
   "N": "border-l-red-400",
 };
 
-const PRESENT_CODES: AttendanceCode[] = ["/", "\\", "L"];
-const UNAUTH_CODES: AttendanceCode[] = ["O", "U", "N"];
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: AttendanceRecord[] = [
-  // Alex — strong attendance
-  {
-    id: "att_1", date: d(-1), youngPerson: "yp_alex", provision: "school", session: "Full Day",
-    attendanceCode: "/", codeMeaning: "Present (AM)",
-    arrivalTime: "08:45", departureTime: "15:15", reason: "", authorisedAbsence: false,
-    interventionsUsed: ["Morning routine adjustment", "Breakfast at home before transport"],
-    recordedBy: "staff_edward",
-    notes: "Settled day at Oakfield Academy. Engaged in maths and PE. Designated teacher confirmed full attendance.",
-  },
-  {
-    id: "att_2", date: d(-2), youngPerson: "yp_alex", provision: "school", session: "Full Day",
-    attendanceCode: "/", codeMeaning: "Present (AM)",
-    arrivalTime: "08:50", departureTime: "15:15", reason: "", authorisedAbsence: false,
-    interventionsUsed: ["Transport support"],
-    recordedBy: "staff_darren",
-    notes: "Full attendance. Arrived slightly later due to traffic.",
-  },
-  {
-    id: "att_3", date: d(-3), youngPerson: "yp_alex", provision: "school", session: "Full Day",
-    attendanceCode: "/", codeMeaning: "Present (AM)",
-    arrivalTime: "08:40", departureTime: "15:15", reason: "", authorisedAbsence: false,
-    interventionsUsed: [],
-    recordedBy: "staff_anna",
-    notes: "Good day reported by form tutor.",
-  },
-  {
-    id: "att_4", date: d(-4), youngPerson: "yp_alex", provision: "school", session: "AM",
-    attendanceCode: "M", codeMeaning: "Medical/dental appointment",
-    arrivalTime: "11:30", departureTime: "15:15", reason: "Dental appointment — pre-booked",
-    authorisedAbsence: true,
-    interventionsUsed: ["Transport support", "Appointment letter provided to school"],
-    recordedBy: "staff_edward",
-    notes: "Dental check-up. Returned to school for afternoon session. Authorised by school office.",
-  },
-  {
-    id: "att_5", date: d(-7), youngPerson: "yp_alex", provision: "school", session: "Full Day",
-    attendanceCode: "/", codeMeaning: "Present (AM)",
-    arrivalTime: "08:45", departureTime: "15:15", reason: "", authorisedAbsence: false,
-    interventionsUsed: [],
-    recordedBy: "staff_darren",
-    notes: "Standard school day, no issues.",
-  },
-  {
-    id: "att_6", date: d(-8), youngPerson: "yp_alex", provision: "school", session: "Full Day",
-    attendanceCode: "L", codeMeaning: "Late (before register closed)",
-    arrivalTime: "09:10", departureTime: "15:15", reason: "Overslept — bus missed",
-    authorisedAbsence: false,
-    interventionsUsed: ["Morning routine adjustment", "Reviewed alarm system with Alex"],
-    recordedBy: "staff_anna",
-    notes: "Late arrival but before register closed. Discussed with Alex — agreed earlier alarm.",
-  },
-
-  // Jordan — part-time timetable, EHCP, more variable
-  {
-    id: "att_7", date: d(-1), youngPerson: "yp_jordan", provision: "school", session: "AM",
-    attendanceCode: "/", codeMeaning: "Present (AM)",
-    arrivalTime: "09:00", departureTime: "12:30", reason: "",
-    authorisedAbsence: false,
-    interventionsUsed: ["1:1 TA support", "Sensory break scheduled"],
-    recordedBy: "staff_edward",
-    notes: "Morning session attended in full. PTT in place — afternoons not currently expected.",
-  },
-  {
-    id: "att_8", date: d(-2), youngPerson: "yp_jordan", provision: "school", session: "AM",
-    attendanceCode: "/", codeMeaning: "Present (AM)",
-    arrivalTime: "09:05", departureTime: "12:30", reason: "",
-    authorisedAbsence: false,
-    interventionsUsed: ["1:1 TA support"],
-    recordedBy: "staff_darren",
-    notes: "Engaged well in English. SENCO reported a positive morning.",
-  },
-  {
-    id: "att_9", date: d(-3), youngPerson: "yp_jordan", provision: "school", session: "AM",
-    attendanceCode: "I", codeMeaning: "Illness (authorised)",
-    arrivalTime: "", departureTime: "", reason: "Migraine — kept home with paracetamol",
-    authorisedAbsence: true,
-    interventionsUsed: ["Quiet room provided", "GP contacted for advice"],
-    recordedBy: "staff_anna",
-    notes: "Authorised absence. Jordan reported severe headache on waking. School informed.",
-  },
-  {
-    id: "att_10", date: d(-4), youngPerson: "yp_jordan", provision: "school", session: "AM",
-    attendanceCode: "O", codeMeaning: "Unauthorised absence (other)",
-    arrivalTime: "", departureTime: "",
-    reason: "Refused to attend citing anxiety — no medical evidence",
-    authorisedAbsence: false,
-    interventionsUsed: ["Anxiety management plan reviewed", "CAMHS referral progressed", "Morning routine adjustment"],
-    recordedBy: "staff_edward",
-    notes: "Jordan refused to leave room. School informed. Virtual school flagged. CAMHS aware. Reflective conversation held in afternoon.",
-  },
-  {
-    id: "att_11", date: d(-7), youngPerson: "yp_jordan", provision: "school", session: "AM",
-    attendanceCode: "/", codeMeaning: "Present (AM)",
-    arrivalTime: "09:00", departureTime: "12:30", reason: "",
-    authorisedAbsence: false,
-    interventionsUsed: ["1:1 TA support", "Sensory break scheduled"],
-    recordedBy: "staff_darren",
-    notes: "Good morning session.",
-  },
-  {
-    id: "att_12", date: d(-8), youngPerson: "yp_jordan", provision: "school", session: "AM",
-    attendanceCode: "L", codeMeaning: "Late (before register closed)",
-    arrivalTime: "09:25", departureTime: "12:30", reason: "Sensory overload at breakfast",
-    authorisedAbsence: false,
-    interventionsUsed: ["Sensory regulation strategies", "Transport support"],
-    recordedBy: "staff_anna",
-    notes: "Arrived late after sensory regulation needed. School aware of EHCP context.",
-  },
-  {
-    id: "att_13", date: d(-9), youngPerson: "yp_jordan", provision: "school", session: "AM",
-    attendanceCode: "O", codeMeaning: "Unauthorised absence (other)",
-    arrivalTime: "", departureTime: "",
-    reason: "Anxiety — refused transport",
-    authorisedAbsence: false,
-    interventionsUsed: ["De-escalation", "Anxiety management plan reviewed"],
-    recordedBy: "staff_edward",
-    notes: "Second unauthorised absence this fortnight. Pattern emerging — flagged at next PTT review.",
-  },
-
-  // Casey — missing education, AP being explored
-  {
-    id: "att_14", date: d(-1), youngPerson: "yp_casey", provision: "AP", session: "Full Day",
-    attendanceCode: "O", codeMeaning: "Unauthorised absence (other)",
-    arrivalTime: "", departureTime: "",
-    reason: "Refused to engage with alternative provision",
-    authorisedAbsence: false,
-    interventionsUsed: ["Mentoring session attempted", "Virtual School Head consulted"],
-    recordedBy: "staff_edward",
-    notes: "AP placement at Bridge House offered for trial day. Casey refused to attend. Virtual school informed. CME process active.",
-  },
-  {
-    id: "att_15", date: d(-2), youngPerson: "yp_casey", provision: "college", session: "Full Day",
-    attendanceCode: "N", codeMeaning: "Reason not yet provided",
-    arrivalTime: "", departureTime: "",
-    reason: "Not provided — Casey did not communicate",
-    authorisedAbsence: false,
-    interventionsUsed: ["Welfare check completed", "Advocate contacted"],
-    recordedBy: "staff_darren",
-    notes: "No reason offered. Welfare check completed — Casey safe in placement. College informed.",
-  },
-  {
-    id: "att_16", date: d(-3), youngPerson: "yp_casey", provision: "college", session: "Full Day",
-    attendanceCode: "O", codeMeaning: "Unauthorised absence (other)",
-    arrivalTime: "", departureTime: "",
-    reason: "Disengaged following LADO investigation — unwilling to return to college",
-    authorisedAbsence: false,
-    interventionsUsed: ["Therapeutic conversation", "Social worker informed"],
-    recordedBy: "staff_anna",
-    notes: "Continued non-attendance. Year 11 — exam impact escalating. Emergency PEP requested.",
-  },
-  {
-    id: "att_17", date: d(-4), youngPerson: "yp_casey", provision: "college", session: "Full Day",
-    attendanceCode: "I", codeMeaning: "Illness (authorised)",
-    arrivalTime: "", departureTime: "",
-    reason: "Migraine — GP contacted",
-    authorisedAbsence: true,
-    interventionsUsed: ["GP appointment arranged", "Quiet room provided"],
-    recordedBy: "staff_edward",
-    notes: "Authorised absence. GP advised rest. College notified.",
-  },
-  {
-    id: "att_18", date: d(-7), youngPerson: "yp_casey", provision: "college", session: "Full Day",
-    attendanceCode: "O", codeMeaning: "Unauthorised absence (other)",
-    arrivalTime: "", departureTime: "",
-    reason: "Persistent disengagement",
-    authorisedAbsence: false,
-    interventionsUsed: ["Mentoring session attempted", "AP options explored with LA"],
-    recordedBy: "staff_darren",
-    notes: "Pattern of non-attendance continuing. CME referral active. Alternative provision being progressed.",
-  },
-  {
-    id: "att_19", date: d(-8), youngPerson: "yp_casey", provision: "college", session: "AM",
-    attendanceCode: "/", codeMeaning: "Present (AM)",
-    arrivalTime: "09:30", departureTime: "12:00", reason: "",
-    authorisedAbsence: false,
-    interventionsUsed: ["Transport support", "1:1 mentoring"],
-    recordedBy: "staff_anna",
-    notes: "Brief attendance — Casey left at lunch reporting feeling overwhelmed. Partial credit recorded.",
-  },
-  {
-    id: "att_20", date: d(-9), youngPerson: "yp_casey", provision: "college", session: "Full Day",
-    attendanceCode: "U", codeMeaning: "Late after register closed (unauthorised)",
-    arrivalTime: "11:15", departureTime: "15:00", reason: "Overslept — no contact made with college",
-    authorisedAbsence: false,
-    interventionsUsed: ["Morning routine adjustment", "Mentoring session"],
-    recordedBy: "staff_edward",
-    notes: "Late beyond register close — counted as unauthorised absence. College DSL informed.",
-  },
-];
+const PRESENT_CODES: EduAttendanceCode[] = ["/", "\\", "L"];
+const UNAUTH_CODES: EduAttendanceCode[] = ["O", "U", "N"];
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function EducationAttendanceTrackerPage() {
-  const [data] = useState(SEED);
+  const { data: queryData, isLoading } = useEduAttendanceRecords();
+  const data = queryData?.data ?? [];
   const [search, setSearch] = useState("");
   const [filterChild, setFilterChild] = useState("all");
   const [filterCode, setFilterCode] = useState("all");
@@ -302,17 +87,17 @@ export default function EducationAttendanceTrackerPage() {
   /* ── derived ─────────────────────────────────────────────────────────────── */
 
   const filtered = useMemo(() => {
-    let rows = data.filter((r: AttendanceRecord) => {
-      if (filterChild !== "all" && r.youngPerson !== filterChild) return false;
-      if (filterCode !== "all" && r.attendanceCode !== filterCode) return false;
+    let rows = data.filter((r: EduAttendanceRecord) => {
+      if (filterChild !== "all" && r.child_id !== filterChild) return false;
+      if (filterCode !== "all" && r.attendance_code !== filterCode) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.codeMeaning.toLowerCase().includes(q) ||
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          r.code_meaning.toLowerCase().includes(q) ||
           r.reason.toLowerCase().includes(q) ||
           r.notes.toLowerCase().includes(q) ||
-          PROVISION_LABEL[r.provision].toLowerCase().includes(q)
+          EDU_PROVISION_LABEL[r.provision].toLowerCase().includes(q)
         );
       }
       return true;
@@ -321,8 +106,8 @@ export default function EducationAttendanceTrackerPage() {
       switch (sortBy) {
         case "date-desc": return b.date.localeCompare(a.date);
         case "date-asc": return a.date.localeCompare(b.date);
-        case "name-asc": return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
-        case "code-asc": return a.attendanceCode.localeCompare(b.attendanceCode);
+        case "name-asc": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "code-asc": return a.attendance_code.localeCompare(b.attendance_code);
         default: return 0;
       }
     });
@@ -331,19 +116,19 @@ export default function EducationAttendanceTrackerPage() {
 
   /* ── stats ───────────────────────────────────────────────────────────────── */
 
-  const weekStart = d(-7);
+  const weekStart = daysFromNow(-7);
   const weekRecords = data.filter((r) => r.date >= weekStart);
-  const weekPresent = weekRecords.filter((r) => PRESENT_CODES.includes(r.attendanceCode)).length;
+  const weekPresent = weekRecords.filter((r) => PRESENT_CODES.includes(r.attendance_code)).length;
   const weekTotal = weekRecords.length || 1;
   const weekPct = Math.round((weekPresent / weekTotal) * 100);
 
-  const weekUnauth = weekRecords.filter((r) => UNAUTH_CODES.includes(r.attendanceCode)).length;
+  const weekUnauth = weekRecords.filter((r) => UNAUTH_CODES.includes(r.attendance_code)).length;
 
   // attendance % per child (overall in dataset)
-  const ypIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const ypIds = [...new Set(data.map(r => r.child_id))];
   const perChild = ypIds.map((id) => {
-    const recs = data.filter((r) => r.youngPerson === id);
-    const present = recs.filter((r) => PRESENT_CODES.includes(r.attendanceCode)).length;
+    const recs = data.filter((r) => r.child_id === id);
+    const present = recs.filter((r) => PRESENT_CODES.includes(r.attendance_code)).length;
     const total = recs.length || 1;
     const pct = Math.round((present / total) * 100);
     return { id, pct, total: recs.length };
@@ -354,23 +139,33 @@ export default function EducationAttendanceTrackerPage() {
 
   /* ── export ──────────────────────────────────────────────────────────────── */
 
-  const exportCols: ExportColumn<AttendanceRecord>[] = [
-    { header: "Date", accessor: (r: AttendanceRecord) => r.date },
-    { header: "Young Person", accessor: (r: AttendanceRecord) => getYPName(r.youngPerson) },
-    { header: "Provision", accessor: (r: AttendanceRecord) => PROVISION_LABEL[r.provision] },
-    { header: "Session", accessor: (r: AttendanceRecord) => r.session },
-    { header: "Code", accessor: (r: AttendanceRecord) => r.attendanceCode },
-    { header: "Code Meaning", accessor: (r: AttendanceRecord) => r.codeMeaning },
-    { header: "Arrival", accessor: (r: AttendanceRecord) => r.arrivalTime },
-    { header: "Departure", accessor: (r: AttendanceRecord) => r.departureTime },
-    { header: "Reason", accessor: (r: AttendanceRecord) => r.reason },
-    { header: "Authorised", accessor: (r: AttendanceRecord) => r.authorisedAbsence ? "Yes" : "No" },
-    { header: "Interventions", accessor: (r: AttendanceRecord) => r.interventionsUsed.join("; ") },
-    { header: "Recorded By", accessor: (r: AttendanceRecord) => getStaffName(r.recordedBy) },
-    { header: "Notes", accessor: (r: AttendanceRecord) => r.notes },
+  const exportCols: ExportColumn<EduAttendanceRecord>[] = [
+    { header: "Date", accessor: (r: EduAttendanceRecord) => r.date },
+    { header: "Young Person", accessor: (r: EduAttendanceRecord) => getYPName(r.child_id) },
+    { header: "Provision", accessor: (r: EduAttendanceRecord) => EDU_PROVISION_LABEL[r.provision] },
+    { header: "Session", accessor: (r: EduAttendanceRecord) => EDU_SESSION_LABEL[r.session] },
+    { header: "Code", accessor: (r: EduAttendanceRecord) => r.attendance_code },
+    { header: "Code Meaning", accessor: (r: EduAttendanceRecord) => r.code_meaning },
+    { header: "Arrival", accessor: (r: EduAttendanceRecord) => r.arrival_time },
+    { header: "Departure", accessor: (r: EduAttendanceRecord) => r.departure_time },
+    { header: "Reason", accessor: (r: EduAttendanceRecord) => r.reason },
+    { header: "Authorised", accessor: (r: EduAttendanceRecord) => r.authorised_absence ? "Yes" : "No" },
+    { header: "Interventions", accessor: (r: EduAttendanceRecord) => r.interventions_used.join("; ") },
+    { header: "Recorded By", accessor: (r: EduAttendanceRecord) => getStaffName(r.recorded_by) },
+    { header: "Notes", accessor: (r: EduAttendanceRecord) => r.notes },
   ];
 
   /* ── render ──────────────────────────────────────────────────────────────── */
+
+  if (isLoading) {
+    return (
+      <PageShell title="Education Attendance Tracker" subtitle="Quality Standard 8 (Education) · Virtual School Oversight · Daily Attendance Monitoring">
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -466,9 +261,9 @@ export default function EducationAttendanceTrackerPage() {
             <SelectTrigger className="w-[180px]"><Filter className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Children</SelectItem>
-              <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-              <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-              <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
+              {ypIds.map((id) => (
+                <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={filterCode} onValueChange={setFilterCode}>
@@ -495,33 +290,33 @@ export default function EducationAttendanceTrackerPage() {
         <div className="space-y-3">
           {filtered.map((r) => {
             const open = expandedId === r.id;
-            const isUnauth = UNAUTH_CODES.includes(r.attendanceCode);
+            const isUnauth = UNAUTH_CODES.includes(r.attendance_code);
             return (
-              <Card key={r.id} className={cn("border-l-4", BORDER_CODE[r.attendanceCode])}>
+              <Card key={r.id} className={cn("border-l-4", BORDER_CODE[r.attendance_code])}>
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {getYPName(r.youngPerson)} — {r.date}
-                        <Badge variant="outline" className={CODE_CLR[r.attendanceCode]}>
-                          {r.attendanceCode} — {r.codeMeaning}
+                        {getYPName(r.child_id)} — {r.date}
+                        <Badge variant="outline" className={CODE_CLR[r.attendance_code]}>
+                          {r.attendance_code} — {r.code_meaning}
                         </Badge>
                         <Badge variant="outline" className={PROVISION_CLR[r.provision]}>
-                          {PROVISION_LABEL[r.provision]}
+                          {EDU_PROVISION_LABEL[r.provision]}
                         </Badge>
                         {isUnauth && (
                           <Badge variant="outline" className="bg-red-100 text-red-800">Unauthorised</Badge>
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {r.session}
-                        {r.arrivalTime && ` · Arrived ${r.arrivalTime}`}
-                        {r.departureTime && ` · Departed ${r.departureTime}`}
-                        {" · Recorded by "}{getStaffName(r.recordedBy)}
+                        {EDU_SESSION_LABEL[r.session]}
+                        {r.arrival_time && ` · Arrived ${r.arrival_time}`}
+                        {r.departure_time && ` · Departed ${r.departure_time}`}
+                        {" · Recorded by "}{getStaffName(r.recorded_by)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {r.authorisedAbsence && (
+                      {r.authorised_absence && (
                         <Badge variant="outline" className="bg-blue-100 text-blue-800">Authorised</Badge>
                       )}
                       {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
@@ -534,19 +329,19 @@ export default function EducationAttendanceTrackerPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Session</p>
-                        <p className="text-xs text-muted-foreground">{r.session}</p>
+                        <p className="text-xs text-muted-foreground">{EDU_SESSION_LABEL[r.session]}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Provision</p>
-                        <p className="text-xs text-muted-foreground">{PROVISION_LABEL[r.provision]}</p>
+                        <p className="text-xs text-muted-foreground">{EDU_PROVISION_LABEL[r.provision]}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Arrival</p>
-                        <p className="text-xs text-muted-foreground">{r.arrivalTime || "—"}</p>
+                        <p className="text-xs text-muted-foreground">{r.arrival_time || "—"}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Departure</p>
-                        <p className="text-xs text-muted-foreground">{r.departureTime || "—"}</p>
+                        <p className="text-xs text-muted-foreground">{r.departure_time || "—"}</p>
                       </div>
                     </div>
 
@@ -554,25 +349,25 @@ export default function EducationAttendanceTrackerPage() {
                     {r.reason && (
                       <div className={cn(
                         "rounded-lg p-3",
-                        isUnauth ? "bg-red-50" : r.authorisedAbsence ? "bg-blue-50" : "bg-amber-50"
+                        isUnauth ? "bg-red-50" : r.authorised_absence ? "bg-blue-50" : "bg-amber-50"
                       )}>
                         <p className={cn(
                           "font-medium mb-1",
-                          isUnauth ? "text-red-800" : r.authorisedAbsence ? "text-blue-800" : "text-amber-800"
+                          isUnauth ? "text-red-800" : r.authorised_absence ? "text-blue-800" : "text-amber-800"
                         )}>Reason</p>
                         <p className={cn(
                           "text-xs",
-                          isUnauth ? "text-red-700" : r.authorisedAbsence ? "text-blue-700" : "text-amber-700"
+                          isUnauth ? "text-red-700" : r.authorised_absence ? "text-blue-700" : "text-amber-700"
                         )}>{r.reason}</p>
                       </div>
                     )}
 
                     {/* interventions */}
-                    {r.interventionsUsed.length > 0 && (
+                    {r.interventions_used.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">Interventions Used</p>
                         <ul className="list-disc list-inside space-y-1">
-                          {r.interventionsUsed.map((i, idx) => (
+                          {r.interventions_used.map((i, idx) => (
                             <li key={idx} className="text-xs text-muted-foreground">{i}</li>
                           ))}
                         </ul>
@@ -589,10 +384,13 @@ export default function EducationAttendanceTrackerPage() {
 
                     {/* footer */}
                     <div className="flex justify-between items-center pt-2 border-t text-xs text-muted-foreground">
-                      <span>Code: {r.attendanceCode} ({r.codeMeaning})</span>
-                      <span>{r.authorisedAbsence ? "Authorised" : isUnauth ? "Unauthorised" : "Present"}</span>
-                      <span>Recorded by {getStaffName(r.recordedBy)}</span>
+                      <span>Code: {r.attendance_code} ({r.code_meaning})</span>
+                      <span>{r.authorised_absence ? "Authorised" : isUnauth ? "Unauthorised" : "Present"}</span>
+                      <span>Recorded by {getStaffName(r.recorded_by)}</span>
                     </div>
+
+                    {/* smart link panel */}
+                    <SmartLinkPanel sourceType="edu_attendance" sourceId={r.id} childId={r.child_id} compact />
                   </CardContent>
                 )}
               </Card>

@@ -18,192 +18,38 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
-  Clock, Search, Bell, FileText, Shield,
+  Clock, Search, Bell, FileText, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { useReg35Notifications } from "@/hooks/use-reg35-notifications";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type {
+  Reg35Notification,
+  Reg35NotificationType,
+  Reg35NotificationMethod,
+  Reg35OfstedResponse,
+} from "@/types/extended";
+import {
+  REG35_NOTIFICATION_TYPE_LABEL,
+  REG35_NOTIFICATION_METHOD_LABEL,
+  REG35_OFSTED_RESPONSE_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── local colour maps ────────────────────────────────────────────────── */
 
-type NotificationType =
-  | "death" | "serious_injury" | "serious_illness" | "restraint"
-  | "allegation_against_staff" | "child_protection" | "police_involvement"
-  | "absconding" | "serious_complaint" | "significant_incident"
-  | "infectious_disease" | "fire" | "other";
-
-type NotificationMethod = "phone" | "email" | "online_form" | "letter";
-type OfstedResponse = "acknowledged" | "no_further_action" | "monitoring" | "inspection_brought_forward" | "awaiting_response";
-
-interface Reg35Notification {
-  id: string;
-  dateOfEvent: string;
-  dateNotified: string;
-  notificationType: NotificationType;
-  notifiedToOfsted: boolean;
-  notifiedToLA: boolean;
-  notifiedToPolice: boolean;
-  notifiedToOther: string[];
-  method: NotificationMethod;
-  ofstedRef: string;
-  youngPersonId: string | null;
-  summary: string;
-  actionsTaken: string[];
-  notifiedById: string;
-  timelinessCompliant: boolean;
-  ofstedResponse: OfstedResponse;
-  followUpRequired: boolean;
-  followUpDetails: string;
-  linkedRecords: string[];
-  notes: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const TYPE_LABEL: Record<NotificationType, string> = {
-  death: "Death of a Child", serious_injury: "Serious Injury", serious_illness: "Serious Illness",
-  restraint: "Use of Restraint", allegation_against_staff: "Allegation Against Staff",
-  child_protection: "Child Protection Incident", police_involvement: "Police Involvement",
-  absconding: "Absconding / Missing", serious_complaint: "Serious Complaint",
-  significant_incident: "Significant Incident", infectious_disease: "Infectious Disease Outbreak",
-  fire: "Fire", other: "Other Notifiable Event",
-};
-
-const METHOD_LABEL: Record<NotificationMethod, string> = {
-  phone: "Telephone", email: "Email", online_form: "Ofsted Online Form", letter: "Letter",
-};
-
-const RESPONSE_LABEL: Record<OfstedResponse, string> = {
-  acknowledged: "Acknowledged", no_further_action: "No Further Action",
-  monitoring: "Monitoring", inspection_brought_forward: "Inspection Brought Forward",
-  awaiting_response: "Awaiting Response",
-};
-const RESPONSE_CLR: Record<OfstedResponse, string> = {
-  acknowledged: "bg-blue-100 text-blue-800", no_further_action: "bg-green-100 text-green-800",
-  monitoring: "bg-amber-100 text-amber-800", inspection_brought_forward: "bg-red-100 text-red-800",
+const RESPONSE_CLR: Record<Reg35OfstedResponse, string> = {
+  acknowledged: "bg-blue-100 text-blue-800",
+  no_further_action: "bg-green-100 text-green-800",
+  monitoring: "bg-amber-100 text-amber-800",
+  inspection_brought_forward: "bg-red-100 text-red-800",
   awaiting_response: "bg-slate-100 text-slate-700",
 };
 
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: Reg35Notification[] = [
-  {
-    id: "r35_001", dateOfEvent: d(-45), dateNotified: d(-45),
-    notificationType: "restraint", method: "online_form", ofstedRef: "OFS-2025-RES-44821",
-    notifiedToOfsted: true, notifiedToLA: true, notifiedToPolice: false,
-    notifiedToOther: ["Casey's Social Worker (Lisa Green)", "Casey's IRO (James Cooper)"],
-    youngPersonId: "yp_casey",
-    summary: "Physical intervention (PRICE hold) used on Casey following an escalating situation where Casey picked up a glass object and moved towards another young person. Two-person hold lasting 4 minutes by Ryan and Chervelle. De-escalation attempted for 12 minutes prior. No injuries to Casey or staff. Body map completed — no marks. Casey debriefed next day.",
-    actionsTaken: [
-      "Body map completed within 1 hour — no injuries",
-      "Medical check completed — no concerns",
-      "Post-incident debrief with Casey (next day)",
-      "Post-incident debrief with Ryan and Chervelle",
-      "Incident report completed and countersigned by RM",
-      "Ofsted notification submitted same day via online form",
-      "Placing LA and SW notified by phone within 2 hours",
-    ],
-    notifiedById: "staff_darren", timelinessCompliant: true,
-    ofstedResponse: "no_further_action",
-    followUpRequired: false, followUpDetails: "",
-    linkedRecords: ["Incident report INC-2025-034", "Body map BM-2025-012", "PI Debrief PIR-2025-008"],
-    notes: "Ofsted acknowledged notification and confirmed no further action. Reg 35(3)(d) — restraint notification. All documentation completed within required timeframes. RI (Richard Holt) informed same day and reviewed incident. Independent review confirmed proportionate response.",
-  },
-  {
-    id: "r35_002", dateOfEvent: d(-30), dateNotified: d(-30),
-    notificationType: "allegation_against_staff", method: "phone", ofstedRef: "OFS-2025-ALL-44903",
-    notifiedToOfsted: true, notifiedToLA: true, notifiedToPolice: false,
-    notifiedToOther: ["LADO (Derbyshire)", "RI (Richard Holt)"],
-    youngPersonId: "yp_casey",
-    summary: "Allegation received against staff member (Anna) regarding inappropriate physical contact during a comforting interaction with Casey. Casey disclosed to her social worker that Anna hugged her without asking. LADO strategy discussion convened. Anna placed on restricted duties pending investigation.",
-    actionsTaken: [
-      "LADO contacted same day — strategy discussion arranged",
-      "Ofsted notified by telephone within 24 hours",
-      "Anna placed on restricted duties (non-contact role pending investigation)",
-      "Casey offered independent advocacy support",
-      "All relevant parties notified per LADO protocol",
-      "RI informed and consulted on interim risk management",
-    ],
-    notifiedById: "staff_darren", timelinessCompliant: true,
-    ofstedResponse: "monitoring",
-    followUpRequired: true, followUpDetails: "LADO investigation ongoing. Ofsted to be updated on outcome. Next LADO review meeting scheduled for " + d(7) + ".",
-    linkedRecords: ["LADO Referral LADO-2025-003", "Staff risk assessment SRA-2025-001"],
-    notes: "Reg 35(3)(c) — allegation against person working at the home. Ofsted notified by telephone (as required for allegations) and written confirmation sent same day. Investigation is ongoing under LADO direction. Anna continues on restricted duties. Casey is being supported by her advocate and key worker (Chervelle covering). Ofsted status: monitoring — requested update when LADO outcome is known.",
-  },
-  {
-    id: "r35_003", dateOfEvent: d(-60), dateNotified: d(-60),
-    notificationType: "absconding", method: "online_form", ofstedRef: "OFS-2025-MIS-43912",
-    notifiedToOfsted: true, notifiedToLA: true, notifiedToPolice: true,
-    notifiedToOther: ["Casey's Social Worker", "Casey's mother (via SW)"],
-    youngPersonId: "yp_casey",
-    summary: "Casey left the home without permission at approximately 21:45. Staff noticed Casey's room was empty during a night check at 22:00. Casey had climbed out of the ground-floor bedroom window. Police notified at 22:10. Casey was located by police at the retail park at 23:30 and returned home by 00:15. Casey was with an unknown adult male — information shared with police and exploitation screening updated.",
-    actionsTaken: [
-      "Night check identified absence at 22:00",
-      "Missing from care protocol activated immediately",
-      "Police called at 22:10 — reported as missing child",
-      "Social worker notified by phone",
-      "Ofsted notified next morning via online form",
-      "Return home interview conducted (Anna, following day)",
-      "Exploitation screening updated — unknown male flagged",
-      "Window locks reviewed and additional security measure installed",
-    ],
-    notifiedById: "staff_darren", timelinessCompliant: true,
-    ofstedResponse: "no_further_action",
-    followUpRequired: false, followUpDetails: "",
-    linkedRecords: ["Missing from Care MFC-2025-005", "Exploitation Screening ES-2025-002", "Return Interview RI-2025-003"],
-    notes: "Reg 35(3)(e) — child absent without permission. Casey returned safely. The unknown male was identified by police as Marcus (known to exploitation team). Information shared with MASH. Casey's window was fitted with a restrictive lock (Casey consulted and agreed — documented as proportionate restriction). Updated exploitation screening reflects increased CSE risk. Strategy discussion held with SW and police.",
-  },
-  {
-    id: "r35_004", dateOfEvent: d(-90), dateNotified: d(-89),
-    notificationType: "serious_complaint", method: "online_form", ofstedRef: "OFS-2025-CMP-42687",
-    notifiedToOfsted: true, notifiedToLA: false, notifiedToPolice: false,
-    notifiedToOther: [],
-    youngPersonId: null,
-    summary: "Anonymous complaint received via Ofsted alleging inappropriate language used by a staff member towards a young person at Oak House. No specific details provided. Ofsted forwarded the complaint to the Registered Manager for investigation.",
-    actionsTaken: [
-      "Thorough investigation conducted over 14 days",
-      "All YP interviewed individually (with advocacy offered)",
-      "All staff interviewed",
-      "CCTV reviewed for 30-day period",
-      "Daily logs reviewed — no corroborating evidence",
-      "Ofsted informed of outcome — complaint not upheld",
-    ],
-    notifiedById: "staff_darren", timelinessCompliant: false,
-    ofstedResponse: "no_further_action",
-    followUpRequired: false, followUpDetails: "",
-    linkedRecords: ["Complaint COMP-2025-003"],
-    notes: "This notification was originated by Ofsted (complaint came to them directly). The home was notified the following day. Investigation was thorough and well-documented. Complaint not upheld — no evidence found. Ofsted satisfied with investigation. Marked as non-compliant for timeliness because the notification was incoming (Ofsted to home) rather than outgoing, but logged here for completeness. All response timescales met.",
-  },
-  {
-    id: "r35_005", dateOfEvent: d(-120), dateNotified: d(-120),
-    notificationType: "serious_illness", method: "phone", ofstedRef: "OFS-2025-ILL-41290",
-    notifiedToOfsted: true, notifiedToLA: true, notifiedToPolice: false,
-    notifiedToOther: ["Alex's Social Worker (Karen Holding)", "Alex's mother (Sarah Mitchell)"],
-    youngPersonId: "yp_alex",
-    summary: "Alex was taken to A&E by ambulance following an acute asthma attack during football practice. Alex's reliever inhaler was not effective after 10 puffs. 999 called at 16:42. Paramedics arrived at 16:55. Alex was nebulised on scene and transported to hospital. Alex was discharged after 6 hours with adjusted medication plan.",
-    actionsTaken: [
-      "999 called immediately when reliever inhaler ineffective",
-      "Staff (Ryan) accompanied Alex in ambulance",
-      "Darren notified and attended hospital",
-      "Social worker notified by phone within 1 hour",
-      "Ofsted notified by phone same evening",
-      "Alex's mother contacted by Darren",
-      "Medication review conducted with hospital pharmacist",
-      "Updated asthma action plan shared with school and stored in home",
-    ],
-    notifiedById: "staff_darren", timelinessCompliant: true,
-    ofstedResponse: "acknowledged",
-    followUpRequired: false, followUpDetails: "",
-    linkedRecords: ["Health Record HR-2025-028", "Medication review MR-2025-004"],
-    notes: "Reg 35(3)(b) — serious illness requiring hospital treatment. Alex recovered well and returned to the home the same evening. Medication adjusted to include a preventer inhaler. School nurse informed. Staff first aid response was prompt and appropriate. Ryan stayed with Alex throughout. Alex's mother was supportive and visited the hospital. Follow-up GP appointment arranged for 1 week later — confirmed adjusted meds are effective.",
-  },
-];
-
-/* ── page ──────────────────────────────────────────────────────────────────── */
+/* ── page ─────────────────────────────────────────────────────────────── */
 
 export default function Reg35NotificationsPage() {
-  const [data] = useState(SEED);
+  const { data: records = [], isLoading } = useReg35Notifications();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -212,37 +58,47 @@ export default function Reg35NotificationsPage() {
   const [showNew, setShowNew] = useState(false);
 
   const filtered = useMemo(() => {
-    let rows = [...data];
+    let rows = [...records];
     if (search) {
       const q = search.toLowerCase();
       rows = rows.filter((r) =>
         r.summary.toLowerCase().includes(q) ||
-        r.ofstedRef.toLowerCase().includes(q) ||
-        (r.youngPersonId && getYPName(r.youngPersonId).toLowerCase().includes(q))
+        r.ofsted_ref.toLowerCase().includes(q) ||
+        (r.child_id && getYPName(r.child_id).toLowerCase().includes(q))
       );
     }
-    if (filterType !== "all") rows = rows.filter((r) => r.notificationType === filterType);
-    if (filterResponse !== "all") rows = rows.filter((r) => r.ofstedResponse === filterResponse);
-    rows.sort((a, b) => sortBy === "newest" ? b.dateOfEvent.localeCompare(a.dateOfEvent) : a.dateOfEvent.localeCompare(b.dateOfEvent));
+    if (filterType !== "all") rows = rows.filter((r) => r.notification_type === filterType);
+    if (filterResponse !== "all") rows = rows.filter((r) => r.ofsted_response === filterResponse);
+    rows.sort((a, b) => sortBy === "newest" ? b.date_of_event.localeCompare(a.date_of_event) : a.date_of_event.localeCompare(b.date_of_event));
     return rows;
-  }, [data, search, filterType, filterResponse, sortBy]);
+  }, [records, search, filterType, filterResponse, sortBy]);
 
-  const total = data.length;
-  const compliant = data.filter((r) => r.timelinessCompliant).length;
-  const pending = data.filter((r) => r.ofstedResponse === "awaiting_response" || r.ofstedResponse === "monitoring").length;
-  const followUps = data.filter((r) => r.followUpRequired).length;
+  const total = records.length;
+  const compliant = records.filter((r) => r.timeliness_compliant).length;
+  const pending = records.filter((r) => r.ofsted_response === "awaiting_response" || r.ofsted_response === "monitoring").length;
+  const followUps = records.filter((r) => r.follow_up_required).length;
 
   const exportCols: ExportColumn<Reg35Notification>[] = [
-    { header: "Event Date", accessor: (r: Reg35Notification) => r.dateOfEvent },
-    { header: "Notified", accessor: (r: Reg35Notification) => r.dateNotified },
-    { header: "Type", accessor: (r: Reg35Notification) => TYPE_LABEL[r.notificationType] },
-    { header: "Ofsted Ref", accessor: (r: Reg35Notification) => r.ofstedRef },
-    { header: "Young Person", accessor: (r: Reg35Notification) => r.youngPersonId ? getYPName(r.youngPersonId) : "N/A" },
-    { header: "Method", accessor: (r: Reg35Notification) => METHOD_LABEL[r.method] },
-    { header: "Timely", accessor: (r: Reg35Notification) => r.timelinessCompliant ? "Yes" : "No" },
-    { header: "Ofsted Response", accessor: (r: Reg35Notification) => RESPONSE_LABEL[r.ofstedResponse] },
-    { header: "Follow-Up", accessor: (r: Reg35Notification) => r.followUpRequired ? "Yes" : "No" },
+    { header: "Event Date", accessor: (r) => r.date_of_event },
+    { header: "Notified", accessor: (r) => r.date_notified },
+    { header: "Type", accessor: (r) => REG35_NOTIFICATION_TYPE_LABEL[r.notification_type] },
+    { header: "Ofsted Ref", accessor: (r) => r.ofsted_ref },
+    { header: "Young Person", accessor: (r) => r.child_id ? getYPName(r.child_id) : "N/A" },
+    { header: "Method", accessor: (r) => REG35_NOTIFICATION_METHOD_LABEL[r.method] },
+    { header: "Timely", accessor: (r) => r.timeliness_compliant ? "Yes" : "No" },
+    { header: "Ofsted Response", accessor: (r) => REG35_OFSTED_RESPONSE_LABEL[r.ofsted_response] },
+    { header: "Follow-Up", accessor: (r) => r.follow_up_required ? "Yes" : "No" },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Reg 35 Notifications" subtitle="Children's Homes Regulations 2015 · Reg 40 · Statutory Notifications to Ofsted">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -251,7 +107,7 @@ export default function Reg35NotificationsPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Reg 35 Notifications" />
-          <ExportButton data={data} columns={exportCols} filename="reg35-notifications" />
+          <ExportButton data={records} columns={exportCols} filename="reg35-notifications" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Notification</Button>
         </div>
       }
@@ -285,7 +141,7 @@ export default function Reg35NotificationsPage() {
             <SelectTrigger className="w-[200px]"><SelectValue placeholder="Type" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              {(Object.entries(TYPE_LABEL) as [NotificationType, string][]).map(([k, v]) => (
+              {(Object.entries(REG35_NOTIFICATION_TYPE_LABEL) as [Reg35NotificationType, string][]).map(([k, v]) => (
                 <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
@@ -294,7 +150,7 @@ export default function Reg35NotificationsPage() {
             <SelectTrigger className="w-[180px]"><SelectValue placeholder="Response" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Responses</SelectItem>
-              {(Object.entries(RESPONSE_LABEL) as [OfstedResponse, string][]).map(([k, v]) => (
+              {(Object.entries(REG35_OFSTED_RESPONSE_LABEL) as [Reg35OfstedResponse, string][]).map(([k, v]) => (
                 <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
@@ -320,24 +176,24 @@ export default function Reg35NotificationsPage() {
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", r.followUpRequired ? "border-l-amber-500" : r.timelinessCompliant ? "border-l-green-400" : "border-l-red-500")}>
+              <Card key={r.id} className={cn("border-l-4", r.follow_up_required ? "border-l-amber-500" : r.timeliness_compliant ? "border-l-green-400" : "border-l-red-500")}>
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : r.id)}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1 flex-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {TYPE_LABEL[r.notificationType]}
-                        <Badge variant="outline" className={RESPONSE_CLR[r.ofstedResponse]}>{RESPONSE_LABEL[r.ofstedResponse]}</Badge>
-                        {r.timelinessCompliant ? (
+                        {REG35_NOTIFICATION_TYPE_LABEL[r.notification_type]}
+                        <Badge variant="outline" className={RESPONSE_CLR[r.ofsted_response]}>{REG35_OFSTED_RESPONSE_LABEL[r.ofsted_response]}</Badge>
+                        {r.timeliness_compliant ? (
                           <Badge variant="outline" className="bg-green-100 text-green-800">Timely</Badge>
                         ) : (
                           <Badge variant="outline" className="bg-red-100 text-red-800">Late</Badge>
                         )}
-                        {r.followUpRequired && <Badge variant="outline" className="bg-amber-100 text-amber-800">Follow-Up</Badge>}
+                        {r.follow_up_required && <Badge variant="outline" className="bg-amber-100 text-amber-800">Follow-Up</Badge>}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Event: {r.dateOfEvent} · Notified: {r.dateNotified} · Ref: {r.ofstedRef}
-                        {r.youngPersonId && ` · ${getYPName(r.youngPersonId)}`}
-                        {" "}· By: {getStaffName(r.notifiedById)} · {METHOD_LABEL[r.method]}
+                        Event: {r.date_of_event} · Notified: {r.date_notified} · Ref: {r.ofsted_ref}
+                        {r.child_id && ` · ${getYPName(r.child_id)}`}
+                        {" "}· By: {getStaffName(r.notified_by_id)} · {REG35_NOTIFICATION_METHOD_LABEL[r.method]}
                       </p>
                     </div>
                     {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -346,30 +202,27 @@ export default function Reg35NotificationsPage() {
 
                 {isOpen && (
                   <CardContent className="pt-0 space-y-3 text-sm">
-                    {/* summary */}
                     <div>
                       <p className="font-medium mb-1">Event Summary</p>
                       <p className="text-muted-foreground text-xs">{r.summary}</p>
                     </div>
 
-                    {/* who was notified */}
                     <div>
                       <p className="font-medium mb-1">Notifications Sent To</p>
                       <div className="flex flex-wrap gap-1">
-                        {r.notifiedToOfsted && <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">Ofsted</Badge>}
-                        {r.notifiedToLA && <Badge variant="outline" className="bg-purple-50 text-purple-700 text-xs">Local Authority</Badge>}
-                        {r.notifiedToPolice && <Badge variant="outline" className="bg-red-50 text-red-700 text-xs">Police</Badge>}
-                        {r.notifiedToOther.map((o, i) => (
+                        {r.notified_to_ofsted && <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">Ofsted</Badge>}
+                        {r.notified_to_la && <Badge variant="outline" className="bg-purple-50 text-purple-700 text-xs">Local Authority</Badge>}
+                        {r.notified_to_police && <Badge variant="outline" className="bg-red-50 text-red-700 text-xs">Police</Badge>}
+                        {r.notified_to_other.map((o, i) => (
                           <Badge key={i} variant="outline" className="bg-muted/50 text-xs">{o}</Badge>
                         ))}
                       </div>
                     </div>
 
-                    {/* actions taken */}
                     <div>
                       <p className="font-medium mb-1">Actions Taken</p>
                       <ul className="space-y-1">
-                        {r.actionsTaken.map((a, i) => (
+                        {r.actions_taken.map((a, i) => (
                           <li key={i} className="flex items-start gap-2 text-xs">
                             <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0 mt-0.5" />
                             <span>{a}</span>
@@ -378,12 +231,11 @@ export default function Reg35NotificationsPage() {
                       </ul>
                     </div>
 
-                    {/* linked records */}
-                    {r.linkedRecords.length > 0 && (
+                    {r.linked_records.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">Linked Records</p>
                         <div className="flex flex-wrap gap-1">
-                          {r.linkedRecords.map((lr, i) => (
+                          {r.linked_records.map((lr, i) => (
                             <Badge key={i} variant="outline" className="bg-muted/30 text-xs">
                               <FileText className="h-3 w-3 mr-1" />{lr}
                             </Badge>
@@ -392,16 +244,18 @@ export default function Reg35NotificationsPage() {
                       </div>
                     )}
 
-                    {/* follow-up */}
-                    {r.followUpRequired && (
+                    {r.follow_up_required && (
                       <div className="bg-amber-50 border border-amber-200 rounded p-2">
                         <p className="font-medium text-xs text-amber-800 mb-1">Follow-Up Required</p>
-                        <p className="text-xs text-amber-700">{r.followUpDetails}</p>
+                        <p className="text-xs text-amber-700">{r.follow_up_details}</p>
                       </div>
                     )}
 
-                    {/* notes */}
                     <div><p className="font-medium mb-1">Notes</p><p className="text-muted-foreground text-xs">{r.notes}</p></div>
+
+                    {r.child_id && (
+                      <SmartLinkPanel sourceType="reg35_notification" sourceId={r.id} childId={r.child_id} compact />
+                    )}
                   </CardContent>
                 )}
               </Card>
@@ -426,7 +280,7 @@ export default function Reg35NotificationsPage() {
               <Label>Notification Type</Label>
               <Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(TYPE_LABEL) as [NotificationType, string][]).map(([k, v]) => (
+                  {(Object.entries(REG35_NOTIFICATION_TYPE_LABEL) as [Reg35NotificationType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
                   ))}
                 </SelectContent>
@@ -447,7 +301,7 @@ export default function Reg35NotificationsPage() {
               <Label>Method</Label>
               <Select><SelectTrigger><SelectValue placeholder="How was Ofsted notified?" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(METHOD_LABEL) as [NotificationMethod, string][]).map(([k, v]) => (
+                  {(Object.entries(REG35_NOTIFICATION_METHOD_LABEL) as [Reg35NotificationMethod, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
                   ))}
                 </SelectContent>

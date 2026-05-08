@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,187 +19,45 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle2, Clock, Phone,
+  AlertTriangle, CheckCircle2, Clock, Phone, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { useSocialWorkerContactRecords } from "@/hooks/use-social-worker-contact-records";
+import type {
+  SocialWorkerContactRecord,
+  SocialWorkerContactType,
+  SocialWorkerContactDirection,
+  SocialWorkerContactUrgency,
+} from "@/types/extended";
+import {
+  SOCIAL_WORKER_CONTACT_TYPE_LABEL,
+  SOCIAL_WORKER_CONTACT_DIRECTION_LABEL,
+  SOCIAL_WORKER_CONTACT_URGENCY_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── local config ─────────────────────────────────────────────────────── */
 
-type ContactType = "phone_call" | "email" | "visit" | "lac_review" | "video_call" | "text" | "unplanned" | "statutory_visit";
-type Direction = "incoming" | "outgoing";
-type Urgency = "routine" | "urgent" | "emergency";
-
-interface ActionItem { action: string; owner: string; dueDate: string; status: "pending" | "completed" | "overdue" }
-
-interface SocialWorkerContact {
-  id: string;
-  youngPersonId: string;
-  socialWorkerName: string;
-  socialWorkerTeam: string;
-  socialWorkerEmail: string;
-  socialWorkerPhone: string;
-  date: string;
-  time: string;
-  contactType: ContactType;
-  direction: Direction;
-  initiatedBy: "home" | "social_worker" | "other";
-  staffMember: string;
-  purpose: string;
-  summary: string;
-  keyDecisions: string[];
-  actionItems: ActionItem[];
-  childAware: boolean;
-  childViews: string;
-  followUpRequired: boolean;
-  followUpDate: string | null;
-  documentsShared: string[];
-  urgency: Urgency;
-  outcome: string;
-  nextScheduledContact: string | null;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const CT_LABEL: Record<ContactType, string> = {
-  phone_call: "Phone Call", email: "Email", visit: "Visit", lac_review: "LAC Review",
-  video_call: "Video Call", text: "Text", unplanned: "Unplanned", statutory_visit: "Statutory Visit",
-};
-const CT_CLR: Record<ContactType, string> = {
+const CT_CLR: Record<SocialWorkerContactType, string> = {
   phone_call: "bg-blue-100 text-blue-800", email: "bg-gray-100 text-gray-800",
   visit: "bg-green-100 text-green-800", lac_review: "bg-purple-100 text-purple-800",
   video_call: "bg-indigo-100 text-indigo-800", text: "bg-slate-100 text-slate-800",
   unplanned: "bg-amber-100 text-amber-800", statutory_visit: "bg-emerald-100 text-emerald-800",
 };
-const DIR_CLR: Record<Direction, string> = { incoming: "bg-teal-100 text-teal-800", outgoing: "bg-sky-100 text-sky-800" };
-const URG_CLR: Record<Urgency, string> = { routine: "bg-gray-100 text-gray-800", urgent: "bg-amber-100 text-amber-800", emergency: "bg-red-100 text-red-800" };
+const DIR_CLR: Record<SocialWorkerContactDirection, string> = { incoming: "bg-teal-100 text-teal-800", outgoing: "bg-sky-100 text-sky-800" };
+const URG_CLR: Record<SocialWorkerContactUrgency, string> = { routine: "bg-gray-100 text-gray-800", urgent: "bg-amber-100 text-amber-800", emergency: "bg-red-100 text-red-800" };
 
-/* social worker directory per child */
+/* social worker directory per child (kept local — not serialisable to store) */
 const SW_DIR: Record<string, { name: string; team: string; email: string; phone: string }> = {
   yp_alex: { name: "Karen Holding", team: "Millbrook Children's Services", email: "karen.holding@millbrook.gov.uk", phone: "01onal 778 2341" },
   yp_jordan: { name: "Michael Osei", team: "Fairfield MASH Team", email: "michael.osei@fairfield.gov.uk", phone: "01onal 445 9821" },
   yp_casey: { name: "Fiona Brennan", team: "Southgate Child Protection", email: "fiona.brennan@southgate.gov.uk", phone: "01onal 332 7765" },
 };
 
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: SocialWorkerContact[] = [
-  {
-    id: "swc1", youngPersonId: "yp_alex",
-    ...SW_DIR.yp_alex, socialWorkerName: SW_DIR.yp_alex.name, socialWorkerTeam: SW_DIR.yp_alex.team,
-    socialWorkerEmail: SW_DIR.yp_alex.email, socialWorkerPhone: SW_DIR.yp_alex.phone,
-    date: d(-7), time: "10:30", contactType: "phone_call", direction: "outgoing",
-    initiatedBy: "home", staffMember: "staff_darren", purpose: "Weekly update call",
-    summary: "Discussed Alex's improved school attendance this week — 100% attendance for the first time. Positive feedback from teachers about engagement in English and Science. Upcoming LAC review booked for next month. Karen confirmed she will attend in person.",
-    keyDecisions: ["LAC review confirmed for next month", "Karen to request updated PEP from school"],
-    actionItems: [
-      { action: "Send updated care plan to Karen ahead of LAC review", owner: "staff_darren", dueDate: d(7), status: "pending" },
-      { action: "Chase PEP from school", owner: "staff_anna", dueDate: d(5), status: "completed" },
-    ],
-    childAware: true, childViews: "Alex knows about the call and asked if Karen would visit soon. Said he wants to talk to her about getting a new bike.",
-    followUpRequired: false, followUpDate: null, documentsShared: [],
-    urgency: "routine", outcome: "Positive update. All on track for LAC review.",
-    nextScheduledContact: d(7),
-  },
-  {
-    id: "swc2", youngPersonId: "yp_jordan",
-    socialWorkerName: "Michael Osei", socialWorkerTeam: "Fairfield MASH Team",
-    socialWorkerEmail: "michael.osei@fairfield.gov.uk", socialWorkerPhone: "01onal 445 9821",
-    date: d(-5), time: "14:00", contactType: "statutory_visit", direction: "incoming",
-    initiatedBy: "social_worker", staffMember: "staff_darren", purpose: "Statutory visit — Reg 28",
-    summary: "Michael visited for statutory visit. Spent 45 minutes with Jordan privately in the lounge. Jordan showed Michael his bedroom and artwork. Discussed medication changes with staff — Concerta XL increased to 36mg, no adverse effects noted. Michael satisfied with care provided.",
-    keyDecisions: ["Michael happy with placement", "Will request CAMHS appointment review"],
-    actionItems: [
-      { action: "Send latest medication review notes to Michael", owner: "staff_ryan", dueDate: d(-2), status: "completed" },
-    ],
-    childAware: true, childViews: "Jordan was pleased to see Michael. Showed him around proudly. Said he feels settled and likes living here. Asked Michael about summer holiday plans.",
-    followUpRequired: false, followUpDate: null, documentsShared: ["Medication review notes"],
-    urgency: "routine", outcome: "Successful statutory visit. Jordan presenting well.",
-    nextScheduledContact: d(21),
-  },
-  {
-    id: "swc3", youngPersonId: "yp_casey",
-    socialWorkerName: "Fiona Brennan", socialWorkerTeam: "Southgate Child Protection",
-    socialWorkerEmail: "fiona.brennan@southgate.gov.uk", socialWorkerPhone: "01onal 332 7765",
-    date: d(-3), time: "09:15", contactType: "phone_call", direction: "incoming",
-    initiatedBy: "social_worker", staffMember: "staff_ryan", purpose: "Urgent — contact arrangement changes",
-    summary: "Fiona called urgently regarding Casey's contact arrangements. Birth mother has made threats towards grandmother at a recent supervised contact session. Fiona has suspended all direct contact with mother pending safety assessment. Indirect contact (letters only) to continue. Casey to be informed sensitively by key worker with Fiona present via video call.",
-    keyDecisions: [
-      "Direct contact with birth mother suspended immediately",
-      "Indirect contact (letters only) to continue",
-      "Casey to be told via video call with Fiona present",
-    ],
-    actionItems: [
-      { action: "Arrange video call with Casey and Fiona to explain changes", owner: "staff_darren", dueDate: d(-1), status: "completed" },
-      { action: "Update contact plan and circulate to all staff", owner: "staff_ryan", dueDate: d(-2), status: "completed" },
-    ],
-    childAware: false, childViews: "Casey not yet informed at time of call. Will be told sensitively with SW present.",
-    followUpRequired: true, followUpDate: d(3), documentsShared: [],
-    urgency: "emergency", outcome: "Contact suspended. Safety plan activated. Casey informed the following day with Fiona on video call — was upset but understood.",
-    nextScheduledContact: d(3),
-  },
-  {
-    id: "swc4", youngPersonId: "yp_alex",
-    socialWorkerName: "Karen Holding", socialWorkerTeam: "Millbrook Children's Services",
-    socialWorkerEmail: "karen.holding@millbrook.gov.uk", socialWorkerPhone: "01onal 778 2341",
-    date: d(-10), time: "16:00", contactType: "email", direction: "outgoing",
-    initiatedBy: "home", staffMember: "staff_anna", purpose: "Monthly progress report",
-    summary: "Emailed Karen the monthly progress report for Alex covering behaviour, education, health, and social development. Attached school report and updated health assessment.",
-    keyDecisions: [],
-    actionItems: [],
-    childAware: false, childViews: "",
-    followUpRequired: false, followUpDate: null,
-    documentsShared: ["Monthly Progress Report — April", "School Report — Spring Term"],
-    urgency: "routine", outcome: "Karen acknowledged receipt and said report was thorough.",
-    nextScheduledContact: d(-7),
-  },
-  {
-    id: "swc5", youngPersonId: "yp_jordan",
-    socialWorkerName: "Michael Osei", socialWorkerTeam: "Fairfield MASH Team",
-    socialWorkerEmail: "michael.osei@fairfield.gov.uk", socialWorkerPhone: "01onal 445 9821",
-    date: d(-2), time: "11:00", contactType: "video_call", direction: "outgoing",
-    initiatedBy: "home", staffMember: "staff_darren", purpose: "LAC review preparation",
-    summary: "Video call with Michael to prepare for Jordan's upcoming LAC review. Discussed Jordan's progress against outcome targets, particularly around emotional regulation and peer relationships. Jordan joined for the first 15 minutes and shared his views directly with Michael — said he wants to stay at Oak House and would like to join a football club.",
-    keyDecisions: [
-      "Jordan's views to be formally recorded in LAC review paperwork",
-      "Football club referral to be explored",
-      "Jordan to chair his own LAC review (with support)",
-    ],
-    actionItems: [
-      { action: "Complete LAC review consultation form with Jordan", owner: "staff_ryan", dueDate: d(3), status: "pending" },
-      { action: "Research local football clubs with SEN-friendly sessions", owner: "staff_anna", dueDate: d(5), status: "pending" },
-      { action: "Draft outcome report for LAC review", owner: "staff_darren", dueDate: d(7), status: "pending" },
-    ],
-    childAware: true, childViews: "Jordan was happy to join the call. Said he wants to stay here because 'the food is good and Ryan is funny.' Wants to join a football team. Nervous about chairing his review but willing to try.",
-    followUpRequired: true, followUpDate: d(7), documentsShared: [],
-    urgency: "routine", outcome: "Good prep session. Jordan engaged well. LAC review on track.",
-    nextScheduledContact: d(14),
-  },
-  {
-    id: "swc6", youngPersonId: "yp_casey",
-    socialWorkerName: "Fiona Brennan", socialWorkerTeam: "Southgate Child Protection",
-    socialWorkerEmail: "fiona.brennan@southgate.gov.uk", socialWorkerPhone: "01onal 332 7765",
-    date: d(-1), time: "15:30", contactType: "unplanned", direction: "incoming",
-    initiatedBy: "social_worker", staffMember: "staff_darren", purpose: "Change of social worker notification",
-    summary: "Fiona called to inform us that she is being promoted and will be leaving the team in 3 weeks. Casey's case will be transferred to a new social worker — Priya Kapoor. Handover period will be 2 weeks with a joint visit planned. Fiona will introduce Priya to Casey in person before handover.",
-    keyDecisions: ["New SW: Priya Kapoor", "Joint introductory visit to be arranged", "Fiona to complete all outstanding paperwork before handover"],
-    actionItems: [
-      { action: "Inform Casey about SW change — sensitively, given attachment history", owner: "staff_darren", dueDate: d(2), status: "pending" },
-      { action: "Prepare transition document for new SW", owner: "staff_darren", dueDate: d(10), status: "pending" },
-    ],
-    childAware: false, childViews: "Casey not yet informed. Given Casey's attachment difficulties, this needs to be handled very carefully with therapeutic support.",
-    followUpRequired: true, followUpDate: d(5), documentsShared: [],
-    urgency: "urgent", outcome: "Transition planned. Key concern is Casey's response given attachment profile.",
-    nextScheduledContact: d(5),
-  },
-];
-
-/* ── component ─────────────────────────────────────────────────────────────── */
+/* ── component ─────────────────────────────────────────────────────────── */
 
 export default function SocialWorkerContactPage() {
-  const [data] = useState<SocialWorkerContact[]>(SEED);
+  const { data: records = [], isLoading } = useSocialWorkerContactRecords();
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -208,46 +67,58 @@ export default function SocialWorkerContactPage() {
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
 
+  const childIds = useMemo(() => Array.from(new Set(records.map((r) => r.child_id))), [records]);
+
   const filtered = useMemo(() => {
-    let out = [...data];
-    if (search) { const s = search.toLowerCase(); out = out.filter(r => getYPName(r.youngPersonId).toLowerCase().includes(s) || r.socialWorkerName.toLowerCase().includes(s) || r.summary.toLowerCase().includes(s)); }
-    if (childFilter !== "all") out = out.filter(r => r.youngPersonId === childFilter);
-    if (typeFilter !== "all") out = out.filter(r => r.contactType === typeFilter);
+    let out = [...records];
+    if (search) { const s = search.toLowerCase(); out = out.filter(r => getYPName(r.child_id).toLowerCase().includes(s) || r.social_worker_name.toLowerCase().includes(s) || r.summary.toLowerCase().includes(s)); }
+    if (childFilter !== "all") out = out.filter(r => r.child_id === childFilter);
+    if (typeFilter !== "all") out = out.filter(r => r.contact_type === typeFilter);
     out.sort((a, b) => sortBy === "oldest" ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date));
     return out;
-  }, [data, search, childFilter, typeFilter, sortBy]);
+  }, [records, search, childFilter, typeFilter, sortBy]);
 
-  const today = d(0);
-  const overdueFollowUps = data.filter(r => r.followUpRequired && r.followUpDate && r.followUpDate < today && r.actionItems.some(a => a.status !== "completed"));
-  const statVisits = data.filter(r => r.contactType === "statutory_visit").length;
-  const thisMonth = data.filter(r => r.date >= d(-30)).length;
+  const today = new Date().toISOString().slice(0, 10);
+  const overdueFollowUps = records.filter(r => r.follow_up_required && r.follow_up_date && r.follow_up_date < today && r.action_items.some(a => a.status !== "completed"));
+  const statVisits = records.filter(r => r.contact_type === "statutory_visit").length;
+  const thisMonth = records.length;
 
-  const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
+  const exportCols: ExportColumn<SocialWorkerContactRecord>[] = [
+    { header: "Date", accessor: (r) => r.date },
+    { header: "Time", accessor: (r) => r.time },
+    { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+    { header: "Social Worker", accessor: (r) => r.social_worker_name },
+    { header: "Team", accessor: (r) => r.social_worker_team },
+    { header: "Type", accessor: (r) => SOCIAL_WORKER_CONTACT_TYPE_LABEL[r.contact_type] },
+    { header: "Direction", accessor: (r) => SOCIAL_WORKER_CONTACT_DIRECTION_LABEL[r.direction] },
+    { header: "Urgency", accessor: (r) => SOCIAL_WORKER_CONTACT_URGENCY_LABEL[r.urgency] },
+    { header: "Staff", accessor: (r) => getStaffName(r.staff_member) },
+    { header: "Purpose", accessor: (r) => r.purpose },
+    { header: "Summary", accessor: (r) => r.summary },
+    { header: "Outcome", accessor: (r) => r.outcome },
+  ];
 
-  const exportCols: ExportColumn<SocialWorkerContact>[] = useMemo(() => [
-    { header: "Date", accessor: (r: SocialWorkerContact) => r.date },
-    { header: "Time", accessor: (r: SocialWorkerContact) => r.time },
-    { header: "Young Person", accessor: (r: SocialWorkerContact) => getYPName(r.youngPersonId) },
-    { header: "Social Worker", accessor: (r: SocialWorkerContact) => r.socialWorkerName },
-    { header: "Team", accessor: (r: SocialWorkerContact) => r.socialWorkerTeam },
-    { header: "Type", accessor: (r: SocialWorkerContact) => CT_LABEL[r.contactType] },
-    { header: "Direction", accessor: (r: SocialWorkerContact) => r.direction },
-    { header: "Urgency", accessor: (r: SocialWorkerContact) => r.urgency },
-    { header: "Staff", accessor: (r: SocialWorkerContact) => getStaffName(r.staffMember) },
-    { header: "Purpose", accessor: (r: SocialWorkerContact) => r.purpose },
-    { header: "Summary", accessor: (r: SocialWorkerContact) => r.summary },
-    { header: "Outcome", accessor: (r: SocialWorkerContact) => r.outcome },
-  ], []);
+  if (isLoading) {
+    return (
+      <PageShell title="Social Worker Contact Log" subtitle="Communication record with allocated social workers — Regulation 5">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
       title="Social Worker Contact Log"
       subtitle="Communication record with allocated social workers — Regulation 5"
-      actions={[
-        <PrintButton key="p" title="Social Worker Contact Log" />,
-        <ExportButton key="e" data={filtered} columns={exportCols} filename="sw-contact-log" />,
-        <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Log Contact</Button>,
-      ]}
+      actions={
+        <div className="flex items-center gap-2">
+          <PrintButton title="Social Worker Contact Log" />
+          <ExportButton data={filtered} columns={exportCols} filename="sw-contact-log" />
+          <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Log Contact</Button>
+        </div>
+      }
     >
       <div id="print-area" className="space-y-6">
 
@@ -257,7 +128,7 @@ export default function SocialWorkerContactPage() {
             { label: "Contacts This Month", value: thisMonth, icon: Phone, colour: "text-blue-600" },
             { label: "Statutory Visits", value: statVisits, icon: CheckCircle2, colour: "text-emerald-600" },
             { label: "Overdue Follow-Ups", value: overdueFollowUps.length, icon: AlertTriangle, colour: "text-red-600" },
-            { label: "Avg Contacts / Week", value: Math.round(data.length / 4 * 10) / 10, icon: Clock, colour: "text-gray-600" },
+            { label: "Avg Contacts / Week", value: records.length > 0 ? Math.round(records.length / 4 * 10) / 10 : 0, icon: Clock, colour: "text-gray-600" },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="pt-4 flex items-center gap-3">
@@ -272,9 +143,9 @@ export default function SocialWorkerContactPage() {
         <div className="grid md:grid-cols-3 gap-4">
           {childIds.map(cid => {
             const sw = SW_DIR[cid];
-            const recs = data.filter(r => r.youngPersonId === cid);
-            const last = recs.sort((a, b) => b.date.localeCompare(a.date))[0];
-            const next = recs.map(r => r.nextScheduledContact).filter(Boolean).sort()[0];
+            const recs = records.filter(r => r.child_id === cid).sort((a, b) => b.date.localeCompare(a.date));
+            const last = recs[0];
+            const next = recs.map(r => r.next_scheduled_contact).filter(Boolean).sort()[0];
             const daysSince = last ? Math.round((Date.now() - new Date(last.date).getTime()) / 86400000) : 999;
             const rag = daysSince <= 7 ? "border-green-400" : daysSince <= 21 ? "border-amber-400" : "border-red-400";
             return (
@@ -300,7 +171,7 @@ export default function SocialWorkerContactPage() {
             <div>
               <p className="font-semibold text-red-900">{overdueFollowUps.length} overdue follow-up{overdueFollowUps.length > 1 ? "s" : ""}</p>
               <ul className="text-sm text-red-800 mt-1 list-disc list-inside">
-                {overdueFollowUps.map(r => <li key={r.id}>{getYPName(r.youngPersonId)} — {r.purpose} (follow-up due {r.followUpDate})</li>)}
+                {overdueFollowUps.map(r => <li key={r.id}>{getYPName(r.child_id)} — {r.purpose} (follow-up due {r.follow_up_date})</li>)}
               </ul>
             </div>
           </div>
@@ -325,7 +196,7 @@ export default function SocialWorkerContactPage() {
                 <Label className="text-xs">Contact Type</Label>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="all">All Types</SelectItem>{(Object.entries(CT_LABEL) as [ContactType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                  <SelectContent><SelectItem value="all">All Types</SelectItem>{(Object.keys(SOCIAL_WORKER_CONTACT_TYPE_LABEL) as SocialWorkerContactType[]).map(k => <SelectItem key={k} value={k}>{SOCIAL_WORKER_CONTACT_TYPE_LABEL[k]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="w-36">
@@ -349,42 +220,42 @@ export default function SocialWorkerContactPage() {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-base">{getYPName(r.youngPersonId)}</CardTitle>
-                        <Badge className={cn("text-xs", CT_CLR[r.contactType])}>{CT_LABEL[r.contactType]}</Badge>
-                        <Badge className={cn("text-xs", DIR_CLR[r.direction])}>{r.direction}</Badge>
-                        {r.urgency !== "routine" && <Badge className={cn("text-xs", URG_CLR[r.urgency])}>{r.urgency}</Badge>}
+                        <CardTitle className="text-base">{getYPName(r.child_id)}</CardTitle>
+                        <Badge className={cn("text-xs", CT_CLR[r.contact_type])}>{SOCIAL_WORKER_CONTACT_TYPE_LABEL[r.contact_type]}</Badge>
+                        <Badge className={cn("text-xs", DIR_CLR[r.direction])}>{SOCIAL_WORKER_CONTACT_DIRECTION_LABEL[r.direction]}</Badge>
+                        {r.urgency !== "routine" && <Badge className={cn("text-xs", URG_CLR[r.urgency])}>{SOCIAL_WORKER_CONTACT_URGENCY_LABEL[r.urgency]}</Badge>}
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">{r.date} {r.time}</span>
                         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">{r.purpose} · SW: {r.socialWorkerName} · Staff: {getStaffName(r.staffMember)}</p>
+                    <p className="text-sm text-muted-foreground">{r.purpose} · SW: {r.social_worker_name} · Staff: {getStaffName(r.staff_member)}</p>
                   </CardHeader>
                 </button>
                 {open && (
                   <CardContent className="space-y-4 pt-0">
                     <p className="text-sm">{r.summary}</p>
 
-                    {r.keyDecisions.length > 0 && (
+                    {r.key_decisions.length > 0 && (
                       <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                         <p className="text-xs font-semibold text-blue-800 mb-1">Key Decisions</p>
-                        <ol className="list-decimal list-inside text-sm text-blue-900 space-y-0.5">{r.keyDecisions.map((kd, i) => <li key={i}>{kd}</li>)}</ol>
+                        <ol className="list-decimal list-inside text-sm text-blue-900 space-y-0.5">{r.key_decisions.map((kd, i) => <li key={i}>{kd}</li>)}</ol>
                       </div>
                     )}
 
-                    {r.actionItems.length > 0 && (
+                    {r.action_items.length > 0 && (
                       <div>
                         <p className="text-xs font-semibold mb-2">Action Items</p>
                         <table className="w-full text-sm border">
                           <thead className="bg-muted/50"><tr><th className="text-left p-2 font-medium">Action</th><th className="text-left p-2 font-medium">Owner</th><th className="text-left p-2 font-medium">Due</th><th className="text-left p-2 font-medium">Status</th></tr></thead>
-                          <tbody>{r.actionItems.map((a, i) => {
-                            const od = a.status !== "completed" && a.dueDate < today;
+                          <tbody>{r.action_items.map((a, i) => {
+                            const od = a.status !== "completed" && a.due_date < today;
                             return (
                               <tr key={i} className={cn("border-t", od && "bg-red-50")}>
                                 <td className="p-2">{a.action}</td>
                                 <td className="p-2">{getStaffName(a.owner)}</td>
-                                <td className={cn("p-2", od && "text-red-600 font-medium")}>{a.dueDate}{od && " (OVERDUE)"}</td>
+                                <td className={cn("p-2", od && "text-red-600 font-medium")}>{a.due_date}{od && " (OVERDUE)"}</td>
                                 <td className="p-2"><Badge className={cn("text-xs", a.status === "completed" ? "bg-green-100 text-green-800" : a.status === "overdue" ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800")}>{a.status}</Badge></td>
                               </tr>
                             );
@@ -393,22 +264,22 @@ export default function SocialWorkerContactPage() {
                       </div>
                     )}
 
-                    {r.documentsShared.length > 0 && (
-                      <div><p className="text-xs font-semibold mb-1">Documents Shared</p><div className="flex gap-1 flex-wrap">{r.documentsShared.map(dc => <Badge key={dc} variant="outline" className="text-xs">{dc}</Badge>)}</div></div>
+                    {r.documents_shared.length > 0 && (
+                      <div><p className="text-xs font-semibold mb-1">Documents Shared</p><div className="flex gap-1 flex-wrap">{r.documents_shared.map(dc => <Badge key={dc} variant="outline" className="text-xs">{dc}</Badge>)}</div></div>
                     )}
 
-                    {r.childViews && (
+                    {r.child_views && (
                       <div className="rounded-lg bg-pink-50 border border-pink-200 p-3">
-                        <p className="text-xs font-semibold text-pink-800 mb-1">Child&apos;s Views {r.childAware ? <CheckCircle2 className="inline h-3 w-3 text-green-600 ml-1" /> : <span className="text-xs text-muted-foreground ml-1">(not yet informed)</span>}</p>
-                        <p className="text-sm text-pink-900">{r.childViews}</p>
+                        <p className="text-xs font-semibold text-pink-800 mb-1">Child&apos;s Views {r.child_aware ? <CheckCircle2 className="inline h-3 w-3 text-green-600 ml-1" /> : <span className="text-xs text-muted-foreground ml-1">(not yet informed)</span>}</p>
+                        <p className="text-sm text-pink-900">{r.child_views}</p>
                       </div>
                     )}
 
-                    {r.followUpRequired && (
+                    {r.follow_up_required && (
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-amber-600" />
                         <span className="font-medium">Follow-up required:</span>
-                        <span className={cn(r.followUpDate && r.followUpDate < today ? "text-red-600 font-medium" : "")}>{r.followUpDate ?? "TBC"}</span>
+                        <span className={cn(r.follow_up_date && r.follow_up_date < today ? "text-red-600 font-medium" : "")}>{r.follow_up_date ?? "TBC"}</span>
                       </div>
                     )}
 
@@ -419,9 +290,11 @@ export default function SocialWorkerContactPage() {
                       </div>
                     )}
 
-                    {r.nextScheduledContact && (
-                      <p className="text-xs text-muted-foreground">Next scheduled contact: <strong>{r.nextScheduledContact}</strong></p>
+                    {r.next_scheduled_contact && (
+                      <p className="text-xs text-muted-foreground">Next scheduled contact: <strong>{r.next_scheduled_contact}</strong></p>
                     )}
+
+                    <SmartLinkPanel sourceType="social-worker-contact" sourceId={r.id} childId={r.child_id} compact />
                   </CardContent>
                 )}
               </Card>
@@ -438,15 +311,16 @@ export default function SocialWorkerContactPage() {
               <thead className="bg-muted/50"><tr><th className="text-left p-2 font-medium">Young Person</th><th className="text-left p-2 font-medium">Social Worker</th><th className="text-left p-2 font-medium">Last Statutory Visit</th><th className="text-left p-2 font-medium">Days Since</th><th className="text-left p-2 font-medium">Next Due</th></tr></thead>
               <tbody>
                 {childIds.map(cid => {
-                  const sv = data.filter(r => r.youngPersonId === cid && r.contactType === "statutory_visit").sort((a, b) => b.date.localeCompare(a.date))[0];
+                  const sv = records.filter(r => r.child_id === cid && r.contact_type === "statutory_visit").sort((a, b) => b.date.localeCompare(a.date))[0];
                   const days = sv ? Math.round((Date.now() - new Date(sv.date).getTime()) / 86400000) : 999;
+                  const dFn = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
                   return (
                     <tr key={cid} className="border-t">
                       <td className="p-2 font-medium">{getYPName(cid)}</td>
                       <td className="p-2">{SW_DIR[cid]?.name}</td>
                       <td className="p-2">{sv?.date ?? "No record"}</td>
                       <td className="p-2"><Badge className={cn("text-xs", days <= 28 ? "bg-green-100 text-green-800" : days <= 42 ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800")}>{days} days</Badge></td>
-                      <td className="p-2">{sv ? d(42 - days) : "Overdue"}</td>
+                      <td className="p-2">{sv ? dFn(42 - days) : "Overdue"}</td>
                     </tr>
                   );
                 })}
@@ -469,7 +343,7 @@ export default function SocialWorkerContactPage() {
           <div className="space-y-3">
             <div><Label>Young Person</Label><Select><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent></Select></div>
             <div className="grid grid-cols-2 gap-3"><div><Label>Date</Label><Input type="date" /></div><div><Label>Time</Label><Input type="time" /></div></div>
-            <div><Label>Contact Type</Label><Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.entries(CT_LABEL) as [ContactType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Contact Type</Label><Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.keys(SOCIAL_WORKER_CONTACT_TYPE_LABEL) as SocialWorkerContactType[]).map(k => <SelectItem key={k} value={k}>{SOCIAL_WORKER_CONTACT_TYPE_LABEL[k]}</SelectItem>)}</SelectContent></Select></div>
             <div><Label>Direction</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="incoming">Incoming</SelectItem><SelectItem value="outgoing">Outgoing</SelectItem></SelectContent></Select></div>
             <div><Label>Purpose</Label><Input placeholder="Purpose of contact" /></div>
             <div><Label>Summary</Label><Textarea rows={3} placeholder="Summary of discussion…" /></div>

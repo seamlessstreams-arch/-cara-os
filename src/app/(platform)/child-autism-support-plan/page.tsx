@@ -11,11 +11,12 @@ import {
   Search,
   Star,
   Clock,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select,
@@ -24,356 +25,96 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-type DiagnosisStatus =
-  | "Diagnosed"
-  | "Self-identified"
-  | "Awaiting assessment"
-  | "Suspected — gathering evidence"
-  | "Not currently considered";
-
-interface SensoryDomainEntry {
-  sense: string;
-  seekingOrAvoiding: "Seeking" | "Avoiding" | "Mixed" | "Neutral";
-  specificNotes: string;
-}
-
-interface ExternalSupport {
-  agency: string;
-  role: string;
-  frequency: string;
-}
-
-interface AutismPlan {
-  id: string;
-  youngPerson: string;
-  planDate: string;
-  diagnosisStatus: DiagnosisStatus;
-  diagnosisDate?: string;
-  diagnosingClinician?: string;
-  specialInterests: string[];
-  communicationPreferences: string[];
-  processingTime: string;
-  sensoryProfile: SensoryDomainEntry[];
-  predictabilityNeeds: string[];
-  routineAnchors: string[];
-  meltdownTriggers: string[];
-  meltdownSupport: string[];
-  shutdownIndicators: string[];
-  shutdownSupport: string[];
-  maskingAwareness: string;
-  unmaskingPermissions: string[];
-  transitionSupport: string[];
-  socialPreferences: string[];
-  staffDoStrategies: string[];
-  staffDoNotStrategies: string[];
-  externalSupport: ExternalSupport[];
-  childVoice: string;
-  staffObservation: string;
-  nextStep: string;
-  reviewDate: string;
-  keyWorker: string;
-}
+import type { AutismPlan, AutismDiagnosisStatus, AutismSensoryPattern } from "@/types/extended";
+import { AUTISM_DIAGNOSIS_STATUS_LABEL, AUTISM_SENSORY_PATTERN_LABEL } from "@/types/extended";
+import { useAutismPlans } from "@/hooks/use-autism-plans";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const STATUS_COLOURS: Record<AutismDiagnosisStatus, string> = {
+  diagnosed: "bg-violet-100 text-violet-800 border-violet-200",
+  self_identified: "bg-teal-100 text-teal-800 border-teal-200",
+  awaiting_assessment: "bg-amber-100 text-amber-800 border-amber-200",
+  suspected_gathering_evidence: "bg-sky-100 text-sky-800 border-sky-200",
+  not_currently_considered: "bg-gray-100 text-gray-700 border-gray-200",
 };
 
-const STATUS_COLOURS: Record<DiagnosisStatus, string> = {
-  "Diagnosed": "bg-violet-100 text-violet-800 border-violet-200",
-  "Self-identified": "bg-teal-100 text-teal-800 border-teal-200",
-  "Awaiting assessment": "bg-amber-100 text-amber-800 border-amber-200",
-  "Suspected — gathering evidence": "bg-sky-100 text-sky-800 border-sky-200",
-  "Not currently considered": "bg-gray-100 text-gray-700 border-gray-200",
+const SEEKING_COLOURS: Record<AutismSensoryPattern, string> = {
+  seeking: "bg-emerald-100 text-emerald-800",
+  avoiding: "bg-rose-100 text-rose-800",
+  mixed: "bg-amber-100 text-amber-800",
+  neutral: "bg-gray-100 text-gray-700",
 };
-
-const SEEKING_COLOURS: Record<SensoryDomainEntry["seekingOrAvoiding"], string> = {
-  Seeking: "bg-emerald-100 text-emerald-800",
-  Avoiding: "bg-rose-100 text-rose-800",
-  Mixed: "bg-amber-100 text-amber-800",
-  Neutral: "bg-gray-100 text-gray-700",
-};
-
-/* ── seed data ─────────────────────────────────────────────────────────── */
-
-const SEED: AutismPlan[] = [
-  {
-    id: "asp_casey_01",
-    youngPerson: "yp_casey",
-    planDate: d(-30),
-    diagnosisStatus: "Diagnosed",
-    diagnosisDate: d(-540),
-    diagnosingClinician: "Dr Catherine Williams, Consultant Child & Adolescent Psychiatrist",
-    specialInterests: [
-      "Butterflies — species, lifecycle, migration patterns",
-      "Dot painting (Indigenous Australian art technique)",
-      "Animal Crossing — villager personalities and museum collection",
-      "Eeyore (Winnie-the-Pooh) — comfort character",
-      "Classification systems — taxonomies, Dewey Decimal, type charts",
-      "Naming and sorting — collections of any kind",
-    ],
-    communicationPreferences: [
-      "Direct, literal language — no idioms or sarcasm",
-      "Concrete questions, not open-ended ones",
-      "Written or text-based options when discussing difficult topics",
-      "Allow 8 seconds of silence after a question — do not rephrase",
-      "Use Casey's name at the start of sentences to gain attention",
-      "Do not require eye contact — looking away aids processing",
-      "Pre-warn before changes in tone, topic or pace",
-    ],
-    processingTime:
-      "8 seconds minimum after a question or instruction. Casey processes deeply and sequentially (monotropic attention). Repeating or rephrasing within this window resets the processing and increases distress. Silence is working time, not avoidance.",
-    sensoryProfile: [
-      {
-        sense: "Auditory",
-        seekingOrAvoiding: "Avoiding",
-        specificNotes:
-          "Cutlery on plates, hand dryers, multiple overlapping voices, fluorescent light hum. Loop earplugs available — Casey self-selects. Headphones in school bag.",
-      },
-      {
-        sense: "Tactile",
-        seekingOrAvoiding: "Mixed",
-        specificNotes:
-          "Avoids wet/slimy textures (relevant to ARFID — see eating support plan). Seeks soft, smooth textures: weighted blanket, satin label, fluffy hoodie. Clothing tags removed.",
-      },
-      {
-        sense: "Visual",
-        seekingOrAvoiding: "Seeking",
-        specificNotes:
-          "Loves repetitive visual patterns — dot art, butterfly wings, lined-up objects. Lining up belongings is regulation, not symptom. Do not 'tidy' Casey's arrangements.",
-      },
-      {
-        sense: "Olfactory",
-        seekingOrAvoiding: "Avoiding",
-        specificNotes:
-          "Strong fragrances (perfume, scented candles, air fresheners) trigger nausea. Unscented products only in Casey's bathroom and bedroom. Staff: avoid scented body sprays on shift.",
-      },
-      {
-        sense: "Gustatory",
-        seekingOrAvoiding: "Avoiding",
-        specificNotes:
-          "Linked to ARFID — narrow safe-foods range. See ARFID eating support plan. Do not pressure new foods. Sensory eating is not 'fussy'.",
-      },
-      {
-        sense: "Proprioceptive",
-        seekingOrAvoiding: "Seeking",
-        specificNotes:
-          "Heavy work helps regulation — carrying shopping, weighted lap pad during homework, deep-pressure hugs (consent first, always). Trampoline 10 minutes calms before bedtime.",
-      },
-      {
-        sense: "Vestibular",
-        seekingOrAvoiding: "Neutral",
-        specificNotes:
-          "No notable seeking or avoiding. Casey enjoys swinging in garden but does not need it for regulation.",
-      },
-      {
-        sense: "Interoceptive",
-        seekingOrAvoiding: "Avoiding",
-        specificNotes:
-          "Reduced awareness of hunger, thirst, toilet needs and rising distress. Body-check prompts at routine times help. Casey may not realise meltdown is coming until late.",
-      },
-    ],
-    predictabilityNeeds: [
-      "Visual schedule for the day shared at breakfast",
-      "Same key worker on shift for first 30 minutes after school where possible",
-      "Advance notice of any change — minimum 24 hours, with reason given",
-      "Same plate, same cup, same chair at meals",
-      "Morning routine in fixed sequence (medication → wash → dress → breakfast)",
-      "Bedtime routine identical seven nights a week",
-    ],
-    routineAnchors: [
-      "Eeyore plush goes everywhere — never washed without warning",
-      "Butterfly fact-of-the-day at breakfast (Casey shares one)",
-      "Animal Crossing 30 minutes after homework",
-      "Dot-painting Wednesday evenings with Chervelle",
-      "Saturday morning butterfly walk in Markeaton Park",
-      "Sunday classification activity (sorting collection of choice)",
-    ],
-    meltdownTriggers: [
-      "Sustained auditory overload (over 20 mins busy environment)",
-      "Unannounced change in routine, plan or person",
-      "Being interrupted mid-special-interest without warning",
-      "Pressure to mask (eye contact, small talk, group performance)",
-      "Sensory accumulation across the day with no decompression time",
-      "Questions stacked on top of one another before processing finishes",
-    ],
-    meltdownSupport: [
-      "Move to low-stim space (Casey's bedroom or sensory corner) — do not block exit",
-      "One staff member only — no audience, no extra voices",
-      "Reduce language to essentials. Casey may not be able to speak — that is fine",
-      "Offer (do not impose) weighted blanket, Eeyore, Loop earplugs",
-      "Do not require explanation, apology or eye contact during or after",
-      "Recovery can take 60–120 minutes. Do not rush re-engagement",
-      "Debrief next day, in writing if Casey prefers",
-      "A meltdown is sensory and neurological, not behavioural. Never sanction",
-    ],
-    shutdownIndicators: [
-      "Goes very quiet, monosyllabic or non-speaking",
-      "Withdraws under bedroom duvet or behind sofa",
-      "Flat facial expression, slowed movement",
-      "Stops eating and drinking",
-      "Does not respond to name (this is not defiance — capacity is gone)",
-    ],
-    shutdownSupport: [
-      "Recognise as different from low mood — shutdown is regulation, not depression",
-      "Reduce sensory and social demands to zero",
-      "Place water and a safe snack within reach silently",
-      "Stay in adjacent room — quiet co-presence, no questions",
-      "Allow sleep if Casey needs it — do not wake for routine",
-      "Recovery often follows long sleep. Re-enter slowly with familiar interest",
-    ],
-    maskingAwareness:
-      "Casey unmasks at home and masks at school. Staff observe Casey arriving home flat, exhausted and sometimes tearful — this is autistic burnout from a day of suppressing stims, forcing eye contact and performing neurotypical communication. The hour after school is decompression: no demands, no questions about the day, soft clothing, Eeyore, special interest access. Masking has long-term mental health costs (Hull et al., research on autistic burnout). Home is the unmasking sanctuary — protecting that is part of Casey's care.",
-    unmaskingPermissions: [
-      "Stim freely — flapping, rocking, vocal sounds, lining objects up",
-      "Eat in bedroom on hard days",
-      "Wear pyjamas for the rest of the evening straight after school",
-      "Decline group activities without explanation",
-      "Use AAC, text, or pointing instead of speech when needed",
-      "Avoid eye contact without it being commented on",
-      "Be alone for as long as needed — solitude is restorative, not concerning",
-    ],
-    transitionSupport: [
-      "School → home: quiet car ride, no questions, music Casey chooses, snack in bag",
-      "Home → school: visual checklist, same route, Eeyore in bag pocket",
-      "Activity → activity: 10-min, 5-min, 2-min, 'now' warnings with timer",
-      "Term → holidays: visual calendar two weeks ahead, special-interest plans built in",
-      "Year-group transitions at school: TA-led pre-visits, photo of new room/teacher",
-      "New staff member: introduction by photo and written profile a week before shift",
-    ],
-    socialPreferences: [
-      "Parallel play / parallel presence preferred over face-to-face conversation",
-      "Small group of 2–3 maximum, with familiar people",
-      "Shared activity (art, games) reduces social load",
-      "Online friendships through Animal Crossing valued — treat as real friendships",
-      "Does not enjoy birthday parties, group meals out, or surprise gatherings",
-      "One trusted friend (Maya, from school) — protect this connection",
-    ],
-    staffDoStrategies: [
-      "Greet Casey by name, then pause — let Casey choose to engage",
-      "Ask about butterflies / Animal Crossing as a connection bridge",
-      "Use 'first … then …' language for transitions",
-      "Offer choice between two options, not open-ended questions",
-      "Validate sensory experience: 'That sounds overwhelming' not 'It's not that loud'",
-      "Write down complex information — leave it for Casey to revisit",
-      "Notice and name strengths: pattern recognition, deep knowledge, loyalty, honesty",
-      "Use the autism plan in handover — every shift",
-    ],
-    staffDoNotStrategies: [
-      "Do not say 'you don't look autistic' or 'everyone's a bit autistic'",
-      "Do not use functioning labels ('high-functioning', 'mild')",
-      "Do not interrupt a special interest to enforce a non-essential routine",
-      "Do not require eye contact or 'looking at me when I'm talking'",
-      "Do not punish stimming, lining up, scripting or echolalia",
-      "Do not 'surprise' Casey — even with positive surprises",
-      "Do not say 'try harder to fit in' — masking is the harm, not the solution",
-      "Do not describe meltdowns as 'tantrums', 'attention-seeking' or 'manipulative'",
-    ],
-    externalSupport: [
-      {
-        agency: "Anna Freud Centre",
-        role: "Specialist autism mental-health input — therapist Dr Priya Shah",
-        frequency: "Fortnightly, Tuesdays 16:00, in-person at Centre",
-      },
-      {
-        agency: "CAMHS Neurodevelopmental Pathway (Derbyshire)",
-        role: "Care coordination, medication review (sertraline), post-diagnostic follow-up",
-        frequency: "Six-weekly, Dr L. Chen",
-      },
-      {
-        agency: "Allestree Woodlands School SENCo",
-        role: "EHCP coordination, masking-load monitoring, sensory accommodations in school",
-        frequency: "Half-termly review meeting + weekly email contact",
-      },
-      {
-        agency: "National Autistic Society — Branching Out (peer group)",
-        role: "Casey-led — autistic peer connection, monotropic-friendly activities",
-        frequency: "Monthly Saturday session",
-      },
-    ],
-    childVoice:
-      "I'm not broken, I'm autistic. I think in patterns and pictures and butterflies. When people make me look at their eyes my brain stops working. School is loud and pretending all day makes me tired in my bones. I like being on my own — that's not sad, that's how I rest. Please don't tidy my butterfly cards. Eeyore knows me. I want staff who get it without me having to explain.",
-    staffObservation:
-      "Casey's monotropic focus is a remarkable strength — when engaged with a special interest, recall and pattern-recognition are exceptional. The team's task is to scaffold the world around that focus, not to redirect away from it. Burnout signs (flatness, increased shutdowns, reduced eating beyond ARFID baseline) are the early warning system — when they appear, demands must come down, not up. Progress is not measured in increased social participation; it is measured in increased self-advocacy, reduced masking, and Casey's reported wellbeing.",
-    nextStep:
-      "Co-produce Casey's school passport (one-page profile in Casey's own words) with SENCo before summer term. Anna Freud session next Tuesday will explore unmasking permissions Casey wants extended into school environment.",
-    reviewDate: d(60),
-    keyWorker: "staff_chervelle",
-  },
-];
 
 /* ── flat row for export ───────────────────────────────────────────────── */
 
 interface FlatRow {
-  youngPerson: string;
-  planDate: string;
-  diagnosisStatus: string;
-  diagnosisDate: string;
-  diagnosingClinician: string;
-  specialInterests: string;
-  communicationPreferences: string;
-  processingTime: string;
-  sensoryProfile: string;
-  predictabilityNeeds: string;
-  routineAnchors: string;
-  meltdownTriggers: string;
-  meltdownSupport: string;
-  shutdownIndicators: string;
-  shutdownSupport: string;
-  maskingAwareness: string;
-  unmaskingPermissions: string;
-  transitionSupport: string;
-  socialPreferences: string;
-  staffDoStrategies: string;
-  staffDoNotStrategies: string;
-  externalSupport: string;
-  childVoice: string;
-  staffObservation: string;
-  nextStep: string;
-  reviewDate: string;
-  keyWorker: string;
+  child: string;
+  plan_date: string;
+  diagnosis_status: string;
+  diagnosis_date: string;
+  diagnosing_clinician: string;
+  special_interests: string;
+  communication_preferences: string;
+  processing_time: string;
+  sensory_profile: string;
+  predictability_needs: string;
+  routine_anchors: string;
+  meltdown_triggers: string;
+  meltdown_support: string;
+  shutdown_indicators: string;
+  shutdown_support: string;
+  masking_awareness: string;
+  unmasking_permissions: string;
+  transition_support: string;
+  social_preferences: string;
+  staff_do_strategies: string;
+  staff_do_not_strategies: string;
+  external_support: string;
+  child_voice: string;
+  staff_observation: string;
+  next_step: string;
+  review_date: string;
+  key_worker: string;
 }
 
 const EXPORT_COLS: ExportColumn<FlatRow>[] = [
-  { header: "Young Person", accessor: (r: FlatRow) => r.youngPerson },
-  { header: "Plan Date", accessor: (r: FlatRow) => r.planDate },
-  { header: "Diagnosis Status", accessor: (r: FlatRow) => r.diagnosisStatus },
-  { header: "Diagnosis Date", accessor: (r: FlatRow) => r.diagnosisDate },
-  { header: "Diagnosing Clinician", accessor: (r: FlatRow) => r.diagnosingClinician },
-  { header: "Special Interests", accessor: (r: FlatRow) => r.specialInterests },
-  { header: "Communication Preferences", accessor: (r: FlatRow) => r.communicationPreferences },
-  { header: "Processing Time", accessor: (r: FlatRow) => r.processingTime },
-  { header: "Sensory Profile", accessor: (r: FlatRow) => r.sensoryProfile },
-  { header: "Predictability Needs", accessor: (r: FlatRow) => r.predictabilityNeeds },
-  { header: "Routine Anchors", accessor: (r: FlatRow) => r.routineAnchors },
-  { header: "Meltdown Triggers", accessor: (r: FlatRow) => r.meltdownTriggers },
-  { header: "Meltdown Support", accessor: (r: FlatRow) => r.meltdownSupport },
-  { header: "Shutdown Indicators", accessor: (r: FlatRow) => r.shutdownIndicators },
-  { header: "Shutdown Support", accessor: (r: FlatRow) => r.shutdownSupport },
-  { header: "Masking Awareness", accessor: (r: FlatRow) => r.maskingAwareness },
-  { header: "Unmasking Permissions", accessor: (r: FlatRow) => r.unmaskingPermissions },
-  { header: "Transition Support", accessor: (r: FlatRow) => r.transitionSupport },
-  { header: "Social Preferences", accessor: (r: FlatRow) => r.socialPreferences },
-  { header: "Staff DO", accessor: (r: FlatRow) => r.staffDoStrategies },
-  { header: "Staff DO NOT", accessor: (r: FlatRow) => r.staffDoNotStrategies },
-  { header: "External Support", accessor: (r: FlatRow) => r.externalSupport },
-  { header: "Child Voice", accessor: (r: FlatRow) => r.childVoice },
-  { header: "Staff Observation", accessor: (r: FlatRow) => r.staffObservation },
-  { header: "Next Step", accessor: (r: FlatRow) => r.nextStep },
-  { header: "Review Date", accessor: (r: FlatRow) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: FlatRow) => r.keyWorker },
+  { header: "Young Person", accessor: (r: FlatRow) => r.child },
+  { header: "Plan Date", accessor: (r: FlatRow) => r.plan_date },
+  { header: "Diagnosis Status", accessor: (r: FlatRow) => r.diagnosis_status },
+  { header: "Diagnosis Date", accessor: (r: FlatRow) => r.diagnosis_date },
+  { header: "Diagnosing Clinician", accessor: (r: FlatRow) => r.diagnosing_clinician },
+  { header: "Special Interests", accessor: (r: FlatRow) => r.special_interests },
+  { header: "Communication Preferences", accessor: (r: FlatRow) => r.communication_preferences },
+  { header: "Processing Time", accessor: (r: FlatRow) => r.processing_time },
+  { header: "Sensory Profile", accessor: (r: FlatRow) => r.sensory_profile },
+  { header: "Predictability Needs", accessor: (r: FlatRow) => r.predictability_needs },
+  { header: "Routine Anchors", accessor: (r: FlatRow) => r.routine_anchors },
+  { header: "Meltdown Triggers", accessor: (r: FlatRow) => r.meltdown_triggers },
+  { header: "Meltdown Support", accessor: (r: FlatRow) => r.meltdown_support },
+  { header: "Shutdown Indicators", accessor: (r: FlatRow) => r.shutdown_indicators },
+  { header: "Shutdown Support", accessor: (r: FlatRow) => r.shutdown_support },
+  { header: "Masking Awareness", accessor: (r: FlatRow) => r.masking_awareness },
+  { header: "Unmasking Permissions", accessor: (r: FlatRow) => r.unmasking_permissions },
+  { header: "Transition Support", accessor: (r: FlatRow) => r.transition_support },
+  { header: "Social Preferences", accessor: (r: FlatRow) => r.social_preferences },
+  { header: "Staff DO", accessor: (r: FlatRow) => r.staff_do_strategies },
+  { header: "Staff DO NOT", accessor: (r: FlatRow) => r.staff_do_not_strategies },
+  { header: "External Support", accessor: (r: FlatRow) => r.external_support },
+  { header: "Child Voice", accessor: (r: FlatRow) => r.child_voice },
+  { header: "Staff Observation", accessor: (r: FlatRow) => r.staff_observation },
+  { header: "Next Step", accessor: (r: FlatRow) => r.next_step },
+  { header: "Review Date", accessor: (r: FlatRow) => r.review_date },
+  { header: "Key Worker", accessor: (r: FlatRow) => r.key_worker },
 ];
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildAutismSupportPlanPage() {
-  const [data] = useState<AutismPlan[]>(SEED);
+  const { data: resp, isLoading } = useAutismPlans();
+  const data = resp?.data ?? [];
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -384,9 +125,9 @@ export default function ChildAutismSupportPlanPage() {
   /* stats */
   const stats = useMemo(() => {
     const active = data.length;
-    const diagnosed = data.filter((r) => r.diagnosisStatus === "Diagnosed").length;
-    const awaiting = data.filter((r) => r.diagnosisStatus === "Awaiting assessment").length;
-    const reviewSoon = data.filter((r) => r.reviewDate <= d(90)).length;
+    const diagnosed = data.filter((r) => r.diagnosis_status === "diagnosed").length;
+    const awaiting = data.filter((r) => r.diagnosis_status === "awaiting_assessment").length;
+    const reviewSoon = data.filter((r) => r.review_date <= todayStr()).length;
     return { active, diagnosed, awaiting, reviewSoon };
   }, [data]);
 
@@ -397,24 +138,24 @@ export default function ChildAutismSupportPlanPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.specialInterests.some((i) => i.toLowerCase().includes(q)) ||
-          r.diagnosisStatus.toLowerCase().includes(q),
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          r.special_interests.some((i) => i.toLowerCase().includes(q)) ||
+          AUTISM_DIAGNOSIS_STATUS_LABEL[r.diagnosis_status].toLowerCase().includes(q),
       );
     }
     if (filterStatus !== "all") {
-      list = list.filter((r) => r.diagnosisStatus === filterStatus);
+      list = list.filter((r) => r.diagnosis_status === filterStatus);
     }
     const out = [...list];
     switch (sortBy) {
       case "name":
-        out.sort((a, b) => getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson)));
+        out.sort((a, b) => getYPName(a.child_id).localeCompare(getYPName(b.child_id)));
         break;
       case "review":
-        out.sort((a, b) => a.reviewDate.localeCompare(b.reviewDate));
+        out.sort((a, b) => a.review_date.localeCompare(b.review_date));
         break;
       case "interests":
-        out.sort((a, b) => b.specialInterests.length - a.specialInterests.length);
+        out.sort((a, b) => b.special_interests.length - a.special_interests.length);
         break;
     }
     return out;
@@ -424,40 +165,53 @@ export default function ChildAutismSupportPlanPage() {
   const exportData = useMemo<FlatRow[]>(
     () =>
       data.map((r) => ({
-        youngPerson: getYPName(r.youngPerson),
-        planDate: r.planDate,
-        diagnosisStatus: r.diagnosisStatus,
-        diagnosisDate: r.diagnosisDate ?? "",
-        diagnosingClinician: r.diagnosingClinician ?? "",
-        specialInterests: r.specialInterests.join("; "),
-        communicationPreferences: r.communicationPreferences.join("; "),
-        processingTime: r.processingTime,
-        sensoryProfile: r.sensoryProfile
-          .map((s) => `${s.sense} (${s.seekingOrAvoiding}): ${s.specificNotes}`)
+        child: getYPName(r.child_id),
+        plan_date: r.plan_date,
+        diagnosis_status: AUTISM_DIAGNOSIS_STATUS_LABEL[r.diagnosis_status],
+        diagnosis_date: r.diagnosis_date ?? "",
+        diagnosing_clinician: r.diagnosing_clinician ?? "",
+        special_interests: r.special_interests.join("; "),
+        communication_preferences: r.communication_preferences.join("; "),
+        processing_time: r.processing_time,
+        sensory_profile: r.sensory_profile
+          .map((s) => `${s.sense} (${AUTISM_SENSORY_PATTERN_LABEL[s.seeking_or_avoiding]}): ${s.specific_notes}`)
           .join(" | "),
-        predictabilityNeeds: r.predictabilityNeeds.join("; "),
-        routineAnchors: r.routineAnchors.join("; "),
-        meltdownTriggers: r.meltdownTriggers.join("; "),
-        meltdownSupport: r.meltdownSupport.join("; "),
-        shutdownIndicators: r.shutdownIndicators.join("; "),
-        shutdownSupport: r.shutdownSupport.join("; "),
-        maskingAwareness: r.maskingAwareness,
-        unmaskingPermissions: r.unmaskingPermissions.join("; "),
-        transitionSupport: r.transitionSupport.join("; "),
-        socialPreferences: r.socialPreferences.join("; "),
-        staffDoStrategies: r.staffDoStrategies.join("; "),
-        staffDoNotStrategies: r.staffDoNotStrategies.join("; "),
-        externalSupport: r.externalSupport
+        predictability_needs: r.predictability_needs.join("; "),
+        routine_anchors: r.routine_anchors.join("; "),
+        meltdown_triggers: r.meltdown_triggers.join("; "),
+        meltdown_support: r.meltdown_support.join("; "),
+        shutdown_indicators: r.shutdown_indicators.join("; "),
+        shutdown_support: r.shutdown_support.join("; "),
+        masking_awareness: r.masking_awareness,
+        unmasking_permissions: r.unmasking_permissions.join("; "),
+        transition_support: r.transition_support.join("; "),
+        social_preferences: r.social_preferences.join("; "),
+        staff_do_strategies: r.staff_do_strategies.join("; "),
+        staff_do_not_strategies: r.staff_do_not_strategies.join("; "),
+        external_support: r.external_support
           .map((e) => `${e.agency} — ${e.role} (${e.frequency})`)
           .join(" | "),
-        childVoice: r.childVoice,
-        staffObservation: r.staffObservation,
-        nextStep: r.nextStep,
-        reviewDate: r.reviewDate,
-        keyWorker: getStaffName(r.keyWorker),
+        child_voice: r.child_voice,
+        staff_observation: r.staff_observation,
+        next_step: r.next_step,
+        review_date: r.review_date,
+        key_worker: getStaffName(r.key_worker),
       })),
     [data],
   );
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Autism Support Plans"
+        subtitle="Per-child, strength-based, neurodiversity-affirming support — monotropism, sensory regulation, masking and unmasking, meltdown vs shutdown protocols"
+      >
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -505,11 +259,11 @@ export default function ChildAutismSupportPlanPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Diagnosis Statuses</SelectItem>
-            <SelectItem value="Diagnosed">Diagnosed</SelectItem>
-            <SelectItem value="Self-identified">Self-identified</SelectItem>
-            <SelectItem value="Awaiting assessment">Awaiting assessment</SelectItem>
-            <SelectItem value="Suspected — gathering evidence">Suspected — gathering evidence</SelectItem>
-            <SelectItem value="Not currently considered">Not currently considered</SelectItem>
+            <SelectItem value="diagnosed">{AUTISM_DIAGNOSIS_STATUS_LABEL.diagnosed}</SelectItem>
+            <SelectItem value="self_identified">{AUTISM_DIAGNOSIS_STATUS_LABEL.self_identified}</SelectItem>
+            <SelectItem value="awaiting_assessment">{AUTISM_DIAGNOSIS_STATUS_LABEL.awaiting_assessment}</SelectItem>
+            <SelectItem value="suspected_gathering_evidence">{AUTISM_DIAGNOSIS_STATUS_LABEL.suspected_gathering_evidence}</SelectItem>
+            <SelectItem value="not_currently_considered">{AUTISM_DIAGNOSIS_STATUS_LABEL.not_currently_considered}</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -531,8 +285,8 @@ export default function ChildAutismSupportPlanPage() {
       <div className="space-y-4 mb-8">
         {filtered.map((r) => {
           const open = expanded[r.id] ?? false;
-          const sensoryComplexity = r.sensoryProfile.filter(
-            (s) => s.seekingOrAvoiding !== "Neutral",
+          const sensoryComplexity = r.sensory_profile.filter(
+            (s) => s.seeking_or_avoiding !== "neutral",
           ).length;
           return (
             <div key={r.id} className="rounded-lg border bg-white">
@@ -543,27 +297,27 @@ export default function ChildAutismSupportPlanPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Brain className="h-4 w-4 text-violet-500" />
-                    <h3 className="font-semibold">{getYPName(r.youngPerson)}</h3>
+                    <h3 className="font-semibold">{getYPName(r.child_id)}</h3>
                     <span
                       className={cn(
                         "px-2 py-0.5 rounded-full text-xs font-medium border",
-                        STATUS_COLOURS[r.diagnosisStatus],
+                        STATUS_COLOURS[r.diagnosis_status],
                       )}
                     >
-                      {r.diagnosisStatus}
+                      {AUTISM_DIAGNOSIS_STATUS_LABEL[r.diagnosis_status]}
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
                       <Star className="h-3 w-3 inline mr-1" />
-                      {r.specialInterests.length} special interests
+                      {r.special_interests.length} special interests
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200">
-                      Sensory: {sensoryComplexity}/{r.sensoryProfile.length} active
+                      Sensory: {sensoryComplexity}/{r.sensory_profile.length} active
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Plan {r.planDate} · Key worker {getStaffName(r.keyWorker)} · Review{" "}
-                    <span className={cn(r.reviewDate <= d(0) ? "text-red-600 font-medium" : "")}>
-                      {r.reviewDate}
+                    Plan {r.plan_date} · Key worker {getStaffName(r.key_worker)} · Review{" "}
+                    <span className={cn(r.review_date <= todayStr() ? "text-red-600 font-medium" : "")}>
+                      {r.review_date}
                     </span>
                   </p>
                 </div>
@@ -580,18 +334,18 @@ export default function ChildAutismSupportPlanPage() {
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm rounded-md bg-violet-50 border border-violet-200 p-3">
                     <div>
                       <span className="text-gray-500">Status:</span>{" "}
-                      <span className="font-medium">{r.diagnosisStatus}</span>
+                      <span className="font-medium">{AUTISM_DIAGNOSIS_STATUS_LABEL[r.diagnosis_status]}</span>
                     </div>
-                    {r.diagnosisDate && (
+                    {r.diagnosis_date && (
                       <div>
                         <span className="text-gray-500">Diagnosed:</span>{" "}
-                        <span className="font-medium">{r.diagnosisDate}</span>
+                        <span className="font-medium">{r.diagnosis_date}</span>
                       </div>
                     )}
-                    {r.diagnosingClinician && (
+                    {r.diagnosing_clinician && (
                       <div className="md:col-span-3">
                         <span className="text-gray-500">Clinician:</span>{" "}
-                        <span className="font-medium">{r.diagnosingClinician}</span>
+                        <span className="font-medium">{r.diagnosing_clinician}</span>
                       </div>
                     )}
                   </div>
@@ -602,7 +356,7 @@ export default function ChildAutismSupportPlanPage() {
                       <Sparkles className="h-3 w-3" /> Special Interests (monotropic strengths)
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {r.specialInterests.map((i, idx) => (
+                      {r.special_interests.map((i, idx) => (
                         <span
                           key={idx}
                           className="px-2.5 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200"
@@ -620,7 +374,7 @@ export default function ChildAutismSupportPlanPage() {
                         Communication Preferences
                       </h4>
                       <ul className="list-disc list-inside text-sm text-teal-900 space-y-0.5">
-                        {r.communicationPreferences.map((c, idx) => (
+                        {r.communication_preferences.map((c, idx) => (
                           <li key={idx}>{c}</li>
                         ))}
                       </ul>
@@ -629,7 +383,7 @@ export default function ChildAutismSupportPlanPage() {
                       <h4 className="text-xs font-semibold text-sky-700 mb-1 flex items-center gap-1">
                         <Clock className="h-3 w-3" /> Processing Time
                       </h4>
-                      <p className="text-sm text-sky-900">{r.processingTime}</p>
+                      <p className="text-sm text-sky-900">{r.processing_time}</p>
                     </div>
                   </div>
 
@@ -646,20 +400,20 @@ export default function ChildAutismSupportPlanPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {r.sensoryProfile.map((s, idx) => (
+                          {r.sensory_profile.map((s, idx) => (
                             <tr key={idx} className="border-t">
                               <td className="px-3 py-2 font-medium">{s.sense}</td>
                               <td className="px-3 py-2">
                                 <span
                                   className={cn(
                                     "px-2 py-0.5 rounded-full text-xs font-medium",
-                                    SEEKING_COLOURS[s.seekingOrAvoiding],
+                                    SEEKING_COLOURS[s.seeking_or_avoiding],
                                   )}
                                 >
-                                  {s.seekingOrAvoiding}
+                                  {AUTISM_SENSORY_PATTERN_LABEL[s.seeking_or_avoiding]}
                                 </span>
                               </td>
-                              <td className="px-3 py-2 text-gray-700">{s.specificNotes}</td>
+                              <td className="px-3 py-2 text-gray-700">{s.specific_notes}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -674,7 +428,7 @@ export default function ChildAutismSupportPlanPage() {
                         Predictability Needs
                       </h4>
                       <ul className="list-disc list-inside text-sm text-violet-900 space-y-0.5">
-                        {r.predictabilityNeeds.map((p, idx) => (
+                        {r.predictability_needs.map((p, idx) => (
                           <li key={idx}>{p}</li>
                         ))}
                       </ul>
@@ -682,7 +436,7 @@ export default function ChildAutismSupportPlanPage() {
                     <div className="rounded-md bg-teal-50 border border-teal-200 p-3">
                       <h4 className="text-xs font-semibold text-teal-700 mb-1">Routine Anchors</h4>
                       <ul className="list-disc list-inside text-sm text-teal-900 space-y-0.5">
-                        {r.routineAnchors.map((p, idx) => (
+                        {r.routine_anchors.map((p, idx) => (
                           <li key={idx}>{p}</li>
                         ))}
                       </ul>
@@ -700,7 +454,7 @@ export default function ChildAutismSupportPlanPage() {
                         <div>
                           <p className="text-xs font-medium text-rose-700">Triggers</p>
                           <ul className="list-disc list-inside text-sm text-rose-900 space-y-0.5">
-                            {r.meltdownTriggers.map((t, idx) => (
+                            {r.meltdown_triggers.map((t, idx) => (
                               <li key={idx}>{t}</li>
                             ))}
                           </ul>
@@ -708,7 +462,7 @@ export default function ChildAutismSupportPlanPage() {
                         <div>
                           <p className="text-xs font-medium text-rose-700">Support</p>
                           <ul className="list-disc list-inside text-sm text-rose-900 space-y-0.5">
-                            {r.meltdownSupport.map((t, idx) => (
+                            {r.meltdown_support.map((t, idx) => (
                               <li key={idx}>{t}</li>
                             ))}
                           </ul>
@@ -719,7 +473,7 @@ export default function ChildAutismSupportPlanPage() {
                         <div>
                           <p className="text-xs font-medium text-indigo-700">Indicators</p>
                           <ul className="list-disc list-inside text-sm text-indigo-900 space-y-0.5">
-                            {r.shutdownIndicators.map((t, idx) => (
+                            {r.shutdown_indicators.map((t, idx) => (
                               <li key={idx}>{t}</li>
                             ))}
                           </ul>
@@ -727,7 +481,7 @@ export default function ChildAutismSupportPlanPage() {
                         <div>
                           <p className="text-xs font-medium text-indigo-700">Support</p>
                           <ul className="list-disc list-inside text-sm text-indigo-900 space-y-0.5">
-                            {r.shutdownSupport.map((t, idx) => (
+                            {r.shutdown_support.map((t, idx) => (
                               <li key={idx}>{t}</li>
                             ))}
                           </ul>
@@ -741,13 +495,13 @@ export default function ChildAutismSupportPlanPage() {
                     <h4 className="text-xs font-semibold text-amber-700">
                       Masking Awareness and Unmasking Permissions
                     </h4>
-                    <p className="text-sm text-amber-900">{r.maskingAwareness}</p>
+                    <p className="text-sm text-amber-900">{r.masking_awareness}</p>
                     <div>
                       <p className="text-xs font-medium text-amber-700 mt-2">
                         Unmasking permissions (home as sanctuary)
                       </p>
                       <ul className="list-disc list-inside text-sm text-amber-900 space-y-0.5">
-                        {r.unmaskingPermissions.map((u, idx) => (
+                        {r.unmasking_permissions.map((u, idx) => (
                           <li key={idx}>{u}</li>
                         ))}
                       </ul>
@@ -759,7 +513,7 @@ export default function ChildAutismSupportPlanPage() {
                     <div className="rounded-md bg-sky-50 border border-sky-200 p-3">
                       <h4 className="text-xs font-semibold text-sky-700 mb-1">Transition Support</h4>
                       <ul className="list-disc list-inside text-sm text-sky-900 space-y-0.5">
-                        {r.transitionSupport.map((t, idx) => (
+                        {r.transition_support.map((t, idx) => (
                           <li key={idx}>{t}</li>
                         ))}
                       </ul>
@@ -767,7 +521,7 @@ export default function ChildAutismSupportPlanPage() {
                     <div className="rounded-md bg-teal-50 border border-teal-200 p-3">
                       <h4 className="text-xs font-semibold text-teal-700 mb-1">Social Preferences</h4>
                       <ul className="list-disc list-inside text-sm text-teal-900 space-y-0.5">
-                        {r.socialPreferences.map((t, idx) => (
+                        {r.social_preferences.map((t, idx) => (
                           <li key={idx}>{t}</li>
                         ))}
                       </ul>
@@ -779,7 +533,7 @@ export default function ChildAutismSupportPlanPage() {
                     <div className="rounded-md bg-emerald-50 border border-emerald-200 p-3">
                       <h4 className="text-xs font-semibold text-emerald-700 mb-1">Staff DO</h4>
                       <ul className="list-disc list-inside text-sm text-emerald-900 space-y-0.5">
-                        {r.staffDoStrategies.map((t, idx) => (
+                        {r.staff_do_strategies.map((t, idx) => (
                           <li key={idx}>{t}</li>
                         ))}
                       </ul>
@@ -787,7 +541,7 @@ export default function ChildAutismSupportPlanPage() {
                     <div className="rounded-md bg-rose-50 border border-rose-200 p-3">
                       <h4 className="text-xs font-semibold text-rose-700 mb-1">Staff DO NOT</h4>
                       <ul className="list-disc list-inside text-sm text-rose-900 space-y-0.5">
-                        {r.staffDoNotStrategies.map((t, idx) => (
+                        {r.staff_do_not_strategies.map((t, idx) => (
                           <li key={idx}>{t}</li>
                         ))}
                       </ul>
@@ -795,7 +549,7 @@ export default function ChildAutismSupportPlanPage() {
                   </div>
 
                   {/* external support */}
-                  {r.externalSupport.length > 0 && (
+                  {r.external_support.length > 0 && (
                     <div>
                       <h4 className="text-xs font-semibold text-gray-500 mb-2">External Support</h4>
                       <div className="overflow-x-auto rounded-md border">
@@ -808,7 +562,7 @@ export default function ChildAutismSupportPlanPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {r.externalSupport.map((e, idx) => (
+                            {r.external_support.map((e, idx) => (
                               <tr key={idx} className="border-t">
                                 <td className="px-3 py-2 font-medium">{e.agency}</td>
                                 <td className="px-3 py-2 text-gray-700">{e.role}</td>
@@ -826,20 +580,23 @@ export default function ChildAutismSupportPlanPage() {
                     <h4 className="text-xs font-semibold text-violet-700 mb-1">
                       Child&apos;s Voice
                     </h4>
-                    <p className="text-sm text-violet-900 italic">&ldquo;{r.childVoice}&rdquo;</p>
+                    <p className="text-sm text-violet-900 italic">&ldquo;{r.child_voice}&rdquo;</p>
                   </div>
 
                   {/* staff observation */}
                   <div className="rounded-md bg-gray-50 border border-gray-200 p-3">
                     <h4 className="text-xs font-semibold text-gray-500 mb-1">Staff Observation</h4>
-                    <p className="text-sm text-gray-800">{r.staffObservation}</p>
+                    <p className="text-sm text-gray-800">{r.staff_observation}</p>
                   </div>
 
                   {/* next step */}
                   <div className="rounded-md bg-teal-50 border border-teal-200 p-3">
                     <h4 className="text-xs font-semibold text-teal-700 mb-1">Next Step</h4>
-                    <p className="text-sm text-teal-900">{r.nextStep}</p>
+                    <p className="text-sm text-teal-900">{r.next_step}</p>
                   </div>
+
+                  {/* smart link panel */}
+                  <SmartLinkPanel sourceType="autism-plan" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               )}
             </div>

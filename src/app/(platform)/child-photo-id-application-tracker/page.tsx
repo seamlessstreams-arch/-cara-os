@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -16,87 +16,36 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
+import type { PhotoIdRecord, PhotoIdType, PhotoIdStatus } from "@/types/extended";
+import { PHOTO_ID_TYPE_LABEL, PHOTO_ID_STATUS_LABEL } from "@/types/extended";
+import { usePhotoIdRecords } from "@/hooks/use-photo-id-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── colour maps ──────────────────────────────────────────────────────────── */
 
-type IdType =
-  | "British Passport"
-  | "Provisional Driving Licence"
-  | "Citizen Card (free for care leavers)"
-  | "Young Scot card"
-  | "Photo Voter ID"
-  | "PASS card"
-  | "Other";
-
-type IdStatus =
-  | "Considering / planning"
-  | "Documents being gathered"
-  | "Application drafted"
-  | "Application submitted"
-  | "Awaiting biometrics"
-  | "Issued"
-  | "Renewal due"
-  | "Lost / replacement applied"
-  | "Not applicable";
-
-interface IdRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  idType: IdType;
-  status: IdStatus;
-  applicationDate?: string;
-  costPaid?: number;
-  fundingSource?: string;
-  documentNumber?: string;
-  issueDate?: string;
-  expiryDate?: string;
-  storageLocation: string;
-  childHasOriginal: boolean;
-  copiesKept: string[];
-  evidenceProvidedToAuthority: string[];
-  uniqueChallengesForLAC: string[];
-  childVoice: string;
-  staffObservation: string;
-  reviewDate: string;
-  keyWorker: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const ID_TYPE_CLR: Record<IdType, string> = {
-  "British Passport": "bg-sky-100 text-sky-800",
-  "Provisional Driving Licence": "bg-blue-100 text-blue-800",
-  "Citizen Card (free for care leavers)": "bg-teal-100 text-teal-800",
-  "Young Scot card": "bg-indigo-100 text-indigo-800",
-  "Photo Voter ID": "bg-purple-100 text-purple-800",
-  "PASS card": "bg-cyan-100 text-cyan-800",
-  "Other": "bg-gray-100 text-gray-800",
+const ID_TYPE_CLR: Record<PhotoIdType, string> = {
+  british_passport: "bg-sky-100 text-sky-800",
+  provisional_driving_licence: "bg-blue-100 text-blue-800",
+  citizen_card: "bg-teal-100 text-teal-800",
+  young_scot_card: "bg-indigo-100 text-indigo-800",
+  photo_voter_id: "bg-purple-100 text-purple-800",
+  pass_card: "bg-cyan-100 text-cyan-800",
+  other: "bg-gray-100 text-gray-800",
 };
 
-const STATUS_CLR: Record<IdStatus, string> = {
-  "Considering / planning": "bg-gray-100 text-gray-800",
-  "Documents being gathered": "bg-amber-100 text-amber-800",
-  "Application drafted": "bg-yellow-100 text-yellow-800",
-  "Application submitted": "bg-blue-100 text-blue-800",
-  "Awaiting biometrics": "bg-indigo-100 text-indigo-800",
-  "Issued": "bg-green-100 text-green-800",
-  "Renewal due": "bg-orange-100 text-orange-800",
-  "Lost / replacement applied": "bg-red-100 text-red-800",
-  "Not applicable": "bg-slate-100 text-slate-800",
+const STATUS_CLR: Record<PhotoIdStatus, string> = {
+  considering_planning: "bg-gray-100 text-gray-800",
+  documents_being_gathered: "bg-amber-100 text-amber-800",
+  application_drafted: "bg-yellow-100 text-yellow-800",
+  application_submitted: "bg-blue-100 text-blue-800",
+  awaiting_biometrics: "bg-indigo-100 text-indigo-800",
+  issued: "bg-green-100 text-green-800",
+  renewal_due: "bg-orange-100 text-orange-800",
+  lost_replacement_applied: "bg-red-100 text-red-800",
+  not_applicable: "bg-slate-100 text-slate-800",
 };
 
-const ID_TYPES: IdType[] = [
-  "British Passport",
-  "Provisional Driving Licence",
-  "Citizen Card (free for care leavers)",
-  "Young Scot card",
-  "Photo Voter ID",
-  "PASS card",
-  "Other",
-];
+/* ── helpers ──────────────────────────────────────────────────────────────── */
 
 const fmtGBP = (n: number) => new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2 }).format(n);
 
@@ -107,186 +56,12 @@ const daysUntil = (iso?: string) => {
   return Math.ceil((target - now) / (1000 * 60 * 60 * 24));
 };
 
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: IdRecord[] = [
-  {
-    id: "id1",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-180),
-    idType: "British Passport",
-    status: "Issued",
-    applicationDate: d(-200),
-    costPaid: 53.50,
-    fundingSource: "Local Authority — s.23B(8) Children Act 1989 duty",
-    documentNumber: "548237196",
-    issueDate: d(-170),
-    expiryDate: d(1640),
-    storageLocation: "Office safe (locked, fire-rated) — Oak House",
-    childHasOriginal: false,
-    copiesKept: ["Photocopy in life-story box", "Encrypted scan on care file"],
-    evidenceProvidedToAuthority: [
-      "Full birth certificate (long form) — original obtained from GRO",
-      "Local authority letter confirming corporate parent status",
-      "Countersigned photo from Pathway Plan PA (Gemma)",
-    ],
-    uniqueChallengesForLAC: [
-      "No parental signature available — countersignature obtained from PA acting on behalf of corporate parent",
-      "Birth certificate had to be reordered from GRO before application could proceed",
-    ],
-    childVoice: "It feels good knowing I can travel if I want. The first time I held my own passport was emotional — it had my name on it and that's mine. I want it kept safe but I know where it is and I can ask Anna if I need it.",
-    staffObservation: "Passport application coordinated with Personal Adviser and social worker. Birth certificate reorder added six weeks to the timeline — this is a recurring issue for LAC. Original document held in office safe per house policy on high-value documents; Jordan briefed on storage location and process for retrieval. Photocopy placed in life-story box at Jordan's request. Cost £53.50 paid from placement budget under the s.23B(8) duty to assist with identity documents.",
-    reviewDate: d(365),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "id2",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-30),
-    idType: "Provisional Driving Licence",
-    status: "Issued",
-    applicationDate: d(-45),
-    costPaid: 34.00,
-    fundingSource: "Leaving Care Grant (cross-linked to driving-lessons-tracker)",
-    documentNumber: "JONES912047JL9XY",
-    issueDate: d(-32),
-    expiryDate: d(3600),
-    storageLocation: "Held by Jordan — wallet (used as photo ID)",
-    childHasOriginal: true,
-    copiesKept: ["Photocopy on care file", "Photo on Jordan's phone (for backup)"],
-    evidenceProvidedToAuthority: [
-      "Passport number (linked to id1)",
-      "National Insurance number",
-      "Three-year address history (Oak House plus previous placements)",
-    ],
-    uniqueChallengesForLAC: [
-      "Three-year address history complicated by multiple placement moves — staff helped Jordan compile dates from care chronology",
-      "Used as primary photo ID by Jordan day-to-day; cross-references the driving-lessons-tracker record",
-    ],
-    childVoice: "Having my provisional means I can get into clubs, prove my age, and obviously start lessons. It's mine, I keep it on me. The picture is alright I suppose.",
-    staffObservation: "Provisional licence application supported during keywork. Address history compiled with Jordan from care chronology — a task only possible because the placement keeps a continuous record. Document carried day-to-day by Jordan as primary photo ID; linked to driving-lessons-tracker for the lessons workflow. Photocopy retained on care file in case of loss.",
-    reviewDate: d(180),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "id3",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-120),
-    idType: "Citizen Card (free for care leavers)",
-    status: "Issued",
-    applicationDate: d(-130),
-    costPaid: 0,
-    fundingSource: "CitizenCard free-for-care-leavers scheme (no cost)",
-    documentNumber: "CC-2025-487201",
-    issueDate: d(-115),
-    expiryDate: d(1700),
-    storageLocation: "Held by Jordan — wallet",
-    childHasOriginal: true,
-    copiesKept: ["Photocopy on care file"],
-    evidenceProvidedToAuthority: [
-      "Local authority confirmation of care-leaver status (CitizenCard pro-forma)",
-      "Passport (linked to id1) as supporting photo evidence",
-    ],
-    uniqueChallengesForLAC: [
-      "Required local authority pro-forma confirming care-leaver status — Personal Adviser obtained this in two days",
-      "Free-for-care-leavers scheme directly addresses the cost barrier LAC face for ID",
-    ],
-    childVoice: "I use this for the boxing club because they want photo ID at the door, and I used it to vote in the local elections. It looks proper. I like that it was free because I'm a care leaver.",
-    staffObservation: "Citizen Card secured at no cost via the CitizenCard free-for-care-leavers scheme — a meaningful benefit for LAC who otherwise face a £15 fee. Used by Jordan as voter ID under the Elections Act 2022 (cross-references voter-registration-civic page) and routinely for age verification at boxing club. Holding the card himself supports identity and autonomy goals from his Pathway Plan.",
-    reviewDate: d(365),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "id4",
-    youngPerson: "yp_alex",
-    recordedDate: d(-90),
-    idType: "Citizen Card (free for care leavers)",
-    status: "Issued",
-    applicationDate: d(-100),
-    costPaid: 0,
-    fundingSource: "CitizenCard free-for-care-leavers scheme (no cost)",
-    documentNumber: "CC-2025-461908",
-    issueDate: d(-85),
-    expiryDate: d(1730),
-    storageLocation: "Held by Alex — wallet",
-    childHasOriginal: true,
-    copiesKept: ["Photocopy on care file"],
-    evidenceProvidedToAuthority: [
-      "Local authority confirmation of looked-after-child status",
-      "School-issued photo ID as supporting evidence",
-    ],
-    uniqueChallengesForLAC: [
-      "Alex has no passport yet (separate application below) so Citizen Card serves as primary photo ID",
-      "Free scheme removed the financial barrier",
-    ],
-    childVoice: "It's the first proper photo ID I've ever had. I used it to vote at the council by-election — the staff at the polling station accepted it straight away. It's good having something with my face on that proves who I am.",
-    staffObservation: "Citizen Card secured for Alex under the free-for-care-leavers scheme. Used as voter ID at the recent council by-election (cross-references voter-registration-civic page) — first time Alex has voted. The card has become Alex's primary photo ID pending the passport renewal below. Alex chose to keep the card on his person.",
-    reviewDate: d(365),
-    keyWorker: "staff_edward",
-  },
-  {
-    id: "id5",
-    youngPerson: "yp_alex",
-    recordedDate: d(-14),
-    idType: "British Passport",
-    status: "Application submitted",
-    applicationDate: d(-7),
-    costPaid: 88.50,
-    fundingSource: "Local Authority — s.23B(8) Children Act 1989 duty",
-    documentNumber: undefined,
-    issueDate: undefined,
-    expiryDate: d(45),
-    storageLocation: "Old passport held in office safe pending new issue",
-    childHasOriginal: false,
-    copiesKept: ["Old passport retained until new one arrives", "Photocopy of old passport on care file"],
-    evidenceProvidedToAuthority: [
-      "Old (expiring) British Passport",
-      "New countersigned photograph",
-      "Local authority confirmation of corporate parent status",
-    ],
-    uniqueChallengesForLAC: [
-      "Renewal triggered by upcoming expiry — staff calendar reminder set six months ahead caught the deadline",
-      "Countersignature from PA again required (no parental signature available)",
-      "Cost £88.50 met by placement budget under s.23B(8) duty",
-    ],
-    childVoice: "I want the new passport before my school trip in the summer. I'm a bit worried the old one expires before the new one comes. Karen says it should be fine.",
-    staffObservation: "Renewal application submitted online seven days ago after the expiry alarm fired six months out. Old passport retained as required by HMPO until new document issued. Karen (social worker) and the Personal Adviser are tracking the application; status currently 'Application submitted' awaiting HMPO biometric appointment. Cost £88.50 (online adult fee) met from placement budget.",
-    reviewDate: d(28),
-    keyWorker: "staff_edward",
-  },
-  {
-    id: "id6",
-    youngPerson: "yp_casey",
-    recordedDate: d(-3),
-    idType: "PASS card",
-    status: "Considering / planning",
-    applicationDate: undefined,
-    costPaid: undefined,
-    fundingSource: "TBD — awaiting decision",
-    documentNumber: undefined,
-    issueDate: undefined,
-    expiryDate: undefined,
-    storageLocation: "N/A — not yet issued",
-    childHasOriginal: false,
-    copiesKept: [],
-    evidenceProvidedToAuthority: [],
-    uniqueChallengesForLAC: [
-      "Casey is under 16 — most adult schemes (Citizen Card free-for-care-leavers, voter ID) not yet applicable",
-      "Discussion opened with social worker Fiona Brennan about appropriate under-16 photo ID",
-      "No fixed proof-of-address documents in Casey's name — utility bills are in placement name",
-      "Parental consent unavailable; corporate parent route required",
-    ],
-    childVoice: "My friends have got cards from school for the school bus. I don't know what I need but Chervelle said we'd talk about it. I'd like something with my photo on so I can prove I'm me.",
-    staffObservation: "Discussion opened during keywork session with Casey about under-16 photo ID options. PASS-accredited under-16 cards (e.g. CitizenCard under-16) are the most appropriate route — they prove age and identity without requiring a passport. Raised with Fiona Brennan (social worker) at last LAC review; agreed to revisit at next Pathway Plan precursor meeting in four weeks. No application made yet — placeholder record to track the conversation and prevent it being forgotten.",
-    reviewDate: d(28),
-    keyWorker: "staff_chervelle",
-  },
-];
-
-/* ── component ─────────────────────────────────────────────────────────────── */
+/* ── component ───────────────────────────────────────────────────────────── */
 
 export default function ChildPhotoIdApplicationTrackerPage() {
-  const [data] = useState<IdRecord[]>(SEED);
+  const { data: raw, isLoading } = usePhotoIdRecords();
+  const items = raw?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState("name");
@@ -295,72 +70,83 @@ export default function ChildPhotoIdApplicationTrackerPage() {
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
 
   const filtered = useMemo(() => {
-    let out = [...data];
+    let out = [...items];
     if (search) {
       const s = search.toLowerCase();
       out = out.filter(r =>
-        getYPName(r.youngPerson).toLowerCase().includes(s) ||
-        r.idType.toLowerCase().includes(s) ||
-        r.status.toLowerCase().includes(s) ||
-        (r.documentNumber ?? "").toLowerCase().includes(s)
+        getYPName(r.child_id).toLowerCase().includes(s) ||
+        PHOTO_ID_TYPE_LABEL[r.id_type].toLowerCase().includes(s) ||
+        PHOTO_ID_STATUS_LABEL[r.status].toLowerCase().includes(s) ||
+        (r.document_number ?? "").toLowerCase().includes(s)
       );
     }
-    if (typeFilter !== "all") out = out.filter(r => r.idType === typeFilter);
+    if (typeFilter !== "all") out = out.filter(r => r.id_type === typeFilter);
     out.sort((a, b) => {
       switch (sortBy) {
-        case "name": return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
-        case "type": return a.idType.localeCompare(b.idType);
+        case "name": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "type": return a.id_type.localeCompare(b.id_type);
         case "status": return a.status.localeCompare(b.status);
         case "expiry": {
-          const av = a.expiryDate ?? "9999-12-31";
-          const bv = b.expiryDate ?? "9999-12-31";
+          const av = a.expiry_date ?? "9999-12-31";
+          const bv = b.expiry_date ?? "9999-12-31";
           return av.localeCompare(bv);
         }
-        case "cost": return (b.costPaid ?? 0) - (a.costPaid ?? 0);
+        case "cost": return (b.cost_paid ?? 0) - (a.cost_paid ?? 0);
         default: return 0;
       }
     });
     return out;
-  }, [data, search, typeFilter, sortBy]);
+  }, [items, search, typeFilter, sortBy]);
 
-  const issuedCount = data.filter(r => r.status === "Issued").length;
-  const inProgressCount = data.filter(r =>
-    r.status === "Documents being gathered" ||
-    r.status === "Application drafted" ||
-    r.status === "Application submitted" ||
-    r.status === "Awaiting biometrics" ||
-    r.status === "Lost / replacement applied"
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Child Photo ID Application Tracker"
+        subtitle="Passport, provisional licence, Citizen Card, voter ID and under-16 photo ID applications, renewals and storage — Care Leavers (England) Regulations 2010 and s.23B(8) Children Act 1989"
+      >
+        <p className="text-sm text-muted-foreground py-8 text-center">Loading…</p>
+      </PageShell>
+    );
+  }
+
+  const issuedCount = items.filter(r => r.status === "issued").length;
+  const inProgressCount = items.filter(r =>
+    r.status === "documents_being_gathered" ||
+    r.status === "application_drafted" ||
+    r.status === "application_submitted" ||
+    r.status === "awaiting_biometrics" ||
+    r.status === "lost_replacement_applied"
   ).length;
-  const expiringSoonCount = data.filter(r => {
-    const days = daysUntil(r.expiryDate);
-    return r.status === "Issued" && days !== null && days <= 90 && days >= 0;
+  const expiringSoonCount = items.filter(r => {
+    const days = daysUntil(r.expiry_date);
+    return r.status === "issued" && days !== null && days <= 90 && days >= 0;
   }).length;
   const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10);
-  const totalCostYTD = data
-    .filter(r => (r.applicationDate ?? "") >= yearStart)
-    .reduce((s, r) => s + (r.costPaid ?? 0), 0);
+  const totalCostYTD = items
+    .filter(r => (r.application_date ?? "") >= yearStart)
+    .reduce((s, r) => s + (r.cost_paid ?? 0), 0);
 
-  const exportCols: ExportColumn<IdRecord>[] = useMemo(() => [
-    { header: "Young Person", accessor: (r: IdRecord) => getYPName(r.youngPerson) },
-    { header: "Recorded Date", accessor: (r: IdRecord) => r.recordedDate },
-    { header: "ID Type", accessor: (r: IdRecord) => r.idType },
-    { header: "Status", accessor: (r: IdRecord) => r.status },
-    { header: "Application Date", accessor: (r: IdRecord) => r.applicationDate ?? "" },
-    { header: "Cost Paid", accessor: (r: IdRecord) => r.costPaid !== undefined ? fmtGBP(r.costPaid) : "" },
-    { header: "Funding Source", accessor: (r: IdRecord) => r.fundingSource ?? "" },
-    { header: "Document Number", accessor: (r: IdRecord) => r.documentNumber ?? "" },
-    { header: "Issue Date", accessor: (r: IdRecord) => r.issueDate ?? "" },
-    { header: "Expiry Date", accessor: (r: IdRecord) => r.expiryDate ?? "" },
-    { header: "Storage Location", accessor: (r: IdRecord) => r.storageLocation },
-    { header: "Child Has Original", accessor: (r: IdRecord) => r.childHasOriginal ? "Yes" : "No" },
-    { header: "Copies Kept", accessor: (r: IdRecord) => r.copiesKept.join("; ") },
-    { header: "Evidence Provided", accessor: (r: IdRecord) => r.evidenceProvidedToAuthority.join("; ") },
-    { header: "LAC Challenges", accessor: (r: IdRecord) => r.uniqueChallengesForLAC.join("; ") },
-    { header: "Child Voice", accessor: (r: IdRecord) => r.childVoice },
-    { header: "Staff Observation", accessor: (r: IdRecord) => r.staffObservation },
-    { header: "Review Date", accessor: (r: IdRecord) => r.reviewDate },
-    { header: "Key Worker", accessor: (r: IdRecord) => getStaffName(r.keyWorker) },
-  ], []);
+  const exportCols: ExportColumn<PhotoIdRecord>[] = [
+    { header: "Young Person", accessor: (r: PhotoIdRecord) => getYPName(r.child_id) },
+    { header: "Recorded Date", accessor: (r: PhotoIdRecord) => r.recorded_date },
+    { header: "ID Type", accessor: (r: PhotoIdRecord) => PHOTO_ID_TYPE_LABEL[r.id_type] },
+    { header: "Status", accessor: (r: PhotoIdRecord) => PHOTO_ID_STATUS_LABEL[r.status] },
+    { header: "Application Date", accessor: (r: PhotoIdRecord) => r.application_date ?? "" },
+    { header: "Cost Paid", accessor: (r: PhotoIdRecord) => r.cost_paid !== undefined ? fmtGBP(r.cost_paid) : "" },
+    { header: "Funding Source", accessor: (r: PhotoIdRecord) => r.funding_source ?? "" },
+    { header: "Document Number", accessor: (r: PhotoIdRecord) => r.document_number ?? "" },
+    { header: "Issue Date", accessor: (r: PhotoIdRecord) => r.issue_date ?? "" },
+    { header: "Expiry Date", accessor: (r: PhotoIdRecord) => r.expiry_date ?? "" },
+    { header: "Storage Location", accessor: (r: PhotoIdRecord) => r.storage_location },
+    { header: "Child Has Original", accessor: (r: PhotoIdRecord) => r.child_has_original ? "Yes" : "No" },
+    { header: "Copies Kept", accessor: (r: PhotoIdRecord) => r.copies_kept.join("; ") },
+    { header: "Evidence Provided", accessor: (r: PhotoIdRecord) => r.evidence_provided_to_authority.join("; ") },
+    { header: "LAC Challenges", accessor: (r: PhotoIdRecord) => r.unique_challenges_for_lac.join("; ") },
+    { header: "Child Voice", accessor: (r: PhotoIdRecord) => r.child_voice },
+    { header: "Staff Observation", accessor: (r: PhotoIdRecord) => r.staff_observation },
+    { header: "Review Date", accessor: (r: PhotoIdRecord) => r.review_date },
+    { header: "Key Worker", accessor: (r: PhotoIdRecord) => getStaffName(r.key_worker) },
+  ];
 
   return (
     <PageShell
@@ -410,7 +196,7 @@ export default function ChildPhotoIdApplicationTrackerPage() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All ID types</SelectItem>
-                    {ID_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    {Object.entries(PHOTO_ID_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -435,9 +221,9 @@ export default function ChildPhotoIdApplicationTrackerPage() {
         <div className="space-y-3">
           {filtered.map(r => {
             const open = expanded === r.id;
-            const days = daysUntil(r.expiryDate);
-            const expiringSoon = r.status === "Issued" && days !== null && days <= 90 && days >= 0;
-            const expired = days !== null && days < 0 && r.status !== "Renewal due";
+            const days = daysUntil(r.expiry_date);
+            const expiringSoon = r.status === "issued" && days !== null && days <= 90 && days >= 0;
+            const expired = days !== null && days < 0 && r.status !== "renewal_due";
 
             return (
               <Card key={r.id} className="border-l-4 border-sky-400 bg-sky-50/30">
@@ -445,20 +231,20 @@ export default function ChildPhotoIdApplicationTrackerPage() {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-base">{getYPName(r.youngPerson)}</CardTitle>
-                        <Badge className={cn("text-xs", ID_TYPE_CLR[r.idType])}>{r.idType}</Badge>
-                        <Badge className={cn("text-xs", STATUS_CLR[r.status])}>{r.status}</Badge>
-                        {r.expiryDate && (
+                        <CardTitle className="text-base">{getYPName(r.child_id)}</CardTitle>
+                        <Badge className={cn("text-xs", ID_TYPE_CLR[r.id_type])}>{PHOTO_ID_TYPE_LABEL[r.id_type]}</Badge>
+                        <Badge className={cn("text-xs", STATUS_CLR[r.status])}>{PHOTO_ID_STATUS_LABEL[r.status]}</Badge>
+                        {r.expiry_date && (
                           <Badge variant="outline" className={cn("text-xs", expiringSoon && "bg-orange-100 text-orange-800 border-orange-300", expired && "bg-red-100 text-red-800 border-red-300")}>
-                            Expires {r.expiryDate}{days !== null && ` (${days >= 0 ? `${days}d` : `${Math.abs(days)}d ago`})`}
+                            Expires {r.expiry_date}{days !== null && ` (${days >= 0 ? `${days}d` : `${Math.abs(days)}d ago`})`}
                           </Badge>
                         )}
-                        <Badge variant="outline" className={cn("text-xs", r.childHasOriginal ? "bg-teal-50 text-teal-800 border-teal-300" : "bg-slate-50 text-slate-700")}>
-                          {r.childHasOriginal ? "Child holds original" : "Held by placement"}
+                        <Badge variant="outline" className={cn("text-xs", r.child_has_original ? "bg-teal-50 text-teal-800 border-teal-300" : "bg-slate-50 text-slate-700")}>
+                          {r.child_has_original ? "Child holds original" : "Held by placement"}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Recorded: {r.recordedDate}</span>
+                        <span className="text-xs text-muted-foreground">Recorded: {r.recorded_date}</span>
                         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </div>
                     </div>
@@ -470,46 +256,46 @@ export default function ChildPhotoIdApplicationTrackerPage() {
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                       <div className="rounded-lg border bg-white p-3 space-y-1">
                         <p className="text-xs font-semibold text-sky-800 flex items-center gap-1"><FileText className="h-3 w-3" />Application</p>
-                        <p className="text-xs">Application date: <strong>{r.applicationDate ?? "—"}</strong></p>
-                        <p className="text-xs">Cost paid: <strong>{r.costPaid !== undefined ? fmtGBP(r.costPaid) : "—"}</strong></p>
-                        <p className="text-xs">Funding: <strong>{r.fundingSource ?? "—"}</strong></p>
+                        <p className="text-xs">Application date: <strong>{r.application_date ?? "—"}</strong></p>
+                        <p className="text-xs">Cost paid: <strong>{r.cost_paid !== undefined ? fmtGBP(r.cost_paid) : "—"}</strong></p>
+                        <p className="text-xs">Funding: <strong>{r.funding_source ?? "—"}</strong></p>
                       </div>
                       <div className="rounded-lg border bg-white p-3 space-y-1">
                         <p className="text-xs font-semibold text-teal-800 flex items-center gap-1"><ShieldCheck className="h-3 w-3" />Document</p>
-                        <p className="text-xs">Document number: <span className="font-mono">{r.documentNumber ?? "—"}</span></p>
-                        <p className="text-xs">Issued: <strong>{r.issueDate ?? "—"}</strong></p>
-                        <p className="text-xs">Expires: <strong>{r.expiryDate ?? "—"}</strong></p>
+                        <p className="text-xs">Document number: <span className="font-mono">{r.document_number ?? "—"}</span></p>
+                        <p className="text-xs">Issued: <strong>{r.issue_date ?? "—"}</strong></p>
+                        <p className="text-xs">Expires: <strong>{r.expiry_date ?? "—"}</strong></p>
                       </div>
                     </div>
 
                     {/* storage */}
                     <div className="rounded-lg border bg-white p-3 text-sm space-y-1">
                       <p className="text-xs font-semibold text-blue-800 flex items-center gap-1"><Camera className="h-3 w-3" />Storage and Copies</p>
-                      <p className="text-xs">Storage location: <strong>{r.storageLocation}</strong></p>
-                      <p className="text-xs">Child has original: <strong>{r.childHasOriginal ? "Yes" : "No"}</strong></p>
-                      {r.copiesKept.length > 0 && (
+                      <p className="text-xs">Storage location: <strong>{r.storage_location}</strong></p>
+                      <p className="text-xs">Child has original: <strong>{r.child_has_original ? "Yes" : "No"}</strong></p>
+                      {r.copies_kept.length > 0 && (
                         <ul className="list-disc list-inside text-xs space-y-0.5 mt-1">
-                          {r.copiesKept.map((c, i) => <li key={i}>{c}</li>)}
+                          {r.copies_kept.map((c, i) => <li key={i}>{c}</li>)}
                         </ul>
                       )}
                     </div>
 
                     {/* evidence */}
-                    {r.evidenceProvidedToAuthority.length > 0 && (
+                    {r.evidence_provided_to_authority.length > 0 && (
                       <div>
                         <p className="text-xs font-semibold mb-1 flex items-center gap-1"><FileText className="h-3 w-3" />Evidence Provided to Issuing Authority</p>
                         <ul className="list-disc list-inside text-sm space-y-0.5">
-                          {r.evidenceProvidedToAuthority.map((e, i) => <li key={i}>{e}</li>)}
+                          {r.evidence_provided_to_authority.map((e, i) => <li key={i}>{e}</li>)}
                         </ul>
                       </div>
                     )}
 
                     {/* LAC challenges */}
-                    {r.uniqueChallengesForLAC.length > 0 && (
+                    {r.unique_challenges_for_lac.length > 0 && (
                       <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                         <p className="text-xs font-semibold text-amber-900 mb-1">Unique Challenges for Looked-After Children</p>
                         <ul className="list-disc list-inside text-sm space-y-0.5 text-amber-900">
-                          {r.uniqueChallengesForLAC.map((c, i) => <li key={i}>{c}</li>)}
+                          {r.unique_challenges_for_lac.map((c, i) => <li key={i}>{c}</li>)}
                         </ul>
                       </div>
                     )}
@@ -517,20 +303,22 @@ export default function ChildPhotoIdApplicationTrackerPage() {
                     {/* child voice */}
                     <div className="rounded-lg bg-sky-50 border border-sky-200 p-3">
                       <p className="text-xs font-semibold text-sky-800 mb-1">Child&apos;s Voice</p>
-                      <p className="text-sm italic">&ldquo;{r.childVoice}&rdquo;</p>
+                      <p className="text-sm italic">&ldquo;{r.child_voice}&rdquo;</p>
                     </div>
 
                     {/* staff observation */}
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                       <p className="text-xs font-semibold text-blue-800 mb-1">Staff Observation</p>
-                      <p className="text-sm">{r.staffObservation}</p>
+                      <p className="text-sm">{r.staff_observation}</p>
                     </div>
 
                     {/* meta */}
                     <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                      <span>Key Worker: <strong>{getStaffName(r.keyWorker)}</strong></span>
-                      <span>Review Date: <strong>{r.reviewDate}</strong></span>
+                      <span>Key Worker: <strong>{getStaffName(r.key_worker)}</strong></span>
+                      <span>Review Date: <strong>{r.review_date}</strong></span>
                     </div>
+
+                    <SmartLinkPanel sourceType="photo-id-record" sourceId={r.id} childId={r.child_id} compact />
                   </CardContent>
                 )}
               </Card>

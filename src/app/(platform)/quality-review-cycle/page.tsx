@@ -6,216 +6,101 @@ import {
   AlertTriangle, CheckCircle2, TrendingUp, Clock,
   ChevronDown, ChevronUp, Users, FileText, Shield,
   BookOpen, Heart, Brain, Home, Award, Calendar,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useReg46Reviews } from "@/hooks/use-reg46-reviews";
+import type {
+  Reg46Review,
+  Reg46ReviewStatus,
+  Reg46AreaRating,
+  Reg46AreaReviewed,
+  Reg46ActionArising,
+} from "@/types/extended";
+import {
+  REG46_REVIEW_STATUS_LABEL,
+  REG46_AREA_RATING_LABEL,
+  REG46_ACTION_STATUS_LABEL,
+} from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
+/* ── local colour maps ─────────────────────────────────────────────────── */
 
-/* ── types ───────────────────────────────────────────────────────────── */
-const STATUSES = ["completed", "planned"] as const;
-type ReviewStatus = typeof STATUSES[number];
-const STATUS_LABELS: Record<ReviewStatus, string> = {
-  completed: "Completed",
-  planned: "Planned",
-};
-const STATUS_COLORS: Record<ReviewStatus, string> = {
+const STATUSES: Reg46ReviewStatus[] = ["completed", "planned"];
+
+const STATUS_COLORS: Record<Reg46ReviewStatus, string> = {
   completed: "bg-green-100 text-green-800",
   planned: "bg-blue-100 text-blue-800",
 };
 
-const AREA_RATINGS = ["outstanding", "good", "requires_improvement", "inadequate"] as const;
-type AreaRating = typeof AREA_RATINGS[number];
-const AREA_RATING_LABELS: Record<AreaRating, string> = {
-  outstanding: "Outstanding",
-  good: "Good",
-  requires_improvement: "Requires Improvement",
-  inadequate: "Inadequate",
-};
-const AREA_RATING_COLORS: Record<AreaRating, string> = {
+const AREA_RATING_COLORS: Record<Reg46AreaRating, string> = {
   outstanding: "bg-green-100 text-green-800",
   good: "bg-blue-100 text-blue-800",
   requires_improvement: "bg-orange-100 text-orange-800",
   inadequate: "bg-red-100 text-red-800",
 };
 
-interface AreaReviewed {
-  area: string;
-  rating: AreaRating;
-  summary: string;
-  evidence: string;
-}
+/* ── component ─────────────────────────────────────────────────────────── */
 
-interface ActionArising {
-  action: string;
-  owner: string;
-  deadline: string;
-  status: "open" | "in_progress" | "completed";
-}
-
-interface Reg46Review {
-  id: string;
-  reviewPeriodStart: string;
-  reviewPeriodEnd: string;
-  completedDate: string | null;
-  reviewer: string;
-  independentInput: string;
-  overallRating: string;
-  areasReviewed: AreaReviewed[];
-  consultationSources: string[];
-  actionsArising: ActionArising[];
-  sharedWith: string[];
-  status: ReviewStatus;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: Reg46Review[] = [
-  {
-    id: "reg46_1",
-    reviewPeriodStart: d(-183),
-    reviewPeriodEnd: d(0),
-    completedDate: d(-14),
-    reviewer: "staff_darren",
-    independentInput: "Regulation 44 independent visitor report incorporated; visitor conducted separate consultation with children and staff",
-    overallRating: "Good with areas for development",
-    areasReviewed: [
-      { area: "Safeguarding", rating: "good", summary: "Robust procedures in place with no concerns identified", evidence: "All safeguarding referrals appropriately managed. DBS checks 100% compliant. Safeguarding training up to date for all staff. Children report feeling safe." },
-      { area: "Education", rating: "good", summary: "All children in education with PEPs up to date", evidence: "All young people have current education placements. Personal Education Plans reviewed termly. Designated teacher liaison in place. Attendance monitoring active." },
-      { area: "Health", rating: "requires_improvement", summary: "Jordan's CAMHS referral experiencing extended wait", evidence: "Physical health assessments current for all YP. Dental and optician checks on schedule. However, Jordan has been on CAMHS waiting list for 4 months with no appointment date confirmed. Escalation letter sent to ICB." },
-      { area: "Emotional wellbeing", rating: "good", summary: "Therapeutic input effective and well-embedded", evidence: "Weekly therapeutic sessions delivered consistently. Staff trained in trauma-informed approach. Key working sessions evidence positive progress. Children's self-reported wellbeing scores improving." },
-      { area: "Staffing", rating: "good", summary: "Stable team with good staff-to-child ratios", evidence: "No agency staff usage this period. All supervision up to date. Team morale positive. CPD records current. Retention strong with no leavers in review period." },
-      { area: "Premises", rating: "good", summary: "Home well maintained and personalised", evidence: "Health and safety checks current. Fire safety equipment serviced. Children's bedrooms personalised to their choice. Communal areas comfortable and well-kept. Minor maintenance addressed promptly." },
-      { area: "Leadership", rating: "outstanding", summary: "Registered Manager driving continuous improvement", evidence: "RM demonstrates exceptional oversight of all aspects of care. Regular monitoring systems in place. Staff feel well-supported. External professionals consistently praise communication and collaboration. Innovation in practice evident." },
-    ],
-    consultationSources: [
-      "Children's views gathered via house meeting and individual 1:1 sessions",
-      "Staff views collected through team meeting and anonymous survey",
-      "Placing authority views obtained via structured survey to all social workers",
-      "Regulation 44 independent visitor report incorporated and cross-referenced",
-    ],
-    actionsArising: [
-      { action: "Escalate Jordan's CAMHS wait via formal complaint to ICB", owner: "staff_darren", deadline: d(-7), status: "completed" },
-      { action: "Develop contingency therapeutic support plan pending CAMHS appointment", owner: "staff_anna", deadline: d(7), status: "in_progress" },
-      { action: "Review and update lone working policy to reflect current practice", owner: "staff_ryan", deadline: d(21), status: "open" },
-    ],
-    sharedWith: ["Ofsted (available on request)", "All placing authorities", "Staff team"],
-    status: "completed",
-  },
-  {
-    id: "reg46_2",
-    reviewPeriodStart: d(-365),
-    reviewPeriodEnd: d(-183),
-    completedDate: d(-195),
-    reviewer: "staff_darren",
-    independentInput: "Independent consultant conducted staff interviews and children's consultations separately from RM",
-    overallRating: "Good",
-    areasReviewed: [
-      { area: "Safeguarding", rating: "good", summary: "Appropriate systems and responses in place", evidence: "One safeguarding concern raised and appropriately managed through LADO. Staff demonstrated good awareness and timely reporting." },
-      { area: "Education", rating: "good", summary: "Education provision stable with positive engagement", evidence: "All children attending education. PEPs current. Strong relationships with education providers maintained." },
-      { area: "Health", rating: "good", summary: "Health needs well met across all young people", evidence: "All statutory health assessments completed on time. Medications managed safely. Health promotion activities embedded in routine." },
-      { area: "Emotional wellbeing", rating: "good", summary: "Therapeutic model consistently applied", evidence: "Children engaging well with therapeutic support. Measurable progress evident in outcome tracking. Staff confidence in therapeutic approach growing." },
-      { area: "Staffing", rating: "requires_improvement", summary: "Concerns about one staff member's practice led to disciplinary process", evidence: "Staff member Diane's practice fell below expected standards. Formal disciplinary process initiated. Additional supervision put in place for all staff. Recruitment commenced for potential replacement." },
-      { area: "Premises", rating: "good", summary: "Home maintained to good standard", evidence: "All maintenance requests addressed within agreed timescales. Decorating programme on track. Garden well maintained." },
-      { area: "Leadership", rating: "good", summary: "RM providing effective oversight", evidence: "Monitoring systems robust. Regulatory compliance maintained. Appropriate action taken when staff concerns identified." },
-    ],
-    consultationSources: [
-      "Children's views gathered through independent consultant interviews",
-      "Staff views collected via confidential survey and team discussion",
-      "Placing authority feedback obtained from all allocated social workers",
-      "Independent consultant report reviewed and incorporated",
-    ],
-    actionsArising: [
-      { action: "Complete disciplinary process for staff_diane", owner: "staff_darren", deadline: d(-170), status: "completed" },
-      { action: "Recruit replacement staff member if needed", owner: "staff_darren", deadline: d(-150), status: "completed" },
-      { action: "Deliver refresher training on professional boundaries for whole team", owner: "staff_ryan", deadline: d(-160), status: "completed" },
-      { action: "Implement enhanced supervision schedule for probationary period", owner: "staff_darren", deadline: d(-140), status: "completed" },
-    ],
-    sharedWith: ["Ofsted (available on request)", "All placing authorities", "Staff team"],
-    status: "completed",
-  },
-  {
-    id: "reg46_3",
-    reviewPeriodStart: d(0),
-    reviewPeriodEnd: d(183),
-    completedDate: null,
-    reviewer: "staff_darren",
-    independentInput: "Independent Reg 44 visitor to provide separate input; scope and schedule being prepared",
-    overallRating: "—",
-    areasReviewed: [],
-    consultationSources: [],
-    actionsArising: [],
-    sharedWith: [],
-    status: "planned",
-  },
-];
-
-/* ── component ───────────────────────────────────────────────────────── */
 export default function QualityReviewCyclePage() {
-  const [reviews] = useState<Reg46Review[]>(SEED);
+  const { data: records = [], isLoading } = useReg46Reviews();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let list = [...reviews];
+    let list = [...records];
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          r.overallRating.toLowerCase().includes(q) ||
-          r.independentInput.toLowerCase().includes(q) ||
-          r.areasReviewed.some((a) => a.summary.toLowerCase().includes(q) || a.area.toLowerCase().includes(q)) ||
-          r.actionsArising.some((a) => a.action.toLowerCase().includes(q))
+          r.overall_rating.toLowerCase().includes(q) ||
+          r.independent_input.toLowerCase().includes(q) ||
+          r.areas_reviewed.some((a) => a.summary.toLowerCase().includes(q) || a.area.toLowerCase().includes(q)) ||
+          r.actions_arising.some((a) => a.action.toLowerCase().includes(q))
       );
     }
     if (filterStatus !== "all") list = list.filter((r) => r.status === filterStatus);
 
     list.sort((a, b) => {
       switch (sortBy) {
-        case "date": return (b.completedDate ?? b.reviewPeriodEnd).localeCompare(a.completedDate ?? a.reviewPeriodEnd);
+        case "date": return (b.completed_date ?? b.review_period_end).localeCompare(a.completed_date ?? a.review_period_end);
         case "status": return STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status);
         default: return 0;
       }
     });
     return list;
-  }, [reviews, search, filterStatus, sortBy]);
+  }, [records, search, filterStatus, sortBy]);
 
   /* stats */
-  const completedOnTime = reviews.filter((r) => r.status === "completed").length;
-  const totalActions = reviews.reduce((s, r) => s + r.actionsArising.length, 0);
-  const completedActions = reviews.reduce((s, r) => s + r.actionsArising.filter((a: ActionArising) => a.status === "completed").length, 0);
+  const completedOnTime = records.filter((r) => r.status === "completed").length;
+  const totalActions = records.reduce((s, r) => s + r.actions_arising.length, 0);
+  const completedActions = records.reduce((s, r) => s + r.actions_arising.filter((a: Reg46ActionArising) => a.status === "completed").length, 0);
   const actionsCompletedPct = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0;
-  const latestCompleted = reviews.filter((r) => r.status === "completed").sort((a, b) => (b.completedDate ?? "").localeCompare(a.completedDate ?? ""))[0];
+  const latestCompleted = records.filter((r) => r.status === "completed").sort((a, b) => (b.completed_date ?? "").localeCompare(a.completed_date ?? ""))[0];
 
   const exportCols: ExportColumn<Reg46Review>[] = [
-    { header: "ID", accessor: (r: Reg46Review) => r.id },
-    { header: "Period Start", accessor: (r: Reg46Review) => r.reviewPeriodStart },
-    { header: "Period End", accessor: (r: Reg46Review) => r.reviewPeriodEnd },
-    { header: "Completed Date", accessor: (r: Reg46Review) => r.completedDate ?? "—" },
-    { header: "Reviewer", accessor: (r: Reg46Review) => getStaffName(r.reviewer) },
-    { header: "Independent Input", accessor: (r: Reg46Review) => r.independentInput },
-    { header: "Overall Rating", accessor: (r: Reg46Review) => r.overallRating },
-    { header: "Status", accessor: (r: Reg46Review) => STATUS_LABELS[r.status] },
-    { header: "Areas Reviewed", accessor: (r: Reg46Review) => r.areasReviewed.map((a: AreaReviewed) => `${a.area}: ${AREA_RATING_LABELS[a.rating]}`).join("; ") },
-    { header: "Consultation Sources", accessor: (r: Reg46Review) => r.consultationSources.join("; ") },
-    { header: "Actions", accessor: (r: Reg46Review) => r.actionsArising.map((a: ActionArising) => `${a.action} (${getStaffName(a.owner)} — ${a.status})`).join("; ") },
-    { header: "Shared With", accessor: (r: Reg46Review) => r.sharedWith.join("; ") },
+    { header: "ID", accessor: (r) => r.id },
+    { header: "Period Start", accessor: (r) => r.review_period_start },
+    { header: "Period End", accessor: (r) => r.review_period_end },
+    { header: "Completed Date", accessor: (r) => r.completed_date ?? "—" },
+    { header: "Reviewer", accessor: (r) => getStaffName(r.reviewer) },
+    { header: "Independent Input", accessor: (r) => r.independent_input },
+    { header: "Overall Rating", accessor: (r) => r.overall_rating },
+    { header: "Status", accessor: (r) => REG46_REVIEW_STATUS_LABEL[r.status] },
+    { header: "Areas Reviewed", accessor: (r) => r.areas_reviewed.map((a: Reg46AreaReviewed) => `${a.area}: ${REG46_AREA_RATING_LABEL[a.rating]}`).join("; ") },
+    { header: "Consultation Sources", accessor: (r) => r.consultation_sources.join("; ") },
+    { header: "Actions", accessor: (r) => r.actions_arising.map((a: Reg46ActionArising) => `${a.action} (${getStaffName(a.owner)} — ${a.status})`).join("; ") },
+    { header: "Shared With", accessor: (r) => r.shared_with.join("; ") },
   ];
 
   const getAreaIcon = (area: string) => {
@@ -230,6 +115,16 @@ export default function QualityReviewCyclePage() {
       default: return FileText;
     }
   };
+
+  if (isLoading) {
+    return (
+      <PageShell title="Regulation 46 — Quality of Care Review" subtitle="Six-monthly independent systematic review of the quality of care provided">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -262,7 +157,7 @@ export default function QualityReviewCyclePage() {
             { label: "Reviews Completed", value: completedOnTime, icon: ClipboardCheck, colour: "text-green-600" },
             { label: "Actions Completed", value: `${actionsCompletedPct}%`, icon: CheckCircle2, colour: actionsCompletedPct === 100 ? "text-green-600" : "text-blue-600" },
             { label: "Overall Trajectory", value: latestCompleted ? "Good" : "—", icon: TrendingUp, colour: "text-green-600" },
-            { label: "Next Review Due", value: reviews.find((r) => r.status === "planned")?.reviewPeriodEnd ?? "—", icon: Calendar, colour: "text-purple-600" },
+            { label: "Next Review Due", value: records.find((r) => r.status === "planned")?.review_period_end ?? "—", icon: Calendar, colour: "text-purple-600" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border bg-white p-4 flex items-center gap-3">
               <s.icon className={cn("h-5 w-5", s.colour)} />
@@ -292,7 +187,7 @@ export default function QualityReviewCyclePage() {
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
+                  <SelectItem key={s} value={s}>{REG46_REVIEW_STATUS_LABEL[s]}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -316,7 +211,7 @@ export default function QualityReviewCyclePage() {
           )}
           {filtered.map((review) => {
             const isExpanded = expandedId === review.id;
-            const openActions = review.actionsArising.filter((a: ActionArising) => a.status !== "completed").length;
+            const openActions = review.actions_arising.filter((a: Reg46ActionArising) => a.status !== "completed").length;
 
             return (
               <div key={review.id} className="rounded-xl border bg-white overflow-hidden">
@@ -328,22 +223,22 @@ export default function QualityReviewCyclePage() {
                     <ClipboardCheck className="h-5 w-5 text-blue-600 shrink-0" />
                     <div className="min-w-0">
                       <p className="font-medium">
-                        {review.reviewPeriodStart} to {review.reviewPeriodEnd}
+                        {review.review_period_start} to {review.review_period_end}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         Reviewer: {getStaffName(review.reviewer)}
-                        {review.completedDate && ` · Completed: ${review.completedDate}`}
+                        {review.completed_date && ` · Completed: ${review.completed_date}`}
                         {openActions > 0 && ` · ${openActions} open action(s)`}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge className={cn("text-xs", STATUS_COLORS[review.status])}>
-                      {STATUS_LABELS[review.status]}
+                      {REG46_REVIEW_STATUS_LABEL[review.status]}
                     </Badge>
-                    {review.overallRating !== "—" && (
+                    {review.overall_rating !== "—" && (
                       <Badge variant="outline" className="text-xs">
-                        {review.overallRating}
+                        {review.overall_rating}
                       </Badge>
                     )}
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -360,10 +255,10 @@ export default function QualityReviewCyclePage() {
                           <p className="text-sm font-medium text-blue-800">Upcoming Review</p>
                         </div>
                         <p className="text-sm text-blue-700 mb-2">
-                          Review period: {review.reviewPeriodStart} to {review.reviewPeriodEnd}
+                          Review period: {review.review_period_start} to {review.review_period_end}
                         </p>
                         <p className="text-sm text-blue-700">
-                          {review.independentInput}
+                          {review.independent_input}
                         </p>
                       </div>
                     )}
@@ -374,15 +269,15 @@ export default function QualityReviewCyclePage() {
                         {/* independent input */}
                         <div className="rounded-lg bg-white border p-3">
                           <p className="text-xs text-muted-foreground font-medium mb-1">Independent Input</p>
-                          <p className="text-sm">{review.independentInput}</p>
+                          <p className="text-sm">{review.independent_input}</p>
                         </div>
 
                         {/* areas reviewed */}
-                        {review.areasReviewed.length > 0 && (
+                        {review.areas_reviewed.length > 0 && (
                           <div>
                             <p className="text-sm font-medium mb-2">Areas Reviewed</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {review.areasReviewed.map((area: AreaReviewed) => {
+                              {review.areas_reviewed.map((area: Reg46AreaReviewed) => {
                                 const AreaIcon = getAreaIcon(area.area);
                                 return (
                                   <div key={area.area} className="flex items-start gap-2 rounded-lg border bg-white p-3">
@@ -391,7 +286,7 @@ export default function QualityReviewCyclePage() {
                                       <div className="flex items-center gap-2 mb-1">
                                         <p className="text-sm font-medium">{area.area}</p>
                                         <Badge className={cn("text-xs", AREA_RATING_COLORS[area.rating])}>
-                                          {AREA_RATING_LABELS[area.rating]}
+                                          {REG46_AREA_RATING_LABEL[area.rating]}
                                         </Badge>
                                       </div>
                                       <p className="text-sm text-slate-700 mb-1">{area.summary}</p>
@@ -405,14 +300,14 @@ export default function QualityReviewCyclePage() {
                         )}
 
                         {/* consultation sources */}
-                        {review.consultationSources.length > 0 && (
+                        {review.consultation_sources.length > 0 && (
                           <div className="rounded-lg bg-purple-50 border border-purple-200 p-3">
                             <div className="flex items-center gap-1 mb-2">
                               <Users className="h-4 w-4 text-purple-600" />
                               <p className="text-xs font-medium text-purple-700">Consultation Sources</p>
                             </div>
                             <ul className="space-y-1">
-                              {review.consultationSources.map((src: string, i: number) => (
+                              {review.consultation_sources.map((src: string, i: number) => (
                                 <li key={i} className="flex items-start gap-1 text-sm text-purple-800">
                                   <CheckCircle2 className="h-3 w-3 text-purple-500 mt-0.5 shrink-0" />
                                   <span>{src}</span>
@@ -423,11 +318,11 @@ export default function QualityReviewCyclePage() {
                         )}
 
                         {/* actions arising */}
-                        {review.actionsArising.length > 0 && (
+                        {review.actions_arising.length > 0 && (
                           <div>
                             <p className="text-sm font-medium mb-2">Actions Arising</p>
                             <div className="space-y-2">
-                              {review.actionsArising.map((action: ActionArising, idx: number) => (
+                              {review.actions_arising.map((action: Reg46ActionArising, idx: number) => (
                                 <div key={idx} className="flex items-start gap-2 rounded-lg border bg-white p-2.5">
                                   <CheckCircle2 className={cn("h-4 w-4 mt-0.5 shrink-0",
                                     action.status === "completed" ? "text-green-600" : action.status === "in_progress" ? "text-blue-600" : "text-slate-400"
@@ -444,7 +339,7 @@ export default function QualityReviewCyclePage() {
                                     action.status === "completed" ? "border-green-300 text-green-700" :
                                     action.status === "in_progress" ? "border-blue-300 text-blue-700" :
                                     "border-slate-300 text-slate-700"
-                                  )}>{action.status.replace("_", " ")}</Badge>
+                                  )}>{REG46_ACTION_STATUS_LABEL[action.status]}</Badge>
                                 </div>
                               ))}
                             </div>
@@ -452,11 +347,11 @@ export default function QualityReviewCyclePage() {
                         )}
 
                         {/* shared with */}
-                        {review.sharedWith.length > 0 && (
+                        {review.shared_with.length > 0 && (
                           <div className="rounded-lg bg-white border p-3">
                             <p className="text-xs text-muted-foreground font-medium mb-1">Report Shared With</p>
                             <div className="flex flex-wrap gap-2">
-                              {review.sharedWith.map((recipient: string, i: number) => (
+                              {review.shared_with.map((recipient: string, i: number) => (
                                 <Badge key={i} variant="outline" className="text-xs">{recipient}</Badge>
                               ))}
                             </div>

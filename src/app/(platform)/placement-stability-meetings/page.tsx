@@ -19,217 +19,101 @@ import {
   ArrowUpDown,
   TrendingUp,
   Heart,
+  Loader2,
 } from "lucide-react";
-
-/* ─── date helper ─── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ─── types ─── */
-interface StabilityMeeting {
-  id: string;
-  youngPersonId: string;
-  meetingDate: string;
-  chairperson: string;
-  attendees: string[];
-  trigger: string;
-  riskLevel: "high" | "medium" | "low";
-  status: "placement_stable" | "at_risk" | "stabilised" | "ended";
-  concerns: string[];
-  strengths: string[];
-  childView: string;
-  agreementsReached: { agreement: string; owner: string; deadline: string; status: string }[];
-  outcome: string;
-  reviewDate: string | null;
-  notes: string;
-}
-
-/* ─── seed data ─── */
-const meetings: StabilityMeeting[] = [
-  {
-    id: "psm_001",
-    youngPersonId: "yp_casey",
-    meetingDate: d(-75),
-    chairperson: "IRO (Samantha Green)",
-    attendees: ["staff_darren", "staff_chervelle", "Casey's SW (Mark)", "IRO", "Casey (for part)"],
-    trigger: "3 missing episodes in 2 weeks. Escalating behaviour. Casey saying 'I don't want to be here.' Staff concern that placement may break down.",
-    riskLevel: "high",
-    status: "stabilised",
-    concerns: [
-      "3 missing episodes in 14 days — pattern escalating",
-      "Casey verbalising wanting to leave",
-      "Conflict with staff over boundaries — Casey experiencing as controlling",
-      "Exploitation concerns during missing episodes",
-      "Risk of unplanned placement ending if trajectory continues",
-    ],
-    strengths: [
-      "Casey has a strong relationship with Chervelle (key worker)",
-      "Casey is attending school consistently",
-      "Casey's relationship with mum improving",
-      "Casey engages when not in crisis — articulate and insightful",
-      "Home has capacity and commitment to work through this",
-    ],
-    childView: "Casey attended for 15 minutes. Said: 'I don't hate it here. I just hate being told what to do all the time. I'm 15, not 5. If people backed off a bit I'd be fine.' When asked what would help: 'Let me have some freedom. Trust me a bit. Stop making everything into a big deal.' Casey left meeting voluntarily — said they'd said enough.",
-    agreementsReached: [
-      { agreement: "Review all boundaries — identify which are negotiable vs non-negotiable", owner: "staff_darren", deadline: d(-68), status: "completed" },
-      { agreement: "Increase Casey's autonomy: self-managed bedtime, independent travel to school", owner: "staff_chervelle", deadline: d(-65), status: "completed" },
-      { agreement: "Cool-off space created in conservatory (Casey's request)", owner: "staff_darren", deadline: d(-60), status: "completed" },
-      { agreement: "Weekly check-in between Casey and Chervelle (not formal key work — just a chat)", owner: "staff_chervelle", deadline: d(-70), status: "completed" },
-      { agreement: "Exploitation multi-agency meeting — separate but parallel", owner: "staff_darren", deadline: d(-60), status: "completed" },
-      { agreement: "Placement not to end without full disruption meeting process", owner: "IRO", deadline: d(-75), status: "completed" },
-    ],
-    outcome: "Placement stabilised within 3 weeks. Casey's feedback was the turning point — staff recognised that boundaries were disproportionate for a 15-year-old. The autonomy increase (self-managed bedtime, independent travel) dramatically reduced conflict. Missing episodes stopped. Casey said 2 weeks later: 'It's actually alright now. People listen.'",
-    reviewDate: d(-45),
-    notes: "This is an excellent example of listening to the child. Casey's 'difficult behaviour' was communication that the environment was too restrictive. When the environment changed, the behaviour changed. The placement was saved by being willing to adapt, not by doubling down on control.",
-  },
-  {
-    id: "psm_002",
-    youngPersonId: "yp_jordan",
-    meetingDate: d(-150),
-    chairperson: "staff_darren",
-    attendees: ["staff_darren", "staff_anna", "Jordan's SW (Priya)", "Jordan's therapist (Dr. Khan)", "Jordan (via advocate)"],
-    trigger: "Jordan's behaviour escalating following contact with birth mum. Physical aggression toward staff (biting, kicking). Staff feeling unable to manage safely. Therapist concerned about placement viability.",
-    riskLevel: "medium",
-    status: "stabilised",
-    concerns: [
-      "Physical aggression increasing in frequency (3 incidents in 1 week)",
-      "Contact with mum causing severe dysregulation lasting 48+ hours",
-      "Staff confidence affected — one staff member requested to not work with Jordan",
-      "Jordan's distress clearly increasing — not malicious behaviour but pain-driven",
-      "Risk of placement breakdown if staff can't manage safely",
-    ],
-    strengths: [
-      "Anna has excellent relationship with Jordan — not targeted by aggression",
-      "Jordan clearly attached to the home — says 'I want to stay'",
-      "Therapeutic relationship with Dr. Khan is strong",
-      "Team generally committed to Jordan — understand behaviour as communication",
-      "Home experienced in trauma-informed practice",
-    ],
-    childView: "Jordan's advocate reported: Jordan is frightened of being moved. Jordan said 'I don't mean to hurt people. My body does things when I'm scared.' Jordan wants to stay and wants to see mum but 'mum makes me feel confused.' Jordan asked for more time with Anna and for people to 'not shout when I'm upset.'",
-    agreementsReached: [
-      { agreement: "Suspend mum contact temporarily — therapeutic work to prepare for reintroduction", owner: "Jordan's SW", deadline: d(-140), status: "completed" },
-      { agreement: "Additional TCI refresher for all staff — focus on de-escalation for Jordan's profile", owner: "staff_darren", deadline: d(-135), status: "completed" },
-      { agreement: "Increase therapy to twice weekly during crisis period", owner: "Dr. Khan", deadline: d(-145), status: "completed" },
-      { agreement: "Anna allocated additional time with Jordan (2 extra key work sessions/week)", owner: "staff_anna", deadline: d(-148), status: "completed" },
-      { agreement: "Sensory room/space created for Jordan's regulation", owner: "staff_darren", deadline: d(-130), status: "completed" },
-      { agreement: "Staff member who requested not to work with Jordan — supported conversation + training", owner: "staff_darren", deadline: d(-140), status: "completed" },
-    ],
-    outcome: "Contact suspension + increased therapy significantly reduced aggression. Jordan's behaviour improved within 2 weeks of contact stopping. Sensory space became Jordan's go-to regulation tool. Staff confidence rebuilt through training and debriefs. The staff member who struggled was supported (not blamed) and now works well with Jordan. Placement is stable.",
-    reviewDate: d(-120),
-    notes: "Jordan's aggression was directly trauma-linked to contact. The decision to suspend contact was hard (Jordan wants to see mum) but necessary for immediate safety. The therapeutic reintroduction plan means contact will resume in a more contained way. Key learning: the placement wasn't at risk because of Jordan — it was at risk because the environment hadn't yet adapted enough to Jordan's needs.",
-  },
-  {
-    id: "psm_003",
-    youngPersonId: "yp_alex",
-    meetingDate: d(-250),
-    chairperson: "staff_darren",
-    attendees: ["staff_darren", "staff_ryan", "Alex's SW (Helen)", "Mum (Karen, for part)"],
-    trigger: "Alex saying 'I want to go home to mum.' Mum requesting discharge. Alex unsettled after weekend contact. Not a crisis but needs proactive management.",
-    riskLevel: "low",
-    status: "placement_stable",
-    concerns: [
-      "Alex expressing wish to return to mum — needs to be heard and explored",
-      "Mum making promises about 'having Alex back soon' that aren't realistic",
-      "Alex somewhat unsettled after contacts — takes 24h to resettle",
-      "Risk of Alex disengaging from placement if feels not listened to",
-    ],
-    strengths: [
-      "Alex is thriving at school — best attendance ever",
-      "Strong friendship with Kieran — positive peer relationship",
-      "Alex happy day-to-day — comments only after contact",
-      "Nan is a stabilising influence — reinforces that placement is right for now",
-      "Alex's stated wish is understandable and normal — not a crisis",
-    ],
-    childView: "Alex said: 'I love mum and I miss her. But I also like it here. I just wish I could see her more.' When asked if they want to move: 'Not really. I just feel sad sometimes after seeing mum because she cries.' Alex's wish is about contact frequency and mum's emotional presentation, not about placement quality.",
-    agreementsReached: [
-      { agreement: "Increase contact frequency from monthly to fortnightly (face-to-face)", owner: "Alex's SW", deadline: d(-240), status: "completed" },
-      { agreement: "Work with mum about managing emotions during contact (SW to support)", owner: "Alex's SW", deadline: d(-230), status: "completed" },
-      { agreement: "Key work with Alex about divided loyalties — it's OK to love mum AND like it here", owner: "staff_anna", deadline: d(-245), status: "completed" },
-      { agreement: "Post-contact routine: something nice planned for evening after seeing mum", owner: "staff_anna", deadline: d(-248), status: "completed" },
-    ],
-    outcome: "Contact increase resolved Alex's sadness. The real issue was missing mum, not wanting to leave. Mum supported to manage her own emotions better (stops crying in front of Alex now). Alex settled quickly. Key learning: children saying 'I want to go home' doesn't always mean the placement is failing — sometimes it means the contact plan needs adjusting.",
-    reviewDate: null,
-    notes: "This was a proactive meeting — not a crisis response. We didn't wait for things to escalate. Alex's feelings were valid and the fix was straightforward: more contact. The placement was never truly at risk but it was right to address Alex's feelings formally rather than dismiss them.",
-  },
-];
+import type {
+  PlacementStabilityMeeting,
+  StabilityMeetingAgreement,
+  StabilityMeetingStatus,
+  StabilityMeetingRiskLevel,
+} from "@/types/extended";
+import {
+  STABILITY_MEETING_STATUS_LABEL,
+  STABILITY_MEETING_RISK_LEVEL_LABEL,
+} from "@/types/extended";
+import { usePlacementStabilityMeetings } from "@/hooks/use-placement-stability-meetings";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ─── export columns ─── */
-const exportCols: ExportColumn<StabilityMeeting>[] = [
-  { header: "Young Person", accessor: (r: StabilityMeeting) => getYPName(r.youngPersonId) },
-  { header: "Date", accessor: (r: StabilityMeeting) => r.meetingDate },
-  { header: "Chair", accessor: (r: StabilityMeeting) => r.chairperson },
-  { header: "Trigger", accessor: (r: StabilityMeeting) => r.trigger },
-  { header: "Risk Level", accessor: (r: StabilityMeeting) => r.riskLevel },
-  { header: "Status", accessor: (r: StabilityMeeting) => r.status.replace(/_/g, " ") },
-  { header: "Agreements", accessor: (r: StabilityMeeting) => r.agreementsReached.length.toString() },
-  { header: "Outcome", accessor: (r: StabilityMeeting) => r.outcome },
-  { header: "Child View", accessor: (r: StabilityMeeting) => r.childView },
+const exportCols: ExportColumn<PlacementStabilityMeeting>[] = [
+  { header: "Young Person", accessor: (r: PlacementStabilityMeeting) => getYPName(r.child_id) },
+  { header: "Date", accessor: (r: PlacementStabilityMeeting) => r.meeting_date },
+  { header: "Chair", accessor: (r: PlacementStabilityMeeting) => r.chairperson },
+  { header: "Trigger", accessor: (r: PlacementStabilityMeeting) => r.trigger },
+  { header: "Risk Level", accessor: (r: PlacementStabilityMeeting) => r.risk_level },
+  { header: "Status", accessor: (r: PlacementStabilityMeeting) => r.status.replace(/_/g, " ") },
+  { header: "Agreements", accessor: (r: PlacementStabilityMeeting) => r.agreements_reached.length.toString() },
+  { header: "Outcome", accessor: (r: PlacementStabilityMeeting) => r.outcome },
+  { header: "Child View", accessor: (r: PlacementStabilityMeeting) => r.child_view },
 ];
 
 /* ─── component ─── */
 export default function PlacementStabilityMeetingsPage() {
+  const { data: res, isLoading } = usePlacementStabilityMeetings();
+  const entries = res?.data ?? [];
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("date");
 
+  const childIds = useMemo(() => [...new Set(entries.map(e => e.child_id))], [entries]);
+
   const filtered = useMemo(() => {
-    let list = [...meetings];
-    if (filterYP !== "all") list = list.filter((r) => r.youngPersonId === filterYP);
+    let list = [...entries];
+    if (filterYP !== "all") list = list.filter((r) => r.child_id === filterYP);
     list.sort((a, b) => {
       switch (sortBy) {
         case "date":
-          return b.meetingDate.localeCompare(a.meetingDate);
+          return b.meeting_date.localeCompare(a.meeting_date);
         case "risk": {
-          const rOrder = { high: 0, medium: 1, low: 2 };
-          return rOrder[a.riskLevel] - rOrder[b.riskLevel];
+          const rOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+          return rOrder[a.risk_level] - rOrder[b.risk_level];
         }
         default:
           return 0;
       }
     });
     return list;
-  }, [filterYP, sortBy]);
+  }, [entries, filterYP, sortBy]);
 
   const stats = useMemo(() => {
-    const total = meetings.length;
-    const stabilised = meetings.filter((m) => m.status === "stabilised" || m.status === "placement_stable").length;
-    const ended = meetings.filter((m) => m.status === "ended").length;
-    const avgAgreements = Math.round(meetings.reduce((s, m) => s + m.agreementsReached.length, 0) / total);
+    const total = entries.length;
+    const stabilised = entries.filter((m) => m.status === "stabilised" || m.status === "placement_stable").length;
+    const ended = entries.filter((m) => m.status === "ended").length;
+    const avgAgreements = total > 0 ? Math.round(entries.reduce((s, m) => s + m.agreements_reached.length, 0) / total) : 0;
     return { total, stabilised, ended, avgAgreements };
-  }, []);
+  }, [entries]);
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
-  const statusBadge = (status: string) => {
-    switch (status) {
-      case "placement_stable":
-        return <Badge className="bg-green-100 text-green-800">Stable</Badge>;
-      case "stabilised":
-        return <Badge className="bg-blue-100 text-blue-800">Stabilised</Badge>;
-      case "at_risk":
-        return <Badge className="bg-red-100 text-red-800">At Risk</Badge>;
-      case "ended":
-        return <Badge className="bg-gray-100 text-gray-800">Ended</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
+  const statusBadge = (status: StabilityMeetingStatus) => {
+    const colours: Record<StabilityMeetingStatus, string> = {
+      placement_stable: "bg-green-100 text-green-800",
+      stabilised: "bg-blue-100 text-blue-800",
+      at_risk: "bg-red-100 text-red-800",
+      ended: "bg-gray-100 text-gray-800",
+    };
+    return <Badge className={colours[status]}>{STABILITY_MEETING_STATUS_LABEL[status]}</Badge>;
   };
 
-  const riskBadge = (risk: string) => {
-    switch (risk) {
-      case "high":
-        return <Badge className="bg-red-100 text-red-800 text-xs">High Risk</Badge>;
-      case "medium":
-        return <Badge className="bg-amber-100 text-amber-800 text-xs">Medium</Badge>;
-      case "low":
-        return <Badge className="bg-green-100 text-green-800 text-xs">Low</Badge>;
-      default:
-        return null;
-    }
+  const riskBadge = (risk: StabilityMeetingRiskLevel) => {
+    const colours: Record<StabilityMeetingRiskLevel, string> = {
+      high: "bg-red-100 text-red-800 text-xs",
+      medium: "bg-amber-100 text-amber-800 text-xs",
+      low: "bg-green-100 text-green-800 text-xs",
+    };
+    return <Badge className={colours[risk]}>{STABILITY_MEETING_RISK_LEVEL_LABEL[risk]} Risk</Badge>;
   };
+
+  if (isLoading) {
+    return (
+      <PageShell title="Placement Stability Meetings" subtitle="Multi-agency meetings to prevent placement breakdown and keep children in the right home">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -237,7 +121,7 @@ export default function PlacementStabilityMeetingsPage() {
       subtitle="Multi-agency meetings to prevent placement breakdown and keep children in the right home"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={meetings} columns={exportCols} filename="stability-meetings" />
+          <ExportButton data={entries} columns={exportCols} filename="stability-meetings" />
           <PrintButton title="Placement Stability Meetings" />
         </div>
       }
@@ -293,9 +177,9 @@ export default function PlacementStabilityMeetingsPage() {
           onChange={(e) => setFilterYP(e.target.value)}
         >
           <option value="all">All Young People</option>
-          <option value="yp_alex">Alex</option>
-          <option value="yp_jordan">Jordan</option>
-          <option value="yp_casey">Casey</option>
+          {childIds.map((c) => (
+            <option key={c} value={c}>{getYPName(c)}</option>
+          ))}
         </select>
 
         <div className="flex items-center gap-1 ml-auto">
@@ -335,11 +219,11 @@ export default function PlacementStabilityMeetingsPage() {
                     </div>
                     <div>
                       <CardTitle className="text-base">
-                        {getYPName(meeting.youngPersonId)} — {meeting.meetingDate}
+                        {getYPName(meeting.child_id)} — {meeting.meeting_date}
                       </CardTitle>
                       <div className="flex items-center gap-2 mt-1">
                         {statusBadge(meeting.status)}
-                        {riskBadge(meeting.riskLevel)}
+                        {riskBadge(meeting.risk_level)}
                       </div>
                     </div>
                   </div>
@@ -404,14 +288,14 @@ export default function PlacementStabilityMeetingsPage() {
                     <p className="text-sm font-medium text-blue-800 mb-1 flex items-center gap-1">
                       <Heart className="h-4 w-4" /> Child&apos;s View
                     </p>
-                    <p className="text-sm text-blue-700">{meeting.childView}</p>
+                    <p className="text-sm text-blue-700">{meeting.child_view}</p>
                   </div>
 
                   {/* agreements */}
                   <div>
                     <p className="text-sm font-medium mb-2">Agreements Reached</p>
                     <div className="space-y-2">
-                      {meeting.agreementsReached.map((agr, i) => (
+                      {meeting.agreements_reached.map((agr, i) => (
                         <div key={i} className="border rounded-md p-2 flex items-center justify-between">
                           <div>
                             <p className="text-sm">{agr.agreement}</p>
@@ -442,6 +326,9 @@ export default function PlacementStabilityMeetingsPage() {
                     <p className="text-sm text-muted-foreground">{meeting.notes}</p>
                   </div>
 
+                  {/* smart link panel */}
+                  <SmartLinkPanel sourceType="placement-stability-meeting" sourceId={meeting.id} childId={meeting.child_id} compact />
+
                   {/* footer */}
                   <div className="grid grid-cols-2 gap-4 pt-2 border-t">
                     <div>
@@ -450,7 +337,7 @@ export default function PlacementStabilityMeetingsPage() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Review Date</p>
-                      <p className="text-sm font-medium">{meeting.reviewDate ?? "No further review needed"}</p>
+                      <p className="text-sm font-medium">{meeting.review_date ?? "No further review needed"}</p>
                     </div>
                   </div>
                 </CardContent>

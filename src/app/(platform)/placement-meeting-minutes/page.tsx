@@ -17,6 +17,7 @@ import {
   Star,
   AlertTriangle,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -25,361 +26,81 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { PlacementMeeting, PlacementMeetingType, PlacementMeetingActionStatus } from "@/types/extended";
+import { PLACEMENT_MEETING_TYPE_LABEL, PLACEMENT_MEETING_ACTION_STATUS_LABEL } from "@/types/extended";
+import { usePlacementMeetings } from "@/hooks/use-placement-meetings";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-interface PlacementMeeting {
-  id: string;
-  youngPerson: string;
-  meetingType: "Weekly Review" | "Monthly Review" | "Crisis Meeting" | "Pre-Placement Plan" | "Pre-LAC Prep" | "Multi-Agency Update" | "Transition Planning";
-  date: string;
-  durationMinutes: number;
-  chair: string;
-  attendees: string[];
-  externalAttendees: string[];
-  childAttended: boolean;
-  childContribution: string;
-  agenda: string[];
-  progressSinceLast: string[];
-  currentConcerns: string[];
-  emergingThemes: string[];
-  decisionsAgreed: string[];
-  actions: { action: string; owner: string; deadline: string; status: "Open" | "In Progress" | "Done" }[];
-  riskUpdates: string;
-  carePlanReviewed: boolean;
-  nextMeeting: string;
-  minutedBy: string;
-  approvedBy: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const data: PlacementMeeting[] = [
-  {
-    id: "pm-001",
-    youngPerson: "yp_alex",
-    meetingType: "Monthly Review",
-    date: d(-7),
-    durationMinutes: 75,
-    chair: "staff_darren",
-    attendees: ["staff_darren", "staff_ryan", "staff_edward", "staff_anna"],
-    externalAttendees: ["Sarah Mitchell (Social Worker)"],
-    childAttended: false,
-    childContribution: "Pre-meeting key work session captured Alex's views: feels settled, school improving, wants more responsibility. Shared via key worker.",
-    agenda: [
-      "Progress against care plan goals",
-      "Education update — recent attendance and engagement",
-      "Therapy review (CAMHS)",
-      "Family contact update",
-      "Risk register review",
-      "Independence pathway progress",
-    ],
-    progressSinceLast: [
-      "School attendance up to 92% (was 85%)",
-      "Therapy engagement strong — therapist reports trust deepening",
-      "Joined boxing club — committed twice weekly attendance",
-      "Successfully managed first sleepover at friend's house",
-    ],
-    currentConcerns: [
-      "Some emotional dysregulation around mother's contact day",
-      "Mild concern about new peer group at school — monitoring",
-    ],
-    emergingThemes: [
-      "Alex showing increased capacity for relational repair",
-      "Identity work emerging in life story sessions",
-      "Greater willingness to take age-appropriate risks",
-    ],
-    decisionsAgreed: [
-      "Continue current care plan with no major changes",
-      "Add 'pre/post mother contact ritual' to support emotional regulation",
-      "Increase Alex's pocket money in line with age (£15→£20/week)",
-      "Approve sleepover requests case-by-case with risk assessment",
-    ],
-    actions: [
-      { action: "Update behaviour support plan with contact-day rituals", owner: "staff_edward", deadline: d(7), status: "In Progress" },
-      { action: "Update pocket money agreement", owner: "staff_anna", deadline: d(3), status: "Done" },
-      { action: "Sleepover protocol drafted", owner: "staff_ryan", deadline: d(14), status: "Open" },
-      { action: "School liaison about peer monitoring", owner: "staff_edward", deadline: d(7), status: "In Progress" },
-    ],
-    riskUpdates: "Risk register reviewed — peer group concern added at low-medium with monitoring. Other risks unchanged.",
-    carePlanReviewed: true,
-    nextMeeting: d(23),
-    minutedBy: "staff_anna",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pm-002",
-    youngPerson: "yp_jordan",
-    meetingType: "Multi-Agency Update",
-    date: d(-3),
-    durationMinutes: 90,
-    chair: "staff_darren",
-    attendees: ["staff_darren", "staff_ryan", "staff_chervelle"],
-    externalAttendees: [
-      "Tom Richards (Social Worker)",
-      "DC James Cole (Police - exploitation team)",
-      "Dr Patel (CAMHS)",
-      "Mr Williams (school DSL)",
-      "Hannah Green (advocate)",
-    ],
-    childAttended: true,
-    childContribution: "Jordan attended for first 30 minutes with advocate. Contributed views about contact arrangements with mother, peer group concerns, and football aspirations. Spoke confidently and was heard.",
-    agenda: [
-      "Mother's pre-release planning",
-      "Contextual safeguarding map review",
-      "Recent peer associations — risk assessment",
-      "Therapy progress",
-      "Football club ongoing — protective factor",
-      "School engagement",
-    ],
-    progressSinceLast: [
-      "No missing-from-care episodes in 6 weeks",
-      "School attendance maintained at 91%",
-      "Football team captain — selected by coach and peers",
-      "Therapy attendance 100% — engagement deepening",
-      "Successfully attended cousin's birthday with supervised contact",
-    ],
-    currentConcerns: [
-      "Mother's release in 8 weeks — preparation needs to begin",
-      "Two known associates from previous neighbourhood seen near school — police aware",
-      "Some testing of boundaries around return times — minor pattern emerging",
-    ],
-    emergingThemes: [
-      "Jordan's increased ability to articulate concerns about mother",
-      "Football identity strongly protective",
-      "Capacity for self-awareness developing through therapy",
-    ],
-    decisionsAgreed: [
-      "Pre-release planning meeting with prison social worker scheduled",
-      "Contact safety plan to be drafted before mother's release",
-      "Continue contextual safeguarding mapping monthly",
-      "Police community presence around school maintained",
-      "Boundary-testing pattern: relational response, not consequence-based",
-    ],
-    actions: [
-      { action: "Pre-release planning meeting", owner: "Tom Richards (SW)", deadline: d(14), status: "Open" },
-      { action: "Contact safety plan v1 drafted", owner: "staff_darren", deadline: d(21), status: "Open" },
-      { action: "Contextual safeguarding map refreshed", owner: "staff_ryan", deadline: d(14), status: "In Progress" },
-      { action: "Boundary conversation with Jordan", owner: "staff_chervelle (key worker)", deadline: d(5), status: "In Progress" },
-      { action: "Update CP plan ahead of next CP review", owner: "Tom Richards (SW)", deadline: d(28), status: "Open" },
-    ],
-    riskUpdates: "Risk profile remains medium-high. Pre-release period anticipated to elevate risk — preparation underway. Football and therapy strong protective factors.",
-    carePlanReviewed: true,
-    nextMeeting: d(28),
-    minutedBy: "staff_chervelle",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pm-003",
-    youngPerson: "yp_casey",
-    meetingType: "Weekly Review",
-    date: d(-1),
-    durationMinutes: 45,
-    chair: "staff_ryan",
-    attendees: ["staff_ryan", "staff_anna", "staff_mirela"],
-    externalAttendees: [],
-    childAttended: false,
-    childContribution: "Casey's views captured via visual cards in key working: feeling settled, art group going well, anxious about upcoming school trip.",
-    agenda: [
-      "Sensory regulation patterns this week",
-      "School trip preparation (next week)",
-      "Art therapy progress",
-      "Routine effectiveness",
-      "Sleep patterns",
-    ],
-    progressSinceLast: [
-      "No major dysregulation events",
-      "Continued positive engagement with art therapy",
-      "Independent friendship outing successful (cinema)",
-      "Sleep patterns stable with melatonin",
-    ],
-    currentConcerns: [
-      "Anxiety building about school trip — needs structured preparation",
-      "New shower gel caused brief sensory issue — resolved",
-    ],
-    emergingThemes: [
-      "Casey expressing more nuanced emotions through art",
-      "Confidence in independent peer relationships growing",
-      "Routines firmly established — sensory needs met",
-    ],
-    decisionsAgreed: [
-      "School trip social story to be created with Casey",
-      "Practice visit to trip location if feasible",
-      "Sensory bag specifically packed for trip",
-      "Quiet contingency option agreed with school",
-    ],
-    actions: [
-      { action: "Create social story for school trip", owner: "staff_anna", deadline: d(3), status: "In Progress" },
-      { action: "Liaise with school about contingency arrangements", owner: "staff_anna", deadline: d(2), status: "Done" },
-      { action: "Pack sensory trip bag with Casey", owner: "staff_anna", deadline: d(5), status: "Open" },
-      { action: "Plan shower products review", owner: "staff_mirela", deadline: d(7), status: "Open" },
-    ],
-    riskUpdates: "No risk changes. School trip identified as anticipated stressor — mitigations in place.",
-    carePlanReviewed: false,
-    nextMeeting: d(6),
-    minutedBy: "staff_mirela",
-    approvedBy: "staff_ryan",
-  },
-  {
-    id: "pm-004",
-    youngPerson: "yp_alex",
-    meetingType: "Pre-LAC Prep",
-    date: d(-14),
-    durationMinutes: 60,
-    chair: "staff_darren",
-    attendees: ["staff_darren", "staff_edward"],
-    externalAttendees: ["Sarah Mitchell (Social Worker)"],
-    childAttended: false,
-    childContribution: "Pre-meeting work with Alex captured priorities for LAC review: wants to discuss college aspirations, mother contact arrangements, and continuing therapy. Did not want to attend in person but views fully represented.",
-    agenda: [
-      "Statutory care plan currency",
-      "Outstanding actions from last LAC review",
-      "Reports for IRO",
-      "Alex's views and wishes",
-      "Multi-agency report co-ordination",
-      "Logistics of upcoming LAC review",
-    ],
-    progressSinceLast: [
-      "All actions from previous LAC review completed except one (EP referral pending)",
-      "Care plan refresh completed",
-      "Education report co-authored with school",
-      "Health report obtained from school nurse",
-    ],
-    currentConcerns: [
-      "EP assessment outstanding — escalating to LA",
-      "Need clarity on mother contact arrangements going forward",
-    ],
-    emergingThemes: [
-      "Alex's progress evident across all domains",
-      "College thinking emerging — aspirational planning needed",
-    ],
-    decisionsAgreed: [
-      "Home report to be submitted 5 days before LAC review",
-      "Alex to meet IRO pre-review for confidential conversation",
-      "College visit to be arranged before next LAC review",
-      "Therapy continuation to be ratified by LAC review",
-    ],
-    actions: [
-      { action: "Submit home report to IRO", owner: "staff_darren", deadline: d(-7), status: "Done" },
-      { action: "IRO confidential meeting with Alex", owner: "staff_edward", deadline: d(-3), status: "Done" },
-      { action: "EP referral escalation", owner: "Sarah Mitchell", deadline: d(0), status: "In Progress" },
-      { action: "College taster day arrangement", owner: "staff_edward", deadline: d(30), status: "Open" },
-    ],
-    riskUpdates: "No new risks identified. Risk register reviewed for LAC review submission.",
-    carePlanReviewed: true,
-    nextMeeting: d(45),
-    minutedBy: "staff_edward",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pm-005",
-    youngPerson: "yp_jordan",
-    meetingType: "Crisis Meeting",
-    date: d(-18),
-    durationMinutes: 60,
-    chair: "staff_darren",
-    attendees: ["staff_darren", "staff_ryan", "staff_lackson"],
-    externalAttendees: ["Tom Richards (SW)", "Police YOT liaison"],
-    childAttended: false,
-    childContribution: "Jordan was at school during meeting. Views captured immediately afterwards by key worker — felt regretful, did not understand why he had left without saying.",
-    agenda: [
-      "Missing episode 48 hours ago — analysis",
-      "Immediate risk assessment",
-      "Safety planning",
-      "Communication plan",
-      "Multi-agency response",
-    ],
-    progressSinceLast: [
-      "Jordan returned within 4 hours unharmed",
-      "Police welfare check completed on return",
-      "Medical check by GP confirmed wellbeing",
-      "Open conversation between Jordan and key worker post-event",
-    ],
-    currentConcerns: [
-      "Trigger identified: news about mother's earlier release date",
-      "Need to strengthen support around contact-related stress",
-      "Pre-existing missing risk requires careful response",
-    ],
-    emergingThemes: [
-      "Jordan's avoidance pattern emerges around mother-related stress",
-      "Self-regulation strategies need strengthening",
-      "Importance of pre-emptive conversations identified",
-    ],
-    decisionsAgreed: [
-      "No sanction-based response — relational approach",
-      "Strengthen pre-emptive conversations around contact news",
-      "Update missing risk assessment with new trigger information",
-      "Therapy session focused on this pattern within 7 days",
-      "Notify CP review chair of incident",
-    ],
-    actions: [
-      { action: "Updated missing risk assessment", owner: "staff_ryan", deadline: d(-15), status: "Done" },
-      { action: "Notify CP review chair", owner: "staff_darren", deadline: d(-16), status: "Done" },
-      { action: "CAMHS session focused on pattern", owner: "staff_lackson", deadline: d(-10), status: "Done" },
-      { action: "Pre-emptive conversation protocol", owner: "staff_darren", deadline: d(-7), status: "Done" },
-    ],
-    riskUpdates: "Missing risk reviewed — new trigger added. Mitigation strategies updated. No further missing episodes since.",
-    carePlanReviewed: true,
-    nextMeeting: d(-3),
-    minutedBy: "staff_ryan",
-    approvedBy: "staff_darren",
-  },
-];
-
-const typeColour: Record<string, string> = {
-  "Weekly Review": "bg-blue-100 text-blue-800",
-  "Monthly Review": "bg-purple-100 text-purple-800",
-  "Crisis Meeting": "bg-red-100 text-red-800",
-  "Pre-Placement Plan": "bg-emerald-100 text-emerald-800",
-  "Pre-LAC Prep": "bg-amber-100 text-amber-800",
-  "Multi-Agency Update": "bg-indigo-100 text-indigo-800",
-  "Transition Planning": "bg-pink-100 text-pink-800",
+const typeColour: Record<PlacementMeetingType, string> = {
+  weekly_review: "bg-blue-100 text-blue-800",
+  monthly_review: "bg-purple-100 text-purple-800",
+  crisis_meeting: "bg-red-100 text-red-800",
+  pre_placement_plan: "bg-emerald-100 text-emerald-800",
+  pre_lac_prep: "bg-amber-100 text-amber-800",
+  multi_agency_update: "bg-indigo-100 text-indigo-800",
+  transition_planning: "bg-pink-100 text-pink-800",
 };
 
 const exportCols: ExportColumn<PlacementMeeting>[] = [
-  { header: "Young Person", accessor: (r: PlacementMeeting) => getYPName(r.youngPerson) },
-  { header: "Type", accessor: (r: PlacementMeeting) => r.meetingType },
+  { header: "Young Person", accessor: (r: PlacementMeeting) => getYPName(r.child_id) },
+  { header: "Type", accessor: (r: PlacementMeeting) => PLACEMENT_MEETING_TYPE_LABEL[r.meeting_type] },
   { header: "Date", accessor: (r: PlacementMeeting) => r.date },
-  { header: "Duration (min)", accessor: (r: PlacementMeeting) => String(r.durationMinutes) },
+  { header: "Duration (min)", accessor: (r: PlacementMeeting) => String(r.duration_minutes) },
   { header: "Chair", accessor: (r: PlacementMeeting) => getStaffName(r.chair) },
-  { header: "Child Attended", accessor: (r: PlacementMeeting) => r.childAttended ? "Yes" : "No" },
-  { header: "Care Plan Reviewed", accessor: (r: PlacementMeeting) => r.carePlanReviewed ? "Yes" : "No" },
-  { header: "Open Actions", accessor: (r: PlacementMeeting) => String(r.actions.filter((a) => a.status !== "Done").length) },
-  { header: "Next Meeting", accessor: (r: PlacementMeeting) => r.nextMeeting },
+  { header: "Child Attended", accessor: (r: PlacementMeeting) => r.child_attended ? "Yes" : "No" },
+  { header: "Care Plan Reviewed", accessor: (r: PlacementMeeting) => r.care_plan_reviewed ? "Yes" : "No" },
+  { header: "Open Actions", accessor: (r: PlacementMeeting) => String(r.actions.filter((a) => a.status !== "done").length) },
+  { header: "Next Meeting", accessor: (r: PlacementMeeting) => r.next_meeting },
 ];
 
 export default function PlacementMeetingMinutesPage() {
+  const { data: res, isLoading } = usePlacementMeetings();
+  const entries = res?.data ?? [];
+
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const childIds = useMemo(() => [...new Set(entries.map(e => e.child_id))], [entries]);
+
   const filtered = useMemo(() => {
-    let items = [...data];
-    if (filterYP !== "all") items = items.filter((m) => m.youngPerson === filterYP);
-    if (filterType !== "all") items = items.filter((m) => m.meetingType === filterType);
+    let items = [...entries];
+    if (filterYP !== "all") items = items.filter((m) => m.child_id === filterYP);
+    if (filterType !== "all") items = items.filter((m) => m.meeting_type === filterType);
     items.sort((a, b) => {
       switch (sortBy) {
         case "date":
           return b.date.localeCompare(a.date);
         case "next":
-          return a.nextMeeting.localeCompare(b.nextMeeting);
+          return a.next_meeting.localeCompare(b.next_meeting);
         case "child":
-          return a.youngPerson.localeCompare(b.youngPerson);
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         default:
           return 0;
       }
     });
     return items;
-  }, [filterYP, filterType, sortBy]);
+  }, [entries, filterYP, filterType, sortBy]);
 
-  const total = data.length;
-  const openActions = data.reduce((sum, m) => sum + m.actions.filter((a) => a.status !== "Done").length, 0);
-  const childAttendedCount = data.filter((m) => m.childAttended).length;
+  if (isLoading) {
+    return (
+      <PageShell title="Placement Meeting Minutes" subtitle="Internal placement reviews — multi-disciplinary discussion, decisions, and actions per child">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
+
+  const total = entries.length;
+  const openActions = entries.reduce((sum, m) => sum + m.actions.filter((a) => a.status !== "done").length, 0);
+  const childAttendedCount = entries.filter((m) => m.child_attended).length;
   const todayStr = new Date().toISOString().slice(0, 10);
-  const upcomingNext = data.filter((m) => m.nextMeeting >= todayStr && m.nextMeeting <= d(14)).length;
+  const in14 = new Date();
+  in14.setDate(in14.getDate() + 14);
+  const in14Str = in14.toISOString().slice(0, 10);
+  const upcomingNext = entries.filter((m) => m.next_meeting >= todayStr && m.next_meeting <= in14Str).length;
 
   return (
     <PageShell
@@ -387,7 +108,7 @@ export default function PlacementMeetingMinutesPage() {
       subtitle="Internal placement reviews — multi-disciplinary discussion, decisions, and actions per child"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="placement-meeting-minutes" />
+          <ExportButton data={entries} columns={exportCols} filename="placement-meeting-minutes" />
           <PrintButton title="Placement Meeting Minutes" />
         </div>
       }
@@ -424,22 +145,18 @@ export default function PlacementMeetingMinutesPage() {
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Children" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Children</SelectItem>
-            <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-            <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-            <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
+            {childIds.map((cid) => (
+              <SelectItem key={cid} value={cid}>{getYPName(cid)}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={filterType} onValueChange={setFilterType}>
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="All Types" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="Weekly Review">Weekly Review</SelectItem>
-            <SelectItem value="Monthly Review">Monthly Review</SelectItem>
-            <SelectItem value="Crisis Meeting">Crisis Meeting</SelectItem>
-            <SelectItem value="Multi-Agency Update">Multi-Agency Update</SelectItem>
-            <SelectItem value="Pre-LAC Prep">Pre-LAC Prep</SelectItem>
-            <SelectItem value="Pre-Placement Plan">Pre-Placement Plan</SelectItem>
-            <SelectItem value="Transition Planning">Transition Planning</SelectItem>
+            {(Object.entries(PLACEMENT_MEETING_TYPE_LABEL) as [PlacementMeetingType, string][]).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -458,7 +175,7 @@ export default function PlacementMeetingMinutesPage() {
       <div className="space-y-3">
         {filtered.map((meeting) => {
           const isExpanded = expandedId === meeting.id;
-          const openActionCount = meeting.actions.filter((a) => a.status !== "Done").length;
+          const openActionCount = meeting.actions.filter((a) => a.status !== "done").length;
 
           return (
             <div key={meeting.id} className="rounded-xl border bg-white overflow-hidden">
@@ -469,15 +186,15 @@ export default function PlacementMeetingMinutesPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Users className="h-5 w-5 text-blue-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(meeting.youngPerson)} &middot; {meeting.meetingType}</p>
+                    <p className="font-medium truncate">{getYPName(meeting.child_id)} &middot; {PLACEMENT_MEETING_TYPE_LABEL[meeting.meeting_type]}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {meeting.date} &middot; {meeting.durationMinutes}min &middot; Chair: {getStaffName(meeting.chair)} &middot; {meeting.attendees.length + meeting.externalAttendees.length} attendees
+                      {meeting.date} &middot; {meeting.duration_minutes}min &middot; Chair: {getStaffName(meeting.chair)} &middot; {meeting.attendees.length + meeting.external_attendees.length} attendees
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", typeColour[meeting.meetingType])}>
-                    {meeting.meetingType}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", typeColour[meeting.meeting_type])}>
+                    {PLACEMENT_MEETING_TYPE_LABEL[meeting.meeting_type]}
                   </span>
                   {openActionCount > 0 && (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">{openActionCount} open</span>
@@ -499,9 +216,9 @@ export default function PlacementMeetingMinutesPage() {
                     </div>
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">External Attendees</p>
-                      {meeting.externalAttendees.length > 0 ? (
+                      {meeting.external_attendees.length > 0 ? (
                         <ul className="space-y-1">
-                          {meeting.externalAttendees.map((a, i) => (
+                          {meeting.external_attendees.map((a, i) => (
                             <li key={i} className="text-sm">{a}</li>
                           ))}
                         </ul>
@@ -513,7 +230,7 @@ export default function PlacementMeetingMinutesPage() {
 
                   <div className="bg-purple-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-1">Child Contribution</p>
-                    <p className="text-sm text-purple-900">{meeting.childAttended ? "Child attended in person. " : "Child did not attend. "}{meeting.childContribution}</p>
+                    <p className="text-sm text-purple-900">{meeting.child_attended ? "Child attended in person. " : "Child did not attend. "}{meeting.child_contribution}</p>
                   </div>
 
                   <div>
@@ -534,7 +251,7 @@ export default function PlacementMeetingMinutesPage() {
                         <Star className="h-3 w-3 inline mr-1" />Progress Since Last
                       </p>
                       <ul className="space-y-1">
-                        {meeting.progressSinceLast.map((p, i) => (
+                        {meeting.progress_since_last.map((p, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <CheckCircle className="h-3 w-3 text-green-500 mt-1 shrink-0" />
                             <span>{p}</span>
@@ -547,7 +264,7 @@ export default function PlacementMeetingMinutesPage() {
                         <AlertTriangle className="h-3 w-3 inline mr-1" />Current Concerns
                       </p>
                       <ul className="space-y-1">
-                        {meeting.currentConcerns.map((c, i) => (
+                        {meeting.current_concerns.map((c, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-amber-600 mt-0.5">•</span>
                             <span>{c}</span>
@@ -560,7 +277,7 @@ export default function PlacementMeetingMinutesPage() {
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Decisions Agreed</p>
                     <ul className="space-y-1">
-                      {meeting.decisionsAgreed.map((dec, i) => (
+                      {meeting.decisions_agreed.map((dec, i) => (
                         <li key={i} className="text-sm flex items-start gap-2">
                           <CheckCircle className="h-3 w-3 text-blue-500 mt-1 shrink-0" />
                           {dec}
@@ -579,30 +296,32 @@ export default function PlacementMeetingMinutesPage() {
                             {act.owner.startsWith("staff_") ? getStaffName(act.owner) : act.owner} &middot; {act.deadline}
                           </span>
                           <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium shrink-0",
-                            act.status === "Done" ? "bg-green-100 text-green-800" :
-                            act.status === "In Progress" ? "bg-blue-100 text-blue-800" :
+                            act.status === "done" ? "bg-green-100 text-green-800" :
+                            act.status === "in_progress" ? "bg-blue-100 text-blue-800" :
                             "bg-amber-100 text-amber-800"
                           )}>
-                            {act.status}
+                            {PLACEMENT_MEETING_ACTION_STATUS_LABEL[act.status]}
                           </span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {meeting.riskUpdates && (
+                  {meeting.risk_updates && (
                     <div className="bg-red-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-red-800 uppercase tracking-wide mb-1">Risk Updates</p>
-                      <p className="text-sm text-red-900">{meeting.riskUpdates}</p>
+                      <p className="text-sm text-red-900">{meeting.risk_updates}</p>
                     </div>
                   )}
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span><Calendar className="h-3 w-3 inline mr-1" />Next: {meeting.nextMeeting}</span>
-                    <span>Minuted by: {getStaffName(meeting.minutedBy)}</span>
-                    <span>Approved by: {getStaffName(meeting.approvedBy)}</span>
-                    {meeting.carePlanReviewed && <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium">Care Plan Reviewed</span>}
+                    <span><Calendar className="h-3 w-3 inline mr-1" />Next: {meeting.next_meeting}</span>
+                    <span>Minuted by: {getStaffName(meeting.minuted_by)}</span>
+                    <span>Approved by: {getStaffName(meeting.approved_by)}</span>
+                    {meeting.care_plan_reviewed && <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium">Care Plan Reviewed</span>}
                   </div>
+
+                  <SmartLinkPanel sourceType="placement-meeting" sourceId={meeting.id} childId={meeting.child_id} compact />
                 </div>
               )}
             </div>

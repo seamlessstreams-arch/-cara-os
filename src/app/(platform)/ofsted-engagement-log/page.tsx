@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import {
   Search, ArrowUpDown, Filter, Building2, Phone, Mail, FileText,
   ClipboardCheck, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2,
-  Clock, Send, BookOpen, Calendar, MessageSquare,
+  Clock, Send, BookOpen, Calendar, MessageSquare, Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -17,273 +17,27 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useOfstedEngagementLog } from "@/hooks/use-ofsted-engagement-log";
+import type {
+  OfstedEngagementRecord,
+  OfstedEngagementType,
+  OfstedEngagementStatus,
+  OfstedEngagementAction,
+} from "@/types/extended";
+import {
+  OFSTED_ENGAGEMENT_TYPE_LABEL,
+  OFSTED_ENGAGEMENT_STATUS_LABEL,
+} from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ── types ───────────────────────────────────────────────────────────── */
-type EngagementType =
-  | "Statutory notification"
-  | "Update letter"
-  | "Phone call (HMI initiated)"
-  | "Phone call (RM initiated)"
-  | "Email"
-  | "Monitoring visit"
-  | "Mock inspection"
-  | "Reg 45 submission"
-  | "Annual return"
-  | "Inspection (full)";
-
-type EngagementStatus = "Closed - resolved" | "Active" | "Following up";
-
-interface AgreedAction {
-  action: string;
-  owner: string;
-  deadline: string;
-  status: string;
-}
-
-interface OfstedEngagement {
-  id: string;
-  date: string;
-  type: EngagementType;
-  reference: string;
-  inspectorOrTeam: string;
-  topicOrReason: string;
-  summary: string;
-  ourResponse: string;
-  documentsShared: string[];
-  actionsAgreed: AgreedAction[];
-  inspectorFeedback: string;
-  ourReflection: string;
-  recordedBy: string;
-  nextEngagement: string;
-  status: EngagementStatus;
-}
-
-const ENGAGEMENT_TYPES: EngagementType[] = [
-  "Statutory notification",
-  "Update letter",
-  "Phone call (HMI initiated)",
-  "Phone call (RM initiated)",
-  "Email",
-  "Monitoring visit",
-  "Mock inspection",
-  "Reg 45 submission",
-  "Annual return",
-  "Inspection (full)",
-];
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: OfstedEngagement[] = [
-  {
-    id: "ofs_eng_1",
-    date: d(-12),
-    type: "Reg 45 submission",
-    reference: "OFS-REG45-2026-002",
-    inspectorOrTeam: "Ofsted Social Care (regional inbox)",
-    topicOrReason: "Six-monthly Regulation 45 review of quality of care",
-    summary:
-      "Latest Reg 45 review submitted covering the previous six months. Report includes analysis of children's progress, complaints, safeguarding events, restraints, missing episodes, and outcomes against the Statement of Purpose.",
-    ourResponse:
-      "Submitted via Ofsted online portal alongside cover letter from RM. Independent reviewer (Reg 44 visitor) input incorporated. Children's views captured through key working sessions and consultation activity.",
-    documentsShared: [
-      "Reg 45 report (Apr-Sep 2026)",
-      "Statement of Purpose v5.2",
-      "Children's consultation summary",
-      "Reg 44 visitor reports (last 6 months)",
-    ],
-    actionsAgreed: [
-      {
-        action: "Embed children's voice section more visibly in next Reg 45 cycle",
-        owner: "staff_darren",
-        deadline: d(150),
-        status: "In progress",
-      },
-    ],
-    inspectorFeedback: "Acknowledgement of receipt received. No queries raised at this stage.",
-    ourReflection:
-      "Cycle was tighter than the last submission — we built the report progressively rather than scrambling at the deadline. Next round we want to add more triangulation between behaviour data and education outcomes.",
-    recordedBy: "staff_darren",
-    nextEngagement: "Next Reg 45 submission due in approximately 6 months",
-    status: "Closed - resolved",
-  },
-  {
-    id: "ofs_eng_2",
-    date: d(-28),
-    type: "Annual return",
-    reference: "OFS-AR-2026-001",
-    inspectorOrTeam: "Ofsted Provider Information Return team",
-    topicOrReason: "Annual return / Provider Information Return submission",
-    summary:
-      "Annual return submitted covering staffing structure, occupancy, placements, training compliance, and key incident metrics. All sections completed and signed off by RM.",
-    ourResponse:
-      "Submitted on time via Ofsted portal. Cross-checked figures against HR records, training matrix, occupancy log, and incident register before submission.",
-    documentsShared: [
-      "Annual return form (signed)",
-      "Training compliance summary",
-      "Occupancy figures spreadsheet",
-    ],
-    actionsAgreed: [],
-    inspectorFeedback: "Automated portal acknowledgement received. No follow-up required.",
-    ourReflection:
-      "Pulling the data was much faster this year now that we have a single source of truth in the system. Set a reminder 8 weeks ahead for next year's window.",
-    recordedBy: "staff_darren",
-    nextEngagement: "Next annual return due Q1 2027",
-    status: "Closed - resolved",
-  },
-  {
-    id: "ofs_eng_3",
-    date: d(-65),
-    type: "Monitoring visit",
-    reference: "OFS-MON-2025-014",
-    inspectorOrTeam: "HMI K. Ahmed (lead) + HMI J. Patterson",
-    topicOrReason:
-      "Interim monitoring visit following last full inspection (Good rating) — focus on leadership and behaviour management",
-    summary:
-      "Two HMIs on site for half a day. Met with RM, two children (those who consented), key worker, and reviewed records including behaviour log, restraint records, complaints log and Reg 44 reports. No formal grade issued; positive feedback throughout.",
-    ourResponse:
-      "Pre-visit pack prepared and shared on arrival. RM gave overview of changes since last inspection. Inspectors invited to access any record, including drafts. Children spoken with privately at their request.",
-    documentsShared: [
-      "Statement of Purpose",
-      "Behaviour log (last 90 days)",
-      "Restraint records",
-      "Reg 44 visitor reports",
-      "Complaints log",
-      "Staff training matrix",
-      "Children's voice records",
-    ],
-    actionsAgreed: [
-      {
-        action: "Strengthen audit trail linking children's views to care plan reviews",
-        owner: "staff_darren",
-        deadline: d(-20),
-        status: "Completed",
-      },
-      {
-        action: "Add quarterly trend analysis to behaviour log dashboard",
-        owner: "staff_ryan",
-        deadline: d(20),
-        status: "In progress",
-      },
-    ],
-    inspectorFeedback:
-      "Verbal feedback at end of visit was positive. Lead HMI commented that leadership was visible, children appeared settled, and records were of a high standard. Two areas for development noted (above).",
-    ourReflection:
-      "Useful visit — the action around children's voice has already led to better-quality care plan reviews. Behaviour trend analysis is underway and will feed the next Reg 45.",
-    recordedBy: "staff_darren",
-    nextEngagement: "Next full inspection window opens in approximately 6-9 months",
-    status: "Following up",
-  },
-  {
-    id: "ofs_eng_4",
-    date: d(-110),
-    type: "Phone call (HMI initiated)",
-    reference: "OFS-CALL-2025-007",
-    inspectorOrTeam: "HMI K. Ahmed",
-    topicOrReason:
-      "Clarification call following statutory notification of Casey missing episode (exploitation flag)",
-    summary:
-      "HMI Ahmed phoned for clarification on the contextual safeguarding actions taken following the missing episode notification. Wanted to understand multi-agency response, child's return interview, and any pattern indicators.",
-    ourResponse:
-      "RM took the call live, then followed up within the hour with a written summary by email confirming actions: missing return interview completed by independent person, MET (missing/exploited/trafficked) team consulted, location risk assessment updated, and information shared with placing authority.",
-    documentsShared: [
-      "Missing return interview (redacted summary)",
-      "Updated safeguarding plan",
-      "Multi-agency meeting minutes",
-    ],
-    actionsAgreed: [
-      {
-        action: "Send written confirmation of multi-agency steps taken",
-        owner: "staff_darren",
-        deadline: d(-110),
-        status: "Completed",
-      },
-    ],
-    inspectorFeedback:
-      "HMI satisfied with response on the call. Confirmed by email two days later that no further action was required from Ofsted.",
-    ourReflection:
-      "Reinforced the value of having the contextual safeguarding response documented in real time. The call was answered confidently because the underlying work was already in place.",
-    recordedBy: "staff_darren",
-    nextEngagement: "No further engagement expected on this thread",
-    status: "Closed - resolved",
-  },
-  {
-    id: "ofs_eng_5",
-    date: d(-150),
-    type: "Statutory notification",
-    reference: "OFS-NOT-2025-022",
-    inspectorOrTeam: "Ofsted notification portal",
-    topicOrReason: "Reg 40 notification — use of physical intervention (TCI hold, 3 minutes)",
-    summary:
-      "Reg 40(4)(b) notification submitted within 24 hours of a brief physical intervention with Casey during a heightened incident. No injuries; debrief and body map completed.",
-    ourResponse:
-      "Notification submitted via portal with full incident summary, de-escalation steps attempted, duration, hold type, debrief outcome and child's view recorded.",
-    documentsShared: ["Reg 40 notification record", "Incident report extract"],
-    actionsAgreed: [],
-    inspectorFeedback: "Portal acknowledgement received. No follow-up queries raised.",
-    ourReflection:
-      "Notification timing was strong (within 24 hrs). Continue to ensure child's view is captured and recorded promptly post-incident.",
-    recordedBy: "staff_ryan",
-    nextEngagement: "None unless pattern emerges",
-    status: "Closed - resolved",
-  },
-  {
-    id: "ofs_eng_6",
-    date: d(-220),
-    type: "Statutory notification",
-    reference: "OFS-NOT-2025-018",
-    inspectorOrTeam: "Ofsted notification portal",
-    topicOrReason: "Reg 40 notification — Section 47 enquiry initiated for Jordan (relating to birth family)",
-    summary:
-      "Reg 40(4)(c) notification submitted in respect of a Section 47 enquiry initiated by the local authority concerning Jordan's birth family contact arrangements. Concern did not relate to care at Oak House.",
-    ourResponse:
-      "Notification submitted within 24 hours. Information shared was proportionate and clearly distinguished what was within Oak House's purview vs the placing authority's investigation.",
-    documentsShared: ["Reg 40 notification record"],
-    actionsAgreed: [],
-    inspectorFeedback: "Portal acknowledgement received. No further engagement requested.",
-    ourReflection:
-      "Useful learning point in team meeting: notify Ofsted even where the concern is external, as the child is in our care and any S47 enquiry is reportable.",
-    recordedBy: "staff_darren",
-    nextEngagement: "None — closed at notification",
-    status: "Closed - resolved",
-  },
-  {
-    id: "ofs_eng_7",
-    date: d(-300),
-    type: "Update letter",
-    reference: "OFS-LET-2025-003",
-    inspectorOrTeam: "Ofsted Social Care (regional inbox)",
-    topicOrReason: "Update letter following minor change to Statement of Purpose",
-    summary:
-      "Sent an update letter to Ofsted noting a minor revision to the Statement of Purpose (refreshed staffing structure section and clarified admission criteria). Not a registered details change — courtesy notification only.",
-    ourResponse:
-      "Letter signed by RM and emailed to regional inbox with revised SoP attached. Logged on the registration changes log.",
-    documentsShared: ["Cover letter", "Statement of Purpose v5.1"],
-    actionsAgreed: [
-      {
-        action: "Confirm whether change should also be filed as a registered details change",
-        owner: "staff_darren",
-        deadline: d(-290),
-        status: "Completed",
-      },
-    ],
-    inspectorFeedback: "Email acknowledgement confirming no formal application required for this change.",
-    ourReflection:
-      "Right to err on the side of telling Ofsted. Will keep a low bar for proactive communication on SoP changes.",
-    recordedBy: "staff_darren",
-    nextEngagement: "Next SoP review scheduled annually",
-    status: "Closed - resolved",
-  },
-];
+/* ── derived constants ──────────────────────────────────────────────── */
+const ENGAGEMENT_TYPES = Object.entries(OFSTED_ENGAGEMENT_TYPE_LABEL) as [OfstedEngagementType, string][];
+const ENGAGEMENT_STATUSES = Object.entries(OFSTED_ENGAGEMENT_STATUS_LABEL) as [OfstedEngagementStatus, string][];
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function OfstedEngagementLogPage() {
-  const [records] = useState<OfstedEngagement[]>(SEED);
+  const { data: res, isLoading } = useOfstedEngagementLog();
+  const records: OfstedEngagementRecord[] = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -297,18 +51,18 @@ export default function OfstedEngagementLogPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          r.topicOrReason.toLowerCase().includes(q) ||
+          r.topic_or_reason.toLowerCase().includes(q) ||
           r.summary.toLowerCase().includes(q) ||
-          r.inspectorOrTeam.toLowerCase().includes(q) ||
+          r.inspector_or_team.toLowerCase().includes(q) ||
           r.reference.toLowerCase().includes(q) ||
-          r.type.toLowerCase().includes(q)
+          OFSTED_ENGAGEMENT_TYPE_LABEL[r.engagement_type].toLowerCase().includes(q)
       );
     }
     if (filterType !== "all") {
-      list = list.filter((r) => r.type === filterType);
+      list = list.filter((r) => r.engagement_type === filterType);
     }
     if (filterStatus !== "all") {
-      list = list.filter((r) => r.status === filterStatus);
+      list = list.filter((r) => r.engagement_status === filterStatus);
     }
 
     list.sort((a, b) => {
@@ -318,9 +72,13 @@ export default function OfstedEngagementLogPage() {
         case "date_asc":
           return a.date.localeCompare(b.date);
         case "type":
-          return a.type.localeCompare(b.type);
+          return OFSTED_ENGAGEMENT_TYPE_LABEL[a.engagement_type].localeCompare(
+            OFSTED_ENGAGEMENT_TYPE_LABEL[b.engagement_type]
+          );
         case "status":
-          return a.status.localeCompare(b.status);
+          return OFSTED_ENGAGEMENT_STATUS_LABEL[a.engagement_status].localeCompare(
+            OFSTED_ENGAGEMENT_STATUS_LABEL[b.engagement_status]
+          );
         default:
           return 0;
       }
@@ -334,11 +92,13 @@ export default function OfstedEngagementLogPage() {
   yearAgo.setFullYear(today.getFullYear() - 1);
 
   const engagementsThisYear = records.filter((r) => new Date(r.date) >= yearAgo).length;
-  const notificationsSubmitted = records.filter((r) => r.type === "Statutory notification").length;
+  const notificationsSubmitted = records.filter(
+    (r) => r.engagement_type === "statutory_notification"
+  ).length;
   const outstandingActions = records.reduce(
     (sum, r) =>
       sum +
-      r.actionsAgreed.filter((a) => a.status !== "Completed" && a.status !== "Closed").length,
+      r.actions_agreed.filter((a) => a.status !== "Completed" && a.status !== "Closed").length,
     0
   );
   const lastEngagementDate = records
@@ -351,23 +111,22 @@ export default function OfstedEngagementLogPage() {
     : 0;
 
   /* ── icon helper ─────────────────────────────────────────────────── */
-  const iconFor = (type: EngagementType) => {
+  const iconFor = (type: OfstedEngagementType) => {
     switch (type) {
-      case "Phone call (HMI initiated)":
-      case "Phone call (RM initiated)":
+      case "phone_call_hmi":
+      case "phone_call_rm":
         return Phone;
-      case "Email":
+      case "email":
         return Mail;
-      case "Monitoring visit":
-      case "Inspection (full)":
+      case "monitoring_visit":
+      case "inspection_full":
+      case "mock_inspection":
         return ClipboardCheck;
-      case "Mock inspection":
-        return ClipboardCheck;
-      case "Statutory notification":
+      case "statutory_notification":
         return Send;
-      case "Reg 45 submission":
-      case "Annual return":
-      case "Update letter":
+      case "reg45_submission":
+      case "annual_return":
+      case "update_letter":
         return FileText;
       default:
         return Building2;
@@ -375,32 +134,46 @@ export default function OfstedEngagementLogPage() {
   };
 
   /* ── export columns ──────────────────────────────────────────────── */
-  const exportCols: ExportColumn<OfstedEngagement>[] = [
-    { header: "ID", accessor: (r: OfstedEngagement) => r.id },
-    { header: "Date", accessor: (r: OfstedEngagement) => r.date },
-    { header: "Type", accessor: (r: OfstedEngagement) => r.type },
-    { header: "Reference", accessor: (r: OfstedEngagement) => r.reference },
-    { header: "Inspector / Team", accessor: (r: OfstedEngagement) => r.inspectorOrTeam },
-    { header: "Topic / Reason", accessor: (r: OfstedEngagement) => r.topicOrReason },
-    { header: "Summary", accessor: (r: OfstedEngagement) => r.summary },
-    { header: "Our Response", accessor: (r: OfstedEngagement) => r.ourResponse },
+  const exportCols: ExportColumn<OfstedEngagementRecord>[] = [
+    { header: "ID", accessor: (r) => r.id },
+    { header: "Date", accessor: (r) => r.date },
+    { header: "Type", accessor: (r) => OFSTED_ENGAGEMENT_TYPE_LABEL[r.engagement_type] },
+    { header: "Reference", accessor: (r) => r.reference },
+    { header: "Inspector / Team", accessor: (r) => r.inspector_or_team },
+    { header: "Topic / Reason", accessor: (r) => r.topic_or_reason },
+    { header: "Summary", accessor: (r) => r.summary },
+    { header: "Our Response", accessor: (r) => r.our_response },
     {
       header: "Documents Shared",
-      accessor: (r: OfstedEngagement) => r.documentsShared.join("; "),
+      accessor: (r) => r.documents_shared.join("; "),
     },
     {
       header: "Actions Agreed",
-      accessor: (r: OfstedEngagement) =>
-        r.actionsAgreed
+      accessor: (r) =>
+        r.actions_agreed
           .map((a) => `${a.action} (owner: ${getStaffName(a.owner)}, due ${a.deadline}, ${a.status})`)
           .join(" | "),
     },
-    { header: "Inspector Feedback", accessor: (r: OfstedEngagement) => r.inspectorFeedback },
-    { header: "Our Reflection", accessor: (r: OfstedEngagement) => r.ourReflection },
-    { header: "Recorded By", accessor: (r: OfstedEngagement) => getStaffName(r.recordedBy) },
-    { header: "Next Engagement", accessor: (r: OfstedEngagement) => r.nextEngagement },
-    { header: "Status", accessor: (r: OfstedEngagement) => r.status },
+    { header: "Inspector Feedback", accessor: (r) => r.inspector_feedback },
+    { header: "Our Reflection", accessor: (r) => r.our_reflection },
+    { header: "Recorded By", accessor: (r) => getStaffName(r.recorded_by) },
+    { header: "Next Engagement", accessor: (r) => r.next_engagement },
+    { header: "Status", accessor: (r) => OFSTED_ENGAGEMENT_STATUS_LABEL[r.engagement_status] },
   ];
+
+  /* ── loading state ───────────────────────────────────────────────── */
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Ofsted Engagement Log"
+        subtitle="All contact with Ofsted between full inspections — notifications, calls, emails, monitoring visits and statutory submissions"
+      >
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -492,9 +265,9 @@ export default function OfstedEngagementLogPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                {ENGAGEMENT_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
+                {ENGAGEMENT_TYPES.map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -506,9 +279,11 @@ export default function OfstedEngagementLogPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Following up">Following up</SelectItem>
-              <SelectItem value="Closed - resolved">Closed - resolved</SelectItem>
+              {ENGAGEMENT_STATUSES.map(([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <div className="flex items-center gap-1">
@@ -536,10 +311,12 @@ export default function OfstedEngagementLogPage() {
           )}
           {filtered.map((rec) => {
             const isExpanded = expandedId === rec.id;
-            const TypeIcon = iconFor(rec.type);
-            const openActions = rec.actionsAgreed.filter(
+            const TypeIcon = iconFor(rec.engagement_type);
+            const openActions = rec.actions_agreed.filter(
               (a) => a.status !== "Completed" && a.status !== "Closed"
             ).length;
+            const statusLabel = OFSTED_ENGAGEMENT_STATUS_LABEL[rec.engagement_status];
+            const typeLabel = OFSTED_ENGAGEMENT_TYPE_LABEL[rec.engagement_type];
 
             return (
               <div key={rec.id} className="rounded-xl border bg-white overflow-hidden">
@@ -551,21 +328,21 @@ export default function OfstedEngagementLogPage() {
                     <TypeIcon
                       className={cn(
                         "h-5 w-5 shrink-0",
-                        rec.status === "Active"
+                        rec.engagement_status === "active"
                           ? "text-amber-600"
-                          : rec.status === "Following up"
+                          : rec.engagement_status === "following_up"
                           ? "text-blue-600"
                           : "text-slate-500"
                       )}
                     />
                     <div className="min-w-0">
                       <p className="font-medium truncate">
-                        {rec.type} &middot;{" "}
+                        {typeLabel} &middot;{" "}
                         <span className="text-muted-foreground font-normal">{rec.reference}</span>
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {rec.date} &middot; {rec.inspectorOrTeam} &middot;{" "}
-                        {getStaffName(rec.recordedBy)}
+                        {rec.date} &middot; {rec.inspector_or_team} &middot;{" "}
+                        {getStaffName(rec.recorded_by)}
                       </p>
                     </div>
                   </div>
@@ -578,14 +355,14 @@ export default function OfstedEngagementLogPage() {
                     <Badge
                       className={cn(
                         "text-xs",
-                        rec.status === "Closed - resolved"
+                        rec.engagement_status === "closed_resolved"
                           ? "bg-green-100 text-green-800"
-                          : rec.status === "Following up"
+                          : rec.engagement_status === "following_up"
                           ? "bg-blue-100 text-blue-800"
                           : "bg-amber-100 text-amber-800"
                       )}
                     >
-                      {rec.status}
+                      {statusLabel}
                     </Badge>
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4" />
@@ -602,7 +379,7 @@ export default function OfstedEngagementLogPage() {
                       <p className="text-xs text-muted-foreground mb-1 font-medium">
                         Topic / Reason
                       </p>
-                      <p className="text-sm">{rec.topicOrReason}</p>
+                      <p className="text-sm">{rec.topic_or_reason}</p>
                     </div>
 
                     {/* summary + our response */}
@@ -613,19 +390,19 @@ export default function OfstedEngagementLogPage() {
                       </div>
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs text-muted-foreground mb-1 font-medium">Our Response</p>
-                        <p className="text-sm">{rec.ourResponse}</p>
+                        <p className="text-sm">{rec.our_response}</p>
                       </div>
                     </div>
 
                     {/* documents shared */}
-                    {rec.documentsShared.length > 0 && (
+                    {rec.documents_shared.length > 0 && (
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
                           <FileText className="h-3.5 w-3.5" />
                           Documents Shared
                         </p>
                         <div className="flex flex-wrap gap-1.5">
-                          {rec.documentsShared.map((doc, i) => (
+                          {rec.documents_shared.map((doc, i) => (
                             <Badge
                               key={`${rec.id}-doc-${i}`}
                               className="bg-slate-100 text-slate-700 text-xs font-normal"
@@ -638,14 +415,14 @@ export default function OfstedEngagementLogPage() {
                     )}
 
                     {/* actions agreed */}
-                    {rec.actionsAgreed.length > 0 && (
+                    {rec.actions_agreed.length > 0 && (
                       <div className="rounded-lg bg-white border p-3">
                         <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
                           <ClipboardCheck className="h-3.5 w-3.5" />
                           Actions Agreed
                         </p>
                         <ul className="space-y-2">
-                          {rec.actionsAgreed.map((a, i) => {
+                          {rec.actions_agreed.map((a, i) => {
                             const done = a.status === "Completed" || a.status === "Closed";
                             return (
                               <li
@@ -685,14 +462,14 @@ export default function OfstedEngagementLogPage() {
                           <MessageSquare className="h-3.5 w-3.5" />
                           Inspector Feedback
                         </p>
-                        <p className="text-sm">{rec.inspectorFeedback}</p>
+                        <p className="text-sm">{rec.inspector_feedback}</p>
                       </div>
                       <div className="rounded-lg bg-indigo-50 border border-indigo-200 p-3">
                         <p className="text-xs font-medium text-indigo-700 mb-1 flex items-center gap-1">
                           <BookOpen className="h-3.5 w-3.5" />
                           Our Reflection
                         </p>
-                        <p className="text-sm">{rec.ourReflection}</p>
+                        <p className="text-sm">{rec.our_reflection}</p>
                       </div>
                     </div>
 
@@ -700,10 +477,10 @@ export default function OfstedEngagementLogPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-muted-foreground">
                       <div>
                         <span className="font-medium">Recorded by:</span>{" "}
-                        {getStaffName(rec.recordedBy)}
+                        {getStaffName(rec.recorded_by)}
                       </div>
                       <div>
-                        <span className="font-medium">Next engagement:</span> {rec.nextEngagement}
+                        <span className="font-medium">Next engagement:</span> {rec.next_engagement}
                       </div>
                     </div>
                   </div>

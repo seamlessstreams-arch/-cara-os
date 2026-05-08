@@ -19,88 +19,36 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Clock, Droplets, Thermometer, ShieldCheck,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useWaterHygieneRecords } from "@/hooks/use-water-hygiene-records";
+import type {
+  WaterHygieneRecord,
+  WaterHygieneCheckType,
+  WaterHygieneLocation,
+  WaterHygieneCompliance,
+} from "@/types/extended";
+import {
+  WATER_HYGIENE_CHECK_TYPE_LABEL,
+  WATER_HYGIENE_LOCATION_LABEL,
+  WATER_HYGIENE_COMPLIANCE_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── local config ─────────────────────────────────────────────────────── */
 
-type CheckType = "hot_temp" | "cold_temp" | "tmv_check" | "flush" | "showerhead_clean" | "tank_inspection" | "legionella_sample" | "dead_leg_flush" | "calorifier_check";
-type Location = "kitchen_hot" | "kitchen_cold" | "bathroom_1_hot" | "bathroom_1_cold" | "bathroom_2_hot" | "bathroom_2_cold" | "en_suite_hot" | "en_suite_cold" | "utility_hot" | "utility_cold" | "header_tank" | "calorifier" | "bathroom_1_shower" | "bathroom_2_shower";
-type Compliance = "compliant" | "non_compliant" | "action_required" | "remediated";
+const COMPLIANCE_CLR: Record<WaterHygieneCompliance, string> = { compliant: "bg-green-100 text-green-800", non_compliant: "bg-red-100 text-red-800", action_required: "bg-amber-100 text-amber-800", remediated: "bg-blue-100 text-blue-800" };
+const BORDER_COMP: Record<WaterHygieneCompliance, string> = { compliant: "border-l-green-400", non_compliant: "border-l-red-600", action_required: "border-l-amber-400", remediated: "border-l-blue-400" };
 
-interface WaterRecord {
-  id: string;
-  date: string;
-  time: string;
-  checkedBy: string;
-  checkType: CheckType;
-  location: Location;
-  temperature: number | null;
-  targetMin: number | null;
-  targetMax: number | null;
-  compliance: Compliance;
-  notes: string;
-  actionRequired: string;
-  actionCompleted: boolean;
-  actionCompletedDate: string | null;
-  nextDueDate: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
+/* ── helpers ───────────────────────────────────────────────────────────── */
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
-const CHECK_LABEL: Record<CheckType, string> = {
-  hot_temp: "Hot Water Temperature", cold_temp: "Cold Water Temperature",
-  tmv_check: "TMV Check", flush: "Outlet Flush",
-  showerhead_clean: "Showerhead Clean & Descale", tank_inspection: "Tank Inspection",
-  legionella_sample: "Legionella Water Sample", dead_leg_flush: "Dead Leg Flush",
-  calorifier_check: "Calorifier Check",
-};
-
-const LOCATION_LABEL: Record<Location, string> = {
-  kitchen_hot: "Kitchen (Hot)", kitchen_cold: "Kitchen (Cold)",
-  bathroom_1_hot: "Bathroom 1 (Hot)", bathroom_1_cold: "Bathroom 1 (Cold)",
-  bathroom_2_hot: "Bathroom 2 (Hot)", bathroom_2_cold: "Bathroom 2 (Cold)",
-  en_suite_hot: "En-Suite (Hot)", en_suite_cold: "En-Suite (Cold)",
-  utility_hot: "Utility (Hot)", utility_cold: "Utility (Cold)",
-  header_tank: "Header Tank", calorifier: "Calorifier",
-  bathroom_1_shower: "Bathroom 1 (Shower)", bathroom_2_shower: "Bathroom 2 (Shower)",
-};
-
-const COMPLIANCE_LABEL: Record<Compliance, string> = { compliant: "Compliant", non_compliant: "Non-Compliant", action_required: "Action Required", remediated: "Remediated" };
-const COMPLIANCE_CLR: Record<Compliance, string> = { compliant: "bg-green-100 text-green-800", non_compliant: "bg-red-100 text-red-800", action_required: "bg-amber-100 text-amber-800", remediated: "bg-blue-100 text-blue-800" };
-
-const BORDER_COMP: Record<Compliance, string> = { compliant: "border-l-green-400", non_compliant: "border-l-red-600", action_required: "border-l-amber-400", remediated: "border-l-blue-400" };
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: WaterRecord[] = [
-  // Monthly temperature checks — today
-  { id: "wh_1", date: d(0), time: "08:00", checkedBy: "staff_darren", checkType: "hot_temp", location: "kitchen_hot", temperature: 62, targetMin: 50, targetMax: null, compliance: "compliant", notes: "Hot water at kitchen tap running for 1 minute. Temperature stable at 62°C.", actionRequired: "", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(30) },
-  { id: "wh_2", date: d(0), time: "08:05", checkedBy: "staff_darren", checkType: "cold_temp", location: "kitchen_cold", temperature: 14, targetMin: null, targetMax: 20, compliance: "compliant", notes: "Cold water running for 2 minutes. Temperature stable at 14°C — well within limits.", actionRequired: "", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(30) },
-  { id: "wh_3", date: d(0), time: "08:10", checkedBy: "staff_darren", checkType: "hot_temp", location: "bathroom_1_hot", temperature: 58, targetMin: 50, targetMax: null, compliance: "compliant", notes: "Bathroom 1 hot tap. Good flow rate. Temperature stable.", actionRequired: "", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(30) },
-  { id: "wh_4", date: d(0), time: "08:15", checkedBy: "staff_darren", checkType: "cold_temp", location: "bathroom_1_cold", temperature: 22, targetMin: null, targetMax: 20, compliance: "non_compliant", notes: "Cold water temperature above 20°C limit. Pipe runs through airing cupboard — possible heat gain.", actionRequired: "Insulate cold water pipe where it passes through airing cupboard. Re-test in 48 hours. If still non-compliant, contact water hygiene contractor.", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(2) },
-  { id: "wh_5", date: d(0), time: "08:20", checkedBy: "staff_darren", checkType: "tmv_check", location: "bathroom_2_hot", temperature: 43, targetMin: 38, targetMax: 44, compliance: "compliant", notes: "TMV on bathroom 2 basin functioning correctly. Mixed water output at safe temperature for children.", actionRequired: "", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(30) },
-  // Weekly flushing — 3 days ago
-  { id: "wh_6", date: d(-3), time: "07:00", checkedBy: "staff_edward", checkType: "flush", location: "en_suite_hot", temperature: null, targetMin: null, targetMax: null, compliance: "compliant", notes: "Guest en-suite — room unoccupied. Flushed hot and cold outlets for 2 minutes each. Clear water, no odour.", actionRequired: "", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(4) },
-  { id: "wh_7", date: d(-3), time: "07:05", checkedBy: "staff_edward", checkType: "dead_leg_flush", location: "utility_hot", temperature: null, targetMin: null, targetMax: null, compliance: "compliant", notes: "Dead leg in utility room (old washing machine connection). Flushed for 3 minutes. Water clear after initial discolouration.", actionRequired: "", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(4) },
-  // Quarterly showerhead clean
-  { id: "wh_8", date: d(-14), time: "10:00", checkedBy: "staff_ryan", checkType: "showerhead_clean", location: "bathroom_1_shower", temperature: null, targetMin: null, targetMax: null, compliance: "compliant", notes: "Showerhead removed, descaled in citric acid solution for 1 hour, rinsed and refitted. Hose inspected — good condition. Flow rate normal.", actionRequired: "", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(76) },
-  { id: "wh_9", date: d(-14), time: "10:30", checkedBy: "staff_ryan", checkType: "showerhead_clean", location: "bathroom_2_shower", temperature: null, targetMin: null, targetMax: null, compliance: "action_required", notes: "Showerhead heavily calcified. Descaling completed but hose shows signs of perishing near connector. Small amount of biofilm noted inside showerhead.", actionRequired: "Replace shower hose. Replace showerhead if biofilm recurs at next clean.", actionCompleted: true, actionCompletedDate: d(-10), nextDueDate: d(76) },
-  // Annual legionella sample
-  { id: "wh_10", date: d(-60), time: "09:00", checkedBy: "staff_darren", checkType: "legionella_sample", location: "header_tank", temperature: null, targetMin: null, targetMax: null, compliance: "compliant", notes: "Annual legionella risk assessment sample taken by Aqua-Safe Ltd. Results received: <100 cfu/L (acceptable level). Full report filed in H&S folder.", actionRequired: "", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(305) },
-  // Calorifier check
-  { id: "wh_11", date: d(-30), time: "14:00", checkedBy: "staff_darren", checkType: "calorifier_check", location: "calorifier", temperature: 65, targetMin: 60, targetMax: null, compliance: "compliant", notes: "Calorifier stored water temperature at 65°C. Thermostat functioning correctly. Drain valve checked — no sediment. Sacrificial anode inspected — approx 50% remaining. Replace at next service.", actionRequired: "Schedule anode replacement at next boiler service.", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(152) },
-  // Tank inspection
-  { id: "wh_12", date: d(-90), time: "11:00", checkedBy: "staff_darren", checkType: "tank_inspection", location: "header_tank", temperature: 16, targetMin: null, targetMax: 20, compliance: "compliant", notes: "Cold water storage tank inspection. Lid secure and intact. Insulation in good condition. No debris or contamination. Overflow pipe connected and discharging correctly. Ball valve functioning. Water temperature at 16°C.", actionRequired: "", actionCompleted: false, actionCompletedDate: null, nextDueDate: d(275) },
-];
-
-/* ── page ──────────────────────────────────────────────────────────────────── */
+/* ── page ──────────────────────────────────────────────────────────────── */
 
 export default function WaterHygienePage() {
-  const [data] = useState(SEED);
+  const { data: records = [], isLoading } = useWaterHygieneRecords();
   const [search, setSearch] = useState("");
   const [filterCompliance, setFilterCompliance] = useState("all");
   const [filterCheckType, setFilterCheckType] = useState("all");
@@ -110,17 +58,17 @@ export default function WaterHygienePage() {
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
-  /* ── derived ─────────────────────────────────────────────────────────────── */
+  /* ── derived ─────────────────────────────────────────────────────────── */
 
   const filtered = useMemo(() => {
-    let rows = data.filter((r) => {
+    let rows = records.filter((r) => {
       if (filterCompliance !== "all" && r.compliance !== filterCompliance) return false;
-      if (filterCheckType !== "all" && r.checkType !== filterCheckType) return false;
+      if (filterCheckType !== "all" && r.check_type !== filterCheckType) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
-          LOCATION_LABEL[r.location].toLowerCase().includes(q) ||
-          CHECK_LABEL[r.checkType].toLowerCase().includes(q) ||
+          WATER_HYGIENE_LOCATION_LABEL[r.location].toLowerCase().includes(q) ||
+          WATER_HYGIENE_CHECK_TYPE_LABEL[r.check_type].toLowerCase().includes(q) ||
           r.notes.toLowerCase().includes(q)
         );
       }
@@ -131,50 +79,60 @@ export default function WaterHygienePage() {
         case "date-desc": return b.date.localeCompare(a.date) || b.time.localeCompare(a.time);
         case "date-asc": return a.date.localeCompare(b.date) || a.time.localeCompare(b.time);
         case "compliance": {
-          const order = ["non_compliant", "action_required", "remediated", "compliant"];
+          const order: WaterHygieneCompliance[] = ["non_compliant", "action_required", "remediated", "compliant"];
           return order.indexOf(a.compliance) - order.indexOf(b.compliance);
         }
         default: return 0;
       }
     });
     return rows;
-  }, [data, search, filterCompliance, filterCheckType, sortBy]);
+  }, [records, search, filterCompliance, filterCheckType, sortBy]);
 
-  /* ── stats ───────────────────────────────────────────────────────────────── */
+  /* ── stats ───────────────────────────────────────────────────────────── */
 
-  const totalChecks = data.length;
-  const compliantCount = data.filter((r) => r.compliance === "compliant").length;
-  const nonCompliant = data.filter((r) => r.compliance === "non_compliant").length;
-  const actionRequired = data.filter((r) => r.compliance === "action_required" && !r.actionCompleted).length;
-  const overdueChecks = data.filter((r) => r.nextDueDate < d(0)).length;
+  const totalChecks = records.length;
+  const compliantCount = records.filter((r) => r.compliance === "compliant").length;
+  const nonCompliant = records.filter((r) => r.compliance === "non_compliant").length;
+  const actionRequired = records.filter((r) => r.compliance === "action_required" && !r.action_completed).length;
+  const overdueChecks = records.filter((r) => r.next_due_date < d(0)).length;
 
-  /* ── compliance schedule ─────────────────────────────────────────────────── */
+  /* ── compliance schedule ─────────────────────────────────────────────── */
 
   const upcomingChecks = useMemo(() => {
-    return [...data]
-      .filter((r) => r.nextDueDate >= d(0) && r.nextDueDate <= d(14))
-      .sort((a, b) => a.nextDueDate.localeCompare(b.nextDueDate));
-  }, [data]);
+    return [...records]
+      .filter((r) => r.next_due_date >= d(0) && r.next_due_date <= d(14))
+      .sort((a, b) => a.next_due_date.localeCompare(b.next_due_date));
+  }, [records]);
 
-  /* ── export ──────────────────────────────────────────────────────────────── */
+  /* ── export ──────────────────────────────────────────────────────────── */
 
-  const exportCols: ExportColumn<WaterRecord>[] = [
-    { header: "Date", accessor: (r: WaterRecord) => r.date },
-    { header: "Time", accessor: (r: WaterRecord) => r.time },
-    { header: "Check Type", accessor: (r: WaterRecord) => CHECK_LABEL[r.checkType] },
-    { header: "Location", accessor: (r: WaterRecord) => LOCATION_LABEL[r.location] },
-    { header: "Temperature (°C)", accessor: (r: WaterRecord) => r.temperature !== null ? String(r.temperature) : "N/A" },
-    { header: "Target Min", accessor: (r: WaterRecord) => r.targetMin !== null ? String(r.targetMin) : "" },
-    { header: "Target Max", accessor: (r: WaterRecord) => r.targetMax !== null ? String(r.targetMax) : "" },
-    { header: "Compliance", accessor: (r: WaterRecord) => COMPLIANCE_LABEL[r.compliance] },
-    { header: "Notes", accessor: (r: WaterRecord) => r.notes },
-    { header: "Action Required", accessor: (r: WaterRecord) => r.actionRequired },
-    { header: "Action Completed", accessor: (r: WaterRecord) => r.actionCompleted ? `Yes — ${r.actionCompletedDate}` : "No" },
-    { header: "Checked By", accessor: (r: WaterRecord) => getStaffName(r.checkedBy) },
-    { header: "Next Due", accessor: (r: WaterRecord) => r.nextDueDate },
+  const exportCols: ExportColumn<WaterHygieneRecord>[] = [
+    { header: "Date", accessor: (r: WaterHygieneRecord) => r.date },
+    { header: "Time", accessor: (r: WaterHygieneRecord) => r.time },
+    { header: "Check Type", accessor: (r: WaterHygieneRecord) => WATER_HYGIENE_CHECK_TYPE_LABEL[r.check_type] },
+    { header: "Location", accessor: (r: WaterHygieneRecord) => WATER_HYGIENE_LOCATION_LABEL[r.location] },
+    { header: "Temperature (°C)", accessor: (r: WaterHygieneRecord) => r.temperature !== null ? String(r.temperature) : "N/A" },
+    { header: "Target Min", accessor: (r: WaterHygieneRecord) => r.target_min !== null ? String(r.target_min) : "" },
+    { header: "Target Max", accessor: (r: WaterHygieneRecord) => r.target_max !== null ? String(r.target_max) : "" },
+    { header: "Compliance", accessor: (r: WaterHygieneRecord) => WATER_HYGIENE_COMPLIANCE_LABEL[r.compliance] },
+    { header: "Notes", accessor: (r: WaterHygieneRecord) => r.notes },
+    { header: "Action Required", accessor: (r: WaterHygieneRecord) => r.action_required },
+    { header: "Action Completed", accessor: (r: WaterHygieneRecord) => r.action_completed ? `Yes — ${r.action_completed_date}` : "No" },
+    { header: "Checked By", accessor: (r: WaterHygieneRecord) => getStaffName(r.checked_by) },
+    { header: "Next Due", accessor: (r: WaterHygieneRecord) => r.next_due_date },
   ];
 
-  /* ── render ──────────────────────────────────────────────────────────────── */
+  if (isLoading) {
+    return (
+      <PageShell title="Water Hygiene & Legionella" subtitle="HSE ACOP L8 · HSG274 · Reg 12 — Protection of Children">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
+
+  /* ── render ──────────────────────────────────────────────────────────── */
 
   return (
     <PageShell
@@ -189,7 +147,7 @@ export default function WaterHygienePage() {
       }
     >
       <div id="print-area">
-        {/* ── stat strip ───────────────────────────────────────────────────── */}
+        {/* ── stat strip ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
             { label: "Total Checks", value: totalChecks, icon: Droplets, clr: "text-blue-600" },
@@ -208,7 +166,7 @@ export default function WaterHygienePage() {
           ))}
         </div>
 
-        {/* ── non-compliant alert ──────────────────────────────────────────── */}
+        {/* ── non-compliant alert ─────────────────────────────────────── */}
         {nonCompliant > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start gap-2">
             <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
@@ -219,44 +177,44 @@ export default function WaterHygienePage() {
           </div>
         )}
 
-        {/* ── upcoming checks ──────────────────────────────────────────────── */}
+        {/* ── upcoming checks ─────────────────────────────────────────── */}
         {upcomingChecks.length > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
             <p className="font-semibold text-blue-800 text-sm mb-2 flex items-center gap-1"><Clock className="h-4 w-4" /> Upcoming Checks (Next 14 Days)</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               {upcomingChecks.map((r) => (
                 <div key={r.id} className="bg-white rounded p-2 text-xs">
-                  <p className="font-medium">{CHECK_LABEL[r.checkType]}</p>
-                  <p className="text-muted-foreground">{LOCATION_LABEL[r.location]} · Due: {r.nextDueDate}</p>
+                  <p className="font-medium">{WATER_HYGIENE_CHECK_TYPE_LABEL[r.check_type]}</p>
+                  <p className="text-muted-foreground">{WATER_HYGIENE_LOCATION_LABEL[r.location]} · Due: {r.next_due_date}</p>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* ── filters ──────────────────────────────────────────────────────── */}
+        {/* ── filters ─────────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 mb-6">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search location, check type, notes…" className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <Select value={filterCompliance} onValueChange={setFilterCompliance}><SelectTrigger className="w-[160px]"><Filter className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Compliance</SelectItem>{(Object.keys(COMPLIANCE_LABEL) as Compliance[]).map((k) => (<SelectItem key={k} value={k}>{COMPLIANCE_LABEL[k]}</SelectItem>))}</SelectContent></Select>
-          <Select value={filterCheckType} onValueChange={setFilterCheckType}><SelectTrigger className="w-[200px]"><Filter className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Check Types</SelectItem>{(Object.keys(CHECK_LABEL) as CheckType[]).map((k) => (<SelectItem key={k} value={k}>{CHECK_LABEL[k]}</SelectItem>))}</SelectContent></Select>
+          <Select value={filterCompliance} onValueChange={setFilterCompliance}><SelectTrigger className="w-[160px]"><Filter className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Compliance</SelectItem>{(Object.keys(WATER_HYGIENE_COMPLIANCE_LABEL) as WaterHygieneCompliance[]).map((k) => (<SelectItem key={k} value={k}>{WATER_HYGIENE_COMPLIANCE_LABEL[k]}</SelectItem>))}</SelectContent></Select>
+          <Select value={filterCheckType} onValueChange={setFilterCheckType}><SelectTrigger className="w-[200px]"><Filter className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All Check Types</SelectItem>{(Object.keys(WATER_HYGIENE_CHECK_TYPE_LABEL) as WaterHygieneCheckType[]).map((k) => (<SelectItem key={k} value={k}>{WATER_HYGIENE_CHECK_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select>
           <Select value={sortBy} onValueChange={setSortBy}><SelectTrigger className="w-[150px]"><ArrowUpDown className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="date-desc">Newest First</SelectItem><SelectItem value="date-asc">Oldest First</SelectItem><SelectItem value="compliance">By Compliance</SelectItem></SelectContent></Select>
         </div>
 
-        {/* ── records ──────────────────────────────────────────────────────── */}
+        {/* ── records ─────────────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.map((r) => {
             const open = expanded[r.id];
             const tempDisplay = r.temperature !== null ? `${r.temperature}°C` : "N/A";
             const tempOk = r.temperature !== null && (
-              (r.targetMin !== null && r.temperature >= r.targetMin) &&
-              (r.targetMax === null || r.temperature <= r.targetMax)
+              (r.target_min !== null && r.temperature >= r.target_min) &&
+              (r.target_max === null || r.temperature <= r.target_max)
             ) || (
               r.temperature !== null &&
-              r.targetMax !== null && r.targetMin === null &&
-              r.temperature <= r.targetMax
+              r.target_max !== null && r.target_min === null &&
+              r.temperature <= r.target_max
             );
 
             return (
@@ -265,8 +223,8 @@ export default function WaterHygienePage() {
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <CardTitle className="text-base flex items-center gap-2">
-                        {CHECK_LABEL[r.checkType]}
-                        <Badge variant="outline" className={COMPLIANCE_CLR[r.compliance]}>{COMPLIANCE_LABEL[r.compliance]}</Badge>
+                        {WATER_HYGIENE_CHECK_TYPE_LABEL[r.check_type]}
+                        <Badge variant="outline" className={COMPLIANCE_CLR[r.compliance]}>{WATER_HYGIENE_COMPLIANCE_LABEL[r.compliance]}</Badge>
                         {r.temperature !== null && (
                           <Badge variant="outline" className={tempOk ? "bg-green-50" : "bg-red-50"}>
                             <Thermometer className="h-3 w-3 mr-1" /> {tempDisplay}
@@ -274,7 +232,7 @@ export default function WaterHygienePage() {
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {LOCATION_LABEL[r.location]} · {r.date} at {r.time} · By: {getStaffName(r.checkedBy)}
+                        {WATER_HYGIENE_LOCATION_LABEL[r.location]} · {r.date} at {r.time} · By: {getStaffName(r.checked_by)}
                       </p>
                     </div>
                     {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
@@ -291,11 +249,11 @@ export default function WaterHygienePage() {
                         </div>
                         <div className="bg-muted/40 rounded p-2 text-center">
                           <p className="font-medium text-xs">Target Min</p>
-                          <p className="text-lg font-bold">{r.targetMin !== null ? `${r.targetMin}°C` : "—"}</p>
+                          <p className="text-lg font-bold">{r.target_min !== null ? `${r.target_min}°C` : "—"}</p>
                         </div>
                         <div className="bg-muted/40 rounded p-2 text-center">
                           <p className="font-medium text-xs">Target Max</p>
-                          <p className="text-lg font-bold">{r.targetMax !== null ? `${r.targetMax}°C` : "—"}</p>
+                          <p className="text-lg font-bold">{r.target_max !== null ? `${r.target_max}°C` : "—"}</p>
                         </div>
                       </div>
                     )}
@@ -307,22 +265,22 @@ export default function WaterHygienePage() {
                     </div>
 
                     {/* action required */}
-                    {r.actionRequired && (
-                      <div className={cn("rounded-lg p-3", r.actionCompleted ? "bg-green-50" : "bg-amber-50")}>
-                        <p className={cn("font-medium mb-1", r.actionCompleted ? "text-green-800" : "text-amber-800")}>
-                          {r.actionCompleted ? "✓ Action Completed" : "⚠ Action Required"}
+                    {r.action_required && (
+                      <div className={cn("rounded-lg p-3", r.action_completed ? "bg-green-50" : "bg-amber-50")}>
+                        <p className={cn("font-medium mb-1", r.action_completed ? "text-green-800" : "text-amber-800")}>
+                          {r.action_completed ? "✓ Action Completed" : "⚠ Action Required"}
                         </p>
-                        <p className={cn("text-xs", r.actionCompleted ? "text-green-700" : "text-amber-700")}>{r.actionRequired}</p>
-                        {r.actionCompleted && r.actionCompletedDate && (
-                          <p className="text-xs text-green-600 mt-1">Completed: {r.actionCompletedDate}</p>
+                        <p className={cn("text-xs", r.action_completed ? "text-green-700" : "text-amber-700")}>{r.action_required}</p>
+                        {r.action_completed && r.action_completed_date && (
+                          <p className="text-xs text-green-600 mt-1">Completed: {r.action_completed_date}</p>
                         )}
                       </div>
                     )}
 
                     {/* footer */}
                     <div className="flex justify-between items-center pt-2 border-t text-xs text-muted-foreground">
-                      <span>Checked by: {getStaffName(r.checkedBy)}</span>
-                      <span>Next due: {r.nextDueDate}</span>
+                      <span>Checked by: {getStaffName(r.checked_by)}</span>
+                      <span>Next due: {r.next_due_date}</span>
                     </div>
                   </CardContent>
                 )}
@@ -331,7 +289,7 @@ export default function WaterHygienePage() {
           })}
         </div>
 
-        {/* ── check schedule ─────────────────────────────────────────────── */}
+        {/* ── check schedule ──────────────────────────────────────────── */}
         <Card className="mt-6">
           <CardHeader>
             <CardTitle className="text-sm">Water Hygiene Monitoring Schedule</CardTitle>
@@ -358,24 +316,24 @@ export default function WaterHygienePage() {
           </CardContent>
         </Card>
 
-        {/* ── regulatory note ────────────────────────────────────────────── */}
+        {/* ── regulatory note ─────────────────────────────────────────── */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
           <p className="font-semibold mb-1">Regulatory Framework</p>
           <p>HSE Approved Code of Practice L8 — Legionnaires&apos; disease: control of legionella bacteria in water systems. HSG274 Part 2 — technical guidance for hot and cold water systems. Health and Safety at Work Act 1974. Children&apos;s Homes (England) Regulations 2015, Reg 12 — ensuring the premises are safe. Hot water stored above 60°C and distributed above 50°C within 1 minute. Cold water below 20°C. TMVs required on outlets accessible to children to prevent scalding. Annual risk assessment by competent person.</p>
         </div>
       </div>
 
-      {/* ── new check dialog ───────────────────────────────────────────────── */}
+      {/* ── new check dialog ──────────────────────────────────────────── */}
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Water Hygiene Check</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             <div><Label>Date</Label><Input type="date" /></div>
             <div><Label>Time</Label><Input type="time" /></div>
-            <div><Label>Check Type</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(CHECK_LABEL) as CheckType[]).map((k) => (<SelectItem key={k} value={k}>{CHECK_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Location</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(LOCATION_LABEL) as Location[]).map((k) => (<SelectItem key={k} value={k}>{LOCATION_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Check Type</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(WATER_HYGIENE_CHECK_TYPE_LABEL) as WaterHygieneCheckType[]).map((k) => (<SelectItem key={k} value={k}>{WATER_HYGIENE_CHECK_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Location</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(WATER_HYGIENE_LOCATION_LABEL) as WaterHygieneLocation[]).map((k) => (<SelectItem key={k} value={k}>{WATER_HYGIENE_LOCATION_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
             <div><Label>Temperature (°C)</Label><Input type="number" placeholder="e.g. 58" /></div>
-            <div><Label>Compliance</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(COMPLIANCE_LABEL) as Compliance[]).map((k) => (<SelectItem key={k} value={k}>{COMPLIANCE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Compliance</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(WATER_HYGIENE_COMPLIANCE_LABEL) as WaterHygieneCompliance[]).map((k) => (<SelectItem key={k} value={k}>{WATER_HYGIENE_COMPLIANCE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
             <div className="col-span-2"><Label>Notes</Label><Textarea placeholder="Details of the check…" rows={3} /></div>
             <div className="col-span-2"><Label>Action Required</Label><Textarea placeholder="If non-compliant, what actions are needed?" rows={2} /></div>
           </div>

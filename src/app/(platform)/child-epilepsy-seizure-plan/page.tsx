@@ -25,172 +25,34 @@ import {
   Phone,
   Clock,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-
-/* ─── date helper ─── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ─── types ─── */
-interface SeizurePlan {
-  id: string;
-  youngPerson: string;
-  planDate: string;
-  diagnosis: string;
-  seizureTypes: { name: string; description: string; typicalDuration: string; lastObserved?: string }[];
-  warningSigns: string[];
-  triggers: string[];
-  duringSeizureSteps: string[];
-  recoveryPositionSteps: string[];
-  call999Criteria: string[];
-  preventerMedication?: { name: string; dose: string; timing: string };
-  rescueMedication?: { name: string; dose: string; route: string; whenToGive: string; secondDoseAllowed: boolean };
-  staffTrainedToAdmin: string[];
-  staffTrainingExpires?: string;
-  safeSleepingArrangements: string[];
-  bathingSwimmingPolicy: string[];
-  schoolPlanInPlace: boolean;
-  emergencyContacts: { name: string; role: string; phone: string }[];
-  recentSeizureLog: { date: string; type: string; durationMinutes: number; rescueGiven: boolean; outcome: string }[];
-  consultantNeurologist?: string;
-  consultantReviewDue?: string;
-  childVoice: string;
-  staffObservation: string;
-  reviewDate: string;
-  keyWorker: string;
-}
-
-/* ─── seed data ─── */
-const PLANS: SeizurePlan[] = [
-  {
-    id: "esp_001",
-    youngPerson: "yp_casey",
-    planDate: d(-30),
-    diagnosis: "Childhood Absence Epilepsy (CAE) — diagnosed within last year",
-    seizureTypes: [
-      {
-        name: "Typical absence seizures",
-        description:
-          "Sudden, brief lapses of awareness — Casey 'goes blank', stops mid-sentence or mid-task, may stare or have subtle eyelid fluttering. No falling, no convulsion. Returns to activity unaware that anything has happened. EEG confirmed 3Hz generalised spike-and-wave discharges. MRI structurally normal.",
-        typicalDuration: "5–15 seconds (occasionally up to 20s)",
-        lastObserved: d(-3),
-      },
-    ],
-    warningSigns: [
-      "Mum has noticed Casey 'goes blank' for a few seconds — eyes still open, unresponsive to name",
-      "Brief eyelid flutter or upward eye-roll at onset",
-      "Drops or fumbles object held in hand at moment of absence",
-      "Suddenly 'loses thread' of conversation or activity",
-      "Cluster pattern observed — multiple absences within 30 minutes when tired",
-    ],
-    triggers: [
-      "Tiredness / poor sleep the night before",
-      "Flickering or strobing lights (photic) — TV, screens, sunlight through trees from car window",
-      "Missed meals / low blood sugar",
-      "Hyperventilation (running, crying, anxiety) — well-recognised trigger for absence epilepsy",
-      "Acute illness with fever",
-      "Missed dose of preventer medication",
-    ],
-    duringSeizureSteps: [
-      "Stay calm. Note the time the seizure started — this is the single most important observation.",
-      "Stay with Casey. Do NOT shake, shout or attempt to 'snap her out of it' — absences cannot be interrupted.",
-      "If Casey is walking, eating, on stairs or near a hazard, gently guide her away from danger and remove the risk (e.g. take cup, move from kerb).",
-      "Do NOT put anything in her mouth. Do NOT restrain.",
-      "Observe and record: duration, eyelid/eye movement, any limb jerking, loss of bladder, colour change.",
-      "When the absence ends Casey will resume what she was doing — quietly let her know she had an absence and what she missed.",
-      "Reassure and offer a short rest. Document on seizure log immediately.",
-    ],
-    recoveryPositionSteps: [
-      "Recovery is automatic for absence seizures — Casey returns to full awareness within seconds.",
-      "Recovery position is NOT routinely required for absences (no loss of postural tone).",
-      "If — unexpectedly — Casey ever has a tonic-clonic (convulsive) seizure: turn her on her side once jerking stops, tilt chin to keep airway clear, do not put anything in mouth, stay until fully recovered.",
-      "Loosen anything tight around the neck. Cushion the head. Do not move unless in immediate danger.",
-    ],
-    call999Criteria: [
-      "Any convulsive (tonic-clonic) seizure — Casey has not had one but always treat first as emergency.",
-      "Absence lasting longer than 30 seconds, or a cluster of absences with no clear recovery between (possible absence status / non-convulsive status epilepticus).",
-      "Repeated absences for >20 minutes without normal awareness in between.",
-      "Any seizure resulting in injury (head injury, fall, burn, water exposure).",
-      "Seizure occurring in water (bath, pool) — even a brief absence.",
-      "Difficulty breathing, blue lips, persistent confusion or unresponsiveness after seizure ends.",
-      "First-ever seizure of a different type (e.g. sudden jerk, drop, full convulsion).",
-      "If in doubt — call 999. State 'known epilepsy, child, absence/possible status'.",
-    ],
-    preventerMedication: {
-      name: "Sodium Valproate (Epilim)",
-      dose: "200mg twice daily (titrating — current week 4 of titration plan)",
-      timing:
-        "08:00 with breakfast and 20:00 with evening meal. CRITICAL FLAG (MHRA Pregnancy Prevention Programme): Sodium Valproate is teratogenic. Casey is pre-pubertal but PPP review must be triggered at first signs of puberty — alternative AED (e.g. ethosuximide or lamotrigine) to be discussed with neurologist BEFORE menarche. Annual PPP form to be signed by specialist. Document in healthcare plan and key-working notes.",
-    },
-    rescueMedication: undefined,
-    staffTrainedToAdmin: ["staff_anna", "staff_darren"],
-    staffTrainingExpires: d(335),
-    safeSleepingArrangements: [
-      "Standard bed at floor-adjacent height (low divan) — minimal fall risk if a nocturnal seizure occurred.",
-      "Anti-suffocation pillow in use as precaution (low SUDEP-mitigation measure recommended for all paediatric epilepsy).",
-      "Bedroom door left ajar overnight; staff sleep-in within hearing distance.",
-      "Audio monitor (consent given by Casey and mum) — staff alerted to unusual sounds.",
-      "No top bunk. No heavy/loose bedding obstructing face. Mattress in good condition.",
-      "Night-time absences not currently observed; reassessed at every plan review.",
-    ],
-    bathingSwimmingPolicy: [
-      "Showers preferred over baths (Joint Epilepsy Council guidance) — reduced drowning risk.",
-      "If bath taken: shallow water (max 10cm), staff member present in bathroom (not just within earshot), bathroom door unlocked, plug not used if Casey alone in room — none of these apply currently as Casey takes showers only.",
-      "Swimming permitted with one-to-one trained adult in water within arm's reach at all times — pool staff informed of epilepsy diagnosis and given seizure plan extract.",
-      "No unsupervised swimming, no diving, no deep-end activities.",
-      "Avoid open-water swimming until full seizure control achieved for 12+ months.",
-      "Hair-washing supervised — risk of head submersion during absence.",
-    ],
-    schoolPlanInPlace: true,
-    emergencyContacts: [
-      { name: "Dr Edwards", role: "Consultant Paediatric Neurologist", phone: "0114 271 7000 (Sheffield Children's Hospital)" },
-      { name: "Epilepsy Specialist Nurse", role: "ESN — community team", phone: "01234 555303" },
-      { name: "Mum (parent — PR retained)", role: "Parent, contact for medical decisions", phone: "07700 900123" },
-      { name: "Eastbrook Medical Practice", role: "GP — Dr M. Patel", phone: "01234 567890" },
-      { name: "Ambulance / Emergency", role: "999 — state 'known epilepsy, child'", phone: "999" },
-    ],
-    recentSeizureLog: [
-      { date: d(-3), type: "Typical absence", durationMinutes: 0.15, rescueGiven: false, outcome: "Self-resolved at breakfast — Casey had stayed up late watching screens. Sleep hygiene reinforced." },
-      { date: d(-9), type: "Typical absence (cluster of 3)", durationMinutes: 0.5, rescueGiven: false, outcome: "Cluster during car journey — flickering sunlight through trees identified as trigger. Sun visor and tinted side-window now in use." },
-      { date: d(-18), type: "Typical absence", durationMinutes: 0.1, rescueGiven: false, outcome: "Brief absence in classroom — teacher recognised and documented. No intervention needed." },
-      { date: d(-25), type: "Typical absence", durationMinutes: 0.25, rescueGiven: false, outcome: "Occurred during PE warm-up (hyperventilation trigger). PE teacher to slow warm-up." },
-      { date: d(-44), type: "Typical absence (cluster of 4 in 20min)", durationMinutes: 1.5, rescueGiven: false, outcome: "Cluster following missed lunch — escalated to ESN. Preventer dose titration brought forward." },
-    ],
-    consultantNeurologist: "Dr Edwards, Consultant Paediatric Neurologist (Sheffield Children's Hospital)",
-    consultantReviewDue: d(60),
-    childVoice:
-      "I don't know when they happen — people just tell me afterwards. I don't like it when teachers make a fuss. I want to be the same as my friends. Mum said the medicine might make me feel a bit sleepy at first but it should help. I like that I can still go swimming if someone watches me.",
-    staffObservation:
-      "Casey settling well to new diagnosis. Engages openly with key-working sessions about epilepsy. Adherence to morning Sodium Valproate is good; evening dose occasionally missed when out — pill organiser and reminder routine in place. Sleep routine has been the biggest impact area — clear correlation between late screens and next-day cluster days. School fully briefed and absences are recognised by class teacher.",
-    reviewDate: d(60),
-    keyWorker: "staff_anna",
-  },
-];
+import type { EpilepsySeizurePlan } from "@/types/extended";
+import { useEpilepsySeizurePlans } from "@/hooks/use-epilepsy-seizure-plans";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ─── export columns ─── */
-const exportCols: ExportColumn<SeizurePlan>[] = [
-  { header: "Young Person", accessor: (r: SeizurePlan) => getYPName(r.youngPerson) },
-  { header: "Plan Date", accessor: (r: SeizurePlan) => r.planDate },
-  { header: "Diagnosis", accessor: (r: SeizurePlan) => r.diagnosis },
-  { header: "Seizure Types", accessor: (r: SeizurePlan) => r.seizureTypes.map((s) => s.name).join("; ") },
-  { header: "Triggers", accessor: (r: SeizurePlan) => r.triggers.join("; ") },
-  { header: "Preventer Med", accessor: (r: SeizurePlan) => (r.preventerMedication ? `${r.preventerMedication.name} ${r.preventerMedication.dose}` : "None") },
-  { header: "Rescue Med", accessor: (r: SeizurePlan) => (r.rescueMedication ? `${r.rescueMedication.name} ${r.rescueMedication.dose} ${r.rescueMedication.route}` : "None") },
-  { header: "Staff Trained (count)", accessor: (r: SeizurePlan) => String(r.staffTrainedToAdmin.length) },
-  { header: "School Plan In Place", accessor: (r: SeizurePlan) => (r.schoolPlanInPlace ? "Yes" : "No") },
-  { header: "Neurologist", accessor: (r: SeizurePlan) => r.consultantNeurologist ?? "" },
-  { header: "Consultant Review Due", accessor: (r: SeizurePlan) => r.consultantReviewDue ?? "" },
-  { header: "Recent Seizures (logged)", accessor: (r: SeizurePlan) => String(r.recentSeizureLog.length) },
-  { header: "Key Worker", accessor: (r: SeizurePlan) => getStaffName(r.keyWorker) },
-  { header: "Review Date", accessor: (r: SeizurePlan) => r.reviewDate },
+const exportCols: ExportColumn<EpilepsySeizurePlan>[] = [
+  { header: "Young Person", accessor: (r: EpilepsySeizurePlan) => getYPName(r.child_id) },
+  { header: "Plan Date", accessor: (r: EpilepsySeizurePlan) => r.plan_date },
+  { header: "Diagnosis", accessor: (r: EpilepsySeizurePlan) => r.diagnosis },
+  { header: "Seizure Types", accessor: (r: EpilepsySeizurePlan) => r.seizure_types.map((s) => s.name).join("; ") },
+  { header: "Triggers", accessor: (r: EpilepsySeizurePlan) => r.triggers.join("; ") },
+  { header: "Preventer Med", accessor: (r: EpilepsySeizurePlan) => (r.preventer_medication ? `${r.preventer_medication.name} ${r.preventer_medication.dose}` : "None") },
+  { header: "Rescue Med", accessor: (r: EpilepsySeizurePlan) => (r.rescue_medication ? `${r.rescue_medication.name} ${r.rescue_medication.dose} ${r.rescue_medication.route}` : "None") },
+  { header: "Staff Trained (count)", accessor: (r: EpilepsySeizurePlan) => String(r.staff_trained_to_admin.length) },
+  { header: "School Plan In Place", accessor: (r: EpilepsySeizurePlan) => (r.school_plan_in_place ? "Yes" : "No") },
+  { header: "Neurologist", accessor: (r: EpilepsySeizurePlan) => r.consultant_neurologist ?? "" },
+  { header: "Consultant Review Due", accessor: (r: EpilepsySeizurePlan) => r.consultant_review_due ?? "" },
+  { header: "Recent Seizures (logged)", accessor: (r: EpilepsySeizurePlan) => String(r.recent_seizure_log.length) },
+  { header: "Key Worker", accessor: (r: EpilepsySeizurePlan) => getStaffName(r.key_worker) },
+  { header: "Review Date", accessor: (r: EpilepsySeizurePlan) => r.review_date },
 ];
 
 /* ─── component ─── */
 export default function ChildEpilepsySeizurePlanPage() {
+  const { data: res, isLoading } = useEpilepsySeizurePlans();
+  const items = res?.data ?? [];
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [diagnosisFilter, setDiagnosisFilter] = useState("all");
@@ -198,19 +60,19 @@ export default function ChildEpilepsySeizurePlanPage() {
 
   const diagnoses = useMemo(() => {
     const set = new Set<string>();
-    PLANS.forEach((p) => set.add(p.diagnosis));
+    items.forEach((p) => set.add(p.diagnosis));
     return Array.from(set);
-  }, []);
+  }, [items]);
 
   const filtered = useMemo(() => {
-    let list = [...PLANS];
+    let list = [...items];
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
         (p) =>
-          getYPName(p.youngPerson).toLowerCase().includes(q) ||
+          getYPName(p.child_id).toLowerCase().includes(q) ||
           p.diagnosis.toLowerCase().includes(q) ||
-          p.seizureTypes.some((s) => s.name.toLowerCase().includes(q)) ||
+          p.seizure_types.some((s) => s.name.toLowerCase().includes(q)) ||
           p.triggers.some((t) => t.toLowerCase().includes(q)),
       );
     }
@@ -220,29 +82,29 @@ export default function ChildEpilepsySeizurePlanPage() {
     list.sort((a, b) => {
       switch (sortBy) {
         case "review_due":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         case "name":
-          return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "recent_seizures":
-          return b.recentSeizureLog.length - a.recentSeizureLog.length;
+          return b.recent_seizure_log.length - a.recent_seizure_log.length;
         case "plan_date":
-          return b.planDate.localeCompare(a.planDate);
+          return b.plan_date.localeCompare(a.plan_date);
         default:
           return 0;
       }
     });
     return list;
-  }, [search, diagnosisFilter, sortBy]);
+  }, [items, search, diagnosisFilter, sortBy]);
 
   const stats = useMemo(() => {
-    const active = PLANS.length;
-    const rescue = PLANS.filter((p) => p.rescueMedication).length;
-    const trained = PLANS.reduce((s, p) => s + p.staffTrainedToAdmin.length, 0);
+    const active = items.length;
+    const rescue = items.filter((p) => p.rescue_medication).length;
+    const trained = items.reduce((s, p) => s + p.staff_trained_to_admin.length, 0);
     const today = new Date();
-    const recent30 = PLANS.reduce(
+    const recent30 = items.reduce(
       (s, p) =>
         s +
-        p.recentSeizureLog.filter((l) => {
+        p.recent_seizure_log.filter((l) => {
           const dt = new Date(l.date);
           const diff = (today.getTime() - dt.getTime()) / (1000 * 60 * 60 * 24);
           return diff <= 30;
@@ -250,9 +112,20 @@ export default function ChildEpilepsySeizurePlanPage() {
       0,
     );
     return { active, rescue, trained, recent30 };
-  }, []);
+  }, [items]);
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Epilepsy & Seizure Plans"
+        subtitle="Per-child epilepsy and seizure management plan · Epilepsy12 format · NICE NG217 · Quality Standard 8"
+      >
+        <p>Loading…</p>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -260,7 +133,7 @@ export default function ChildEpilepsySeizurePlanPage() {
       subtitle="Per-child epilepsy and seizure management plan · Epilepsy12 format · NICE NG217 · Quality Standard 8"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={PLANS} columns={exportCols} filename="epilepsy-seizure-plans" />
+          <ExportButton data={items} columns={exportCols} filename="epilepsy-seizure-plans" />
           <PrintButton title="Epilepsy & Seizure Plans" />
         </div>
       }
@@ -342,7 +215,7 @@ export default function ChildEpilepsySeizurePlanPage() {
         <div className="space-y-3">
           {filtered.map((plan) => {
             const isOpen = expandedId === plan.id;
-            const hasRescue = !!plan.rescueMedication;
+            const hasRescue = !!plan.rescue_medication;
 
             return (
               <Card key={plan.id} className="border-l-4 border-l-indigo-500">
@@ -354,7 +227,7 @@ export default function ChildEpilepsySeizurePlanPage() {
                     <div className="space-y-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
                         <Brain className="h-4 w-4 text-indigo-600" />
-                        {getYPName(plan.youngPerson)}
+                        {getYPName(plan.child_id)}
                         <Badge variant="outline" className="bg-indigo-100 text-indigo-800">
                           {plan.diagnosis.split(" — ")[0]}
                         </Badge>
@@ -368,18 +241,18 @@ export default function ChildEpilepsySeizurePlanPage() {
                           </Badge>
                         )}
                         <Badge variant="outline" className="bg-emerald-100 text-emerald-800">
-                          {plan.staffTrainedToAdmin.length} staff trained
+                          {plan.staff_trained_to_admin.length} staff trained
                         </Badge>
-                        {plan.schoolPlanInPlace && (
+                        {plan.school_plan_in_place && (
                           <Badge variant="outline" className="bg-blue-100 text-blue-800">
                             School plan in place
                           </Badge>
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Plan dated {plan.planDate} · Key worker {getStaffName(plan.keyWorker)} · Review due{" "}
-                        {plan.reviewDate}
-                        {plan.consultantNeurologist ? ` · ${plan.consultantNeurologist}` : ""}
+                        Plan dated {plan.plan_date} · Key worker {getStaffName(plan.key_worker)} · Review due{" "}
+                        {plan.review_date}
+                        {plan.consultant_neurologist ? ` · ${plan.consultant_neurologist}` : ""}
                       </p>
                     </div>
                     {isOpen ? (
@@ -404,18 +277,18 @@ export default function ChildEpilepsySeizurePlanPage() {
                         <Brain className="h-4 w-4 text-indigo-600" /> Seizure Types
                       </p>
                       <div className="space-y-1">
-                        {plan.seizureTypes.map((s, i) => (
+                        {plan.seizure_types.map((s, i) => (
                           <div key={i} className="bg-muted/40 rounded p-2 text-xs">
                             <div className="flex items-center justify-between gap-2 mb-0.5">
                               <span className="font-medium">{s.name}</span>
                               <Badge variant="outline" className="text-[10px]">
-                                <Clock className="h-3 w-3 mr-1" /> {s.typicalDuration}
+                                <Clock className="h-3 w-3 mr-1" /> {s.typical_duration}
                               </Badge>
                             </div>
                             <p className="text-muted-foreground">{s.description}</p>
-                            {s.lastObserved && (
+                            {s.last_observed && (
                               <p className="text-muted-foreground mt-0.5">
-                                Last observed: {s.lastObserved}
+                                Last observed: {s.last_observed}
                               </p>
                             )}
                           </div>
@@ -430,7 +303,7 @@ export default function ChildEpilepsySeizurePlanPage() {
                           <AlertTriangle className="h-4 w-4 text-amber-600" /> Warning Signs / Aura
                         </p>
                         <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-                          {plan.warningSigns.map((w, i) => (
+                          {plan.warning_signs.map((w, i) => (
                             <li key={i}>{w}</li>
                           ))}
                         </ul>
@@ -453,7 +326,7 @@ export default function ChildEpilepsySeizurePlanPage() {
                         <AlertTriangle className="h-4 w-4" /> What to Do During a Seizure
                       </p>
                       <ol className="list-decimal list-inside text-xs text-violet-900 space-y-1">
-                        {plan.duringSeizureSteps.map((step, i) => (
+                        {plan.during_seizure_steps.map((step, i) => (
                           <li key={i} className="leading-relaxed">
                             {step}
                           </li>
@@ -465,7 +338,7 @@ export default function ChildEpilepsySeizurePlanPage() {
                     <div className="bg-blue-50 border border-blue-200 rounded p-3">
                       <p className="font-semibold text-blue-900 mb-2">Recovery Position / Post-Seizure Care</p>
                       <ol className="list-decimal list-inside text-xs text-blue-900 space-y-1">
-                        {plan.recoveryPositionSteps.map((step, i) => (
+                        {plan.recovery_position_steps.map((step, i) => (
                           <li key={i} className="leading-relaxed">
                             {step}
                           </li>
@@ -479,7 +352,7 @@ export default function ChildEpilepsySeizurePlanPage() {
                         <Phone className="h-4 w-4" /> CALL 999 IMMEDIATELY IF…
                       </p>
                       <ul className="list-disc list-inside text-xs text-red-800 space-y-1 font-medium">
-                        {plan.call999Criteria.map((c, i) => (
+                        {plan.call_999_criteria.map((c, i) => (
                           <li key={i} className="leading-relaxed">
                             {c}
                           </li>
@@ -489,35 +362,35 @@ export default function ChildEpilepsySeizurePlanPage() {
 
                     {/* preventer + rescue meds */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {plan.preventerMedication && (
+                      {plan.preventer_medication && (
                         <div>
                           <p className="font-medium mb-1 flex items-center gap-1">
                             <Pill className="h-4 w-4 text-emerald-600" /> Preventer Medication
                           </p>
                           <div className="bg-emerald-50 border border-emerald-200 rounded p-2 text-xs">
                             <p className="font-semibold text-emerald-900">
-                              {plan.preventerMedication.name} — {plan.preventerMedication.dose}
+                              {plan.preventer_medication.name} — {plan.preventer_medication.dose}
                             </p>
-                            <p className="text-emerald-800 mt-0.5">{plan.preventerMedication.timing}</p>
+                            <p className="text-emerald-800 mt-0.5">{plan.preventer_medication.timing}</p>
                           </div>
                         </div>
                       )}
-                      {plan.rescueMedication ? (
+                      {plan.rescue_medication ? (
                         <div>
                           <p className="font-medium mb-1 flex items-center gap-1">
                             <Pill className="h-4 w-4 text-violet-600" /> Rescue Medication
                           </p>
                           <div className="bg-violet-50 border border-violet-200 rounded p-2 text-xs">
                             <p className="font-semibold text-violet-900">
-                              {plan.rescueMedication.name} — {plan.rescueMedication.dose} ({plan.rescueMedication.route})
+                              {plan.rescue_medication.name} — {plan.rescue_medication.dose} ({plan.rescue_medication.route})
                             </p>
                             <p className="text-violet-800 mt-0.5">
                               <span className="font-medium">When to give:</span>{" "}
-                              {plan.rescueMedication.whenToGive}
+                              {plan.rescue_medication.when_to_give}
                             </p>
                             <p className="text-violet-800 mt-0.5">
                               Second dose:{" "}
-                              {plan.rescueMedication.secondDoseAllowed
+                              {plan.rescue_medication.second_dose_allowed
                                 ? "Permitted (per protocol — call 999 if needed)"
                                 : "NOT permitted — call 999"}
                             </p>
@@ -541,15 +414,15 @@ export default function ChildEpilepsySeizurePlanPage() {
                     <div>
                       <p className="font-medium mb-1">Staff Trained to Recognise &amp; Respond</p>
                       <div className="flex flex-wrap gap-1">
-                        {plan.staffTrainedToAdmin.map((s) => (
+                        {plan.staff_trained_to_admin.map((s) => (
                           <Badge key={s} variant="outline" className="bg-emerald-100 text-emerald-800 text-xs">
                             {getStaffName(s)}
                           </Badge>
                         ))}
                       </div>
-                      {plan.staffTrainingExpires && (
+                      {plan.staff_training_expires && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Annual epilepsy awareness training expires: {plan.staffTrainingExpires}
+                          Annual epilepsy awareness training expires: {plan.staff_training_expires}
                         </p>
                       )}
                     </div>
@@ -559,7 +432,7 @@ export default function ChildEpilepsySeizurePlanPage() {
                       <div>
                         <p className="font-medium mb-1">Safe Sleeping Arrangements</p>
                         <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-                          {plan.safeSleepingArrangements.map((s, i) => (
+                          {plan.safe_sleeping_arrangements.map((s, i) => (
                             <li key={i}>{s}</li>
                           ))}
                         </ul>
@@ -567,7 +440,7 @@ export default function ChildEpilepsySeizurePlanPage() {
                       <div>
                         <p className="font-medium mb-1">Bathing &amp; Swimming Policy</p>
                         <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
-                          {plan.bathingSwimmingPolicy.map((s, i) => (
+                          {plan.bathing_swimming_policy.map((s, i) => (
                             <li key={i}>{s}</li>
                           ))}
                         </ul>
@@ -579,7 +452,7 @@ export default function ChildEpilepsySeizurePlanPage() {
                       <p className="font-medium mb-1 flex items-center gap-1">
                         <Clock className="h-4 w-4 text-amber-600" /> Recent Seizure Log
                       </p>
-                      {plan.recentSeizureLog.length === 0 ? (
+                      {plan.recent_seizure_log.length === 0 ? (
                         <p className="text-xs text-muted-foreground">No recorded seizures.</p>
                       ) : (
                         <div className="overflow-x-auto">
@@ -594,13 +467,13 @@ export default function ChildEpilepsySeizurePlanPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              {plan.recentSeizureLog.map((log, i) => (
+                              {plan.recent_seizure_log.map((log, i) => (
                                 <tr key={i} className="border-t">
                                   <td className="p-2 border align-top">{log.date}</td>
                                   <td className="p-2 border align-top">{log.type}</td>
-                                  <td className="p-2 border align-top">{log.durationMinutes}</td>
+                                  <td className="p-2 border align-top">{log.duration_minutes}</td>
                                   <td className="p-2 border align-top">
-                                    {log.rescueGiven ? (
+                                    {log.rescue_given ? (
                                       <Badge variant="outline" className="bg-violet-100 text-violet-800 text-[10px]">
                                         Yes
                                       </Badge>
@@ -623,7 +496,7 @@ export default function ChildEpilepsySeizurePlanPage() {
                         <Phone className="h-4 w-4 text-blue-600" /> Emergency Contacts
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                        {plan.emergencyContacts.map((c, i) => (
+                        {plan.emergency_contacts.map((c, i) => (
                           <div key={i} className="bg-muted/40 rounded p-2 text-xs">
                             <p className="font-medium">{c.name}</p>
                             <p className="text-muted-foreground">
@@ -635,12 +508,12 @@ export default function ChildEpilepsySeizurePlanPage() {
                     </div>
 
                     {/* consultant review */}
-                    {plan.consultantNeurologist && (
+                    {plan.consultant_neurologist && (
                       <div className="bg-muted/40 rounded p-2 text-xs">
                         <p className="font-medium">Consultant Neurologist</p>
                         <p className="text-muted-foreground">
-                          {plan.consultantNeurologist}
-                          {plan.consultantReviewDue ? ` · Next review due ${plan.consultantReviewDue}` : ""}
+                          {plan.consultant_neurologist}
+                          {plan.consultant_review_due ? ` · Next review due ${plan.consultant_review_due}` : ""}
                         </p>
                       </div>
                     )}
@@ -650,14 +523,16 @@ export default function ChildEpilepsySeizurePlanPage() {
                       <div>
                         <p className="font-medium mb-1">Child&apos;s Voice</p>
                         <p className="text-xs italic text-muted-foreground leading-relaxed">
-                          &ldquo;{plan.childVoice}&rdquo;
+                          &ldquo;{plan.child_voice}&rdquo;
                         </p>
                       </div>
                       <div>
                         <p className="font-medium mb-1">Staff Observation</p>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{plan.staffObservation}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{plan.staff_observation}</p>
                       </div>
                     </div>
+
+                    <SmartLinkPanel sourceType="epilepsy-seizure-plan" sourceId={plan.id} childId={plan.child_id} compact />
                   </CardContent>
                 )}
               </Card>

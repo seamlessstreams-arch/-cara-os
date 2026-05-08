@@ -5,7 +5,7 @@ import {
   Home, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, TrendingUp, TrendingDown,
   ChevronDown, ChevronUp, Calendar, Shield,
-  Heart, Target, Clock,
+  Heart, Target, Clock, Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -18,204 +18,79 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import type { PlacementStabilityRecord, StabilityFactor, PlacementEvent, StabilityRiskLevel, StabilityTrend } from "@/types/extended";
+import { STABILITY_RISK_LEVEL_LABEL } from "@/types/extended";
+import { usePlacementStabilityRecords } from "@/hooks/use-placement-stability-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+/* ── constants ──────────────────────────────────────────────────────── */
+const RISK_LEVELS: StabilityRiskLevel[] = ["low", "medium", "high", "critical"];
+const RISK_COLORS: Record<StabilityRiskLevel, string> = {
+  low: "bg-green-100 text-green-800",
+  medium: "bg-yellow-100 text-yellow-800",
+  high: "bg-orange-100 text-orange-800",
+  critical: "bg-red-100 text-red-800",
 };
-
-/* ── types ───────────────────────────────────────────────────────────── */
-const RISK_LEVELS = ["low", "medium", "high", "critical"] as const;
-type RiskLevel = typeof RISK_LEVELS[number];
-const RISK_COLORS: Record<RiskLevel, string> = {
-  low: "bg-green-100 text-green-800", medium: "bg-yellow-100 text-yellow-800",
-  high: "bg-orange-100 text-orange-800", critical: "bg-red-100 text-red-800",
-};
-
-interface StabilityFactor {
-  factor: string;
-  status: "positive" | "concern" | "risk";
-  detail: string;
-}
-
-interface PlacementEvent {
-  date: string;
-  event: string;
-  impact: "positive" | "neutral" | "negative";
-  response: string;
-}
-
-interface PlacementRecord {
-  id: string;
-  youngPersonId: string;
-  placementStartDate: string;
-  daysInPlacement: number;
-  previousPlacements: number;
-  stabilityRisk: RiskLevel;
-  trend: "improving" | "stable" | "declining";
-  keyWorker: string;
-  socialWorker: string;
-  lastReview: string;
-  nextReview: string;
-  factors: StabilityFactor[];
-  recentEvents: PlacementEvent[];
-  strengths: string[];
-  concerns: string[];
-  actionPlan: string;
-  notes: string;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: PlacementRecord[] = [
-  {
-    id: "ps_1", youngPersonId: "yp_alex",
-    placementStartDate: d(-420), daysInPlacement: 420,
-    previousPlacements: 4, stabilityRisk: "medium", trend: "stable",
-    keyWorker: "staff_anna", socialWorker: "Sarah Mitchell",
-    lastReview: d(-30), nextReview: d(60),
-    factors: [
-      { factor: "Attachment to Staff", status: "positive", detail: "Strong bond with key worker. Trusts the team. Seeks support when anxious." },
-      { factor: "Education Engagement", status: "concern", detail: "Attendance at 78%. Refusing some days. Possible bullying issue being investigated." },
-      { factor: "Peer Relationships", status: "positive", detail: "Gets on well with Jordan and Casey. Some sibling-like dynamics — normal." },
-      { factor: "Emotional Regulation", status: "concern", detail: "Social media triggers distress. Late-night phone use causing sleep disruption." },
-      { factor: "Family Contact", status: "positive", detail: "Regular contact with mum. Relationship improving. No safeguarding concerns from contact." },
-      { factor: "Sense of Belonging", status: "positive", detail: "Refers to Oak House as 'home'. Decorated room with personal items. Has favourite chair." },
-    ],
-    recentEvents: [
-      { date: d(-8), event: "Internal truancy — went to park instead of school", impact: "negative", response: "Discussed bullying concerns. Meeting with school arranged." },
-      { date: d(-4), event: "Social media distress — late-night incident", impact: "negative", response: "Phone routine adjusted. Key work session on online safety." },
-      { date: d(-1), event: "Volunteered to help cook Sunday dinner", impact: "positive", response: "Praised and thanked. Added cooking to activity plan." },
-    ],
-    strengths: [
-      "Longest placement to date — significant achievement",
-      "Strong attachment to key worker and staff team",
-      "Growing sense of home and belonging",
-      "Improving relationship with family",
-    ],
-    concerns: [
-      "Education attendance below target",
-      "Social media impacting emotional wellbeing",
-      "Previous placement breakdowns may affect trust during challenging periods",
-    ],
-    actionPlan: "Education attendance action plan with school. Phone use boundaries being reinforced consistently. Key work to continue focusing on emotional literacy. Consider CAMHS re-referral if anxiety continues. Maintain strong relationship base — this is Alex's anchor.",
-    notes: "Alex has made enormous progress. This is the longest and most stable placement. Must protect this — school attendance and phone management are the key risks to monitor.",
-  },
-  {
-    id: "ps_2", youngPersonId: "yp_jordan",
-    placementStartDate: d(-150), daysInPlacement: 150,
-    previousPlacements: 2, stabilityRisk: "low", trend: "improving",
-    keyWorker: "staff_anna", socialWorker: "Tom Richards",
-    lastReview: d(-14), nextReview: d(76),
-    factors: [
-      { factor: "Settling In", status: "positive", detail: "Initial anxieties resolved. Now fully settled. Feels comfortable in the home." },
-      { factor: "Education Engagement", status: "positive", detail: "Good attendance. Making friends at school. Positive reports from teachers." },
-      { factor: "Peer Relationships", status: "positive", detail: "Good relationship with Alex and Casey. Enjoys communal activities." },
-      { factor: "Emotional Regulation", status: "positive", detail: "Anxiety around contact visits has reduced. Uses coping strategies taught in key work." },
-      { factor: "Family Contact", status: "concern", detail: "Contact with father remains supervised. Some anxiety before visits but managing well." },
-      { factor: "Sense of Belonging", status: "positive", detail: "Told Reg 44 visitor this is 'the best home'. Room fully personalised." },
-    ],
-    recentEvents: [
-      { date: d(-14), event: "Positive LAC review — stability praised by IRO", impact: "positive", response: "Celebrated with Jordan. Shared feedback with team." },
-      { date: d(-7), event: "Couldn't sleep before contact visit — anxious", impact: "negative", response: "Staff sat with Jordan. Made warm drink. Talked through worries." },
-      { date: d(-2), event: "Scored winning goal at school football match", impact: "positive", response: "Staff attended to watch. Jordan beaming. Photo for life story book." },
-    ],
-    strengths: [
-      "Rapid settling-in — credited to skilled staff team",
-      "Excellent school engagement and peer relationships",
-      "Growing confidence and self-esteem",
-      "Strong attachment forming with the home",
-    ],
-    concerns: [
-      "Anxiety around paternal contact — needs continued support",
-      "Only 5 months in — still in critical stability window",
-    ],
-    actionPlan: "Maintain consistency of care and routine. Pre-contact support to continue. School engagement to be celebrated and reinforced. Key work to build on emotional literacy. Life story work to be started.",
-    notes: "Jordan is settling beautifully. The team has done an excellent job. Must maintain this trajectory — consistency is key. Contact anxiety is manageable with current support.",
-  },
-  {
-    id: "ps_3", youngPersonId: "yp_casey",
-    placementStartDate: d(-310), daysInPlacement: 310,
-    previousPlacements: 1, stabilityRisk: "low", trend: "improving",
-    keyWorker: "staff_chervelle", socialWorker: "Lisa Park",
-    lastReview: d(-45), nextReview: d(45),
-    factors: [
-      { factor: "Attachment to Staff", status: "positive", detail: "Very close to key worker. Comfortable with all staff. Asks for help appropriately." },
-      { factor: "Education Engagement", status: "positive", detail: "Thriving at college. Art portfolio developing well. Tutor relationship strong." },
-      { factor: "Emotional Wellbeing", status: "concern", detail: "Anxiety being managed with CAMHS support. Some difficulty sleeping. Generally improving." },
-      { factor: "Peer Relationships", status: "positive", detail: "Good friendships at college and in the home. Social confidence growing." },
-      { factor: "Family Contact", status: "positive", detail: "Good relationship with mother. Regular contact. Mother engaged with care plan." },
-      { factor: "Independence Skills", status: "positive", detail: "Cooking, budgeting, and self-care skills developing well. Transition planning underway." },
-    ],
-    recentEvents: [
-      { date: d(-6), event: "College inset day — Casey chose to do art at home", impact: "positive", response: "Provided art supplies. Casey produced impressive piece for portfolio." },
-      { date: d(-3), event: "CAMHS review — positive progress noted", impact: "positive", response: "CAMHS recommendations integrated into daily support plan." },
-      { date: d(-1), event: "Requested more vegetarian options — expressed preference", impact: "positive", response: "Menu planning updated. Casey involved in meal decisions." },
-    ],
-    strengths: [
-      "Only one previous placement — strong stability history",
-      "Thriving in education with clear talent and motivation",
-      "Good family relationships supporting stability",
-      "Developing independence skills ahead of transition",
-    ],
-    concerns: [
-      "Anxiety management is ongoing — CAMHS engagement essential",
-      "Sleep difficulties occasionally impact daily functioning",
-    ],
-    actionPlan: "CAMHS sessions to continue. Sleep hygiene strategies being implemented. College engagement celebrated and supported. Transition planning to progress at Casey's pace. Mother to be more involved in care plan reviews.",
-    notes: "Casey is in a really good place. The placement is strong and stable. Anxiety is the main area of focus but is being well-managed. College success is a protective factor.",
-  },
-];
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function PlacementStabilityPage() {
-  const [records] = useState<PlacementRecord[]>(SEED);
+  const { data: res, isLoading } = usePlacementStabilityRecords();
+  const entries = res?.data ?? [];
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("risk");
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let list = [...records];
+    let list = [...entries];
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          getYPName(r.youngPersonId).toLowerCase().includes(q) ||
+          getYPName(r.child_id).toLowerCase().includes(q) ||
           r.notes.toLowerCase().includes(q) ||
-          r.actionPlan.toLowerCase().includes(q)
+          r.action_plan.toLowerCase().includes(q)
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "risk": return RISK_LEVELS.indexOf(b.stabilityRisk) - RISK_LEVELS.indexOf(a.stabilityRisk);
-        case "days": return b.daysInPlacement - a.daysInPlacement;
-        case "name": return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
+        case "risk": return RISK_LEVELS.indexOf(b.stability_risk) - RISK_LEVELS.indexOf(a.stability_risk);
+        case "days": return b.days_in_placement - a.days_in_placement;
+        case "name": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         default: return 0;
       }
     });
     return list;
-  }, [records, search, sortBy]);
+  }, [entries, search, sortBy]);
 
-  const avgDays = Math.round(records.reduce((s, r) => s + r.daysInPlacement, 0) / records.length);
-  const atRisk = records.filter((r) => r.stabilityRisk === "high" || r.stabilityRisk === "critical").length;
-  const improving = records.filter((r) => r.trend === "improving").length;
+  if (isLoading) {
+    return (
+      <PageShell title="Placement Stability" subtitle="Monitor and support placement stability for every young person">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
-  const exportCols: ExportColumn<PlacementRecord>[] = [
-    { header: "Young Person", accessor: (r: PlacementRecord) => getYPName(r.youngPersonId) },
-    { header: "Placement Start", accessor: (r: PlacementRecord) => r.placementStartDate },
-    { header: "Days in Placement", accessor: (r: PlacementRecord) => r.daysInPlacement },
-    { header: "Previous Placements", accessor: (r: PlacementRecord) => r.previousPlacements },
-    { header: "Stability Risk", accessor: (r: PlacementRecord) => r.stabilityRisk },
-    { header: "Trend", accessor: (r: PlacementRecord) => r.trend },
-    { header: "Key Worker", accessor: (r: PlacementRecord) => getStaffName(r.keyWorker) },
-    { header: "Social Worker", accessor: (r: PlacementRecord) => r.socialWorker },
-    { header: "Strengths", accessor: (r: PlacementRecord) => r.strengths.join("; ") },
-    { header: "Concerns", accessor: (r: PlacementRecord) => r.concerns.join("; ") },
-    { header: "Factors", accessor: (r: PlacementRecord) => r.factors.map((f: StabilityFactor) => `${f.factor}: ${f.status}`).join("; ") },
-    { header: "Action Plan", accessor: (r: PlacementRecord) => r.actionPlan },
-    { header: "Next Review", accessor: (r: PlacementRecord) => r.nextReview },
-    { header: "Notes", accessor: (r: PlacementRecord) => r.notes },
+  const avgDays = entries.length > 0 ? Math.round(entries.reduce((s, r) => s + r.days_in_placement, 0) / entries.length) : 0;
+  const atRisk = entries.filter((r) => r.stability_risk === "high" || r.stability_risk === "critical").length;
+  const improving = entries.filter((r) => r.trend === "improving").length;
+
+  const exportCols: ExportColumn<PlacementStabilityRecord>[] = [
+    { header: "Young Person", accessor: (r: PlacementStabilityRecord) => getYPName(r.child_id) },
+    { header: "Placement Start", accessor: (r: PlacementStabilityRecord) => r.placement_start_date },
+    { header: "Days in Placement", accessor: (r: PlacementStabilityRecord) => r.days_in_placement },
+    { header: "Previous Placements", accessor: (r: PlacementStabilityRecord) => r.previous_placements },
+    { header: "Stability Risk", accessor: (r: PlacementStabilityRecord) => r.stability_risk },
+    { header: "Trend", accessor: (r: PlacementStabilityRecord) => r.trend },
+    { header: "Key Worker", accessor: (r: PlacementStabilityRecord) => getStaffName(r.key_worker) },
+    { header: "Social Worker", accessor: (r: PlacementStabilityRecord) => r.social_worker },
+    { header: "Strengths", accessor: (r: PlacementStabilityRecord) => r.strengths.join("; ") },
+    { header: "Concerns", accessor: (r: PlacementStabilityRecord) => r.concerns.join("; ") },
+    { header: "Factors", accessor: (r: PlacementStabilityRecord) => r.factors.map((f: StabilityFactor) => `${f.factor}: ${f.status}`).join("; ") },
+    { header: "Action Plan", accessor: (r: PlacementStabilityRecord) => r.action_plan },
+    { header: "Next Review", accessor: (r: PlacementStabilityRecord) => r.next_review },
+    { header: "Notes", accessor: (r: PlacementStabilityRecord) => r.notes },
   ];
 
   return (
@@ -233,7 +108,7 @@ export default function PlacementStabilityPage() {
         {/* ── stats ─────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Young People", value: records.length, icon: Heart, colour: "text-pink-600" },
+            { label: "Young People", value: entries.length, icon: Heart, colour: "text-pink-600" },
             { label: "Avg. Days in Placement", value: avgDays, icon: Calendar, colour: "text-blue-600" },
             { label: "At Risk", value: atRisk, icon: AlertTriangle, colour: atRisk > 0 ? "text-red-600" : "text-green-600" },
             { label: "Improving", value: improving, icon: TrendingUp, colour: "text-green-600" },
@@ -286,22 +161,22 @@ export default function PlacementStabilityPage() {
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Home className={cn("h-5 w-5 shrink-0",
-                      rec.stabilityRisk === "low" ? "text-green-600" :
-                      rec.stabilityRisk === "medium" ? "text-yellow-600" :
+                      rec.stability_risk === "low" ? "text-green-600" :
+                      rec.stability_risk === "medium" ? "text-yellow-600" :
                       "text-red-600"
                     )} />
                     <div className="min-w-0">
-                      <p className="font-medium">{getYPName(rec.youngPersonId)}</p>
+                      <p className="font-medium">{getYPName(rec.child_id)}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {rec.daysInPlacement} days · {rec.previousPlacements} previous placement(s) · KW: {getStaffName(rec.keyWorker)}
+                        {rec.days_in_placement} days · {rec.previous_placements} previous placement(s) · KW: {getStaffName(rec.key_worker)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {rec.trend === "improving" && <TrendingUp className="h-4 w-4 text-green-600" />}
                     {rec.trend === "declining" && <TrendingDown className="h-4 w-4 text-red-600" />}
-                    <Badge className={cn("text-xs", RISK_COLORS[rec.stabilityRisk])}>
-                      {rec.stabilityRisk.charAt(0).toUpperCase() + rec.stabilityRisk.slice(1)} Risk
+                    <Badge className={cn("text-xs", RISK_COLORS[rec.stability_risk])}>
+                      {rec.stability_risk.charAt(0).toUpperCase() + rec.stability_risk.slice(1)} Risk
                     </Badge>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -311,10 +186,10 @@ export default function PlacementStabilityPage() {
                   <div className="border-t bg-slate-50 p-4 space-y-4">
                     {/* meta */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div><span className="text-muted-foreground">Placed:</span> <span className="font-medium">{rec.placementStartDate}</span></div>
-                      <div><span className="text-muted-foreground">Social Worker:</span> <span className="font-medium">{rec.socialWorker}</span></div>
-                      <div><span className="text-muted-foreground">Last Review:</span> <span className="font-medium">{rec.lastReview}</span></div>
-                      <div><span className="text-muted-foreground">Next Review:</span> <span className="font-medium">{rec.nextReview}</span></div>
+                      <div><span className="text-muted-foreground">Placed:</span> <span className="font-medium">{rec.placement_start_date}</span></div>
+                      <div><span className="text-muted-foreground">Social Worker:</span> <span className="font-medium">{rec.social_worker}</span></div>
+                      <div><span className="text-muted-foreground">Last Review:</span> <span className="font-medium">{rec.last_review}</span></div>
+                      <div><span className="text-muted-foreground">Next Review:</span> <span className="font-medium">{rec.next_review}</span></div>
                     </div>
 
                     {/* stability factors */}
@@ -343,7 +218,7 @@ export default function PlacementStabilityPage() {
                     <div>
                       <p className="text-sm font-medium mb-2">Recent Events</p>
                       <div className="space-y-2">
-                        {rec.recentEvents.map((evt: PlacementEvent, idx: number) => (
+                        {rec.recent_events.map((evt: PlacementEvent, idx: number) => (
                           <div key={idx} className="flex items-start gap-2 rounded-lg border bg-white p-2.5 text-sm">
                             {evt.impact === "positive" ? <TrendingUp className="h-4 w-4 text-green-600 mt-0.5 shrink-0" /> :
                              evt.impact === "negative" ? <TrendingDown className="h-4 w-4 text-red-600 mt-0.5 shrink-0" /> :
@@ -392,7 +267,7 @@ export default function PlacementStabilityPage() {
                         <Target className="h-4 w-4 text-blue-600" />
                         <p className="text-xs font-medium text-blue-700">Action Plan</p>
                       </div>
-                      <p className="text-sm">{rec.actionPlan}</p>
+                      <p className="text-sm">{rec.action_plan}</p>
                     </div>
 
                     {/* notes */}
@@ -400,6 +275,9 @@ export default function PlacementStabilityPage() {
                       <p className="text-xs text-muted-foreground mb-1 font-medium">RM Notes</p>
                       <p className="text-sm">{rec.notes}</p>
                     </div>
+
+                    {/* smart links */}
+                    <SmartLinkPanel sourceType="placement-stability-record" sourceId={rec.id} childId={rec.child_id} compact />
                   </div>
                 )}
               </div>

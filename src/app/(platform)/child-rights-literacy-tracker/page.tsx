@@ -14,7 +14,7 @@ import {
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select,
@@ -23,233 +23,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-type KnowledgeLevel =
-  | "Doesn't know"
-  | "Has heard of"
-  | "Understands basics"
-  | "Confident"
-  | "Can explain to others";
-
-interface RightsRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  rightsKnowledge: { right: string; level: KnowledgeLevel }[];
-  knowsHowToComplain: boolean;
-  knowsAdvocateName?: string;
-  knowsIndependentVisitorName?: string;
-  knowsHowToContactOfsted: boolean;
-  knowsRightToAccessRecords: boolean;
-  knowsRightToRefuseContact: boolean;
-  hasUsedRights: { what: string; date: string; outcome: string }[];
-  learningPlanThisQuarter: string[];
-  resourcesUsed: string[];
-  childVoice: string;
-  staffObservation: string;
-  reviewDate: string;
-  keyWorker: string;
-}
+import type { RightsLiteracyRecord, RightsKnowledgeLevel } from "@/types/extended";
+import { RIGHTS_KNOWLEDGE_LEVEL_LABEL } from "@/types/extended";
+import { useRightsLiteracyRecords } from "@/hooks/use-rights-literacy-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const LEVEL_META: Record<RightsKnowledgeLevel, { colour: string; weight: number }> = {
+  doesnt_know:          { colour: "bg-rose-100 text-rose-800",      weight: 0 },
+  has_heard_of:         { colour: "bg-amber-100 text-amber-800",    weight: 1 },
+  understands_basics:   { colour: "bg-yellow-100 text-yellow-800",  weight: 2 },
+  confident:            { colour: "bg-teal-100 text-teal-800",      weight: 3 },
+  can_explain_to_others:{ colour: "bg-emerald-100 text-emerald-800", weight: 4 },
 };
-
-const LEVEL_META: Record<KnowledgeLevel, { colour: string; weight: number }> = {
-  "Doesn't know":          { colour: "bg-rose-100 text-rose-800",      weight: 0 },
-  "Has heard of":          { colour: "bg-amber-100 text-amber-800",    weight: 1 },
-  "Understands basics":    { colour: "bg-yellow-100 text-yellow-800",  weight: 2 },
-  "Confident":             { colour: "bg-teal-100 text-teal-800",      weight: 3 },
-  "Can explain to others": { colour: "bg-emerald-100 text-emerald-800", weight: 4 },
-};
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const SEED: RightsRecord[] = [
-  /* ── Jordan — high knowledge ── */
-  {
-    id: "rl_jordan",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-21),
-    rightsKnowledge: [
-      { right: "Right to be heard (UNCRC Art. 12)",          level: "Can explain to others" },
-      { right: "Right to private family life (Art. 16)",     level: "Confident" },
-      { right: "Right to advocate (Reg 7, CHR 2015)",         level: "Can explain to others" },
-      { right: "Right to complain (Reg 39, CHR 2015)",        level: "Can explain to others" },
-      { right: "Right to refuse contact",                     level: "Confident" },
-      { right: "Right to access records (DPA 2018 / GDPR)",   level: "Confident" },
-      { right: "Right to education (Art. 28)",                level: "Confident" },
-      { right: "Right to be free from harm (Art. 19)",        level: "Can explain to others" },
-    ],
-    knowsHowToComplain: true,
-    knowsAdvocateName: "Priya Bhatt (NYAS)",
-    knowsIndependentVisitorName: "David Owusu",
-    knowsHowToContactOfsted: true,
-    knowsRightToAccessRecords: true,
-    knowsRightToRefuseContact: true,
-    hasUsedRights: [
-      {
-        what: "Asked for advocate during placement disagreement at previous home",
-        date: d(-240),
-        outcome:
-          "Advocate (NYAS) attended LAC review with Jordan, supported him to challenge a proposed move. Move was paused, alternative plan agreed.",
-      },
-      {
-        what: "Contacted independent visitor directly when Jordan felt his views weren't being heard",
-        date: d(-95),
-        outcome:
-          "Independent visitor met with Jordan within 48 hours, raised concern with RM. Issue resolved through key work session with revised plan.",
-      },
-      {
-        what: "Helped Casey understand the complaints process",
-        date: d(-30),
-        outcome:
-          "Jordan explained complaint cards to Casey during a children's meeting. Both children later used the process appropriately.",
-      },
-    ],
-    learningPlanThisQuarter: [
-      "Develop peer-mentor role — formal arrangement with the home for new admissions",
-      "Attend Children's Commissioner youth panel (already shortlisted)",
-      "Revisit information rights — what Subject Access actually entitles him to",
-    ],
-    resourcesUsed: [
-      "NYAS young person's rights pack",
-      "Children's Commissioner 'Help at Hand' booklet",
-      "Children's Guide for Oak House (annotated by Jordan)",
-      "UNCRC child-friendly version (UNICEF UK)",
-      "Article 12 In Action workshop (attended off-site)",
-    ],
-    childVoice:
-      "I want other kids in care to know what I know. Half the time grown-ups talk over you and you don't even realise you've got the right to push back. I'd rather a kid use the complaint process and get it wrong than never know they had it.",
-    staffObservation:
-      "Jordan demonstrates a sophisticated, age-appropriate grasp of his rights. He uses them proportionately — not as a shield against routine boundaries, but to challenge when adults aren't acting in his interests. His advocacy of Casey is strong evidence of internalised rights literacy. Suitable to take on a peer-mentor role with safeguarding scaffolding.",
-    reviewDate: d(60),
-    keyWorker: "staff_anna",
-  },
-
-  /* ── Alex — building ── */
-  {
-    id: "rl_alex",
-    youngPerson: "yp_alex",
-    recordedDate: d(-14),
-    rightsKnowledge: [
-      { right: "Right to be heard (UNCRC Art. 12)",          level: "Confident" },
-      { right: "Right to private family life (Art. 16)",     level: "Understands basics" },
-      { right: "Right to advocate (Reg 7, CHR 2015)",         level: "Confident" },
-      { right: "Right to complain (Reg 39, CHR 2015)",        level: "Confident" },
-      { right: "Right to refuse contact",                     level: "Understands basics" },
-      { right: "Right to access records (DPA 2018 / GDPR)",   level: "Has heard of" },
-      { right: "Right to education (Art. 28)",                level: "Understands basics" },
-      { right: "Right to be free from harm (Art. 19)",        level: "Confident" },
-    ],
-    knowsHowToComplain: true,
-    knowsAdvocateName: "Sarah Mansfield (Coram Voice)",
-    knowsIndependentVisitorName: "Helen Cartwright",
-    knowsHowToContactOfsted: true,
-    knowsRightToAccessRecords: false,
-    knowsRightToRefuseContact: true,
-    hasUsedRights: [
-      {
-        what: "Participated in Children's Commissioner consultation on care experience",
-        date: d(-45),
-        outcome:
-          "Travelled to regional consultation with key worker. Returned with much deeper understanding of Article 12 and how care leavers are using it. Cited this as a turning point.",
-      },
-      {
-        what: "Asked Sarah (advocate) to attend his last LAC review",
-        date: d(-30),
-        outcome:
-          "Advocate supported Alex to raise concerns about contact arrangements. IRO reflected views in minutes; SW agreed to a revised plan.",
-      },
-    ],
-    learningPlanThisQuarter: [
-      "Walk through Subject Access Request process — what's in his file, how to ask",
-      "Visual one-pager on Ofsted complaints route (already a draft on his fridge)",
-      "Direct work session on identity-based rights (Art. 8 & Art. 14)",
-      "Explore peer rights group at college LGBTQ+ society",
-    ],
-    resourcesUsed: [
-      "Coram Voice 'Always Heard' pack (advocate-led)",
-      "Children's Guide for Oak House",
-      "Help at Hand poster (kitchen)",
-      "Children's Commissioner consultation workbook",
-      "Stonewall young person's rights leaflet",
-    ],
-    childVoice:
-      "Going to the Commissioner thing flicked a switch — I used to think rights were a school topic. Now I know they're mine, like, today. I want to learn the records one next because I don't actually know what's been written about me.",
-    staffObservation:
-      "Alex has moved from passive awareness to active use of his rights inside three months. The Commissioner consultation was transformative. Records access is the next clear gap — he's ready for the conversation but needs scaffolding given the emotional weight of file content. Coordinate with social worker before any SAR.",
-    reviewDate: d(75),
-    keyWorker: "staff_edward",
-  },
-
-  /* ── Casey — foundational ── */
-  {
-    id: "rl_casey",
-    youngPerson: "yp_casey",
-    recordedDate: d(-9),
-    rightsKnowledge: [
-      { right: "Right to be heard (UNCRC Art. 12)",          level: "Has heard of" },
-      { right: "Right to private family life (Art. 16)",     level: "Has heard of" },
-      { right: "Right to advocate (Reg 7, CHR 2015)",         level: "Has heard of" },
-      { right: "Right to complain (Reg 39, CHR 2015)",        level: "Understands basics" },
-      { right: "Right to refuse contact",                     level: "Doesn't know" },
-      { right: "Right to access records (DPA 2018 / GDPR)",   level: "Doesn't know" },
-      { right: "Right to education (Art. 28)",                level: "Has heard of" },
-      { right: "Right to be free from harm (Art. 19)",        level: "Understands basics" },
-    ],
-    knowsHowToComplain: true,
-    knowsAdvocateName: "Mark Reid (NYAS) — met once",
-    knowsIndependentVisitorName: undefined,
-    knowsHowToContactOfsted: false,
-    knowsRightToAccessRecords: false,
-    knowsRightToRefuseContact: false,
-    hasUsedRights: [
-      {
-        what: "Used a complaint card to ask for a different bedtime routine",
-        date: d(-40),
-        outcome:
-          "Complaint logged, RM responded within 5 working days, routine adjusted in line with Casey's preference. Casey told staff she felt 'taken seriously'.",
-      },
-      {
-        what: "Told Anna (key worker on shift) she didn't want to speak to a visiting professional",
-        date: d(-12),
-        outcome:
-          "Visit rearranged. Used as a teaching moment about the right to refuse — reinforced with an age-appropriate explanation.",
-      },
-    ],
-    learningPlanThisQuarter: [
-      "Re-introduce advocate Mark Reid — second meeting on neutral ground (cafe), low-pressure",
-      "Age-appropriate UNCRC introduction using the UNICEF child-friendly cards",
-      "Direct work on 'who you can speak to' map — Anna, social worker, advocate, IV",
-      "Walk-through of complaint cards in office, including practising posting one",
-      "Introduce concept of right to refuse contact (linked to her safety plan)",
-    ],
-    resourcesUsed: [
-      "Children's Guide for Oak House (read together with Anna)",
-      "Complaint cards displayed in office",
-      "UNICEF child-friendly UNCRC summary cards",
-      "'Who can help me?' visual map (developed in key work)",
-    ],
-    childVoice:
-      "I know I can tell Anna or my social worker if something's wrong. I met Mark once but I forgot what he does. The cards are in the office — I've seen them. I don't really know about the rest yet.",
-    staffObservation:
-      "Casey is at a foundational stage and that's developmentally appropriate at 12. She has a working trust relationship with Anna and a functioning complaint route, which is the right starting point. Priority is to embed the advocate relationship — one meeting is not enough. Pace must be led by Casey; rights literacy will not be effective if it feels like another adult agenda imposed on her.",
-    reviewDate: d(45),
-    keyWorker: "staff_chervelle",
-  },
-];
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildRightsLiteracyTrackerPage() {
-  const [data] = useState<RightsRecord[]>(SEED);
+  const { data: res, isLoading } = useRightsLiteracyRecords();
+  const items = res?.data ?? [];
+
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterChild, setFilterChild] = useState<string>("all");
@@ -258,81 +52,89 @@ export default function ChildRightsLiteracyTrackerPage() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const childrenOptions = useMemo(() => {
-    const ids = Array.from(new Set(data.map((r) => r.youngPerson)));
+    const ids = Array.from(new Set(items.map((r) => r.child_id)));
     return ids.map((id) => ({ id, name: getYPName(id) }));
-  }, [data]);
+  }, [items]);
 
   const stats = useMemo(() => {
-    const withPlans = data.filter((r) => r.learningPlanThisQuarter.length > 0).length;
-    const confident = data.filter((r) => {
+    const withPlans = items.filter((r) => !!r.learning_plan_this_quarter).length;
+    const confident = items.filter((r) => {
       const avg =
-        r.rightsKnowledge.reduce((sum, k) => sum + LEVEL_META[k.level].weight, 0) /
-        Math.max(1, r.rightsKnowledge.length);
+        r.rights_knowledge.reduce((sum, k) => sum + LEVEL_META[k.level].weight, 0) /
+        Math.max(1, r.rights_knowledge.length);
       return avg >= 2.5;
     }).length;
-    const advocates = data.filter((r) => !!r.knowsAdvocateName).length;
-    const reviewsDue60 = data.filter((r) => {
-      const reviewDt = new Date(r.reviewDate).getTime();
+    const advocates = items.filter((r) => !!r.knows_advocate_name).length;
+    const reviewsDue60 = items.filter((r) => {
+      const reviewDt = new Date(r.review_date).getTime();
       const todayDt = new Date(today).getTime();
       const diffDays = (reviewDt - todayDt) / (1000 * 60 * 60 * 24);
       return diffDays <= 60;
     }).length;
     return { withPlans, confident, advocates, reviewsDue60 };
-  }, [data, today]);
+  }, [items, today]);
 
   const filtered = useMemo(() => {
-    let list = [...data];
-    if (filterChild !== "all") list = list.filter((r) => r.youngPerson === filterChild);
+    let list = [...items];
+    if (filterChild !== "all") list = list.filter((r) => r.child_id === filterChild);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.childVoice.toLowerCase().includes(q) ||
-          r.staffObservation.toLowerCase().includes(q) ||
-          r.rightsKnowledge.some((k) => k.right.toLowerCase().includes(q))
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          r.child_voice.toLowerCase().includes(q) ||
+          r.staff_observation.toLowerCase().includes(q) ||
+          r.rights_knowledge.some((k) => k.right.toLowerCase().includes(q))
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
         case "child":
-          return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "review":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         case "knowledge": {
           const avgA =
-            a.rightsKnowledge.reduce((s, k) => s + LEVEL_META[k.level].weight, 0) /
-            Math.max(1, a.rightsKnowledge.length);
+            a.rights_knowledge.reduce((s, k) => s + LEVEL_META[k.level].weight, 0) /
+            Math.max(1, a.rights_knowledge.length);
           const avgB =
-            b.rightsKnowledge.reduce((s, k) => s + LEVEL_META[k.level].weight, 0) /
-            Math.max(1, b.rightsKnowledge.length);
+            b.rights_knowledge.reduce((s, k) => s + LEVEL_META[k.level].weight, 0) /
+            Math.max(1, b.rights_knowledge.length);
           return avgB - avgA;
         }
         default:
-          return b.recordedDate.localeCompare(a.recordedDate);
+          return b.recorded_date.localeCompare(a.recorded_date);
       }
     });
     return list;
-  }, [data, filterChild, search, sortBy]);
+  }, [items, filterChild, search, sortBy]);
 
-  const exportCols: ExportColumn<RightsRecord>[] = [
-    { header: "Young Person",            accessor: (r: RightsRecord) => getYPName(r.youngPerson) },
-    { header: "Recorded",                accessor: (r: RightsRecord) => r.recordedDate },
-    { header: "Rights Knowledge",        accessor: (r: RightsRecord) => r.rightsKnowledge.map((k) => `${k.right}: ${k.level}`).join("; ") },
-    { header: "Knows How To Complain",   accessor: (r: RightsRecord) => (r.knowsHowToComplain ? "Yes" : "No") },
-    { header: "Advocate",                accessor: (r: RightsRecord) => r.knowsAdvocateName || "" },
-    { header: "Independent Visitor",     accessor: (r: RightsRecord) => r.knowsIndependentVisitorName || "" },
-    { header: "Knows Ofsted Contact",    accessor: (r: RightsRecord) => (r.knowsHowToContactOfsted ? "Yes" : "No") },
-    { header: "Knows Records Right",     accessor: (r: RightsRecord) => (r.knowsRightToAccessRecords ? "Yes" : "No") },
-    { header: "Knows Refuse Contact",    accessor: (r: RightsRecord) => (r.knowsRightToRefuseContact ? "Yes" : "No") },
-    { header: "Has Used Rights",         accessor: (r: RightsRecord) => r.hasUsedRights.map((h) => `${h.date} — ${h.what} (${h.outcome})`).join("; ") },
-    { header: "Learning Plan",           accessor: (r: RightsRecord) => r.learningPlanThisQuarter.join("; ") },
-    { header: "Resources Used",          accessor: (r: RightsRecord) => r.resourcesUsed.join("; ") },
-    { header: "Child Voice",             accessor: (r: RightsRecord) => r.childVoice },
-    { header: "Staff Observation",       accessor: (r: RightsRecord) => r.staffObservation },
-    { header: "Review Date",             accessor: (r: RightsRecord) => r.reviewDate },
-    { header: "Key Worker",              accessor: (r: RightsRecord) => getStaffName(r.keyWorker) },
+  const exportCols: ExportColumn<RightsLiteracyRecord>[] = [
+    { header: "Young Person",            accessor: (r: RightsLiteracyRecord) => getYPName(r.child_id) },
+    { header: "Recorded",                accessor: (r: RightsLiteracyRecord) => r.recorded_date },
+    { header: "Rights Knowledge",        accessor: (r: RightsLiteracyRecord) => r.rights_knowledge.map((k) => `${k.right}: ${RIGHTS_KNOWLEDGE_LEVEL_LABEL[k.level]}`).join("; ") },
+    { header: "Knows How To Complain",   accessor: (r: RightsLiteracyRecord) => (r.knows_how_to_complain ? "Yes" : "No") },
+    { header: "Advocate",                accessor: (r: RightsLiteracyRecord) => r.knows_advocate_name || "" },
+    { header: "Independent Visitor",     accessor: (r: RightsLiteracyRecord) => r.knows_independent_visitor_name || "" },
+    { header: "Knows Ofsted Contact",    accessor: (r: RightsLiteracyRecord) => (r.knows_how_to_contact_ofsted ? "Yes" : "No") },
+    { header: "Knows Records Right",     accessor: (r: RightsLiteracyRecord) => (r.knows_right_to_access_records ? "Yes" : "No") },
+    { header: "Knows Refuse Contact",    accessor: (r: RightsLiteracyRecord) => (r.knows_right_to_refuse_contact ? "Yes" : "No") },
+    { header: "Has Used Rights",         accessor: (r: RightsLiteracyRecord) => r.has_used_rights.map((h) => `${h.date} — ${h.what} (${h.outcome})`).join("; ") },
+    { header: "Learning Plan",           accessor: (r: RightsLiteracyRecord) => r.learning_plan_this_quarter || "" },
+    { header: "Resources Used",          accessor: (r: RightsLiteracyRecord) => r.resources_used.join("; ") },
+    { header: "Child Voice",             accessor: (r: RightsLiteracyRecord) => r.child_voice },
+    { header: "Staff Observation",       accessor: (r: RightsLiteracyRecord) => r.staff_observation },
+    { header: "Review Date",             accessor: (r: RightsLiteracyRecord) => r.review_date },
+    { header: "Key Worker",              accessor: (r: RightsLiteracyRecord) => getStaffName(r.key_worker) },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Child Rights Literacy Tracker" subtitle="Loading…">
+        <div />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -340,7 +142,7 @@ export default function ChildRightsLiteracyTrackerPage() {
       subtitle="Per-child rights knowledge, advocacy connections and empowerment learning — UNCRC, CHR 2015, Children Act 1989"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="child-rights-literacy" />
+          <ExportButton data={items} columns={exportCols} filename="child-rights-literacy" />
           <PrintButton title="Children's Rights Literacy" />
         </div>
       }
@@ -409,14 +211,14 @@ export default function ChildRightsLiteracyTrackerPage() {
         {filtered.map((rec) => {
           const isOpen = expanded === rec.id;
           const avg =
-            rec.rightsKnowledge.reduce((s, k) => s + LEVEL_META[k.level].weight, 0) /
-            Math.max(1, rec.rightsKnowledge.length);
-          const headlineLevel: KnowledgeLevel =
-            avg >= 3.25 ? "Can explain to others" :
-            avg >= 2.5  ? "Confident" :
-            avg >= 1.5  ? "Understands basics" :
-            avg >= 0.75 ? "Has heard of" :
-                          "Doesn't know";
+            rec.rights_knowledge.reduce((s, k) => s + LEVEL_META[k.level].weight, 0) /
+            Math.max(1, rec.rights_knowledge.length);
+          const headlineLevel: RightsKnowledgeLevel =
+            avg >= 3.25 ? "can_explain_to_others" :
+            avg >= 2.5  ? "confident" :
+            avg >= 1.5  ? "understands_basics" :
+            avg >= 0.75 ? "has_heard_of" :
+                          "doesnt_know";
 
           return (
             <div
@@ -433,38 +235,38 @@ export default function ChildRightsLiteracyTrackerPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold">{getYPName(rec.youngPerson)}</h3>
+                      <h3 className="font-semibold">{getYPName(rec.child_id)}</h3>
                       <span
                         className={cn(
                           "rounded-full px-2 py-0.5 text-xs font-medium",
                           LEVEL_META[headlineLevel].colour
                         )}
                       >
-                        {headlineLevel}
+                        {RIGHTS_KNOWLEDGE_LEVEL_LABEL[headlineLevel]}
                       </span>
-                      {rec.knowsAdvocateName && (
+                      {rec.knows_advocate_name && (
                         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
-                          Advocate: {rec.knowsAdvocateName}
+                          Advocate: {rec.knows_advocate_name}
                         </span>
                       )}
-                      {rec.knowsIndependentVisitorName && (
+                      {rec.knows_independent_visitor_name && (
                         <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800">
-                          IV: {rec.knowsIndependentVisitorName}
+                          IV: {rec.knows_independent_visitor_name}
                         </span>
                       )}
                       <span
                         className={cn(
                           "rounded-full px-2 py-0.5 text-xs font-medium",
-                          rec.knowsHowToComplain
+                          rec.knows_how_to_complain
                             ? "bg-teal-100 text-teal-800"
                             : "bg-rose-100 text-rose-800"
                         )}
                       >
-                        {rec.knowsHowToComplain ? "Knows how to complain" : "Complaints route gap"}
+                        {rec.knows_how_to_complain ? "Knows how to complain" : "Complaints route gap"}
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Recorded {rec.recordedDate} · Review {rec.reviewDate} · Key worker {getStaffName(rec.keyWorker)}
+                      Recorded {formatDate(rec.recorded_date)} · Review {formatDate(rec.review_date)} · Key worker {getStaffName(rec.key_worker)}
                     </p>
                   </div>
                 </div>
@@ -479,7 +281,7 @@ export default function ChildRightsLiteracyTrackerPage() {
                       Rights knowledge map
                     </p>
                     <ul className="space-y-1.5">
-                      {rec.rightsKnowledge.map((k, i) => (
+                      {rec.rights_knowledge.map((k, i) => (
                         <li
                           key={i}
                           className="flex items-center justify-between gap-3 rounded-md border bg-white px-3 py-1.5 text-sm"
@@ -491,7 +293,7 @@ export default function ChildRightsLiteracyTrackerPage() {
                               LEVEL_META[k.level].colour
                             )}
                           >
-                            {k.level}
+                            {RIGHTS_KNOWLEDGE_LEVEL_LABEL[k.level]}
                           </span>
                         </li>
                       ))}
@@ -501,12 +303,12 @@ export default function ChildRightsLiteracyTrackerPage() {
                   {/* Specific knowledge flags */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {[
-                      { label: "Knows complaints route", val: rec.knowsHowToComplain },
-                      { label: "Knows Ofsted contact",   val: rec.knowsHowToContactOfsted },
-                      { label: "Knows records right",    val: rec.knowsRightToAccessRecords },
-                      { label: "Knows refuse contact",   val: rec.knowsRightToRefuseContact },
-                      { label: "Has advocate named",     val: !!rec.knowsAdvocateName },
-                      { label: "Has IV named",           val: !!rec.knowsIndependentVisitorName },
+                      { label: "Knows complaints route", val: rec.knows_how_to_complain },
+                      { label: "Knows Ofsted contact",   val: rec.knows_how_to_contact_ofsted },
+                      { label: "Knows records right",    val: rec.knows_right_to_access_records },
+                      { label: "Knows refuse contact",   val: rec.knows_right_to_refuse_contact },
+                      { label: "Has advocate named",     val: !!rec.knows_advocate_name },
+                      { label: "Has IV named",           val: !!rec.knows_independent_visitor_name },
                     ].map((f) => (
                       <div
                         key={f.label}
@@ -524,16 +326,16 @@ export default function ChildRightsLiteracyTrackerPage() {
                   </div>
 
                   {/* Has used rights */}
-                  {rec.hasUsedRights.length > 0 && (
+                  {rec.has_used_rights.length > 0 && (
                     <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3">
                       <p className="text-xs uppercase tracking-wide text-emerald-800 font-semibold mb-2">
                         Times rights have been used
                       </p>
                       <ul className="space-y-2 text-sm text-emerald-950">
-                        {rec.hasUsedRights.map((h, i) => (
+                        {rec.has_used_rights.map((h, i) => (
                           <li key={i} className="border-l-2 border-emerald-300 pl-3">
                             <p className="font-medium">{h.what}</p>
-                            <p className="text-xs text-emerald-800">{h.date}</p>
+                            <p className="text-xs text-emerald-800">{formatDate(h.date)}</p>
                             <p className="text-sm">{h.outcome}</p>
                           </li>
                         ))}
@@ -547,15 +349,8 @@ export default function ChildRightsLiteracyTrackerPage() {
                       <p className="text-xs uppercase tracking-wide text-sky-800 font-semibold mb-2">
                         Learning plan this quarter
                       </p>
-                      {rec.learningPlanThisQuarter.length ? (
-                        <ul className="space-y-1 text-sm text-sky-900">
-                          {rec.learningPlanThisQuarter.map((s, i) => (
-                            <li key={i} className="flex gap-2">
-                              <span aria-hidden>•</span>
-                              <span>{s}</span>
-                            </li>
-                          ))}
-                        </ul>
+                      {rec.learning_plan_this_quarter ? (
+                        <p className="text-sm text-sky-900">{rec.learning_plan_this_quarter}</p>
                       ) : (
                         <p className="text-sm italic text-sky-900/70">No active plan.</p>
                       )}
@@ -565,9 +360,9 @@ export default function ChildRightsLiteracyTrackerPage() {
                       <p className="text-xs uppercase tracking-wide text-teal-800 font-semibold mb-2">
                         Resources used
                       </p>
-                      {rec.resourcesUsed.length ? (
+                      {rec.resources_used.length ? (
                         <ul className="space-y-1 text-sm text-teal-900">
-                          {rec.resourcesUsed.map((s, i) => (
+                          {rec.resources_used.map((s, i) => (
                             <li key={i} className="flex gap-2">
                               <span aria-hidden>•</span>
                               <span>{s}</span>
@@ -586,7 +381,7 @@ export default function ChildRightsLiteracyTrackerPage() {
                       Child voice
                     </p>
                     <p className="text-sm italic text-rose-950 leading-relaxed">
-                      &ldquo;{rec.childVoice}&rdquo;
+                      &ldquo;{rec.child_voice}&rdquo;
                     </p>
                   </div>
 
@@ -594,8 +389,11 @@ export default function ChildRightsLiteracyTrackerPage() {
                     <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold mb-1">
                       Staff observation
                     </p>
-                    <p className="text-sm text-gray-800 leading-relaxed">{rec.staffObservation}</p>
+                    <p className="text-sm text-gray-800 leading-relaxed">{rec.staff_observation}</p>
                   </div>
+
+                  {/* Smart link panel */}
+                  <SmartLinkPanel sourceType="rights-literacy-records" sourceId={rec.id} childId={rec.child_id} compact />
                 </div>
               )}
             </div>

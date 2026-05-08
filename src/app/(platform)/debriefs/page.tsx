@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
@@ -18,33 +19,12 @@ import {
   RefreshCw, AlertTriangle, CheckCircle2, Clock, Calendar,
   Heart, Shield, Users, MessageSquare
 } from "lucide-react";
+import type { DebriefRecord, ReflectiveDebriefType, DebriefFollowUpAction } from "@/types/extended";
+import { REFLECTIVE_DEBRIEF_TYPE_LABEL } from "@/types/extended";
+import { useDebriefRecords, useCreateDebriefRecord } from "@/hooks/use-debrief-records";
+import { toast } from "sonner";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-type DebriefType = "post_incident" | "post_restraint" | "critical_event" | "near_miss" | "team_reflection" | "safeguarding";
-
-interface Debrief {
-  id: string;
-  date: string;
-  type: DebriefType;
-  linkedIncidentId: string;
-  linkedIncidentSummary: string;
-  youngPersonId: string;
-  staffInvolved: string[];
-  facilitatedBy: string;
-  whatHappened: string;
-  whatWorkedWell: string;
-  whatCouldImprove: string;
-  staffWellbeing: string;
-  childPerspective: string;
-  lessonsLearned: string[];
-  changesNeeded: string[];
-  followUpActions: { action: string; owner: string; completed: boolean }[];
-  supportOffered: boolean;
-  supportDetails: string;
-  createdAt: string;
-}
-
-const TYPE_META: Record<DebriefType, { label: string; color: string }> = {
+const TYPE_META: Record<ReflectiveDebriefType, { label: string; color: string }> = {
   post_incident:   { label: "Post-Incident",    color: "bg-red-100 text-red-800" },
   post_restraint:  { label: "Post-Restraint",   color: "bg-orange-100 text-orange-800" },
   critical_event:  { label: "Critical Event",   color: "bg-purple-100 text-purple-800" },
@@ -53,99 +33,25 @@ const TYPE_META: Record<DebriefType, { label: string; color: string }> = {
   safeguarding:    { label: "Safeguarding",     color: "bg-pink-100 text-pink-800" },
 };
 
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const SEED: Debrief[] = [
-  {
-    id: "db_001", date: d(-5), type: "post_incident", linkedIncidentId: "inc_001",
-    linkedIncidentSummary: "Alex became aggressive after school — pushed furniture, shouted at staff",
-    youngPersonId: "yp_alex", staffInvolved: ["staff_darren", "staff_ryan"], facilitatedBy: "staff_darren",
-    whatHappened: "Alex came home from school angry after an argument with a peer. Escalated when asked to remove shoes — threw them across the hallway, pushed the console table, and shouted aggressively at staff. Staff used PACE approach and de-escalated over 20 minutes.",
-    whatWorkedWell: "Staff remained calm throughout. Darren used low tone and positioned himself non-threateningly. Ryan removed other YP from the area without fuss. The 'space and time' approach worked — Alex was able to self-regulate once given room.",
-    whatCouldImprove: "Initial interaction could have been better timed — Alex was clearly dysregulated on arrival. Asking about shoes immediately may have added pressure. Better to allow transition time first.",
-    staffWellbeing: "Both staff debriefed. Ryan reported feeling confident in the approach. Darren acknowledged it was stressful but manageable. Neither requires further support at this time.",
-    childPerspective: "Alex apologised afterwards and said 'I know I shouldn't have done that. I was just so angry about school.' Alex identified the peer argument as the real trigger.",
-    lessonsLearned: ["Allow transition time when YP arrives home upset", "Avoid non-essential requests during dysregulation", "PACE approach continues to be effective with Alex"],
-    changesNeeded: ["Add 'transition time' to Alex's behaviour support plan", "Brief all staff on avoiding requests during arrival if Alex appears upset"],
-    followUpActions: [
-      { action: "Update Alex's BSP with transition time guidance", owner: "staff_darren", completed: true },
-      { action: "Brief team at next staff meeting", owner: "staff_darren", completed: false },
-      { action: "Key work session with Alex about school triggers", owner: "staff_darren", completed: true },
-    ],
-    supportOffered: true, supportDetails: "Both staff offered supervision support. Ryan declined. Darren discussed in regular supervision.", createdAt: d(-5),
-  },
-  {
-    id: "db_002", date: d(-12), type: "near_miss", linkedIncidentId: "",
-    linkedIncidentSummary: "Jordan found near-open window on first floor after lights out",
-    youngPersonId: "yp_jordan", staffInvolved: ["staff_edward"], facilitatedBy: "staff_darren",
-    whatHappened: "During night checks, Edward found Jordan's bedroom window fully open and Jordan sitting on the windowsill looking outside. Jordan was not attempting to climb out but the window should have been restricted. Investigation revealed the window restrictor had failed.",
-    whatWorkedWell: "Night checks caught the issue. Edward approached calmly and didn't startle Jordan. Jordan was cooperative and came inside immediately when asked.",
-    whatCouldImprove: "Window restrictors should be checked more regularly as part of H&S schedule. Jordan's room should have been prioritised given absconding risk assessment.",
-    staffWellbeing: "Edward was shaken but managed well. Received phone support from RM immediately.",
-    childPerspective: "Jordan said 'I just wanted fresh air. I wasn't going to jump or anything.' Seemed genuine — was stargazing.",
-    lessonsLearned: ["Window restrictors need monthly checks", "Night staff should have H&S awareness of window risks", "Jordan needs appropriate ventilation options"],
-    changesNeeded: ["Repair all window restrictors immediately", "Add window checks to monthly H&S schedule", "Provide Jordan with a desk fan for ventilation"],
-    followUpActions: [
-      { action: "Replace window restrictors — all bedrooms", owner: "staff_ryan", completed: true },
-      { action: "Add to H&S monthly checks", owner: "staff_ryan", completed: true },
-      { action: "Buy desk fan for Jordan", owner: "staff_anna", completed: true },
-    ],
-    supportOffered: true, supportDetails: "Phone debrief with Edward same night. Follow-up in person next day.", createdAt: d(-12),
-  },
-  {
-    id: "db_003", date: d(-8), type: "safeguarding", linkedIncidentId: "",
-    linkedIncidentSummary: "Casey disclosed feeling unsafe in previous placement during key work session",
-    youngPersonId: "yp_casey", staffInvolved: ["staff_chervelle"], facilitatedBy: "staff_darren",
-    whatHappened: "During a key work session about identity, Casey became emotional and disclosed feeling unsafe and ignored in their previous foster placement. Casey did not make specific allegations but described a general sense of being unlistened to and invisible.",
-    whatWorkedWell: "Chervelle handled the disclosure excellently — listened without leading, maintained calm, reassured Casey they were believed. Did not probe for details. Recorded verbatim immediately after session. Consulted RM same day.",
-    whatCouldImprove: "Nothing significant — the response was textbook. Team reflected on the importance of creating safe spaces where children feel able to disclose.",
-    staffWellbeing: "Chervelle found the disclosure emotionally difficult but felt supported by RM response. Received additional supervision the following day.",
-    childPerspective: "Casey said 'I feel safe here and I didn't feel safe there. I just wanted someone to know.'",
-    lessonsLearned: ["Safe, trusting relationships enable disclosures", "Identity work can open up deeper conversations — staff should be prepared", "Immediate RM consultation is essential"],
-    changesNeeded: ["Ensure all staff refresh safeguarding disclosure response training", "Add identity work sessions as a standing agenda item in clinical meetings"],
-    followUpActions: [
-      { action: "Inform SW of disclosure", owner: "staff_darren", completed: true },
-      { action: "Expedite therapy referral", owner: "staff_darren", completed: true },
-      { action: "Safeguarding refresher for team", owner: "staff_darren", completed: false },
-    ],
-    supportOffered: true, supportDetails: "Chervelle received additional supervision. Offered counselling referral — declined but appreciated.", createdAt: d(-8),
-  },
-  {
-    id: "db_004", date: d(-20), type: "team_reflection", linkedIncidentId: "",
-    linkedIncidentSummary: "Reflecting on Casey's first two weeks at Oak House",
-    youngPersonId: "yp_casey", staffInvolved: ["staff_darren", "staff_ryan", "staff_anna", "staff_chervelle"], facilitatedBy: "staff_darren",
-    whatHappened: "Team met to reflect on Casey's first two weeks in placement. Discussed the welcome process, settling-in activities, and how the existing children responded.",
-    whatWorkedWell: "Welcome house meeting was excellent. Alex volunteered as buddy — really stepped up. Casey engaged with creative activities from day one. Staff consistency in approach. Key worker relationship forming well.",
-    whatCouldImprove: "Initial paperwork was slightly rushed due to short notice. Could have had more preparation time. Casey's room could have been more personalised before arrival.",
-    staffWellbeing: "Team feeling positive about Casey's placement. Good energy in the home.",
-    childPerspective: "Casey reported feeling welcomed and safe. Alex and Jordan both said they were glad Casey came.",
-    lessonsLearned: ["Welcome meetings are invaluable — continue as standard", "Buddy system works well", "Pre-admission room preparation checklist would be useful"],
-    changesNeeded: ["Create pre-admission room preparation checklist", "Build in 48-hour prep time for planned admissions where possible"],
-    followUpActions: [
-      { action: "Create admission prep checklist", owner: "staff_anna", completed: true },
-      { action: "Share positive feedback with Casey's SW", owner: "staff_darren", completed: true },
-    ],
-    supportOffered: false, supportDetails: "", createdAt: d(-20),
-  },
-];
-
-const EXPORT_COLS: ExportColumn<Debrief>[] = [
-  { header: "ID",              accessor: (r: Debrief) => r.id },
-  { header: "Date",            accessor: (r: Debrief) => r.date },
-  { header: "Type",            accessor: (r: Debrief) => TYPE_META[r.type].label },
-  { header: "Incident",        accessor: (r: Debrief) => r.linkedIncidentSummary },
-  { header: "Young Person",    accessor: (r: Debrief) => r.youngPersonId ? getYPName(r.youngPersonId) : "—" },
-  { header: "Staff Involved",  accessor: (r: Debrief) => r.staffInvolved.map(getStaffName).join(", ") },
-  { header: "What Happened",   accessor: (r: Debrief) => r.whatHappened },
-  { header: "What Worked",     accessor: (r: Debrief) => r.whatWorkedWell },
-  { header: "To Improve",      accessor: (r: Debrief) => r.whatCouldImprove },
-  { header: "Lessons",         accessor: (r: Debrief) => r.lessonsLearned.join("; ") },
-  { header: "Changes",         accessor: (r: Debrief) => r.changesNeeded.join("; ") },
-  { header: "Facilitated By",  accessor: (r: Debrief) => getStaffName(r.facilitatedBy) },
+const EXPORT_COLS: ExportColumn<DebriefRecord>[] = [
+  { header: "ID",              accessor: (r: DebriefRecord) => r.id },
+  { header: "Date",            accessor: (r: DebriefRecord) => r.date },
+  { header: "Type",            accessor: (r: DebriefRecord) => TYPE_META[r.type].label },
+  { header: "Incident",        accessor: (r: DebriefRecord) => r.linked_incident_summary },
+  { header: "Young Person",    accessor: (r: DebriefRecord) => r.child_id ? getYPName(r.child_id) : "—" },
+  { header: "Staff Involved",  accessor: (r: DebriefRecord) => r.staff_involved.map(getStaffName).join(", ") },
+  { header: "What Happened",   accessor: (r: DebriefRecord) => r.what_happened },
+  { header: "What Worked",     accessor: (r: DebriefRecord) => r.what_worked_well },
+  { header: "To Improve",      accessor: (r: DebriefRecord) => r.what_could_improve },
+  { header: "Lessons",         accessor: (r: DebriefRecord) => r.lessons_learned.join("; ") },
+  { header: "Changes",         accessor: (r: DebriefRecord) => r.changes_needed.join("; ") },
+  { header: "Facilitated By",  accessor: (r: DebriefRecord) => getStaffName(r.facilitated_by) },
 ];
 
 export default function DebriefsPage() {
-  const [debriefs, setDebriefs] = useState<Debrief[]>(SEED);
+  const { data: raw, isLoading } = useDebriefRecords();
+  const debriefs = raw?.data ?? [];
+  const createDebrief = useCreateDebriefRecord();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -158,7 +64,7 @@ export default function DebriefsPage() {
     let list = [...debriefs];
     if (search) {
       const s = search.toLowerCase();
-      list = list.filter((db) => db.whatHappened.toLowerCase().includes(s) || db.lessonsLearned.some((l) => l.toLowerCase().includes(s)) || db.linkedIncidentSummary.toLowerCase().includes(s));
+      list = list.filter((db) => db.what_happened.toLowerCase().includes(s) || db.lessons_learned.some((l) => l.toLowerCase().includes(s)) || db.linked_incident_summary.toLowerCase().includes(s));
     }
     if (typeFilter !== "all") list = list.filter((db) => db.type === typeFilter);
     list.sort((a, b) => b.date.localeCompare(a.date));
@@ -167,10 +73,12 @@ export default function DebriefsPage() {
 
   const stats = useMemo(() => {
     const total = debriefs.length;
-    const pendingActions = debriefs.flatMap((db) => db.followUpActions).filter((a) => !a.completed).length;
-    const lessonsTotal = debriefs.reduce((a, db) => a + db.lessonsLearned.length, 0);
+    const pendingActions = debriefs.flatMap((db) => db.follow_up_actions).filter((a) => !a.completed).length;
+    const lessonsTotal = debriefs.reduce((a, db) => a + db.lessons_learned.length, 0);
     return { total, pendingActions, lessonsTotal };
   }, [debriefs]);
+
+  if (isLoading) return <PageShell title="Debriefs & Reflections" subtitle="Post-incident debriefs, team reflections, and lessons learned"><div /></PageShell>;
 
   return (
     <PageShell
@@ -219,7 +127,7 @@ export default function DebriefsPage() {
           {filtered.map((db) => {
             const open = !!expanded[db.id];
             const typeM = TYPE_META[db.type];
-            const pending = db.followUpActions.filter((a) => !a.completed).length;
+            const pending = db.follow_up_actions.filter((a) => !a.completed).length;
             return (
               <Card key={db.id} className={cn("border-l-4", db.type === "post_restraint" || db.type === "post_incident" ? "border-l-red-400" : db.type === "safeguarding" ? "border-l-pink-400" : "border-l-blue-400")}>
                 <CardContent className="p-4">
@@ -228,14 +136,14 @@ export default function DebriefsPage() {
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <Badge className={cn("text-xs", typeM.color)}>{typeM.label}</Badge>
                         {pending > 0 && <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">{pending} pending</Badge>}
-                        {db.supportOffered && <Badge variant="outline" className="text-xs text-green-600 border-green-300">Support offered</Badge>}
+                        {db.support_offered && <Badge variant="outline" className="text-xs text-green-600 border-green-300">Support offered</Badge>}
                       </div>
-                      <p className="font-semibold">{db.linkedIncidentSummary}</p>
+                      <p className="font-semibold">{db.linked_incident_summary}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                         <span>{db.date}</span>
-                        {db.youngPersonId && <span>Re: {getYPName(db.youngPersonId)}</span>}
-                        <span>Staff: {db.staffInvolved.map(getStaffName).join(", ")}</span>
-                        <span>{db.lessonsLearned.length} lessons</span>
+                        {db.child_id && <span>Re: {getYPName(db.child_id)}</span>}
+                        <span>Staff: {db.staff_involved.map(getStaffName).join(", ")}</span>
+                        <span>{db.lessons_learned.length} lessons</span>
                       </div>
                     </div>
                     {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
@@ -243,39 +151,39 @@ export default function DebriefsPage() {
 
                   {open && (
                     <div className="mt-4 space-y-3 border-t pt-3 text-sm">
-                      <div><p className="font-medium text-muted-foreground mb-1">What Happened</p><p className="text-xs">{db.whatHappened}</p></div>
+                      <div><p className="font-medium text-muted-foreground mb-1">What Happened</p><p className="text-xs">{db.what_happened}</p></div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="bg-green-50 p-3 rounded-lg">
                           <p className="font-medium text-green-800 text-xs mb-1">What Worked Well</p>
-                          <p className="text-xs text-green-900">{db.whatWorkedWell}</p>
+                          <p className="text-xs text-green-900">{db.what_worked_well}</p>
                         </div>
                         <div className="bg-amber-50 p-3 rounded-lg">
                           <p className="font-medium text-amber-800 text-xs mb-1">What Could Improve</p>
-                          <p className="text-xs text-amber-900">{db.whatCouldImprove}</p>
+                          <p className="text-xs text-amber-900">{db.what_could_improve}</p>
                         </div>
                       </div>
-                      {db.childPerspective && (
+                      {db.child_perspective && (
                         <div><p className="font-medium text-muted-foreground mb-1">Child&apos;s Perspective</p>
-                          <div className="bg-pink-50 p-2 rounded border border-pink-200 italic text-pink-900 text-xs">{db.childPerspective}</div>
+                          <div className="bg-pink-50 p-2 rounded border border-pink-200 italic text-pink-900 text-xs">{db.child_perspective}</div>
                         </div>
                       )}
                       <div><p className="font-medium text-muted-foreground mb-1">Staff Wellbeing</p>
-                        <div className="bg-blue-50 p-2 rounded text-xs text-blue-900 flex items-start gap-1"><Heart className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-blue-500" />{db.staffWellbeing}</div>
+                        <div className="bg-blue-50 p-2 rounded text-xs text-blue-900 flex items-start gap-1"><Heart className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-blue-500" />{db.staff_wellbeing}</div>
                       </div>
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Lessons Learned</p>
-                        <ul className="space-y-0.5 text-xs">{db.lessonsLearned.map((l, i) => <li key={i} className="flex items-start gap-1"><CheckCircle2 className="h-3 w-3 mt-0.5 text-green-600 flex-shrink-0" />{l}</li>)}</ul>
+                        <ul className="space-y-0.5 text-xs">{db.lessons_learned.map((l, i) => <li key={i} className="flex items-start gap-1"><CheckCircle2 className="h-3 w-3 mt-0.5 text-green-600 flex-shrink-0" />{l}</li>)}</ul>
                       </div>
-                      {db.changesNeeded.length > 0 && (
+                      {db.changes_needed.length > 0 && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">Changes Needed</p>
-                          <ul className="space-y-0.5 text-xs">{db.changesNeeded.map((c, i) => <li key={i} className="flex items-start gap-1"><AlertTriangle className="h-3 w-3 mt-0.5 text-amber-500 flex-shrink-0" />{c}</li>)}</ul>
+                          <ul className="space-y-0.5 text-xs">{db.changes_needed.map((c, i) => <li key={i} className="flex items-start gap-1"><AlertTriangle className="h-3 w-3 mt-0.5 text-amber-500 flex-shrink-0" />{c}</li>)}</ul>
                         </div>
                       )}
-                      {db.followUpActions.length > 0 && (
+                      {db.follow_up_actions.length > 0 && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">Follow-Up Actions</p>
-                          <div className="space-y-1">{db.followUpActions.map((a, i) => (
+                          <div className="space-y-1">{db.follow_up_actions.map((a, i) => (
                             <div key={i} className="flex items-center gap-2 text-xs">
                               {a.completed ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <Clock className="h-3.5 w-3.5 text-amber-600" />}
                               <span className={a.completed ? "line-through text-muted-foreground" : ""}>{a.action}</span>
@@ -284,7 +192,10 @@ export default function DebriefsPage() {
                           ))}</div>
                         </div>
                       )}
-                      <p className="text-xs text-muted-foreground">Facilitated by {getStaffName(db.facilitatedBy)}</p>
+                      <p className="text-xs text-muted-foreground">Facilitated by {getStaffName(db.facilitated_by)}</p>
+                      {db.child_id && (
+                        <SmartLinkPanel sourceType="debrief" sourceId={db.id} childId={db.child_id} compact />
+                      )}
                     </div>
                   )}
                 </CardContent>

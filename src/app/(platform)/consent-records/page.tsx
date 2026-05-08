@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,37 +11,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { toast } from "sonner";
+import {
+  useConsentRecords,
+  useCreateConsentRecord,
+  useUpdateConsentRecord,
+} from "@/hooks/use-consent-records";
+import type {
+  ConsentRecord,
+  ConsentCategory,
+  ConsentStatus,
+  ConsentorType,
+} from "@/types/extended";
+import { CONSENTOR_TYPE_LABEL } from "@/types/extended";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   FileCheck, AlertTriangle, CheckCircle2, Clock, Calendar,
   Shield, XCircle, RefreshCw
 } from "lucide-react";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-type ConsentCategory = "medical" | "education" | "photography" | "trips_activities" | "information_sharing" | "therapy" | "social_media" | "overnight_stays" | "contact" | "research";
-type ConsentStatus = "granted" | "refused" | "pending" | "expired" | "withdrawn";
-type ConsentorType = "social_worker" | "parent" | "young_person" | "local_authority" | "guardian";
-
-interface ConsentRecord {
-  id: string;
-  youngPersonId: string;
-  category: ConsentCategory;
-  description: string;
-  status: ConsentStatus;
-  consentorType: ConsentorType;
-  consentorName: string;
-  dateRequested: string;
-  dateDecided: string;
-  expiryDate: string;
-  conditions: string;
-  recordedBy: string;
-  notes: string;
-  reviewDate: string;
-  createdAt: string;
-}
-
+// ── Local meta (keeps color / icon info that doesn't belong in shared types) ─
 const CATEGORY_META: Record<ConsentCategory, { label: string; color: string }> = {
   medical:             { label: "Medical Treatment",      color: "bg-red-100 text-red-800" },
   education:           { label: "Education",              color: "bg-blue-100 text-blue-800" },
@@ -63,129 +55,31 @@ const STATUS_META: Record<ConsentStatus, { label: string; icon: React.ReactNode;
   withdrawn: { label: "Withdrawn", icon: <XCircle className="h-3.5 w-3.5" />,      color: "bg-orange-100 text-orange-700" },
 };
 
-const CONSENTOR_META: Record<ConsentorType, string> = {
-  social_worker:   "Social Worker",
-  parent:          "Parent/Carer",
-  young_person:    "Young Person",
-  local_authority: "Local Authority",
-  guardian:        "Guardian",
-};
-
-// ── Seed data ────────────────────────────────────────────────────────────────
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const SEED: ConsentRecord[] = [
-  {
-    id: "cr_001", youngPersonId: "yp_alex", category: "medical",
-    description: "Consent for routine dental treatment including fillings and check-ups",
-    status: "granted", consentorType: "social_worker", consentorName: "Sarah Mitchell",
-    dateRequested: d(-90), dateDecided: d(-88), expiryDate: d(275),
-    conditions: "Excludes general anaesthetic — separate consent required", recordedBy: "staff_darren",
-    notes: "Annual dental consent renewed.", reviewDate: d(275), createdAt: d(-90),
-  },
-  {
-    id: "cr_002", youngPersonId: "yp_alex", category: "photography",
-    description: "Consent for photographs to be used in life story work and internal records only",
-    status: "granted", consentorType: "social_worker", consentorName: "Sarah Mitchell",
-    dateRequested: d(-60), dateDecided: d(-58), expiryDate: d(305),
-    conditions: "No social media or external publication. Internal use only.", recordedBy: "staff_anna",
-    notes: "Alex also personally agreed to photographs.", reviewDate: d(120), createdAt: d(-60),
-  },
-  {
-    id: "cr_003", youngPersonId: "yp_alex", category: "trips_activities",
-    description: "Blanket consent for local day trips within 30 miles of the home",
-    status: "granted", consentorType: "social_worker", consentorName: "Sarah Mitchell",
-    dateRequested: d(-45), dateDecided: d(-43), expiryDate: d(320),
-    conditions: "Local trips only. Separate consent needed for overnight or >30 miles.", recordedBy: "staff_darren",
-    notes: "Covers bowling, cinema, swimming, parks etc.", reviewDate: d(120), createdAt: d(-45),
-  },
-  {
-    id: "cr_004", youngPersonId: "yp_jordan", category: "therapy",
-    description: "Consent for CAMHS therapeutic sessions including CBT",
-    status: "granted", consentorType: "social_worker", consentorName: "David Clarke",
-    dateRequested: d(-30), dateDecided: d(-28), expiryDate: d(335),
-    conditions: "Sessions to be reviewed after 12 weeks.", recordedBy: "staff_anna",
-    notes: "Jordan also consented personally. Sessions started.", reviewDate: d(56), createdAt: d(-30),
-  },
-  {
-    id: "cr_005", youngPersonId: "yp_jordan", category: "overnight_stays",
-    description: "Consent for overnight stays at approved friend's house (Tyler's family)",
-    status: "granted", consentorType: "social_worker", consentorName: "David Clarke",
-    dateRequested: d(-20), dateDecided: d(-17), expiryDate: d(160),
-    conditions: "Maximum one night. Parents to be DBS-checked. Advance notice required.", recordedBy: "staff_ryan",
-    notes: "Tyler's parents have been vetted.", reviewDate: d(60), createdAt: d(-20),
-  },
-  {
-    id: "cr_006", youngPersonId: "yp_jordan", category: "social_media",
-    description: "Consent for Jordan to have supervised social media accounts",
-    status: "refused", consentorType: "social_worker", consentorName: "David Clarke",
-    dateRequested: d(-25), dateDecided: d(-22), expiryDate: "",
-    conditions: "", recordedBy: "staff_ryan",
-    notes: "Refused due to ongoing safeguarding concerns. To be reviewed in 3 months.", reviewDate: d(65), createdAt: d(-25),
-  },
-  {
-    id: "cr_007", youngPersonId: "yp_casey", category: "medical",
-    description: "Consent for immunisations and routine medical treatment",
-    status: "granted", consentorType: "local_authority", consentorName: "Derby City Council — CLA Team",
-    dateRequested: d(-14), dateDecided: d(-12), expiryDate: d(351),
-    conditions: "Standard medical treatment only. Surgery requires separate consent.", recordedBy: "staff_darren",
-    notes: "LA holds parental responsibility.", reviewDate: d(180), createdAt: d(-14),
-  },
-  {
-    id: "cr_008", youngPersonId: "yp_casey", category: "information_sharing",
-    description: "Consent to share placement information with school for PEP",
-    status: "granted", consentorType: "social_worker", consentorName: "Emma Watson",
-    dateRequested: d(-10), dateDecided: d(-8), expiryDate: d(355),
-    conditions: "Limited to educational needs and pastoral support. No sharing of placement address.", recordedBy: "staff_chervelle",
-    notes: "Essential for PEP meeting next month.", reviewDate: d(90), createdAt: d(-10),
-  },
-  {
-    id: "cr_009", youngPersonId: "yp_casey", category: "contact",
-    description: "Consent for supervised telephone contact with father",
-    status: "pending", consentorType: "social_worker", consentorName: "Emma Watson",
-    dateRequested: d(-5), dateDecided: "", expiryDate: "",
-    conditions: "", recordedBy: "staff_darren",
-    notes: "Awaiting SW decision. Casey has expressed wish for contact.", reviewDate: d(7), createdAt: d(-5),
-  },
-  {
-    id: "cr_010", youngPersonId: "yp_alex", category: "education",
-    description: "Consent for college enrolment at Derby College — Catering NVQ Level 2",
-    status: "pending", consentorType: "social_worker", consentorName: "Sarah Mitchell",
-    dateRequested: d(-3), dateDecided: "", expiryDate: "",
-    conditions: "", recordedBy: "staff_darren",
-    notes: "Linked to transition planning. Need decision before application deadline.", reviewDate: d(5), createdAt: d(-3),
-  },
-  {
-    id: "cr_011", youngPersonId: "yp_alex", category: "trips_activities",
-    description: "Consent for Alton Towers residential day trip",
-    status: "expired", consentorType: "social_worker", consentorName: "Sarah Mitchell",
-    dateRequested: d(-100), dateDecided: d(-98), expiryDate: d(-10),
-    conditions: "One-off trip consent. Staff ratio 1:2.", recordedBy: "staff_ryan",
-    notes: "Trip completed successfully. Consent now expired.", reviewDate: "", createdAt: d(-100),
-  },
-];
-
-// ── Export ────────────────────────────────────────────────────────────────────
+// ── Export columns ──────────────────────────────────────────────────────────
 const EXPORT_COLS: ExportColumn<ConsentRecord>[] = [
   { header: "ID",             accessor: (r: ConsentRecord) => r.id },
-  { header: "Young Person",   accessor: (r: ConsentRecord) => getYPName(r.youngPersonId) },
+  { header: "Young Person",   accessor: (r: ConsentRecord) => getYPName(r.child_id) },
   { header: "Category",       accessor: (r: ConsentRecord) => CATEGORY_META[r.category].label },
   { header: "Description",    accessor: (r: ConsentRecord) => r.description },
   { header: "Status",         accessor: (r: ConsentRecord) => STATUS_META[r.status].label },
-  { header: "Consentor Type", accessor: (r: ConsentRecord) => CONSENTOR_META[r.consentorType] },
-  { header: "Consentor Name", accessor: (r: ConsentRecord) => r.consentorName },
-  { header: "Date Requested", accessor: (r: ConsentRecord) => r.dateRequested },
-  { header: "Date Decided",   accessor: (r: ConsentRecord) => r.dateDecided || "—" },
-  { header: "Expiry",         accessor: (r: ConsentRecord) => r.expiryDate || "—" },
+  { header: "Consentor Type", accessor: (r: ConsentRecord) => CONSENTOR_TYPE_LABEL[r.consentor_type] },
+  { header: "Consentor Name", accessor: (r: ConsentRecord) => r.consentor_name },
+  { header: "Date Requested", accessor: (r: ConsentRecord) => r.date_requested },
+  { header: "Date Decided",   accessor: (r: ConsentRecord) => r.date_decided || "—" },
+  { header: "Expiry",         accessor: (r: ConsentRecord) => r.expiry_date || "—" },
   { header: "Conditions",     accessor: (r: ConsentRecord) => r.conditions || "—" },
-  { header: "Recorded By",    accessor: (r: ConsentRecord) => getStaffName(r.recordedBy) },
+  { header: "Recorded By",    accessor: (r: ConsentRecord) => getStaffName(r.recorded_by) },
   { header: "Notes",          accessor: (r: ConsentRecord) => r.notes },
-  { header: "Review Date",    accessor: (r: ConsentRecord) => r.reviewDate || "—" },
+  { header: "Review Date",    accessor: (r: ConsentRecord) => r.review_date || "—" },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function ConsentRecordsPage() {
-  const [records, setRecords] = useState<ConsentRecord[]>(SEED);
+  const { data, isLoading } = useConsentRecords();
+  const records = data?.data ?? [];
+  const createMutation = useCreateConsentRecord();
+  const updateMutation = useUpdateConsentRecord();
+
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -194,45 +88,95 @@ export default function ConsentRecordsPage() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
 
+  // ── New-record form state ─────────────────────────────────────────────────
+  const [newChildId, setNewChildId] = useState("");
+  const [newCategory, setNewCategory] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newConsentorName, setNewConsentorName] = useState("");
+  const [newConsentorType, setNewConsentorType] = useState("");
+  const [newDateRequested, setNewDateRequested] = useState("");
+  const [newExpiryDate, setNewExpiryDate] = useState("");
+  const [newConditions, setNewConditions] = useState("");
+
+  const resetForm = () => {
+    setNewChildId("");
+    setNewCategory("");
+    setNewDescription("");
+    setNewConsentorName("");
+    setNewConsentorType("");
+    setNewDateRequested("");
+    setNewExpiryDate("");
+    setNewConditions("");
+  };
+
+  if (isLoading) return <PageShell title="Consent Records" subtitle="Tracking permissions, approvals, and authorisations for each young person"><div /></PageShell>;
+
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
-  const children = useMemo(() => {
-    const ids = [...new Set(records.map((r) => r.youngPersonId))];
+  const children = (() => {
+    const ids = [...new Set(records.map((r) => r.child_id))];
     return ids.map((id) => ({ id, name: getYPName(id) }));
-  }, [records]);
+  })();
 
-  const filtered = useMemo(() => {
+  const today = new Date().toISOString().slice(0, 10);
+  const in30 = (() => { const dt = new Date(); dt.setDate(dt.getDate() + 30); return dt.toISOString().slice(0, 10); })();
+
+  const filtered = (() => {
     let list = [...records];
     if (search) {
       const s = search.toLowerCase();
-      list = list.filter((r) => r.description.toLowerCase().includes(s) || r.consentorName.toLowerCase().includes(s) || r.notes.toLowerCase().includes(s));
+      list = list.filter((r) => r.description.toLowerCase().includes(s) || r.consentor_name.toLowerCase().includes(s) || r.notes.toLowerCase().includes(s));
     }
-    if (childFilter !== "all") list = list.filter((r) => r.youngPersonId === childFilter);
+    if (childFilter !== "all") list = list.filter((r) => r.child_id === childFilter);
     if (categoryFilter !== "all") list = list.filter((r) => r.category === categoryFilter);
     if (statusFilter !== "all") list = list.filter((r) => r.status === statusFilter);
 
     list.sort((a, b) => {
       switch (sortBy) {
-        case "date":     return b.dateRequested.localeCompare(a.dateRequested);
+        case "date":     return b.date_requested.localeCompare(a.date_requested);
         case "category": return CATEGORY_META[a.category].label.localeCompare(CATEGORY_META[b.category].label);
         case "status":   return a.status.localeCompare(b.status);
-        case "child":    return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
-        case "expiry":   return (a.expiryDate || "9999").localeCompare(b.expiryDate || "9999");
+        case "child":    return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "expiry":   return (a.expiry_date || "9999").localeCompare(b.expiry_date || "9999");
         default:         return 0;
       }
     });
     return list;
-  }, [records, search, childFilter, categoryFilter, statusFilter, sortBy]);
+  })();
 
   // ── Stats ──────────────────────────────────────────────────────────────────
-  const stats = useMemo(() => {
+  const stats = (() => {
     const total = records.length;
     const granted = records.filter((r) => r.status === "granted").length;
     const pending = records.filter((r) => r.status === "pending").length;
-    const expired = records.filter((r) => r.status === "expired" || (r.expiryDate && r.expiryDate < d(0) && r.status === "granted")).length;
-    const expiringSoon = records.filter((r) => r.status === "granted" && r.expiryDate && r.expiryDate >= d(0) && r.expiryDate <= d(30)).length;
+    const expired = records.filter((r) => r.status === "expired" || (r.expiry_date && r.expiry_date < today && r.status === "granted")).length;
+    const expiringSoon = records.filter((r) => r.status === "granted" && r.expiry_date && r.expiry_date >= today && r.expiry_date <= in30).length;
     return { total, granted, pending, expired, expiringSoon };
-  }, [records]);
+  })();
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate(
+      {
+        child_id: newChildId,
+        category: newCategory as ConsentCategory,
+        description: newDescription,
+        consentor_name: newConsentorName,
+        consentor_type: newConsentorType as ConsentorType,
+        date_requested: newDateRequested || today,
+        expiry_date: newExpiryDate,
+        conditions: newConditions,
+        status: "pending" as ConsentStatus,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Consent record created");
+          resetForm();
+          setShowNew(false);
+        },
+      }
+    );
+  };
 
   return (
     <PageShell
@@ -330,7 +274,7 @@ export default function ConsentRecordsPage() {
             const open = !!expanded[r.id];
             const catM = CATEGORY_META[r.category];
             const statusM = STATUS_META[r.status];
-            const nearExpiry = r.status === "granted" && r.expiryDate && r.expiryDate >= d(0) && r.expiryDate <= d(30);
+            const nearExpiry = r.status === "granted" && r.expiry_date && r.expiry_date >= today && r.expiry_date <= in30;
             return (
               <Card key={r.id} className={cn("border-l-4", r.status === "granted" ? "border-l-green-500" : r.status === "refused" || r.status === "withdrawn" ? "border-l-red-400" : r.status === "pending" ? "border-l-amber-400" : "border-l-gray-400")}>
                 <CardContent className="p-4">
@@ -343,9 +287,9 @@ export default function ConsentRecordsPage() {
                       </div>
                       <p className="font-semibold">{r.description}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                        <span>{getYPName(r.youngPersonId)}</span>
-                        <span>By: {r.consentorName} ({CONSENTOR_META[r.consentorType]})</span>
-                        <span>Requested: {r.dateRequested}</span>
+                        <span>{getYPName(r.child_id)}</span>
+                        <span>By: {r.consentor_name} ({CONSENTOR_TYPE_LABEL[r.consentor_type]})</span>
+                        <span>Requested: {r.date_requested}</span>
                       </div>
                     </div>
                     {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
@@ -354,10 +298,10 @@ export default function ConsentRecordsPage() {
                   {open && (
                     <div className="mt-4 space-y-3 border-t pt-3 text-sm">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div><p className="text-xs text-muted-foreground">Requested</p><p className="font-medium">{r.dateRequested}</p></div>
-                        <div><p className="text-xs text-muted-foreground">Decided</p><p className="font-medium">{r.dateDecided || "Awaiting"}</p></div>
-                        <div><p className="text-xs text-muted-foreground">Expires</p><p className="font-medium">{r.expiryDate || "N/A"}</p></div>
-                        <div><p className="text-xs text-muted-foreground">Recorded By</p><p className="font-medium">{getStaffName(r.recordedBy)}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Requested</p><p className="font-medium">{r.date_requested}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Decided</p><p className="font-medium">{r.date_decided || "Awaiting"}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Expires</p><p className="font-medium">{r.expiry_date || "N/A"}</p></div>
+                        <div><p className="text-xs text-muted-foreground">Recorded By</p><p className="font-medium">{getStaffName(r.recorded_by)}</p></div>
                       </div>
                       {r.conditions && (
                         <div>
@@ -371,16 +315,42 @@ export default function ConsentRecordsPage() {
                           <p className="italic text-muted-foreground">{r.notes}</p>
                         </div>
                       )}
-                      {r.reviewDate && (
+                      {r.review_date && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Calendar className="h-3.5 w-3.5" />
-                          <span>Review date: {r.reviewDate}</span>
+                          <span>Review date: {r.review_date}</span>
                         </div>
                       )}
+                      <SmartLinkPanel sourceType="consent-record" sourceId={r.id} childId={r.child_id} compact />
                       {r.status === "pending" && (
                         <div className="flex gap-2">
-                          <Button size="sm" variant="default" onClick={() => setRecords((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "granted", dateDecided: d(0) } : x))}>Grant</Button>
-                          <Button size="sm" variant="outline" className="text-red-600" onClick={() => setRecords((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "refused", dateDecided: d(0) } : x))}>Refuse</Button>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            disabled={updateMutation.isPending}
+                            onClick={() =>
+                              updateMutation.mutate(
+                                { id: r.id, status: "granted", date_decided: new Date().toISOString().slice(0, 10) },
+                                { onSuccess: () => toast.success("Consent granted") }
+                              )
+                            }
+                          >
+                            Grant
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600"
+                            disabled={updateMutation.isPending}
+                            onClick={() =>
+                              updateMutation.mutate(
+                                { id: r.id, status: "refused", date_decided: new Date().toISOString().slice(0, 10) },
+                                { onSuccess: () => toast.success("Consent refused") }
+                              )
+                            }
+                          >
+                            Refuse
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -403,53 +373,56 @@ export default function ConsentRecordsPage() {
       </div>
 
       {/* ── New consent dialog ────────────────────────────────────────────── */}
-      <Dialog open={showNew} onOpenChange={setShowNew}>
+      <Dialog open={showNew} onOpenChange={(open) => { setShowNew(open); if (!open) resetForm(); }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Consent Record</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleCreate} className="space-y-3">
             <div>
               <label className="text-sm font-medium">Young Person</label>
-              <Select><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+              <Select value={newChildId} onValueChange={setNewChildId}>
+                <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-sm font-medium">Category</label>
-              <Select><SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+              <Select value={newCategory} onValueChange={setNewCategory}>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>{Object.entries(CATEGORY_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-sm font-medium">Description</label>
-              <Textarea placeholder="What is being consented to?" rows={3} />
+              <Textarea placeholder="What is being consented to?" rows={3} value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Consentor Name</label>
-              <Input placeholder="Name of person giving consent" />
+              <Input placeholder="Name of person giving consent" value={newConsentorName} onChange={(e) => setNewConsentorName(e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Consentor Type</label>
-              <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>{Object.entries(CONSENTOR_META).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              <Select value={newConsentorType} onValueChange={setNewConsentorType}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{Object.entries(CONSENTOR_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium">Date Requested</label>
-                <Input type="date" />
+                <Input type="date" value={newDateRequested} onChange={(e) => setNewDateRequested(e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium">Expiry Date</label>
-                <Input type="date" />
+                <Input type="date" value={newExpiryDate} onChange={(e) => setNewExpiryDate(e.target.value)} />
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Conditions</label>
-              <Textarea placeholder="Any conditions or limitations…" rows={2} />
+              <Textarea placeholder="Any conditions or limitations…" rows={2} value={newConditions} onChange={(e) => setNewConditions(e.target.value)} />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Save Record</Button>
+              <Button type="button" variant="outline" onClick={() => { setShowNew(false); resetForm(); }}>Cancel</Button>
+              <Button type="submit" disabled={createMutation.isPending}>Save Record</Button>
             </DialogFooter>
           </form>
         </DialogContent>

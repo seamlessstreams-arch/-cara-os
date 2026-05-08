@@ -4,313 +4,83 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
+import { useContactPlans } from "@/hooks/use-contact-plans";
+import type { ContactPlan, ContactPlanArrangement } from "@/types/extended";
+import {
+  CONTACT_METHOD_TYPE_LABEL,
+  CONTACT_PLAN_SUPERVISION_LEVEL_LABEL,
+  CONTACT_PLAN_STATUS_LABEL,
+} from "@/types/extended";
 import {
   ChevronUp,
   ChevronDown,
   Phone,
   Video,
   Users,
-  MapPin,
-  Calendar,
   Shield,
   AlertTriangle,
   CheckCircle2,
   ArrowUpDown,
   Heart,
+  Loader2,
 } from "lucide-react";
-
-/* ─── date helper ─── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ─── types ─── */
-interface ContactArrangement {
-  contactWith: string;
-  relationship: string;
-  frequency: string;
-  duration: string;
-  type: "face_to_face" | "phone" | "video" | "letter" | "supervised";
-  supervisionLevel: "unsupervised" | "monitored" | "supervised" | "no_contact";
-  supervisionReason: string | null;
-  venue: string;
-  notes: string;
-}
-
-interface ContactPlan {
-  id: string;
-  youngPersonId: string;
-  createdBy: string;
-  createdDate: string;
-  reviewDate: string;
-  status: "active" | "under_review" | "suspended";
-  arrangements: ContactArrangement[];
-  childWishes: string;
-  courtOrders: string | null;
-  riskFactors: string[];
-  positiveFactors: string[];
-  overallAssessment: string;
-  lastReviewedDate: string;
-  nextScheduledContact: string;
-}
-
-/* ─── seed data ─── */
-const plans: ContactPlan[] = [
-  {
-    id: "cp_001",
-    youngPersonId: "yp_alex",
-    createdBy: "staff_darren",
-    createdDate: d(-120),
-    reviewDate: d(14),
-    status: "active",
-    arrangements: [
-      {
-        contactWith: "Mum (Karen)",
-        relationship: "Birth mother",
-        frequency: "Fortnightly",
-        duration: "2 hours",
-        type: "face_to_face",
-        supervisionLevel: "monitored",
-        supervisionReason: "Mum can become emotionally dysregulated — staff nearby but not in room. Steps down to unsupervised planned for next review.",
-        venue: "Local café or park (Alex's choice)",
-        notes: "Contact generally positive. Alex looks forward to seeing mum. Mum occasionally late which upsets Alex.",
-      },
-      {
-        contactWith: "Mum (Karen)",
-        relationship: "Birth mother",
-        frequency: "Weekly (midweek)",
-        duration: "20 minutes",
-        type: "phone",
-        supervisionLevel: "unsupervised",
-        supervisionReason: null,
-        venue: "Alex's bedroom (privacy)",
-        notes: "Alex calls mum every Wednesday after school. Generally positive. Staff available if Alex upset afterwards.",
-      },
-      {
-        contactWith: "Nan (Doris)",
-        relationship: "Maternal grandmother",
-        frequency: "Monthly",
-        duration: "Full day",
-        type: "face_to_face",
-        supervisionLevel: "unsupervised",
-        supervisionReason: null,
-        venue: "Nan's house",
-        notes: "Excellent relationship. Alex stays for lunch and sometimes tea. Nan is a protective factor and stable attachment figure.",
-      },
-      {
-        contactWith: "Dad (Steve)",
-        relationship: "Birth father",
-        frequency: "No current contact",
-        duration: "N/A",
-        type: "letter",
-        supervisionLevel: "no_contact",
-        supervisionReason: "Dad in prison (schedule 1 offence). No contact order in place. Alex aware and does not wish contact. Reviewed every 6 months.",
-        venue: "N/A",
-        notes: "Alex occasionally asks questions about dad — answered age-appropriately by key worker. Life story work addresses this relationship.",
-      },
-    ],
-    childWishes: "Alex wants to see mum more often and is working toward overnight stays. Loves going to Nan's. Does not want any contact with dad and feels strongly about this. Would like to have a pen pal (friend from previous school).",
-    courtOrders: "No contact order — birth father (Steve). Full Care Order s.31.",
-    riskFactors: [
-      "Mum's emotional dysregulation can upset Alex",
-      "Mum has historically made promises she can't keep (e.g., 'you'll come home soon')",
-      "Dad's offence history — no contact order in place",
-    ],
-    positiveFactors: [
-      "Nan provides stability and unconditional positive regard",
-      "Mum-Alex relationship improving with support",
-      "Alex articulate about contact wishes — voice strongly heard",
-      "Previous school friend contact supports social development",
-    ],
-    overallAssessment: "Contact plan working well. Mum contact is generally positive but requires monitoring due to occasional emotional dysregulation. Nan contact is wholly positive and a protective factor. Dad contact appropriately restricted. Plan for stepping down mum supervision at next review if positive trajectory continues.",
-    lastReviewedDate: d(-30),
-    nextScheduledContact: d(3),
-  },
-  {
-    id: "cp_002",
-    youngPersonId: "yp_jordan",
-    createdBy: "staff_darren",
-    createdDate: d(-90),
-    reviewDate: d(7),
-    status: "under_review",
-    arrangements: [
-      {
-        contactWith: "Mum (Tracey)",
-        relationship: "Birth mother",
-        frequency: "Currently suspended — under review",
-        duration: "Was 1 hour",
-        type: "supervised",
-        supervisionLevel: "supervised",
-        supervisionReason: "Contact suspended 3 weeks ago after mum made distressing promises to Jordan about returning home that aren't realistic. Jordan severely dysregulated for 48 hours afterwards. SW and therapist recommend suspension pending therapeutic work.",
-        venue: "Was at contact centre — currently suspended",
-        notes: "Suspension is temporary. Plan to reintroduce indirect contact (letters) first, then build back to supervised visits. Jordan's therapist will advise on readiness.",
-      },
-      {
-        contactWith: "Mum (Tracey)",
-        relationship: "Birth mother",
-        frequency: "Fortnightly (proposed restart)",
-        duration: "Letter exchange",
-        type: "letter",
-        supervisionLevel: "monitored",
-        supervisionReason: "Letters checked before giving to Jordan — mum has previously included inappropriate content (promises of return, criticism of care).",
-        venue: "Written at home, posted via SW",
-        notes: "Letter contact being considered as first step to rebuilding. Staff will read letters first and discuss content with Jordan before handing over.",
-      },
-      {
-        contactWith: "Brother (Tyler, 8)",
-        relationship: "Sibling (placed separately)",
-        frequency: "Monthly",
-        duration: "3 hours",
-        type: "face_to_face",
-        supervisionLevel: "unsupervised",
-        supervisionReason: null,
-        venue: "Soft play or park — activity-based",
-        notes: "Jordan and Tyler have a lovely bond. Contact is always positive. Tyler's carers are cooperative and flexible. This is Jordan's most important relationship.",
-      },
-    ],
-    childWishes: "Jordan misses mum deeply and wants contact to restart. Jordan says 'I know mum says things that aren't true but I still want to see her.' Loves seeing Tyler and asks for more frequent sibling contact. Jordan's therapist is working on helping Jordan manage expectations around mum.",
-    courtOrders: "Full Care Order s.31. No restrictions on sibling contact.",
-    riskFactors: [
-      "Mum's promises of reunification cause severe emotional harm",
-      "Mum has arrived at contact intoxicated (twice in past year)",
-      "Jordan's sleep and behaviour significantly worse after difficult mum contact",
-      "Mum has previously tried to take Jordan from contact centre",
-    ],
-    positiveFactors: [
-      "Sibling relationship with Tyler is secure and positive",
-      "Jordan can articulate feelings about contact (with support)",
-      "Therapeutic input specifically addressing contact responses",
-      "Jordan resilient — recovers from difficult contact within 48-72 hours",
-    ],
-    overallAssessment: "Complex situation. Mum contact currently causing more harm than good due to inappropriate promises and inconsistent behaviour. Suspension appropriate and supported by SW, therapist, and IRO. Sibling contact is protective and should be increased if possible. Plan is to reintroduce mum contact slowly via letters, with therapeutic support, once Jordan's therapist advises readiness. Jordan's wishes to see mum are heard and respected — suspension is to protect, not punish.",
-    lastReviewedDate: d(-7),
-    nextScheduledContact: d(10),
-  },
-  {
-    id: "cp_003",
-    youngPersonId: "yp_casey",
-    createdBy: "staff_darren",
-    createdDate: d(-60),
-    reviewDate: d(30),
-    status: "active",
-    arrangements: [
-      {
-        contactWith: "Mum (Michelle)",
-        relationship: "Birth mother",
-        frequency: "Weekly phone call",
-        duration: "As long as Casey wants",
-        type: "phone",
-        supervisionLevel: "unsupervised",
-        supervisionReason: null,
-        venue: "Casey's bedroom",
-        notes: "Relationship improved significantly since Casey entered care. Calls are generally positive. Mum supportive of placement. Casey sometimes cancels if busy — this is Casey's choice and respected.",
-      },
-      {
-        contactWith: "Mum (Michelle)",
-        relationship: "Birth mother",
-        frequency: "Monthly",
-        duration: "Half day",
-        type: "face_to_face",
-        supervisionLevel: "unsupervised",
-        supervisionReason: null,
-        venue: "Mum's flat or local area — Casey's choice",
-        notes: "Casey has good relationship with mum now — the distance has helped. Mum acknowledges she couldn't manage Casey's behaviour at home. Genuinely supportive now.",
-      },
-      {
-        contactWith: "Older sister (Jade, 19)",
-        relationship: "Half-sibling",
-        frequency: "Ad hoc — Casey's initiative",
-        duration: "Varies",
-        type: "face_to_face",
-        supervisionLevel: "unsupervised",
-        supervisionReason: null,
-        venue: "Jade's flat, local area, or home",
-        notes: "Jade is a positive role model. Casey looks up to her. Contact is entirely Casey-led — sometimes weekly, sometimes fortnightly. Jade welcome at the home.",
-      },
-      {
-        contactWith: "Dad (unknown)",
-        relationship: "Birth father",
-        frequency: "No contact",
-        duration: "N/A",
-        type: "letter",
-        supervisionLevel: "no_contact",
-        supervisionReason: "Father identity not confirmed. Casey does not wish to explore this currently. To be revisited if Casey expresses interest.",
-        venue: "N/A",
-        notes: "Casey has occasionally asked questions. Informed that life story work or CICC support available when ready. No pressure.",
-      },
-    ],
-    childWishes: "Casey is happy with current arrangements. Likes that calls with mum are on their terms. Enjoys seeing Jade and values the independence of managing that relationship themselves. No interest in birth father contact currently but 'maybe one day.'",
-    courtOrders: "Full Care Order s.31. No contact restrictions.",
-    riskFactors: [
-      "Historical DV in mum's household (Casey witnessed) — no current concerns",
-      "Casey's peer associations outside of family contact more concerning than family contact itself",
-    ],
-    positiveFactors: [
-      "Mum-Casey relationship much improved since placement",
-      "Jade is protective factor and positive role model",
-      "Casey exercises genuine autonomy over contact — empowering",
-      "Mum engaged with care team and attends reviews",
-    ],
-    overallAssessment: "Contact plan is working well and is appropriately Casey-led given their age (15) and maturity. Family relationships are a strength. The risk in Casey's life is not from family contact but from peer associations — contact plan reflects this by enabling rather than restricting family time. Mum's engagement with the care team is excellent.",
-    lastReviewedDate: d(-21),
-    nextScheduledContact: d(2),
-  },
-];
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<ContactPlan>[] = [
-  { header: "Young Person", accessor: (r: ContactPlan) => getYPName(r.youngPersonId) },
-  { header: "Status", accessor: (r: ContactPlan) => r.status.replace("_", " ") },
-  { header: "Created", accessor: (r: ContactPlan) => r.createdDate },
-  { header: "Review Due", accessor: (r: ContactPlan) => r.reviewDate },
-  { header: "Arrangements", accessor: (r: ContactPlan) => r.arrangements.length.toString() },
-  { header: "Court Orders", accessor: (r: ContactPlan) => r.courtOrders ?? "None" },
-  { header: "Risk Factors", accessor: (r: ContactPlan) => r.riskFactors.length.toString() },
-  { header: "Child Wishes", accessor: (r: ContactPlan) => r.childWishes },
-  { header: "Next Contact", accessor: (r: ContactPlan) => r.nextScheduledContact },
-  { header: "Assessment", accessor: (r: ContactPlan) => r.overallAssessment },
+  { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+  { header: "Status", accessor: (r) => CONTACT_PLAN_STATUS_LABEL[r.status] },
+  { header: "Created", accessor: (r) => r.created_date },
+  { header: "Review Due", accessor: (r) => r.review_date },
+  { header: "Arrangements", accessor: (r) => r.arrangements.length.toString() },
+  { header: "Court Orders", accessor: (r) => r.court_orders ?? "None" },
+  { header: "Risk Factors", accessor: (r) => r.risk_factors.length.toString() },
+  { header: "Child Wishes", accessor: (r) => r.child_wishes },
+  { header: "Next Contact", accessor: (r) => r.next_scheduled_contact },
+  { header: "Assessment", accessor: (r) => r.overall_assessment },
 ];
 
 /* ─── component ─── */
 export default function ContactPlansPage() {
+  const { data: res, isLoading } = useContactPlans();
+  const records = useMemo(() => res?.data ?? [], [res]);
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("review");
 
   const filtered = useMemo(() => {
-    let list = [...plans];
-    if (filterYP !== "all") list = list.filter((r) => r.youngPersonId === filterYP);
+    let list = [...records];
+    if (filterYP !== "all") list = list.filter((r) => r.child_id === filterYP);
     if (filterStatus !== "all") list = list.filter((r) => r.status === filterStatus);
     list.sort((a, b) => {
       switch (sortBy) {
         case "review":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         case "name":
-          return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "created":
-          return b.createdDate.localeCompare(a.createdDate);
+          return b.created_date.localeCompare(a.created_date);
         default:
           return 0;
       }
     });
     return list;
-  }, [filterYP, filterStatus, sortBy]);
+  }, [records, filterYP, filterStatus, sortBy]);
 
   const stats = useMemo(() => {
-    const total = plans.length;
-    const active = plans.filter((p) => p.status === "active").length;
-    const underReview = plans.filter((p) => p.status === "under_review").length;
-    const totalArrangements = plans.reduce((s, p) => s + p.arrangements.length, 0);
-    const noContact = plans.reduce((s, p) => s + p.arrangements.filter((a) => a.supervisionLevel === "no_contact").length, 0);
+    const total = records.length;
+    const active = records.filter((p) => p.status === "active").length;
+    const underReview = records.filter((p) => p.status === "under_review").length;
+    const totalArrangements = records.reduce((s, p) => s + p.arrangements.length, 0);
+    const noContact = records.reduce((s, p) => s + p.arrangements.filter((a) => a.supervision_level === "no_contact").length, 0);
     return { total, active, underReview, totalArrangements, noContact };
-  }, []);
+  }, [records]);
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
@@ -352,13 +122,23 @@ export default function ContactPlansPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <PageShell title="Contact Plans" subtitle="Loading...">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell
       title="Contact Plans"
       subtitle="Family contact arrangements — frequency, supervision, child's wishes, and risk assessment"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={plans} columns={exportCols} filename="contact-plans" />
+          <ExportButton data={records} columns={exportCols} filename="contact-plans" />
           <PrintButton title="Contact Plans" />
         </div>
       }
@@ -405,9 +185,9 @@ export default function ContactPlansPage() {
             <div>
               <p className="text-sm font-medium text-amber-800">Contact Plan Under Review</p>
               <p className="text-xs text-amber-700 mt-1">
-                {plans
+                {records
                   .filter((p) => p.status === "under_review")
-                  .map((p) => getYPName(p.youngPersonId))
+                  .map((p) => getYPName(p.child_id))
                   .join(", ")}{" "}
                 — contact arrangements being reconsidered. Ensure child&apos;s wishes are central to any changes.
               </p>
@@ -424,9 +204,9 @@ export default function ContactPlansPage() {
           onChange={(e) => setFilterYP(e.target.value)}
         >
           <option value="all">All Young People</option>
-          <option value="yp_alex">Alex</option>
-          <option value="yp_jordan">Jordan</option>
-          <option value="yp_casey">Casey</option>
+          <option value="yp_alex">{getYPName("yp_alex")}</option>
+          <option value="yp_jordan">{getYPName("yp_jordan")}</option>
+          <option value="yp_casey">{getYPName("yp_casey")}</option>
         </select>
 
         <select
@@ -435,9 +215,9 @@ export default function ContactPlansPage() {
           onChange={(e) => setFilterStatus(e.target.value)}
         >
           <option value="all">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="under_review">Under Review</option>
-          <option value="suspended">Suspended</option>
+          {Object.entries(CONTACT_PLAN_STATUS_LABEL).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
+          ))}
         </select>
 
         <div className="flex items-center gap-1 ml-auto">
@@ -480,7 +260,7 @@ export default function ContactPlansPage() {
                     </div>
                     <div>
                       <CardTitle className="text-base">
-                        {getYPName(plan.youngPersonId)}
+                        {getYPName(plan.child_id)}
                       </CardTitle>
                       <div className="flex items-center gap-2 mt-1">
                         {statusBadge(plan.status)}
@@ -488,7 +268,7 @@ export default function ContactPlansPage() {
                           {plan.arrangements.length} arrangement{plan.arrangements.length !== 1 ? "s" : ""}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          Next contact: {plan.nextScheduledContact}
+                          Next contact: {plan.next_scheduled_contact}
                         </span>
                       </div>
                     </div>
@@ -496,7 +276,7 @@ export default function ContactPlansPage() {
                   <div className="flex items-center gap-3">
                     <div className="text-right hidden sm:block">
                       <p className="text-xs text-muted-foreground">Review Due</p>
-                      <p className="text-sm font-medium">{plan.reviewDate}</p>
+                      <p className="text-sm font-medium">{plan.review_date}</p>
                     </div>
                     {expanded ? (
                       <ChevronUp className="h-5 w-5 text-muted-foreground" />
@@ -513,18 +293,18 @@ export default function ContactPlansPage() {
                   <div>
                     <p className="text-sm font-medium mb-3">Contact Arrangements</p>
                     <div className="space-y-3">
-                      {plan.arrangements.map((arr, idx) => (
+                      {plan.arrangements.map((arr: ContactPlanArrangement, idx: number) => (
                         <div key={idx} className={cn(
                           "border rounded-lg p-3",
-                          arr.supervisionLevel === "no_contact" && "bg-red-50 border-red-200"
+                          arr.supervision_level === "no_contact" && "bg-red-50 border-red-200"
                         )}>
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               {contactTypeIcon(arr.type)}
-                              <span className="text-sm font-medium">{arr.contactWith}</span>
+                              <span className="text-sm font-medium">{arr.contact_with}</span>
                               <span className="text-xs text-muted-foreground">({arr.relationship})</span>
                             </div>
-                            {supervisionBadge(arr.supervisionLevel)}
+                            {supervisionBadge(arr.supervision_level)}
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
                             <div>
@@ -537,16 +317,16 @@ export default function ContactPlansPage() {
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">Type</p>
-                              <p className="text-xs font-medium capitalize">{arr.type.replace(/_/g, " ")}</p>
+                              <p className="text-xs font-medium">{CONTACT_METHOD_TYPE_LABEL[arr.type]}</p>
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">Venue</p>
                               <p className="text-xs font-medium">{arr.venue}</p>
                             </div>
                           </div>
-                          {arr.supervisionReason && (
+                          {arr.supervision_reason && (
                             <p className="text-xs text-muted-foreground border-t pt-2 mt-2">
-                              <span className="font-medium">Supervision rationale:</span> {arr.supervisionReason}
+                              <span className="font-medium">Supervision rationale:</span> {arr.supervision_reason}
                             </p>
                           )}
                           {arr.notes && (
@@ -564,16 +344,16 @@ export default function ContactPlansPage() {
                     <p className="text-sm font-medium text-blue-800 flex items-center gap-1 mb-1">
                       <Heart className="h-4 w-4" /> Child&apos;s Wishes
                     </p>
-                    <p className="text-sm text-blue-700">{plan.childWishes}</p>
+                    <p className="text-sm text-blue-700">{plan.child_wishes}</p>
                   </div>
 
                   {/* court orders */}
-                  {plan.courtOrders && (
+                  {plan.court_orders && (
                     <div className="border rounded-md p-3">
                       <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                         <Shield className="h-3 w-3" /> Court Orders
                       </p>
-                      <p className="text-sm">{plan.courtOrders}</p>
+                      <p className="text-sm">{plan.court_orders}</p>
                     </div>
                   )}
 
@@ -584,7 +364,7 @@ export default function ContactPlansPage() {
                         <AlertTriangle className="h-4 w-4" /> Risk Factors
                       </p>
                       <ul className="space-y-1">
-                        {plan.riskFactors.map((f, i) => (
+                        {plan.risk_factors.map((f, i) => (
                           <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                             <span className="text-red-400 mt-1.5">•</span> {f}
                           </li>
@@ -596,7 +376,7 @@ export default function ContactPlansPage() {
                         <CheckCircle2 className="h-4 w-4" /> Positive Factors
                       </p>
                       <ul className="space-y-1">
-                        {plan.positiveFactors.map((f, i) => (
+                        {plan.positive_factors.map((f, i) => (
                           <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                             <span className="text-green-400 mt-1.5">•</span> {f}
                           </li>
@@ -608,28 +388,30 @@ export default function ContactPlansPage() {
                   {/* overall assessment */}
                   <div className="bg-muted/30 rounded-md p-3">
                     <p className="text-sm font-medium mb-1">Overall Assessment</p>
-                    <p className="text-sm text-muted-foreground">{plan.overallAssessment}</p>
+                    <p className="text-sm text-muted-foreground">{plan.overall_assessment}</p>
                   </div>
 
                   {/* footer */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2 border-t">
                     <div>
                       <p className="text-xs text-muted-foreground">Created By</p>
-                      <p className="text-sm font-medium">{getStaffName(plan.createdBy)}</p>
+                      <p className="text-sm font-medium">{getStaffName(plan.created_by)}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Created</p>
-                      <p className="text-sm font-medium">{plan.createdDate}</p>
+                      <p className="text-sm font-medium">{plan.created_date}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Last Reviewed</p>
-                      <p className="text-sm font-medium">{plan.lastReviewedDate}</p>
+                      <p className="text-sm font-medium">{plan.last_reviewed_date}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Next Contact</p>
-                      <p className="text-sm font-medium">{plan.nextScheduledContact}</p>
+                      <p className="text-sm font-medium">{plan.next_scheduled_contact}</p>
                     </div>
                   </div>
+
+                  <SmartLinkPanel sourceType="contact-plans" sourceId={plan.id} childId={plan.child_id} compact />
                 </CardContent>
               )}
             </Card>

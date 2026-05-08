@@ -18,6 +18,7 @@ import {
   Home,
   Shield,
   Users,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -26,208 +27,67 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePreAdmissionChecklists } from "@/hooks/use-pre-admission-checklists";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type { PreAdmissionChecklist, PreAdmissionStatus } from "@/types/extended";
+import { PRE_ADMISSION_STATUS_LABEL } from "@/types/extended";
 
-// ── types ─────────────────────────��────────────────���────────────────────────
-interface ChecklistItem {
-  task: string;
-  completed: boolean;
-  completedDate?: string;
-  completedBy?: string;
-  notes?: string;
-}
-
-interface PreAdmissionChecklist {
-  id: string;
-  youngPerson: string;
-  referralDate: string;
-  targetAdmissionDate: string;
-  socialWorker: string;
-  localAuthority: string;
-  status: "Not Started" | "In Progress" | "Complete" | "On Hold";
-  assignedTo: string;
-  impactAssessmentDone: boolean;
-  matchingPanelDate?: string;
-  items: ChecklistItem[];
-  riskConsiderations: string[];
-  specialRequirements: string[];
-}
-
-// ── seed data ────────────────────────────────────────────���──────────────────
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const data: PreAdmissionChecklist[] = [
-  {
-    id: "pac-001",
-    youngPerson: "yp_alex",
-    referralDate: d(-90),
-    targetAdmissionDate: d(-80),
-    socialWorker: "Sarah Mitchell — Riverside LA",
-    localAuthority: "Riverside County Council",
-    status: "Complete",
-    assignedTo: "staff_darren",
-    impactAssessmentDone: true,
-    matchingPanelDate: d(-85),
-    items: [
-      { task: "Referral paperwork received and reviewed", completed: true, completedDate: d(-89), completedBy: "staff_darren" },
-      { task: "Initial information sharing meeting with SW", completed: true, completedDate: d(-88), completedBy: "staff_darren" },
-      { task: "Impact assessment completed (Reg 14)", completed: true, completedDate: d(-86), completedBy: "staff_darren" },
-      { task: "Matching panel convened", completed: true, completedDate: d(-85), completedBy: "staff_darren" },
-      { task: "Risk assessment reviewed and accepted", completed: true, completedDate: d(-84), completedBy: "staff_ryan" },
-      { task: "Bedroom prepared and personalised", completed: true, completedDate: d(-82), completedBy: "staff_anna" },
-      { task: "Welcome pack created", completed: true, completedDate: d(-82), completedBy: "staff_chervelle" },
-      { task: "Existing children consulted about new admission", completed: true, completedDate: d(-83), completedBy: "staff_ryan" },
-      { task: "Staff briefing completed", completed: true, completedDate: d(-81), completedBy: "staff_darren" },
-      { task: "Introduction visit arranged", completed: true, completedDate: d(-81), completedBy: "staff_darren" },
-      { task: "GP, dentist, optician registration initiated", completed: true, completedDate: d(-80), completedBy: "staff_anna" },
-      { task: "Education provision confirmed", completed: true, completedDate: d(-80), completedBy: "staff_edward" },
-      { task: "Medication requirements clarified", completed: true, completedDate: d(-82), completedBy: "staff_anna" },
-      { task: "Delegated authority matrix agreed with SW", completed: true, completedDate: d(-81), completedBy: "staff_darren" },
-      { task: "Placement plan drafted", completed: true, completedDate: d(-80), completedBy: "staff_darren" },
-    ],
-    riskConsiderations: [
-      "History of placement disruption — additional support in first 6 weeks",
-      "Peer conflict potential with existing resident — proactive matching work",
-      "ADHD medication needs — pharmacy confirmed before admission",
-    ],
-    specialRequirements: [
-      "Quiet introduction — not all staff present initially",
-      "Familiar item from previous placement to be brought",
-      "Evening admission preferred (avoids school-day disruption)",
-    ],
-  },
-  {
-    id: "pac-002",
-    youngPerson: "yp_jordan",
-    referralDate: d(-60),
-    targetAdmissionDate: d(-50),
-    socialWorker: "Tom Richards — Valley Borough",
-    localAuthority: "Valley Borough Council",
-    status: "Complete",
-    assignedTo: "staff_darren",
-    impactAssessmentDone: true,
-    matchingPanelDate: d(-55),
-    items: [
-      { task: "Referral paperwork received and reviewed", completed: true, completedDate: d(-59), completedBy: "staff_darren" },
-      { task: "Initial information sharing meeting with SW", completed: true, completedDate: d(-57), completedBy: "staff_darren" },
-      { task: "Impact assessment completed (Reg 14)", completed: true, completedDate: d(-56), completedBy: "staff_darren" },
-      { task: "Matching panel convened", completed: true, completedDate: d(-55), completedBy: "staff_darren" },
-      { task: "Risk assessment reviewed and accepted", completed: true, completedDate: d(-54), completedBy: "staff_ryan" },
-      { task: "Bedroom prepared and personalised", completed: true, completedDate: d(-52), completedBy: "staff_lackson" },
-      { task: "Welcome pack created", completed: true, completedDate: d(-52), completedBy: "staff_mirela" },
-      { task: "Existing children consulted about new admission", completed: true, completedDate: d(-53), completedBy: "staff_ryan" },
-      { task: "Staff briefing completed", completed: true, completedDate: d(-51), completedBy: "staff_darren" },
-      { task: "Introduction visit arranged", completed: true, completedDate: d(-51), completedBy: "staff_darren" },
-      { task: "GP, dentist, optician registration initiated", completed: true, completedDate: d(-50), completedBy: "staff_anna" },
-      { task: "Education provision confirmed", completed: true, completedDate: d(-50), completedBy: "staff_edward" },
-      { task: "Medication requirements clarified", completed: true, completedDate: d(-52), completedBy: "staff_anna", notes: "No current medication" },
-      { task: "Delegated authority matrix agreed with SW", completed: true, completedDate: d(-51), completedBy: "staff_darren" },
-      { task: "Placement plan drafted", completed: true, completedDate: d(-50), completedBy: "staff_darren" },
-    ],
-    riskConsiderations: [
-      "Missing from care history — location safety plan needed day one",
-      "Peer exploitation concerns — contextual safeguarding mapped",
-      "Mother in prison — complex contact arrangements",
-    ],
-    specialRequirements: [
-      "Football kit purchased before arrival (known interest)",
-      "Phone access maintained — friend connections important",
-      "Afternoon admission to allow settling before bedtime",
-    ],
-  },
-  {
-    id: "pac-003",
-    youngPerson: "yp_casey",
-    referralDate: d(-45),
-    targetAdmissionDate: d(-35),
-    socialWorker: "Lisa Chen — Hillside LA",
-    localAuthority: "Hillside County Council",
-    status: "Complete",
-    assignedTo: "staff_darren",
-    impactAssessmentDone: true,
-    matchingPanelDate: d(-40),
-    items: [
-      { task: "Referral paperwork received and reviewed", completed: true, completedDate: d(-44), completedBy: "staff_darren" },
-      { task: "Initial information sharing meeting with SW", completed: true, completedDate: d(-43), completedBy: "staff_darren" },
-      { task: "Impact assessment completed (Reg 14)", completed: true, completedDate: d(-41), completedBy: "staff_darren" },
-      { task: "Matching panel convened", completed: true, completedDate: d(-40), completedBy: "staff_darren" },
-      { task: "Risk assessment reviewed and accepted", completed: true, completedDate: d(-39), completedBy: "staff_ryan" },
-      { task: "Bedroom prepared and personalised", completed: true, completedDate: d(-37), completedBy: "staff_anna", notes: "Sensory-friendly: low lighting, weighted blanket, minimal clutter" },
-      { task: "Welcome pack created", completed: true, completedDate: d(-37), completedBy: "staff_chervelle", notes: "Visual/accessible format" },
-      { task: "Existing children consulted about new admission", completed: true, completedDate: d(-38), completedBy: "staff_ryan" },
-      { task: "Staff briefing completed", completed: true, completedDate: d(-36), completedBy: "staff_darren", notes: "ASD awareness refresher included" },
-      { task: "Introduction visit arranged", completed: true, completedDate: d(-36), completedBy: "staff_darren", notes: "Two short visits rather than one long one" },
-      { task: "GP, dentist, optician registration initiated", completed: true, completedDate: d(-35), completedBy: "staff_anna" },
-      { task: "Education provision confirmed", completed: true, completedDate: d(-36), completedBy: "staff_edward", notes: "Specialist provision confirmed" },
-      { task: "Medication requirements clarified", completed: true, completedDate: d(-37), completedBy: "staff_anna", notes: "Melatonin for sleep" },
-      { task: "Delegated authority matrix agreed with SW", completed: true, completedDate: d(-36), completedBy: "staff_darren" },
-      { task: "Placement plan drafted", completed: true, completedDate: d(-35), completedBy: "staff_darren" },
-      { task: "Sensory profile obtained from previous placement", completed: true, completedDate: d(-38), completedBy: "staff_anna" },
-      { task: "SALT recommendations obtained", completed: true, completedDate: d(-38), completedBy: "staff_anna" },
-      { task: "Visual timetable prepared", completed: true, completedDate: d(-36), completedBy: "staff_anna" },
-    ],
-    riskConsiderations: [
-      "Meltdowns during transitions — structured, predictable approach needed",
-      "Food anxieties — familiar foods available from day one",
-      "Noise sensitivity — ensure quiet admission process",
-    ],
-    specialRequirements: [
-      "Sensory-friendly bedroom setup (low stimulation)",
-      "Two introduction visits before actual admission",
-      "Familiar transition object from previous placement",
-      "Visual social story about Oak House prepared",
-      "Staff trained in ASD-specific approaches before admission",
-    ],
-  },
-];
-
-// ── export columns ─────────────────────────���────────────────────────────────
+// ── export columns ──────────────────────────────────────────────────────────
 const exportCols: ExportColumn<PreAdmissionChecklist>[] = [
-  { header: "Young Person", accessor: (r: PreAdmissionChecklist) => getYPName(r.youngPerson) },
-  { header: "Referral Date", accessor: (r: PreAdmissionChecklist) => r.referralDate },
-  { header: "Target Admission", accessor: (r: PreAdmissionChecklist) => r.targetAdmissionDate },
-  { header: "Status", accessor: (r: PreAdmissionChecklist) => r.status },
-  { header: "Local Authority", accessor: (r: PreAdmissionChecklist) => r.localAuthority },
-  { header: "Social Worker", accessor: (r: PreAdmissionChecklist) => r.socialWorker },
-  { header: "Completion", accessor: (r: PreAdmissionChecklist) => `${r.items.filter((i) => i.completed).length}/${r.items.length}` },
-  { header: "Assigned To", accessor: (r: PreAdmissionChecklist) => getStaffName(r.assignedTo) },
+  { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+  { header: "Referral Date", accessor: (r) => r.referral_date },
+  { header: "Target Admission", accessor: (r) => r.target_admission_date },
+  { header: "Status", accessor: (r) => PRE_ADMISSION_STATUS_LABEL[r.status] },
+  { header: "Local Authority", accessor: (r) => r.local_authority },
+  { header: "Social Worker", accessor: (r) => r.social_worker },
+  { header: "Completion", accessor: (r) => `${r.items.filter((i) => i.completed).length}/${r.items.length}` },
+  { header: "Assigned To", accessor: (r) => getStaffName(r.assigned_to) },
 ];
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function PreAdmissionChecklistPage() {
+  const { data: records = [], isLoading } = usePreAdmissionChecklists();
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let items = [...data];
+    let items = [...records];
     if (filterStatus !== "all") items = items.filter((c) => c.status === filterStatus);
 
     items.sort((a, b) => {
       switch (sortBy) {
         case "date":
-          return b.referralDate.localeCompare(a.referralDate);
-        case "completion":
+          return b.referral_date.localeCompare(a.referral_date);
+        case "completion": {
           const pctA = a.items.filter((i) => i.completed).length / a.items.length;
           const pctB = b.items.filter((i) => i.completed).length / b.items.length;
           return pctA - pctB;
+        }
         case "child":
-          return a.youngPerson.localeCompare(b.youngPerson);
+          return a.child_id.localeCompare(b.child_id);
         default:
           return 0;
       }
     });
     return items;
-  }, [filterStatus, sortBy]);
+  }, [records, filterStatus, sortBy]);
 
-  // ── stats ─────────────────────────────────────────────────────���───────────
-  const totalChecklists = data.length;
-  const complete = data.filter((c) => c.status === "Complete").length;
-  const totalTasks = data.reduce((sum, c) => sum + c.items.length, 0);
-  const completedTasks = data.reduce((sum, c) => sum + c.items.filter((i) => i.completed).length, 0);
+  // ── stats ──────────────────────────────────────────────────────────────────
+  const totalChecklists = records.length;
+  const complete = records.filter((c) => c.status === "complete").length;
+  const totalTasks = records.reduce((sum, c) => sum + c.items.length, 0);
+  const completedTasks = records.reduce((sum, c) => sum + c.items.filter((i) => i.completed).length, 0);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Pre-Admission Checklist" subtitle="Structured preparation for every admission — ensuring safe, planned, and child-centred transitions">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -235,7 +95,7 @@ export default function PreAdmissionChecklistPage() {
       subtitle="Structured preparation for every admission — ensuring safe, planned, and child-centred transitions"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="pre-admission-checklists" />
+          <ExportButton data={records} columns={exportCols} filename="pre-admission-checklists" />
           <PrintButton title="Pre-Admission Checklists" />
         </div>
       }
@@ -255,21 +115,22 @@ export default function PreAdmissionChecklistPage() {
           <p className="text-xs text-muted-foreground">Tasks Done</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-purple-600">100%</p>
+          <p className="text-2xl font-bold text-purple-600">
+            {totalChecklists > 0 ? (records.filter(r => r.impact_assessment_done).length === totalChecklists ? "100%" : `${Math.round((records.filter(r => r.impact_assessment_done).length / totalChecklists) * 100)}%`) : "—"}
+          </p>
           <p className="text-xs text-muted-foreground">Impact Assessed</p>
         </div>
       </div>
 
-      {/* ── filters/sort ────────────────���──────────────────────────────── */}
+      {/* ── filters/sort ──────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="Not Started">Not Started</SelectItem>
-            <SelectItem value="In Progress">In Progress</SelectItem>
-            <SelectItem value="Complete">Complete</SelectItem>
-            <SelectItem value="On Hold">On Hold</SelectItem>
+            {(Object.entries(PRE_ADMISSION_STATUS_LABEL) as [PreAdmissionStatus, string][]).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -294,7 +155,7 @@ export default function PreAdmissionChecklistPage() {
           const isExpanded = expandedId === checklist.id;
           const completedCount = checklist.items.filter((i) => i.completed).length;
           const totalCount = checklist.items.length;
-          const pct = Math.round((completedCount / totalCount) * 100);
+          const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
           return (
             <div key={checklist.id} className="rounded-xl border bg-white overflow-hidden">
@@ -304,12 +165,12 @@ export default function PreAdmissionChecklistPage() {
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <FileCheck className={cn("h-5 w-5 shrink-0",
-                    checklist.status === "Complete" ? "text-green-600" : "text-blue-600"
+                    checklist.status === "complete" ? "text-green-600" : "text-blue-600"
                   )} />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(checklist.youngPerson)}</p>
+                    <p className="font-medium truncate">{getYPName(checklist.child_id)}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Referred: {checklist.referralDate} &middot; {checklist.localAuthority} &middot; {checklist.socialWorker}
+                      Referred: {checklist.referral_date} &middot; {checklist.local_authority} &middot; {checklist.social_worker}
                     </p>
                   </div>
                 </div>
@@ -344,9 +205,9 @@ export default function PreAdmissionChecklistPage() {
                           <div className="flex-1">
                             <span className={cn(item.completed ? "text-slate-700" : "text-slate-500")}>{item.task}</span>
                             {item.notes && <span className="text-xs text-muted-foreground ml-2">({item.notes})</span>}
-                            {item.completedDate && (
+                            {item.completed_date && (
                               <span className="text-xs text-muted-foreground ml-2">
-                                — {item.completedDate} by {getStaffName(item.completedBy || "")}
+                                — {item.completed_date} by {getStaffName(item.completed_by || "")}
                               </span>
                             )}
                           </div>
@@ -361,7 +222,7 @@ export default function PreAdmissionChecklistPage() {
                       <AlertTriangle className="h-3 w-3 inline mr-1" />Risk Considerations
                     </p>
                     <ul className="space-y-1">
-                      {checklist.riskConsiderations.map((risk, i) => (
+                      {checklist.risk_considerations.map((risk, i) => (
                         <li key={i} className="text-sm flex items-start gap-2">
                           <Shield className="h-3 w-3 text-amber-500 mt-1 shrink-0" />
                           {risk}
@@ -376,7 +237,7 @@ export default function PreAdmissionChecklistPage() {
                       <Home className="h-3 w-3 inline mr-1" />Special Requirements
                     </p>
                     <ul className="space-y-1">
-                      {checklist.specialRequirements.map((req, i) => (
+                      {checklist.special_requirements.map((req, i) => (
                         <li key={i} className="text-sm flex items-start gap-2">
                           <Clock className="h-3 w-3 text-blue-500 mt-1 shrink-0" />
                           {req}
@@ -387,16 +248,18 @@ export default function PreAdmissionChecklistPage() {
 
                   {/* metadata */}
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span><Users className="h-3 w-3 inline mr-1" />Assigned: {getStaffName(checklist.assignedTo)}</span>
-                    <span>Target admission: {checklist.targetAdmissionDate}</span>
-                    {checklist.matchingPanelDate && <span>Matching panel: {checklist.matchingPanelDate}</span>}
+                    <span><Users className="h-3 w-3 inline mr-1" />Assigned: {getStaffName(checklist.assigned_to)}</span>
+                    <span>Target admission: {checklist.target_admission_date}</span>
+                    {checklist.matching_panel_date && <span>Matching panel: {checklist.matching_panel_date}</span>}
                     <span className={cn(
                       "px-2 py-0.5 rounded-full font-medium",
-                      checklist.impactAssessmentDone ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                      checklist.impact_assessment_done ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                     )}>
-                      Impact Assessment: {checklist.impactAssessmentDone ? "Complete" : "Pending"}
+                      Impact Assessment: {checklist.impact_assessment_done ? "Complete" : "Pending"}
                     </span>
                   </div>
+
+                  <SmartLinkPanel sourceType="pre_admission_checklist" sourceId={checklist.id} childId={checklist.child_id} compact />
                 </div>
               )}
             </div>
@@ -404,7 +267,7 @@ export default function PreAdmissionChecklistPage() {
         })}
       </div>
 
-      {/* ── regulatory note ─────────────────────���──────────────────────── */}
+      {/* ── regulatory note ──────────────────────────────────────────── */}
       <div className="mt-8 rounded-lg bg-muted/50 border p-4">
         <p className="text-xs text-muted-foreground">
           <strong>Regulatory Context:</strong> Pre-admission checklists support Regulation 14 (assessment of children

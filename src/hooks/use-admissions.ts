@@ -2,28 +2,12 @@
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "./use-api";
+import type { AdmissionReferral } from "@/types/extended";
 
-export interface Referral {
-  id: string;
-  child_name: string;
-  age: number;
-  gender: string;
-  local_authority: string;
-  referral_source: string;
-  status: "new" | "under_assessment" | "impact_assessment" | "panel_decision" | "accepted" | "declined" | "withdrawn" | "placed";
-  referral_date: string;
-  presenting_needs: string[];
-  risk_factors: string[];
-  placement_type?: string;
-  social_worker?: string;
-  notes?: string;
-  staff_id: string;
-  home_id?: string;
-  created_at?: string;
-}
+export type { AdmissionReferral };
 
-type ListResponse = { data: Referral[]; meta: { total: number; active: number; placed_this_year: number } };
-type SingleResponse = { data: Referral };
+type ListResponse = { data: AdmissionReferral[]; meta: { total: number; active: number; placed_this_year: number } };
+type SingleResponse = { data: AdmissionReferral };
 
 export function useAdmissions(params?: { status?: string }) {
   const qs = new URLSearchParams();
@@ -40,7 +24,7 @@ export function useAdmissions(params?: { status?: string }) {
 export function useCreateReferral() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<Referral>) =>
+    mutationFn: (data: Partial<AdmissionReferral>) =>
       api.post<SingleResponse>("/admissions", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admissions"] });
@@ -52,7 +36,7 @@ export function useCreateReferral() {
 export function useUpdateReferral() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & Partial<Referral>) =>
+    mutationFn: ({ id, ...data }: { id: string } & Partial<AdmissionReferral>) =>
       api.patch<SingleResponse>(`/admissions/${id}`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admissions"] });

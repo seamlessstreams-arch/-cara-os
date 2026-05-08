@@ -12,6 +12,7 @@ import {
   Shield,
   ArrowUpDown,
   Search,
+  Loader2,
 } from "lucide-react";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -20,124 +21,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge }        from "@/components/ui/badge";
 import { cn }           from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-type Status = "on_track" | "attention_needed" | "not_age_appropriate";
-
-interface Domain {
-  name: string;
-  score: number;
-  maxScore: number;
-  evidence: string;
-  nextSteps: string;
-}
-
-interface PathwayAssessment {
-  id: string;
-  youngPersonId: string;
-  assessedBy: string;
-  assessmentDate: string;
-  reviewDate: string;
-  overallReadiness: number;
-  domains: Domain[];
-  status: Status;
-  expectedTransitionAge: number;
-  pathwayPlanLinked: boolean;
-  notes: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const SEED: PathwayAssessment[] = [
-  {
-    id: "pa1",
-    youngPersonId: "yp_casey",
-    assessedBy: "staff_chervelle",
-    assessmentDate: d(-14),
-    reviewDate: d(60),
-    overallReadiness: 65,
-    domains: [
-      { name: "Managing money", score: 4, maxScore: 5, evidence: "Manages pocket money well, opened savings account", nextSteps: "Introduce monthly budgeting with bills simulation" },
-      { name: "Cooking & nutrition", score: 3, maxScore: 5, evidence: "Can cook basic meals, needs support with planning", nextSteps: "Weekly meal planning sessions, introduce batch cooking" },
-      { name: "Personal hygiene", score: 5, maxScore: 5, evidence: "Fully independent", nextSteps: "Maintain — no further intervention needed" },
-      { name: "Household tasks", score: 3, maxScore: 5, evidence: "Can do laundry, needs prompting for cleaning", nextSteps: "Create cleaning rota for own space, reduce prompting" },
-      { name: "Using public transport", score: 4, maxScore: 5, evidence: "Travels independently to school and activities", nextSteps: "Plan unfamiliar multi-leg journeys independently" },
-      { name: "Health management", score: 3, maxScore: 5, evidence: "Attends appointments but needs reminding, understands medication", nextSteps: "Self-manage appointment diary, explore GP self-referral" },
-      { name: "Education/employment", score: 3, maxScore: 5, evidence: "In school, no clear post-16 plan yet", nextSteps: "Careers guidance session, explore apprenticeship options" },
-      { name: "Social networks", score: 4, maxScore: 5, evidence: "Good friendships, some concerning peers", nextSteps: "Work on identifying healthy vs unhealthy relationships" },
-      { name: "Emotional readiness", score: 2, maxScore: 5, evidence: "Still needs adult support with regulation, not ready for independence", nextSteps: "Continue therapeutic support, build coping toolkit" },
-      { name: "Knowing rights", score: 4, maxScore: 5, evidence: "Articulate about rights, engages with advocacy", nextSteps: "Introduce housing rights and tenancy law basics" },
-    ],
-    status: "on_track",
-    expectedTransitionAge: 18,
-    pathwayPlanLinked: true,
-    notes: "Casey is progressing well in practical skills but emotional readiness remains the key concern. Transition timeline should not be rushed — Casey needs continued therapeutic support alongside skill-building.",
-  },
-  {
-    id: "pa2",
-    youngPersonId: "yp_alex",
-    assessedBy: "staff_anna",
-    assessmentDate: d(-21),
-    reviewDate: d(90),
-    overallReadiness: 35,
-    domains: [
-      { name: "Managing money", score: 2, maxScore: 5, evidence: "Basic understanding of coins/notes, no budgeting practice yet", nextSteps: "Start pocket money tracking with visual chart" },
-      { name: "Cooking & nutrition", score: 2, maxScore: 5, evidence: "Can make toast and cereal, interested in baking", nextSteps: "Cook together weekly — start with simple recipes Alex chooses" },
-      { name: "Personal hygiene", score: 4, maxScore: 5, evidence: "Good routine established, occasional reminders needed for teeth", nextSteps: "Maintain routine, introduce responsibility for buying own products" },
-      { name: "Household tasks", score: 2, maxScore: 5, evidence: "Will help when asked but no independent initiative", nextSteps: "Assign one regular chore as own responsibility" },
-      { name: "Using public transport", score: 2, maxScore: 5, evidence: "Not yet age-appropriate for solo travel", nextSteps: "Accompanied bus journeys to build familiarity and confidence" },
-      { name: "Health management", score: 3, maxScore: 5, evidence: "Understands why appointments matter, can describe own needs", nextSteps: "Practice explaining health needs to professionals" },
-      { name: "Education/employment", score: 4, maxScore: 5, evidence: "Engaged well in school, good attendance, clear interests", nextSteps: "Support subject choices, explore extracurricular options" },
-      { name: "Social networks", score: 3, maxScore: 5, evidence: "Has a small friendship group, some social anxiety", nextSteps: "Support social confidence through group activities" },
-      { name: "Emotional readiness", score: 3, maxScore: 5, evidence: "Can identify emotions, developing self-regulation strategies", nextSteps: "Continue key-working on emotional literacy" },
-      { name: "Knowing rights", score: 3, maxScore: 5, evidence: "Knows about children's rights, participates in house meetings", nextSteps: "Introduce advocacy and complaints process" },
-    ],
-    status: "not_age_appropriate",
-    expectedTransitionAge: 18,
-    pathwayPlanLinked: false,
-    notes: "Alex is young and not expected to score highly yet. Focus is on age-appropriate skill building (cooking together, understanding money, building confidence). No pressure toward independence — still needs primary care experience.",
-  },
-  {
-    id: "pa3",
-    youngPersonId: "yp_jordan",
-    assessedBy: "staff_anna",
-    assessmentDate: d(-21),
-    reviewDate: d(90),
-    overallReadiness: 25,
-    domains: [
-      { name: "Managing money", score: 1, maxScore: 5, evidence: "No understanding of money management yet", nextSteps: "Introduce coins/notes through play, pocket money with visual savings jar" },
-      { name: "Cooking & nutrition", score: 2, maxScore: 5, evidence: "Will help with supervised baking, limited interest otherwise", nextSteps: "Sensory-friendly cooking activities — focus on textures Jordan tolerates" },
-      { name: "Personal hygiene", score: 3, maxScore: 5, evidence: "Needs support due to sensory needs — dislikes certain textures", nextSteps: "Occupational therapy input on sensory-friendly hygiene products" },
-      { name: "Household tasks", score: 2, maxScore: 5, evidence: "Can tidy own room with visual checklist support", nextSteps: "Expand to one communal area task with sensory accommodations" },
-      { name: "Using public transport", score: 1, maxScore: 5, evidence: "Significant anxiety about public transport, sensory overload", nextSteps: "Gradual exposure — short accompanied journeys at quiet times" },
-      { name: "Health management", score: 2, maxScore: 5, evidence: "Relies on staff, finds appointments distressing", nextSteps: "Social story about health appointments, pre-visit preparation" },
-      { name: "Education/employment", score: 3, maxScore: 5, evidence: "Engaged with adapted curriculum, makes progress with support", nextSteps: "Continue EHCP support, explore interests for future options" },
-      { name: "Social networks", score: 2, maxScore: 5, evidence: "Finds group settings challenging, one close peer relationship", nextSteps: "Build confidence in small group settings, nurture existing friendship" },
-      { name: "Emotional readiness", score: 2, maxScore: 5, evidence: "Dysregulation linked to attachment difficulties and sensory needs", nextSteps: "Trauma-informed therapeutic work, sensory regulation strategies" },
-      { name: "Knowing rights", score: 2, maxScore: 5, evidence: "Beginning to understand choices and preferences", nextSteps: "Use visual aids to explain rights in accessible way" },
-    ],
-    status: "not_age_appropriate",
-    expectedTransitionAge: 18,
-    pathwayPlanLinked: false,
-    notes: "Jordan is the youngest and has additional needs (sensory processing, attachment difficulties). Independence work should be playful, trauma-informed, and at Jordan's pace. Key focus: self-care with sensory accommodations, and building confidence in social settings.",
-  },
-];
+import { useIndependencePathways } from "@/hooks/use-independence-pathways";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type { IndependencePathway, IndependencePathwayStatus } from "@/types/extended";
+import { INDEPENDENCE_PATHWAY_STATUS_LABEL } from "@/types/extended";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
-const STATUS_META: Record<Status, { label: string; colour: string }> = {
-  on_track:            { label: "On Track",            colour: "bg-green-100 text-green-700" },
-  attention_needed:    { label: "Attention Needed",    colour: "bg-amber-100 text-amber-700" },
-  not_age_appropriate: { label: "Not Age-Appropriate", colour: "bg-blue-100 text-blue-700" },
+const STATUS_COLOURS: Record<IndependencePathwayStatus, string> = {
+  on_track:            "bg-green-100 text-green-700",
+  attention_needed:    "bg-amber-100 text-amber-700",
+  not_age_appropriate: "bg-blue-100 text-blue-700",
 };
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function IndependencePathwayPage() {
-  const [data] = useState<PathwayAssessment[]>(SEED);
+  const { data: res, isLoading } = useIndependencePathways();
+  const data: IndependencePathway[] = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState<"readiness" | "name" | "review">("readiness");
@@ -145,12 +46,12 @@ export default function IndependencePathwayPage() {
   /* ── filtered & sorted ───────────────────────────────────────────────── */
   const filtered = useMemo(() => {
     let list = [...data];
-    if (filterYP !== "all") list = list.filter((a) => a.youngPersonId === filterYP);
+    if (filterYP !== "all") list = list.filter((a) => a.child_id === filterYP);
     list.sort((a, b) => {
       switch (sortBy) {
-        case "readiness": return b.overallReadiness - a.overallReadiness;
-        case "review":    return a.reviewDate.localeCompare(b.reviewDate);
-        default:          return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
+        case "readiness": return b.overall_readiness - a.overall_readiness;
+        case "review":    return a.review_date.localeCompare(b.review_date);
+        default:          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
       }
     });
     return list;
@@ -158,12 +59,13 @@ export default function IndependencePathwayPage() {
 
   /* ── summary stats ───────────────────────────────────────────────────── */
   const stats = useMemo(() => {
-    const avgReadiness = Math.round(data.reduce((s, a) => s + a.overallReadiness, 0) / data.length);
+    if (!data.length) return { avgReadiness: 0, domainsNeedingAttention: [] as { domain: string; youngPerson: string; score: number }[], nextReviews: [] as { youngPerson: string; reviewDate: string }[] };
+    const avgReadiness = Math.round(data.reduce((s, a) => s + a.overall_readiness, 0) / data.length);
     const domainsNeedingAttention = data.flatMap((a) =>
-      a.domains.filter((dm) => dm.score <= 2).map((dm) => ({ domain: dm.name, youngPerson: getYPName(a.youngPersonId), score: dm.score }))
+      a.domains.filter((dm) => dm.score <= 2).map((dm) => ({ domain: dm.name, youngPerson: getYPName(a.child_id), score: dm.score }))
     );
     const nextReviews = data
-      .map((a) => ({ youngPerson: getYPName(a.youngPersonId), reviewDate: a.reviewDate }))
+      .map((a) => ({ youngPerson: getYPName(a.child_id), reviewDate: a.review_date }))
       .sort((a, b) => a.reviewDate.localeCompare(b.reviewDate));
     return { avgReadiness, domainsNeedingAttention, nextReviews };
   }, [data]);
@@ -182,18 +84,18 @@ export default function IndependencePathwayPage() {
 
   /* ── export ──────────────────────────────────────────────────────────── */
   const exportData = useMemo(() => data.flatMap((a) => a.domains.map((dm) => ({
-    youngPerson: getYPName(a.youngPersonId),
-    assessedBy: getStaffName(a.assessedBy),
-    assessmentDate: a.assessmentDate,
-    reviewDate: a.reviewDate,
-    overallReadiness: `${a.overallReadiness}%`,
-    status: STATUS_META[a.status].label,
+    youngPerson: getYPName(a.child_id),
+    assessedBy: getStaffName(a.assessed_by),
+    assessmentDate: a.assessment_date,
+    reviewDate: a.review_date,
+    overallReadiness: `${a.overall_readiness}%`,
+    status: INDEPENDENCE_PATHWAY_STATUS_LABEL[a.status],
     domain: dm.name,
-    score: `${dm.score}/${dm.maxScore}`,
+    score: `${dm.score}/${dm.max_score}`,
     evidence: dm.evidence,
-    nextSteps: dm.nextSteps,
-    expectedTransitionAge: String(a.expectedTransitionAge),
-    pathwayPlanLinked: a.pathwayPlanLinked ? "Yes" : "No",
+    nextSteps: dm.next_steps,
+    expectedTransitionAge: String(a.expected_transition_age),
+    pathwayPlanLinked: a.pathway_plan_linked ? "Yes" : "No",
     notes: a.notes,
   }))), [data]);
 
@@ -212,6 +114,8 @@ export default function IndependencePathwayPage() {
     { header: "Pathway Plan Linked",   accessor: (r: typeof exportData[number]) => r.pathwayPlanLinked },
     { header: "Notes",                 accessor: (r: typeof exportData[number]) => r.notes },
   ];
+
+  if (isLoading) return <PageShell title="Independence Pathway" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   /* ── render ──────────────────────────────────────────────────────────── */
   return (
@@ -266,8 +170,8 @@ export default function IndependencePathwayPage() {
               <div className="flex items-center gap-3">
                 <Calendar className="h-8 w-8 text-blue-500" />
                 <div>
-                  <p className="text-lg font-bold">{stats.nextReviews[0]?.reviewDate}</p>
-                  <p className="text-xs text-muted-foreground">{stats.nextReviews[0]?.youngPerson}</p>
+                  <p className="text-lg font-bold">{stats.nextReviews[0]?.reviewDate ?? "—"}</p>
+                  <p className="text-xs text-muted-foreground">{stats.nextReviews[0]?.youngPerson ?? "—"}</p>
                 </div>
               </div>
             </CardContent>
@@ -281,20 +185,20 @@ export default function IndependencePathwayPage() {
             return (
               <div key={a.id} className="rounded-lg border bg-white p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">{getYPName(a.youngPersonId)}</h3>
-                  <span className={cn("text-lg font-bold", readinessColour(a.overallReadiness))}>
-                    {a.overallReadiness}%
+                  <h3 className="font-semibold">{getYPName(a.child_id)}</h3>
+                  <span className={cn("text-lg font-bold", readinessColour(a.overall_readiness))}>
+                    {a.overall_readiness}%
                   </span>
                 </div>
                 <div className="w-full h-3 rounded-full bg-gray-100 overflow-hidden">
-                  <div className={cn("h-full rounded-full transition-all", readinessBg(a.overallReadiness))} style={{ width: `${a.overallReadiness}%` }} />
+                  <div className={cn("h-full rounded-full transition-all", readinessBg(a.overall_readiness))} style={{ width: `${a.overall_readiness}%` }} />
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  <Badge className={cn("text-xs", STATUS_META[a.status].colour)}>{STATUS_META[a.status].label}</Badge>
-                  {a.pathwayPlanLinked && <Badge className="text-xs bg-purple-100 text-purple-700">Pathway Plan Linked</Badge>}
+                  <Badge className={cn("text-xs", STATUS_COLOURS[a.status])}>{INDEPENDENCE_PATHWAY_STATUS_LABEL[a.status]}</Badge>
+                  {a.pathway_plan_linked && <Badge className="text-xs bg-purple-100 text-purple-700">Pathway Plan Linked</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Assessed {a.assessmentDate} by {getStaffName(a.assessedBy)} · Review due {a.reviewDate}
+                  Assessed {a.assessment_date} by {getStaffName(a.assessed_by)} · Review due {a.review_date}
                 </p>
               </div>
             );
@@ -312,7 +216,7 @@ export default function IndependencePathwayPage() {
             >
               <option value="all">All Young People</option>
               {data.map((a) => (
-                <option key={a.youngPersonId} value={a.youngPersonId}>{getYPName(a.youngPersonId)}</option>
+                <option key={a.child_id} value={a.child_id}>{getYPName(a.child_id)}</option>
               ))}
             </select>
           </div>
@@ -336,15 +240,15 @@ export default function IndependencePathwayPage() {
               <div className="flex items-center gap-3">
                 <Target className="h-5 w-5 text-brand" />
                 <div className="text-left">
-                  <h3 className="font-semibold">{getYPName(assessment.youngPersonId)}</h3>
+                  <h3 className="font-semibold">{getYPName(assessment.child_id)}</h3>
                   <p className="text-xs text-muted-foreground">
-                    Readiness {assessment.overallReadiness}% · {assessment.domains.length} domains assessed · Review due {assessment.reviewDate}
+                    Readiness {assessment.overall_readiness}% · {assessment.domains.length} domains assessed · Review due {assessment.review_date}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Badge className={cn("text-xs", STATUS_META[assessment.status].colour)}>
-                  {STATUS_META[assessment.status].label}
+                <Badge className={cn("text-xs", STATUS_COLOURS[assessment.status])}>
+                  {INDEPENDENCE_PATHWAY_STATUS_LABEL[assessment.status]}
                 </Badge>
                 {expandedId === assessment.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
               </div>
@@ -356,19 +260,19 @@ export default function IndependencePathwayPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   <div>
                     <span className="text-muted-foreground">Assessed by:</span>
-                    <p className="font-medium">{getStaffName(assessment.assessedBy)}</p>
+                    <p className="font-medium">{getStaffName(assessment.assessed_by)}</p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Assessment date:</span>
-                    <p className="font-medium">{assessment.assessmentDate}</p>
+                    <p className="font-medium">{assessment.assessment_date}</p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Expected transition age:</span>
-                    <p className="font-medium">{assessment.expectedTransitionAge}</p>
+                    <p className="font-medium">{assessment.expected_transition_age}</p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Pathway Plan linked:</span>
-                    <p className="font-medium">{assessment.pathwayPlanLinked ? "Yes" : "No"}</p>
+                    <p className="font-medium">{assessment.pathway_plan_linked ? "Yes" : "No"}</p>
                   </div>
                 </div>
 
@@ -376,10 +280,10 @@ export default function IndependencePathwayPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium">Overall Readiness</span>
-                    <span className={cn("text-sm font-bold", readinessColour(assessment.overallReadiness))}>{assessment.overallReadiness}%</span>
+                    <span className={cn("text-sm font-bold", readinessColour(assessment.overall_readiness))}>{assessment.overall_readiness}%</span>
                   </div>
                   <div className="w-full h-4 rounded-full bg-gray-100 overflow-hidden">
-                    <div className={cn("h-full rounded-full transition-all", readinessBg(assessment.overallReadiness))} style={{ width: `${assessment.overallReadiness}%` }} />
+                    <div className={cn("h-full rounded-full transition-all", readinessBg(assessment.overall_readiness))} style={{ width: `${assessment.overall_readiness}%` }} />
                   </div>
                 </div>
 
@@ -400,11 +304,11 @@ export default function IndependencePathwayPage() {
                           <td className="py-2 pr-3 font-medium whitespace-nowrap">{dm.name}</td>
                           <td className="py-2 pr-3">
                             <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium", scoreBadge(dm.score))}>
-                              {dm.score}/{dm.maxScore}
+                              {dm.score}/{dm.max_score}
                             </span>
                           </td>
                           <td className="py-2 pr-3 text-xs text-muted-foreground max-w-[250px]">{dm.evidence}</td>
-                          <td className="py-2 text-xs max-w-[200px]">{dm.nextSteps}</td>
+                          <td className="py-2 text-xs max-w-[200px]">{dm.next_steps}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -417,7 +321,7 @@ export default function IndependencePathwayPage() {
                     <div key={i} className="rounded-lg border p-2 text-center">
                       <p className="text-xs text-muted-foreground truncate">{dm.name}</p>
                       <p className={cn("text-lg font-bold", dm.score >= 4 ? "text-green-600" : dm.score >= 3 ? "text-amber-600" : "text-red-600")}>
-                        {dm.score}/{dm.maxScore}
+                        {dm.score}/{dm.max_score}
                       </p>
                     </div>
                   ))}
@@ -428,6 +332,8 @@ export default function IndependencePathwayPage() {
                   <h4 className="text-sm font-semibold text-blue-800 mb-1">Assessment Notes</h4>
                   <p className="text-sm text-blue-900">{assessment.notes}</p>
                 </div>
+
+                <SmartLinkPanel sourceType="independence-pathways" sourceId={assessment.id} childId={assessment.child_id} compact />
               </div>
             )}
           </div>

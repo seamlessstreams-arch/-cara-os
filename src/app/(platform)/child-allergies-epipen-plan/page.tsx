@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, todayStr } from "@/lib/utils";
 import {
   Syringe,
   AlertTriangle,
@@ -34,246 +34,49 @@ import {
   Search,
   Phone,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type Severity = "Mild" | "Moderate" | "Severe" | "Anaphylactic";
-
-interface AllergyPlan {
-  id: string;
-  youngPerson: string;
-  planDate: string;
-  allergens: { allergen: string; severity: Severity; lastReaction?: string }[];
-  antihistamine?: { name: string; dose: string; route: string };
-  aaiPrescribed: boolean;
-  aaiBrand?: "EpiPen" | "Jext" | "Emerade" | "Other";
-  aaiDose?: "150mcg" | "300mcg" | "500mcg";
-  aaiLocations: string[];
-  aaiExpiryDates: { location: string; expiry: string }[];
-  staffTrainedNames: string[];
-  staffTrainingExpires?: string;
-  emergencyProtocol: string[];
-  hospitalAdmissions: { date: string; reason: string; outcome: string }[];
-  schoolHasPlan: boolean;
-  schoolHasAai: boolean;
-  childCanSelfAdminister: boolean;
-  childWearsMedicalAlert: boolean;
-  emergencyContacts: { name: string; role: string; phone: string }[];
-  childVoice: string;
-  staffObservation: string;
-  reviewDate: string;
-  keyWorker: string;
-}
+import type { AllergyPlan, AllergySeverity } from "@/types/extended";
+import { ALLERGY_SEVERITY_LABEL, AAI_BRAND_LABEL } from "@/types/extended";
+import { useAllergyPlans } from "@/hooks/use-allergy-plans";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const SEVERITY_COLOURS: Record<AllergySeverity, string> = {
+  mild: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  moderate: "bg-amber-100 text-amber-800 border-amber-200",
+  severe: "bg-orange-100 text-orange-800 border-orange-200",
+  anaphylactic: "bg-red-100 text-red-800 border-red-200",
+  life_threatening: "bg-red-100 text-red-800 border-red-200",
 };
 
-const today = d(0);
-const in60 = d(60);
-
-const SEVERITY_COLOURS: Record<Severity, string> = {
-  Mild: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  Moderate: "bg-amber-100 text-amber-800 border-amber-200",
-  Severe: "bg-orange-100 text-orange-800 border-orange-200",
-  Anaphylactic: "bg-red-100 text-red-800 border-red-200",
-};
-
-const SEVERITY_RING: Record<Severity, string> = {
-  Mild: "border-l-4 border-l-emerald-400",
-  Moderate: "border-l-4 border-l-amber-400",
-  Severe: "border-l-4 border-l-orange-500",
-  Anaphylactic: "border-l-4 border-l-red-600",
+const SEVERITY_RING: Record<AllergySeverity, string> = {
+  mild: "border-l-4 border-l-emerald-400",
+  moderate: "border-l-4 border-l-amber-400",
+  severe: "border-l-4 border-l-orange-500",
+  anaphylactic: "border-l-4 border-l-red-600",
+  life_threatening: "border-l-4 border-l-red-600",
 };
 
 const expiryStatus = (expiry: string) => {
+  const today = todayStr();
+  const in60 = (() => {
+    const dt = new Date();
+    dt.setDate(dt.getDate() + 60);
+    return dt.toISOString().slice(0, 10);
+  })();
   if (expiry < today) return { label: "Expired", colour: "bg-red-100 text-red-800" };
   if (expiry < in60)
     return { label: "Expiring soon", colour: "bg-amber-100 text-amber-800" };
   return { label: "In date", colour: "bg-emerald-100 text-emerald-800" };
 };
 
-const highestSeverity = (plan: AllergyPlan): Severity | null => {
+const highestSeverity = (plan: AllergyPlan): AllergySeverity | null => {
   if (plan.allergens.length === 0) return null;
-  const order: Severity[] = ["Mild", "Moderate", "Severe", "Anaphylactic"];
-  return plan.allergens.reduce<Severity>((acc, a) => {
+  const order: AllergySeverity[] = ["mild", "moderate", "severe", "anaphylactic"];
+  return plan.allergens.reduce<AllergySeverity>((acc, a) => {
     return order.indexOf(a.severity) > order.indexOf(acc) ? a.severity : acc;
-  }, "Mild");
+  }, "mild");
 };
-
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const SEED: AllergyPlan[] = [
-  {
-    id: "alp_001",
-    youngPerson: "yp_alex",
-    planDate: d(-30),
-    allergens: [
-      {
-        allergen: "Peanut",
-        severity: "Anaphylactic",
-        lastReaction:
-          "Age 8 — accidental ingestion of biscuit containing peanut traces; full anaphylaxis with airway swelling, EpiPen administered, hospital admission 24h.",
-      },
-      {
-        allergen: "Tree nuts (cashew, almond, walnut)",
-        severity: "Moderate",
-        lastReaction:
-          "Age 11 — facial swelling and hives after eating cashew, settled with antihistamine.",
-      },
-      {
-        allergen: "Latex",
-        severity: "Moderate",
-        lastReaction:
-          "Age 12 — contact dermatitis on hands following balloon handling at school event.",
-      },
-    ],
-    antihistamine: {
-      name: "Cetirizine",
-      dose: "10mg",
-      route: "Oral (PO) — once daily as needed for mild reactions",
-    },
-    aaiPrescribed: true,
-    aaiBrand: "Jext",
-    aaiDose: "300mcg",
-    aaiLocations: [
-      "Alex's bedroom (named pouch on bedside table — primary)",
-      "Kitchen first aid kit (locked cupboard)",
-      "School bag (carried daily)",
-      "Boxing gym sports bag",
-    ],
-    aaiExpiryDates: [
-      { location: "Bedroom", expiry: d(180) },
-      { location: "Kitchen first aid kit", expiry: d(45) },
-      { location: "School bag", expiry: d(220) },
-      { location: "Boxing sports bag", expiry: d(-5) },
-    ],
-    staffTrainedNames: ["staff_anna", "staff_edward", "staff_chervelle"],
-    staffTrainingExpires: d(330),
-    emergencyProtocol: [
-      "Recognise signs: swelling of lips/face/tongue, throat tightness, hoarse voice, wheeze, widespread hives, sudden floppy/pale presentation, persistent vomiting, sense of impending doom.",
-      "Lie Alex flat with legs raised (sit upright if breathing is difficult, recovery position if unconscious but breathing). Never stand Alex up.",
-      "Administer Jext 300mcg into outer mid-thigh — hold against thigh for 10 seconds, gently massage site for a further 10 seconds. Through clothing acceptable.",
-      "Call 999 IMMEDIATELY — say the words 'anaphylaxis, AAI given'. Never delay because the AAI seemed to work.",
-      "Note exact time of administration on the empty Jext device casing.",
-      "If no clear improvement after 5 minutes, give a second AAI from the nearest spare location.",
-      "Stay with Alex. Keep airway clear. Do not give food, drink or oral medication.",
-      "Hand the used AAI device to paramedics on arrival.",
-      "Inform on-call manager and parents/social worker within 1 hour of the incident.",
-    ],
-    hospitalAdmissions: [
-      {
-        date: "2018-04-12",
-        reason: "Anaphylaxis — peanut ingestion",
-        outcome:
-          "EpiPen given by parent, 24h observation at Royal Derby for biphasic reaction risk, immunology referral.",
-      },
-      {
-        date: "2022-09-30",
-        reason: "Cashew exposure — moderate allergic reaction",
-        outcome: "A&E review, cetirizine, no AAI required, discharged same day.",
-      },
-    ],
-    schoolHasPlan: true,
-    schoolHasAai: true,
-    childCanSelfAdminister: true,
-    childWearsMedicalAlert: true,
-    emergencyContacts: [
-      { name: "Karen Holding", role: "Social Worker (Derby City)", phone: "01332 641 700" },
-      { name: "Dr. S. Patel", role: "Registered GP", phone: "01332 500 100" },
-      { name: "Royal Derby Paediatric Allergy Team", role: "Consultant Immunologist", phone: "01332 340 131" },
-      { name: "On-call Manager", role: "Cornerstone — Oak House", phone: "07700 000001" },
-    ],
-    childVoice:
-      "I know what to do if I feel my throat closing. I want staff to stay calm and not panic — that makes it worse. I trust Anna and Edward most. I want the boxing coach to know about my Jext but I don't want the whole class to be told.",
-    staffObservation:
-      "Alex is competent and confident with self-administration after BSACI-format teaching. Carries Jext in a labelled pouch at all times. Has shown good awareness around social pressure (e.g. shared snacks at school). Continues to need adult prompting to check restaurant menus and to read ingredient labels for snacks bought independently.",
-    reviewDate: d(-30 + 365),
-    keyWorker: "staff_edward",
-  },
-  {
-    id: "alp_002",
-    youngPerson: "yp_jordan",
-    planDate: d(-60),
-    allergens: [
-      {
-        allergen: "Penicillin",
-        severity: "Moderate",
-        lastReaction:
-          "Age 6 — widespread urticarial rash 24h after starting amoxicillin for ear infection, settled with antihistamine. Recorded on GP allergy record. Not anaphylactic.",
-      },
-      {
-        allergen: "Strawberries (suspected)",
-        severity: "Mild",
-        lastReaction:
-          "Reports tingling lips after fresh strawberries on two occasions. Skin prick test negative, food challenge not yet completed — treated as suspected food sensitivity.",
-      },
-    ],
-    antihistamine: {
-      name: "Cetirizine",
-      dose: "10mg",
-      route: "Oral (PO) — once daily as needed",
-    },
-    aaiPrescribed: false,
-    aaiLocations: [],
-    aaiExpiryDates: [],
-    staffTrainedNames: ["staff_anna", "staff_edward", "staff_chervelle"],
-    emergencyProtocol: [
-      "Avoid all penicillin-class antibiotics (amoxicillin, ampicillin, co-amoxiclav). Confirm with any prescriber and pharmacist before issuing any new antibiotic.",
-      "If accidental exposure: monitor for rash, swelling or breathing difficulty. Give cetirizine 10mg PO if mild rash or itching.",
-      "Call GP same day for any reaction. Call 999 if breathing affected, throat tightening, collapse, or rapidly spreading rash with feeling of unwellness.",
-      "For suspected strawberry sensitivity: avoid fresh strawberries pending food challenge. Cooked/processed strawberry products tolerated to date — supervise first exposures.",
-    ],
-    hospitalAdmissions: [],
-    schoolHasPlan: true,
-    schoolHasAai: false,
-    childCanSelfAdminister: false,
-    childWearsMedicalAlert: false,
-    emergencyContacts: [
-      { name: "Michael Osei", role: "Social Worker (Notts)", phone: "0115 977 3100" },
-      { name: "Dr. A. Khan", role: "Registered GP", phone: "01332 500 200" },
-    ],
-    childVoice:
-      "I don't think strawberries are a big deal but the doctor said wait until they test me. I always tell new doctors no penicillin.",
-    staffObservation:
-      "Jordan is well aware of penicillin allergy and consistently informs healthcare staff. Allergy alert recorded on GP and dental records. Strawberry challenge to be booked once stable in placement (post 6-month placement anniversary).",
-    reviewDate: d(-60 + 365),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "alp_003",
-    youngPerson: "yp_casey",
-    planDate: d(-14),
-    allergens: [],
-    aaiPrescribed: false,
-    aaiLocations: [],
-    aaiExpiryDates: [],
-    staffTrainedNames: [],
-    emergencyProtocol: [
-      "No known allergies — placeholder plan held to confirm screening and review on admission and at every annual health assessment.",
-      "If any new reaction is observed (rash, swelling, breathing change, gastrointestinal symptoms after exposure): document on body map, inform GP, do not give any antihistamine without GP advice unless previously authorised.",
-    ],
-    hospitalAdmissions: [],
-    schoolHasPlan: false,
-    schoolHasAai: false,
-    childCanSelfAdminister: false,
-    childWearsMedicalAlert: false,
-    emergencyContacts: [
-      { name: "Fiona Brennan", role: "Social Worker (Derbyshire)", phone: "01629 533 190" },
-      { name: "Dr. L. Chen", role: "Registered GP", phone: "01332 500 300" },
-    ],
-    childVoice:
-      "I don't think I'm allergic to anything but my last carer said maybe nuts? I'm not sure. I want to be tested properly so I know.",
-    staffObservation:
-      "Casey reports possible nut sensitivity from previous placement but no documented evidence on transferred records. Allergy testing referral submitted via GP — pending appointment. In the interim, nuts are not stored or served at home as a precaution.",
-    reviewDate: d(-14 + 90),
-    keyWorker: "staff_chervelle",
-  },
-];
 
 // ── Page Component ────────────────────────────────────────────────────────────
 
@@ -283,28 +86,43 @@ export default function ChildAllergiesEpipenPlanPage() {
   const [sortBy, setSortBy] = useState("severity");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const { data: resp, isLoading } = useAllergyPlans();
+  const records = resp?.data ?? [];
+
   // ── Stats ───────────────────────────────────────────────────────────────────
 
   const stats = useMemo(() => {
-    const anaphylactic = SEED.filter((p) =>
-      p.allergens.some((a) => a.severity === "Anaphylactic")
+    const today = todayStr();
+    const in60 = (() => {
+      const dt = new Date();
+      dt.setDate(dt.getDate() + 60);
+      return dt.toISOString().slice(0, 10);
+    })();
+    const in30 = (() => {
+      const dt = new Date();
+      dt.setDate(dt.getDate() + 30);
+      return dt.toISOString().slice(0, 10);
+    })();
+
+    const anaphylactic = records.filter((p) =>
+      p.allergens.some((a) => a.severity === "anaphylactic")
     ).length;
 
-    const allAaiExpiries = SEED.flatMap((p) => p.aaiExpiryDates);
+    const allAaiExpiries = records.flatMap((p) => p.aai_expiry_dates);
     const aaisInDate = allAaiExpiries.filter((e) => e.expiry >= in60).length;
 
-    const staffTrainedSet = new Set(SEED.flatMap((p) => p.staffTrainedNames));
+    const staffTrainedSet = new Set(records.flatMap((p) => p.staff_trained_names));
     const staffTrained = staffTrainedSet.size;
 
-    const reviewsDue = SEED.filter((p) => p.reviewDate <= d(30)).length;
+    const reviewsDue = records.filter((p) => p.review_date <= in30).length;
 
     return { anaphylactic, aaisInDate, staffTrained, reviewsDue };
-  }, []);
+  }, [records]);
 
   // ── Filtering & Sorting ─────────────────────────────────────────────────────
 
   const filtered = useMemo(() => {
-    let list = [...SEED];
+    let list = [...records];
 
     if (severityFilter !== "all") {
       list = list.filter((p) =>
@@ -315,14 +133,14 @@ export default function ChildAllergiesEpipenPlanPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (p) =>
-          getYPName(p.youngPerson).toLowerCase().includes(q) ||
+          getYPName(p.child_id).toLowerCase().includes(q) ||
           p.allergens.some((a) => a.allergen.toLowerCase().includes(q)) ||
           (p.antihistamine?.name.toLowerCase().includes(q) ?? false) ||
-          (p.aaiBrand?.toLowerCase().includes(q) ?? false)
+          (p.aai_brand ? AAI_BRAND_LABEL[p.aai_brand].toLowerCase().includes(q) : false)
       );
     }
 
-    const order: Severity[] = ["Mild", "Moderate", "Severe", "Anaphylactic"];
+    const order: AllergySeverity[] = ["mild", "moderate", "severe", "anaphylactic"];
     list.sort((a, b) => {
       switch (sortBy) {
         case "severity": {
@@ -334,30 +152,30 @@ export default function ChildAllergiesEpipenPlanPage() {
           );
         }
         case "review_due":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         case "young_person":
-          return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         default:
           return 0;
       }
     });
 
     return list;
-  }, [search, severityFilter, sortBy]);
+  }, [records, search, severityFilter, sortBy]);
 
   // ── Export columns ──────────────────────────────────────────────────────────
 
   const exportColumns: ExportColumn<AllergyPlan>[] = [
     {
       header: "Young Person",
-      accessor: (r: AllergyPlan) => getYPName(r.youngPerson),
+      accessor: (r: AllergyPlan) => getYPName(r.child_id),
     },
-    { header: "Plan Date", accessor: (r: AllergyPlan) => r.planDate },
+    { header: "Plan Date", accessor: (r: AllergyPlan) => r.plan_date },
     {
       header: "Allergens",
       accessor: (r: AllergyPlan) =>
         r.allergens
-          .map((a) => `${a.allergen} (${a.severity})`)
+          .map((a) => `${a.allergen} (${ALLERGY_SEVERITY_LABEL[a.severity]})`)
           .join("; "),
     },
     {
@@ -369,76 +187,89 @@ export default function ChildAllergiesEpipenPlanPage() {
     },
     {
       header: "AAI Prescribed",
-      accessor: (r: AllergyPlan) => (r.aaiPrescribed ? "Yes" : "No"),
+      accessor: (r: AllergyPlan) => (r.aai_prescribed ? "Yes" : "No"),
     },
-    { header: "AAI Brand", accessor: (r: AllergyPlan) => r.aaiBrand ?? "" },
-    { header: "AAI Dose", accessor: (r: AllergyPlan) => r.aaiDose ?? "" },
+    { header: "AAI Brand", accessor: (r: AllergyPlan) => r.aai_brand ? AAI_BRAND_LABEL[r.aai_brand] : "" },
+    { header: "AAI Dose", accessor: (r: AllergyPlan) => r.aai_dose ?? "" },
     {
       header: "AAI Locations",
-      accessor: (r: AllergyPlan) => r.aaiLocations.join("; "),
+      accessor: (r: AllergyPlan) => r.aai_locations.join("; "),
     },
     {
       header: "AAI Expiry Dates",
       accessor: (r: AllergyPlan) =>
-        r.aaiExpiryDates.map((e) => `${e.location}: ${e.expiry}`).join("; "),
+        r.aai_expiry_dates.map((e) => `${e.location}: ${e.expiry}`).join("; "),
     },
     {
       header: "Staff Trained",
       accessor: (r: AllergyPlan) =>
-        r.staffTrainedNames.map(getStaffName).join(", "),
+        r.staff_trained_names.map(getStaffName).join(", "),
     },
     {
       header: "Staff Training Expires",
-      accessor: (r: AllergyPlan) => r.staffTrainingExpires ?? "",
+      accessor: (r: AllergyPlan) => r.staff_training_expires ?? "",
     },
     {
       header: "Emergency Protocol",
       accessor: (r: AllergyPlan) =>
-        r.emergencyProtocol.map((s, i) => `${i + 1}. ${s}`).join(" | "),
+        r.emergency_protocol.map((s, i) => `${i + 1}. ${s}`).join(" | "),
     },
     {
       header: "Hospital Admissions",
       accessor: (r: AllergyPlan) =>
-        r.hospitalAdmissions
+        r.hospital_admissions
           .map((h) => `${h.date} — ${h.reason} → ${h.outcome}`)
           .join(" | "),
     },
     {
       header: "School Has Plan",
-      accessor: (r: AllergyPlan) => (r.schoolHasPlan ? "Yes" : "No"),
+      accessor: (r: AllergyPlan) => (r.school_has_plan ? "Yes" : "No"),
     },
     {
       header: "School Has AAI",
-      accessor: (r: AllergyPlan) => (r.schoolHasAai ? "Yes" : "No"),
+      accessor: (r: AllergyPlan) => (r.school_has_aai ? "Yes" : "No"),
     },
     {
       header: "Child Self-Administers",
-      accessor: (r: AllergyPlan) => (r.childCanSelfAdminister ? "Yes" : "No"),
+      accessor: (r: AllergyPlan) => (r.child_can_self_administer ? "Yes" : "No"),
     },
     {
       header: "Wears Medical Alert",
-      accessor: (r: AllergyPlan) => (r.childWearsMedicalAlert ? "Yes" : "No"),
+      accessor: (r: AllergyPlan) => (r.child_wears_medical_alert ? "Yes" : "No"),
     },
     {
       header: "Emergency Contacts",
       accessor: (r: AllergyPlan) =>
-        r.emergencyContacts
+        r.emergency_contacts
           .map((c) => `${c.name} (${c.role}) ${c.phone}`)
           .join("; "),
     },
-    { header: "Child Voice", accessor: (r: AllergyPlan) => r.childVoice },
+    { header: "Child Voice", accessor: (r: AllergyPlan) => r.child_voice },
     {
       header: "Staff Observation",
-      accessor: (r: AllergyPlan) => r.staffObservation,
+      accessor: (r: AllergyPlan) => r.staff_observation,
     },
-    { header: "Review Date", accessor: (r: AllergyPlan) => r.reviewDate },
+    { header: "Review Date", accessor: (r: AllergyPlan) => r.review_date },
     {
       header: "Key Worker",
-      accessor: (r: AllergyPlan) => getStaffName(r.keyWorker),
+      accessor: (r: AllergyPlan) => getStaffName(r.key_worker),
     },
   ];
 
   // ── Render ──────────────────────────────────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Allergies & Anaphylaxis Plans"
+        subtitle="Per-child BSACI allergy management — AAI/EpiPen protocol, training register and hospital plan"
+      >
+        <div className="flex items-center justify-center py-16">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -532,10 +363,10 @@ export default function ChildAllergiesEpipenPlanPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Severities</SelectItem>
-            <SelectItem value="Mild">Mild</SelectItem>
-            <SelectItem value="Moderate">Moderate</SelectItem>
-            <SelectItem value="Severe">Severe</SelectItem>
-            <SelectItem value="Anaphylactic">Anaphylactic</SelectItem>
+            <SelectItem value="mild">{ALLERGY_SEVERITY_LABEL.mild}</SelectItem>
+            <SelectItem value="moderate">{ALLERGY_SEVERITY_LABEL.moderate}</SelectItem>
+            <SelectItem value="severe">{ALLERGY_SEVERITY_LABEL.severe}</SelectItem>
+            <SelectItem value="anaphylactic">{ALLERGY_SEVERITY_LABEL.anaphylactic}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -565,10 +396,10 @@ export default function ChildAllergiesEpipenPlanPage() {
         {filtered.map((plan) => {
           const expanded = expandedId === plan.id;
           const peakSeverity = highestSeverity(plan);
-          const reviewOverdue = plan.reviewDate < today;
+          const reviewOverdue = plan.review_date < todayStr();
 
           // Worst expiry among AAI locations
-          const expiries = plan.aaiExpiryDates.map((e) => e.expiry).sort();
+          const expiries = plan.aai_expiry_dates.map((e) => e.expiry).sort();
           const worstExpiry = expiries[0];
           const worstExpiryStatus = worstExpiry
             ? expiryStatus(worstExpiry)
@@ -592,7 +423,7 @@ export default function ChildAllergiesEpipenPlanPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-sm">
-                        {getYPName(plan.youngPerson)}
+                        {getYPName(plan.child_id)}
                       </span>
 
                       {peakSeverity ? (
@@ -602,7 +433,7 @@ export default function ChildAllergiesEpipenPlanPage() {
                             SEVERITY_COLOURS[peakSeverity]
                           )}
                         >
-                          {peakSeverity}
+                          {ALLERGY_SEVERITY_LABEL[peakSeverity]}
                         </span>
                       ) : (
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">
@@ -610,7 +441,7 @@ export default function ChildAllergiesEpipenPlanPage() {
                         </span>
                       )}
 
-                      {plan.aaiPrescribed && worstExpiryStatus && (
+                      {plan.aai_prescribed && worstExpiryStatus && (
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
@@ -621,13 +452,13 @@ export default function ChildAllergiesEpipenPlanPage() {
                         </span>
                       )}
 
-                      {plan.childCanSelfAdminister && (
+                      {plan.child_can_self_administer && (
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700">
                           Self-administer competent
                         </span>
                       )}
 
-                      {plan.childWearsMedicalAlert && (
+                      {plan.child_wears_medical_alert && (
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-purple-50 text-purple-700">
                           Medical alert worn
                         </span>
@@ -644,8 +475,8 @@ export default function ChildAllergiesEpipenPlanPage() {
                       {plan.allergens.length > 0
                         ? plan.allergens.map((a) => a.allergen).join(", ")
                         : "No documented allergens — annual screening only"}
-                      {plan.aaiPrescribed &&
-                        ` — ${plan.aaiBrand} ${plan.aaiDose}`}
+                      {plan.aai_prescribed && plan.aai_brand &&
+                        ` — ${AAI_BRAND_LABEL[plan.aai_brand]} ${plan.aai_dose}`}
                     </p>
                   </div>
                 </div>
@@ -667,7 +498,7 @@ export default function ChildAllergiesEpipenPlanPage() {
                     {plan.allergens.length === 0 ? (
                       <p className="text-sm text-muted-foreground">
                         No documented allergens. Screening recorded on plan
-                        date {plan.planDate}.
+                        date {plan.plan_date}.
                       </p>
                     ) : (
                       <ul className="space-y-2">
@@ -684,12 +515,12 @@ export default function ChildAllergiesEpipenPlanPage() {
                                 {a.allergen}
                               </span>
                               <span className="text-xs font-medium uppercase tracking-wide">
-                                {a.severity}
+                                {ALLERGY_SEVERITY_LABEL[a.severity]}
                               </span>
                             </div>
-                            {a.lastReaction && (
+                            {a.last_reaction && (
                               <p className="mt-1 text-xs opacity-90">
-                                <strong>Last reaction:</strong> {a.lastReaction}
+                                <strong>Last reaction:</strong> {a.last_reaction}
                               </p>
                             )}
                           </li>
@@ -713,15 +544,15 @@ export default function ChildAllergiesEpipenPlanPage() {
                   )}
 
                   {/* AAI block */}
-                  {plan.aaiPrescribed ? (
+                  {plan.aai_prescribed ? (
                     <div className="rounded-md border-2 border-red-200 bg-red-50/60 p-3 space-y-2">
                       <h4 className="text-sm font-semibold flex items-center gap-1 text-red-900">
                         <Syringe className="h-4 w-4" /> Adrenaline Auto-Injector
                         (AAI)
                       </h4>
                       <p className="text-sm text-red-900">
-                        <strong>Brand:</strong> {plan.aaiBrand} —{" "}
-                        <strong>Dose:</strong> {plan.aaiDose}
+                        <strong>Brand:</strong> {plan.aai_brand ? AAI_BRAND_LABEL[plan.aai_brand] : "—"} —{" "}
+                        <strong>Dose:</strong> {plan.aai_dose}
                       </p>
 
                       <div>
@@ -729,7 +560,7 @@ export default function ChildAllergiesEpipenPlanPage() {
                           AAI Locations
                         </h5>
                         <ul className="list-disc list-inside text-sm text-red-900 space-y-0.5">
-                          {plan.aaiLocations.map((loc, i) => (
+                          {plan.aai_locations.map((loc, i) => (
                             <li key={i}>{loc}</li>
                           ))}
                         </ul>
@@ -740,7 +571,7 @@ export default function ChildAllergiesEpipenPlanPage() {
                           AAI Expiry Dates
                         </h5>
                         <ul className="space-y-1">
-                          {plan.aaiExpiryDates.map((e, i) => {
+                          {plan.aai_expiry_dates.map((e, i) => {
                             const s = expiryStatus(e.expiry);
                             return (
                               <li
@@ -787,13 +618,13 @@ export default function ChildAllergiesEpipenPlanPage() {
                     <h4 className="text-sm font-semibold mb-1">
                       Staff Trained to Administer
                     </h4>
-                    {plan.staffTrainedNames.length > 0 ? (
+                    {plan.staff_trained_names.length > 0 ? (
                       <p className="text-sm text-muted-foreground">
-                        {plan.staffTrainedNames.map(getStaffName).join(", ")}
-                        {plan.staffTrainingExpires && (
+                        {plan.staff_trained_names.map(getStaffName).join(", ")}
+                        {plan.staff_training_expires && (
                           <>
                             {" "}— BSACI training valid until{" "}
-                            <strong>{plan.staffTrainingExpires}</strong>
+                            <strong>{plan.staff_training_expires}</strong>
                           </>
                         )}
                       </p>
@@ -810,20 +641,20 @@ export default function ChildAllergiesEpipenPlanPage() {
                       Emergency Protocol — Step by Step
                     </h4>
                     <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1.5 marker:font-semibold marker:text-foreground">
-                      {plan.emergencyProtocol.map((step, i) => (
+                      {plan.emergency_protocol.map((step, i) => (
                         <li key={i}>{step}</li>
                       ))}
                     </ol>
                   </div>
 
                   {/* Hospital admissions */}
-                  {plan.hospitalAdmissions.length > 0 && (
+                  {plan.hospital_admissions.length > 0 && (
                     <div>
                       <h4 className="text-sm font-semibold mb-2">
                         Hospital Admissions History
                       </h4>
                       <ul className="space-y-1.5">
-                        {plan.hospitalAdmissions.map((h, i) => (
+                        {plan.hospital_admissions.map((h, i) => (
                           <li
                             key={i}
                             className="rounded-md border bg-muted/30 p-2 text-sm"
@@ -849,11 +680,11 @@ export default function ChildAllergiesEpipenPlanPage() {
                       <ul className="text-sm text-muted-foreground space-y-0.5">
                         <li>
                           School holds plan:{" "}
-                          <strong>{plan.schoolHasPlan ? "Yes" : "No"}</strong>
+                          <strong>{plan.school_has_plan ? "Yes" : "No"}</strong>
                         </li>
                         <li>
                           School holds AAI:{" "}
-                          <strong>{plan.schoolHasAai ? "Yes" : "No"}</strong>
+                          <strong>{plan.school_has_aai ? "Yes" : "No"}</strong>
                         </li>
                       </ul>
                     </div>
@@ -865,13 +696,13 @@ export default function ChildAllergiesEpipenPlanPage() {
                         <li>
                           Self-administer competent:{" "}
                           <strong>
-                            {plan.childCanSelfAdminister ? "Yes" : "No"}
+                            {plan.child_can_self_administer ? "Yes" : "No"}
                           </strong>
                         </li>
                         <li>
                           Wears medical alert:{" "}
                           <strong>
-                            {plan.childWearsMedicalAlert ? "Yes" : "No"}
+                            {plan.child_wears_medical_alert ? "Yes" : "No"}
                           </strong>
                         </li>
                       </ul>
@@ -884,7 +715,7 @@ export default function ChildAllergiesEpipenPlanPage() {
                       <Phone className="h-4 w-4" /> Emergency Contacts
                     </h4>
                     <ul className="space-y-1">
-                      {plan.emergencyContacts.map((c, i) => (
+                      {plan.emergency_contacts.map((c, i) => (
                         <li
                           key={i}
                           className="flex items-center justify-between text-sm border-b last:border-b-0 py-1"
@@ -907,7 +738,7 @@ export default function ChildAllergiesEpipenPlanPage() {
                       Child&apos;s Voice
                     </h4>
                     <p className="text-sm italic text-blue-900">
-                      &ldquo;{plan.childVoice}&rdquo;
+                      &ldquo;{plan.child_voice}&rdquo;
                     </p>
                   </div>
 
@@ -917,27 +748,30 @@ export default function ChildAllergiesEpipenPlanPage() {
                       Staff Observation
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      {plan.staffObservation}
+                      {plan.staff_observation}
                     </p>
                   </div>
 
                   {/* Meta row */}
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
                     <span>
-                      <strong>Plan Date:</strong> {plan.planDate}
+                      <strong>Plan Date:</strong> {plan.plan_date}
                     </span>
                     <span
                       className={cn(
                         reviewOverdue && "text-red-700 font-semibold"
                       )}
                     >
-                      <strong>Next Review:</strong> {plan.reviewDate}
+                      <strong>Next Review:</strong> {plan.review_date}
                     </span>
                     <span>
                       <strong>Key Worker:</strong>{" "}
-                      {getStaffName(plan.keyWorker)}
+                      {getStaffName(plan.key_worker)}
                     </span>
                   </div>
+
+                  {/* Smart Link Panel */}
+                  <SmartLinkPanel sourceType="allergy-plan" sourceId={plan.id} childId={plan.child_id} compact />
                 </div>
               )}
             </div>

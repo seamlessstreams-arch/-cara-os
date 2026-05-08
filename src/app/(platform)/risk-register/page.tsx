@@ -1,15 +1,7 @@
 "use client";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — RISK REGISTER
-// Tracks live risks to young people, staff, and the home environment.
-// Each risk has owner, category, likelihood/impact scoring, mitigations,
-// review dates, and status. Supports Ofsted ILACS evidence that the home
-// proactively identifies, manages, and reviews risk.
-// ══════════════════════════════════════════════════════════════════════════════
-
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/layout/page-shell";
+import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,10 +13,13 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
-import { useAuthContext } from "@/contexts/auth-context";
-import { PrintButton } from "@/components/common/print-button";
-import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { PrintButton } from "@/components/ui/print-button";
+import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { useRiskRegisterEntries } from "@/hooks/use-risk-register-entries";
+import type { RiskRegisterEntry, RiskRegisterCategory, RiskRegisterStatus, RiskRegisterLevel } from "@/types/extended";
+import { RISK_REGISTER_CATEGORY_LABEL, RISK_REGISTER_STATUS_LABEL, RISK_REGISTER_LEVEL_LABEL } from "@/types/extended";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   Plus, X, AlertTriangle, AlertOctagon, Shield, ShieldCheck,
@@ -32,248 +27,16 @@ import {
   Loader2, TrendingUp, TrendingDown, Eye, Zap,
 } from "lucide-react";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+/* ── local config ────────────────────────────────────────────────────── */
 
-type RiskCategory = "safeguarding" | "behaviour" | "health" | "placement_stability" | "staffing" | "environmental" | "regulatory" | "emotional_wellbeing" | "exploitation" | "missing";
-type RiskStatus = "active" | "mitigated" | "monitoring" | "closed" | "escalated";
-type RiskLevel = "critical" | "high" | "medium" | "low";
-
-interface RiskEntry {
-  id: string;
-  title: string;
-  description: string;
-  category: RiskCategory;
-  child_id: string | null;
-  likelihood: number;      // 1-5
-  impact: number;          // 1-5
-  risk_score: number;      // likelihood * impact
-  risk_level: RiskLevel;
-  status: RiskStatus;
-  owner_id: string;
-  mitigations: string[];
-  review_date: string;
-  last_reviewed: string | null;
-  created_at: string;
-  updated_at: string;
-  escalated_to: string | null;
-  notes: string | null;
-}
-
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-function computeLevel(score: number): RiskLevel {
+function computeLevel(score: number): RiskRegisterLevel {
   if (score >= 20) return "critical";
   if (score >= 12) return "high";
   if (score >= 6) return "medium";
   return "low";
 }
 
-const SEED_RISKS: RiskEntry[] = [
-  {
-    id: "risk_001",
-    title: "Evening dysregulation pattern — Alex",
-    description: "Consistent pattern of dysregulation between 17:00-19:00, potentially linked to school-to-home transition or contact anxiety. Risk of escalation to physical intervention if not proactively managed.",
-    category: "behaviour",
-    child_id: "yp_alex",
-    likelihood: 4,
-    impact: 4,
-    risk_score: 16,
-    risk_level: "high",
-    status: "active",
-    owner_id: "staff_darren",
-    mitigations: [
-      "Proactive 5pm transition support intervention in place (named staff)",
-      "ARIA pattern monitoring active — alerts if frequency increases",
-      "De-escalation toolbox available and known to all staff",
-      "Weekly review of dysregulation episodes with key worker",
-    ],
-    review_date: "2026-05-10",
-    last_reviewed: "2026-04-25",
-    created_at: "2026-04-08T09:00:00Z",
-    updated_at: "2026-04-25T10:00:00Z",
-    escalated_to: null,
-    notes: "Linked to ARIA pattern alert pat_001. Intervention int_001 in place.",
-  },
-  {
-    id: "risk_002",
-    title: "Post-contact emotional distress — Casey",
-    description: "Casey shows significant emotional distress following each contact session with her mother. Includes tearfulness, withdrawal, and reduced sleep. Risk of placement disruption if not managed.",
-    category: "emotional_wellbeing",
-    child_id: "yp_casey",
-    likelihood: 4,
-    impact: 3,
-    risk_score: 12,
-    risk_level: "high",
-    status: "mitigated",
-    owner_id: "staff_darren",
-    mitigations: [
-      "Pre-contact preparation session with key worker before each visit",
-      "Post-contact de-brief and sensory regulation activity planned",
-      "Social worker notified — contact review requested",
-      "Sleep monitoring for 48 hours post-contact",
-    ],
-    review_date: "2026-05-15",
-    last_reviewed: "2026-04-20",
-    created_at: "2026-04-10T08:00:00Z",
-    updated_at: "2026-04-20T14:00:00Z",
-    escalated_to: null,
-    notes: "Contact preparation plan shared with SW. Waiting on IRO decision re: contact frequency.",
-  },
-  {
-    id: "risk_003",
-    title: "Agency staffing during peak hours",
-    description: "High reliance on agency staff for evening shifts (6 shifts in 14 days). Unfamiliar staff during vulnerable evening hours increases risk for all young people, particularly those with attachment difficulties.",
-    category: "staffing",
-    child_id: null,
-    likelihood: 3,
-    impact: 4,
-    risk_score: 12,
-    risk_level: "high",
-    status: "active",
-    owner_id: "staff_darren",
-    mitigations: [
-      "Same agency staff requested where possible for continuity",
-      "Agency staff briefed on individual risk assessments and routines",
-      "Rota review underway to cover gaps with permanent staff",
-      "Recruitment to senior RSW vacancy progressing",
-    ],
-    review_date: "2026-05-08",
-    last_reviewed: "2026-04-22",
-    created_at: "2026-04-15T07:00:00Z",
-    updated_at: "2026-04-22T09:00:00Z",
-    escalated_to: "staff_alicia",
-    notes: "Escalated to RI for provider-level recruitment support.",
-  },
-  {
-    id: "risk_004",
-    title: "Missing from care history — Alex",
-    description: "Alex has a history of going missing from previous placements. While no missing episodes at Oak House yet, the risk remains elevated given his dysregulation pattern and previous behaviour.",
-    category: "missing",
-    child_id: "yp_alex",
-    likelihood: 3,
-    impact: 5,
-    risk_score: 15,
-    risk_level: "high",
-    status: "monitoring",
-    owner_id: "staff_ryan",
-    mitigations: [
-      "Missing from care protocol shared with all staff and reviewed",
-      "Alex's missing risk assessment updated monthly",
-      "Known locations and associates documented",
-      "Police aware and flagged on PNC",
-      "Grab pack maintained and up to date",
-    ],
-    review_date: "2026-05-05",
-    last_reviewed: "2026-04-18",
-    created_at: "2026-03-15T10:00:00Z",
-    updated_at: "2026-04-18T11:00:00Z",
-    escalated_to: null,
-    notes: "No missing episodes since placement. Continue monitoring.",
-  },
-  {
-    id: "risk_005",
-    title: "Medication storage — fridge temperature logging",
-    description: "Insulin for Alex requires refrigerated storage. Temperature logging has been inconsistent — 2 missed entries in past 14 days.",
-    category: "health",
-    child_id: "yp_alex",
-    likelihood: 2,
-    impact: 4,
-    risk_score: 8,
-    risk_level: "medium",
-    status: "mitigated",
-    owner_id: "staff_anna",
-    mitigations: [
-      "Daily temperature check added to shift handover checklist",
-      "Digital thermometer with alarm installed in medication fridge",
-      "Audit of missed entries — both within safe range",
-      "Staff re-trained on medication storage procedures",
-    ],
-    review_date: "2026-05-20",
-    last_reviewed: "2026-04-28",
-    created_at: "2026-04-05T14:00:00Z",
-    updated_at: "2026-04-28T10:00:00Z",
-    escalated_to: null,
-    notes: "Two missed entries were administrative — temperatures within range. Alarm system now mitigates.",
-  },
-  {
-    id: "risk_006",
-    title: "Fire safety — annual check overdue",
-    description: "Annual fire safety inspection is 2 weeks overdue. The quarterly check was completed but the annual inspection by an external provider needs scheduling.",
-    category: "environmental",
-    child_id: null,
-    likelihood: 2,
-    impact: 5,
-    risk_score: 10,
-    risk_level: "medium",
-    status: "active",
-    owner_id: "staff_darren",
-    mitigations: [
-      "Quarterly fire safety check completed on time",
-      "All fire equipment serviceable and checked monthly",
-      "Fire drills up to date — last drill 3 weeks ago",
-      "External inspection being scheduled for first week of May",
-    ],
-    review_date: "2026-05-10",
-    last_reviewed: null,
-    created_at: "2026-04-20T08:00:00Z",
-    updated_at: "2026-04-20T08:00:00Z",
-    escalated_to: null,
-    notes: "Low concern — routine inspection, not a safety failure.",
-  },
-  {
-    id: "risk_007",
-    title: "Jordan — LAC review anxiety",
-    description: "Jordan has expressed anxiety about her upcoming LAC review. While settled overall, she has historically disengaged from education around review periods.",
-    category: "emotional_wellbeing",
-    child_id: "yp_jordan",
-    likelihood: 2,
-    impact: 2,
-    risk_score: 4,
-    risk_level: "low",
-    status: "monitoring",
-    owner_id: "staff_lackson",
-    mitigations: [
-      "Key worker preparation conversations started — review goals discussed with Jordan",
-      "Jordan has written her views for the review with support",
-      "School informed to monitor attendance around review date",
-      "Post-review check-in planned for same day",
-    ],
-    review_date: "2026-05-12",
-    last_reviewed: "2026-04-25",
-    created_at: "2026-04-20T12:00:00Z",
-    updated_at: "2026-04-25T14:00:00Z",
-    escalated_to: null,
-    notes: "Positive — Jordan engaged with preparation. Low current risk.",
-  },
-  {
-    id: "risk_008",
-    title: "DBS renewal — Diane",
-    description: "Diane's enhanced DBS is due for renewal in June 2026. While not yet expired, the renewal should be initiated to avoid a gap in compliance.",
-    category: "regulatory",
-    child_id: null,
-    likelihood: 1,
-    impact: 3,
-    risk_score: 3,
-    risk_level: "low",
-    status: "closed",
-    owner_id: "staff_darren",
-    mitigations: [
-      "DBS renewal application submitted on 28 April",
-      "Update service check confirms clean record",
-      "Renewal tracked in safer recruitment module",
-    ],
-    review_date: "2026-06-15",
-    last_reviewed: "2026-04-28",
-    created_at: "2026-04-10T09:00:00Z",
-    updated_at: "2026-04-28T16:00:00Z",
-    escalated_to: null,
-    notes: "Application submitted. Closed — will reopen if renewal not received by June.",
-  },
-];
-
-// ── Constants ──────────────────────────────────────────────────────────────────
-
-const CATEGORY_CONFIG: Record<RiskCategory, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
+const CATEGORY_CONFIG: Record<RiskRegisterCategory, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
   safeguarding:        { label: "Safeguarding",        icon: Shield,        color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200"     },
   behaviour:           { label: "Behaviour",           icon: Zap,           color: "text-orange-700",  bg: "bg-orange-50",  border: "border-orange-200"  },
   health:              { label: "Health",               icon: Activity,      color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
@@ -286,7 +49,7 @@ const CATEGORY_CONFIG: Record<RiskCategory, { label: string; icon: React.Element
   missing:             { label: "Missing",              icon: AlertTriangle, color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"   },
 };
 
-const STATUS_CONFIG: Record<RiskStatus, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
+const STATUS_CONFIG: Record<RiskRegisterStatus, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
   active:    { label: "Active",     icon: Zap,          color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200"     },
   escalated: { label: "Escalated",  icon: AlertOctagon, color: "text-rose-700",    bg: "bg-rose-50",    border: "border-rose-200"    },
   monitoring:{ label: "Monitoring", icon: Eye,          color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"   },
@@ -294,36 +57,16 @@ const STATUS_CONFIG: Record<RiskStatus, { label: string; icon: React.ElementType
   closed:    { label: "Closed",     icon: CheckCircle2, color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
 };
 
-const LEVEL_CONFIG: Record<RiskLevel, { label: string; color: string; bg: string; border: string }> = {
+const LEVEL_CONFIG: Record<RiskRegisterLevel, { label: string; color: string; bg: string; border: string }> = {
   critical: { label: "Critical", color: "text-red-700",    bg: "bg-red-100",    border: "border-red-300"    },
   high:     { label: "High",     color: "text-orange-700", bg: "bg-orange-50",  border: "border-orange-300" },
   medium:   { label: "Medium",   color: "text-amber-700",  bg: "bg-amber-50",   border: "border-amber-200"  },
   low:      { label: "Low",      color: "text-blue-700",   bg: "bg-blue-50",    border: "border-blue-200"   },
 };
 
-// ── Export Columns ────────────────────────────────────────────────────────────
+/* ── sub-components ──────────────────────────────────────────────────── */
 
-const RISK_EXPORT_COLS: ExportColumn<RiskEntry>[] = [
-  { header: "Title",         accessor: (r) => r.title },
-  { header: "Category",      accessor: (r) => CATEGORY_CONFIG[r.category]?.label ?? r.category },
-  { header: "Young Person",  accessor: (r) => r.child_id ? getYPName(r.child_id) : "Home-wide" },
-  { header: "Likelihood",    accessor: (r) => r.likelihood },
-  { header: "Impact",        accessor: (r) => r.impact },
-  { header: "Risk Score",    accessor: (r) => r.risk_score },
-  { header: "Risk Level",    accessor: (r) => LEVEL_CONFIG[r.risk_level]?.label ?? r.risk_level },
-  { header: "Status",        accessor: (r) => STATUS_CONFIG[r.status]?.label ?? r.status },
-  { header: "Owner",         accessor: (r) => getStaffName(r.owner_id) },
-  { header: "Mitigations",   accessor: (r) => r.mitigations.join("; ") },
-  { header: "Review Date",   accessor: (r) => r.review_date },
-  { header: "Last Reviewed", accessor: (r) => r.last_reviewed ?? "" },
-  { header: "Escalated To",  accessor: (r) => r.escalated_to ? getStaffName(r.escalated_to) : "" },
-  { header: "Notes",         accessor: (r) => r.notes ?? "" },
-  { header: "Created",       accessor: (r) => r.created_at.slice(0, 10) },
-];
-
-// ── Risk Score Matrix ────────────────────────────────────────────────────────
-
-function RiskScoreBadge({ score, level }: { score: number; level: RiskLevel }) {
+function RiskScoreBadge({ score, level }: { score: number; level: RiskRegisterLevel }) {
   const lc = LEVEL_CONFIG[level];
   return (
     <div className={cn("flex items-center gap-1 rounded-md px-2 py-0.5 border text-xs font-bold", lc.bg, lc.color, lc.border)}>
@@ -333,17 +76,7 @@ function RiskScoreBadge({ score, level }: { score: number; level: RiskLevel }) {
   );
 }
 
-// ── Risk Card ────────────────────────────────────────────────────────────────
-
-function RiskCard({
-  risk,
-  onStatusChange,
-  busy,
-}: {
-  risk: RiskEntry;
-  onStatusChange: (newStatus: RiskStatus) => void;
-  busy: boolean;
-}) {
+function RiskCard({ risk }: { risk: RiskRegisterEntry }) {
   const [expanded, setExpanded] = useState(false);
   const cat = CATEGORY_CONFIG[risk.category];
   const st = STATUS_CONFIG[risk.status];
@@ -358,7 +91,6 @@ function RiskCard({
       risk.risk_level === "critical" && risk.status !== "closed" && "ring-2 ring-red-400 border-red-300",
       isOverdue && "border-amber-300",
     )}>
-      {/* Header */}
       <div
         className="flex items-start gap-3 p-4 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
@@ -410,16 +142,13 @@ function RiskCard({
         </div>
       </div>
 
-      {/* Expanded */}
       {expanded && (
         <div className="border-t px-4 pb-4 pt-3 space-y-4">
-          {/* Description */}
           <div>
             <h4 className="text-[11px] font-semibold text-slate-600 uppercase tracking-wide mb-1">Risk Description</h4>
             <p className="text-xs text-slate-700 leading-relaxed">{risk.description}</p>
           </div>
 
-          {/* Likelihood x Impact */}
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-lg bg-slate-50 border border-slate-100 p-2.5 text-center">
               <div className="text-lg font-bold text-slate-700">{risk.likelihood}</div>
@@ -435,7 +164,6 @@ function RiskCard({
             </div>
           </div>
 
-          {/* Mitigations */}
           {risk.mitigations.length > 0 && (
             <div>
               <h4 className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide mb-2">
@@ -452,7 +180,6 @@ function RiskCard({
             </div>
           )}
 
-          {/* Owner + Notes */}
           <div className="flex items-center gap-4 text-[10px] text-slate-400 pt-1 border-t border-slate-100">
             <span>Owner: {getStaffName(risk.owner_id)}</span>
             {risk.last_reviewed && <span>Last reviewed: {formatDate(risk.last_reviewed)}</span>}
@@ -463,28 +190,8 @@ function RiskCard({
             <p className="text-[11px] text-slate-500 italic">{risk.notes}</p>
           )}
 
-          {/* Status actions */}
-          {risk.status !== "closed" && (
-            <div className="flex items-center gap-2 pt-1">
-              {risk.status === "active" && (
-                <>
-                  <Button size="sm" variant="outline" className="text-xs h-7 bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100" onClick={(e) => { e.stopPropagation(); onStatusChange("monitoring"); }} disabled={busy}>
-                    <Eye className="h-3 w-3 mr-1" /> Monitor
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-xs h-7 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100" onClick={(e) => { e.stopPropagation(); onStatusChange("mitigated"); }} disabled={busy}>
-                    <Shield className="h-3 w-3 mr-1" /> Mitigated
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-xs h-7 bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100" onClick={(e) => { e.stopPropagation(); onStatusChange("escalated"); }} disabled={busy}>
-                    <TrendingUp className="h-3 w-3 mr-1" /> Escalate
-                  </Button>
-                </>
-              )}
-              {(risk.status === "monitoring" || risk.status === "mitigated" || risk.status === "escalated") && (
-                <Button size="sm" variant="outline" className="text-xs h-7 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100" onClick={(e) => { e.stopPropagation(); onStatusChange("closed"); }} disabled={busy}>
-                  <CheckCircle2 className="h-3 w-3 mr-1" /> Close Risk
-                </Button>
-              )}
-            </div>
+          {risk.child_id && (
+            <SmartLinkPanel sourceType="risk-register" sourceId={risk.id} childId={risk.child_id} compact />
           )}
         </div>
       )}
@@ -492,180 +199,20 @@ function RiskCard({
   );
 }
 
-// ── New Risk Dialog ──────────────────────────────────────────────────────────
-
-function NewRiskDialog({
-  open,
-  onClose,
-  onSubmit,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (risk: RiskEntry) => void;
-}) {
-  const { currentUser } = useAuthContext();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<RiskCategory>("safeguarding");
-  const [childId, setChildId] = useState("none");
-  const [likelihood, setLikelihood] = useState("3");
-  const [impact, setImpact] = useState("3");
-  const [mitigations, setMitigations] = useState("");
-  const [reviewDate, setReviewDate] = useState("");
-
-  function handleSubmit() {
-    if (!title.trim() || !description.trim()) return;
-    const l = parseInt(likelihood);
-    const imp = parseInt(impact);
-    const score = l * imp;
-    const now = new Date().toISOString();
-    const risk: RiskEntry = {
-      id: `risk_local_${Date.now()}`,
-      title: title.trim(),
-      description: description.trim(),
-      category,
-      child_id: childId === "none" ? null : childId,
-      likelihood: l,
-      impact: imp,
-      risk_score: score,
-      risk_level: computeLevel(score),
-      status: "active",
-      owner_id: currentUser?.id ?? "staff_darren",
-      mitigations: mitigations.split("\n").filter(Boolean),
-      review_date: reviewDate || todayStr(),
-      last_reviewed: null,
-      created_at: now,
-      updated_at: now,
-      escalated_to: null,
-      notes: null,
-    };
-    onSubmit(risk);
-    onClose();
-    setTitle("");
-    setDescription("");
-    setCategory("safeguarding");
-    setChildId("none");
-    setLikelihood("3");
-    setImpact("3");
-    setMitigations("");
-    setReviewDate("");
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <Shield className="h-4 w-4 text-red-600" />
-            New Risk Entry
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-3 py-2">
-          <div>
-            <label className="text-[11px] font-medium text-slate-600 mb-1 block">Risk Title *</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Brief title for this risk" className="h-8 text-xs" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Category</label>
-              <Select value={category} onValueChange={(v) => setCategory(v as RiskCategory)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(CATEGORY_CONFIG) as RiskCategory[]).map((c) => (
-                    <SelectItem key={c} value={c}>{CATEGORY_CONFIG[c].label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Young Person</label>
-              <Select value={childId} onValueChange={setChildId}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Home-wide</SelectItem>
-                  <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                  <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-                  <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[11px] font-medium text-slate-600 mb-1 block">Description *</label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the risk, context, and potential impact…" className="text-xs min-h-[80px]" />
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Likelihood (1-5)</label>
-              <Select value={likelihood} onValueChange={setLikelihood}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{n} — {["Rare","Unlikely","Possible","Likely","Almost certain"][n-1]}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Impact (1-5)</label>
-              <Select value={impact} onValueChange={setImpact}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{n} — {["Negligible","Minor","Moderate","Major","Catastrophic"][n-1]}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Review Date</label>
-              <Input type="date" value={reviewDate} onChange={(e) => setReviewDate(e.target.value)} className="h-8 text-xs" />
-            </div>
-          </div>
-
-          {/* Live score preview */}
-          <div className="rounded-lg bg-slate-50 border border-slate-100 p-2.5 flex items-center justify-between">
-            <span className="text-[11px] text-slate-500">Computed risk score:</span>
-            <RiskScoreBadge
-              score={parseInt(likelihood) * parseInt(impact)}
-              level={computeLevel(parseInt(likelihood) * parseInt(impact))}
-            />
-          </div>
-
-          <div>
-            <label className="text-[11px] font-medium text-slate-600 mb-1 block">Mitigations (one per line)</label>
-            <Textarea value={mitigations} onChange={(e) => setMitigations(e.target.value)} placeholder="Enter each mitigation on a new line…" className="text-xs min-h-[60px]" />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" size="sm" className="text-xs" onClick={onClose}>Cancel</Button>
-          <Button size="sm" className="text-xs" onClick={handleSubmit} disabled={!title.trim() || !description.trim()}>
-            Add Risk
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ── Main Page ────────────────────────────────────────────────────────────────
+/* ── main page ───────────────────────────────────────────────────────── */
 
 export default function RiskRegisterPage() {
-  const [risks, setRisks] = useState<RiskEntry[]>(SEED_RISKS);
+  const { data: risks = [], isLoading } = useRiskRegisterEntries();
   const [showNew, setShowNew] = useState(false);
-  const [busyId, setBusyId] = useState<string | null>(null);
 
-  // Filters
-  const [tab, setTab] = useState<RiskStatus | "all" | "overdue">("all");
+  const [tab, setTab] = useState<RiskRegisterStatus | "all" | "overdue">("all");
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<RiskCategory | "all">("all");
-  const [levelFilter, setLevelFilter] = useState<RiskLevel | "all">("all");
+  const [categoryFilter, setCategoryFilter] = useState<RiskRegisterCategory | "all">("all");
+  const [levelFilter, setLevelFilter] = useState<RiskRegisterLevel | "all">("all");
   const [sortBy, setSortBy] = useState("score");
 
   const today = todayStr();
 
-  // Filtered + sorted
   const filtered = useMemo(() => {
     let list = [...risks];
 
@@ -694,7 +241,7 @@ export default function RiskRegisterPage() {
       );
     }
 
-    const LEVEL_ORDER: Record<RiskLevel, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+    const LEVEL_ORDER: Record<RiskRegisterLevel, number> = { critical: 0, high: 1, medium: 2, low: 3 };
     switch (sortBy) {
       case "score":
         list.sort((a, b) => b.risk_score - a.risk_score);
@@ -720,7 +267,6 @@ export default function RiskRegisterPage() {
     return list;
   }, [risks, tab, categoryFilter, levelFilter, search, sortBy, today]);
 
-  // Stats
   const stats = useMemo(() => {
     const active = risks.filter((r) => r.status === "active").length;
     const critical = risks.filter((r) => r.risk_level === "critical" && r.status !== "closed").length;
@@ -733,21 +279,24 @@ export default function RiskRegisterPage() {
 
   const hasFilters = search || categoryFilter !== "all" || levelFilter !== "all";
 
-  const handleStatusChange = (id: string, newStatus: RiskStatus) => {
-    setBusyId(id);
-    setTimeout(() => {
-      setRisks((prev) =>
-        prev.map((r) => r.id === id ? { ...r, status: newStatus, updated_at: new Date().toISOString() } : r)
-      );
-      setBusyId(null);
-    }, 300);
-  };
+  const RISK_EXPORT_COLS: ExportColumn<RiskRegisterEntry>[] = [
+    { header: "Title",         accessor: (r) => r.title },
+    { header: "Category",      accessor: (r) => CATEGORY_CONFIG[r.category]?.label ?? r.category },
+    { header: "Young Person",  accessor: (r) => r.child_id ? getYPName(r.child_id) : "Home-wide" },
+    { header: "Likelihood",    accessor: (r) => r.likelihood },
+    { header: "Impact",        accessor: (r) => r.impact },
+    { header: "Risk Score",    accessor: (r) => r.risk_score },
+    { header: "Risk Level",    accessor: (r) => LEVEL_CONFIG[r.risk_level]?.label ?? r.risk_level },
+    { header: "Status",        accessor: (r) => STATUS_CONFIG[r.status]?.label ?? r.status },
+    { header: "Owner",         accessor: (r) => getStaffName(r.owner_id) },
+    { header: "Mitigations",   accessor: (r) => r.mitigations.join("; ") },
+    { header: "Review Date",   accessor: (r) => r.review_date },
+    { header: "Last Reviewed", accessor: (r) => r.last_reviewed ?? "" },
+    { header: "Escalated To",  accessor: (r) => r.escalated_to ? getStaffName(r.escalated_to) : "" },
+    { header: "Notes",         accessor: (r) => r.notes ?? "" },
+    { header: "Created",       accessor: (r) => r.created_at.slice(0, 10) },
+  ];
 
-  const handleCreate = (risk: RiskEntry) => {
-    setRisks((prev) => [risk, ...prev]);
-  };
-
-  // Tabs
   const TABS: { key: typeof tab; label: string; count: number }[] = [
     { key: "all",       label: "All",        count: stats.total     },
     { key: "active",    label: "Active",     count: stats.active    },
@@ -756,6 +305,16 @@ export default function RiskRegisterPage() {
     { key: "closed",    label: "Closed",     count: stats.closed    },
   ];
 
+  if (isLoading) {
+    return (
+      <PageShell title="Risk Register" subtitle="Live risk tracking — young people, staff, and environment">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell
       title="Risk Register"
@@ -763,7 +322,7 @@ export default function RiskRegisterPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={RISK_EXPORT_COLS} filename="risk-register" />
-          <PrintButton title="Risk Register" subtitle="Oak House — Risk Management" />
+          <PrintButton title="Risk Register" />
           <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5" />
             New Risk
@@ -771,7 +330,6 @@ export default function RiskRegisterPage() {
         </div>
       }
     >
-      {/* ── Summary stats ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-6">
         {[
           { label: "Total Risks",   value: stats.total,     color: "text-slate-700",   bg: "bg-slate-50",   border: "border-slate-200"   },
@@ -788,7 +346,6 @@ export default function RiskRegisterPage() {
         ))}
       </div>
 
-      {/* Alert banner */}
       {(stats.critical > 0 || stats.overdue > 0) && (
         <div className={cn(
           "rounded-lg border p-3 mb-6 flex items-start gap-3",
@@ -808,7 +365,6 @@ export default function RiskRegisterPage() {
         </div>
       )}
 
-      {/* Tabs */}
       <div className="flex items-center gap-1 border-b mb-4 overflow-x-auto">
         {TABS.map((t) => (
           <button
@@ -825,7 +381,6 @@ export default function RiskRegisterPage() {
         ))}
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
@@ -834,21 +389,21 @@ export default function RiskRegisterPage() {
 
         <Filter className="h-3.5 w-3.5 text-slate-400" />
 
-        <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as RiskCategory | "all")}>
+        <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as RiskRegisterCategory | "all")}>
           <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
-            {(Object.keys(CATEGORY_CONFIG) as RiskCategory[]).map((c) => (
+            {(Object.keys(CATEGORY_CONFIG) as RiskRegisterCategory[]).map((c) => (
               <SelectItem key={c} value={c}>{CATEGORY_CONFIG[c].label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Select value={levelFilter} onValueChange={(v) => setLevelFilter(v as RiskLevel | "all")}>
+        <Select value={levelFilter} onValueChange={(v) => setLevelFilter(v as RiskRegisterLevel | "all")}>
           <SelectTrigger className="h-8 w-[130px] text-xs"><SelectValue placeholder="Risk level" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All levels</SelectItem>
-            {(["critical", "high", "medium", "low"] as RiskLevel[]).map((l) => (
+            {(["critical", "high", "medium", "low"] as RiskRegisterLevel[]).map((l) => (
               <SelectItem key={l} value={l}>{LEVEL_CONFIG[l].label}</SelectItem>
             ))}
           </SelectContent>
@@ -875,7 +430,6 @@ export default function RiskRegisterPage() {
         )}
       </div>
 
-      {/* Risk List */}
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
           <Shield className="h-10 w-10 mx-auto mb-3 opacity-40" />
@@ -885,12 +439,7 @@ export default function RiskRegisterPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((risk) => (
-            <RiskCard
-              key={risk.id}
-              risk={risk}
-              onStatusChange={(s) => handleStatusChange(risk.id, s)}
-              busy={busyId === risk.id}
-            />
+            <RiskCard key={risk.id} risk={risk} />
           ))}
         </div>
       )}
@@ -899,7 +448,6 @@ export default function RiskRegisterPage() {
         Showing {filtered.length} of {stats.total} risk{stats.total !== 1 ? "s" : ""}
       </div>
 
-      {/* Regulatory Note */}
       <div className="mt-8 rounded-lg bg-slate-50 border border-slate-200 p-4">
         <div className="flex items-start gap-3">
           <Shield className="h-5 w-5 text-indigo-500 mt-0.5 flex-shrink-0" />
@@ -917,7 +465,59 @@ export default function RiskRegisterPage() {
         </div>
       </div>
 
-      <NewRiskDialog open={showNew} onClose={() => setShowNew(false)} onSubmit={handleCreate} />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Shield className="h-4 w-4 text-red-600" />
+              New Risk Entry
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Risk Title *</label>
+              <Input placeholder="Brief title for this risk" className="h-8 text-xs" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Category</label>
+                <Select>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(CATEGORY_CONFIG) as RiskRegisterCategory[]).map((c) => (
+                      <SelectItem key={c} value={c}>{CATEGORY_CONFIG[c].label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Young Person</label>
+                <Select>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Home-wide</SelectItem>
+                    <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
+                    <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
+                    <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Description *</label>
+              <Textarea placeholder="Describe the risk, context, and potential impact…" className="text-xs min-h-[80px]" />
+            </div>
+            <div>
+              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Mitigations (one per line)</label>
+              <Textarea placeholder="Enter each mitigation on a new line…" className="text-xs min-h-[60px]" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" className="text-xs" onClick={() => setShowNew(false)}>Cancel</Button>
+            <Button size="sm" className="text-xs" onClick={() => setShowNew(false)}>Add Risk</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

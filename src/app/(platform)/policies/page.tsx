@@ -19,62 +19,18 @@ import { getStaffName } from "@/lib/seed-data";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { useHomePolicies } from "@/hooks/use-home-policies";
+import type { HomePolicy, HomePolicyCategory, HomePolicyStatus } from "@/types/extended";
+import { HOME_POLICY_CATEGORY_LABEL, HOME_POLICY_STATUS_LABEL } from "@/types/extended";
 import {
   FileText, Search, Filter, ArrowUpDown, CheckCircle2, AlertTriangle,
   Clock, ChevronDown, ChevronUp, Eye, Shield, Users, Calendar, Download,
   BookOpen, Loader2, RefreshCw, Star, Lock, UserCheck, Pencil,
 } from "lucide-react";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-
-type PolicyCategory =
-  | "safeguarding"
-  | "care_practice"
-  | "health_safety"
-  | "workforce"
-  | "behaviour"
-  | "complaints"
-  | "data_protection"
-  | "admissions"
-  | "missing_persons"
-  | "medication"
-  | "fire_safety"
-  | "lone_working"
-  | "whistleblowing";
-
-type PolicyStatus = "current" | "due_review" | "overdue" | "draft" | "archived";
-
-interface PolicyReadAck {
-  staff_id: string;
-  read_at: string;
-  acknowledged: boolean;
-}
-
-interface Policy {
-  id: string;
-  title: string;
-  category: PolicyCategory;
-  description: string;
-  version: string;
-  status: PolicyStatus;
-  owner_id: string;
-  approved_by: string | null;
-  approved_date: string | null;
-  effective_date: string;
-  next_review_date: string;
-  last_reviewed: string | null;
-  statutory_basis: string;
-  linked_standard: string;
-  key_points: string[];
-  read_acknowledgements: PolicyReadAck[];
-  total_staff_required: number;
-  created_at: string;
-  updated_at: string;
-}
-
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const CATEGORY_CONFIG: Record<PolicyCategory, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
+const CATEGORY_CONFIG: Record<HomePolicyCategory, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
   safeguarding:     { label: "Safeguarding",       icon: Shield,      color: "text-red-600",      bg: "bg-red-50",      border: "border-red-200"     },
   care_practice:    { label: "Care Practice",       icon: BookOpen,    color: "text-indigo-600",   bg: "bg-indigo-50",   border: "border-indigo-200"  },
   health_safety:    { label: "Health & Safety",     icon: CheckCircle2,color: "text-emerald-600",  bg: "bg-emerald-50",  border: "border-emerald-200" },
@@ -90,7 +46,7 @@ const CATEGORY_CONFIG: Record<PolicyCategory, { label: string; icon: React.Eleme
   whistleblowing:   { label: "Whistleblowing",      icon: Shield,      color: "text-indigo-600",   bg: "bg-indigo-50",   border: "border-indigo-200"  },
 };
 
-const STATUS_CONFIG: Record<PolicyStatus, { label: string; cls: string }> = {
+const STATUS_CONFIG: Record<HomePolicyStatus, { label: string; cls: string }> = {
   current:    { label: "Current",     cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   due_review: { label: "Due Review",  cls: "bg-amber-50 text-amber-700 border-amber-200"      },
   overdue:    { label: "Overdue",     cls: "bg-red-50 text-red-700 border-red-200"             },
@@ -98,139 +54,7 @@ const STATUS_CONFIG: Record<PolicyStatus, { label: string; cls: string }> = {
   archived:   { label: "Archived",    cls: "bg-slate-50 text-slate-400 border-slate-200"       },
 };
 
-// ── Seed data ────────────────────────────────────────────────────────────────
-
-const now = new Date().toISOString();
-
-function makeAcks(staffIds: string[], readIds: string[]): PolicyReadAck[] {
-  return staffIds.map((sid) => ({
-    staff_id: sid,
-    read_at: readIds.includes(sid) ? "2026-04-15T10:00:00Z" : "",
-    acknowledged: readIds.includes(sid),
-  }));
-}
-
-const ALL_STAFF = ["staff_darren", "staff_ryan", "staff_anna", "staff_chervelle", "staff_diane", "staff_edward", "staff_lackson", "staff_mirela"];
-
-const POLICIES: Policy[] = [
-  {
-    id: "pol_001", title: "Safeguarding & Child Protection Policy", category: "safeguarding",
-    description: "Comprehensive policy covering all safeguarding responsibilities, LADO referral processes, contextual safeguarding, and the home's approach to managing disclosures, allegations, and concerns.",
-    version: "4.2", status: "current", owner_id: "staff_darren", approved_by: "staff_darren", approved_date: "2026-01-15",
-    effective_date: "2026-01-15", next_review_date: "2026-07-15", last_reviewed: "2026-01-10",
-    statutory_basis: "Children Act 1989 & 2004; Working Together to Safeguard Children 2023",
-    linked_standard: "Quality Standard 5 — Protection of Children",
-    key_points: ["All staff trained to Level 3 safeguarding", "LADO referral within 1 working day", "Contextual safeguarding assessment framework", "Monthly safeguarding audits", "Young person voice captured at all stages"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ALL_STAFF), total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-  {
-    id: "pol_002", title: "Behaviour Support & Physical Intervention Policy", category: "behaviour",
-    description: "Outlines the home's trauma-informed approach to behaviour support. Covers de-escalation strategies, safety planning, approved physical intervention techniques (PRICE), debrief requirements, and recording obligations.",
-    version: "3.1", status: "current", owner_id: "staff_darren", approved_by: "staff_darren", approved_date: "2025-12-01",
-    effective_date: "2025-12-01", next_review_date: "2026-06-01", last_reviewed: "2025-11-28",
-    statutory_basis: "Children's Homes Regulations 2015, Reg 20; QS Standard 11",
-    linked_standard: "Quality Standard 11 — Positive Relationships",
-    key_points: ["PRICE-approved techniques only", "De-escalation is always first approach", "Debrief within 24 hours — child and staff", "Body-worn cameras during PI where proportionate", "Monthly PI analysis and trends review"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ["staff_darren", "staff_ryan", "staff_anna", "staff_chervelle", "staff_edward", "staff_lackson"]),
-    total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-  {
-    id: "pol_003", title: "Missing from Care Protocol", category: "missing_persons",
-    description: "Step-by-step protocol for responding to missing from care episodes including risk assessment triggers, police notification timescales, return home interview requirements, and pattern analysis.",
-    version: "2.4", status: "due_review", owner_id: "staff_ryan", approved_by: "staff_darren", approved_date: "2025-10-20",
-    effective_date: "2025-10-20", next_review_date: "2026-04-20", last_reviewed: "2025-10-15",
-    statutory_basis: "Children Act 1989; DfE Statutory guidance on children who run away or go missing 2014",
-    linked_standard: "Quality Standard 5 — Protection of Children",
-    key_points: ["Immediate risk assessment on discovery", "Police notification within 1 hour for high-risk", "Return home interview within 72 hours", "Strategy meeting if 3+ episodes in 28 days", "Pattern analysis monthly"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ["staff_darren", "staff_ryan", "staff_anna", "staff_edward"]),
-    total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-  {
-    id: "pol_004", title: "Medication Administration Policy", category: "medication",
-    description: "Covers the safe storage, administration, recording, and disposal of medication. Includes controlled drugs, PRN protocols, medication errors, and stock check procedures.",
-    version: "3.0", status: "current", owner_id: "staff_ryan", approved_by: "staff_darren", approved_date: "2026-02-01",
-    effective_date: "2026-02-01", next_review_date: "2026-08-01", last_reviewed: "2026-01-28",
-    statutory_basis: "Children's Homes Regulations 2015, Reg 23",
-    linked_standard: "Quality Standard 3 — Health & Well-Being",
-    key_points: ["Two-staff witness for controlled drugs", "MAR sheet completed immediately", "Medication errors reported within 1 hour", "Weekly stock checks by senior staff", "PRN protocols signed by prescriber"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ALL_STAFF), total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-  {
-    id: "pol_005", title: "Complaints & Representations Policy", category: "complaints",
-    description: "Statutory complaints procedure including timescales for acknowledgement (3 working days) and response (10 working days). Covers young person, parent, and professional complaints plus the escalation pathway.",
-    version: "2.2", status: "current", owner_id: "staff_darren", approved_by: "staff_darren", approved_date: "2025-11-01",
-    effective_date: "2025-11-01", next_review_date: "2026-05-01", last_reviewed: "2025-10-28",
-    statutory_basis: "Statutory Guidance on Representations and Complaints (2016); QS Standard 3",
-    linked_standard: "Quality Standard 3 — Rights & Responsibilities",
-    key_points: ["Young person-friendly version available", "Acknowledgement within 3 working days", "Stage 1 response within 10 working days", "Independent advocate offered", "Annual complaints summary for Reg 45"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ALL_STAFF), total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-  {
-    id: "pol_006", title: "Data Protection & GDPR Policy", category: "data_protection",
-    description: "Data handling procedures, consent management, data subject access requests, breach notification protocols, and records retention schedule for children's social care data.",
-    version: "2.0", status: "overdue", owner_id: "staff_darren", approved_by: "staff_darren", approved_date: "2025-03-01",
-    effective_date: "2025-03-01", next_review_date: "2025-09-01", last_reviewed: "2025-02-25",
-    statutory_basis: "UK GDPR 2018; Data Protection Act 2018",
-    linked_standard: "Quality Standard 14 — Financial Viability & Governance",
-    key_points: ["All data stored on encrypted systems", "Subject access requests within 30 days", "Breach notification to ICO within 72 hours", "Retention: care records 75 years after DOB", "DPO: Registered Manager"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ["staff_darren", "staff_ryan", "staff_anna"]),
-    total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-  {
-    id: "pol_007", title: "Admissions & Matching Policy", category: "admissions",
-    description: "Impact risk assessment and matching procedure for new placements. Covers referral assessment, existing children impact assessment, compatibility review, and emergency placement protocols.",
-    version: "1.5", status: "current", owner_id: "staff_darren", approved_by: "staff_darren", approved_date: "2026-01-10",
-    effective_date: "2026-01-10", next_review_date: "2026-07-10", last_reviewed: "2026-01-08",
-    statutory_basis: "Children's Homes Regulations 2015, Reg 14; QS Standard 7",
-    linked_standard: "Quality Standard 7 — Children Missing from Home and Care",
-    key_points: ["72-hour impact assessment for all placements", "Existing children consulted", "Risk compatibility matrix completed", "Emergency placements: 24-hour review", "RI approval required for all planned admissions"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ["staff_darren", "staff_ryan", "staff_chervelle"]),
-    total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-  {
-    id: "pol_008", title: "Fire Safety Policy & Evacuation Procedures", category: "fire_safety",
-    description: "Fire risk assessment outcomes, evacuation procedures, personal emergency evacuation plans (PEEPs) for each young person, fire drill schedule, and fire safety equipment maintenance.",
-    version: "2.8", status: "current", owner_id: "staff_ryan", approved_by: "staff_darren", approved_date: "2026-03-01",
-    effective_date: "2026-03-01", next_review_date: "2026-09-01", last_reviewed: "2026-02-28",
-    statutory_basis: "Regulatory Reform (Fire Safety) Order 2005; QS Standard 10",
-    linked_standard: "Quality Standard 10 — Premises",
-    key_points: ["Fire drills every 4 weeks minimum", "PEEPs for all young people", "Weekly fire alarm tests", "Assembly point: front car park", "Night-time evacuation procedures documented"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ALL_STAFF), total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-  {
-    id: "pol_009", title: "Lone Working Policy", category: "lone_working",
-    description: "Risk assessment and procedures for lone working situations. Covers when lone working is permitted, check-in procedures, communication requirements, and incident reporting.",
-    version: "1.3", status: "current", owner_id: "staff_ryan", approved_by: "staff_darren", approved_date: "2025-11-15",
-    effective_date: "2025-11-15", next_review_date: "2026-05-15", last_reviewed: "2025-11-10",
-    statutory_basis: "Health & Safety at Work Act 1974; Management of Health and Safety at Work Regulations 1999",
-    linked_standard: "Quality Standard 6 — Staffing",
-    key_points: ["Lone working risk assessment completed", "30-minute check-in intervals", "Emergency contact procedures", "On-call manager always available", "Waking night: minimum 2 staff where possible"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ALL_STAFF), total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-  {
-    id: "pol_010", title: "Whistleblowing Policy", category: "whistleblowing",
-    description: "Procedures for staff to raise concerns about malpractice, abuse, or regulatory non-compliance. Covers internal escalation, external reporting routes, and protection for whistleblowers.",
-    version: "1.2", status: "draft", owner_id: "staff_darren", approved_by: null, approved_date: null,
-    effective_date: "2025-06-01", next_review_date: "2026-06-01", last_reviewed: null,
-    statutory_basis: "Public Interest Disclosure Act 1998; Employment Rights Act 1996",
-    linked_standard: "Quality Standard 14 — Financial Viability & Governance",
-    key_points: ["No detriment to whistleblower", "External reporting to Ofsted available", "Named confidential contact", "Investigation within 10 working days", "Annual reminder to all staff"],
-    read_acknowledgements: makeAcks(ALL_STAFF, ["staff_darren"]),
-    total_staff_required: 8,
-    created_at: now, updated_at: now,
-  },
-];
-
-const POLICY_EXPORT_COLS: ExportColumn<Policy>[] = [
+const POLICY_EXPORT_COLS: ExportColumn<HomePolicy>[] = [
   { header: "Title", accessor: (p) => p.title },
   { header: "Category", accessor: (p) => CATEGORY_CONFIG[p.category].label },
   { header: "Version", accessor: (p) => p.version },
@@ -254,7 +78,7 @@ function daysUntil(dateStr: string): number {
 
 // ── Policy Card ──────────────────────────────────────────────────────────────
 
-function PolicyCard({ policy }: { policy: Policy }) {
+function PolicyCard({ policy }: { policy: HomePolicy }) {
   const [expanded, setExpanded] = useState(false);
   const catCfg = CATEGORY_CONFIG[policy.category];
   const CatIcon = catCfg.icon;
@@ -408,7 +232,7 @@ function PolicyCard({ policy }: { policy: Policy }) {
 type ViewTab = "all" | "current" | "due_review" | "overdue";
 
 export default function PoliciesPage() {
-  const policies = POLICIES;
+  const { data: policies = [], isLoading } = useHomePolicies();
 
   const [viewTab, setViewTab] = useState<ViewTab>("all");
   const [search, setSearch] = useState("");
@@ -425,7 +249,7 @@ export default function PoliciesPage() {
         else if (daysUntil(p.next_review_date) <= 30) status = "due_review";
         else status = "current";
       }
-      return { ...p, status } as Policy;
+      return { ...p, status } as HomePolicy;
     });
   }, [policies]);
 
@@ -493,6 +317,16 @@ export default function PoliciesPage() {
 
     return list;
   }, [enrichedPolicies, viewTab, categoryFilter, search, sortBy]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Policies & Procedures" subtitle="All home policies — version control, review dates, and staff read-acknowledgements">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -585,7 +419,7 @@ export default function PoliciesPage() {
               className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-700 focus:border-indigo-300 focus:ring-1 focus:ring-indigo-200 outline-none"
             >
               <option value="all">All categories</option>
-              {(Object.entries(CATEGORY_CONFIG) as [PolicyCategory, typeof CATEGORY_CONFIG[PolicyCategory]][]).map(([key, cfg]) => (
+              {(Object.entries(CATEGORY_CONFIG) as [HomePolicyCategory, typeof CATEGORY_CONFIG[HomePolicyCategory]][]).map(([key, cfg]) => (
                 <option key={key} value={key}>{cfg.label} ({categoryCounts[key] ?? 0})</option>
               ))}
             </select>

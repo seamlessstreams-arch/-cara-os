@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronUp,
   LogOut,
+  Loader2,
   Plus,
   ArrowUpDown,
   Search,
@@ -24,75 +25,23 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type {
+  DischargeRecord,
+  DischargePlanStatus,
+} from "@/types/extended";
+import {
+  DISCHARGE_REASON_LABEL,
+  DISCHARGE_PLAN_STATUS_LABEL,
+} from "@/types/extended";
+import { useDischargeRecords, useCreateDischargeRecord } from "@/hooks/use-discharge-records";
+import { toast } from "sonner";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── local helpers ─────────────────────────────────────────────────────── */
 
-type DischargeReason = "reunification" | "foster_care" | "other_residential" | "semi_independent" | "independent" | "adoption" | "age_18" | "placement_breakdown" | "secure_unit" | "other";
-type PlanStatus = "not_started" | "in_progress" | "on_track" | "at_risk" | "completed" | "cancelled";
+const today = () => new Date().toISOString().slice(0, 10);
 
-interface ChecklistItem {
-  id: string;
-  task: string;
-  category: string;
-  completed: boolean;
-  completedDate: string | null;
-  completedBy: string | null;
-  notes: string;
-}
-
-interface TransitionAction {
-  id: string;
-  action: string;
-  owner: string;
-  dueDate: string;
-  status: "pending" | "in_progress" | "completed" | "overdue";
-  notes: string;
-}
-
-interface DischargeRecord {
-  id: string;
-  youngPersonId: string;
-  reason: DischargeReason;
-  status: PlanStatus;
-  plannedDate: string;
-  actualDate: string | null;
-  destination: string;
-  destinationAddress: string;
-  receivingProvider: string | null;
-  socialWorker: string;
-  socialWorkerContact: string;
-  keyWorker: string;
-  checklist: ChecklistItem[];
-  transitionActions: TransitionAction[];
-  riskAssessmentCompleted: boolean;
-  belongingsReturned: boolean;
-  belongingsWitnessed: string | null;
-  exitInterview: { completed: boolean; date: string | null; conductedBy: string | null; childViews: string; };
-  aftercareProvision: string[];
-  stayInTouchPlan: string;
-  childViews: string;
-  professionalViews: string;
-  notes: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const REASON_LABELS: Record<DischargeReason, string> = {
-  reunification: "Return to Family", foster_care: "Foster Care",
-  other_residential: "Other Residential", semi_independent: "Semi-Independent",
-  independent: "Independent Living", adoption: "Adoption",
-  age_18: "Aged Out (18+)", placement_breakdown: "Placement Breakdown",
-  secure_unit: "Secure Unit", other: "Other",
-};
-
-const STATUS_LABELS: Record<PlanStatus, string> = {
-  not_started: "Not Started", in_progress: "In Progress", on_track: "On Track",
-  at_risk: "At Risk", completed: "Completed", cancelled: "Cancelled",
-};
-
-const STATUS_COLOURS: Record<PlanStatus, string> = {
+const STATUS_COLOURS: Record<DischargePlanStatus, string> = {
   not_started: "bg-gray-100 text-gray-700",
   in_progress: "bg-blue-100 text-blue-800",
   on_track: "bg-green-100 text-green-800",
@@ -100,99 +49,6 @@ const STATUS_COLOURS: Record<PlanStatus, string> = {
   completed: "bg-emerald-100 text-emerald-800",
   cancelled: "bg-gray-100 text-gray-500",
 };
-
-const SEED: DischargeRecord[] = [
-  {
-    id: "dis1", youngPersonId: "yp_alex", reason: "semi_independent",
-    status: "in_progress", plannedDate: d(90), actualDate: null,
-    destination: "Supported Lodgings – 14 Maple Avenue", destinationAddress: "14 Maple Avenue, Stockport, SK4 1AB",
-    receivingProvider: "Stockport Supported Living Ltd", socialWorker: "Lisa Chen",
-    socialWorkerContact: "lisa.chen@stockport.gov.uk", keyWorker: "staff_anna",
-    riskAssessmentCompleted: true, belongingsReturned: false, belongingsWitnessed: null,
-    exitInterview: { completed: false, date: null, conductedBy: null, childViews: "" },
-    aftercareProvision: ["Personal Adviser allocated", "Staying Put option discussed", "Pathway Plan in place", "Council Tax exemption applied"],
-    stayInTouchPlan: "Alex has agreed to weekly phone calls with key worker for first 3 months, then fortnightly. Open invitation to visit Oak House.",
-    childViews: "Alex is excited about the move but nervous about managing bills. Wants to keep in touch with staff and visit Jordan and Casey.",
-    professionalViews: "Alex has made excellent progress in independence skills. Budgeting remains an area to strengthen before move. Supported lodgings provide appropriate level of oversight.",
-    notes: "Transition timeline agreed at LAC review. Gradual overnight stays at supported lodgings to begin 6 weeks before move.",
-    checklist: [
-      { id: "c1", task: "Pathway Plan updated and signed", category: "Planning", completed: true, completedDate: d(-14), completedBy: "staff_anna", notes: "" },
-      { id: "c2", task: "Leaving care entitlements explained", category: "Planning", completed: true, completedDate: d(-14), completedBy: "staff_anna", notes: "Setting up grant discussed" },
-      { id: "c3", task: "GP registration transferred", category: "Health", completed: false, completedDate: null, completedBy: null, notes: "New GP identified near Maple Avenue" },
-      { id: "c4", task: "Dental registration arranged", category: "Health", completed: false, completedDate: null, completedBy: null, notes: "" },
-      { id: "c5", task: "Education/training placement confirmed", category: "Education", completed: true, completedDate: d(-7), completedBy: "staff_edward", notes: "College placement continuing" },
-      { id: "c6", task: "Bank account set up", category: "Finance", completed: true, completedDate: d(-21), completedBy: "staff_anna", notes: "Nationwide account opened" },
-      { id: "c7", task: "Benefit entitlements assessed", category: "Finance", completed: false, completedDate: null, completedBy: null, notes: "Universal Credit application to be submitted" },
-      { id: "c8", task: "Life story work completed", category: "Emotional", completed: true, completedDate: d(-30), completedBy: "staff_anna", notes: "" },
-      { id: "c9", task: "Personal belongings inventory finalised", category: "Practical", completed: false, completedDate: null, completedBy: null, notes: "" },
-      { id: "c10", task: "Emergency contacts card provided", category: "Safety", completed: false, completedDate: null, completedBy: null, notes: "" },
-      { id: "c11", task: "Overnight stays at new placement", category: "Transition", completed: false, completedDate: null, completedBy: null, notes: "3 overnight stays planned" },
-      { id: "c12", task: "Goodbye celebration planned", category: "Emotional", completed: false, completedDate: null, completedBy: null, notes: "Alex wants a pizza evening" },
-    ],
-    transitionActions: [
-      { id: "a1", action: "Arrange visit to supported lodgings with Alex", owner: "staff_anna", dueDate: d(7), status: "in_progress", notes: "Provider available next Wednesday" },
-      { id: "a2", action: "Complete budgeting workshop sessions (3/6)", owner: "staff_edward", dueDate: d(30), status: "in_progress", notes: "Sessions 1-3 done. Focus on utility bills next." },
-      { id: "a3", action: "Apply for Setting Up Home allowance", owner: "staff_anna", dueDate: d(45), status: "pending", notes: "£2,000 available. Need to identify essential items." },
-      { id: "a4", action: "Transfer medication to new GP", owner: "staff_darren", dueDate: d(80), status: "pending", notes: "" },
-      { id: "a5", action: "Final LAC review before discharge", owner: "staff_darren", dueDate: d(60), status: "pending", notes: "IRO to be contacted for date" },
-    ],
-  },
-  {
-    id: "dis2", youngPersonId: "yp_casey", reason: "reunification",
-    status: "on_track", plannedDate: d(45), actualDate: null,
-    destination: "Mother's home – 8 Birch Lane", destinationAddress: "8 Birch Lane, Cheadle, SK8 3PQ",
-    receivingProvider: null, socialWorker: "James Okafor",
-    socialWorkerContact: "james.okafor@stockport.gov.uk", keyWorker: "staff_anna",
-    riskAssessmentCompleted: true, belongingsReturned: false, belongingsWitnessed: null,
-    exitInterview: { completed: false, date: null, conductedBy: null, childViews: "" },
-    aftercareProvision: ["Family support worker allocated", "Outreach visits weekly for 12 weeks", "School liaison to continue"],
-    stayInTouchPlan: "Casey's mum has agreed to call Oak House if any concerns. School SENCO will provide continuity. Family support worker for 3 months post-return.",
-    childViews: "Casey is very happy about going home. Worried about missing friends at Oak House but excited to be back with mum and the cat.",
-    professionalViews: "Mum has engaged well with parenting programme. Home conditions much improved. Risk assessment shows reduced concerns. Graduated return with increasing overnight stays recommended.",
-    notes: "Court order variation pending. Graduated return starts with weekends, building to full weeks. Final court hearing scheduled.",
-    checklist: [
-      { id: "c13", task: "Court order variation filed", category: "Legal", completed: true, completedDate: d(-10), completedBy: null, notes: "Hearing date set" },
-      { id: "c14", task: "Home conditions assessment completed", category: "Safety", completed: true, completedDate: d(-20), completedBy: null, notes: "Social worker confirmed satisfactory" },
-      { id: "c15", task: "School place confirmed at current school", category: "Education", completed: true, completedDate: d(-5), completedBy: "staff_anna", notes: "Transport arrangements needed" },
-      { id: "c16", task: "GP registration transferred", category: "Health", completed: true, completedDate: d(-3), completedBy: "staff_anna", notes: "Same GP surgery — no transfer needed" },
-      { id: "c17", task: "Graduated return overnights commenced", category: "Transition", completed: true, completedDate: d(-7), completedBy: "staff_anna", notes: "2 weekends completed successfully" },
-      { id: "c18", task: "Belongings packed and inventoried", category: "Practical", completed: false, completedDate: null, completedBy: null, notes: "" },
-      { id: "c19", task: "Life story work up to date", category: "Emotional", completed: true, completedDate: d(-15), completedBy: "staff_anna", notes: "" },
-      { id: "c20", task: "Safety plan agreed with family", category: "Safety", completed: true, completedDate: d(-12), completedBy: null, notes: "SW-led family meeting" },
-    ],
-    transitionActions: [
-      { id: "a6", action: "Complete final 2 weekend overnights", owner: "staff_anna", dueDate: d(14), status: "in_progress", notes: "Weekend 3 this Friday" },
-      { id: "a7", action: "Arrange transport for school from home", owner: "staff_anna", dueDate: d(21), status: "pending", notes: "Bus pass application" },
-      { id: "a8", action: "Pack belongings with Casey", owner: "staff_anna", dueDate: d(35), status: "pending", notes: "Casey wants to choose what goes first" },
-    ],
-  },
-  {
-    id: "dis3", youngPersonId: "yp_jordan", reason: "placement_breakdown",
-    status: "completed", plannedDate: "2025-03-01", actualDate: "2025-03-01",
-    destination: "Previous placement — emergency return", destinationAddress: "Undisclosed",
-    receivingProvider: "Greenfield Children's Home", socialWorker: "Sarah Malik",
-    socialWorkerContact: "sarah.malik@stockport.gov.uk", keyWorker: "staff_ryan",
-    riskAssessmentCompleted: true, belongingsReturned: true, belongingsWitnessed: "staff_darren",
-    exitInterview: { completed: true, date: "2025-02-28", conductedBy: "staff_darren", childViews: "Jordan said they didn't feel safe after the incident. Wanted to move. Will miss Mr Bear though (brought it)." },
-    aftercareProvision: [],
-    stayInTouchPlan: "Jordan left contact number. Staff to send birthday card. Jordan knows they can call.",
-    childViews: "Jordan expressed relief at moving but sadness about leaving. Felt the placement 'wasn't working out.' Asked to take the art supplies.",
-    professionalViews: "Despite best efforts, the peer dynamic became unmanageable. Jordan's needs may be better met in a smaller home. Full disruption meeting to be held.",
-    notes: "Emergency move following critical incident. Disruption meeting scheduled for 2 weeks post-move. All relevant parties notified.",
-    checklist: [
-      { id: "c21", task: "Emergency risk assessment completed", category: "Safety", completed: true, completedDate: "2025-02-28", completedBy: "staff_darren", notes: "" },
-      { id: "c22", task: "Social worker notified", category: "Planning", completed: true, completedDate: "2025-02-28", completedBy: "staff_darren", notes: "Phone call 18:30" },
-      { id: "c23", task: "Belongings packed and signed off", category: "Practical", completed: true, completedDate: "2025-03-01", completedBy: "staff_ryan", notes: "Full inventory attached" },
-      { id: "c24", task: "Medication transferred to receiving home", category: "Health", completed: true, completedDate: "2025-03-01", completedBy: "staff_darren", notes: "MAR chart photocopied" },
-      { id: "c25", task: "School notified of move", category: "Education", completed: true, completedDate: "2025-03-01", completedBy: "staff_anna", notes: "" },
-      { id: "c26", task: "Disruption meeting arranged", category: "Review", completed: true, completedDate: "2025-03-05", completedBy: "staff_darren", notes: "Held 14/03 — lessons learned recorded" },
-    ],
-    transitionActions: [
-      { id: "a9", action: "Complete disruption meeting report", owner: "staff_darren", dueDate: "2025-03-14", status: "completed", notes: "Report filed with RM" },
-      { id: "a10", action: "Send personal items left behind", owner: "staff_ryan", dueDate: "2025-03-07", status: "completed", notes: "Art supplies posted" },
-    ],
-  },
-];
 
 /* ── flat row for export ─────────────────────────────────────────────── */
 
@@ -223,7 +79,8 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function DischargePage() {
-  const [data] = useState<DischargeRecord[]>(SEED);
+  const { data: raw, isLoading } = useDischargeRecords();
+  const records = raw?.data ?? [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -234,55 +91,55 @@ export default function DischargePage() {
 
   /* ── stats ────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
-    const active = data.filter((r) => !["completed", "cancelled"].includes(r.status)).length;
-    const completed = data.filter((r) => r.status === "completed").length;
-    const atRisk = data.filter((r) => r.status === "at_risk").length;
-    const overdueActions = data.reduce((s, r) => s + r.transitionActions.filter((a) => a.status === "overdue" || (a.status !== "completed" && a.dueDate < d(0))).length, 0);
+    const active = records.filter((r) => !["completed", "cancelled"].includes(r.status)).length;
+    const completed = records.filter((r) => r.status === "completed").length;
+    const atRisk = records.filter((r) => r.status === "at_risk").length;
+    const overdueActions = records.reduce((s, r) => s + r.transition_actions.filter((a) => a.status === "overdue" || (a.status !== "completed" && a.due_date < today())).length, 0);
     return { active, completed, atRisk, overdueActions };
-  }, [data]);
+  }, [records]);
 
   /* ── filtered / sorted ────────────────────────────────────────────── */
   const filtered = useMemo(() => {
-    let list = data;
+    let list = records;
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) =>
-        getYPName(r.youngPersonId).toLowerCase().includes(q) ||
+        getYPName(r.child_id).toLowerCase().includes(q) ||
         r.destination.toLowerCase().includes(q)
       );
     }
     if (filterStatus !== "all") list = list.filter((r) => r.status === filterStatus);
     const out = [...list];
     switch (sortBy) {
-      case "date":   out.sort((a, b) => a.plannedDate.localeCompare(b.plannedDate)); break;
-      case "name":   out.sort((a, b) => getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId))); break;
+      case "date":   out.sort((a, b) => a.planned_date.localeCompare(b.planned_date)); break;
+      case "name":   out.sort((a, b) => getYPName(a.child_id).localeCompare(getYPName(b.child_id))); break;
       case "status": out.sort((a, b) => a.status.localeCompare(b.status)); break;
     }
     return out;
-  }, [data, search, filterStatus, sortBy]);
+  }, [records, search, filterStatus, sortBy]);
 
   /* ── export data ──────────────────────────────────────────────────── */
   const exportData = useMemo<FlatRow[]>(() =>
-    data.map((r) => {
+    records.map((r) => {
       const done = r.checklist.filter((c) => c.completed).length;
-      const actionsDone = r.transitionActions.filter((a) => a.status === "completed").length;
+      const actionsDone = r.transition_actions.filter((a) => a.status === "completed").length;
       return {
-        youngPerson: getYPName(r.youngPersonId),
-        reason: REASON_LABELS[r.reason],
-        status: STATUS_LABELS[r.status],
-        plannedDate: r.plannedDate,
-        actualDate: r.actualDate ?? "—",
+        youngPerson: getYPName(r.child_id),
+        reason: DISCHARGE_REASON_LABEL[r.reason],
+        status: DISCHARGE_PLAN_STATUS_LABEL[r.status],
+        plannedDate: r.planned_date,
+        actualDate: r.actual_date ?? "—",
         destination: r.destination,
-        socialWorker: r.socialWorker,
-        keyWorker: getStaffName(r.keyWorker),
+        socialWorker: r.social_worker,
+        keyWorker: getStaffName(r.key_worker),
         checklistProgress: `${done}/${r.checklist.length}`,
-        actionsProgress: `${actionsDone}/${r.transitionActions.length}`,
-        riskAssessment: r.riskAssessmentCompleted ? "Complete" : "Pending",
-        belongingsReturned: r.belongingsReturned ? "Yes" : "No",
-        exitInterview: r.exitInterview.completed ? "Complete" : "Pending",
+        actionsProgress: `${actionsDone}/${r.transition_actions.length}`,
+        riskAssessment: r.risk_assessment_completed ? "Complete" : "Pending",
+        belongingsReturned: r.belongings_returned ? "Yes" : "No",
+        exitInterview: r.exit_interview.completed ? "Complete" : "Pending",
         notes: r.notes,
       };
-    }), [data]);
+    }), [records]);
 
   return (
     <PageShell
@@ -298,6 +155,10 @@ export default function DischargePage() {
         </div>
       }
     >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+      ) : (
+      <>
       {/* ── stat strip ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
@@ -318,16 +179,16 @@ export default function DischargePage() {
 
       {/* ── per-child summary ──────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {data.map((r) => {
+        {records.map((r) => {
           const done = r.checklist.filter((c) => c.completed).length;
           const pct = r.checklist.length ? Math.round((done / r.checklist.length) * 100) : 0;
           return (
             <div key={r.id} className="rounded-lg border bg-white p-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold">{getYPName(r.youngPersonId)}</h3>
-                <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[r.status])}>{STATUS_LABELS[r.status]}</span>
+                <h3 className="font-semibold">{getYPName(r.child_id)}</h3>
+                <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[r.status])}>{DISCHARGE_PLAN_STATUS_LABEL[r.status]}</span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">{REASON_LABELS[r.reason]} · {r.status === "completed" ? `Left ${r.actualDate}` : `Planned ${r.plannedDate}`}</p>
+              <p className="text-xs text-gray-500 mt-1">{DISCHARGE_REASON_LABEL[r.reason]} · {r.status === "completed" ? `Left ${r.actual_date}` : `Planned ${r.planned_date}`}</p>
               <p className="text-xs text-gray-600 mt-1 truncate">{r.destination}</p>
               <div className="mt-3">
                 <div className="flex items-center justify-between text-xs mb-1">
@@ -353,7 +214,7 @@ export default function DischargePage() {
           <SelectTrigger className="w-[160px] h-9 text-sm"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            {Object.entries(DISCHARGE_PLAN_STATUS_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -382,10 +243,10 @@ export default function DischargePage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <LogOut className="h-4 w-4 text-gray-400" />
-                    <h3 className="font-semibold">{getYPName(r.youngPersonId)}</h3>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[r.status])}>{STATUS_LABELS[r.status]}</span>
+                    <h3 className="font-semibold">{getYPName(r.child_id)}</h3>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[r.status])}>{DISCHARGE_PLAN_STATUS_LABEL[r.status]}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{REASON_LABELS[r.reason]} → {r.destination} · Checklist {pct}%</p>
+                  <p className="text-xs text-gray-500 mt-1">{DISCHARGE_REASON_LABEL[r.reason]} → {r.destination} · Checklist {pct}%</p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
               </button>
@@ -394,19 +255,19 @@ export default function DischargePage() {
                 <div className="border-t px-4 pb-4 space-y-4">
                   {/* key details */}
                   <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div><span className="text-gray-500">Planned:</span> <span className="font-medium">{r.plannedDate}</span></div>
-                    <div><span className="text-gray-500">Actual:</span> <span className="font-medium">{r.actualDate ?? "—"}</span></div>
-                    <div><span className="text-gray-500">SW:</span> <span className="font-medium">{r.socialWorker}</span></div>
-                    <div><span className="text-gray-500">Key Worker:</span> <span className="font-medium">{getStaffName(r.keyWorker)}</span></div>
+                    <div><span className="text-gray-500">Planned:</span> <span className="font-medium">{r.planned_date}</span></div>
+                    <div><span className="text-gray-500">Actual:</span> <span className="font-medium">{r.actual_date ?? "—"}</span></div>
+                    <div><span className="text-gray-500">SW:</span> <span className="font-medium">{r.social_worker}</span></div>
+                    <div><span className="text-gray-500">Key Worker:</span> <span className="font-medium">{getStaffName(r.key_worker)}</span></div>
                     <div className="col-span-2"><span className="text-gray-500">Destination:</span> <span className="font-medium">{r.destination}</span></div>
-                    {r.receivingProvider && <div className="col-span-2"><span className="text-gray-500">Provider:</span> <span className="font-medium">{r.receivingProvider}</span></div>}
+                    {r.receiving_provider && <div className="col-span-2"><span className="text-gray-500">Provider:</span> <span className="font-medium">{r.receiving_provider}</span></div>}
                   </div>
 
                   {/* quick status */}
                   <div className="flex flex-wrap gap-2">
-                    <span className={cn("px-2 py-1 rounded text-xs font-medium", r.riskAssessmentCompleted ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")}>{r.riskAssessmentCompleted ? "✓ Risk Assessment" : "✗ Risk Assessment"}</span>
-                    <span className={cn("px-2 py-1 rounded text-xs font-medium", r.belongingsReturned ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>{r.belongingsReturned ? "✓ Belongings Returned" : "○ Belongings Pending"}</span>
-                    <span className={cn("px-2 py-1 rounded text-xs font-medium", r.exitInterview.completed ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>{r.exitInterview.completed ? "✓ Exit Interview" : "○ Exit Interview"}</span>
+                    <span className={cn("px-2 py-1 rounded text-xs font-medium", r.risk_assessment_completed ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")}>{r.risk_assessment_completed ? "✓ Risk Assessment" : "✗ Risk Assessment"}</span>
+                    <span className={cn("px-2 py-1 rounded text-xs font-medium", r.belongings_returned ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>{r.belongings_returned ? "✓ Belongings Returned" : "○ Belongings Pending"}</span>
+                    <span className={cn("px-2 py-1 rounded text-xs font-medium", r.exit_interview.completed ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>{r.exit_interview.completed ? "✓ Exit Interview" : "○ Exit Interview"}</span>
                   </div>
 
                   {/* checklist by category */}
@@ -423,7 +284,7 @@ export default function DischargePage() {
                             {c.completed ? <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" /> : <div className="h-4 w-4 rounded-full border-2 border-gray-300 mt-0.5 shrink-0" />}
                             <div>
                               <p className={cn("text-sm", c.completed ? "text-gray-500 line-through" : "")}>{c.task}</p>
-                              {c.completed && c.completedDate && <p className="text-xs text-gray-400">{c.completedDate}{c.completedBy ? ` — ${getStaffName(c.completedBy)}` : ""}</p>}
+                              {c.completed && c.completed_date && <p className="text-xs text-gray-400">{c.completed_date}{c.completed_by ? ` — ${getStaffName(c.completed_by)}` : ""}</p>}
                               {c.notes && <p className="text-xs text-gray-500 italic">{c.notes}</p>}
                             </div>
                           </div>
@@ -433,7 +294,7 @@ export default function DischargePage() {
                   </div>
 
                   {/* transition actions */}
-                  {r.transitionActions.length > 0 && (
+                  {r.transition_actions.length > 0 && (
                     <div>
                       <h4 className="text-xs font-semibold text-gray-500 mb-2">Transition Actions</h4>
                       <div className="overflow-x-auto">
@@ -448,20 +309,20 @@ export default function DischargePage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {r.transitionActions.map((a) => {
-                              const overdue = a.status !== "completed" && a.dueDate < d(0);
+                            {r.transition_actions.map((a) => {
+                              const overdue = a.status !== "completed" && a.due_date < today();
                               return (
                                 <tr key={a.id} className="border-b last:border-0">
                                   <td className="py-2 pr-3">{a.action}</td>
                                   <td className="py-2 pr-3">{getStaffName(a.owner)}</td>
-                                  <td className={cn("py-2 pr-3", overdue ? "text-red-600 font-medium" : "")}>{a.dueDate}</td>
+                                  <td className={cn("py-2 pr-3", overdue ? "text-red-600 font-medium" : "")}>{a.due_date}</td>
                                   <td className="py-2 pr-3">
                                     <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium",
                                       a.status === "completed" ? "bg-green-100 text-green-800" :
                                       overdue ? "bg-red-100 text-red-800" :
                                       a.status === "in_progress" ? "bg-blue-100 text-blue-800" :
                                       "bg-gray-100 text-gray-700"
-                                    )}>{overdue ? "Overdue" : a.status.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+                                    )}>{overdue ? "Overdue" : a.status.replace("_", " ").replace(/\b\w/g, (ch) => ch.toUpperCase())}</span>
                                   </td>
                                   <td className="py-2 text-xs text-gray-500">{a.notes}</td>
                                 </tr>
@@ -474,44 +335,44 @@ export default function DischargePage() {
                   )}
 
                   {/* aftercare */}
-                  {r.aftercareProvision.length > 0 && (
+                  {r.aftercare_provision.length > 0 && (
                     <div className="rounded-md bg-gray-50 p-3">
                       <h4 className="text-xs font-semibold text-gray-500 mb-1">Aftercare Provision</h4>
                       <ul className="list-disc list-inside text-sm text-gray-700 space-y-0.5">
-                        {r.aftercareProvision.map((a, i) => <li key={i}>{a}</li>)}
+                        {r.aftercare_provision.map((a, i) => <li key={i}>{a}</li>)}
                       </ul>
                     </div>
                   )}
 
                   {/* stay in touch */}
-                  {r.stayInTouchPlan && (
+                  {r.stay_in_touch_plan && (
                     <div className="rounded-md bg-gray-50 p-3">
                       <h4 className="text-xs font-semibold text-gray-500 mb-1">Stay in Touch Plan</h4>
-                      <p className="text-sm">{r.stayInTouchPlan}</p>
+                      <p className="text-sm">{r.stay_in_touch_plan}</p>
                     </div>
                   )}
 
                   {/* child's view */}
-                  {r.childViews && (
+                  {r.child_views && (
                     <div className="rounded-md bg-pink-50 border border-pink-200 p-3">
                       <h4 className="text-xs font-semibold text-pink-700 mb-1">Child&apos;s Views on Moving</h4>
-                      <p className="text-sm text-pink-800">{r.childViews}</p>
+                      <p className="text-sm text-pink-800">{r.child_views}</p>
                     </div>
                   )}
 
                   {/* exit interview */}
-                  {r.exitInterview.completed && r.exitInterview.childViews && (
+                  {r.exit_interview.completed && r.exit_interview.child_views && (
                     <div className="rounded-md bg-pink-50 border border-pink-200 p-3">
-                      <h4 className="text-xs font-semibold text-pink-700 mb-1">Exit Interview — {r.exitInterview.date} ({r.exitInterview.conductedBy ? getStaffName(r.exitInterview.conductedBy) : ""})</h4>
-                      <p className="text-sm text-pink-800">{r.exitInterview.childViews}</p>
+                      <h4 className="text-xs font-semibold text-pink-700 mb-1">Exit Interview — {r.exit_interview.date} ({r.exit_interview.conducted_by ? getStaffName(r.exit_interview.conducted_by) : ""})</h4>
+                      <p className="text-sm text-pink-800">{r.exit_interview.child_views}</p>
                     </div>
                   )}
 
                   {/* professional views */}
-                  {r.professionalViews && (
+                  {r.professional_views && (
                     <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
                       <h4 className="text-xs font-semibold text-blue-700 mb-1">Professional Views</h4>
-                      <p className="text-sm text-blue-800">{r.professionalViews}</p>
+                      <p className="text-sm text-blue-800">{r.professional_views}</p>
                     </div>
                   )}
 
@@ -522,6 +383,9 @@ export default function DischargePage() {
                       <p className="text-sm text-gray-700">{r.notes}</p>
                     </div>
                   )}
+
+                  {/* smart links */}
+                  <SmartLinkPanel sourceType="discharge" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               )}
             </div>
@@ -549,7 +413,7 @@ export default function DischargePage() {
               <div>
                 <label className="text-sm font-medium">Reason</label>
                 <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{Object.entries(REASON_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                  <SelectContent>{Object.entries(DISCHARGE_REASON_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
@@ -582,6 +446,8 @@ export default function DischargePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </>
+      )}
     </PageShell>
   );
 }

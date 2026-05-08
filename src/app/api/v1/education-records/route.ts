@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
     details: body.details || undefined,
     outcome: body.outcome || undefined,
     follow_up_date: body.follow_up_date || undefined,
+    attendance_status: body.attendance_status ?? null,
+    linked_pep: body.linked_pep ?? false,
     staff_id: body.staff_id || "staff_darren",
     status: body.status || "open",
     home_id: body.home_id || "home_oak",

@@ -8,252 +8,61 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowUpDown, ChevronDown, ChevronUp, Phone, AlertTriangle, ShieldCheck, Clock, Users, Filter, PhoneCall, Heart } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronUp, Phone, AlertTriangle, ShieldCheck, Clock, Users, Filter, PhoneCall, Heart, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-
-/* ── types ─────────────────────────────────────────────────────────────────── */
-
-interface OnCallCall {
-  datetime: string;
-  from: string;
-  type: string;
-  durationMins: number;
-  outcome: string;
-  escalated: boolean;
-}
-
-type OnCallRole = "First-line on-call (RM)" | "Second-line on-call (Deputy)" | "Senior practitioner cover";
-type ShiftPattern = "Weekday evenings 17:00-08:00" | "Weekend full" | "Bank holiday" | "Standard rota slot";
-
-interface OnCallShift {
-  id: string;
-  dateFrom: string;
-  dateTo: string;
-  role: OnCallRole;
-  onCallStaff: string;
-  backupStaff: string;
-  contactNumber: string;
-  shiftPattern: ShiftPattern;
-  callsReceived: OnCallCall[];
-  criticalIncidentsHandled: number;
-  routineCallsHandled: number;
-  advisoryCallsHandled: number;
-  staffWellbeingDuringOnCall: string;
-  feedbackOnArrangements: string;
-  reviewNotes: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: OnCallShift[] = [
-  {
-    id: "oc1",
-    dateFrom: d(-1),
-    dateTo: d(0),
-    role: "First-line on-call (RM)",
-    onCallStaff: "staff_darren",
-    backupStaff: "staff_ryan",
-    contactNumber: "07*** *** 401",
-    shiftPattern: "Weekday evenings 17:00-08:00",
-    callsReceived: [
-      { datetime: `${d(-1)} 19:42`, from: "Sleep-in staff (Chervelle)", type: "Routine update", durationMins: 6, outcome: "Confirmed plan to manage Alex's bedtime anxiety; no action required", escalated: false },
-      { datetime: `${d(-1)} 23:18`, from: "Night staff (Lackson)", type: "Advisory", durationMins: 12, outcome: "Discussed appropriate response to Jordan's phone use after lights out; agreed to log and review in morning handover", escalated: false },
-    ],
-    criticalIncidentsHandled: 0,
-    routineCallsHandled: 1,
-    advisoryCallsHandled: 1,
-    staffWellbeingDuringOnCall: "Calm shift overall. Sleep undisturbed after 23:30. RM reported feeling well-rested and able to be present for early handover.",
-    feedbackOnArrangements: "Backup line clear and tested at start of shift. No issues with phone signal at home address.",
-    reviewNotes: "Both calls handled within first-line scope. No escalation needed.",
-  },
-  {
-    id: "oc2",
-    dateFrom: d(-3),
-    dateTo: d(-2),
-    role: "Second-line on-call (Deputy)",
-    onCallStaff: "staff_ryan",
-    backupStaff: "staff_darren",
-    contactNumber: "07*** *** 402",
-    shiftPattern: "Weekday evenings 17:00-08:00",
-    callsReceived: [],
-    criticalIncidentsHandled: 0,
-    routineCallsHandled: 0,
-    advisoryCallsHandled: 0,
-    staffWellbeingDuringOnCall: "Quiet shift, no calls received. Deputy used time to catch up on reading and rest.",
-    feedbackOnArrangements: "On-call phone tested at 17:00 handover. All systems functional.",
-    reviewNotes: "No incidents. Quiet rota slot.",
-  },
-  {
-    id: "oc3",
-    dateFrom: d(-4),
-    dateTo: d(-2),
-    role: "First-line on-call (RM)",
-    onCallStaff: "staff_darren",
-    backupStaff: "staff_ryan",
-    contactNumber: "07*** *** 401",
-    shiftPattern: "Weekend full",
-    callsReceived: [
-      { datetime: `${d(-4)} 21:05`, from: "Senior on shift (Anna)", type: "Critical incident", durationMins: 38, outcome: "Casey self-harm episode — supported Anna through immediate response, advised on body-map completion and out-of-hours CAMHS contact. Agreed RM would attend home in person.", escalated: true },
-      { datetime: `${d(-4)} 21:50`, from: "Out-of-hours CAMHS", type: "Multi-agency liaison", durationMins: 22, outcome: "Triage call with CAMHS practitioner. Agreed home-based monitoring overnight, follow-up appointment booked for Monday morning.", escalated: true },
-      { datetime: `${d(-4)} 23:15`, from: "EDT social worker", type: "Notification", durationMins: 14, outcome: "Notified EDT of incident as per safeguarding protocol. Confirmed no statutory response required overnight, allocated SW to be informed Monday.", escalated: false },
-      { datetime: `${d(-3)} 02:40`, from: "Night staff (Edward)", type: "Welfare check-in", durationMins: 8, outcome: "Casey settled and asleep. Plan holding. Advised Edward to wake RM only if Casey's presentation changed.", escalated: false },
-      { datetime: `${d(-3)} 09:20`, from: "Day shift (Mirela)", type: "Handover support", durationMins: 18, outcome: "RM provided detailed handover, supported Mirela in framing the day for Casey, confirmed RM remained available throughout.", escalated: false },
-      { datetime: `${d(-2)} 14:10`, from: "Sleep-in staff", type: "Routine update", durationMins: 5, outcome: "Confirmed Casey engaging well with afternoon activity. Plan continuing to hold.", escalated: false },
-    ],
-    criticalIncidentsHandled: 1,
-    routineCallsHandled: 2,
-    advisoryCallsHandled: 3,
-    staffWellbeingDuringOnCall: "Demanding shift. RM attended the home in person between 21:30 and 02:00 Saturday night. Sleep significantly disrupted. Took rest day on Monday as agreed under post-incident wellbeing protocol.",
-    feedbackOnArrangements: "Backup arrangements worked well — Deputy was contactable within 4 minutes when consulted. CAMHS out-of-hours line answered within 2 rings. Recording of calls into oncall log completed retrospectively due to incident demands; this is a known pattern after critical events and is acceptable.",
-    reviewNotes: "Escalation pathway worked as intended. Post-incident review scheduled. RM took compensatory rest. Casey safeguarding plan updated. RI notified on Monday morning under Reg 40.",
-  },
-  {
-    id: "oc4",
-    dateFrom: d(-6),
-    dateTo: d(-5),
-    role: "First-line on-call (RM)",
-    onCallStaff: "staff_darren",
-    backupStaff: "staff_ryan",
-    contactNumber: "07*** *** 401",
-    shiftPattern: "Weekday evenings 17:00-08:00",
-    callsReceived: [
-      { datetime: `${d(-6)} 18:30`, from: "Sleep-in staff", type: "Routine update", durationMins: 4, outcome: "Confirmed evening routine going well, all young people settled.", escalated: false },
-    ],
-    criticalIncidentsHandled: 0,
-    routineCallsHandled: 1,
-    advisoryCallsHandled: 0,
-    staffWellbeingDuringOnCall: "Quiet shift. Sleep undisturbed.",
-    feedbackOnArrangements: "All systems functional. Phone signal good.",
-    reviewNotes: "Routine shift. No incidents.",
-  },
-  {
-    id: "oc5",
-    dateFrom: d(-8),
-    dateTo: d(-7),
-    role: "Second-line on-call (Deputy)",
-    onCallStaff: "staff_ryan",
-    backupStaff: "staff_darren",
-    contactNumber: "07*** *** 402",
-    shiftPattern: "Weekday evenings 17:00-08:00",
-    callsReceived: [
-      { datetime: `${d(-8)} 20:15`, from: "Senior on shift (Chervelle)", type: "Advisory", durationMins: 15, outcome: "Discussed approach to Jordan's request to attend a peer's house — Deputy supported staff to use contextual safeguarding assessment in the moment. Decision to permit with check-in arrangement.", escalated: false },
-    ],
-    criticalIncidentsHandled: 0,
-    routineCallsHandled: 0,
-    advisoryCallsHandled: 1,
-    staffWellbeingDuringOnCall: "Felt confident in decision-making support. Sleep undisturbed after 21:00.",
-    feedbackOnArrangements: "Decision-tree document referenced and helpful. No need to escalate to first-line.",
-    reviewNotes: "Good example of second-line cover preventing unnecessary RM disturbance while supporting staff confidence.",
-  },
-  {
-    id: "oc6",
-    dateFrom: d(-10),
-    dateTo: d(-9),
-    role: "First-line on-call (RM)",
-    onCallStaff: "staff_darren",
-    backupStaff: "staff_ryan",
-    contactNumber: "07*** *** 401",
-    shiftPattern: "Weekday evenings 17:00-08:00",
-    callsReceived: [
-      { datetime: `${d(-10)} 22:50`, from: "Night staff", type: "Advisory", durationMins: 9, outcome: "Brief consult on responding to Alex's nightmares; reinforced grounding strategy. No follow-up required.", escalated: false },
-    ],
-    criticalIncidentsHandled: 0,
-    routineCallsHandled: 0,
-    advisoryCallsHandled: 1,
-    staffWellbeingDuringOnCall: "Settled shift. Single brief call. Slept well.",
-    feedbackOnArrangements: "No issues.",
-    reviewNotes: "Routine.",
-  },
-  {
-    id: "oc7",
-    dateFrom: d(-11),
-    dateTo: d(-9),
-    role: "Senior practitioner cover",
-    onCallStaff: "staff_ryan",
-    backupStaff: "staff_darren",
-    contactNumber: "07*** *** 403",
-    shiftPattern: "Weekend full",
-    callsReceived: [
-      { datetime: `${d(-11)} 19:00`, from: "Sleep-in staff", type: "Routine update", durationMins: 5, outcome: "All young people settled. Activity plan went well.", escalated: false },
-      { datetime: `${d(-10)} 11:30`, from: "Senior on shift", type: "Advisory", durationMins: 10, outcome: "Supported team decision around weekend visit logistics for Casey.", escalated: false },
-      { datetime: `${d(-9)} 16:45`, from: "Sleep-in staff", type: "Routine update", durationMins: 4, outcome: "Confirmed Sunday afternoon plan in place.", escalated: false },
-    ],
-    criticalIncidentsHandled: 0,
-    routineCallsHandled: 2,
-    advisoryCallsHandled: 1,
-    staffWellbeingDuringOnCall: "Good weekend rota cover. Calls were spread out and manageable. Maintained own routine throughout.",
-    feedbackOnArrangements: "Senior practitioner cover model working well — providing accessible advice without RM disturbance.",
-    reviewNotes: "Strong example of distributed on-call reducing RM burden.",
-  },
-  {
-    id: "oc8",
-    dateFrom: d(-14),
-    dateTo: d(-13),
-    role: "First-line on-call (RM)",
-    onCallStaff: "staff_darren",
-    backupStaff: "staff_ryan",
-    contactNumber: "07*** *** 401",
-    shiftPattern: "Bank holiday",
-    callsReceived: [
-      { datetime: `${d(-14)} 13:20`, from: "Senior on shift", type: "Advisory", durationMins: 11, outcome: "Discussed appropriate staff response to family contact arrangements over the bank holiday. Confirmed care plan stipulations.", escalated: false },
-      { datetime: `${d(-14)} 19:55`, from: "Sleep-in staff", type: "Routine update", durationMins: 6, outcome: "Confirmed evening routine on track.", escalated: false },
-    ],
-    criticalIncidentsHandled: 0,
-    routineCallsHandled: 1,
-    advisoryCallsHandled: 1,
-    staffWellbeingDuringOnCall: "Bank holiday cover. RM remained available but had family time around calls.",
-    feedbackOnArrangements: "Bank holiday cover arrangements clear in advance. No confusion about who was on-call.",
-    reviewNotes: "Routine bank holiday shift.",
-  },
-];
+import { useOnCallShifts } from "@/hooks/use-on-call-shifts";
+import type { OnCallShift, OnCallRole, OnCallShiftPattern } from "@/types/extended";
+import { ON_CALL_ROLE_LABEL, ON_CALL_SHIFT_PATTERN_LABEL } from "@/types/extended";
 
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function OnCallRotaPage() {
-  const [data] = useState<OnCallShift[]>(SEED);
+  const { data: res, isLoading } = useOnCallShifts();
+  const data: OnCallShift[] = res?.data ?? [];
+
   const [roleFilter, setRoleFilter] = useState("all");
   const [staffFilter, setStaffFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  if (isLoading) return <PageShell title="On-Call Rota" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
+
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
-  const staffIds = [...new Set(data.map(r => r.onCallStaff))];
-  const roles: OnCallRole[] = ["First-line on-call (RM)", "Second-line on-call (Deputy)", "Senior practitioner cover"];
+  const staffIds = [...new Set(data.map(r => r.on_call_staff))];
+  const allRoles: OnCallRole[] = ["first_line_rm", "second_line_deputy", "senior_practitioner_cover"];
 
   const filtered = useMemo(() => {
     let out = [...data];
     if (roleFilter !== "all") out = out.filter(r => r.role === roleFilter);
-    if (staffFilter !== "all") out = out.filter(r => r.onCallStaff === staffFilter);
-    out.sort((a, b) => sortBy === "oldest" ? a.dateFrom.localeCompare(b.dateFrom) : b.dateFrom.localeCompare(a.dateFrom));
+    if (staffFilter !== "all") out = out.filter(r => r.on_call_staff === staffFilter);
+    out.sort((a, b) => sortBy === "oldest" ? a.date_from.localeCompare(b.date_from) : b.date_from.localeCompare(a.date_from));
     return out;
   }, [data, roleFilter, staffFilter, sortBy]);
 
-  const shiftsThisFortnight = data.filter(r => r.dateFrom >= d(-14)).length;
-  const totalCalls = data.reduce((sum, r) => sum + r.callsReceived.length, 0);
-  const criticalIncidents = data.reduce((sum, r) => sum + r.criticalIncidentsHandled, 0);
+  const fourteenDaysAgo = new Date(); fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+  const fourteenDaysAgoStr = fourteenDaysAgo.toISOString().slice(0, 10);
+  const shiftsThisFortnight = data.filter(r => r.date_from >= fourteenDaysAgoStr).length;
+  const totalCalls = data.reduce((sum, r) => sum + r.calls_received.length, 0);
+  const criticalIncidents = data.reduce((sum, r) => sum + r.critical_incidents_handled, 0);
   const avgCallsPerShift = data.length ? (totalCalls / data.length).toFixed(1) : "0";
 
   const exportCols: ExportColumn<OnCallShift>[] = useMemo(() => [
-    { header: "From", accessor: (r: OnCallShift) => r.dateFrom },
-    { header: "To", accessor: (r: OnCallShift) => r.dateTo },
-    { header: "Role", accessor: (r: OnCallShift) => r.role },
-    { header: "On-Call Staff", accessor: (r: OnCallShift) => getStaffName(r.onCallStaff) },
-    { header: "Backup Staff", accessor: (r: OnCallShift) => getStaffName(r.backupStaff) },
-    { header: "Contact Number", accessor: (r: OnCallShift) => r.contactNumber },
-    { header: "Shift Pattern", accessor: (r: OnCallShift) => r.shiftPattern },
-    { header: "Calls Received", accessor: (r: OnCallShift) => r.callsReceived.length },
-    { header: "Critical Incidents", accessor: (r: OnCallShift) => r.criticalIncidentsHandled },
-    { header: "Routine Calls", accessor: (r: OnCallShift) => r.routineCallsHandled },
-    { header: "Advisory Calls", accessor: (r: OnCallShift) => r.advisoryCallsHandled },
-    { header: "Staff Wellbeing", accessor: (r: OnCallShift) => r.staffWellbeingDuringOnCall },
-    { header: "Feedback", accessor: (r: OnCallShift) => r.feedbackOnArrangements },
-    { header: "Review Notes", accessor: (r: OnCallShift) => r.reviewNotes },
+    { header: "From", accessor: (r: OnCallShift) => r.date_from },
+    { header: "To", accessor: (r: OnCallShift) => r.date_to },
+    { header: "Role", accessor: (r: OnCallShift) => ON_CALL_ROLE_LABEL[r.role] },
+    { header: "On-Call Staff", accessor: (r: OnCallShift) => getStaffName(r.on_call_staff) },
+    { header: "Backup Staff", accessor: (r: OnCallShift) => getStaffName(r.backup_staff) },
+    { header: "Contact Number", accessor: (r: OnCallShift) => r.contact_number },
+    { header: "Shift Pattern", accessor: (r: OnCallShift) => ON_CALL_SHIFT_PATTERN_LABEL[r.shift_pattern] },
+    { header: "Calls Received", accessor: (r: OnCallShift) => r.calls_received.length },
+    { header: "Critical Incidents", accessor: (r: OnCallShift) => r.critical_incidents_handled },
+    { header: "Routine Calls", accessor: (r: OnCallShift) => r.routine_calls_handled },
+    { header: "Advisory Calls", accessor: (r: OnCallShift) => r.advisory_calls_handled },
+    { header: "Staff Wellbeing", accessor: (r: OnCallShift) => r.staff_wellbeing_during_on_call },
+    { header: "Feedback", accessor: (r: OnCallShift) => r.feedback_on_arrangements },
+    { header: "Review Notes", accessor: (r: OnCallShift) => r.review_notes },
   ], []);
 
   return (
@@ -306,7 +115,7 @@ export default function OnCallRotaPage() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Roles</SelectItem>
-                    {roles.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                    {allRoles.map(r => <SelectItem key={r} value={r}>{ON_CALL_ROLE_LABEL[r]}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -338,17 +147,17 @@ export default function OnCallRotaPage() {
         <div className="space-y-3">
           {filtered.map(r => {
             const open = expandedId === r.id;
-            const hasCritical = r.criticalIncidentsHandled > 0;
+            const hasCritical = r.critical_incidents_handled > 0;
             return (
               <Card key={r.id} className={cn(hasCritical && "border-amber-300 ring-1 ring-amber-200")}>
                 <button className="w-full text-left" onClick={() => toggle(r.id)}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-base">{getStaffName(r.onCallStaff)}</CardTitle>
-                        <Badge variant="outline" className="text-xs">{r.role}</Badge>
-                        <Badge variant="outline" className="text-xs">{r.shiftPattern}</Badge>
-                        <Badge className="text-xs bg-blue-100 text-blue-800">{r.callsReceived.length} call{r.callsReceived.length === 1 ? "" : "s"}</Badge>
+                        <CardTitle className="text-base">{getStaffName(r.on_call_staff)}</CardTitle>
+                        <Badge variant="outline" className="text-xs">{ON_CALL_ROLE_LABEL[r.role]}</Badge>
+                        <Badge variant="outline" className="text-xs">{ON_CALL_SHIFT_PATTERN_LABEL[r.shift_pattern]}</Badge>
+                        <Badge className="text-xs bg-blue-100 text-blue-800">{r.calls_received.length} call{r.calls_received.length === 1 ? "" : "s"}</Badge>
                         {hasCritical && (
                           <Badge className="text-xs bg-amber-100 text-amber-800 flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" />Critical incident
@@ -356,7 +165,7 @@ export default function OnCallRotaPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs text-muted-foreground">{r.dateFrom}{r.dateFrom !== r.dateTo ? ` → ${r.dateTo}` : ""}</span>
+                        <span className="text-xs text-muted-foreground">{r.date_from}{r.date_from !== r.date_to ? ` → ${r.date_to}` : ""}</span>
                         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </div>
                     </div>
@@ -369,21 +178,21 @@ export default function OnCallRotaPage() {
                         <Users className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-semibold text-slate-700">Backup</p>
-                          <p className="text-sm text-slate-900">{getStaffName(r.backupStaff)}</p>
+                          <p className="text-sm text-slate-900">{getStaffName(r.backup_staff)}</p>
                         </div>
                       </div>
                       <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 flex items-start gap-2">
                         <Phone className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-semibold text-slate-700">Contact number</p>
-                          <p className="text-sm text-slate-900 font-mono">{r.contactNumber}</p>
+                          <p className="text-sm text-slate-900 font-mono">{r.contact_number}</p>
                         </div>
                       </div>
                       <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 flex items-start gap-2">
                         <Clock className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-semibold text-slate-700">Pattern</p>
-                          <p className="text-sm text-slate-900">{r.shiftPattern}</p>
+                          <p className="text-sm text-slate-900">{ON_CALL_SHIFT_PATTERN_LABEL[r.shift_pattern]}</p>
                         </div>
                       </div>
                     </div>
@@ -391,33 +200,33 @@ export default function OnCallRotaPage() {
                     <div className="grid grid-cols-3 gap-3 text-center">
                       <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                         <p className="text-xs font-semibold text-amber-800">Critical</p>
-                        <p className="text-2xl font-bold text-amber-900">{r.criticalIncidentsHandled}</p>
+                        <p className="text-2xl font-bold text-amber-900">{r.critical_incidents_handled}</p>
                       </div>
                       <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                         <p className="text-xs font-semibold text-blue-800">Advisory</p>
-                        <p className="text-2xl font-bold text-blue-900">{r.advisoryCallsHandled}</p>
+                        <p className="text-2xl font-bold text-blue-900">{r.advisory_calls_handled}</p>
                       </div>
                       <div className="rounded-lg bg-green-50 border border-green-200 p-3">
                         <p className="text-xs font-semibold text-green-800">Routine</p>
-                        <p className="text-2xl font-bold text-green-900">{r.routineCallsHandled}</p>
+                        <p className="text-2xl font-bold text-green-900">{r.routine_calls_handled}</p>
                       </div>
                     </div>
 
-                    {r.callsReceived.length > 0 ? (
+                    {r.calls_received.length > 0 ? (
                       <div className="rounded-lg bg-slate-50 border border-slate-200 p-3">
                         <p className="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1">
-                          <PhoneCall className="h-3 w-3" />Call log ({r.callsReceived.length})
+                          <PhoneCall className="h-3 w-3" />Call log ({r.calls_received.length})
                         </p>
                         <ul className="space-y-2">
-                          {r.callsReceived.map((c, i) => (
+                          {r.calls_received.map((c, i) => (
                             <li key={i} className="border-l-2 border-slate-300 pl-3">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-xs font-mono text-slate-600">{c.datetime}</span>
-                                <Badge variant="outline" className="text-xs">{c.type}</Badge>
-                                <Badge variant="outline" className="text-xs">{c.durationMins} min</Badge>
+                                <Badge variant="outline" className="text-xs">{c.call_type}</Badge>
+                                <Badge variant="outline" className="text-xs">{c.duration_mins} min</Badge>
                                 {c.escalated && <Badge className="text-xs bg-amber-100 text-amber-800">Escalated</Badge>}
                               </div>
-                              <p className="text-xs text-slate-700 mt-0.5">From: {c.from}</p>
+                              <p className="text-xs text-slate-700 mt-0.5">From: {c.from_contact}</p>
                               <p className="text-sm text-slate-900 mt-1">{c.outcome}</p>
                             </li>
                           ))}
@@ -433,18 +242,18 @@ export default function OnCallRotaPage() {
                       <Heart className="h-4 w-4 text-pink-700 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs font-semibold text-pink-800">Staff wellbeing during on-call</p>
-                        <p className="text-sm text-pink-900">{r.staffWellbeingDuringOnCall}</p>
+                        <p className="text-sm text-pink-900">{r.staff_wellbeing_during_on_call}</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                         <p className="text-xs font-semibold text-blue-800 mb-1">Feedback on arrangements</p>
-                        <p className="text-sm text-blue-900">{r.feedbackOnArrangements}</p>
+                        <p className="text-sm text-blue-900">{r.feedback_on_arrangements}</p>
                       </div>
                       <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                         <p className="text-xs font-semibold text-amber-800 mb-1">Review notes</p>
-                        <p className="text-sm text-amber-900">{r.reviewNotes}</p>
+                        <p className="text-sm text-amber-900">{r.review_notes}</p>
                       </div>
                     </div>
                   </CardContent>

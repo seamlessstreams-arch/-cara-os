@@ -1,18 +1,11 @@
 "use client";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — QA AUDIT PAGE
-// Internal quality assurance audits — self-assessment checks, monthly QA
-// reviews, and action plans from QA findings.
-// ══════════════════════════════════════════════════════════════════════════════
-
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Search,
@@ -25,205 +18,41 @@ import {
   TrendingUp,
   Target,
   ArrowUpDown,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useQaAuditRecords } from "@/hooks/use-qa-audit-records";
+import type { QAAuditRecord, QAAuditRating, QAAuditActionStatus } from "@/types/extended";
+import { QA_AUDIT_RATING_LABEL, QA_AUDIT_ACTION_STATUS_LABEL } from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── local colour maps ───────────────────────────────────────────────────── */
 
-type OverallRating = "excellent" | "good" | "requires_improvement" | "inadequate";
-type ActionStatus = "completed" | "in_progress" | "pending" | "overdue";
-
-interface QAAuditAction {
-  action: string;
-  owner: string;
-  deadline: string;
-  status: ActionStatus;
-}
-
-interface QAAuditRecord {
-  id: string;
-  title: string;
-  date: string;
-  auditor: string;
-  scope: string;
-  overallRating: OverallRating;
-  score: number;
-  findings: string[];
-  strengths: string[];
-  areasForImprovement: string[];
-  actions: QAAuditAction[];
-  notes: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const RATING_LABEL: Record<OverallRating, string> = {
-  excellent: "Excellent",
-  good: "Good",
-  requires_improvement: "Requires Improvement",
-  inadequate: "Inadequate",
-};
-
-const RATING_CLR: Record<OverallRating, string> = {
+const RATING_CLR: Record<QAAuditRating, string> = {
   excellent: "bg-green-100 text-green-800",
   good: "bg-blue-100 text-blue-800",
   requires_improvement: "bg-amber-100 text-amber-800",
   inadequate: "bg-red-100 text-red-800",
 };
 
-const BORDER_RATING: Record<OverallRating, string> = {
+const BORDER_RATING: Record<QAAuditRating, string> = {
   excellent: "border-l-green-500",
   good: "border-l-blue-500",
   requires_improvement: "border-l-amber-500",
   inadequate: "border-l-red-500",
 };
 
-const ACTION_STATUS_CLR: Record<ActionStatus, string> = {
+const ACTION_STATUS_CLR: Record<QAAuditActionStatus, string> = {
   completed: "bg-green-100 text-green-800",
   in_progress: "bg-blue-100 text-blue-800",
   pending: "bg-slate-100 text-slate-700",
   overdue: "bg-red-100 text-red-800",
 };
 
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: QAAuditRecord[] = [
-  {
-    id: "qa_1",
-    title: "Monthly Case File Audit",
-    date: d(-7),
-    auditor: "staff_darren",
-    scope: "All children's case files",
-    overallRating: "good",
-    score: 87,
-    findings: [
-      "Care plans current for all children",
-      "Risk assessments up to date across all placements",
-      "One daily log entry missing detail — shift of 12th lacked context for behaviour incident",
-    ],
-    strengths: [
-      "Consistent recording standards across team",
-      "Care plans reviewed within timescale",
-      "Risk assessments reflect current circumstances",
-    ],
-    areasForImprovement: [
-      "Daily log entries should include full context for any incident, however minor",
-    ],
-    actions: [
-      {
-        action: "Staff reminded about recording standards — detail required in all daily log entries",
-        owner: "staff_darren",
-        deadline: d(-5),
-        status: "completed",
-      },
-    ],
-    notes: "Monthly review of all case files as per Reg 35. Overall a strong audit with only one minor finding. Team recording has improved significantly since last month's feedback.",
-  },
-  {
-    id: "qa_2",
-    title: "Medication Audit",
-    date: d(-30),
-    auditor: "staff_ryan",
-    scope: "Medication storage, records, administration",
-    overallRating: "excellent",
-    score: 100,
-    findings: [
-      "All stock balanced — no discrepancies",
-      "Records accurate across all MAR charts",
-      "Storage conditions met — temperature within range, cabinet locked",
-      "No administration errors identified",
-    ],
-    strengths: [
-      "Excellent medication management across all areas",
-      "Dual-signature protocol consistently followed",
-      "Stock reconciliation accurate",
-      "Storage conditions exemplary",
-    ],
-    areasForImprovement: [],
-    actions: [],
-    notes: "Full medication audit completed with zero findings requiring action. Team commended for maintaining high standards. Result shared with pharmacy for their records.",
-  },
-  {
-    id: "qa_3",
-    title: "Health & Safety Walkthrough",
-    date: d(-14),
-    auditor: "staff_darren",
-    scope: "Building safety, fire equipment, first aid, hygiene",
-    overallRating: "good",
-    score: 92,
-    findings: [
-      "Fire extinguisher in kitchen due for service — now booked with contractor",
-      "All fire exits clear and unobstructed",
-      "First aid kit fully replenished",
-      "All areas clean and hygienic",
-    ],
-    strengths: [
-      "Building maintained to high standard",
-      "Fire exits consistently clear",
-      "First aid supplies well-managed",
-      "Cleaning schedules adhered to",
-    ],
-    areasForImprovement: [
-      "Fire equipment servicing should be flagged earlier — ideally 4 weeks before due date",
-    ],
-    actions: [
-      {
-        action: "Fire extinguisher service booked with approved contractor",
-        owner: "staff_darren",
-        deadline: d(-7),
-        status: "completed",
-      },
-    ],
-    notes: "Quarterly H&S walkthrough. Building in good condition. Only finding relates to fire extinguisher service date — proactive system needed to flag these earlier. Service now booked.",
-  },
-  {
-    id: "qa_4",
-    title: "Staff Supervision & Training Audit",
-    date: d(-21),
-    auditor: "staff_darren",
-    scope: "Supervision records, training compliance",
-    overallRating: "requires_improvement",
-    score: 71,
-    findings: [
-      "Edward's supervision overdue by 8 days",
-      "Mirela missing 1 mandatory training module (fire safety refresher)",
-      "All other staff supervision records up to date",
-      "Training compliance otherwise above target",
-    ],
-    strengths: [
-      "Majority of staff supervision on schedule",
-      "Good-quality supervision notes with clear actions",
-      "Training plan in place for all staff",
-    ],
-    areasForImprovement: [
-      "Supervision must not exceed 6-week cycle — system needed to alert before overdue",
-      "Mandatory training gaps must be addressed within 5 working days of identification",
-    ],
-    actions: [
-      {
-        action: "Edward's supervision scheduled urgently — booked within 48 hours",
-        owner: "staff_darren",
-        deadline: d(-19),
-        status: "completed",
-      },
-      {
-        action: "Mirela enrolled on fire safety refresher module",
-        owner: "staff_darren",
-        deadline: d(-14),
-        status: "completed",
-      },
-    ],
-    notes: "Audit identified two gaps requiring immediate attention. Both addressed within timescale. Supervision tracker updated to send reminders at 5 weeks to prevent future breaches. Ofsted expectation is that supervision is regular and recorded — this finding would be flagged in inspection.",
-  },
-];
-
-/* ── page ──────────────────────────────────────────────────────────────────── */
+/* ── page ────────────────────────────────────────────────────────────────── */
 
 export default function QAAuditPage() {
-  const [data] = useState(SEED);
+  const { data: records = [], isLoading } = useQaAuditRecords();
   const [search, setSearch] = useState("");
   const [filterRating, setFilterRating] = useState("all");
   const [sortBy, setSortBy] = useState("date-desc");
@@ -231,11 +60,9 @@ export default function QAAuditPage() {
 
   const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
-  /* ── derived ─────────────────────────────────────────────────────────────── */
-
   const filtered = useMemo(() => {
-    let rows = data.filter((r) => {
-      if (filterRating !== "all" && r.overallRating !== filterRating) return false;
+    let rows = records.filter((r) => {
+      if (filterRating !== "all" && r.overall_rating !== filterRating) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
@@ -257,32 +84,36 @@ export default function QAAuditPage() {
       }
     });
     return rows;
-  }, [data, search, filterRating, sortBy]);
+  }, [records, search, filterRating, sortBy]);
 
-  /* ── stats ───────────────────────────────────────────────────────────────── */
-
-  const totalAudits = data.length;
-  const avgScore = Math.round(data.reduce((sum, r) => sum + r.score, 0) / data.length);
-  const areasOfConcern = data.filter((r) => r.overallRating === "requires_improvement" || r.overallRating === "inadequate").length;
-  const excellentCount = data.filter((r) => r.overallRating === "excellent").length;
-
-  /* ── export ──────────────────────────────────────────────────────────────── */
+  const totalAudits = records.length;
+  const avgScore = records.length > 0 ? Math.round(records.reduce((sum, r) => sum + r.score, 0) / records.length) : 0;
+  const areasOfConcern = records.filter((r) => r.overall_rating === "requires_improvement" || r.overall_rating === "inadequate").length;
+  const excellentCount = records.filter((r) => r.overall_rating === "excellent").length;
 
   const exportCols: ExportColumn<QAAuditRecord>[] = [
-    { header: "Title", accessor: (r: QAAuditRecord) => r.title },
-    { header: "Date", accessor: (r: QAAuditRecord) => r.date },
-    { header: "Auditor", accessor: (r: QAAuditRecord) => getStaffName(r.auditor) },
-    { header: "Scope", accessor: (r: QAAuditRecord) => r.scope },
-    { header: "Overall Rating", accessor: (r: QAAuditRecord) => RATING_LABEL[r.overallRating] },
-    { header: "Score %", accessor: (r: QAAuditRecord) => `${r.score}%` },
-    { header: "Findings", accessor: (r: QAAuditRecord) => r.findings.join("; ") },
-    { header: "Strengths", accessor: (r: QAAuditRecord) => r.strengths.join("; ") },
-    { header: "Areas for Improvement", accessor: (r: QAAuditRecord) => r.areasForImprovement.join("; ") },
-    { header: "Actions", accessor: (r: QAAuditRecord) => r.actions.map((a) => `${a.action} (${a.status})`).join("; ") },
-    { header: "Notes", accessor: (r: QAAuditRecord) => r.notes },
+    { header: "Title", accessor: (r) => r.title },
+    { header: "Date", accessor: (r) => r.date },
+    { header: "Auditor", accessor: (r) => getStaffName(r.auditor) },
+    { header: "Scope", accessor: (r) => r.scope },
+    { header: "Overall Rating", accessor: (r) => QA_AUDIT_RATING_LABEL[r.overall_rating] },
+    { header: "Score %", accessor: (r) => `${r.score}%` },
+    { header: "Findings", accessor: (r) => r.findings.join("; ") },
+    { header: "Strengths", accessor: (r) => r.strengths.join("; ") },
+    { header: "Areas for Improvement", accessor: (r) => r.areas_for_improvement.join("; ") },
+    { header: "Actions", accessor: (r) => r.actions.map((a) => `${a.action} (${a.status})`).join("; ") },
+    { header: "Notes", accessor: (r) => r.notes },
   ];
 
-  /* ── render ──────────────────────────────────────────────────────────────── */
+  if (isLoading) {
+    return (
+      <PageShell title="QA Audit" subtitle="Reg 45 · Self-Assessment · Continuous Improvement · Quality Monitoring">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -296,7 +127,7 @@ export default function QAAuditPage() {
       }
     >
       <div id="print-area">
-        {/* ── stat strip ───────────────────────────────────────────────────── */}
+        {/* ── stat strip ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: "Total Audits", value: totalAudits, icon: ClipboardCheck, clr: "text-blue-600" },
@@ -314,7 +145,7 @@ export default function QAAuditPage() {
           ))}
         </div>
 
-        {/* ── areas of concern alert ──────────────────────────────────────── */}
+        {/* ── areas of concern alert ─────────────────────────────────── */}
         {areasOfConcern > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
@@ -325,7 +156,7 @@ export default function QAAuditPage() {
           </div>
         )}
 
-        {/* ── regulatory note ─────────────────────────────────────────────── */}
+        {/* ── regulatory note ────────────────────────────────────────── */}
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 mb-6 flex items-start gap-2">
           <Target className="h-5 w-5 text-slate-600 shrink-0 mt-0.5" />
           <div className="text-sm">
@@ -334,7 +165,7 @@ export default function QAAuditPage() {
           </div>
         </div>
 
-        {/* ── filters ──────────────────────────────────────────────────────── */}
+        {/* ── filters ─────────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 mb-6">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -369,18 +200,18 @@ export default function QAAuditPage() {
           </div>
         </div>
 
-        {/* ── audit records ────────────────────────────────────────────────── */}
+        {/* ── audit records ───────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.map((r) => {
             const open = expandedId === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", BORDER_RATING[r.overallRating])}>
+              <Card key={r.id} className={cn("border-l-4", BORDER_RATING[r.overall_rating])}>
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <CardTitle className="text-base flex items-center gap-2">
                         {r.title}
-                        <Badge variant="outline" className={RATING_CLR[r.overallRating]}>{RATING_LABEL[r.overallRating]}</Badge>
+                        <Badge variant="outline" className={RATING_CLR[r.overall_rating]}>{QA_AUDIT_RATING_LABEL[r.overall_rating]}</Badge>
                         <Badge variant="outline" className="bg-slate-100 text-slate-800">{r.score}%</Badge>
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
@@ -399,7 +230,6 @@ export default function QAAuditPage() {
                 </CardHeader>
                 {open && (
                   <CardContent className="pt-0 space-y-4 text-sm">
-                    {/* findings */}
                     <div>
                       <p className="font-semibold text-slate-700 mb-1">Findings</p>
                       <ul className="list-disc list-inside space-y-0.5 text-slate-600">
@@ -407,7 +237,6 @@ export default function QAAuditPage() {
                       </ul>
                     </div>
 
-                    {/* strengths */}
                     {r.strengths.length > 0 && (
                       <div>
                         <p className="font-semibold text-green-700 mb-1">Strengths</p>
@@ -417,17 +246,15 @@ export default function QAAuditPage() {
                       </div>
                     )}
 
-                    {/* areas for improvement */}
-                    {r.areasForImprovement.length > 0 && (
+                    {r.areas_for_improvement.length > 0 && (
                       <div>
                         <p className="font-semibold text-amber-700 mb-1">Areas for Improvement</p>
                         <ul className="list-disc list-inside space-y-0.5 text-amber-600">
-                          {r.areasForImprovement.map((a, i) => <li key={i}>{a}</li>)}
+                          {r.areas_for_improvement.map((a, i) => <li key={i}>{a}</li>)}
                         </ul>
                       </div>
                     )}
 
-                    {/* actions */}
                     {r.actions.length > 0 && (
                       <div>
                         <p className="font-semibold text-slate-700 mb-2">Action Plan</p>
@@ -441,7 +268,7 @@ export default function QAAuditPage() {
                                 </p>
                               </div>
                               <Badge variant="outline" className={ACTION_STATUS_CLR[a.status]}>
-                                {a.status.replace("_", " ")}
+                                {QA_AUDIT_ACTION_STATUS_LABEL[a.status]}
                               </Badge>
                             </div>
                           ))}
@@ -449,7 +276,6 @@ export default function QAAuditPage() {
                       </div>
                     )}
 
-                    {/* notes */}
                     {r.notes && (
                       <div>
                         <p className="font-semibold text-slate-700 mb-1">Notes</p>

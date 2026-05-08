@@ -19,35 +19,22 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate, todayStr } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getYPName } from "@/lib/seed-data";
+import { toast } from "sonner";
+import type { ContactDirectoryEntry, ContactCategory } from "@/types/extended";
+import {
+  useContactDirectoryEntries,
+  useCreateContactDirectoryEntry,
+} from "@/hooks/use-contact-directory-entries";
 import {
   Search, ArrowUpDown, X, Plus, Phone, Mail, User,
   ChevronDown, ChevronUp, Shield, Building2,
   AlertTriangle, Copy, CheckCircle2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type ContactCategory = "social_worker" | "iro" | "gp" | "dentist" | "camhs" | "school" | "police" | "ofsted" | "local_authority" | "advocate" | "therapist" | "emergency" | "other";
-
-interface Contact {
-  id: string;
-  name: string;
-  role: string;
-  organisation: string;
-  category: ContactCategory;
-  phone: string;
-  email: string;
-  address: string;
-  linked_children: string[];
-  is_emergency: boolean;
-  notes: string;
-  last_updated: string;
-}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -67,37 +54,15 @@ const CATEGORY_CONFIG: Record<ContactCategory, { label: string; colour: string }
   other:           { label: "Other",           colour: "bg-gray-100 text-gray-600"     },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: Contact[] = [
-  { id: "ct_001", name: "Karen Holding", role: "Social Worker", organisation: "Derby City Council", category: "social_worker", phone: "01332 641 700", email: "karen.holding@derby.gov.uk", address: "The Council House, Corporation Street, Derby DE1 2FS", linked_children: ["yp_alex"], is_emergency: false, notes: "Alex's allocated social worker. Available Mon-Fri 9-5. Out of hours: EDT.", last_updated: d(-10) },
-  { id: "ct_002", name: "Michael Osei", role: "Social Worker", organisation: "Nottinghamshire County Council", category: "social_worker", phone: "0115 977 3100", email: "michael.osei@nottscc.gov.uk", address: "County Hall, West Bridgford, Nottingham NG2 7QP", linked_children: ["yp_jordan"], is_emergency: false, notes: "Jordan's allocated social worker. Prefers email contact initially.", last_updated: d(-14) },
-  { id: "ct_003", name: "Fiona Brennan", role: "Social Worker", organisation: "Derbyshire County Council", category: "social_worker", phone: "01629 533 190", email: "fiona.brennan@derbyshire.gov.uk", address: "County Hall, Matlock DE4 3AG", linked_children: ["yp_casey"], is_emergency: false, notes: "Casey's allocated social worker.", last_updated: d(-7) },
-  { id: "ct_004", name: "James Patterson", role: "Independent Reviewing Officer", organisation: "Derby City Council", category: "iro", phone: "01332 641 800", email: "james.patterson@derby.gov.uk", address: "The Council House, Derby", linked_children: ["yp_alex"], is_emergency: false, notes: "Alex's IRO. Chairs LAC reviews.", last_updated: d(-30) },
-  { id: "ct_005", name: "Ruth Chambers", role: "Independent Reviewing Officer", organisation: "Nottinghamshire CC", category: "iro", phone: "0115 977 3200", email: "ruth.chambers@nottscc.gov.uk", address: "County Hall, West Bridgford", linked_children: ["yp_jordan"], is_emergency: false, notes: "Jordan's IRO.", last_updated: d(-30) },
-  { id: "ct_006", name: "Dr. S. Patel", role: "General Practitioner", organisation: "Littleover Surgery", category: "gp", phone: "01332 500 100", email: "", address: "Burton Road, Littleover, Derby DE23 6EH", linked_children: ["yp_alex"], is_emergency: false, notes: "Alex's registered GP. Also manages asthma plan.", last_updated: d(-30) },
-  { id: "ct_007", name: "Dr. A. Khan", role: "General Practitioner", organisation: "Allestree Medical Centre", category: "gp", phone: "01332 500 200", email: "", address: "Park Farm Centre, Allestree, Derby DE22 2QN", linked_children: ["yp_jordan"], is_emergency: false, notes: "Jordan's registered GP. Penicillin allergy documented.", last_updated: d(-10) },
-  { id: "ct_008", name: "Dr. L. Chen", role: "General Practitioner", organisation: "Littleover Surgery", category: "gp", phone: "01332 500 300", email: "", address: "Burton Road, Littleover, Derby DE23 6EH", linked_children: ["yp_casey"], is_emergency: false, notes: "Casey's registered GP. Manages medication reviews.", last_updated: d(-2) },
-  { id: "ct_009", name: "Dr. Sarah Collins", role: "Consultant Psychiatrist", organisation: "Derby CAMHS", category: "camhs", phone: "01332 623 700", email: "s.collins@derbycamhs.nhs.uk", address: "CAMHS Centre, London Road, Derby DE1 2QY", linked_children: ["yp_alex"], is_emergency: false, notes: "Leading Alex's CAMHS assessment. Referral accepted.", last_updated: d(-5) },
-  { id: "ct_010", name: "Dr. H. Williams", role: "Clinical Psychologist", organisation: "Derby CAMHS", category: "camhs", phone: "01332 623 710", email: "h.williams@derbycamhs.nhs.uk", address: "CAMHS Centre, London Road, Derby", linked_children: ["yp_casey"], is_emergency: false, notes: "Casey's CAMHS therapist. Managing anxiety. Reviews every 6 weeks.", last_updated: d(-14) },
-  { id: "ct_011", name: "Mrs. Thompson", role: "Head of Inclusion", organisation: "Derby Alternative Provision", category: "school", phone: "01332 600 200", email: "thompson@derbyap.org.uk", address: "Derby AP Campus, Osmaston Road, Derby", linked_children: ["yp_alex"], is_emergency: false, notes: "Main school contact for Alex. Manages behaviour plan and reintegration.", last_updated: d(-5) },
-  { id: "ct_012", name: "Mr. Johnson", role: "Designated Teacher (LAC)", organisation: "Highfields Academy", category: "school", phone: "01332 600 300", email: "d.johnson@highfields.derby.sch.uk", address: "Highfields Academy, Normanton Road, Derby", linked_children: ["yp_jordan"], is_emergency: false, notes: "Jordan's designated teacher. PEP lead at school.", last_updated: d(-7) },
-  { id: "ct_013", name: "Lisa Baines", role: "Play Therapist", organisation: "The Therapy Hub", category: "therapist", phone: "01332 700 100", email: "lisa@therapyhubderby.co.uk", address: "The Therapy Hub, Kedleston Road, Derby", linked_children: ["yp_alex"], is_emergency: false, notes: "Alex's play therapist. Weekly sessions. Good engagement reported.", last_updated: d(-10) },
-  { id: "ct_014", name: "Ofsted East Midlands", role: "Regulatory Body", organisation: "Ofsted", category: "ofsted", phone: "0300 123 1231", email: "enquiries@ofsted.gov.uk", address: "Piccadilly Gate, Store Street, Manchester M1 2WD", linked_children: [], is_emergency: false, notes: "Main Ofsted contact line. Monitoring visit confirmed.", last_updated: d(-7) },
-  { id: "ct_015", name: "Emergency Duty Team", role: "Out of Hours Social Work", organisation: "Derby City Council", category: "emergency", phone: "01332 786 968", email: "", address: "", linked_children: [], is_emergency: true, notes: "Available evenings, weekends, bank holidays. For all urgent safeguarding referrals outside office hours.", last_updated: d(-60) },
-  { id: "ct_016", name: "MASH (Multi-Agency Safeguarding Hub)", role: "Safeguarding Referral", organisation: "Derby Safeguarding Partnership", category: "emergency", phone: "01332 641 172", email: "mash@derby.gov.uk", address: "The Council House, Derby", linked_children: [], is_emergency: true, notes: "For all safeguarding referrals during office hours.", last_updated: d(-60) },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ContactDirectoryPage() {
   const { currentUser } = useAuthContext();
 
-  const [contacts, setContacts] = useState<Contact[]>(SEED);
+  const { data, isLoading } = useContactDirectoryEntries();
+  const createMutation = useCreateContactDirectoryEntry();
+  const contacts: ContactDirectoryEntry[] = data?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortBy, setSortBy] = useState("name");
@@ -120,6 +85,8 @@ export default function ContactDirectoryPage() {
 
   const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
 
+  if (isLoading) return <PageShell title="Contact Directory" subtitle="Professional contacts and emergency numbers"><div /></PageShell>;
+
   /* ── copy helper ────────────────────────────────────────────────────────── */
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -128,7 +95,7 @@ export default function ContactDirectoryPage() {
   };
 
   /* ── filtering ──────────────────────────────────────────────────────────── */
-  const filtered = useMemo(() => {
+  const filtered = (() => {
     let list = [...contacts];
     if (tab === "emergency") list = list.filter(c => c.is_emergency);
     if (tab === "by_child" && childFilter !== "all") list = list.filter(c => c.linked_children.includes(childFilter));
@@ -153,10 +120,10 @@ export default function ContactDirectoryPage() {
       }
     });
     return list;
-  }, [contacts, search, categoryFilter, sortBy, tab, childFilter]);
+  })();
 
   /* ── stats ──────────────────────────────────────────────────────────────── */
-  const stats = useMemo(() => ({
+  const stats = {
     total: contacts.length,
     linked: contacts.filter(c => c.linked_children.length > 0).length,
     emergency: contacts.filter(c => c.is_emergency).length,
@@ -165,10 +132,10 @@ export default function ContactDirectoryPage() {
       const diff = (Date.now() - new Date(c.last_updated).getTime()) / 86400000;
       return diff <= 30;
     }).length,
-  }), [contacts]);
+  };
 
   /* ── export ─────────────────────────────────────────────────────────────── */
-  const exportCols: ExportColumn<Contact>[] = [
+  const exportCols: ExportColumn<ContactDirectoryEntry>[] = [
     { header: "Name", accessor: r => r.name },
     { header: "Role", accessor: r => r.role },
     { header: "Organisation", accessor: r => r.organisation },
@@ -185,24 +152,28 @@ export default function ContactDirectoryPage() {
   /* ── create ─────────────────────────────────────────────────────────────── */
   const handleCreate = () => {
     if (!nName || !nRole || !nCategory) return;
-    const contact: Contact = {
-      id: `ct_${Date.now()}`,
-      name: nName,
-      role: nRole,
-      organisation: nOrg,
-      category: nCategory as ContactCategory,
-      phone: nPhone,
-      email: nEmail,
-      address: nAddress,
-      linked_children: [],
-      is_emergency: nEmergency,
-      notes: nNotes,
-      last_updated: todayStr(),
-    };
-    setContacts(prev => [contact, ...prev]);
-    setShowNew(false);
-    setNName(""); setNRole(""); setNOrg(""); setNCategory("");
-    setNPhone(""); setNEmail(""); setNAddress(""); setNNotes(""); setNEmergency(false);
+    createMutation.mutate(
+      {
+        name: nName,
+        role: nRole,
+        organisation: nOrg,
+        category: nCategory as ContactCategory,
+        phone: nPhone,
+        email: nEmail,
+        address: nAddress,
+        linked_children: [],
+        is_emergency: nEmergency,
+        notes: nNotes,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Contact added");
+          setShowNew(false);
+          setNName(""); setNRole(""); setNOrg(""); setNCategory("");
+          setNPhone(""); setNEmail(""); setNAddress(""); setNNotes(""); setNEmergency(false);
+        },
+      }
+    );
   };
 
   return (

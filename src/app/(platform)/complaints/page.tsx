@@ -61,6 +61,7 @@ const OUTCOME_COLOUR: Record<ComplaintOutcome, string> = {
   not_upheld:       "bg-emerald-50 text-emerald-700 border-emerald-200",
   inconclusive:     "bg-slate-50 text-slate-600 border-slate-200",
   withdrawn:        "bg-slate-50 text-slate-500 border-slate-200",
+  ongoing:          "bg-blue-50 text-blue-700 border-blue-200",
 };
 const OUTCOME_LABELS: Record<ComplaintOutcome, string> = {
   upheld:           "Upheld",
@@ -68,6 +69,7 @@ const OUTCOME_LABELS: Record<ComplaintOutcome, string> = {
   not_upheld:       "Not Upheld",
   inconclusive:     "Inconclusive",
   withdrawn:        "Withdrawn",
+  ongoing:          "Ongoing",
 };
 
 const CATEGORY_LABELS: Record<ComplaintCategory, string> = {

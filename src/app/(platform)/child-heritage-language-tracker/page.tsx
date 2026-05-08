@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import {
@@ -23,332 +24,93 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type {
+  HeritageLanguageRecord,
+  HeritageLanguageStatus,
+  LanguageIdentityImportance,
+  HeritageSkillLevel,
+} from "@/types/extended";
+import {
+  HERITAGE_LANGUAGE_STATUS_LABEL,
+  LANGUAGE_IDENTITY_IMPORTANCE_LABEL,
+} from "@/types/extended";
+import { useHeritageLanguageRecords } from "@/hooks/use-heritage-language-records";
 
-type LanguageStatus =
-  | "Mother tongue"
-  | "Fluent"
-  | "Conversational"
-  | "Developing"
-  | "Receptive only"
-  | "Lost — being recovered";
-
-type IdentityImportance =
-  | "Central"
-  | "Important"
-  | "Becoming important"
-  | "Mixed feelings"
-  | "Fading";
-
-type SkillLevel = 1 | 2 | 3 | 4 | 5;
-
-interface LanguageEntry {
-  name: string;
-  status: LanguageStatus;
-  speakingLevel: SkillLevel;
-  readingLevel: SkillLevel;
-  writingLevel: SkillLevel;
-}
-
-interface FamilyContact {
-  person: string;
-  relationship: string;
-  languageUsed: string;
-}
-
-interface LanguageRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  languages: LanguageEntry[];
-  primaryLanguageAtPlacement: string;
-  homeAtmosphereSupports: boolean;
-  opportunitiesToUse: string[];
-  communityResources: string[];
-  familyContactInLanguage: FamilyContact[];
-  readingMaterials: string[];
-  filmsMusic: string[];
-  formalLearning?: string;
-  identityImportance: IdentityImportance;
-  childVoice: string;
-  staffObservation: string;
-  flagsConcerns: string[];
-  nextStep: string;
-  reviewDate: string;
-  keyWorker: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const statusColour: Record<HeritageLanguageStatus, string> = {
+  mother_tongue: "bg-amber-100 text-amber-800",
+  fluent: "bg-emerald-100 text-emerald-800",
+  conversational: "bg-teal-100 text-teal-800",
+  developing: "bg-blue-100 text-blue-800",
+  receptive_only: "bg-purple-100 text-purple-800",
+  lost_being_recovered: "bg-rose-100 text-rose-800",
 };
 
-const data: LanguageRecord[] = [
-  {
-    id: "hlt-001",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-12),
-    languages: [
-      {
-        name: "Urdu",
-        status: "Mother tongue",
-        speakingLevel: 5,
-        readingLevel: 3,
-        writingLevel: 2,
-      },
-      {
-        name: "English",
-        status: "Fluent",
-        speakingLevel: 5,
-        readingLevel: 5,
-        writingLevel: 5,
-      },
-      {
-        name: "Arabic (Quranic)",
-        status: "Receptive only",
-        speakingLevel: 2,
-        readingLevel: 3,
-        writingLevel: 1,
-      },
-    ],
-    primaryLanguageAtPlacement:
-      "Urdu (with mum); English in school and most peer settings",
-    homeAtmosphereSupports: true,
-    opportunitiesToUse: [
-      "Weekly WhatsApp video call with mum — entirely in Urdu",
-      "Friday mosque attendance with Yusuf (mosque mentor) — Urdu and Arabic",
-      "Cooking with Chervelle on Pakistani-heritage food nights — Urdu food vocabulary",
-      "Teaching Casey Urdu greetings and counting (Casey curious) — reinforcing Jordan's confidence",
-    ],
-    communityResources: [
-      "Riverside Central Mosque — Urdu/Arabic Quran-school weekly",
-      "Pakistani Cultural Association — monthly youth night",
-      "Local Urdu library section (Riverside Central Library)",
-    ],
-    familyContactInLanguage: [
-      {
-        person: "Mum (Sabeen)",
-        relationship: "Mother",
-        languageUsed: "Urdu — exclusively",
-      },
-      {
-        person: "Cousin Devon",
-        relationship: "Cousin",
-        languageUsed: "Mix of English and Urdu — code-switches",
-      },
-      {
-        person: "Nani (maternal grandmother)",
-        relationship: "Grandmother",
-        languageUsed: "Urdu only — Jordan's grandmother does not speak English",
-      },
-    ],
-    readingMaterials: [
-      "Urdu writing practice book (Anna sourced — 'Urdu Qaida' beginner's primer)",
-      "Bilingual children's stories from library",
-      "Urdu Quran with English translation",
-    ],
-    filmsMusic: [
-      "Pakistani drama serials with mum (weekend catch-up)",
-      "Nusrat Fateh Ali Khan playlist (Jordan's choice)",
-      "Bollywood films — exposure to Urdu/Hindi mix",
-    ],
-    formalLearning:
-      "Mosque Quran-school 2x/week — Arabic recitation. Anna sourced Urdu writing book at Jordan's request — practising 30 mins twice a week with key worker support.",
-    identityImportance: "Central",
-    childVoice:
-      "Urdu is mum's language. When I speak Urdu I'm me. I want my writing to be as good as my speaking — Nani won't read English so I want to write to her properly.",
-    staffObservation:
-      "Jordan's heritage language is a core thread of identity and family connection. Active development — Jordan teaches Casey words (pride and reciprocity). Writing the weakest skill, now actively addressed. Mosque mentor Yusuf is a consistent Urdu/Arabic adult presence.",
-    flagsConcerns: [
-      "Writing competence well below speaking — risk of literacy gap if not supported",
-      "Arabic mostly Quranic/receptive — Jordan curious about conversational Arabic",
-    ],
-    nextStep:
-      "Continue Urdu writing book sessions with Anna. Plan handwritten letter to Nani by next review. Explore community Urdu literacy class if Jordan wishes.",
-    reviewDate: d(78),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "hlt-002",
-    youngPerson: "yp_alex",
-    recordedDate: d(-30),
-    languages: [
-      {
-        name: "English",
-        status: "Mother tongue",
-        speakingLevel: 5,
-        readingLevel: 5,
-        writingLevel: 4,
-      },
-    ],
-    primaryLanguageAtPlacement: "English — sole language",
-    homeAtmosphereSupports: true,
-    opportunitiesToUse: [
-      "All home and school settings — English mother tongue",
-      "Boxing club banter — Alex's preferred informal register",
-    ],
-    communityResources: [],
-    familyContactInLanguage: [
-      {
-        person: "Dad (occasional contact)",
-        relationship: "Father",
-        languageUsed: "English",
-      },
-    ],
-    readingMaterials: [
-      "Sports biographies — chosen by Alex",
-      "Graphic novels (preferred reading format)",
-    ],
-    filmsMusic: ["UK grime and drill", "Boxing documentaries"],
-    identityImportance: "Mixed feelings",
-    childVoice:
-      "English is just what I speak. I don't really think about it as a heritage thing.",
-    staffObservation:
-      "No additional heritage language relevant for Alex — English mother tongue with no other family or community languages identified. Record maintained for completeness and to evidence non-discriminatory tracking; revisit if Alex expresses interest in language learning.",
-    flagsConcerns: [],
-    nextStep:
-      "No active heritage language work. Annual review only unless Alex expresses interest.",
-    reviewDate: d(330),
-    keyWorker: "staff_edward",
-  },
-  {
-    id: "hlt-003",
-    youngPerson: "yp_casey",
-    recordedDate: d(-21),
-    languages: [
-      {
-        name: "English",
-        status: "Mother tongue",
-        speakingLevel: 5,
-        readingLevel: 5,
-        writingLevel: 5,
-      },
-      {
-        name: "British Sign Language (BSL)",
-        status: "Developing",
-        speakingLevel: 2,
-        readingLevel: 2,
-        writingLevel: 1,
-      },
-      {
-        name: "Urdu (greetings/counting)",
-        status: "Developing",
-        speakingLevel: 1,
-        readingLevel: 1,
-        writingLevel: 1,
-      },
-    ],
-    primaryLanguageAtPlacement: "English — sole language at placement",
-    homeAtmosphereSupports: true,
-    opportunitiesToUse: [
-      "BSL Level 1 evening class — Casey enrolled at Riverside Adult Learning",
-      "Signing with Ellie's deaf cousin Maya at sleepovers — real-life practice",
-      "Anna learning BSL alongside Casey — household reinforcement",
-      "Jordan teaches Casey Urdu greetings — household cross-pollination",
-    ],
-    communityResources: [
-      "Riverside Adult Learning — BSL Level 1 course (Casey is youngest learner — staff confirmed safeguarding plan)",
-      "Local Deaf Community Centre — open tea afternoon attended once with Anna",
-    ],
-    familyContactInLanguage: [
-      {
-        person: "Mum (where contact appropriate)",
-        relationship: "Mother",
-        languageUsed: "English",
-      },
-    ],
-    readingMaterials: [
-      "BSL fingerspelling chart (in Casey's bedroom)",
-      "'Sign with Me' illustrated dictionary",
-    ],
-    filmsMusic: [
-      "BSL music videos on YouTube (Casey curates own playlist)",
-      "Subtitled films preferred — sensory-friendly and BSL learning crossover",
-    ],
-    formalLearning:
-      "BSL Level 1 evening course — 10 weeks, week 4 of 10. Anna attending with Casey for support and to build joint household skill.",
-    identityImportance: "Becoming important",
-    childVoice:
-      "Maya is my best friend's cousin. I want to talk to her properly. Signing also feels good — it's quieter than talking. I like that words can be hands.",
-    staffObservation:
-      "Heritage of friendship and community — Casey's BSL learning rooted in genuine relationship with Maya, not abstract goal. Sensory crossover (visual-spatial, no auditory load) suits Casey. Cross-household enrichment: Jordan teaching Urdu greetings strengthens household belonging.",
-    flagsConcerns: [
-      "Monitor that BSL class environment remains right for Casey (sensory) — Anna present as anchor",
-    ],
-    nextStep:
-      "Complete BSL Level 1 with Casey. Plan signed conversation milestone with Maya by end of course. Continue Urdu greetings exchange with Jordan.",
-    reviewDate: d(60),
-    keyWorker: "staff_anna",
-  },
-];
-
-const statusColour: Record<LanguageStatus, string> = {
-  "Mother tongue": "bg-amber-100 text-amber-800",
-  Fluent: "bg-emerald-100 text-emerald-800",
-  Conversational: "bg-teal-100 text-teal-800",
-  Developing: "bg-blue-100 text-blue-800",
-  "Receptive only": "bg-purple-100 text-purple-800",
-  "Lost — being recovered": "bg-rose-100 text-rose-800",
+const importanceColour: Record<LanguageIdentityImportance, string> = {
+  central: "bg-amber-100 text-amber-800",
+  important: "bg-teal-100 text-teal-800",
+  becoming_important: "bg-blue-100 text-blue-800",
+  mixed_feelings: "bg-slate-100 text-slate-800",
+  fading: "bg-rose-100 text-rose-800",
 };
 
-const importanceColour: Record<IdentityImportance, string> = {
-  Central: "bg-amber-100 text-amber-800",
-  Important: "bg-teal-100 text-teal-800",
-  "Becoming important": "bg-blue-100 text-blue-800",
-  "Mixed feelings": "bg-slate-100 text-slate-800",
-  Fading: "bg-rose-100 text-rose-800",
-};
-
-const exportCols: ExportColumn<LanguageRecord>[] = [
-  { header: "Young Person", accessor: (r: LanguageRecord) => getYPName(r.youngPerson) },
-  { header: "Recorded", accessor: (r: LanguageRecord) => r.recordedDate },
+const exportCols: ExportColumn<HeritageLanguageRecord>[] = [
+  { header: "Young Person", accessor: (r: HeritageLanguageRecord) => getYPName(r.child_id) },
+  { header: "Recorded", accessor: (r: HeritageLanguageRecord) => r.recorded_date },
   {
     header: "Languages",
-    accessor: (r: LanguageRecord) =>
-      r.languages.map((l) => `${l.name} (${l.status})`).join("; "),
+    accessor: (r: HeritageLanguageRecord) =>
+      r.languages.map((l) => `${l.name} (${HERITAGE_LANGUAGE_STATUS_LABEL[l.status]})`).join("; "),
   },
   {
     header: "Primary Language at Placement",
-    accessor: (r: LanguageRecord) => r.primaryLanguageAtPlacement,
+    accessor: (r: HeritageLanguageRecord) => r.primary_language_at_placement,
   },
   {
     header: "Home Atmosphere Supports",
-    accessor: (r: LanguageRecord) => (r.homeAtmosphereSupports ? "Yes" : "No"),
+    accessor: (r: HeritageLanguageRecord) => (r.home_atmosphere_supports ? "Yes" : "No"),
   },
   {
     header: "Opportunities to Use",
-    accessor: (r: LanguageRecord) => r.opportunitiesToUse.join("; "),
+    accessor: (r: HeritageLanguageRecord) => r.opportunities_to_use.join("; "),
   },
   {
     header: "Community Resources",
-    accessor: (r: LanguageRecord) => r.communityResources.join("; "),
+    accessor: (r: HeritageLanguageRecord) => r.community_resources.join("; "),
   },
   {
     header: "Family Contacts in Language",
-    accessor: (r: LanguageRecord) =>
-      r.familyContactInLanguage
-        .map((f) => `${f.person} (${f.relationship}) — ${f.languageUsed}`)
+    accessor: (r: HeritageLanguageRecord) =>
+      r.family_contact_in_language
+        .map((f) => `${f.person} (${f.relationship}) — ${f.language_used}`)
         .join("; "),
   },
   {
     header: "Reading Materials",
-    accessor: (r: LanguageRecord) => r.readingMaterials.join("; "),
+    accessor: (r: HeritageLanguageRecord) => r.reading_materials.join("; "),
   },
-  { header: "Films/Music", accessor: (r: LanguageRecord) => r.filmsMusic.join("; ") },
-  { header: "Formal Learning", accessor: (r: LanguageRecord) => r.formalLearning ?? "" },
-  { header: "Identity Importance", accessor: (r: LanguageRecord) => r.identityImportance },
-  { header: "Child Voice", accessor: (r: LanguageRecord) => r.childVoice },
-  { header: "Staff Observation", accessor: (r: LanguageRecord) => r.staffObservation },
+  { header: "Films/Music", accessor: (r: HeritageLanguageRecord) => r.films_music.join("; ") },
+  { header: "Formal Learning", accessor: (r: HeritageLanguageRecord) => r.formal_learning ?? "" },
+  { header: "Identity Importance", accessor: (r: HeritageLanguageRecord) => LANGUAGE_IDENTITY_IMPORTANCE_LABEL[r.identity_importance] },
+  { header: "Child Voice", accessor: (r: HeritageLanguageRecord) => r.child_voice },
+  { header: "Staff Observation", accessor: (r: HeritageLanguageRecord) => r.staff_observation },
   {
     header: "Flags/Concerns",
-    accessor: (r: LanguageRecord) => r.flagsConcerns.join("; "),
+    accessor: (r: HeritageLanguageRecord) => r.flags_concerns.join("; "),
   },
-  { header: "Next Step", accessor: (r: LanguageRecord) => r.nextStep },
-  { header: "Review Date", accessor: (r: LanguageRecord) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: LanguageRecord) => getStaffName(r.keyWorker) },
+  { header: "Next Step", accessor: (r: HeritageLanguageRecord) => r.next_step },
+  { header: "Review Date", accessor: (r: HeritageLanguageRecord) => r.review_date },
+  { header: "Key Worker", accessor: (r: HeritageLanguageRecord) => getStaffName(r.key_worker) },
 ];
 
-function SkillBar({ level, label }: { level: SkillLevel; label: string }) {
+const importanceOptions: LanguageIdentityImportance[] = [
+  "central",
+  "important",
+  "becoming_important",
+  "mixed_feelings",
+  "fading",
+];
+
+function SkillBar({ level, label }: { level: HeritageSkillLevel; label: string }) {
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="w-16 text-muted-foreground">{label}</span>
@@ -369,24 +131,27 @@ function SkillBar({ level, label }: { level: SkillLevel; label: string }) {
 }
 
 export default function ChildHeritageLanguageTrackerPage() {
+  const { data: res, isLoading } = useHeritageLanguageRecords();
+  const items = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterImportance, setFilterImportance] = useState("all");
-  const [sortBy, setSortBy] = useState("recordedDate");
+  const [sortBy, setSortBy] = useState("recorded_date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let items = [...data];
+    let list = [...items];
     if (search.trim()) {
       const q = search.toLowerCase();
-      items = items.filter((r) => {
+      list = list.filter((r) => {
         const haystack = [
-          getYPName(r.youngPerson),
-          r.primaryLanguageAtPlacement,
+          getYPName(r.child_id),
+          r.primary_language_at_placement,
           r.languages.map((l) => l.name).join(" "),
-          r.opportunitiesToUse.join(" "),
-          r.communityResources.join(" "),
-          r.childVoice,
-          r.staffObservation,
+          r.opportunities_to_use.join(" "),
+          r.community_resources.join(" "),
+          r.child_voice,
+          r.staff_observation,
         ]
           .join(" ")
           .toLowerCase();
@@ -394,48 +159,54 @@ export default function ChildHeritageLanguageTrackerPage() {
       });
     }
     if (filterImportance !== "all") {
-      items = items.filter((r) => r.identityImportance === filterImportance);
+      list = list.filter((r) => r.identity_importance === filterImportance);
     }
-    items.sort((a, b) => {
+    list.sort((a, b) => {
       switch (sortBy) {
-        case "recordedDate":
-          return b.recordedDate.localeCompare(a.recordedDate);
-        case "reviewDate":
-          return a.reviewDate.localeCompare(b.reviewDate);
-        case "youngPerson":
-          return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+        case "recorded_date":
+          return b.recorded_date.localeCompare(a.recorded_date);
+        case "review_date":
+          return a.review_date.localeCompare(b.review_date);
+        case "child_id":
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "languageCount":
           return b.languages.length - a.languages.length;
         default:
           return 0;
       }
     });
-    return items;
-  }, [search, filterImportance, sortBy]);
+    return list;
+  }, [items, search, filterImportance, sortBy]);
 
-  const childrenWithHeritage = data.filter((r) =>
+  const childrenWithHeritage = items.filter((r) =>
     r.languages.some((l) => l.name !== "English")
   ).length;
-  const motherTongueFluent = data.filter((r) =>
-    r.languages.some((l) => l.status === "Mother tongue" && l.speakingLevel === 5)
+  const motherTongueFluent = items.filter((r) =>
+    r.languages.some((l) => l.status === "mother_tongue" && l.speaking_level === 5)
   ).length;
-  const familyContactsCount = data.reduce(
-    (acc, r) => acc + r.familyContactInLanguage.length,
+  const familyContactsCount = items.reduce(
+    (acc, r) => acc + r.family_contact_in_language.length,
     0
   );
-  const horizon = d(90);
-  const today = d(0);
-  const reviewsDue90d = data.filter(
-    (r) => r.reviewDate >= today && r.reviewDate <= horizon
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const horizon = new Date(now);
+  horizon.setDate(horizon.getDate() + 90);
+  const horizonStr = horizon.toISOString().slice(0, 10);
+  const reviewsDue90d = items.filter(
+    (r) => r.review_date >= todayStr && r.review_date <= horizonStr
   ).length;
 
-  const importanceOptions: IdentityImportance[] = [
-    "Central",
-    "Important",
-    "Becoming important",
-    "Mixed feelings",
-    "Fading",
-  ];
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Heritage Language Tracker"
+        subtitle="Per-child heritage language preservation and development — care preserves languages, never erases them"
+      >
+        <p>Loading…</p>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -444,7 +215,7 @@ export default function ChildHeritageLanguageTrackerPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
-            data={data}
+            data={items}
             columns={exportCols}
             filename="heritage-language-tracker"
           />
@@ -501,7 +272,7 @@ export default function ChildHeritageLanguageTrackerPage() {
             <SelectItem value="all">All Identity Importance</SelectItem>
             {importanceOptions.map((imp) => (
               <SelectItem key={imp} value={imp}>
-                {imp}
+                {LANGUAGE_IDENTITY_IMPORTANCE_LABEL[imp]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -513,9 +284,9 @@ export default function ChildHeritageLanguageTrackerPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="recordedDate">By Recorded (newest)</SelectItem>
-              <SelectItem value="reviewDate">By Review Date (soonest)</SelectItem>
-              <SelectItem value="youngPerson">By Young Person</SelectItem>
+              <SelectItem value="recorded_date">By Recorded (newest)</SelectItem>
+              <SelectItem value="review_date">By Review Date (soonest)</SelectItem>
+              <SelectItem value="child_id">By Young Person</SelectItem>
               <SelectItem value="languageCount">By Languages (most)</SelectItem>
             </SelectContent>
           </Select>
@@ -537,11 +308,11 @@ export default function ChildHeritageLanguageTrackerPage() {
                   <Globe className="h-5 w-5 text-amber-600 shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">
-                      {getYPName(r.youngPerson)}
+                      {getYPName(r.child_id)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {r.primaryLanguageAtPlacement} &middot; recorded{" "}
-                      {r.recordedDate} &middot; review {r.reviewDate}
+                      {r.primary_language_at_placement} &middot; recorded{" "}
+                      {r.recorded_date} &middot; review {r.review_date}
                     </p>
                   </div>
                 </div>
@@ -553,16 +324,16 @@ export default function ChildHeritageLanguageTrackerPage() {
                         statusColour[primaryLang.status]
                       )}
                     >
-                      {primaryLang.name} — {primaryLang.status}
+                      {primaryLang.name} — {HERITAGE_LANGUAGE_STATUS_LABEL[primaryLang.status]}
                     </span>
                   )}
                   <span
                     className={cn(
                       "text-xs px-2 py-0.5 rounded-full font-medium",
-                      importanceColour[r.identityImportance]
+                      importanceColour[r.identity_importance]
                     )}
                   >
-                    Identity: {r.identityImportance}
+                    Identity: {LANGUAGE_IDENTITY_IMPORTANCE_LABEL[r.identity_importance]}
                   </span>
                   {isExpanded ? (
                     <ChevronUp className="h-4 w-4" />
@@ -592,13 +363,13 @@ export default function ChildHeritageLanguageTrackerPage() {
                                 statusColour[l.status]
                               )}
                             >
-                              {l.status}
+                              {HERITAGE_LANGUAGE_STATUS_LABEL[l.status]}
                             </span>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <SkillBar level={l.speakingLevel} label="Speaking" />
-                            <SkillBar level={l.readingLevel} label="Reading" />
-                            <SkillBar level={l.writingLevel} label="Writing" />
+                            <SkillBar level={l.speaking_level} label="Speaking" />
+                            <SkillBar level={l.reading_level} label="Reading" />
+                            <SkillBar level={l.writing_level} label="Writing" />
                           </div>
                         </div>
                       ))}
@@ -612,7 +383,7 @@ export default function ChildHeritageLanguageTrackerPage() {
                         Opportunities to Use
                       </p>
                       <ul className="space-y-1">
-                        {r.opportunitiesToUse.map((o, i) => (
+                        {r.opportunities_to_use.map((o, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-amber-600 mt-0.5">•</span>
                             <span>{o}</span>
@@ -624,9 +395,9 @@ export default function ChildHeritageLanguageTrackerPage() {
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                         Community Resources
                       </p>
-                      {r.communityResources.length > 0 ? (
+                      {r.community_resources.length > 0 ? (
                         <ul className="space-y-1">
-                          {r.communityResources.map((c, i) => (
+                          {r.community_resources.map((c, i) => (
                             <li key={i} className="text-sm flex items-start gap-1">
                               <span className="text-teal-600 mt-0.5">•</span>
                               <span>{c}</span>
@@ -646,15 +417,15 @@ export default function ChildHeritageLanguageTrackerPage() {
                       <Heart className="h-3 w-3 inline mr-1" />
                       Family Contact in Language
                     </p>
-                    {r.familyContactInLanguage.length > 0 ? (
+                    {r.family_contact_in_language.length > 0 ? (
                       <ul className="space-y-1">
-                        {r.familyContactInLanguage.map((f, i) => (
+                        {r.family_contact_in_language.map((f, i) => (
                           <li key={i} className="text-sm">
                             <span className="font-medium">{f.person}</span>{" "}
                             <span className="text-muted-foreground">
                               ({f.relationship})
                             </span>
-                            — {f.languageUsed}
+                            — {f.language_used}
                           </li>
                         ))}
                       </ul>
@@ -671,9 +442,9 @@ export default function ChildHeritageLanguageTrackerPage() {
                         <BookOpen className="h-3 w-3 inline mr-1" />
                         Reading Materials
                       </p>
-                      {r.readingMaterials.length > 0 ? (
+                      {r.reading_materials.length > 0 ? (
                         <ul className="space-y-1">
-                          {r.readingMaterials.map((m, i) => (
+                          {r.reading_materials.map((m, i) => (
                             <li key={i} className="text-sm flex items-start gap-1">
                               <span className="text-amber-600 mt-0.5">•</span>
                               <span>{m}</span>
@@ -690,9 +461,9 @@ export default function ChildHeritageLanguageTrackerPage() {
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                         Films & Music
                       </p>
-                      {r.filmsMusic.length > 0 ? (
+                      {r.films_music.length > 0 ? (
                         <ul className="space-y-1">
-                          {r.filmsMusic.map((m, i) => (
+                          {r.films_music.map((m, i) => (
                             <li key={i} className="text-sm flex items-start gap-1">
                               <span className="text-teal-600 mt-0.5">•</span>
                               <span>{m}</span>
@@ -707,12 +478,12 @@ export default function ChildHeritageLanguageTrackerPage() {
                     </div>
                   </div>
 
-                  {r.formalLearning && (
+                  {r.formal_learning && (
                     <div className="bg-teal-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-teal-800 uppercase tracking-wide mb-1">
                         Formal Learning
                       </p>
-                      <p className="text-sm">{r.formalLearning}</p>
+                      <p className="text-sm">{r.formal_learning}</p>
                     </div>
                   )}
 
@@ -720,23 +491,23 @@ export default function ChildHeritageLanguageTrackerPage() {
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">
                       Child&apos;s Voice
                     </p>
-                    <p className="text-sm italic">&ldquo;{r.childVoice}&rdquo;</p>
+                    <p className="text-sm italic">&ldquo;{r.child_voice}&rdquo;</p>
                   </div>
 
                   <div className="bg-emerald-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">
                       Staff Observation
                     </p>
-                    <p className="text-sm">{r.staffObservation}</p>
+                    <p className="text-sm">{r.staff_observation}</p>
                   </div>
 
-                  {r.flagsConcerns.length > 0 && (
+                  {r.flags_concerns.length > 0 && (
                     <div className="bg-rose-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-rose-800 uppercase tracking-wide mb-1">
                         Flags / Concerns
                       </p>
                       <ul className="space-y-1">
-                        {r.flagsConcerns.map((f, i) => (
+                        {r.flags_concerns.map((f, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-rose-600 mt-0.5">•</span>
                             <span>{f}</span>
@@ -750,18 +521,20 @@ export default function ChildHeritageLanguageTrackerPage() {
                     <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
                       Next Step
                     </p>
-                    <p className="text-sm">{r.nextStep}</p>
+                    <p className="text-sm">{r.next_step}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span>Recorded: {r.recordedDate}</span>
-                    <span>Review: {r.reviewDate}</span>
-                    <span>Key worker: {getStaffName(r.keyWorker)}</span>
+                    <span>Recorded: {r.recorded_date}</span>
+                    <span>Review: {r.review_date}</span>
+                    <span>Key worker: {getStaffName(r.key_worker)}</span>
                     <span>
                       Home atmosphere supports:{" "}
-                      {r.homeAtmosphereSupports ? "Yes" : "No"}
+                      {r.home_atmosphere_supports ? "Yes" : "No"}
                     </span>
                   </div>
+
+                  <SmartLinkPanel sourceType="heritage-language" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               )}
             </div>

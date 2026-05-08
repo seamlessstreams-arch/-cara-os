@@ -1,16 +1,8 @@
 "use client";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — POSITIVE ACHIEVEMENTS
-// Celebrates and records children's positive achievements — awards, milestones,
-// certificates, personal bests, and moments of pride. Supports Reg 45 (positive
-// outcomes), strengths-based practice, and positive reinforcement approaches.
-// ══════════════════════════════════════════════════════════════════════════════
-
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -19,41 +11,20 @@ import { cn, formatDate } from "@/lib/utils";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { usePositiveAchievements } from "@/hooks/use-positive-achievements";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type { PositiveAchievement, PositiveAchievementCategory } from "@/types/extended";
+import { POSITIVE_ACHIEVEMENT_CATEGORY_LABEL } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Star, Trophy, Sparkles,
   ChevronDown, ChevronUp, User, Calendar, Heart,
   GraduationCap, Palette, MessageCircle, Brain,
-  Home, Users, Award, TrendingUp,
+  Home, Users, Award, TrendingUp, Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type AchievementCategory =
-  | "sport"
-  | "education"
-  | "creative"
-  | "communication"
-  | "emotional"
-  | "independence"
-  | "social"
-  | "milestone";
-
-interface Achievement {
-  id: string;
-  youngPersonId: string;
-  date: string;
-  category: AchievementCategory;
-  title: string;
-  description: string;
-  recordedBy: string;
-  sharedWith: string[];
-  celebratedHow: string;
-  childReaction: string;
-}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const CATEGORY_CONFIG: Record<AchievementCategory, { label: string; colour: string; icon: React.ElementType }> = {
+const CATEGORY_CONFIG: Record<PositiveAchievementCategory, { label: string; colour: string; icon: React.ElementType }> = {
   sport:         { label: "Sport",          colour: "bg-blue-100 text-blue-700",   icon: Trophy },
   education:     { label: "Education",      colour: "bg-purple-100 text-purple-700", icon: GraduationCap },
   creative:      { label: "Creative",       colour: "bg-pink-100 text-pink-700",   icon: Palette },
@@ -64,182 +35,87 @@ const CATEGORY_CONFIG: Record<AchievementCategory, { label: string; colour: stri
   milestone:     { label: "Milestone",      colour: "bg-emerald-100 text-emerald-700", icon: Award },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: Achievement[] = [
-  {
-    id: "ach_001",
-    youngPersonId: "yp_alex",
-    date: d(-5),
-    category: "sport",
-    title: "Selected for county football trials",
-    description: "Alex was selected from 40 boys for the county trials after impressing at his club. He was over the moon. This is a huge achievement and reflects his dedication to training.",
-    recordedBy: "staff_ryan",
-    sharedWith: ["Social worker", "School", "Family"],
-    celebratedHow: "Announced at house meeting. Staff gave a round of applause. New football boots purchased as reward.",
-    childReaction: "Beaming with pride. Told every member of staff individually. Asked to call his mum to tell her.",
-  },
-  {
-    id: "ach_002",
-    youngPersonId: "yp_alex",
-    date: d(-14),
-    category: "education",
-    title: "91% school attendance this term",
-    description: "Best attendance since entering care. Consistent effort every morning.",
-    recordedBy: "staff_ryan",
-    sharedWith: ["Social worker", "School", "IRO"],
-    celebratedHow: "Certificate presented at PEP meeting. Added to achievements wall in hallway.",
-    childReaction: "Quietly pleased. Said 'it's not that hard when you actually go.' Understated but clearly proud.",
-  },
-  {
-    id: "ach_003",
-    youngPersonId: "yp_jordan",
-    date: d(-10),
-    category: "creative",
-    title: "Artwork displayed in school reception",
-    description: "Jordan's painting of the ocean was selected by the art teacher for permanent display. Jordan was visibly proud — smiled and pointed at it when we visited school.",
-    recordedBy: "staff_anna",
-    sharedWith: ["Social worker", "Family"],
-    celebratedHow: "Photo taken and framed for Jordan's room. Shared at house meeting with applause.",
-    childReaction: "Jordan smiled broadly and pointed at the painting when visiting school. Asked staff to take a photo.",
-  },
-  {
-    id: "ach_004",
-    youngPersonId: "yp_jordan",
-    date: d(-3),
-    category: "communication",
-    title: "Used verbal request at dinner without prompting",
-    description: "Jordan said 'more please' at dinner without any visual prompt. First unprompted verbal request in 2 weeks. Celebrated with positive praise.",
-    recordedBy: "staff_anna",
-    sharedWith: ["SALT", "Social worker"],
-    celebratedHow: "Immediate verbal praise and a big smile from staff. Extra portion given enthusiastically. Noted in communication log for SALT review.",
-    childReaction: "Jordan looked pleased and made eye contact. Repeated 'more please' the next evening too.",
-  },
-  {
-    id: "ach_005",
-    youngPersonId: "yp_casey",
-    date: d(-7),
-    category: "education",
-    title: "Completed art coursework piece",
-    description: "Despite not attending college, Casey completed an outstanding art piece at home. Chervelle supported. College accepted it — potential Distinction level.",
-    recordedBy: "staff_chervelle",
-    sharedWith: ["Social worker", "College tutor", "Virtual School"],
-    celebratedHow: "Photographed for portfolio. Casey chose to display it in the lounge. Staff wrote congratulations card.",
-    childReaction: "Casey was surprised the college accepted it. Said 'I didn't think they'd care.' Smiled when told it could be a Distinction.",
-  },
-  {
-    id: "ach_006",
-    youngPersonId: "yp_casey",
-    date: d(-2),
-    category: "emotional",
-    title: "Used grounding technique independently",
-    description: "Casey was feeling overwhelmed and used the breathing exercise from her toolkit without staff prompting. Told Chervelle 'I did the breathing thing.' Major progress.",
-    recordedBy: "staff_chervelle",
-    sharedWith: ["Therapist", "Social worker"],
-    celebratedHow: "Verbal praise and acknowledgement. Casey's therapist informed — will reinforce in next session.",
-    childReaction: "Casey seemed proud of herself. Said 'it actually works sometimes.' Appeared calmer throughout the evening.",
-  },
-  {
-    id: "ach_007",
-    youngPersonId: "yp_alex",
-    date: d(-8),
-    category: "independence",
-    title: "Cooked spaghetti bolognese for the house",
-    description: "Alex's first full meal cooked independently (with supervision). Everyone ate it and Casey said it was 'actually good.' Alex was proud.",
-    recordedBy: "staff_ryan",
-    sharedWith: ["Social worker"],
-    celebratedHow: "Everyone thanked Alex at dinner. Photo taken for life-story work. Added to independence skills tracker.",
-    childReaction: "Alex was proud and kept asking if people liked it. Asked what he could cook next week.",
-  },
-  {
-    id: "ach_008",
-    youngPersonId: "yp_jordan",
-    date: d(-6),
-    category: "independence",
-    title: "Completed morning routine independently (3 days in a row)",
-    description: "Jordan followed the visual schedule without any prompting for 3 consecutive mornings. Significant progress.",
-    recordedBy: "staff_anna",
-    sharedWith: ["Social worker", "School"],
-    celebratedHow: "3 tokens added to reward chart. Approaching 20-token goal. Praised at house meeting.",
-    childReaction: "Jordan appeared confident and ready earlier than usual each morning. Showed staff the completed checklist with a smile.",
-  },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function PositiveAchievementsPage() {
-  const [achievements] = useState<Achievement[]>(SEED);
+  const { data: records = [], isLoading } = usePositiveAchievements();
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const childIds = useMemo(() => [...new Set(achievements.map(a => a.youngPersonId))], [achievements]);
+  const childIds = useMemo(() => [...new Set(records.map(a => a.child_id))], [records]);
 
   /* ── filtering ──────────────────────────────────────────────────────────── */
   const filtered = useMemo(() => {
-    let list = [...achievements];
-    if (childFilter !== "all") list = list.filter(a => a.youngPersonId === childFilter);
+    let list = [...records];
+    if (childFilter !== "all") list = list.filter(a => a.child_id === childFilter);
     if (categoryFilter !== "all") list = list.filter(a => a.category === categoryFilter);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(a =>
         a.title.toLowerCase().includes(q) ||
         a.description.toLowerCase().includes(q) ||
-        getYPName(a.youngPersonId).toLowerCase().includes(q)
+        getYPName(a.child_id).toLowerCase().includes(q)
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
         case "newest": return b.date.localeCompare(a.date);
         case "oldest": return a.date.localeCompare(b.date);
-        case "child":  return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
+        case "child":  return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "category": return a.category.localeCompare(b.category);
         default: return 0;
       }
     });
     return list;
-  }, [achievements, search, childFilter, categoryFilter, sortBy]);
+  }, [records, search, childFilter, categoryFilter, sortBy]);
 
   /* ── stats ──────────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
     const perChild = new Map<string, number>();
-    const perCategory = new Map<AchievementCategory, number>();
-    achievements.forEach(a => {
-      perChild.set(a.youngPersonId, (perChild.get(a.youngPersonId) || 0) + 1);
+    const perCategory = new Map<PositiveAchievementCategory, number>();
+    records.forEach(a => {
+      perChild.set(a.child_id, (perChild.get(a.child_id) || 0) + 1);
       perCategory.set(a.category, (perCategory.get(a.category) || 0) + 1);
     });
-    let topCategory: AchievementCategory = "education";
+    let topCategory: PositiveAchievementCategory = "education";
     let topCount = 0;
     perCategory.forEach((count, cat) => {
       if (count > topCount) { topCount = count; topCategory = cat; }
     });
     return {
-      total: achievements.length,
+      total: records.length,
       perChild,
       perCategory,
       topCategory,
     };
-  }, [achievements]);
+  }, [records]);
 
   /* ── export columns ─────────────────────────────────────────────────────── */
-  const exportCols: ExportColumn<Achievement>[] = [
-    { header: "ID", accessor: (r: Achievement) => r.id },
-    { header: "Young Person", accessor: (r: Achievement) => getYPName(r.youngPersonId) },
-    { header: "Date", accessor: (r: Achievement) => r.date },
-    { header: "Category", accessor: (r: Achievement) => CATEGORY_CONFIG[r.category].label },
-    { header: "Title", accessor: (r: Achievement) => r.title },
-    { header: "Description", accessor: (r: Achievement) => r.description },
-    { header: "Recorded By", accessor: (r: Achievement) => getStaffName(r.recordedBy) },
-    { header: "Shared With", accessor: (r: Achievement) => r.sharedWith.join(", ") },
-    { header: "How Celebrated", accessor: (r: Achievement) => r.celebratedHow },
-    { header: "Child Reaction", accessor: (r: Achievement) => r.childReaction },
+  const exportCols: ExportColumn<PositiveAchievement>[] = [
+    { header: "ID", accessor: (r) => r.id },
+    { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+    { header: "Date", accessor: (r) => r.date },
+    { header: "Category", accessor: (r) => CATEGORY_CONFIG[r.category].label },
+    { header: "Title", accessor: (r) => r.title },
+    { header: "Description", accessor: (r) => r.description },
+    { header: "Recorded By", accessor: (r) => getStaffName(r.recorded_by) },
+    { header: "Shared With", accessor: (r) => r.shared_with.join(", ") },
+    { header: "How Celebrated", accessor: (r) => r.celebrated_how },
+    { header: "Child Reaction", accessor: (r) => r.child_reaction },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Positive Achievements" subtitle="Celebrating strengths, progress, and moments of pride">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -247,7 +123,7 @@ export default function PositiveAchievementsPage() {
       subtitle="Celebrating strengths, progress, and moments of pride"
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Positive Achievements" subtitle="Oak House — Celebrating Success" />
+          <PrintButton title="Positive Achievements" />
           <ExportButton data={filtered} columns={exportCols} filename="positive-achievements" />
         </div>
       }
@@ -303,7 +179,7 @@ export default function PositiveAchievementsPage() {
           <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {(Object.entries(CATEGORY_CONFIG) as [AchievementCategory, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(CATEGORY_CONFIG) as [PositiveAchievementCategory, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -359,7 +235,7 @@ export default function PositiveAchievementsPage() {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {getYPName(achievement.youngPersonId)} · {formatDate(achievement.date)} · {getStaffName(achievement.recordedBy)}
+                    {getYPName(achievement.child_id)} · {formatDate(achievement.date)} · {getStaffName(achievement.recorded_by)}
                   </p>
                 </div>
                 <Star className="h-4 w-4 text-amber-400 shrink-0" />
@@ -378,21 +254,21 @@ export default function PositiveAchievementsPage() {
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1 flex items-center gap-1">
                         <Heart className="h-3 w-3 text-green-600" /> How We Celebrated
                       </p>
-                      <p className="text-sm">{achievement.celebratedHow}</p>
+                      <p className="text-sm">{achievement.celebrated_how}</p>
                     </div>
                     <div className="rounded-lg border border-green-100 p-2.5 bg-white">
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1 flex items-center gap-1">
                         <Sparkles className="h-3 w-3 text-amber-500" /> Child&apos;s Reaction
                       </p>
-                      <p className="text-sm">{achievement.childReaction}</p>
+                      <p className="text-sm">{achievement.child_reaction}</p>
                     </div>
                   </div>
 
-                  {achievement.sharedWith.length > 0 && (
+                  {achievement.shared_with.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Shared With</p>
                       <div className="flex flex-wrap gap-1">
-                        {achievement.sharedWith.map(s => (
+                        {achievement.shared_with.map(s => (
                           <Badge key={s} variant="outline" className="text-xs bg-green-50 text-green-700">{s}</Badge>
                         ))}
                       </div>
@@ -400,9 +276,11 @@ export default function PositiveAchievementsPage() {
                   )}
 
                   <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1 border-t border-green-100">
-                    <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />{getStaffName(achievement.recordedBy)}</span>
+                    <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />{getStaffName(achievement.recorded_by)}</span>
                     <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{formatDate(achievement.date)}</span>
                   </div>
+
+                  <SmartLinkPanel sourceType="positive_achievement" sourceId={achievement.id} childId={achievement.child_id} compact />
                 </div>
               )}
             </div>

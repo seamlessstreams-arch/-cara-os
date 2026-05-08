@@ -15,83 +15,44 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-
-/* ── types ─────────────────────────────────────────────────────────────────── */
-
-type VisionStatus =
-  | "No correction needed"
-  | "Prescription glasses"
-  | "Contact lenses"
-  | "Glasses + contacts"
-  | "Awaiting test"
-  | "Specialist referral active";
-
-type WearConsistency = "Always" | "Mostly" | "Inconsistent" | "Resists";
-
-interface VisionRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  status: VisionStatus;
-  lastSightTestDate?: string;
-  nextSightTestDue?: string;
-  optometrist?: string;
-  prescription?: { right: string; left: string };
-  glassesFrames?: { brand: string; model: string; purchaseDate: string };
-  spareGlassesAvailable: boolean;
-  contactLensType?: string;
-  symptomsReported: string[];
-  specialistReferral?: { service: string; date: string; reason: string };
-  schoolAware: boolean;
-  childWearsConsistently?: WearConsistency;
-  cleaningRoutine: string[];
-  childVoice: string;
-  staffObservation: string;
-  reviewDate: string;
-  keyWorker: string;
-}
+import type {
+  VisionCareRecord,
+  VisionStatus,
+  GlassesWearConsistency,
+} from "@/types/extended";
+import {
+  VISION_STATUS_LABEL,
+  GLASSES_WEAR_CONSISTENCY_LABEL,
+} from "@/types/extended";
+import { useVisionCareRecords } from "@/hooks/use-vision-care-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
 const STATUS_CLR: Record<VisionStatus, string> = {
-  "No correction needed": "bg-emerald-100 text-emerald-800",
-  "Prescription glasses": "bg-sky-100 text-sky-800",
-  "Contact lenses": "bg-teal-100 text-teal-800",
-  "Glasses + contacts": "bg-cyan-100 text-cyan-800",
-  "Awaiting test": "bg-amber-100 text-amber-800",
-  "Specialist referral active": "bg-rose-100 text-rose-800",
+  no_correction_needed: "bg-emerald-100 text-emerald-800",
+  prescription_glasses: "bg-sky-100 text-sky-800",
+  contact_lenses: "bg-teal-100 text-teal-800",
+  glasses_and_contacts: "bg-cyan-100 text-cyan-800",
+  awaiting_test: "bg-amber-100 text-amber-800",
+  specialist_referral_active: "bg-rose-100 text-rose-800",
 };
 
 const BORDER_STATUS: Record<VisionStatus, string> = {
-  "No correction needed": "border-l-emerald-400",
-  "Prescription glasses": "border-l-sky-500",
-  "Contact lenses": "border-l-teal-500",
-  "Glasses + contacts": "border-l-cyan-500",
-  "Awaiting test": "border-l-amber-500",
-  "Specialist referral active": "border-l-rose-500",
+  no_correction_needed: "border-l-emerald-400",
+  prescription_glasses: "border-l-sky-500",
+  contact_lenses: "border-l-teal-500",
+  glasses_and_contacts: "border-l-cyan-500",
+  awaiting_test: "border-l-amber-500",
+  specialist_referral_active: "border-l-rose-500",
 };
 
-const WEAR_CLR: Record<WearConsistency, string> = {
-  "Always": "bg-emerald-100 text-emerald-800",
-  "Mostly": "bg-sky-100 text-sky-800",
-  "Inconsistent": "bg-amber-100 text-amber-800",
-  "Resists": "bg-rose-100 text-rose-800",
+const WEAR_CLR: Record<GlassesWearConsistency, string> = {
+  always: "bg-emerald-100 text-emerald-800",
+  mostly: "bg-sky-100 text-sky-800",
+  inconsistent: "bg-amber-100 text-amber-800",
+  resists: "bg-rose-100 text-rose-800",
 };
-
-const STATUSES: VisionStatus[] = [
-  "No correction needed",
-  "Prescription glasses",
-  "Contact lenses",
-  "Glasses + contacts",
-  "Awaiting test",
-  "Specialist referral active",
-];
 
 const isOverdue = (dateStr?: string) => {
   if (!dateStr) return false;
@@ -104,87 +65,12 @@ const daysUntil = (dateStr?: string) => {
   return Math.ceil(ms / (1000 * 60 * 60 * 24));
 };
 
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: VisionRecord[] = [
-  {
-    id: "vis_1",
-    youngPerson: "yp_casey",
-    recordedDate: d(-30),
-    status: "Prescription glasses",
-    lastSightTestDate: d(-90),
-    nextSightTestDue: d(275),
-    optometrist: "Specsavers — Derby City",
-    prescription: { right: "-1.25 sph", left: "-1.50 sph" },
-    glassesFrames: {
-      brand: "Specsavers Kids",
-      model: "Tortoiseshell round (£45 NHS voucher)",
-      purchaseDate: d(-85),
-    },
-    spareGlassesAvailable: true,
-    symptomsReported: ["Squinting at whiteboard before test", "Headaches when reading small print"],
-    schoolAware: true,
-    childWearsConsistently: "Mostly",
-    cleaningRoutine: [
-      "Daily prompt at breakfast — microfibre cloth",
-      "Weekly rinse with lukewarm water",
-      "Stored in hard case overnight",
-    ],
-    childVoice:
-      "I like my round ones, they're better than the square pair. Sometimes I forget them when I rush to school though.",
-    staffObservation:
-      "Casey wears glasses for school and reading. Forgets them when going out with friends — gentle prompt at the door now part of routine. Spare pair kept in bedroom drawer in case of breakage. No complaints of headaches since prescription started.",
-    reviewDate: d(60),
-    keyWorker: "staff_chervelle",
-  },
-  {
-    id: "vis_2",
-    youngPerson: "yp_alex",
-    recordedDate: d(-20),
-    status: "No correction needed",
-    lastSightTestDate: d(-330),
-    nextSightTestDue: d(35),
-    optometrist: "Boots Opticians — Derby Westfield",
-    spareGlassesAvailable: false,
-    symptomsReported: [],
-    schoolAware: true,
-    cleaningRoutine: [],
-    childVoice:
-      "My eyes are fine. The eye drops were weird but the lady was nice. I don't need glasses.",
-    staffObservation:
-      "Alex passed last NHS sight test with no correction needed. Heavy screen-time use (gaming, schoolwork) — staff prompt 20-20-20 rule (every 20 mins, look 20 ft away for 20 sec). Next annual test booked for next month. No reported symptoms.",
-    reviewDate: d(35),
-    keyWorker: "staff_edward",
-  },
-  {
-    id: "vis_3",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-5),
-    status: "Awaiting test",
-    lastSightTestDate: d(-420),
-    nextSightTestDue: d(-60),
-    optometrist: "Vision Express — Intu Derby (booked)",
-    spareGlassesAvailable: false,
-    symptomsReported: [
-      "Headaches when reading reported over past 3 weeks",
-      "Holding book/phone closer than usual",
-      "Rubbing eyes after homework",
-    ],
-    schoolAware: true,
-    cleaningRoutine: [],
-    childVoice:
-      "My head hurts when I do my homework. The words go a bit fuzzy if I read for ages. I don't really want glasses but I'll try.",
-    staffObservation:
-      "Last NHS test 14 months ago — overdue per annual under-16 entitlement. Headaches and reading difficulty reported by Jordan to keyworker on key work session. Appointment booked at Vision Express for next week. School informed and have moved Jordan closer to whiteboard as interim measure. Will support Jordan at appointment and discuss any anxieties about wearing glasses beforehand.",
-    reviewDate: d(14),
-    keyWorker: "staff_anna",
-  },
-];
-
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function ChildVisionCarePage() {
-  const [data] = useState(SEED);
+  const { data: res, isLoading } = useVisionCareRecords();
+  const items = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("review-asc");
@@ -195,81 +81,85 @@ export default function ChildVisionCarePage() {
   /* ── derived ─────────────────────────────────────────────────────────────── */
 
   const filtered = useMemo(() => {
-    let rows = data.filter((r) => {
+    let rows = items.filter((r) => {
       if (filterStatus !== "all" && r.status !== filterStatus) return false;
       if (search) {
         const q = search.toLowerCase();
         return (
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
+          getYPName(r.child_id).toLowerCase().includes(q) ||
           (r.optometrist ?? "").toLowerCase().includes(q) ||
-          r.staffObservation.toLowerCase().includes(q) ||
-          r.childVoice.toLowerCase().includes(q) ||
-          r.symptomsReported.some((s) => s.toLowerCase().includes(q))
+          r.staff_observation.toLowerCase().includes(q) ||
+          r.child_voice.toLowerCase().includes(q) ||
+          r.symptoms_reported.some((s) => s.toLowerCase().includes(q))
         );
       }
       return true;
     });
     rows = [...rows].sort((a, b) => {
       switch (sortBy) {
-        case "review-asc": return a.reviewDate.localeCompare(b.reviewDate);
-        case "review-desc": return b.reviewDate.localeCompare(a.reviewDate);
-        case "yp": return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+        case "review-asc": return a.review_date.localeCompare(b.review_date);
+        case "review-desc": return b.review_date.localeCompare(a.review_date);
+        case "yp": return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         case "status": return a.status.localeCompare(b.status);
         case "test-overdue": {
-          const ao = isOverdue(a.nextSightTestDue) ? 0 : 1;
-          const bo = isOverdue(b.nextSightTestDue) ? 0 : 1;
+          const ao = isOverdue(a.next_sight_test_due) ? 0 : 1;
+          const bo = isOverdue(b.next_sight_test_due) ? 0 : 1;
           if (ao !== bo) return ao - bo;
-          return (a.nextSightTestDue ?? "").localeCompare(b.nextSightTestDue ?? "");
+          return (a.next_sight_test_due ?? "").localeCompare(b.next_sight_test_due ?? "");
         }
         default: return 0;
       }
     });
     return rows;
-  }, [data, search, filterStatus, sortBy]);
+  }, [items, search, filterStatus, sortBy]);
 
   /* ── stats ───────────────────────────────────────────────────────────────── */
 
-  const prescriptionCount = data.filter(
-    (r) => r.status === "Prescription glasses" || r.status === "Contact lenses" || r.status === "Glasses + contacts",
+  const prescriptionCount = items.filter(
+    (r) => r.status === "prescription_glasses" || r.status === "contact_lenses" || r.status === "glasses_and_contacts",
   ).length;
 
-  const overdueTests = data.filter((r) => isOverdue(r.nextSightTestDue)).length;
+  const overdueTests = items.filter((r) => isOverdue(r.next_sight_test_due)).length;
 
-  const sparesAvailable = data.filter((r) => r.spareGlassesAvailable).length;
+  const sparesAvailable = items.filter((r) => r.spare_glasses_available).length;
 
-  const reviewsDue90 = data.filter((r) => {
-    const days = daysUntil(r.reviewDate);
+  const reviewsDue90 = items.filter((r) => {
+    const days = daysUntil(r.review_date);
     return days >= 0 && days <= 90;
   }).length;
 
   /* ── export ──────────────────────────────────────────────────────────────── */
 
-  const exportCols: ExportColumn<VisionRecord>[] = [
-    { header: "Young Person", accessor: (r: VisionRecord) => getYPName(r.youngPerson) },
-    { header: "Recorded Date", accessor: (r: VisionRecord) => r.recordedDate },
-    { header: "Status", accessor: (r: VisionRecord) => r.status },
-    { header: "Last Sight Test", accessor: (r: VisionRecord) => r.lastSightTestDate ?? "" },
-    { header: "Next Sight Test Due", accessor: (r: VisionRecord) => r.nextSightTestDue ?? "" },
-    { header: "Optometrist", accessor: (r: VisionRecord) => r.optometrist ?? "" },
-    { header: "Right Eye", accessor: (r: VisionRecord) => r.prescription?.right ?? "" },
-    { header: "Left Eye", accessor: (r: VisionRecord) => r.prescription?.left ?? "" },
-    { header: "Frame Brand", accessor: (r: VisionRecord) => r.glassesFrames?.brand ?? "" },
-    { header: "Frame Model", accessor: (r: VisionRecord) => r.glassesFrames?.model ?? "" },
-    { header: "Frame Purchase Date", accessor: (r: VisionRecord) => r.glassesFrames?.purchaseDate ?? "" },
-    { header: "Spare Glasses Available", accessor: (r: VisionRecord) => (r.spareGlassesAvailable ? "Yes" : "No") },
-    { header: "Contact Lens Type", accessor: (r: VisionRecord) => r.contactLensType ?? "" },
-    { header: "Symptoms Reported", accessor: (r: VisionRecord) => r.symptomsReported.join("; ") },
-    { header: "Specialist Service", accessor: (r: VisionRecord) => r.specialistReferral?.service ?? "" },
-    { header: "Specialist Referral Date", accessor: (r: VisionRecord) => r.specialistReferral?.date ?? "" },
-    { header: "Specialist Reason", accessor: (r: VisionRecord) => r.specialistReferral?.reason ?? "" },
-    { header: "School Aware", accessor: (r: VisionRecord) => (r.schoolAware ? "Yes" : "No") },
-    { header: "Wears Consistently", accessor: (r: VisionRecord) => r.childWearsConsistently ?? "" },
-    { header: "Cleaning Routine", accessor: (r: VisionRecord) => r.cleaningRoutine.join("; ") },
-    { header: "Child Voice", accessor: (r: VisionRecord) => r.childVoice },
-    { header: "Staff Observation", accessor: (r: VisionRecord) => r.staffObservation },
-    { header: "Review Date", accessor: (r: VisionRecord) => r.reviewDate },
-    { header: "Key Worker", accessor: (r: VisionRecord) => getStaffName(r.keyWorker) },
+  const exportCols: ExportColumn<VisionCareRecord>[] = [
+    { header: "Young Person", accessor: (r: VisionCareRecord) => getYPName(r.child_id) },
+    { header: "Recorded Date", accessor: (r: VisionCareRecord) => r.recorded_date },
+    { header: "Status", accessor: (r: VisionCareRecord) => VISION_STATUS_LABEL[r.status] },
+    { header: "Last Sight Test", accessor: (r: VisionCareRecord) => r.last_sight_test_date ?? "" },
+    { header: "Next Sight Test Due", accessor: (r: VisionCareRecord) => r.next_sight_test_due ?? "" },
+    { header: "Optometrist", accessor: (r: VisionCareRecord) => r.optometrist ?? "" },
+    { header: "Right Eye", accessor: (r: VisionCareRecord) => r.prescription?.right ?? "" },
+    { header: "Left Eye", accessor: (r: VisionCareRecord) => r.prescription?.left ?? "" },
+    { header: "Frame Brand", accessor: (r: VisionCareRecord) => r.glasses_frames?.brand ?? "" },
+    { header: "Frame Model", accessor: (r: VisionCareRecord) => r.glasses_frames?.model ?? "" },
+    { header: "Frame Purchase Date", accessor: (r: VisionCareRecord) => r.glasses_frames?.purchase_date ?? "" },
+    { header: "Spare Glasses Available", accessor: (r: VisionCareRecord) => (r.spare_glasses_available ? "Yes" : "No") },
+    { header: "Contact Lens Type", accessor: (r: VisionCareRecord) => r.contact_lens_type ?? "" },
+    { header: "Symptoms Reported", accessor: (r: VisionCareRecord) => r.symptoms_reported.join("; ") },
+    { header: "Specialist Service", accessor: (r: VisionCareRecord) => r.specialist_referral?.service ?? "" },
+    { header: "Specialist Referral Date", accessor: (r: VisionCareRecord) => r.specialist_referral?.date ?? "" },
+    { header: "Specialist Reason", accessor: (r: VisionCareRecord) => r.specialist_referral?.reason ?? "" },
+    { header: "School Aware", accessor: (r: VisionCareRecord) => (r.school_aware ? "Yes" : "No") },
+    { header: "Wears Consistently", accessor: (r: VisionCareRecord) => r.child_wears_consistently ? GLASSES_WEAR_CONSISTENCY_LABEL[r.child_wears_consistently] : "" },
+    { header: "Cleaning Routine", accessor: (r: VisionCareRecord) => r.cleaning_routine },
+    { header: "Child Voice", accessor: (r: VisionCareRecord) => r.child_voice },
+    { header: "Staff Observation", accessor: (r: VisionCareRecord) => r.staff_observation },
+    { header: "Review Date", accessor: (r: VisionCareRecord) => r.review_date },
+    { header: "Key Worker", accessor: (r: VisionCareRecord) => getStaffName(r.key_worker) },
   ];
+
+  /* ── loading state ─────────────────────────────────────────────────────── */
+
+  if (isLoading) return <PageShell title="Child Vision Care" subtitle="Quality Standard 8 (Health) · NHS sight test entitlement · UNCRC Art. 24 · GOC standards"><div /></PageShell>;
 
   /* ── render ──────────────────────────────────────────────────────────────── */
 
@@ -347,7 +237,9 @@ export default function ChildVisionCarePage() {
             <SelectTrigger className="w-[210px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              {STATUSES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+              {(Object.entries(VISION_STATUS_LABEL) as [VisionStatus, string][]).map(([key, label]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -366,23 +258,23 @@ export default function ChildVisionCarePage() {
         <div className="space-y-3">
           {filtered.map((r) => {
             const open = expandedId === r.id;
-            const overdue = isOverdue(r.nextSightTestDue);
+            const overdue = isOverdue(r.next_sight_test_due);
             return (
               <Card key={r.id} className={cn("border-l-4", BORDER_STATUS[r.status])}>
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1 flex-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {getYPName(r.youngPerson)}
-                        <Badge variant="outline" className={STATUS_CLR[r.status]}>{r.status}</Badge>
-                        {r.lastSightTestDate && (
+                        {getYPName(r.child_id)}
+                        <Badge variant="outline" className={STATUS_CLR[r.status]}>{VISION_STATUS_LABEL[r.status]}</Badge>
+                        {r.last_sight_test_date && (
                           <Badge variant="outline" className="bg-slate-100 text-slate-700">
-                            <Calendar className="h-3 w-3 mr-1" /> Tested {r.lastSightTestDate}
+                            <Calendar className="h-3 w-3 mr-1" /> Tested {r.last_sight_test_date}
                           </Badge>
                         )}
-                        {r.childWearsConsistently && (
-                          <Badge variant="outline" className={WEAR_CLR[r.childWearsConsistently]}>
-                            Wears: {r.childWearsConsistently}
+                        {r.child_wears_consistently && (
+                          <Badge variant="outline" className={WEAR_CLR[r.child_wears_consistently]}>
+                            Wears: {GLASSES_WEAR_CONSISTENCY_LABEL[r.child_wears_consistently]}
                           </Badge>
                         )}
                         {overdue && (
@@ -390,14 +282,14 @@ export default function ChildVisionCarePage() {
                             <AlertTriangle className="h-3 w-3 mr-1" /> Test overdue
                           </Badge>
                         )}
-                        {r.specialistReferral && (
+                        {r.specialist_referral && (
                           <Badge variant="outline" className="bg-rose-50 text-rose-700">
-                            Specialist: {r.specialistReferral.service}
+                            Specialist: {r.specialist_referral.service}
                           </Badge>
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Recorded {r.recordedDate} · Key worker: {getStaffName(r.keyWorker)} · Review {r.reviewDate}
+                        Recorded {r.recorded_date} · Key worker: {getStaffName(r.key_worker)} · Review {r.review_date}
                       </p>
                     </div>
                     {open ? (
@@ -413,11 +305,11 @@ export default function ChildVisionCarePage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="bg-sky-50 rounded p-2">
                         <p className="font-medium text-xs">Last Sight Test</p>
-                        <p className="text-xs text-muted-foreground">{r.lastSightTestDate ?? "—"}</p>
+                        <p className="text-xs text-muted-foreground">{r.last_sight_test_date ?? "—"}</p>
                       </div>
                       <div className={cn("rounded p-2", overdue ? "bg-rose-50" : "bg-teal-50")}>
                         <p className="font-medium text-xs">Next Test Due</p>
-                        <p className="text-xs text-muted-foreground">{r.nextSightTestDue ?? "—"}</p>
+                        <p className="text-xs text-muted-foreground">{r.next_sight_test_due ?? "—"}</p>
                       </div>
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">Optometrist</p>
@@ -425,12 +317,12 @@ export default function ChildVisionCarePage() {
                       </div>
                       <div className="bg-muted/40 rounded p-2">
                         <p className="font-medium text-xs">School Aware</p>
-                        <p className="text-xs text-muted-foreground">{r.schoolAware ? "Yes" : "No"}</p>
+                        <p className="text-xs text-muted-foreground">{r.school_aware ? "Yes" : "No"}</p>
                       </div>
                     </div>
 
                     {/* prescription / frames */}
-                    {(r.prescription || r.glassesFrames || r.contactLensType) && (
+                    {(r.prescription || r.glasses_frames || r.contact_lens_type) && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {r.prescription && (
                           <div className="bg-sky-50 border border-sky-200 rounded-lg p-3">
@@ -441,78 +333,79 @@ export default function ChildVisionCarePage() {
                             <p className="text-xs text-sky-900">Left eye: {r.prescription.left}</p>
                           </div>
                         )}
-                        {r.glassesFrames && (
+                        {r.glasses_frames && (
                           <div className="bg-teal-50 border border-teal-200 rounded-lg p-3">
                             <p className="font-medium mb-1 flex items-center gap-1 text-teal-800">
                               <Glasses className="h-4 w-4" /> Frames
                             </p>
                             <p className="text-xs text-teal-900">
-                              {r.glassesFrames.brand} — {r.glassesFrames.model}
+                              {r.glasses_frames.brand} — {r.glasses_frames.model}
                             </p>
-                            <p className="text-xs text-teal-900">Purchased: {r.glassesFrames.purchaseDate}</p>
+                            <p className="text-xs text-teal-900">Purchased: {r.glasses_frames.purchase_date}</p>
                             <p className="text-xs text-teal-900 mt-1">
-                              Spare pair: {r.spareGlassesAvailable ? "Yes" : "No"}
+                              Spare pair: {r.spare_glasses_available ? "Yes" : "No"}
                             </p>
                           </div>
                         )}
-                        {r.contactLensType && (
+                        {r.contact_lens_type && (
                           <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 md:col-span-2">
                             <p className="font-medium mb-1 text-cyan-800">Contact Lenses</p>
-                            <p className="text-xs text-cyan-900">{r.contactLensType}</p>
+                            <p className="text-xs text-cyan-900">{r.contact_lens_type}</p>
                           </div>
                         )}
                       </div>
                     )}
 
                     {/* specialist referral */}
-                    {r.specialistReferral && (
+                    {r.specialist_referral && (
                       <div className="bg-rose-50 border border-rose-200 rounded-lg p-3">
                         <p className="font-medium text-rose-800 flex items-center gap-1">
                           <AlertTriangle className="h-4 w-4" /> Specialist referral active
                         </p>
                         <p className="text-xs text-rose-700 mt-1">
-                          {r.specialistReferral.service} · referred {r.specialistReferral.date}
+                          {r.specialist_referral.service} · referred {r.specialist_referral.date}
                         </p>
-                        <p className="text-xs text-rose-700">Reason: {r.specialistReferral.reason}</p>
+                        <p className="text-xs text-rose-700">Reason: {r.specialist_referral.reason}</p>
                       </div>
                     )}
 
                     {/* symptoms */}
-                    {r.symptomsReported.length > 0 && (
+                    {r.symptoms_reported.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">Symptoms Reported</p>
                         <ul className="list-disc list-inside text-muted-foreground text-xs space-y-0.5">
-                          {r.symptomsReported.map((s, i) => (<li key={i}>{s}</li>))}
+                          {r.symptoms_reported.map((s, i) => (<li key={i}>{s}</li>))}
                         </ul>
                       </div>
                     )}
 
                     {/* cleaning routine */}
-                    {r.cleaningRoutine.length > 0 && (
+                    {r.cleaning_routine && (
                       <div>
                         <p className="font-medium mb-1">Cleaning &amp; Care Routine</p>
-                        <ul className="list-disc list-inside text-muted-foreground text-xs space-y-0.5">
-                          {r.cleaningRoutine.map((c, i) => (<li key={i}>{c}</li>))}
-                        </ul>
+                        <p className="text-muted-foreground text-xs">{r.cleaning_routine}</p>
                       </div>
                     )}
 
                     {/* child voice */}
                     <div className="bg-sky-50 border border-sky-200 rounded-lg p-3">
                       <p className="font-medium text-sky-800 mb-1">Child&apos;s Voice</p>
-                      <p className="text-sky-900 italic">&ldquo;{r.childVoice}&rdquo;</p>
+                      <p className="text-sky-900 italic">&ldquo;{r.child_voice}&rdquo;</p>
                     </div>
 
                     {/* staff observation */}
                     <div>
                       <p className="font-medium mb-1">Staff Observation</p>
-                      <p className="text-muted-foreground">{r.staffObservation}</p>
+                      <p className="text-muted-foreground">{r.staff_observation}</p>
                     </div>
+
+                    {/* smart link panel */}
+                    <SmartLinkPanel sourceType="vision-care-record" sourceId={r.id} childId={r.child_id} compact />
 
                     {/* footer */}
                     <div className="flex flex-wrap justify-between items-center pt-2 border-t text-xs text-muted-foreground gap-2">
-                      <span>Key worker: {getStaffName(r.keyWorker)}</span>
-                      <span>Next review: {r.reviewDate}</span>
+                      <span>Key worker: {getStaffName(r.key_worker)}</span>
+                      <span>Next review: {r.review_date}</span>
                     </div>
                   </CardContent>
                 )}

@@ -10,248 +10,53 @@ import {
   TrendingUp, TrendingDown, Minus,
   Shield, CheckCircle2, AlertTriangle, XCircle,
   BarChart3, Heart, GraduationCap, Users, ClipboardCheck,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useKpiEntries } from "@/hooks/use-kpi-entries";
+import type { KpiEntry, KpiRag, KpiTrend, KpiCategory } from "@/types/extended";
+import { KPI_RAG_LABEL, KPI_TREND_LABEL, KPI_CATEGORY_LABEL } from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+/* ── UI metadata ──────────────────────────────────────────────────────── */
+
+const CATEGORY_ICON: Record<KpiCategory, React.ReactNode> = {
+  experiences_progress:  <BarChart3 className="h-4 w-4" />,
+  health_wellbeing:      <Heart className="h-4 w-4" />,
+  safety:                <Shield className="h-4 w-4" />,
+  education:             <GraduationCap className="h-4 w-4" />,
+  leadership_management: <Users className="h-4 w-4" />,
 };
 
-/* ── types ───────────────────────────────────────────────────────────── */
-type RAG = "green" | "amber" | "red";
-type Trend = "up" | "down" | "stable";
-
-type Category =
-  | "experiences_progress"
-  | "health_wellbeing"
-  | "safety"
-  | "education"
-  | "leadership_management";
-
-interface KPI {
-  id: string;
-  category: Category;
-  name: string;
-  value: string;
-  target: string;
-  rag: RAG;
-  trend: Trend;
-  notes: string;
-}
-
-const CATEGORY_META: Record<Category, { label: string; icon: React.ReactNode }> = {
-  experiences_progress:  { label: "Overall Experiences & Progress", icon: <BarChart3 className="h-4 w-4" /> },
-  health_wellbeing:      { label: "Health & Wellbeing",            icon: <Heart className="h-4 w-4" /> },
-  safety:                { label: "Safety",                        icon: <Shield className="h-4 w-4" /> },
-  education:             { label: "Education",                     icon: <GraduationCap className="h-4 w-4" /> },
-  leadership_management: { label: "Leadership & Management",       icon: <Users className="h-4 w-4" /> },
+const RAG_META: Record<KpiRag, { dotColor: string; bgColor: string; textColor: string }> = {
+  green: { dotColor: "bg-green-500", bgColor: "bg-green-50",  textColor: "text-green-700" },
+  amber: { dotColor: "bg-amber-500", bgColor: "bg-amber-50",  textColor: "text-amber-700" },
+  red:   { dotColor: "bg-red-500",   bgColor: "bg-red-50",    textColor: "text-red-700" },
 };
 
-const RAG_META: Record<RAG, { label: string; dotColor: string; bgColor: string; textColor: string }> = {
-  green: { label: "Green", dotColor: "bg-green-500", bgColor: "bg-green-50",  textColor: "text-green-700" },
-  amber: { label: "Amber", dotColor: "bg-amber-500", bgColor: "bg-amber-50",  textColor: "text-amber-700" },
-  red:   { label: "Red",   dotColor: "bg-red-500",   bgColor: "bg-red-50",    textColor: "text-red-700" },
-};
-
-const TREND_ICON: Record<Trend, React.ReactNode> = {
+const TREND_ICON: Record<KpiTrend, React.ReactNode> = {
   up:     <TrendingUp className="h-3.5 w-3.5 text-green-600" />,
   down:   <TrendingDown className="h-3.5 w-3.5 text-red-600" />,
   stable: <Minus className="h-3.5 w-3.5 text-muted-foreground" />,
 };
 
-const TREND_LABEL: Record<Trend, string> = {
-  up: "Improving",
-  down: "Declining",
-  stable: "Stable",
-};
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: KPI[] = [
-  // Overall Experiences & Progress
-  {
-    id: "kpi_001", category: "experiences_progress",
-    name: "Placement stability", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "No placement breakdowns in the last 12 months. All three young people remain settled.",
-  },
-  {
-    id: "kpi_002", category: "experiences_progress",
-    name: "Average Outcome Star score", value: "5.8 / 10", target: "6.0+",
-    rag: "amber", trend: "up",
-    notes: "Slightly below target. Two YP showing steady improvement; one plateau in education domain.",
-  },
-  {
-    id: "kpi_003", category: "experiences_progress",
-    name: "LAC reviews within timescale", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All LAC reviews completed on schedule. Next review due within 28 days.",
-  },
-  {
-    id: "kpi_004", category: "experiences_progress",
-    name: "Children’s views collected", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All three young people contributed views via key-work sessions and feedback forms.",
-  },
-
-  // Health & Wellbeing
-  {
-    id: "kpi_005", category: "health_wellbeing",
-    name: "Health assessments up to date", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All initial and review health assessments completed within statutory timescales.",
-  },
-  {
-    id: "kpi_006", category: "health_wellbeing",
-    name: "Dental checks within 12 months", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All three young people have attended dental appointments within the last 12 months.",
-  },
-  {
-    id: "kpi_007", category: "health_wellbeing",
-    name: "CAMHS referrals actioned", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "One active CAMHS referral progressing. No outstanding referrals awaiting action.",
-  },
-  {
-    id: "kpi_008", category: "health_wellbeing",
-    name: "Medication errors", value: "0 in quarter", target: "0",
-    rag: "green", trend: "stable",
-    notes: "Zero medication errors this quarter. Monthly medication audits all clear.",
-  },
-
-  // Safety
-  {
-    id: "kpi_009", category: "safety",
-    name: "Safeguarding training compliance", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All staff have completed Level 3 safeguarding training. Annual refresher schedule in place.",
-  },
-  {
-    id: "kpi_010", category: "safety",
-    name: "Missing episodes (last quarter)", value: "2", target: "0",
-    rag: "amber", trend: "down",
-    notes: "Two short missing episodes (both under 2 hours). Return home interviews completed. Action plans updated.",
-  },
-  {
-    id: "kpi_011", category: "safety",
-    name: "Restraint incidents (last quarter)", value: "1", target: "≤2",
-    rag: "green", trend: "up",
-    notes: "One planned intervention following risk assessment protocol. Debrief completed. Within expected range.",
-  },
-  {
-    id: "kpi_012", category: "safety",
-    name: "Risk assessments current", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All individual risk assessments reviewed within the last 30 days.",
-  },
-  {
-    id: "kpi_013", category: "safety",
-    name: "Exploitation screening current", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "CSE/CCE screening tools completed for all young people. No elevated concerns identified.",
-  },
-
-  // Education
-  {
-    id: "kpi_014", category: "education",
-    name: "School/college attendance (avg)", value: "62%", target: "85%+",
-    rag: "red", trend: "down",
-    notes: "Below target. One YP on reduced timetable; one refusing intermittently. PEP meeting arranged to address barriers.",
-  },
-  {
-    id: "kpi_015", category: "education",
-    name: "PEPs current", value: "67% (2 of 3)", target: "100%",
-    rag: "amber", trend: "stable",
-    notes: "One PEP overdue by 3 weeks. Virtual school contacted to reschedule. Two PEPs up to date.",
-  },
-  {
-    id: "kpi_016", category: "education",
-    name: "Pupil Premium utilisation", value: "62%", target: "100%",
-    rag: "amber", trend: "up",
-    notes: "Funds partially allocated. Tutor commissioned for one YP. Awaiting confirmation on remaining spend.",
-  },
-
-  // Leadership & Management
-  {
-    id: "kpi_017", category: "leadership_management",
-    name: "Staff supervision compliance", value: "71% (5/7 current)", target: "100%",
-    rag: "amber", trend: "down",
-    notes: "Two supervisions overdue due to staff sickness. Rescheduled within the next 7 days.",
-  },
-  {
-    id: "kpi_018", category: "leadership_management",
-    name: "Mandatory training compliance", value: "95%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "One staff member has outstanding first aid refresher booked for next week.",
-  },
-  {
-    id: "kpi_019", category: "leadership_management",
-    name: "Staff turnover (rolling 12 months)", value: "2 leavers", target: "≤1",
-    rag: "amber", trend: "stable",
-    notes: "Two staff departed in the period. Both positions filled. Exit interviews completed.",
-  },
-  {
-    id: "kpi_020", category: "leadership_management",
-    name: "Reg 44 visits on time", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All Regulation 44 independent visits completed within statutory timescales.",
-  },
-  {
-    id: "kpi_021", category: "leadership_management",
-    name: "Reg 45 submitted on time", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All Regulation 45 quality-of-care reports submitted to Ofsted on schedule.",
-  },
-  {
-    id: "kpi_022", category: "leadership_management",
-    name: "Complaints responded within timescale", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All complaints acknowledged within 24 hours and resolved within 28 days.",
-  },
-  {
-    id: "kpi_023", category: "leadership_management",
-    name: "Notifiable events reported within timescale", value: "100%", target: "100%",
-    rag: "green", trend: "stable",
-    notes: "All notifiable events reported to Ofsted within 24 hours as required.",
-  },
-];
-
-/* ── export columns ──────────────────────────────────────────────────── */
-const EXPORT_COLS: ExportColumn<KPI>[] = [
-  { header: "ID",       accessor: (r: KPI) => r.id },
-  { header: "Category", accessor: (r: KPI) => CATEGORY_META[r.category].label },
-  { header: "KPI",      accessor: (r: KPI) => r.name },
-  { header: "Value",    accessor: (r: KPI) => r.value },
-  { header: "Target",   accessor: (r: KPI) => r.target },
-  { header: "RAG",      accessor: (r: KPI) => r.rag.toUpperCase() },
-  { header: "Trend",    accessor: (r: KPI) => TREND_LABEL[r.trend] },
-  { header: "Notes",    accessor: (r: KPI) => r.notes },
-];
-
-/* ══════════════════════════════════════════════════════════════════════ */
 export default function KPIDashboardPage() {
-  const kpis = SEED;
+  const { data: res, isLoading } = useKpiEntries();
+  const kpis: KpiEntry[] = res?.data ?? [];
 
-  /* ── overall summary ─────────────────────────────────────────────── */
   const summary = useMemo(() => {
     const green = kpis.filter((k) => k.rag === "green").length;
     const amber = kpis.filter((k) => k.rag === "amber").length;
     const red   = kpis.filter((k) => k.rag === "red").length;
 
-    let overall: RAG = "green";
+    let overall: KpiRag = "green";
     if (red > 0) overall = "red";
-    else if (amber >= 3) overall = "amber";
     else if (amber > 0) overall = "amber";
 
     return { green, amber, red, total: kpis.length, overall };
   }, [kpis]);
 
-  /* ── grouped by category ─────────────────────────────────────────── */
   const categories = useMemo(() => {
-    const order: Category[] = [
+    const order: KpiCategory[] = [
       "experiences_progress",
       "health_wellbeing",
       "safety",
@@ -260,10 +65,24 @@ export default function KPIDashboardPage() {
     ];
     return order.map((cat) => ({
       key: cat,
-      ...CATEGORY_META[cat],
+      label: KPI_CATEGORY_LABEL[cat],
+      icon: CATEGORY_ICON[cat],
       items: kpis.filter((k) => k.category === cat),
     }));
   }, [kpis]);
+
+  const exportCols: ExportColumn<KpiEntry>[] = [
+    { header: "ID",       accessor: (r: KpiEntry) => r.id },
+    { header: "Category", accessor: (r: KpiEntry) => KPI_CATEGORY_LABEL[r.category] },
+    { header: "KPI",      accessor: (r: KpiEntry) => r.name },
+    { header: "Value",    accessor: (r: KpiEntry) => r.value },
+    { header: "Target",   accessor: (r: KpiEntry) => r.target },
+    { header: "RAG",      accessor: (r: KpiEntry) => r.rag.toUpperCase() },
+    { header: "Trend",    accessor: (r: KpiEntry) => KPI_TREND_LABEL[r.trend] },
+    { header: "Notes",    accessor: (r: KpiEntry) => r.notes },
+  ];
+
+  if (isLoading) return <PageShell title="KPI Dashboard" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -272,13 +91,13 @@ export default function KPIDashboardPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="KPI Dashboard" />
-          <ExportButton data={kpis} columns={EXPORT_COLS} filename="kpi-dashboard" />
+          <ExportButton data={kpis} columns={exportCols} filename="kpi-dashboard" />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
 
-        {/* ── Overall RAG Rating ─────────────────────────────────────── */}
+        {/* Overall RAG Rating */}
         <Card className={cn(
           "border-l-4",
           summary.overall === "green" ? "border-l-green-500" : summary.overall === "amber" ? "border-l-amber-500" : "border-l-red-500",
@@ -301,7 +120,7 @@ export default function KPIDashboardPage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Overall Performance Rating</p>
                   <p className={cn("text-lg font-bold", RAG_META[summary.overall].textColor)}>
-                    {summary.overall === "green" ? "Good" : summary.overall === "amber" ? "Requires Improvement" : "Inadequate"} — {RAG_META[summary.overall].label.toUpperCase()}
+                    {summary.overall === "green" ? "Good" : summary.overall === "amber" ? "Requires Improvement" : "Inadequate"} — {KPI_RAG_LABEL[summary.overall].toUpperCase()}
                   </p>
                 </div>
               </div>
@@ -330,12 +149,12 @@ export default function KPIDashboardPage() {
           </CardContent>
         </Card>
 
-        {/* ── Category Sections ──────────────────────────────────────── */}
+        {/* Category Sections */}
         {categories.map((cat) => {
           const catGreens = cat.items.filter((k) => k.rag === "green").length;
           const catAmbers = cat.items.filter((k) => k.rag === "amber").length;
           const catReds   = cat.items.filter((k) => k.rag === "red").length;
-          const catRag: RAG = catReds > 0 ? "red" : catAmbers > 0 ? "amber" : "green";
+          const catRag: KpiRag = catReds > 0 ? "red" : catAmbers > 0 ? "amber" : "green";
 
           return (
             <Card key={cat.key}>
@@ -373,7 +192,7 @@ export default function KPIDashboardPage() {
                             <p className="text-sm font-medium">{kpi.name}</p>
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                               {TREND_ICON[kpi.trend]}
-                              {TREND_LABEL[kpi.trend]}
+                              {KPI_TREND_LABEL[kpi.trend]}
                             </span>
                           </div>
                           <p className="text-xs text-muted-foreground ml-[18px]">{kpi.notes}</p>
@@ -395,7 +214,7 @@ export default function KPIDashboardPage() {
           );
         })}
 
-        {/* ── Regulatory Note ────────────────────────────────────────── */}
+        {/* Regulatory Note */}
         <Card className="bg-muted/40">
           <CardContent className="p-3 text-xs text-muted-foreground flex items-start gap-2">
             <ClipboardCheck className="h-4 w-4 mt-0.5 flex-shrink-0" />

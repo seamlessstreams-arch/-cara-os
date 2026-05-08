@@ -10,7 +10,6 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -19,194 +18,44 @@ import { getStaffName } from "@/lib/seed-data";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   CheckCircle2, Clock, AlertTriangle, FileText, BookOpen,
-  Shield, Users, ClipboardCheck, Calendar, User,
+  Shield, Users, ClipboardCheck, Calendar, User, Loader2,
 } from "lucide-react";
+import { useStaffHandbookAcknowledgementRecords } from "@/hooks/use-staff-handbook-acknowledgement-records";
+import type { StaffHandbookAcknowledgementRecord, StaffHandbookDocumentCategory } from "@/types/extended";
+import { STAFF_HANDBOOK_DOCUMENT_CATEGORY_LABEL } from "@/types/extended";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Config (icon not serializable — kept local) ─────────────────────────────
 
-type DocumentCategory = "handbook" | "policy" | "procedure" | "briefing" | "training";
-
-interface Acknowledgement {
-  staffId: string;
-  acknowledgedDate: string | null;
-}
-
-interface AcknowledgementDocument {
-  id: string;
-  title: string;
-  version: string | null;
-  issuedDate: string;
-  requiredBy: string;
-  issuedBy: string;
-  category: DocumentCategory;
-  acknowledgements: Acknowledgement[];
-  notes: string;
-}
-
-// ── Config ────────────────────────────────────────────────────────────────────
-
-const CATEGORY_CONFIG: Record<DocumentCategory, { label: string; colour: string; icon: typeof FileText }> = {
-  handbook:  { label: "Handbook",  colour: "bg-blue-100 text-blue-700",   icon: BookOpen },
-  policy:    { label: "Policy",    colour: "bg-purple-100 text-purple-700", icon: Shield },
-  procedure: { label: "Procedure", colour: "bg-amber-100 text-amber-700", icon: ClipboardCheck },
-  briefing:  { label: "Briefing",  colour: "bg-indigo-100 text-indigo-700", icon: FileText },
-  training:  { label: "Training",  colour: "bg-green-100 text-green-700", icon: Users },
+const CATEGORY_CONFIG: Record<StaffHandbookDocumentCategory, { colour: string; icon: typeof FileText }> = {
+  handbook:  { colour: "bg-blue-100 text-blue-700",   icon: BookOpen },
+  policy:    { colour: "bg-purple-100 text-purple-700", icon: Shield },
+  procedure: { colour: "bg-amber-100 text-amber-700", icon: ClipboardCheck },
+  briefing:  { colour: "bg-indigo-100 text-indigo-700", icon: FileText },
+  training:  { colour: "bg-green-100 text-green-700", icon: Users },
 };
 
-// ── Date Helper ───────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-// ── Staff IDs ─────────────────────────────────────────────────────────────────
-
-const ALL_STAFF = [
-  "staff_darren", "staff_ryan", "staff_anna", "staff_chervelle",
-  "staff_edward", "staff_lackson", "staff_mirela",
-];
-
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const SEED_DOCUMENTS: AcknowledgementDocument[] = [
-  {
-    id: "ack_001",
-    title: "Staff Handbook",
-    version: "v6.1",
-    issuedDate: d(-30),
-    requiredBy: d(-23),
-    issuedBy: "staff_darren",
-    category: "handbook",
-    acknowledgements: [
-      { staffId: "staff_darren", acknowledgedDate: d(-29) },
-      { staffId: "staff_ryan", acknowledgedDate: d(-28) },
-      { staffId: "staff_anna", acknowledgedDate: d(-27) },
-      { staffId: "staff_chervelle", acknowledgedDate: d(-26) },
-      { staffId: "staff_edward", acknowledgedDate: d(-25) },
-      { staffId: "staff_lackson", acknowledgedDate: d(-24) },
-      { staffId: "staff_mirela", acknowledgedDate: d(-23) },
-    ],
-    notes: "Full handbook reissue following annual review. All staff acknowledged within the required 7-day window.",
-  },
-  {
-    id: "ack_002",
-    title: "Updated Safeguarding Policy",
-    version: "v4.2",
-    issuedDate: d(-30),
-    requiredBy: d(-23),
-    issuedBy: "staff_darren",
-    category: "policy",
-    acknowledgements: [
-      { staffId: "staff_darren", acknowledgedDate: d(-30) },
-      { staffId: "staff_ryan", acknowledgedDate: d(-29) },
-      { staffId: "staff_anna", acknowledgedDate: d(-28) },
-      { staffId: "staff_chervelle", acknowledgedDate: d(-27) },
-      { staffId: "staff_edward", acknowledgedDate: d(-26) },
-      { staffId: "staff_lackson", acknowledgedDate: d(-25) },
-      { staffId: "staff_mirela", acknowledgedDate: d(-24) },
-    ],
-    notes: "Updated to reflect revised KCSIE 2025 guidance and local LSCP procedures. Key changes highlighted in team meeting.",
-  },
-  {
-    id: "ack_003",
-    title: "Revised Missing from Care Procedure",
-    version: null,
-    issuedDate: d(-14),
-    requiredBy: d(-7),
-    issuedBy: "staff_darren",
-    category: "procedure",
-    acknowledgements: [
-      { staffId: "staff_darren", acknowledgedDate: d(-14) },
-      { staffId: "staff_ryan", acknowledgedDate: d(-13) },
-      { staffId: "staff_anna", acknowledgedDate: d(-12) },
-      { staffId: "staff_chervelle", acknowledgedDate: d(-11) },
-      { staffId: "staff_edward", acknowledgedDate: d(-10) },
-      { staffId: "staff_lackson", acknowledgedDate: null },
-      { staffId: "staff_mirela", acknowledgedDate: null },
-    ],
-    notes: "New procedure following multi-agency review. Incorporates updated police notification timescales and return home interview requirements.",
-  },
-  {
-    id: "ack_004",
-    title: "TCI Refresher Briefing (2025)",
-    version: null,
-    issuedDate: d(-7),
-    requiredBy: d(0),
-    issuedBy: "staff_ryan",
-    category: "briefing",
-    acknowledgements: [
-      { staffId: "staff_darren", acknowledgedDate: d(-7) },
-      { staffId: "staff_ryan", acknowledgedDate: d(-6) },
-      { staffId: "staff_anna", acknowledgedDate: null },
-      { staffId: "staff_chervelle", acknowledgedDate: d(-5) },
-      { staffId: "staff_edward", acknowledgedDate: null },
-      { staffId: "staff_lackson", acknowledgedDate: null },
-      { staffId: "staff_mirela", acknowledgedDate: null },
-    ],
-    notes: "Summary briefing of key updates from 2025 TCI refresher training. Staff must acknowledge before next shift.",
-  },
-  {
-    id: "ack_005",
-    title: "GDPR Annual Refresher",
-    version: null,
-    issuedDate: d(-60),
-    requiredBy: d(-53),
-    issuedBy: "staff_darren",
-    category: "training",
-    acknowledgements: [
-      { staffId: "staff_darren", acknowledgedDate: d(-60) },
-      { staffId: "staff_ryan", acknowledgedDate: d(-59) },
-      { staffId: "staff_anna", acknowledgedDate: d(-58) },
-      { staffId: "staff_chervelle", acknowledgedDate: d(-57) },
-      { staffId: "staff_edward", acknowledgedDate: d(-56) },
-      { staffId: "staff_lackson", acknowledgedDate: d(-55) },
-      { staffId: "staff_mirela", acknowledgedDate: d(-54) },
-    ],
-    notes: "Annual data protection refresher. All staff completed within first week of issue.",
-  },
-  {
-    id: "ack_006",
-    title: "Medication Administration Update",
-    version: null,
-    issuedDate: d(-21),
-    requiredBy: d(-14),
-    issuedBy: "staff_darren",
-    category: "procedure",
-    acknowledgements: [
-      { staffId: "staff_darren", acknowledgedDate: d(-21) },
-      { staffId: "staff_ryan", acknowledgedDate: d(-20) },
-      { staffId: "staff_anna", acknowledgedDate: d(-19) },
-      { staffId: "staff_chervelle", acknowledgedDate: d(-18) },
-      { staffId: "staff_edward", acknowledgedDate: d(-17) },
-      { staffId: "staff_lackson", acknowledgedDate: null },
-      { staffId: "staff_mirela", acknowledgedDate: d(-16) },
-    ],
-    notes: "Updated medication administration procedure following audit findings. Lackson to acknowledge on return from leave (expected back " + d(3) + ").",
-  },
-];
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string): string {
   const dt = new Date(iso);
   return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function getCompletionCount(doc: AcknowledgementDocument): number {
-  return doc.acknowledgements.filter(a => a.acknowledgedDate !== null).length;
+function getCompletionCount(doc: StaffHandbookAcknowledgementRecord): number {
+  return doc.acknowledgements.filter(a => a.acknowledged_date !== null).length;
 }
 
-function getTotalCount(doc: AcknowledgementDocument): number {
+function getTotalCount(doc: StaffHandbookAcknowledgementRecord): number {
   return doc.acknowledgements.length;
 }
 
-function isComplete(doc: AcknowledgementDocument): boolean {
+function isComplete(doc: StaffHandbookAcknowledgementRecord): boolean {
   return getCompletionCount(doc) === getTotalCount(doc);
 }
 
-function hasOverdue(doc: AcknowledgementDocument): boolean {
+function hasOverdue(doc: StaffHandbookAcknowledgementRecord): boolean {
   const today = new Date().toISOString().slice(0, 10);
-  return !isComplete(doc) && doc.requiredBy < today;
+  return !isComplete(doc) && doc.required_by < today;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -214,10 +63,10 @@ function hasOverdue(doc: AcknowledgementDocument): boolean {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function StaffHandbookAcknowledgementsPage() {
-  const [documents] = useState<AcknowledgementDocument[]>(SEED_DOCUMENTS);
+  const { data: documents = [], isLoading } = useStaffHandbookAcknowledgementRecords();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<"all" | "complete" | "incomplete">("all");
-  const [filterCategory, setFilterCategory] = useState<DocumentCategory | "all">("all");
+  const [filterCategory, setFilterCategory] = useState<StaffHandbookDocumentCategory | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"issued" | "category">("issued");
 
@@ -246,7 +95,7 @@ export default function StaffHandbookAcknowledgementsPage() {
     }
 
     if (sortBy === "issued") {
-      results.sort((a, b) => new Date(b.issuedDate).getTime() - new Date(a.issuedDate).getTime());
+      results.sort((a, b) => new Date(b.issued_date).getTime() - new Date(a.issued_date).getTime());
     } else {
       results.sort((a, b) => a.category.localeCompare(b.category));
     }
@@ -259,15 +108,15 @@ export default function StaffHandbookAcknowledgementsPage() {
   const stats = useMemo(() => {
     const totalDocs = documents.length;
     const fullyAcknowledged = documents.filter(doc => isComplete(doc)).length;
-    const fullyAcknowledgedPct = Math.round((fullyAcknowledged / totalDocs) * 100);
+    const fullyAcknowledgedPct = totalDocs > 0 ? Math.round((fullyAcknowledged / totalDocs) * 100) : 0;
     const overdueCount = documents.filter(doc => hasOverdue(doc)).length;
 
     // Staff with outstanding reads
     const staffOutstanding = new Set<string>();
     documents.forEach(doc => {
       doc.acknowledgements.forEach(a => {
-        if (a.acknowledgedDate === null) {
-          staffOutstanding.add(a.staffId);
+        if (a.acknowledged_date === null) {
+          staffOutstanding.add(a.staff_id);
         }
       });
     });
@@ -277,20 +126,30 @@ export default function StaffHandbookAcknowledgementsPage() {
 
   // ── Export Columns ────────────────────────────────────────────────────────
 
-  const exportCols: ExportColumn<AcknowledgementDocument>[] = [
-    { header: "ID", accessor: (r: AcknowledgementDocument) => r.id },
-    { header: "Title", accessor: (r: AcknowledgementDocument) => r.title },
-    { header: "Version", accessor: (r: AcknowledgementDocument) => r.version || "N/A" },
-    { header: "Category", accessor: (r: AcknowledgementDocument) => CATEGORY_CONFIG[r.category].label },
-    { header: "Issued Date", accessor: (r: AcknowledgementDocument) => r.issuedDate },
-    { header: "Required By", accessor: (r: AcknowledgementDocument) => r.requiredBy },
-    { header: "Issued By", accessor: (r: AcknowledgementDocument) => getStaffName(r.issuedBy) },
-    { header: "Acknowledged", accessor: (r: AcknowledgementDocument) => `${getCompletionCount(r)}/${getTotalCount(r)}` },
-    { header: "Status", accessor: (r: AcknowledgementDocument) => isComplete(r) ? "Complete" : hasOverdue(r) ? "Overdue" : "Pending" },
-    { header: "Notes", accessor: (r: AcknowledgementDocument) => r.notes },
+  const exportCols: ExportColumn<StaffHandbookAcknowledgementRecord>[] = [
+    { header: "ID", accessor: (r: StaffHandbookAcknowledgementRecord) => r.id },
+    { header: "Title", accessor: (r: StaffHandbookAcknowledgementRecord) => r.title },
+    { header: "Version", accessor: (r: StaffHandbookAcknowledgementRecord) => r.version || "N/A" },
+    { header: "Category", accessor: (r: StaffHandbookAcknowledgementRecord) => STAFF_HANDBOOK_DOCUMENT_CATEGORY_LABEL[r.category] },
+    { header: "Issued Date", accessor: (r: StaffHandbookAcknowledgementRecord) => r.issued_date },
+    { header: "Required By", accessor: (r: StaffHandbookAcknowledgementRecord) => r.required_by },
+    { header: "Issued By", accessor: (r: StaffHandbookAcknowledgementRecord) => getStaffName(r.issued_by) },
+    { header: "Acknowledged", accessor: (r: StaffHandbookAcknowledgementRecord) => `${getCompletionCount(r)}/${getTotalCount(r)}` },
+    { header: "Status", accessor: (r: StaffHandbookAcknowledgementRecord) => isComplete(r) ? "Complete" : hasOverdue(r) ? "Overdue" : "Pending" },
+    { header: "Notes", accessor: (r: StaffHandbookAcknowledgementRecord) => r.notes },
   ];
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  if (isLoading) {
+    return (
+      <PageShell title="Staff Handbook Acknowledgements" subtitle="Track staff acknowledgement of key documents, policies, and procedure updates">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -361,7 +220,7 @@ export default function StaffHandbookAcknowledgementsPage() {
 
         <select
           value={filterCategory}
-          onChange={e => setFilterCategory(e.target.value as DocumentCategory | "all")}
+          onChange={e => setFilterCategory(e.target.value as StaffHandbookDocumentCategory | "all")}
           className="rounded-md border bg-background px-2 py-1.5 text-sm"
         >
           <option value="all">All Categories</option>
@@ -416,7 +275,7 @@ export default function StaffHandbookAcknowledgementsPage() {
                       <Badge variant="outline" className="text-xs">{doc.version}</Badge>
                     )}
                     <Badge variant="outline" className={cn("text-xs", cc.colour)}>
-                      {cc.label}
+                      {STAFF_HANDBOOK_DOCUMENT_CATEGORY_LABEL[doc.category]}
                     </Badge>
                     {complete ? (
                       <Badge variant="outline" className="text-xs bg-green-100 text-green-700">
@@ -433,9 +292,9 @@ export default function StaffHandbookAcknowledgementsPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Issued: {formatDate(doc.issuedDate)}
+                    Issued: {formatDate(doc.issued_date)}
                     {" · "}
-                    Required by: {formatDate(doc.requiredBy)}
+                    Required by: {formatDate(doc.required_by)}
                     {" · "}
                     <span className={cn(
                       complete ? "text-green-600" : overdue ? "text-red-600 font-semibold" : "text-amber-600"
@@ -452,15 +311,15 @@ export default function StaffHandbookAcknowledgementsPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Issued By</p>
-                      <p className="text-sm">{getStaffName(doc.issuedBy)}</p>
+                      <p className="text-sm">{getStaffName(doc.issued_by)}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Issued Date</p>
-                      <p className="text-sm">{formatDate(doc.issuedDate)}</p>
+                      <p className="text-sm">{formatDate(doc.issued_date)}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Required By</p>
-                      <p className="text-sm">{formatDate(doc.requiredBy)}</p>
+                      <p className="text-sm">{formatDate(doc.required_by)}</p>
                     </div>
                   </div>
 
@@ -478,13 +337,13 @@ export default function StaffHandbookAcknowledgementsPage() {
                         </thead>
                         <tbody>
                           {doc.acknowledgements.map(ack => (
-                            <tr key={ack.staffId} className="border-t">
+                            <tr key={ack.staff_id} className="border-t">
                               <td className="px-3 py-1.5 flex items-center gap-1.5">
                                 <User className="h-3.5 w-3.5 text-muted-foreground" />
-                                {getStaffName(ack.staffId)}
+                                {getStaffName(ack.staff_id)}
                               </td>
                               <td className="px-3 py-1.5">
-                                {ack.acknowledgedDate ? (
+                                {ack.acknowledged_date ? (
                                   <span className="inline-flex items-center gap-1 text-green-600 text-xs font-medium">
                                     <CheckCircle2 className="h-3.5 w-3.5" />Acknowledged
                                   </span>
@@ -498,7 +357,7 @@ export default function StaffHandbookAcknowledgementsPage() {
                                 )}
                               </td>
                               <td className="px-3 py-1.5 text-muted-foreground">
-                                {ack.acknowledgedDate ? formatDate(ack.acknowledgedDate) : "—"}
+                                {ack.acknowledged_date ? formatDate(ack.acknowledged_date) : "—"}
                               </td>
                             </tr>
                           ))}
@@ -516,9 +375,9 @@ export default function StaffHandbookAcknowledgementsPage() {
                   )}
 
                   <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-                    <span><Calendar className="inline h-3.5 w-3.5 mr-0.5" />Issued: {formatDate(doc.issuedDate)}</span>
-                    <span><User className="inline h-3.5 w-3.5 mr-0.5" />By: {getStaffName(doc.issuedBy)}</span>
-                    <span><Clock className="inline h-3.5 w-3.5 mr-0.5" />Due: {formatDate(doc.requiredBy)}</span>
+                    <span><Calendar className="inline h-3.5 w-3.5 mr-0.5" />Issued: {formatDate(doc.issued_date)}</span>
+                    <span><User className="inline h-3.5 w-3.5 mr-0.5" />By: {getStaffName(doc.issued_by)}</span>
+                    <span><Clock className="inline h-3.5 w-3.5 mr-0.5" />Due: {formatDate(doc.required_by)}</span>
                   </div>
                 </div>
               )}

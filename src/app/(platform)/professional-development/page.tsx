@@ -19,8 +19,8 @@ import {
   Filter,
   ArrowUpDown,
   Shield,
-  Calendar,
   TrendingUp,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
@@ -29,40 +29,11 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useCpdRecords } from "@/hooks/use-cpd-records";
+import type { CPDRecord, CPDType, CPDStatus } from "@/types/extended";
+import { CPD_TYPE_LABEL, CPD_STATUS_LABEL } from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
-
-type CPDType = "qualification" | "training" | "conference" | "reflective_account" | "mentoring" | "shadowing";
-type CPDStatus = "completed" | "in_progress" | "planned";
-
-interface CPDRecord {
-  id: string;
-  staffId: string;
-  title: string;
-  type: CPDType;
-  provider: string;
-  startDate: string;
-  completedDate: string | null;
-  duration: string;
-  status: CPDStatus;
-  cpdHours: number;
-  certificateObtained: boolean;
-  impactOnPractice: string;
-  notes: string;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const TYPE_LABEL: Record<CPDType, string> = {
-  qualification: "Qualification",
-  training: "Training",
-  conference: "Conference",
-  reflective_account: "Reflective Account",
-  mentoring: "Mentoring",
-  shadowing: "Shadowing",
-};
+/* ── local colour maps ────────────────────────────────────────────────────── */
 
 const TYPE_COLOUR: Record<CPDType, string> = {
   qualification: "bg-purple-100 text-purple-800",
@@ -73,162 +44,18 @@ const TYPE_COLOUR: Record<CPDType, string> = {
   shadowing: "bg-pink-100 text-pink-800",
 };
 
-const STATUS_LABEL: Record<CPDStatus, string> = {
-  completed: "Completed",
-  in_progress: "In Progress",
-  planned: "Planned",
-};
-
 const STATUS_COLOUR: Record<CPDStatus, string> = {
   completed: "bg-emerald-100 text-emerald-800",
   in_progress: "bg-blue-100 text-blue-800",
   planned: "bg-slate-100 text-slate-700",
 };
 
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: CPDRecord[] = [
-  {
-    id: "cpd1",
-    staffId: "staff_darren",
-    title: "Level 7 Leadership & Management (in progress)",
-    type: "qualification",
-    provider: "University-based",
-    startDate: d(-180),
-    completedDate: null,
-    duration: "12 months",
-    status: "in_progress",
-    cpdHours: 120,
-    certificateObtained: false,
-    impactOnPractice: "Applying strategic leadership models directly to home management. Improved governance and quality assurance frameworks.",
-    notes: "Module 3 submitted. Distinction in modules 1 and 2. Applying learning directly to home management.",
-  },
-  {
-    id: "cpd2",
-    staffId: "staff_darren",
-    title: "Ofsted Preparation Workshop",
-    type: "conference",
-    provider: "National Children's Bureau",
-    startDate: d(-45),
-    completedDate: d(-45),
-    duration: "1 day",
-    status: "completed",
-    cpdHours: 7,
-    certificateObtained: true,
-    impactOnPractice: "Refined self-evaluation and evidence-gathering approaches aligned with SCCIF framework.",
-    notes: "Excellent workshop on SCCIF framework. Key takeaway: evidence of impact over process.",
-  },
-  {
-    id: "cpd3",
-    staffId: "staff_ryan",
-    title: "Level 5 Leadership (completed)",
-    type: "qualification",
-    provider: "Distance Learning",
-    startDate: d(-365),
-    completedDate: d(-90),
-    duration: "9 months",
-    status: "completed",
-    cpdHours: 90,
-    certificateObtained: true,
-    impactOnPractice: "Enhanced understanding of regulatory framework and supervision practice. Now supporting with Reg 45 authorship.",
-    notes: "Completed with Merit. Now supporting with Reg 45 authorship.",
-  },
-  {
-    id: "cpd4",
-    staffId: "staff_chervelle",
-    title: "CSE Awareness Advanced Training",
-    type: "training",
-    provider: "Barnardo's",
-    startDate: d(-30),
-    completedDate: d(-29),
-    duration: "2 days",
-    status: "completed",
-    cpdHours: 14,
-    certificateObtained: true,
-    impactOnPractice: "Strengthened ability to identify exploitation indicators early and implement disruption strategies within care planning.",
-    notes: "In-depth exploitation indicators and disruption techniques. Directly applicable to work with Casey.",
-  },
-  {
-    id: "cpd5",
-    staffId: "staff_chervelle",
-    title: "Senior Practitioner Pathway — Module 1",
-    type: "qualification",
-    provider: "In-house / TCSW",
-    startDate: d(-60),
-    completedDate: null,
-    duration: "6 months per module",
-    status: "in_progress",
-    cpdHours: 30,
-    certificateObtained: false,
-    impactOnPractice: "Building evidenced competencies through portfolio. Developing advanced practitioner skills in key working and risk assessment.",
-    notes: "First module complete. Evidencing competencies through portfolio.",
-  },
-  {
-    id: "cpd6",
-    staffId: "staff_anna",
-    title: "Makaton Level 2",
-    type: "training",
-    provider: "Makaton Charity",
-    startDate: d(-21),
-    completedDate: d(-21),
-    duration: "1 day",
-    status: "completed",
-    cpdHours: 7,
-    certificateObtained: true,
-    impactOnPractice: "Increased confidence and repertoire of signs used in daily communication with Jordan. Supports his communication passport goals.",
-    notes: "Building on existing Level 1. Now more confident signing with Jordan.",
-  },
-  {
-    id: "cpd7",
-    staffId: "staff_edward",
-    title: "TCI Refresher",
-    type: "training",
-    provider: "Internal (Darren Laville)",
-    startDate: d(-14),
-    completedDate: d(-14),
-    duration: "Half day",
-    status: "completed",
-    cpdHours: 4,
-    certificateObtained: false,
-    impactOnPractice: "Reinforced verbal de-escalation techniques. Improved confidence in managing escalating situations without physical intervention.",
-    notes: "Edward requested additional practice with verbal de-escalation scenarios.",
-  },
-  {
-    id: "cpd8",
-    staffId: "staff_mirela",
-    title: "First Aid at Work (renewal)",
-    type: "training",
-    provider: "St John Ambulance",
-    startDate: d(-7),
-    completedDate: d(-6),
-    duration: "2 days",
-    status: "completed",
-    cpdHours: 14,
-    certificateObtained: true,
-    impactOnPractice: "Certificate renewed for 3 years. Updated knowledge on paediatric emergencies and anaphylaxis management.",
-    notes: "Certificate renewed for 3 years.",
-  },
-  {
-    id: "cpd9",
-    staffId: "staff_lackson",
-    title: "Trauma-Informed Practice",
-    type: "conference",
-    provider: "TACT",
-    startDate: d(-60),
-    completedDate: d(-60),
-    duration: "1 day",
-    status: "completed",
-    cpdHours: 7,
-    certificateObtained: true,
-    impactOnPractice: "Deepened understanding of ACEs and their physiological impact. Applied learning to daily interactions and care planning for Casey.",
-    notes: "Good overview of ACEs and their impact. Lackson reflected on how this applies to Casey.",
-  },
-];
+const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
 /* ── component ─────────────────────────────────────────────────────────────── */
 
 export default function ProfessionalDevelopmentPage() {
-  const [data] = useState<CPDRecord[]>(SEED);
+  const { data: records = [], isLoading } = useCpdRecords();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [staffFilter, setStaffFilter] = useState("all");
@@ -236,50 +63,60 @@ export default function ProfessionalDevelopmentPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
-  const staffIds = [...new Set(data.map(r => r.staffId))];
+  const staffIds = useMemo(() => [...new Set(records.map(r => r.staff_id))], [records]);
 
   /* ── filtering & sorting ── */
   const filtered = useMemo(() => {
-    let out = [...data];
+    let out = [...records];
     if (search) {
       const s = search.toLowerCase();
       out = out.filter(r =>
         r.title.toLowerCase().includes(s) ||
-        getStaffName(r.staffId).toLowerCase().includes(s) ||
+        getStaffName(r.staff_id).toLowerCase().includes(s) ||
         r.provider.toLowerCase().includes(s)
       );
     }
     if (typeFilter !== "all") out = out.filter(r => r.type === typeFilter);
-    if (staffFilter !== "all") out = out.filter(r => r.staffId === staffFilter);
+    if (staffFilter !== "all") out = out.filter(r => r.staff_id === staffFilter);
     out.sort((a, b) => {
-      if (sortBy === "oldest") return a.startDate.localeCompare(b.startDate);
-      if (sortBy === "hours") return b.cpdHours - a.cpdHours;
-      return b.startDate.localeCompare(a.startDate);
+      if (sortBy === "oldest") return a.start_date.localeCompare(b.start_date);
+      if (sortBy === "hours") return b.cpd_hours - a.cpd_hours;
+      return b.start_date.localeCompare(a.start_date);
     });
     return out;
-  }, [data, search, typeFilter, staffFilter, sortBy]);
+  }, [records, search, typeFilter, staffFilter, sortBy]);
 
   /* ── summary stats ── */
-  const totalHours = useMemo(() => data.reduce((sum, r) => sum + r.cpdHours, 0), [data]);
-  const avgPerStaff = useMemo(() => Math.round(totalHours / staffIds.length), [totalHours, staffIds.length]);
-  const qualificationsInProgress = useMemo(() => data.filter(r => r.type === "qualification" && r.status === "in_progress").length, [data]);
-  const completedThisQuarter = useMemo(() => data.filter(r => r.completedDate && r.completedDate >= d(-90)).length, [data]);
+  const totalHours = useMemo(() => records.reduce((sum, r) => sum + r.cpd_hours, 0), [records]);
+  const avgPerStaff = useMemo(() => staffIds.length > 0 ? Math.round(totalHours / staffIds.length) : 0, [totalHours, staffIds.length]);
+  const qualificationsInProgress = useMemo(() => records.filter(r => r.type === "qualification" && r.status === "in_progress").length, [records]);
+  const completedThisQuarter = useMemo(() => records.filter(r => r.completed_date && r.completed_date >= d(-90)).length, [records]);
 
   /* ── export columns ── */
   const exportCols: ExportColumn<CPDRecord>[] = useMemo(() => [
-    { header: "Staff", accessor: (r: CPDRecord) => getStaffName(r.staffId) },
-    { header: "Title", accessor: (r: CPDRecord) => r.title },
-    { header: "Type", accessor: (r: CPDRecord) => TYPE_LABEL[r.type] },
-    { header: "Provider", accessor: (r: CPDRecord) => r.provider },
-    { header: "Start Date", accessor: (r: CPDRecord) => r.startDate },
-    { header: "Completed", accessor: (r: CPDRecord) => r.completedDate ?? "In progress" },
-    { header: "Duration", accessor: (r: CPDRecord) => r.duration },
-    { header: "Status", accessor: (r: CPDRecord) => STATUS_LABEL[r.status] },
-    { header: "CPD Hours", accessor: (r: CPDRecord) => String(r.cpdHours) },
-    { header: "Certificate", accessor: (r: CPDRecord) => r.certificateObtained ? "Yes" : "No" },
-    { header: "Impact on Practice", accessor: (r: CPDRecord) => r.impactOnPractice },
-    { header: "Notes", accessor: (r: CPDRecord) => r.notes },
+    { header: "Staff", accessor: (r) => getStaffName(r.staff_id) },
+    { header: "Title", accessor: (r) => r.title },
+    { header: "Type", accessor: (r) => CPD_TYPE_LABEL[r.type] },
+    { header: "Provider", accessor: (r) => r.provider },
+    { header: "Start Date", accessor: (r) => r.start_date },
+    { header: "Completed", accessor: (r) => r.completed_date ?? "In progress" },
+    { header: "Duration", accessor: (r) => r.duration },
+    { header: "Status", accessor: (r) => CPD_STATUS_LABEL[r.status] },
+    { header: "CPD Hours", accessor: (r) => String(r.cpd_hours) },
+    { header: "Certificate", accessor: (r) => r.certificate_obtained ? "Yes" : "No" },
+    { header: "Impact on Practice", accessor: (r) => r.impact_on_practice },
+    { header: "Notes", accessor: (r) => r.notes },
   ], []);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Professional Development" subtitle="CPD records, qualifications, conferences, and learning activities">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -291,7 +128,6 @@ export default function ProfessionalDevelopmentPage() {
       ]}
     >
       <div id="print-area" className="space-y-6">
-
         {/* ── summary stats ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
@@ -329,7 +165,7 @@ export default function ProfessionalDevelopmentPage() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
-                    {(Object.entries(TYPE_LABEL) as [CPDType, string][]).map(([k, v]) => (
+                    {(Object.entries(CPD_TYPE_LABEL) as [CPDType, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
                     ))}
                   </SelectContent>
@@ -365,7 +201,7 @@ export default function ProfessionalDevelopmentPage() {
         {/* ── results count ──────────────────────────────────────────────── */}
         {(search || typeFilter !== "all" || staffFilter !== "all") && (
           <p className="text-xs text-muted-foreground">
-            Showing {filtered.length} of {data.length} record{data.length !== 1 ? "s" : ""}
+            Showing {filtered.length} of {records.length} record{records.length !== 1 ? "s" : ""}
           </p>
         )}
 
@@ -380,19 +216,19 @@ export default function ProfessionalDevelopmentPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 flex-wrap">
                         <CardTitle className="text-base">{r.title}</CardTitle>
-                        <Badge className={cn("text-xs", TYPE_COLOUR[r.type])}>{TYPE_LABEL[r.type]}</Badge>
-                        <Badge className={cn("text-xs", STATUS_COLOUR[r.status])}>{STATUS_LABEL[r.status]}</Badge>
-                        {r.certificateObtained && <Badge className="text-xs bg-amber-100 text-amber-800"><Award className="h-3 w-3 mr-0.5" />Certificate</Badge>}
+                        <Badge className={cn("text-xs", TYPE_COLOUR[r.type])}>{CPD_TYPE_LABEL[r.type]}</Badge>
+                        <Badge className={cn("text-xs", STATUS_COLOUR[r.status])}>{CPD_STATUS_LABEL[r.status]}</Badge>
+                        {r.certificate_obtained && <Badge className="text-xs bg-amber-100 text-amber-800"><Award className="h-3 w-3 mr-0.5" />Certificate</Badge>}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">{r.startDate} · {getStaffName(r.staffId)}</span>
+                        <span className="text-xs text-muted-foreground">{r.start_date} · {getStaffName(r.staff_id)}</span>
                         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </div>
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" />{r.provider}</span>
                       <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{r.duration}</span>
-                      <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" />{r.cpdHours} CPD hours</span>
+                      <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" />{r.cpd_hours} CPD hours</span>
                     </div>
                   </CardHeader>
                 </button>
@@ -404,24 +240,24 @@ export default function ProfessionalDevelopmentPage() {
                     </div>
                     <div className="rounded-lg bg-green-50 border border-green-200 p-3">
                       <p className="text-xs font-semibold text-green-800 mb-1">Impact on Practice</p>
-                      <p className="text-sm text-green-900">{r.impactOnPractice}</p>
+                      <p className="text-sm text-green-900">{r.impact_on_practice}</p>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                       <div className="rounded-lg bg-slate-50 border p-2">
                         <p className="font-semibold text-slate-600">Start Date</p>
-                        <p className="text-slate-900">{r.startDate}</p>
+                        <p className="text-slate-900">{r.start_date}</p>
                       </div>
                       <div className="rounded-lg bg-slate-50 border p-2">
                         <p className="font-semibold text-slate-600">Completed</p>
-                        <p className="text-slate-900">{r.completedDate ?? "Ongoing"}</p>
+                        <p className="text-slate-900">{r.completed_date ?? "Ongoing"}</p>
                       </div>
                       <div className="rounded-lg bg-slate-50 border p-2">
                         <p className="font-semibold text-slate-600">CPD Hours</p>
-                        <p className="text-slate-900">{r.cpdHours}</p>
+                        <p className="text-slate-900">{r.cpd_hours}</p>
                       </div>
                       <div className="rounded-lg bg-slate-50 border p-2">
                         <p className="font-semibold text-slate-600">Certificate</p>
-                        <p className="text-slate-900">{r.certificateObtained ? "Yes" : "No"}</p>
+                        <p className="text-slate-900">{r.certificate_obtained ? "Yes" : "No"}</p>
                       </div>
                     </div>
                   </CardContent>

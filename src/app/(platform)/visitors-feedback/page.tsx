@@ -5,6 +5,7 @@ import {
   MessageSquare, Plus, Search, ArrowUpDown, Filter,
   Star, ChevronDown, ChevronUp, Users, ClipboardCheck,
   ThumbsUp, AlertTriangle, Lightbulb, CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -12,7 +13,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -21,28 +22,15 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useVisitorsFeedbackRecords } from "@/hooks/use-visitors-feedback-records";
+import type { VisitorsFeedbackRecord, VisitorsFeedbackRole } from "@/types/extended";
+import { VISITORS_FEEDBACK_ROLE_LABEL } from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
+/* ── local config ───────────────────────────────────────────────────────── */
 
-/* ── types ───────────────────────────────────────────────────────────── */
-const VISITOR_ROLES = [
-  "reg44", "social_worker", "family", "professional", "iro", "other",
-] as const;
-type VisitorRole = typeof VISITOR_ROLES[number];
-const ROLE_LABELS: Record<VisitorRole, string> = {
-  reg44: "Reg 44 Visitor",
-  social_worker: "Social Worker",
-  family: "Family Member",
-  professional: "Professional",
-  iro: "IRO",
-  other: "Other Visitor",
-};
-const ROLE_COLOURS: Record<VisitorRole, string> = {
+const VISITOR_ROLES: VisitorsFeedbackRole[] = ["reg44", "social_worker", "family", "professional", "iro", "other"];
+
+const ROLE_COLOURS: Record<VisitorsFeedbackRole, string> = {
   reg44: "bg-purple-100 text-purple-800",
   social_worker: "bg-blue-100 text-blue-800",
   family: "bg-pink-100 text-pink-800",
@@ -51,131 +39,7 @@ const ROLE_COLOURS: Record<VisitorRole, string> = {
   other: "bg-slate-100 text-slate-800",
 };
 
-interface VisitorFeedback {
-  id: string;
-  visitorName: string;
-  visitorRole: VisitorRole;
-  visitDate: string;
-  rating: number;
-  positives: string[];
-  concerns: string[];
-  suggestions: string[];
-  actionTaken: string | null;
-  respondedBy: string | null;
-  childRelated: string | null;
-  notes: string;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: VisitorFeedback[] = [
-  {
-    id: "vf_1",
-    visitorName: "Margaret Thompson",
-    visitorRole: "reg44",
-    visitDate: d(-14),
-    rating: 4,
-    positives: [
-      "Home is well-run with clear routines and structure",
-      "Children appeared happy, settled, and well cared for",
-      "Staff were warm, professional, and child-focused",
-      "Documentation and records were in good order",
-    ],
-    concerns: [],
-    suggestions: [
-      "Improve the garden area to create a more inviting outdoor space for the children",
-    ],
-    actionTaken: "Garden improvement plan drawn up. Budget approved for new outdoor furniture and planting. Work scheduled for next month.",
-    respondedBy: "staff_darren",
-    childRelated: "All",
-    notes: "Monthly Reg 44 independent visit. Margaret spoke with all three young people individually and reviewed a sample of records. Overall a very positive visit with one minor recommendation regarding the outdoor space.",
-  },
-  {
-    id: "vf_2",
-    visitorName: "Lisa Green",
-    visitorRole: "social_worker",
-    visitDate: d(-10),
-    rating: 3,
-    positives: [
-      "Staff clearly care about Casey and understand his needs",
-      "LADO process has been handled transparently and professionally",
-      "Good communication between home and placing authority",
-    ],
-    concerns: [
-      "Casey is increasingly disengaged from education and attendance has dropped",
-    ],
-    suggestions: [
-      "Consider a PEP review to address educational disengagement",
-      "Explore alternative education provisions if mainstream continues to be a challenge",
-    ],
-    actionTaken: "PEP review meeting arranged with school and virtual school head. Key worker to implement daily education check-in with Casey.",
-    respondedBy: "staff_darren",
-    childRelated: "Casey",
-    notes: "Statutory visit for Casey. Lisa was generally positive about the placement and the quality of care. She raised valid concerns about educational engagement which the home is addressing proactively. Acknowledged the LADO referral was handled correctly and in a timely manner.",
-  },
-  {
-    id: "vf_3",
-    visitorName: "Jean (Alex's Grandmother)",
-    visitorRole: "family",
-    visitDate: d(-21),
-    rating: 5,
-    positives: [
-      "Alex looks so well and happy since being placed at Oak House",
-      "Staff are wonderful and make the family feel welcome",
-      "The home environment is clean, warm, and feels like a real home",
-      "Alex is clearly thriving and making progress",
-    ],
-    concerns: [],
-    suggestions: [],
-    actionTaken: null,
-    respondedBy: null,
-    childRelated: "Alex",
-    notes: "Jean visited Alex for a family contact session. She was extremely positive about every aspect of the home and Alex's care. She became emotional expressing her gratitude to the staff team. This feedback was shared with the team during handover.",
-  },
-  {
-    id: "vf_4",
-    visitorName: "Dr K. Rahman (CAMHS)",
-    visitorRole: "professional",
-    visitDate: d(-7),
-    rating: 4,
-    positives: [
-      "Impressed with the home's trauma-informed approach to care",
-      "Medication management is excellent with thorough records",
-      "Staff demonstrate strong understanding of Casey's mental health needs",
-    ],
-    concerns: [],
-    suggestions: [
-      "More regular communication about Casey's mental health between scheduled visits would be beneficial",
-      "Consider implementing a brief weekly mood-tracking tool that staff can share with CAMHS",
-    ],
-    actionTaken: "Weekly CAMHS update email agreed with Dr Rahman. Staff to complete brief mood tracker for Casey each shift, shared fortnightly with CAMHS team.",
-    respondedBy: "staff_darren",
-    childRelated: "Casey",
-    notes: "Dr Rahman visited to review Casey's therapeutic progress and medication. Very positive about the home's approach. Made helpful suggestions about improving communication between visits which have been implemented.",
-  },
-  {
-    id: "vf_5",
-    visitorName: "Sarah Mitchell",
-    visitorRole: "iro",
-    visitDate: d(-30),
-    rating: 4,
-    positives: [
-      "Good placement where Alex is thriving",
-      "Strong key working relationship between Alex and Ryan",
-      "Care plan is being followed and outcomes are being met",
-      "Alex expressed feeling safe and happy during the review",
-    ],
-    concerns: [],
-    suggestions: [
-      "Ensure life story work is progressed and documented",
-    ],
-    actionTaken: "Life story work sessions scheduled fortnightly with Ryan. Progress to be recorded and evidenced in care plan reviews.",
-    respondedBy: "staff_darren",
-    childRelated: "Alex",
-    notes: "Alex's LAC review. Sarah was very pleased with the placement and Alex's progress. She noted the strong bond with key worker Ryan and the positive impact this is having. One recommendation around life story work which is now in progress.",
-  },
-];
-
-/* ── stars renderer ──────────────────────────────────────────────────── */
+/* ── stars renderer ────────────────────────────────────────────────────── */
 function Stars({ rating, max = 5 }: { rating: number; max?: number }) {
   return (
     <div className="flex items-center gap-0.5">
@@ -192,9 +56,9 @@ function Stars({ rating, max = 5 }: { rating: number; max?: number }) {
   );
 }
 
-/* ── component ───────────────────────────────────────────────────────── */
+/* ── component ──────────────────────────────────────────────────────────── */
 export default function VisitorsFeedbackPage() {
-  const [entries] = useState<VisitorFeedback[]>(SEED);
+  const { data: entries = [], isLoading } = useVisitorsFeedbackRecords();
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -207,19 +71,19 @@ export default function VisitorsFeedbackPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (e) =>
-          e.visitorName.toLowerCase().includes(q) ||
+          e.visitor_name.toLowerCase().includes(q) ||
           e.notes.toLowerCase().includes(q) ||
-          (e.childRelated && e.childRelated.toLowerCase().includes(q)) ||
+          (e.child_related && e.child_related.toLowerCase().includes(q)) ||
           e.positives.some((p) => p.toLowerCase().includes(q)) ||
           e.concerns.some((c) => c.toLowerCase().includes(q))
       );
     }
-    if (filterRole !== "all") list = list.filter((e) => e.visitorRole === filterRole);
+    if (filterRole !== "all") list = list.filter((e) => e.visitor_role === filterRole);
 
     list.sort((a, b) => {
       switch (sortBy) {
-        case "date": return b.visitDate.localeCompare(a.visitDate);
-        case "role": return a.visitorRole.localeCompare(b.visitorRole);
+        case "date": return b.visit_date.localeCompare(a.visit_date);
+        case "role": return a.visitor_role.localeCompare(b.visitor_role);
         case "rating": return b.rating - a.rating;
         default: return 0;
       }
@@ -227,7 +91,7 @@ export default function VisitorsFeedbackPage() {
     return list;
   }, [entries, search, filterRole, sortBy]);
 
-  /* ── summary stats ───────────────────────────────────────────────── */
+  /* ── summary stats ──────────────────────────────────────────────────── */
   const totalFeedback = entries.length;
   const avgRating = entries.length > 0
     ? (entries.reduce((sum, e) => sum + e.rating, 0) / entries.length).toFixed(1)
@@ -237,21 +101,31 @@ export default function VisitorsFeedbackPage() {
     : 0;
   const concernsRaised = entries.filter((e) => e.concerns.length > 0).length;
 
-  /* ── export columns ──────────────────────────────────────────────── */
-  const exportCols: ExportColumn<VisitorFeedback>[] = [
-    { header: "ID", accessor: (r: VisitorFeedback) => r.id },
-    { header: "Visitor Name", accessor: (r: VisitorFeedback) => r.visitorName },
-    { header: "Visitor Role", accessor: (r: VisitorFeedback) => ROLE_LABELS[r.visitorRole] },
-    { header: "Visit Date", accessor: (r: VisitorFeedback) => r.visitDate },
-    { header: "Rating", accessor: (r: VisitorFeedback) => `${r.rating}/5` },
-    { header: "Positives", accessor: (r: VisitorFeedback) => r.positives.join("; ") },
-    { header: "Concerns", accessor: (r: VisitorFeedback) => r.concerns.join("; ") },
-    { header: "Suggestions", accessor: (r: VisitorFeedback) => r.suggestions.join("; ") },
-    { header: "Action Taken", accessor: (r: VisitorFeedback) => r.actionTaken ?? "" },
-    { header: "Responded By", accessor: (r: VisitorFeedback) => r.respondedBy ? getStaffName(r.respondedBy) : "" },
-    { header: "Child Related", accessor: (r: VisitorFeedback) => r.childRelated ?? "General" },
-    { header: "Notes", accessor: (r: VisitorFeedback) => r.notes },
+  /* ── export columns ─────────────────────────────────────────────────── */
+  const exportCols: ExportColumn<VisitorsFeedbackRecord>[] = [
+    { header: "ID", accessor: (r: VisitorsFeedbackRecord) => r.id },
+    { header: "Visitor Name", accessor: (r: VisitorsFeedbackRecord) => r.visitor_name },
+    { header: "Visitor Role", accessor: (r: VisitorsFeedbackRecord) => VISITORS_FEEDBACK_ROLE_LABEL[r.visitor_role] },
+    { header: "Visit Date", accessor: (r: VisitorsFeedbackRecord) => r.visit_date },
+    { header: "Rating", accessor: (r: VisitorsFeedbackRecord) => `${r.rating}/5` },
+    { header: "Positives", accessor: (r: VisitorsFeedbackRecord) => r.positives.join("; ") },
+    { header: "Concerns", accessor: (r: VisitorsFeedbackRecord) => r.concerns.join("; ") },
+    { header: "Suggestions", accessor: (r: VisitorsFeedbackRecord) => r.suggestions.join("; ") },
+    { header: "Action Taken", accessor: (r: VisitorsFeedbackRecord) => r.action_taken ?? "" },
+    { header: "Responded By", accessor: (r: VisitorsFeedbackRecord) => r.responded_by ? getStaffName(r.responded_by) : "" },
+    { header: "Child Related", accessor: (r: VisitorsFeedbackRecord) => r.child_related ?? "General" },
+    { header: "Notes", accessor: (r: VisitorsFeedbackRecord) => r.notes },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Visitors' Feedback" subtitle="Feedback from Reg 44 visitors, IROs, social workers, family members, and professionals">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -268,7 +142,7 @@ export default function VisitorsFeedbackPage() {
       }
     >
       <div id="print-area" className="space-y-6">
-        {/* ── summary stats ───────────────────────────────────────── */}
+        {/* ── summary stats ──────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Total Feedback", value: totalFeedback, icon: MessageSquare, colour: "text-blue-600" },
@@ -293,7 +167,7 @@ export default function VisitorsFeedbackPage() {
           ))}
         </div>
 
-        {/* ── filters ─────────────────────────────────────────────── */}
+        {/* ── filters ────────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3 items-end">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -311,7 +185,7 @@ export default function VisitorsFeedbackPage() {
               <SelectContent>
                 <SelectItem value="all">All Visitors</SelectItem>
                 {VISITOR_ROLES.map((r) => (
-                  <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
+                  <SelectItem key={r} value={r}>{VISITORS_FEEDBACK_ROLE_LABEL[r]}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -329,7 +203,7 @@ export default function VisitorsFeedbackPage() {
           </div>
         </div>
 
-        {/* ── feedback list ───────────────────────────────────────── */}
+        {/* ── feedback list ──────────────────────────────────────────── */}
         <div className="space-y-3">
           {filtered.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">No feedback matches your filters.</div>
@@ -345,17 +219,17 @@ export default function VisitorsFeedbackPage() {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Users className="h-5 w-5 text-blue-600 shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-medium truncate">{entry.visitorName}</p>
+                      <p className="font-medium truncate">{entry.visitor_name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {entry.visitDate} · {ROLE_LABELS[entry.visitorRole]}
-                        {entry.childRelated && ` · Re: ${entry.childRelated}`}
+                        {entry.visit_date} · {VISITORS_FEEDBACK_ROLE_LABEL[entry.visitor_role]}
+                        {entry.child_related && ` · Re: ${entry.child_related}`}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Stars rating={entry.rating} />
-                    <Badge className={cn("text-xs", ROLE_COLOURS[entry.visitorRole])}>
-                      {ROLE_LABELS[entry.visitorRole]}
+                    <Badge className={cn("text-xs", ROLE_COLOURS[entry.visitor_role])}>
+                      {VISITORS_FEEDBACK_ROLE_LABEL[entry.visitor_role]}
                     </Badge>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -425,13 +299,13 @@ export default function VisitorsFeedbackPage() {
                     )}
 
                     {/* action taken */}
-                    {entry.actionTaken && (
+                    {entry.action_taken && (
                       <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                         <div className="flex items-center gap-1 mb-1">
                           <ClipboardCheck className="h-4 w-4 text-blue-600" />
                           <p className="text-xs font-medium text-blue-700">Action Taken</p>
                         </div>
-                        <p className="text-sm">{entry.actionTaken}</p>
+                        <p className="text-sm">{entry.action_taken}</p>
                       </div>
                     )}
 
@@ -446,12 +320,12 @@ export default function VisitorsFeedbackPage() {
                       <div>
                         <span className="text-muted-foreground">Responded By:</span>{" "}
                         <span className="font-medium">
-                          {entry.respondedBy ? getStaffName(entry.respondedBy) : "Pending"}
+                          {entry.responded_by ? getStaffName(entry.responded_by) : "Pending"}
                         </span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Child Related:</span>{" "}
-                        <span className="font-medium">{entry.childRelated ?? "General"}</span>
+                        <span className="font-medium">{entry.child_related ?? "General"}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Rating:</span>{" "}
@@ -465,7 +339,7 @@ export default function VisitorsFeedbackPage() {
           })}
         </div>
 
-        {/* ── regulatory note ─────────────────────────────────────── */}
+        {/* ── regulatory note ────────────────────────────────────────── */}
         <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">
           <strong>Regulatory Guidance:</strong> Regulation 44 of the Children&apos;s Homes (England) Regulations
           2015 requires monthly independent visits to monitor the home&apos;s effectiveness.
@@ -475,7 +349,7 @@ export default function VisitorsFeedbackPage() {
         </div>
       </div>
 
-      {/* ── placeholder dialog ────────────────────────────────────── */}
+      {/* ── placeholder dialog ───────────────────────────────────────── */}
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg">
           <DialogHeader>

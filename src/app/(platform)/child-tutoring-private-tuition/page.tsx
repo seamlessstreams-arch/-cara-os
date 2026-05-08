@@ -24,227 +24,57 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type {
+  TutoringRecord,
+  TutoringFormat,
+  TutoringFundingSource,
+  TutoringMotivation,
+} from "@/types/extended";
+import {
+  TUTORING_FORMAT_LABEL,
+  TUTORING_FUNDING_SOURCE_LABEL,
+  TUTORING_MOTIVATION_LABEL,
+} from "@/types/extended";
+import { useTutoringRecords } from "@/hooks/use-tutoring-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-interface TutorRecord {
-  id: string;
-  youngPerson: string;
-  subject: string;
-  examFocus?: string;
-  tutorName: string;
-  tutorQualifications: string;
-  dbsCheckedDate: string;
-  agency?: string;
-  startDate: string;
-  endDate?: string;
-  ongoing: boolean;
-  format: "Online" | "In-home" | "Tutor's home" | "Library" | "Mixed";
-  hoursPerWeek: number;
-  hourlyRate: number;
-  costToDate: number;
-  fundingSource:
-    | "Pupil Premium Plus"
-    | "Virtual School grant"
-    | "Leaving Care fund"
-    | "Home budget"
-    | "Family contribution"
-    | "Mixed"
-    | "Free (charity)";
-  baselineGrade?: string;
-  currentGrade?: string;
-  targetGrade?: string;
-  resourcesProvided: string[];
-  childMotivation: "High" | "Building" | "Mixed" | "Low";
-  parentSwAware: boolean;
-  childVoice: string;
-  staffObservation: string;
-  nextSession?: string;
-  reviewDate: string;
-  keyWorker: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const motivationColour: Record<TutoringMotivation, string> = {
+  high: "bg-emerald-100 text-emerald-800",
+  building: "bg-sky-100 text-sky-800",
+  mixed: "bg-amber-100 text-amber-800",
+  low: "bg-rose-100 text-rose-800",
 };
 
-const data: TutorRecord[] = [
-  {
-    id: "tut-001",
-    youngPerson: "yp_jordan",
-    subject: "GCSE Maths",
-    examFocus: "AQA GCSE Mathematics — Higher tier — May/June 2026",
-    tutorName: "Bilal Khan",
-    tutorQualifications: "PGCE Secondary Mathematics, BSc Maths (1st), 5 years secondary teaching, Tutorful verified",
-    dbsCheckedDate: "2025-09-04",
-    agency: "Tutorful",
-    startDate: "2026-01-12",
-    ongoing: true,
-    format: "In-home",
-    hoursPerWeek: 2,
-    hourlyRate: 30,
-    costToDate: 960,
-    fundingSource: "Mixed",
-    baselineGrade: "4",
-    currentGrade: "5",
-    targetGrade: "6",
-    resourcesProvided: [
-      "CGP GCSE Maths Higher revision guide + workbook",
-      "Casio fx-83GT calculator",
-      "Maths Made Easy practice paper subscription",
-      "Bespoke topic notebook (Bilal-prepared)",
-    ],
-    childMotivation: "High",
-    parentSwAware: true,
-    childVoice:
-      "Bilal explains things how my brain actually works. I get it now. I'm gonna smash that 6.",
-    staffObservation:
-      "16 weeks in. Confidence transformed — Jordan now volunteers in class. Bilal a steady male academic role model. Funding split: Pupil Premium Plus £600 + Virtual School top-up £360. Worth every penny.",
-    nextSession: d(2),
-    reviewDate: d(28),
-    keyWorker: "staff_chervelle",
-  },
-  {
-    id: "tut-002",
-    youngPerson: "yp_jordan",
-    subject: "GCSE English Language & Literature",
-    examFocus: "AQA GCSE English Language Paper 1 + 2; Literature An Inspector Calls + Macbeth",
-    tutorName: "Sarah Wills",
-    tutorQualifications: "QTS English Secondary, MA English Lit, 8 years tutoring",
-    dbsCheckedDate: "2025-08-20",
-    agency: "Tutorful",
-    startDate: "2026-02-09",
-    ongoing: true,
-    format: "Online",
-    hoursPerWeek: 1,
-    hourlyRate: 25,
-    costToDate: 300,
-    fundingSource: "Pupil Premium Plus",
-    baselineGrade: "4",
-    currentGrade: "4",
-    targetGrade: "5",
-    resourcesProvided: [
-      "York Notes for An Inspector Calls + Macbeth",
-      "AQA past papers (annotated by Sarah)",
-      "Quote bank — bespoke flashcards",
-    ],
-    childMotivation: "Building",
-    parentSwAware: true,
-    childVoice:
-      "Online's alright. Sarah's nice. Maths is more my thing but I'm trying.",
-    staffObservation:
-      "Pairing with Maths tutoring deliberate — closing exam-readiness gap together. Online format suits Jordan's evening schedule around football. Slow start but engagement strengthening.",
-    nextSession: d(4),
-    reviewDate: d(56),
-    keyWorker: "staff_chervelle",
-  },
-  {
-    id: "tut-003",
-    youngPerson: "yp_alex",
-    subject: "A-level Sociology",
-    examFocus: "AQA A-level Sociology Paper 1 (Education + methods), Paper 2 (Topics), Paper 3 (Crime + theory) — 2026",
-    tutorName: "Dr Paula Reid",
-    tutorQualifications: "PhD Sociology (Manchester), PGCE FE, 12 years A-level examining experience",
-    dbsCheckedDate: "2025-11-02",
-    agency: "MyTutor",
-    startDate: "2026-01-20",
-    ongoing: true,
-    format: "Online",
-    hoursPerWeek: 2,
-    hourlyRate: 40,
-    costToDate: 1120,
-    fundingSource: "Leaving Care fund",
-    baselineGrade: "C",
-    currentGrade: "B",
-    targetGrade: "A",
-    resourcesProvided: [
-      "AQA A-level Sociology textbook (Webb)",
-      "Tutor2u online resource subscription",
-      "Annotated 25-mark essay exemplars",
-      "Theory mind-maps (bespoke)",
-    ],
-    childMotivation: "Building",
-    parentSwAware: true,
-    childVoice:
-      "Paula gets why I want uni. She doesn't pity me. She just expects me to do the work — and I do.",
-    staffObservation:
-      "Alex (16+, leaving care eligible) — funded via Leaving Care personal advisor budget under Care Leavers Regs 2010. Paula ideal: academic without being patronising. Aspiration shifting from 'maybe' to 'definitely' uni.",
-    nextSession: d(1),
-    reviewDate: d(42),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "tut-004",
-    youngPerson: "yp_casey",
-    subject: "Year 6 SATs — Maths",
-    examFocus: "Year 6 KS2 SATs — Maths reasoning + arithmetic — May 2026",
-    tutorName: "Mrs Linda Harper",
-    tutorQualifications: "QTS Primary, 22 years Year 6 teaching (recently retired), school-organised",
-    dbsCheckedDate: "2025-09-01",
-    startDate: "2026-02-02",
-    ongoing: true,
-    format: "In-home",
-    hoursPerWeek: 1,
-    hourlyRate: 0,
-    costToDate: 0,
-    fundingSource: "Free (charity)",
-    baselineGrade: "Working towards expected",
-    currentGrade: "Approaching expected",
-    targetGrade: "Expected standard",
-    resourcesProvided: [
-      "CGP KS2 Maths SATs Question Book",
-      "School-supplied past papers",
-      "Sensory-friendly visual timer for sessions",
-    ],
-    childMotivation: "High",
-    parentSwAware: true,
-    childVoice:
-      "Mrs Harper is kind. We do maths at the kitchen table. I like the sticker chart.",
-    staffObservation:
-      "School-organised tutoring funded via Pupil Premium at primary level (free to home). Mrs Harper trauma-aware and sensory-aware — sessions calibrated to Casey's regulation. SATs not high-stakes for Casey but progress matters for confidence.",
-    nextSession: d(3),
-    reviewDate: d(35),
-    keyWorker: "staff_anna",
-  },
-];
-
-const motivationColour: Record<string, string> = {
-  High: "bg-emerald-100 text-emerald-800",
-  Building: "bg-sky-100 text-sky-800",
-  Mixed: "bg-amber-100 text-amber-800",
-  Low: "bg-rose-100 text-rose-800",
+const fundingColour: Record<TutoringFundingSource, string> = {
+  pupil_premium_plus: "bg-violet-100 text-violet-800",
+  virtual_school_grant: "bg-indigo-100 text-indigo-800",
+  leaving_care_fund: "bg-purple-100 text-purple-800",
+  home_budget: "bg-slate-100 text-slate-800",
+  family_contribution: "bg-blue-100 text-blue-800",
+  mixed: "bg-fuchsia-100 text-fuchsia-800",
+  free_charity: "bg-emerald-100 text-emerald-800",
 };
 
-const fundingColour: Record<string, string> = {
-  "Pupil Premium Plus": "bg-violet-100 text-violet-800",
-  "Virtual School grant": "bg-indigo-100 text-indigo-800",
-  "Leaving Care fund": "bg-purple-100 text-purple-800",
-  "Home budget": "bg-slate-100 text-slate-800",
-  "Family contribution": "bg-blue-100 text-blue-800",
-  Mixed: "bg-fuchsia-100 text-fuchsia-800",
-  "Free (charity)": "bg-emerald-100 text-emerald-800",
-};
-
-const exportCols: ExportColumn<TutorRecord>[] = [
-  { header: "Young Person", accessor: (r: TutorRecord) => getYPName(r.youngPerson) },
-  { header: "Subject", accessor: (r: TutorRecord) => r.subject },
-  { header: "Exam Focus", accessor: (r: TutorRecord) => r.examFocus ?? "" },
-  { header: "Tutor", accessor: (r: TutorRecord) => r.tutorName },
-  { header: "Qualifications", accessor: (r: TutorRecord) => r.tutorQualifications },
-  { header: "DBS Checked", accessor: (r: TutorRecord) => r.dbsCheckedDate },
-  { header: "Agency", accessor: (r: TutorRecord) => r.agency ?? "Direct" },
-  { header: "Format", accessor: (r: TutorRecord) => r.format },
-  { header: "Hours/Week", accessor: (r: TutorRecord) => `${r.hoursPerWeek}` },
-  { header: "Hourly Rate £", accessor: (r: TutorRecord) => `£${r.hourlyRate}` },
-  { header: "Cost To Date £", accessor: (r: TutorRecord) => `£${r.costToDate}` },
-  { header: "Funding", accessor: (r: TutorRecord) => r.fundingSource },
-  { header: "Baseline", accessor: (r: TutorRecord) => r.baselineGrade ?? "" },
-  { header: "Current", accessor: (r: TutorRecord) => r.currentGrade ?? "" },
-  { header: "Target", accessor: (r: TutorRecord) => r.targetGrade ?? "" },
-  { header: "Motivation", accessor: (r: TutorRecord) => r.childMotivation },
-  { header: "Parent/SW Aware", accessor: (r: TutorRecord) => (r.parentSwAware ? "Yes" : "No") },
-  { header: "Review Date", accessor: (r: TutorRecord) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: TutorRecord) => getStaffName(r.keyWorker) },
+const exportCols: ExportColumn<TutoringRecord>[] = [
+  { header: "Young Person", accessor: (r: TutoringRecord) => getYPName(r.child_id) },
+  { header: "Subject", accessor: (r: TutoringRecord) => r.subject },
+  { header: "Exam Focus", accessor: (r: TutoringRecord) => r.exam_focus ?? "" },
+  { header: "Tutor", accessor: (r: TutoringRecord) => r.tutor_name },
+  { header: "Qualifications", accessor: (r: TutoringRecord) => r.tutor_qualifications },
+  { header: "DBS Checked", accessor: (r: TutoringRecord) => r.dbs_checked_date },
+  { header: "Agency", accessor: (r: TutoringRecord) => r.agency ?? "Direct" },
+  { header: "Format", accessor: (r: TutoringRecord) => TUTORING_FORMAT_LABEL[r.format] },
+  { header: "Hours/Week", accessor: (r: TutoringRecord) => `${r.hours_per_week}` },
+  { header: "Hourly Rate £", accessor: (r: TutoringRecord) => `£${r.hourly_rate}` },
+  { header: "Cost To Date £", accessor: (r: TutoringRecord) => `£${r.cost_to_date}` },
+  { header: "Funding", accessor: (r: TutoringRecord) => TUTORING_FUNDING_SOURCE_LABEL[r.funding_source] },
+  { header: "Baseline", accessor: (r: TutoringRecord) => r.baseline_grade ?? "" },
+  { header: "Current", accessor: (r: TutoringRecord) => r.current_grade ?? "" },
+  { header: "Target", accessor: (r: TutoringRecord) => r.target_grade ?? "" },
+  { header: "Motivation", accessor: (r: TutoringRecord) => TUTORING_MOTIVATION_LABEL[r.child_motivation] },
+  { header: "Parent/SW Aware", accessor: (r: TutoringRecord) => (r.parent_sw_aware ? "Yes" : "No") },
+  { header: "Review Date", accessor: (r: TutoringRecord) => r.review_date },
+  { header: "Key Worker", accessor: (r: TutoringRecord) => getStaffName(r.key_worker) },
 ];
 
 export default function ChildTutoringPrivateTuitionPage() {
@@ -253,49 +83,54 @@ export default function ChildTutoringPrivateTuitionPage() {
   const [sortBy, setSortBy] = useState("review");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const { data: res, isLoading } = useTutoringRecords();
+  const items = res?.data ?? [];
+
   const subjects = useMemo(
-    () => Array.from(new Set(data.map((r) => r.subject))).sort(),
-    [],
+    () => Array.from(new Set(items.map((r) => r.subject))).sort(),
+    [items],
   );
 
   const filtered = useMemo(() => {
-    let items = [...data];
-    if (filterSubject !== "all") items = items.filter((r) => r.subject === filterSubject);
+    let list = [...items];
+    if (filterSubject !== "all") list = list.filter((r) => r.subject === filterSubject);
     if (search.trim()) {
       const q = search.toLowerCase();
-      items = items.filter(
+      list = list.filter(
         (r) =>
           r.subject.toLowerCase().includes(q) ||
-          r.tutorName.toLowerCase().includes(q) ||
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          (r.examFocus ?? "").toLowerCase().includes(q),
+          r.tutor_name.toLowerCase().includes(q) ||
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          (r.exam_focus ?? "").toLowerCase().includes(q),
       );
     }
-    items.sort((a, b) => {
+    list.sort((a, b) => {
       switch (sortBy) {
         case "review":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         case "cost":
-          return b.costToDate - a.costToDate;
+          return b.cost_to_date - a.cost_to_date;
         case "hours":
-          return b.hoursPerWeek - a.hoursPerWeek;
+          return b.hours_per_week - a.hours_per_week;
         case "subject":
           return a.subject.localeCompare(b.subject);
         default:
           return 0;
       }
     });
-    return items;
-  }, [filterSubject, search, sortBy]);
+    return list;
+  }, [items, filterSubject, search, sortBy]);
 
-  const activeTutoring = data.filter((r) => r.ongoing).length;
-  const totalHoursPerWeek = data
+  if (isLoading) return <PageShell title="Tutoring & Private Tuition" subtitle="Per-child academic support — closing the attainment gap with intentional, funded, monitored tuition"><div /></PageShell>;
+
+  const activeTutoring = items.filter((r) => r.ongoing).length;
+  const totalHoursPerWeek = items
     .filter((r) => r.ongoing)
-    .reduce((s, r) => s + r.hoursPerWeek, 0);
-  const costYTD = data.reduce((s, r) => s + r.costToDate, 0);
+    .reduce((s, r) => s + r.hours_per_week, 0);
+  const costYTD = items.reduce((s, r) => s + r.cost_to_date, 0);
   const today = new Date();
-  const reviewsDue90 = data.filter((r) => {
-    const rd = new Date(r.reviewDate);
+  const reviewsDue90 = items.filter((r) => {
+    const rd = new Date(r.review_date);
     const diff = (rd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
     return diff >= 0 && diff <= 90;
   }).length;
@@ -306,7 +141,7 @@ export default function ChildTutoringPrivateTuitionPage() {
       subtitle="Per-child academic support — closing the attainment gap with intentional, funded, monitored tuition"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="child-tutoring" />
+          <ExportButton data={items} columns={exportCols} filename="child-tutoring" />
           <PrintButton title="Tutoring & Private Tuition" />
         </div>
       }
@@ -393,44 +228,44 @@ export default function ChildTutoringPrivateTuitionPage() {
                   <BookOpen className="h-5 w-5 text-sky-600 shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">
-                      {r.subject} &middot; {getYPName(r.youngPerson)}
+                      {r.subject} &middot; {getYPName(r.child_id)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      Tutor: {r.tutorName} &middot; started {r.startDate}
-                      {r.ongoing ? " · ongoing" : r.endDate ? ` · ended ${r.endDate}` : ""}
+                      Tutor: {r.tutor_name} &middot; started {r.start_date}
+                      {r.ongoing ? " · ongoing" : r.end_date ? ` · ended ${r.end_date}` : ""}
                     </p>
                     <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-medium">
                         {r.subject}
                       </span>
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium">
-                        {r.format}
+                        {TUTORING_FORMAT_LABEL[r.format]}
                       </span>
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">
-                        {r.hoursPerWeek} hr/wk
+                        {r.hours_per_week} hr/wk
                       </span>
                       <span
                         className={cn(
                           "text-[11px] px-2 py-0.5 rounded-full font-medium",
-                          fundingColour[r.fundingSource],
+                          fundingColour[r.funding_source],
                         )}
                       >
-                        {r.fundingSource}
+                        {TUTORING_FUNDING_SOURCE_LABEL[r.funding_source]}
                       </span>
                       <span
                         className={cn(
                           "text-[11px] px-2 py-0.5 rounded-full font-medium",
-                          motivationColour[r.childMotivation],
+                          motivationColour[r.child_motivation],
                         )}
                       >
-                        {r.childMotivation} motivation
+                        {TUTORING_MOTIVATION_LABEL[r.child_motivation]} motivation
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
                   <span className="text-sm font-semibold text-indigo-600">
-                    £{r.costToDate.toLocaleString()}
+                    £{r.cost_to_date.toLocaleString()}
                   </span>
                   {isExpanded ? (
                     <ChevronUp className="h-4 w-4" />
@@ -447,49 +282,49 @@ export default function ChildTutoringPrivateTuitionPage() {
                       <GraduationCap className="h-3 w-3 inline mr-1" />
                       Tutor
                     </p>
-                    <p className="text-sm font-medium">{r.tutorName}</p>
+                    <p className="text-sm font-medium">{r.tutor_name}</p>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                      {r.tutorQualifications}
+                      {r.tutor_qualifications}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      DBS checked {r.dbsCheckedDate}
+                      DBS checked {r.dbs_checked_date}
                       {r.agency ? ` · via ${r.agency}` : " · direct"}
                     </p>
                   </div>
 
-                  {r.examFocus && (
+                  {r.exam_focus && (
                     <div className="bg-violet-50 rounded-lg p-3 border border-violet-200">
                       <p className="text-xs font-semibold text-violet-800 uppercase tracking-wide mb-1">
                         <Award className="h-3 w-3 inline mr-1" />
                         Exam Focus
                       </p>
-                      <p className="text-sm">{r.examFocus}</p>
+                      <p className="text-sm">{r.exam_focus}</p>
                     </div>
                   )}
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Format</p>
-                      <p className="font-medium">{r.format}</p>
+                      <p className="font-medium">{TUTORING_FORMAT_LABEL[r.format]}</p>
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Hours/wk</p>
-                      <p className="font-medium">{r.hoursPerWeek}</p>
+                      <p className="font-medium">{r.hours_per_week}</p>
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Hourly rate</p>
                       <p className="font-medium">
                         <PoundSterling className="h-3 w-3 inline" />
-                        {r.hourlyRate}
+                        {r.hourly_rate}
                       </p>
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Cost to date</p>
-                      <p className="font-medium">£{r.costToDate.toLocaleString()}</p>
+                      <p className="font-medium">£{r.cost_to_date.toLocaleString()}</p>
                     </div>
                   </div>
 
-                  {(r.baselineGrade || r.currentGrade || r.targetGrade) && (
+                  {(r.baseline_grade || r.current_grade || r.target_grade) && (
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                         Progress
@@ -498,34 +333,34 @@ export default function ChildTutoringPrivateTuitionPage() {
                         <div className="flex-1 text-center">
                           <p className="text-xs text-muted-foreground">Baseline</p>
                           <p className="text-lg font-bold text-slate-700">
-                            {r.baselineGrade ?? "—"}
+                            {r.baseline_grade ?? "—"}
                           </p>
                         </div>
                         <div className="flex-1 h-1 bg-gradient-to-r from-slate-300 via-sky-400 to-violet-500 rounded-full" />
                         <div className="flex-1 text-center">
                           <p className="text-xs text-muted-foreground">Current</p>
                           <p className="text-lg font-bold text-sky-600">
-                            {r.currentGrade ?? "—"}
+                            {r.current_grade ?? "—"}
                           </p>
                         </div>
                         <div className="flex-1 h-1 bg-gradient-to-r from-sky-400 to-violet-500 rounded-full" />
                         <div className="flex-1 text-center">
                           <p className="text-xs text-muted-foreground">Target</p>
                           <p className="text-lg font-bold text-violet-700">
-                            {r.targetGrade ?? "—"}
+                            {r.target_grade ?? "—"}
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {r.resourcesProvided.length > 0 && (
+                  {r.resources_provided.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                         Resources Provided
                       </p>
                       <ul className="space-y-1">
-                        {r.resourcesProvided.map((res, i) => (
+                        {r.resources_provided.map((res, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <BookOpen className="h-3 w-3 text-sky-500 mt-1 shrink-0" />
                             <span>{res}</span>
@@ -539,20 +374,20 @@ export default function ChildTutoringPrivateTuitionPage() {
                     <span
                       className={cn(
                         "text-xs px-2 py-0.5 rounded-full font-medium",
-                        r.parentSwAware
+                        r.parent_sw_aware
                           ? "bg-emerald-100 text-emerald-800"
                           : "bg-rose-100 text-rose-800",
                       )}
                     >
-                      Parent / Social Worker {r.parentSwAware ? "aware" : "NOT aware"}
+                      Parent / Social Worker {r.parent_sw_aware ? "aware" : "NOT aware"}
                     </span>
-                    {r.nextSession && (
+                    {r.next_session && (
                       <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">
-                        Next session: {r.nextSession}
+                        Next session: {r.next_session}
                       </span>
                     )}
                     <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
-                      Review: {r.reviewDate}
+                      Review: {r.review_date}
                     </span>
                   </div>
 
@@ -560,18 +395,20 @@ export default function ChildTutoringPrivateTuitionPage() {
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">
                       Child&apos;s Voice
                     </p>
-                    <p className="text-sm italic">&ldquo;{r.childVoice}&rdquo;</p>
+                    <p className="text-sm italic">&ldquo;{r.child_voice}&rdquo;</p>
                   </div>
 
                   <div className="bg-emerald-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">
                       Staff Observation
                     </p>
-                    <p className="text-sm">{r.staffObservation}</p>
+                    <p className="text-sm">{r.staff_observation}</p>
                   </div>
 
+                  <SmartLinkPanel sourceType="tutoring-record" sourceId={r.id} childId={r.child_id} compact />
+
                   <div className="text-xs text-muted-foreground pt-2 border-t">
-                    Key worker: {getStaffName(r.keyWorker)}
+                    Key worker: {getStaffName(r.key_worker)}
                   </div>
                 </div>
               )}

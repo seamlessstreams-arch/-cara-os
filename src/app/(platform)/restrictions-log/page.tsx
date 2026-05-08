@@ -12,11 +12,12 @@ import {
   CheckCircle2,
   Clock,
   ShieldAlert,
+  Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { PrintButton }  from "@/components/ui/print-button";
-import { cn }           from "@/lib/utils";
+import { PrintButton } from "@/components/ui/print-button";
+import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -24,131 +25,33 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { useRestrictionsLogRecords } from "@/hooks/use-restrictions-log-records";
+import type {
+  RestrictionsLogRecord,
+  RestrictionsLogType,
+  RestrictionsLogStatus,
+  RestrictionsLogAuthorisedBy,
+} from "@/types/extended";
+import {
+  RESTRICTIONS_LOG_TYPE_LABEL,
+  RESTRICTIONS_LOG_STATUS_LABEL,
+  RESTRICTIONS_LOG_AUTHORISED_BY_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── local colour maps ────────────────────────────────────────────── */
 
-type RestrictionType = "liberty" | "access" | "contact" | "technology" | "movement" | "medication" | "financial" | "dietary" | "other";
-type RestrictionStatus = "active" | "under_review" | "ended" | "appealed";
-type AuthorisedBy = "court_order" | "placing_authority" | "care_plan" | "risk_assessment" | "dols";
-
-interface Review {
-  date: string;
-  reviewer: string;
-  outcome: string;
-  continued: boolean;
-}
-
-interface Restriction {
-  id: string;
-  youngPersonId: string;
-  type: RestrictionType;
-  description: string;
-  reason: string;
-  status: RestrictionStatus;
-  authorisedBy: AuthorisedBy;
-  authoriserName: string;
-  startDate: string;
-  endDate: string | null;
-  reviewFrequency: string;
-  reviews: Review[];
-  childView: string;
-  proportionality: string;
-  leastRestrictive: string;
-  impactAssessment: string;
-  notifiedParties: string[];
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const SEED: Restriction[] = [
-  {
-    id: "r1", youngPersonId: "yp_jordan", type: "technology",
-    description: "Snapchat account suspended and app removed from phone.",
-    reason: "Following contact from unknown adult with grooming indicators. Police investigation ongoing. Temporary measure to protect Jordan while investigation progresses.",
-    status: "active", authorisedBy: "risk_assessment", authoriserName: "Darren Laville (RM)",
-    startDate: d(-7), endDate: null, reviewFrequency: "Weekly",
-    reviews: [
-      { date: d(-3), reviewer: "staff_darren", outcome: "Police investigation ongoing. Restriction continues. Jordan accepting. Will review again when police provide update.", continued: true },
-    ],
-    childView: "Jordan understands why Snapchat has been removed but is frustrated about it. Said 'I get it but it's not fair that I can't use it because of what someone else did.' Staff validated this feeling and reassured Jordan the restriction is temporary and will be lifted as soon as it's safe to do so.",
-    proportionality: "Restriction is proportionate to the identified risk. Only Snapchat has been restricted — all other apps and internet access remain available. The restriction is the minimum necessary to protect Jordan from the specific identified risk.",
-    leastRestrictive: "Considered blocking the specific account only, but Snapchat's architecture means the user could create new accounts. Full app suspension is the least restrictive option that effectively mitigates the risk.",
-    impactAssessment: "Limited social impact — Jordan primarily uses WhatsApp for peer contact. Some frustration expressed but Jordan understands the rationale. Play therapy providing additional emotional support during this period.",
-    notifiedParties: ["Social Worker (David Osei)", "Police (DI Singh)", "IRO (via social worker)"],
-  },
-  {
-    id: "r2", youngPersonId: "yp_alex", type: "financial",
-    description: "Xbox in-game purchases require staff PIN approval.",
-    reason: "Alex spent £50 on in-game purchases without realising the cumulative cost. PIN control introduced to support financial awareness and prevent unplanned spending. This is a supportive measure, not a sanction.",
-    status: "active", authorisedBy: "care_plan", authoriserName: "Anna Kowalski (Key Worker)",
-    startDate: d(-45), endDate: null, reviewFrequency: "Monthly",
-    reviews: [
-      { date: d(-15), reviewer: "staff_anna", outcome: "Alex has not attempted any unplanned purchases. Engaging well with budgeting as part of independence skills. Restriction continues but with agreed pocket money allocation for gaming — Alex can request up to £10/month for V-Bucks.", continued: true },
-    ],
-    childView: "Alex initially found this annoying but now says 'I actually think it helps me not waste my money.' He has agreed to continue the PIN control voluntarily and sees it as a learning tool rather than a restriction. Positive reframing successful.",
-    proportionality: "Minimal restriction — only affects in-app purchases, not gaming access. Alex can still play all games freely. The PIN is a supportive tool to develop financial literacy.",
-    leastRestrictive: "This is the least restrictive option available. Alternatives considered: removing Xbox (disproportionate), blocking all internet on Xbox (too broad), verbal reminders only (previously unsuccessful). PIN control targets only the specific risk.",
-    impactAssessment: "Positive impact on Alex's financial awareness. No negative impact on gaming enjoyment or social interaction. Alex has started tracking spending voluntarily.",
-    notifiedParties: ["Social Worker (Sarah Hughes)"],
-  },
-  {
-    id: "r3", youngPersonId: "yp_jordan", type: "movement",
-    description: "Jordan to be accompanied by staff when visiting the town centre.",
-    reason: "Following intelligence about county lines activity in the town centre area. Jordan identified as potentially vulnerable to exploitation. Accompanying measure is to ensure safety during this period of heightened risk.",
-    status: "under_review", authorisedBy: "risk_assessment", authoriserName: "Darren Laville (RM)",
-    startDate: d(-30), endDate: null, reviewFrequency: "Fortnightly",
-    reviews: [
-      { date: d(-16), reviewer: "staff_darren", outcome: "Police have confirmed ongoing county lines operation. Restriction continues. Jordan accompanied to town 3 times — no concerns. Jordan frustrated but accepting.", continued: true },
-      { date: d(-2), reviewer: "staff_darren", outcome: "Police operation concluded. Reviewing whether restriction can be stepped down. Meeting with SW scheduled to discuss.", continued: true },
-    ],
-    childView: "Jordan finds this restriction difficult and says 'none of my friends have to have adults with them.' Staff have acknowledged this is frustrating and explained it's about safety, not trust. Jordan has been cooperative but this restriction is impacting their sense of independence.",
-    proportionality: "Restriction is proportionate to the assessed risk of criminal exploitation. However, as the police operation concludes, proportionality needs re-assessment. Jordan's independence is being impacted.",
-    leastRestrictive: "Alternatives considered: full town centre ban (too restrictive), curfew only (doesn't address daytime risk), GPS tracking (disproportionate and intrusive). Staff accompaniment allows Jordan to still access the community while being protected.",
-    impactAssessment: "Some negative impact on Jordan's developing independence and peer relationships. Mitigated by staff being discreet (not 'hovering') and allowing Jordan space during outings. Restriction should be stepped down as soon as risk level permits.",
-    notifiedParties: ["Social Worker (David Osei)", "Police (community safety team)", "IRO"],
-  },
-  {
-    id: "r4", youngPersonId: "yp_casey", type: "contact",
-    description: "No unsupervised contact with biological father (Mark Morgan).",
-    reason: "Court-ordered restriction. Schedule 1 offender. Contact permitted supervised only at local authority contact centre. This is a legal requirement, not a home-imposed restriction.",
-    status: "active", authorisedBy: "court_order", authoriserName: "Family Court — Order dated 2023-11-15",
-    startDate: "2023-11-15", endDate: null, reviewFrequency: "Per court schedule (annually)",
-    reviews: [
-      { date: d(-90), reviewer: "staff_darren", outcome: "Court order remains in place. Contact continuing at LA contact centre monthly. Casey's views sought — Casey chooses to attend. No concerns raised by contact supervisor.", continued: true },
-    ],
-    childView: "Casey understands and accepts the contact arrangement. Has said 'I know why it has to be supervised and I'm okay with it. I still want to see my dad.' Casey's wishes are respected within the legal framework. Advocate involved in court reviews.",
-    proportionality: "This is a court-ordered restriction and therefore legally mandated. The home implements it as directed. Contact still takes place — the restriction is on the supervision arrangement, not on contact itself.",
-    leastRestrictive: "Court-mandated. The home does not have discretion to modify this restriction. Casey's right to family life is maintained through supervised contact.",
-    impactAssessment: "Casey has adjusted well to the supervised arrangement. The restriction does not cause distress. Casey values the contact and the contact centre staff are known and trusted. No additional restrictions are imposed by the home beyond the court order.",
-    notifiedParties: ["Social Worker (Jade Morris)", "IRO", "CAFCASS Guardian", "Casey's Advocate"],
-  },
-];
-
-/* ── constants ─────────────────────────────────────────────────────────── */
-
-const TYPE_LABELS: Record<RestrictionType, string> = {
-  liberty: "Liberty", access: "Access", contact: "Contact", technology: "Technology",
-  movement: "Movement", medication: "Medication", financial: "Financial", dietary: "Dietary", other: "Other",
+const STATUS_META: Record<RestrictionsLogStatus, { colour: string }> = {
+  active:       { colour: "bg-red-100 text-red-700" },
+  under_review: { colour: "bg-amber-100 text-amber-700" },
+  ended:        { colour: "bg-green-100 text-green-700" },
+  appealed:     { colour: "bg-purple-100 text-purple-700" },
 };
 
-const STATUS_META: Record<RestrictionStatus, { label: string; colour: string }> = {
-  active:       { label: "Active",       colour: "bg-red-100 text-red-700" },
-  under_review: { label: "Under Review", colour: "bg-amber-100 text-amber-700" },
-  ended:        { label: "Ended",        colour: "bg-green-100 text-green-700" },
-  appealed:     { label: "Appealed",     colour: "bg-purple-100 text-purple-700" },
-};
-
-const AUTH_LABELS: Record<AuthorisedBy, string> = {
-  court_order: "Court Order", placing_authority: "Placing Authority",
-  care_plan: "Care Plan", risk_assessment: "Risk Assessment", dols: "DoLS",
-};
-
-/* ── component ─────────────────────────────────────────────────────────── */
+/* ── page ──────────────────────────────────────────────────────────── */
 
 export default function RestrictionsLogPage() {
-  const [data] = useState<Restriction[]>(SEED);
+  const { data: records = [], isLoading } = useRestrictionsLogRecords();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -157,66 +60,59 @@ export default function RestrictionsLogPage() {
   const [showDialog, setShowDialog] = useState(false);
 
   const stats = useMemo(() => ({
-    total: data.length,
-    active: data.filter((r) => r.status === "active").length,
-    underReview: data.filter((r) => r.status === "under_review").length,
-    ended: data.filter((r) => r.status === "ended").length,
-    courtOrdered: data.filter((r) => r.authorisedBy === "court_order").length,
-  }), [data]);
+    total: records.length,
+    active: records.filter((r) => r.status === "active").length,
+    underReview: records.filter((r) => r.status === "under_review").length,
+    ended: records.filter((r) => r.status === "ended").length,
+    courtOrdered: records.filter((r) => r.authorised_by === "court_order").length,
+  }), [records]);
 
   const filtered = useMemo(() => {
-    let list = [...data];
+    let list = [...records];
     if (filterType !== "all") list = list.filter((r) => r.type === filterType);
-    if (filterYP !== "all") list = list.filter((r) => r.youngPersonId === filterYP);
+    if (filterYP !== "all") list = list.filter((r) => r.child_id === filterYP);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) => r.description.toLowerCase().includes(q) || r.reason.toLowerCase().includes(q));
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "type":   return TYPE_LABELS[a.type].localeCompare(TYPE_LABELS[b.type]);
-        case "status": return Object.keys(STATUS_META).indexOf(a.status) - Object.keys(STATUS_META).indexOf(b.status);
-        default:       return b.startDate.localeCompare(a.startDate);
+        case "type":   return RESTRICTIONS_LOG_TYPE_LABEL[a.type].localeCompare(RESTRICTIONS_LOG_TYPE_LABEL[b.type]);
+        case "status": return (Object.keys(STATUS_META) as RestrictionsLogStatus[]).indexOf(a.status) - (Object.keys(STATUS_META) as RestrictionsLogStatus[]).indexOf(b.status);
+        default:       return b.start_date.localeCompare(a.start_date);
       }
     });
     return list;
-  }, [data, filterType, filterYP, search, sortBy]);
+  }, [records, filterType, filterYP, search, sortBy]);
 
-  const exportData = useMemo(() => data.map((r) => ({
-    youngPerson: getYPName(r.youngPersonId),
-    type: TYPE_LABELS[r.type],
-    description: r.description,
-    reason: r.reason,
-    status: STATUS_META[r.status].label,
-    authorisedBy: AUTH_LABELS[r.authorisedBy],
-    authoriserName: r.authoriserName,
-    startDate: r.startDate,
-    endDate: r.endDate || "Ongoing",
-    reviewFrequency: r.reviewFrequency,
-    childView: r.childView,
-    proportionality: r.proportionality,
-    leastRestrictive: r.leastRestrictive,
-    notifiedParties: r.notifiedParties.join("; "),
-  })), [data]);
+  const ypIds = useMemo(() => [...new Set(records.map((r) => r.child_id))], [records]);
 
-  const exportCols: ExportColumn<typeof exportData[number]>[] = [
-    { header: "Young Person",    accessor: (r: typeof exportData[number]) => r.youngPerson },
-    { header: "Type",            accessor: (r: typeof exportData[number]) => r.type },
-    { header: "Description",     accessor: (r: typeof exportData[number]) => r.description },
-    { header: "Reason",          accessor: (r: typeof exportData[number]) => r.reason },
-    { header: "Status",          accessor: (r: typeof exportData[number]) => r.status },
-    { header: "Authorised By",   accessor: (r: typeof exportData[number]) => r.authorisedBy },
-    { header: "Authoriser",      accessor: (r: typeof exportData[number]) => r.authoriserName },
-    { header: "Start Date",      accessor: (r: typeof exportData[number]) => r.startDate },
-    { header: "End Date",        accessor: (r: typeof exportData[number]) => r.endDate },
-    { header: "Review Frequency",accessor: (r: typeof exportData[number]) => r.reviewFrequency },
-    { header: "Child View",      accessor: (r: typeof exportData[number]) => r.childView },
-    { header: "Proportionality", accessor: (r: typeof exportData[number]) => r.proportionality },
-    { header: "Least Restrictive",accessor: (r: typeof exportData[number]) => r.leastRestrictive },
-    { header: "Notified Parties",accessor: (r: typeof exportData[number]) => r.notifiedParties },
+  const exportCols: ExportColumn<RestrictionsLogRecord>[] = [
+    { header: "Young Person",     accessor: (r) => getYPName(r.child_id) },
+    { header: "Type",             accessor: (r) => RESTRICTIONS_LOG_TYPE_LABEL[r.type] },
+    { header: "Description",      accessor: (r) => r.description },
+    { header: "Reason",           accessor: (r) => r.reason },
+    { header: "Status",           accessor: (r) => RESTRICTIONS_LOG_STATUS_LABEL[r.status] },
+    { header: "Authorised By",    accessor: (r) => RESTRICTIONS_LOG_AUTHORISED_BY_LABEL[r.authorised_by] },
+    { header: "Authoriser",       accessor: (r) => r.authoriser_name },
+    { header: "Start Date",       accessor: (r) => r.start_date },
+    { header: "End Date",         accessor: (r) => r.end_date || "Ongoing" },
+    { header: "Review Frequency", accessor: (r) => r.review_frequency },
+    { header: "Child View",       accessor: (r) => r.child_view },
+    { header: "Proportionality",  accessor: (r) => r.proportionality },
+    { header: "Least Restrictive", accessor: (r) => r.least_restrictive },
+    { header: "Notified Parties", accessor: (r) => r.notified_parties.join("; ") },
   ];
 
-  const ypIds = [...new Set(data.map((r) => r.youngPersonId))];
+  if (isLoading) {
+    return (
+      <PageShell title="Restrictions Log" subtitle="Reg 20 — restrictions on liberty, movement, contact and access with proportionality review">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -224,7 +120,7 @@ export default function RestrictionsLogPage() {
       subtitle="Reg 20 — restrictions on liberty, movement, contact and access with proportionality review"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={exportData} columns={exportCols} filename="restrictions-log" />
+          <ExportButton data={records} columns={exportCols} filename="restrictions-log" />
           <PrintButton title="Restrictions Log" />
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> Log Restriction
@@ -239,7 +135,7 @@ export default function RestrictionsLogPage() {
             { l: "Active",       v: stats.active, icon: ShieldAlert, c: "text-red-600" },
             { l: "Under Review", v: stats.underReview, icon: Clock, c: "text-amber-600" },
             { l: "Ended",        v: stats.ended, icon: CheckCircle2, c: "text-green-600" },
-            { l: "Court Ordered",v: stats.courtOrdered, icon: Lock, c: "text-purple-600" },
+            { l: "Court Ordered", v: stats.courtOrdered, icon: Lock, c: "text-purple-600" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
               <s.icon className={cn("mx-auto h-5 w-5 mb-1", s.c)} />
@@ -265,7 +161,9 @@ export default function RestrictionsLogPage() {
             <SelectTrigger className="w-[160px]"><SelectValue placeholder="Type" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              {Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+              {(Object.keys(RESTRICTIONS_LOG_TYPE_LABEL) as RestrictionsLogType[]).map((k) => (
+                <SelectItem key={k} value={k}>{RESTRICTIONS_LOG_TYPE_LABEL[k]}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={filterYP} onValueChange={setFilterYP}>
@@ -292,11 +190,11 @@ export default function RestrictionsLogPage() {
                 <Lock className="h-5 w-5 text-red-500" />
                 <div className="text-left">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{getYPName(restriction.youngPersonId)}</h3>
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{TYPE_LABELS[restriction.type]}</span>
-                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_META[restriction.status].colour)}>{STATUS_META[restriction.status].label}</span>
+                    <h3 className="font-semibold">{getYPName(restriction.child_id)}</h3>
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{RESTRICTIONS_LOG_TYPE_LABEL[restriction.type]}</span>
+                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_META[restriction.status].colour)}>{RESTRICTIONS_LOG_STATUS_LABEL[restriction.status]}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{restriction.description} · Since {restriction.startDate}</p>
+                  <p className="text-xs text-muted-foreground">{restriction.description} · Since {restriction.start_date}</p>
                 </div>
               </div>
               {expanded === restriction.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
@@ -305,10 +203,10 @@ export default function RestrictionsLogPage() {
             {expanded === restriction.id && (
               <div className="border-t p-4 space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Authorised By:</span> {AUTH_LABELS[restriction.authorisedBy]}</div>
-                  <div><span className="text-muted-foreground">Authoriser:</span> {restriction.authoriserName}</div>
-                  <div><span className="text-muted-foreground">Review Frequency:</span> {restriction.reviewFrequency}</div>
-                  <div><span className="text-muted-foreground">End Date:</span> {restriction.endDate || "Ongoing"}</div>
+                  <div><span className="text-muted-foreground">Authorised By:</span> {RESTRICTIONS_LOG_AUTHORISED_BY_LABEL[restriction.authorised_by]}</div>
+                  <div><span className="text-muted-foreground">Authoriser:</span> {restriction.authoriser_name}</div>
+                  <div><span className="text-muted-foreground">Review Frequency:</span> {restriction.review_frequency}</div>
+                  <div><span className="text-muted-foreground">End Date:</span> {restriction.end_date || "Ongoing"}</div>
                 </div>
 
                 <div className="rounded-lg bg-gray-50 p-3">
@@ -323,18 +221,18 @@ export default function RestrictionsLogPage() {
                   </div>
                   <div className="rounded-lg bg-green-50 p-3">
                     <h4 className="text-sm font-semibold text-green-800 mb-1">Least Restrictive Option</h4>
-                    <p className="text-sm text-green-900">{restriction.leastRestrictive}</p>
+                    <p className="text-sm text-green-900">{restriction.least_restrictive}</p>
                   </div>
                 </div>
 
                 <div className="rounded-lg bg-amber-50 p-3">
                   <h4 className="text-sm font-semibold text-amber-800 mb-1">Impact Assessment</h4>
-                  <p className="text-sm text-amber-900">{restriction.impactAssessment}</p>
+                  <p className="text-sm text-amber-900">{restriction.impact_assessment}</p>
                 </div>
 
                 <div className="rounded-lg bg-pink-50 border border-pink-200 p-3">
                   <h4 className="text-sm font-semibold text-pink-800 mb-1">Child&apos;s View</h4>
-                  <p className="text-sm text-pink-900">{restriction.childView}</p>
+                  <p className="text-sm text-pink-900">{restriction.child_view}</p>
                 </div>
 
                 {restriction.reviews.length > 0 && (
@@ -356,8 +254,10 @@ export default function RestrictionsLogPage() {
 
                 <div>
                   <h4 className="text-xs font-semibold text-muted-foreground mb-1">Notified Parties</h4>
-                  <div className="flex flex-wrap gap-1">{restriction.notifiedParties.map((p, i) => <span key={i} className="rounded bg-gray-100 px-2 py-0.5 text-xs">{p}</span>)}</div>
+                  <div className="flex flex-wrap gap-1">{restriction.notified_parties.map((p, i) => <span key={i} className="rounded bg-gray-100 px-2 py-0.5 text-xs">{p}</span>)}</div>
                 </div>
+
+                <SmartLinkPanel sourceType="restrictions-log-record" sourceId={restriction.id} childId={restriction.child_id} compact />
               </div>
             )}
           </div>
@@ -373,10 +273,10 @@ export default function RestrictionsLogPage() {
           <DialogHeader><DialogTitle>Log Restriction</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-2">
             <select className="rounded border px-3 py-2 text-sm"><option value="">Young Person…</option>{ypIds.map((id) => <option key={id} value={id}>{getYPName(id)}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Restriction type…</option>{Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+            <select className="rounded border px-3 py-2 text-sm"><option value="">Restriction type…</option>{(Object.keys(RESTRICTIONS_LOG_TYPE_LABEL) as RestrictionsLogType[]).map((k) => <option key={k} value={k}>{RESTRICTIONS_LOG_TYPE_LABEL[k]}</option>)}</select>
             <input placeholder="Description" className="rounded border px-3 py-2 text-sm" />
             <textarea placeholder="Reason for restriction" rows={3} className="rounded border px-3 py-2 text-sm" />
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Authorised by…</option>{Object.entries(AUTH_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+            <select className="rounded border px-3 py-2 text-sm"><option value="">Authorised by…</option>{(Object.keys(RESTRICTIONS_LOG_AUTHORISED_BY_LABEL) as RestrictionsLogAuthorisedBy[]).map((k) => <option key={k} value={k}>{RESTRICTIONS_LOG_AUTHORISED_BY_LABEL[k]}</option>)}</select>
             <input placeholder="Authoriser name" className="rounded border px-3 py-2 text-sm" />
             <textarea placeholder="Proportionality assessment" rows={2} className="rounded border px-3 py-2 text-sm" />
             <textarea placeholder="Child's view" rows={2} className="rounded border px-3 py-2 text-sm" />

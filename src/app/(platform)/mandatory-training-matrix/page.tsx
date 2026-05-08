@@ -12,251 +12,58 @@ import {
 } from "@/components/ui/select";
 import {
   AlertTriangle, CheckCircle2, Clock, Users, Shield, GraduationCap,
-  ChevronDown, ChevronUp, ArrowUpDown, FileCheck, Award, BookOpen,
+  ChevronDown, ChevronUp, ArrowUpDown, FileCheck, Award, BookOpen, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useTrainingMatrixRows } from "@/hooks/use-training-matrix-rows";
+import type {
+  TrainingMatrixRow, TrainingCourseCategory, TrainingCourseStatus,
+  TrainingOverallCompliance, TrainingStatusEntry,
+} from "@/types/extended";
+import {
+  TRAINING_COURSE_CATEGORY_LABEL, TRAINING_COURSE_STATUS_LABEL,
+  TRAINING_OVERALL_COMPLIANCE_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── UI metadata ──────────────────────────────────────────────────────── */
 
-type CourseCategory = "Mandatory" | "Role-specific" | "Best practice";
-type CourseStatus = "Valid" | "Expiring soon" | "Expired" | "Not completed";
-type OverallCompliance = "Fully compliant" | "Action required" | "Non-compliant";
-
-interface TrainingStatus {
-  courseName: string;
-  category: CourseCategory;
-  completedDate: string;
-  expiryDate: string;
-  validityMonths: number;
-  status: CourseStatus;
-  provider: string;
-  certificateOnFile: boolean;
-}
-
-interface TrainingMatrixRow {
-  id: string;
-  staffId: string;
-  role: string;
-  trainingStatuses: TrainingStatus[];
-  overallCompliance: OverallCompliance;
-  nextRefresherDue: string;
-  totalCourses: number;
-  validCount: number;
-  expiringCount: number;
-  expiredCount: number;
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const STATUS_CLR: Record<TrainingCourseStatus, string> = {
+  valid: "bg-green-100 text-green-800",
+  expiring_soon: "bg-amber-100 text-amber-800",
+  expired: "bg-red-100 text-red-800",
+  not_completed: "bg-slate-100 text-slate-700",
 };
 
-const STATUS_CLR: Record<CourseStatus, string> = {
-  "Valid": "bg-green-100 text-green-800",
-  "Expiring soon": "bg-amber-100 text-amber-800",
-  "Expired": "bg-red-100 text-red-800",
-  "Not completed": "bg-slate-100 text-slate-700",
+const STATUS_DOT: Record<TrainingCourseStatus, string> = {
+  valid: "bg-green-500",
+  expiring_soon: "bg-amber-500",
+  expired: "bg-red-500",
+  not_completed: "bg-slate-400",
 };
 
-const STATUS_DOT: Record<CourseStatus, string> = {
-  "Valid": "bg-green-500",
-  "Expiring soon": "bg-amber-500",
-  "Expired": "bg-red-500",
-  "Not completed": "bg-slate-400",
+const COMPLIANCE_CLR: Record<TrainingOverallCompliance, string> = {
+  fully_compliant: "bg-green-100 text-green-800",
+  action_required: "bg-amber-100 text-amber-800",
+  non_compliant: "bg-red-100 text-red-800",
 };
 
-const COMPLIANCE_CLR: Record<OverallCompliance, string> = {
-  "Fully compliant": "bg-green-100 text-green-800",
-  "Action required": "bg-amber-100 text-amber-800",
-  "Non-compliant": "bg-red-100 text-red-800",
+const COMPLIANCE_BORDER: Record<TrainingOverallCompliance, string> = {
+  fully_compliant: "border-l-green-400",
+  action_required: "border-l-amber-400",
+  non_compliant: "border-l-red-500",
 };
 
-const COMPLIANCE_BORDER: Record<OverallCompliance, string> = {
-  "Fully compliant": "border-l-green-400",
-  "Action required": "border-l-amber-400",
-  "Non-compliant": "border-l-red-500",
+const CATEGORY_CLR: Record<TrainingCourseCategory, string> = {
+  mandatory: "bg-blue-50 text-blue-700 border-blue-200",
+  role_specific: "bg-purple-50 text-purple-700 border-purple-200",
+  best_practice: "bg-slate-50 text-slate-700 border-slate-200",
 };
-
-const CATEGORY_CLR: Record<CourseCategory, string> = {
-  "Mandatory": "bg-blue-50 text-blue-700 border-blue-200",
-  "Role-specific": "bg-purple-50 text-purple-700 border-purple-200",
-  "Best practice": "bg-slate-50 text-slate-700 border-slate-200",
-};
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: TrainingMatrixRow[] = [
-  {
-    id: "tm_1",
-    staffId: "staff_darren",
-    role: "Registered Manager",
-    trainingStatuses: [
-      { courseName: "Safeguarding Children Level 3", category: "Mandatory", completedDate: d(-180), expiryDate: d(545), validityMonths: 24, status: "Valid", provider: "Derby Safeguarding Children Partnership", certificateOnFile: true },
-      { courseName: "Positive Behaviour Support", category: "Mandatory", completedDate: d(-200), expiryDate: d(165), validityMonths: 12, status: "Valid", provider: "Team Teach", certificateOnFile: true },
-      { courseName: "First Aid (Paediatric)", category: "Mandatory", completedDate: d(-300), expiryDate: d(795), validityMonths: 36, status: "Valid", provider: "St John Ambulance", certificateOnFile: true },
-      { courseName: "Lone Working Awareness", category: "Mandatory", completedDate: d(-220), expiryDate: d(145), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Trauma-Informed Practice", category: "Mandatory", completedDate: d(-150), expiryDate: d(575), validityMonths: 24, status: "Valid", provider: "Beacon House", certificateOnFile: true },
-      { courseName: "Online Safety", category: "Mandatory", completedDate: d(-340), expiryDate: d(25), validityMonths: 12, status: "Expiring soon", provider: "Educare", certificateOnFile: true },
-      { courseName: "Equality & Diversity", category: "Mandatory", completedDate: d(-110), expiryDate: d(615), validityMonths: 24, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Data Protection (GDPR)", category: "Mandatory", completedDate: d(-90), expiryDate: d(275), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Fire Safety", category: "Mandatory", completedDate: d(-80), expiryDate: d(285), validityMonths: 12, status: "Valid", provider: "Derbyshire Fire & Rescue", certificateOnFile: true },
-      { courseName: "Medication Administration", category: "Mandatory", completedDate: d(-160), expiryDate: d(205), validityMonths: 12, status: "Valid", provider: "Boots Healthcare", certificateOnFile: true },
-      { courseName: "Leadership Level 5 (Diploma)", category: "Role-specific", completedDate: d(-420), expiryDate: d(9999), validityMonths: 0, status: "Valid", provider: "Skills for Care", certificateOnFile: true },
-      { courseName: "Safer Recruitment", category: "Role-specific", completedDate: d(-260), expiryDate: d(105), validityMonths: 12, status: "Valid", provider: "NSPCC Learning", certificateOnFile: true },
-    ],
-    overallCompliance: "Action required",
-    nextRefresherDue: d(25),
-    totalCourses: 12,
-    validCount: 11,
-    expiringCount: 1,
-    expiredCount: 0,
-  },
-  {
-    id: "tm_2",
-    staffId: "staff_ryan",
-    role: "Deputy Manager",
-    trainingStatuses: [
-      { courseName: "Safeguarding Children Level 3", category: "Mandatory", completedDate: d(-90), expiryDate: d(635), validityMonths: 24, status: "Valid", provider: "Derby Safeguarding Children Partnership", certificateOnFile: true },
-      { courseName: "Positive Behaviour Support", category: "Mandatory", completedDate: d(-100), expiryDate: d(265), validityMonths: 12, status: "Valid", provider: "Team Teach", certificateOnFile: true },
-      { courseName: "First Aid (Paediatric)", category: "Mandatory", completedDate: d(-200), expiryDate: d(895), validityMonths: 36, status: "Valid", provider: "St John Ambulance", certificateOnFile: true },
-      { courseName: "Lone Working Awareness", category: "Mandatory", completedDate: d(-130), expiryDate: d(235), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Trauma-Informed Practice", category: "Mandatory", completedDate: d(-95), expiryDate: d(630), validityMonths: 24, status: "Valid", provider: "Beacon House", certificateOnFile: true },
-      { courseName: "Online Safety", category: "Mandatory", completedDate: d(-110), expiryDate: d(255), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Equality & Diversity", category: "Mandatory", completedDate: d(-115), expiryDate: d(610), validityMonths: 24, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Data Protection (GDPR)", category: "Mandatory", completedDate: d(-105), expiryDate: d(260), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Fire Safety", category: "Mandatory", completedDate: d(-70), expiryDate: d(295), validityMonths: 12, status: "Valid", provider: "Derbyshire Fire & Rescue", certificateOnFile: true },
-      { courseName: "Medication Administration", category: "Mandatory", completedDate: d(-140), expiryDate: d(225), validityMonths: 12, status: "Valid", provider: "Boots Healthcare", certificateOnFile: true },
-    ],
-    overallCompliance: "Fully compliant",
-    nextRefresherDue: d(225),
-    totalCourses: 10,
-    validCount: 10,
-    expiringCount: 0,
-    expiredCount: 0,
-  },
-  {
-    id: "tm_3",
-    staffId: "staff_edward",
-    role: "Residential Care Worker",
-    trainingStatuses: [
-      { courseName: "Safeguarding Children Level 3", category: "Mandatory", completedDate: d(-380), expiryDate: d(-15), validityMonths: 24, status: "Expired", provider: "Derby Safeguarding Children Partnership", certificateOnFile: true },
-      { courseName: "Positive Behaviour Support", category: "Mandatory", completedDate: d(-260), expiryDate: d(105), validityMonths: 12, status: "Valid", provider: "Team Teach", certificateOnFile: true },
-      { courseName: "First Aid (Paediatric)", category: "Mandatory", completedDate: d(-410), expiryDate: d(685), validityMonths: 36, status: "Valid", provider: "St John Ambulance", certificateOnFile: true },
-      { courseName: "Lone Working Awareness", category: "Mandatory", completedDate: d(-340), expiryDate: d(25), validityMonths: 12, status: "Expiring soon", provider: "Educare", certificateOnFile: true },
-      { courseName: "Trauma-Informed Practice", category: "Mandatory", completedDate: d(-200), expiryDate: d(525), validityMonths: 24, status: "Valid", provider: "Beacon House", certificateOnFile: true },
-      { courseName: "Online Safety", category: "Mandatory", completedDate: d(-220), expiryDate: d(145), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Equality & Diversity", category: "Mandatory", completedDate: d(-180), expiryDate: d(545), validityMonths: 24, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Data Protection (GDPR)", category: "Mandatory", completedDate: d(-170), expiryDate: d(195), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Fire Safety", category: "Mandatory", completedDate: d(-150), expiryDate: d(215), validityMonths: 12, status: "Valid", provider: "Derbyshire Fire & Rescue", certificateOnFile: true },
-    ],
-    overallCompliance: "Non-compliant",
-    nextRefresherDue: d(-15),
-    totalCourses: 9,
-    validCount: 7,
-    expiringCount: 1,
-    expiredCount: 1,
-  },
-  {
-    id: "tm_4",
-    staffId: "staff_anna",
-    role: "Residential Care Worker",
-    trainingStatuses: [
-      { courseName: "Safeguarding Children Level 3", category: "Mandatory", completedDate: d(-150), expiryDate: d(575), validityMonths: 24, status: "Valid", provider: "Derby Safeguarding Children Partnership", certificateOnFile: true },
-      { courseName: "Positive Behaviour Support", category: "Mandatory", completedDate: d(-160), expiryDate: d(205), validityMonths: 12, status: "Valid", provider: "Team Teach", certificateOnFile: true },
-      { courseName: "First Aid (Paediatric)", category: "Mandatory", completedDate: d(-250), expiryDate: d(845), validityMonths: 36, status: "Valid", provider: "St John Ambulance", certificateOnFile: true },
-      { courseName: "Lone Working Awareness", category: "Mandatory", completedDate: d(-170), expiryDate: d(195), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Trauma-Informed Practice", category: "Mandatory", completedDate: d(-140), expiryDate: d(585), validityMonths: 24, status: "Valid", provider: "Beacon House", certificateOnFile: true },
-      { courseName: "Online Safety", category: "Mandatory", completedDate: d(-160), expiryDate: d(205), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Equality & Diversity", category: "Mandatory", completedDate: d(-145), expiryDate: d(580), validityMonths: 24, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Data Protection (GDPR)", category: "Mandatory", completedDate: d(-155), expiryDate: d(210), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Fire Safety", category: "Mandatory", completedDate: d(-120), expiryDate: d(245), validityMonths: 12, status: "Valid", provider: "Derbyshire Fire & Rescue", certificateOnFile: true },
-      { courseName: "Medication Administration", category: "Mandatory", completedDate: d(-180), expiryDate: d(185), validityMonths: 12, status: "Valid", provider: "Boots Healthcare", certificateOnFile: true },
-    ],
-    overallCompliance: "Fully compliant",
-    nextRefresherDue: d(185),
-    totalCourses: 10,
-    validCount: 10,
-    expiringCount: 0,
-    expiredCount: 0,
-  },
-  {
-    id: "tm_5",
-    staffId: "staff_chervelle",
-    role: "Residential Care Worker",
-    trainingStatuses: [
-      { courseName: "Safeguarding Children Level 3", category: "Mandatory", completedDate: d(-110), expiryDate: d(615), validityMonths: 24, status: "Valid", provider: "Derby Safeguarding Children Partnership", certificateOnFile: true },
-      { courseName: "Positive Behaviour Support", category: "Mandatory", completedDate: d(-120), expiryDate: d(245), validityMonths: 12, status: "Valid", provider: "Team Teach", certificateOnFile: true },
-      { courseName: "First Aid (Paediatric)", category: "Mandatory", completedDate: d(-100), expiryDate: d(995), validityMonths: 36, status: "Valid", provider: "St John Ambulance", certificateOnFile: true },
-      { courseName: "Lone Working Awareness", category: "Mandatory", completedDate: d(-330), expiryDate: d(35), validityMonths: 12, status: "Expiring soon", provider: "Educare", certificateOnFile: true },
-      { courseName: "Trauma-Informed Practice", category: "Mandatory", completedDate: d(-105), expiryDate: d(620), validityMonths: 24, status: "Valid", provider: "Beacon House", certificateOnFile: true },
-      { courseName: "Online Safety", category: "Mandatory", completedDate: d(-115), expiryDate: d(250), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Equality & Diversity", category: "Mandatory", completedDate: d(-95), expiryDate: d(630), validityMonths: 24, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Data Protection (GDPR)", category: "Mandatory", completedDate: d(-100), expiryDate: d(265), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Fire Safety", category: "Mandatory", completedDate: d(-85), expiryDate: d(280), validityMonths: 12, status: "Valid", provider: "Derbyshire Fire & Rescue", certificateOnFile: true },
-      { courseName: "Medication Administration", category: "Mandatory", completedDate: d(-130), expiryDate: d(235), validityMonths: 12, status: "Valid", provider: "Boots Healthcare", certificateOnFile: true },
-    ],
-    overallCompliance: "Action required",
-    nextRefresherDue: d(35),
-    totalCourses: 10,
-    validCount: 9,
-    expiringCount: 1,
-    expiredCount: 0,
-  },
-  {
-    id: "tm_6",
-    staffId: "staff_lackson",
-    role: "Residential Care Worker",
-    trainingStatuses: [
-      { courseName: "Safeguarding Children Level 3", category: "Mandatory", completedDate: d(-200), expiryDate: d(525), validityMonths: 24, status: "Valid", provider: "Derby Safeguarding Children Partnership", certificateOnFile: true },
-      { courseName: "Positive Behaviour Support", category: "Mandatory", completedDate: d(-210), expiryDate: d(155), validityMonths: 12, status: "Valid", provider: "Team Teach", certificateOnFile: true },
-      { courseName: "First Aid (Paediatric)", category: "Mandatory", completedDate: d(-220), expiryDate: d(875), validityMonths: 36, status: "Valid", provider: "St John Ambulance", certificateOnFile: true },
-      { courseName: "Lone Working Awareness", category: "Mandatory", completedDate: d(-220), expiryDate: d(145), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Trauma-Informed Practice", category: "Mandatory", completedDate: d(-360), expiryDate: d(-5), validityMonths: 12, status: "Expired", provider: "Beacon House", certificateOnFile: true },
-      { courseName: "Online Safety", category: "Mandatory", completedDate: d(-200), expiryDate: d(165), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Equality & Diversity", category: "Mandatory", completedDate: d(-180), expiryDate: d(545), validityMonths: 24, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Data Protection (GDPR)", category: "Mandatory", completedDate: d(-190), expiryDate: d(175), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Fire Safety", category: "Mandatory", completedDate: d(-160), expiryDate: d(205), validityMonths: 12, status: "Valid", provider: "Derbyshire Fire & Rescue", certificateOnFile: true },
-    ],
-    overallCompliance: "Non-compliant",
-    nextRefresherDue: d(-5),
-    totalCourses: 9,
-    validCount: 8,
-    expiringCount: 0,
-    expiredCount: 1,
-  },
-  {
-    id: "tm_7",
-    staffId: "staff_mirela",
-    role: "Residential Care Worker",
-    trainingStatuses: [
-      { courseName: "Safeguarding Children Level 3", category: "Mandatory", completedDate: d(-60), expiryDate: d(665), validityMonths: 24, status: "Valid", provider: "Derby Safeguarding Children Partnership", certificateOnFile: true },
-      { courseName: "Positive Behaviour Support", category: "Mandatory", completedDate: d(-55), expiryDate: d(310), validityMonths: 12, status: "Valid", provider: "Team Teach", certificateOnFile: true },
-      { courseName: "First Aid (Paediatric)", category: "Mandatory", completedDate: d(-50), expiryDate: d(1045), validityMonths: 36, status: "Valid", provider: "St John Ambulance", certificateOnFile: true },
-      { courseName: "Lone Working Awareness", category: "Mandatory", completedDate: d(-40), expiryDate: d(325), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Trauma-Informed Practice", category: "Mandatory", completedDate: d(-65), expiryDate: d(660), validityMonths: 24, status: "Valid", provider: "Beacon House", certificateOnFile: true },
-      { courseName: "Online Safety", category: "Mandatory", completedDate: d(-50), expiryDate: d(315), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Equality & Diversity", category: "Mandatory", completedDate: d(-45), expiryDate: d(680), validityMonths: 24, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Data Protection (GDPR)", category: "Mandatory", completedDate: d(-55), expiryDate: d(310), validityMonths: 12, status: "Valid", provider: "Educare", certificateOnFile: true },
-      { courseName: "Fire Safety", category: "Mandatory", completedDate: d(-30), expiryDate: d(335), validityMonths: 12, status: "Valid", provider: "Derbyshire Fire & Rescue", certificateOnFile: true },
-      { courseName: "Medication Administration", category: "Mandatory", completedDate: d(0), expiryDate: d(0), validityMonths: 12, status: "Not completed", provider: "Boots Healthcare", certificateOnFile: false },
-    ],
-    overallCompliance: "Action required",
-    nextRefresherDue: d(310),
-    totalCourses: 10,
-    validCount: 9,
-    expiringCount: 0,
-    expiredCount: 0,
-  },
-];
-
-/* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function MandatoryTrainingMatrixPage() {
-  const [data] = useState<TrainingMatrixRow[]>(SEED);
+  const { data: res, isLoading } = useTrainingMatrixRows();
+  const data: TrainingMatrixRow[] = res?.data ?? [];
+
   const [filterCompliance, setFilterCompliance] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"name" | "compliance" | "expiry">("compliance");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -264,22 +71,22 @@ export default function MandatoryTrainingMatrixPage() {
   /* summary stats */
   const stats = useMemo(() => {
     const totalStaff = data.length;
-    const totalCourses = data.reduce((sum, r) => sum + r.totalCourses, 0);
-    const totalValid = data.reduce((sum, r) => sum + r.validCount, 0);
-    const totalExpiring = data.reduce((sum, r) => sum + r.expiringCount, 0);
-    const totalExpired = data.reduce((sum, r) => sum + r.expiredCount, 0);
-    const fullyCompliant = data.filter((r) => r.overallCompliance === "Fully compliant").length;
+    const totalCourses = data.reduce((sum, r) => sum + r.total_courses, 0);
+    const totalValid = data.reduce((sum, r) => sum + r.valid_count, 0);
+    const totalExpiring = data.reduce((sum, r) => sum + r.expiring_count, 0);
+    const totalExpired = data.reduce((sum, r) => sum + r.expired_count, 0);
+    const fullyCompliant = data.filter((r) => r.overall_compliance === "fully_compliant").length;
     const compliancePct = totalCourses > 0 ? Math.round((totalValid / totalCourses) * 100) : 0;
     return { totalStaff, totalCourses, totalValid, totalExpiring, totalExpired, fullyCompliant, compliancePct };
   }, [data]);
 
-  /* alerts: expired or expiring courses */
+  /* alerts */
   const alerts = useMemo(() => {
-    const list: { staffId: string; course: string; status: CourseStatus; expiryDate: string }[] = [];
+    const list: { staffId: string; course: string; status: TrainingCourseStatus; expiryDate: string }[] = [];
     data.forEach((r) => {
-      r.trainingStatuses.forEach((t) => {
-        if (t.status === "Expired" || t.status === "Expiring soon" || t.status === "Not completed") {
-          list.push({ staffId: r.staffId, course: t.courseName, status: t.status, expiryDate: t.expiryDate });
+      r.training_statuses.forEach((t: TrainingStatusEntry) => {
+        if (t.status === "expired" || t.status === "expiring_soon" || t.status === "not_completed") {
+          list.push({ staffId: r.staff_id, course: t.course_name, status: t.status, expiryDate: t.expiry_date });
         }
       });
     });
@@ -288,33 +95,34 @@ export default function MandatoryTrainingMatrixPage() {
 
   /* filter + sort */
   const filtered = useMemo(() => {
-    let rows = data;
+    let rows = [...data];
     if (filterCompliance !== "all") {
-      rows = rows.filter((r) => r.overallCompliance === filterCompliance);
+      rows = rows.filter((r) => r.overall_compliance === filterCompliance);
     }
-    const sorted = [...rows];
     if (sortBy === "name") {
-      sorted.sort((a, b) => getStaffName(a.staffId).localeCompare(getStaffName(b.staffId)));
+      rows.sort((a, b) => getStaffName(a.staff_id).localeCompare(getStaffName(b.staff_id)));
     } else if (sortBy === "compliance") {
-      const order: Record<OverallCompliance, number> = { "Non-compliant": 0, "Action required": 1, "Fully compliant": 2 };
-      sorted.sort((a, b) => order[a.overallCompliance] - order[b.overallCompliance]);
+      const order: Record<TrainingOverallCompliance, number> = { non_compliant: 0, action_required: 1, fully_compliant: 2 };
+      rows.sort((a, b) => order[a.overall_compliance] - order[b.overall_compliance]);
     } else if (sortBy === "expiry") {
-      sorted.sort((a, b) => a.nextRefresherDue.localeCompare(b.nextRefresherDue));
+      rows.sort((a, b) => a.next_refresher_due.localeCompare(b.next_refresher_due));
     }
-    return sorted;
+    return rows;
   }, [data, filterCompliance, sortBy]);
 
   /* export columns */
   const exportCols: ExportColumn<TrainingMatrixRow>[] = [
-    { header: "Staff", accessor: (r: TrainingMatrixRow) => getStaffName(r.staffId) },
-    { header: "Role", accessor: (r: TrainingMatrixRow) => r.role },
-    { header: "Total Courses", accessor: (r: TrainingMatrixRow) => String(r.totalCourses) },
-    { header: "Valid", accessor: (r: TrainingMatrixRow) => String(r.validCount) },
-    { header: "Expiring Soon", accessor: (r: TrainingMatrixRow) => String(r.expiringCount) },
-    { header: "Expired", accessor: (r: TrainingMatrixRow) => String(r.expiredCount) },
-    { header: "Overall Compliance", accessor: (r: TrainingMatrixRow) => r.overallCompliance },
-    { header: "Next Refresher Due", accessor: (r: TrainingMatrixRow) => r.nextRefresherDue },
+    { header: "Staff", accessor: (r) => getStaffName(r.staff_id) },
+    { header: "Role", accessor: (r) => r.role },
+    { header: "Total Courses", accessor: (r) => String(r.total_courses) },
+    { header: "Valid", accessor: (r) => String(r.valid_count) },
+    { header: "Expiring Soon", accessor: (r) => String(r.expiring_count) },
+    { header: "Expired", accessor: (r) => String(r.expired_count) },
+    { header: "Overall Compliance", accessor: (r) => TRAINING_OVERALL_COMPLIANCE_LABEL[r.overall_compliance] },
+    { header: "Next Refresher Due", accessor: (r) => r.next_refresher_due },
   ];
+
+  if (isLoading) return <PageShell title="Mandatory Training Matrix" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -328,7 +136,7 @@ export default function MandatoryTrainingMatrixPage() {
       }
     >
       <div id="print-area">
-        {/* ── summary stats ──────────────────────────────────────────────── */}
+        {/* summary stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: "Team Compliance", value: `${stats.compliancePct}%`, icon: Shield, clr: "text-purple-600" },
@@ -346,7 +154,7 @@ export default function MandatoryTrainingMatrixPage() {
           ))}
         </div>
 
-        {/* ── alerts ─────────────────────────────────────────────────────── */}
+        {/* alerts */}
         {alerts.length > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start gap-2">
             <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
@@ -361,8 +169,8 @@ export default function MandatoryTrainingMatrixPage() {
                     <span>
                       <span className="font-medium">{getStaffName(a.staffId)}</span> — {a.course}
                       {" · "}
-                      <span className="font-medium">{a.status}</span>
-                      {a.status !== "Not completed" && <> (expiry {a.expiryDate})</>}
+                      <span className="font-medium">{TRAINING_COURSE_STATUS_LABEL[a.status]}</span>
+                      {a.status !== "not_completed" && <> (expiry {a.expiryDate})</>}
                     </span>
                   </li>
                 ))}
@@ -371,7 +179,7 @@ export default function MandatoryTrainingMatrixPage() {
           </div>
         )}
 
-        {/* ── filters / sort ─────────────────────────────────────────────── */}
+        {/* filters / sort */}
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <Select value={filterCompliance} onValueChange={setFilterCompliance}>
             <SelectTrigger className="w-[200px]">
@@ -379,9 +187,9 @@ export default function MandatoryTrainingMatrixPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All staff</SelectItem>
-              <SelectItem value="Fully compliant">Fully compliant</SelectItem>
-              <SelectItem value="Action required">Action required</SelectItem>
-              <SelectItem value="Non-compliant">Non-compliant</SelectItem>
+              {(Object.keys(TRAINING_OVERALL_COMPLIANCE_LABEL) as TrainingOverallCompliance[]).map((k) => (
+                <SelectItem key={k} value={k}>{TRAINING_OVERALL_COMPLIANCE_LABEL[k]}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
@@ -402,13 +210,13 @@ export default function MandatoryTrainingMatrixPage() {
           </div>
         </div>
 
-        {/* ── matrix card list ───────────────────────────────────────────── */}
+        {/* matrix card list */}
         <div className="space-y-3">
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
-            const compliancePct = r.totalCourses > 0 ? Math.round((r.validCount / r.totalCourses) * 100) : 0;
+            const compliancePct = r.total_courses > 0 ? Math.round((r.valid_count / r.total_courses) * 100) : 0;
             return (
-              <Card key={r.id} className={cn("border-l-4", COMPLIANCE_BORDER[r.overallCompliance])}>
+              <Card key={r.id} className={cn("border-l-4", COMPLIANCE_BORDER[r.overall_compliance])}>
                 <CardHeader
                   className="pb-2 cursor-pointer"
                   onClick={() => setExpandedId(isOpen ? null : r.id)}
@@ -417,21 +225,21 @@ export default function MandatoryTrainingMatrixPage() {
                     <div className="space-y-1 flex-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
                         <Users className="h-4 w-4 text-muted-foreground" />
-                        {getStaffName(r.staffId)}
+                        {getStaffName(r.staff_id)}
                         <Badge variant="outline" className="bg-muted/50 text-xs">{r.role}</Badge>
-                        <Badge variant="outline" className={COMPLIANCE_CLR[r.overallCompliance]}>
-                          {r.overallCompliance}
+                        <Badge variant="outline" className={COMPLIANCE_CLR[r.overall_compliance]}>
+                          {TRAINING_OVERALL_COMPLIANCE_LABEL[r.overall_compliance]}
                         </Badge>
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {r.validCount}/{r.totalCourses} valid · {compliancePct}% compliance · Next refresher {r.nextRefresherDue}
+                        {r.valid_count}/{r.total_courses} valid · {compliancePct}% compliance · Next refresher {r.next_refresher_due}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="hidden md:flex items-center gap-2 text-xs">
-                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-green-500" />{r.validCount}</span>
-                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-500" />{r.expiringCount}</span>
-                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-500" />{r.expiredCount}</span>
+                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-green-500" />{r.valid_count}</span>
+                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-500" />{r.expiring_count}</span>
+                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-500" />{r.expired_count}</span>
                       </div>
                       {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>
@@ -444,19 +252,19 @@ export default function MandatoryTrainingMatrixPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="bg-muted/40 rounded p-2 text-center">
                         <p className="text-xs text-muted-foreground">Total Courses</p>
-                        <p className="text-lg font-bold">{r.totalCourses}</p>
+                        <p className="text-lg font-bold">{r.total_courses}</p>
                       </div>
                       <div className="bg-green-50 rounded p-2 text-center">
                         <p className="text-xs text-green-700">Valid</p>
-                        <p className="text-lg font-bold text-green-700">{r.validCount}</p>
+                        <p className="text-lg font-bold text-green-700">{r.valid_count}</p>
                       </div>
                       <div className="bg-amber-50 rounded p-2 text-center">
                         <p className="text-xs text-amber-700">Expiring soon</p>
-                        <p className="text-lg font-bold text-amber-700">{r.expiringCount}</p>
+                        <p className="text-lg font-bold text-amber-700">{r.expiring_count}</p>
                       </div>
                       <div className="bg-red-50 rounded p-2 text-center">
                         <p className="text-xs text-red-700">Expired</p>
-                        <p className="text-lg font-bold text-red-700">{r.expiredCount}</p>
+                        <p className="text-lg font-bold text-red-700">{r.expired_count}</p>
                       </div>
                     </div>
 
@@ -466,42 +274,42 @@ export default function MandatoryTrainingMatrixPage() {
                         <BookOpen className="h-3.5 w-3.5" /> Course Currency
                       </p>
                       <div className="space-y-1.5">
-                        {r.trainingStatuses.map((t, i) => (
+                        {r.training_statuses.map((t: TrainingStatusEntry, i: number) => (
                           <div
                             key={i}
                             className="grid grid-cols-12 gap-2 items-center bg-muted/30 rounded px-2 py-1.5 text-xs"
                           >
                             <div className="col-span-12 md:col-span-4 flex items-center gap-2">
                               <span className={cn("h-2 w-2 rounded-full shrink-0", STATUS_DOT[t.status])} />
-                              <span className="font-medium truncate">{t.courseName}</span>
+                              <span className="font-medium truncate">{t.course_name}</span>
                             </div>
                             <div className="col-span-4 md:col-span-2">
                               <Badge variant="outline" className={cn("text-[10px]", CATEGORY_CLR[t.category])}>
-                                {t.category}
+                                {TRAINING_COURSE_CATEGORY_LABEL[t.category]}
                               </Badge>
                             </div>
                             <div className="col-span-4 md:col-span-2 text-muted-foreground">
-                              {t.status === "Not completed" ? "—" : t.completedDate}
+                              {t.status === "not_completed" ? "—" : t.completed_date}
                             </div>
                             <div className="col-span-4 md:col-span-2">
-                              {t.status === "Not completed" ? (
+                              {t.status === "not_completed" ? (
                                 <span className="text-muted-foreground">—</span>
-                              ) : t.validityMonths === 0 ? (
+                              ) : t.validity_months === 0 ? (
                                 <span className="text-muted-foreground">No expiry</span>
                               ) : (
                                 <span className={cn(
-                                  t.status === "Expired" && "text-red-600 font-medium",
-                                  t.status === "Expiring soon" && "text-amber-700 font-medium",
+                                  t.status === "expired" && "text-red-600 font-medium",
+                                  t.status === "expiring_soon" && "text-amber-700 font-medium",
                                 )}>
-                                  {t.expiryDate}
+                                  {t.expiry_date}
                                 </span>
                               )}
                             </div>
                             <div className="col-span-12 md:col-span-2 flex items-center gap-2 justify-end">
                               <Badge variant="outline" className={cn("text-[10px]", STATUS_CLR[t.status])}>
-                                {t.status}
+                                {TRAINING_COURSE_STATUS_LABEL[t.status]}
                               </Badge>
-                              {t.certificateOnFile ? (
+                              {t.certificate_on_file ? (
                                 <FileCheck className="h-3.5 w-3.5 text-green-600" aria-label="Certificate on file" />
                               ) : (
                                 <FileCheck className="h-3.5 w-3.5 text-slate-300" aria-label="No certificate" />
@@ -515,7 +323,7 @@ export default function MandatoryTrainingMatrixPage() {
                     {/* providers summary */}
                     <div className="text-xs text-muted-foreground flex items-center gap-1.5">
                       <Award className="h-3.5 w-3.5" />
-                      Providers: {Array.from(new Set(r.trainingStatuses.map((t) => t.provider))).join(", ")}
+                      Providers: {Array.from(new Set(r.training_statuses.map((t: TrainingStatusEntry) => t.provider))).join(", ")}
                     </div>
 
                     <div className="flex justify-end gap-2">
@@ -531,7 +339,7 @@ export default function MandatoryTrainingMatrixPage() {
           })}
         </div>
 
-        {/* ── regulatory note ────────────────────────────────────────────── */}
+        {/* regulatory note */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
           <p className="font-semibold mb-1">Regulatory Framework</p>
           <p>

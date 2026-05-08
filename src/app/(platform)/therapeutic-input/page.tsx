@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Calendar,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -24,118 +25,19 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { useTherapeuticInputRecords } from "@/hooks/use-therapeutic-input-records";
+import type {
+  TherapeuticInputRecord,
+  TherapeuticInputTherapyType,
+  TherapeuticInputReferralStatus,
+  TherapeuticInputEngagement,
+} from "@/types/extended";
+import { THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL } from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── local config ─────────────────────────────────────────────────────── */
 
-type TherapyType = "camhs" | "play_therapy" | "counselling" | "art_therapy" | "cbt" | "emdr" | "family_therapy" | "speech_language" | "occupational" | "psychotherapy";
-type ReferralStatus = "pending" | "accepted" | "active" | "on_hold" | "completed" | "discharged" | "declined";
-type Engagement = "excellent" | "good" | "variable" | "reluctant" | "disengaged";
-
-interface Session {
-  date: string;
-  attended: boolean;
-  summary: string;
-  engagement: Engagement;
-  homeActions: string[];
-}
-
-interface TherapeuticRecord {
-  id: string;
-  youngPersonId: string;
-  therapyType: TherapyType;
-  provider: string;
-  therapist: string;
-  referralDate: string;
-  startDate: string | null;
-  frequency: string;
-  status: ReferralStatus;
-  referralReason: string;
-  goals: string[];
-  recentSessions: Session[];
-  waitingWeeks: number | null;
-  homeKeyWorker: string;
-  consent: string;
-  nextAppointment: string | null;
-  reviewDate: string | null;
-  progressNotes: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const SEED: TherapeuticRecord[] = [
-  {
-    id: "th1", youngPersonId: "yp_alex", therapyType: "camhs",
-    provider: "Pennine Care NHS Foundation Trust", therapist: "Dr Aisha Patel",
-    referralDate: d(-180), startDate: d(-150), frequency: "Fortnightly",
-    status: "active", referralReason: "Anxiety, low mood, attachment difficulties. Recommended by previous social worker following placement move.",
-    goals: ["Develop coping strategies for anxiety", "Process feelings about family separation", "Build emotional regulation skills", "Improve self-esteem"],
-    recentSessions: [
-      { date: d(-7), attended: true, summary: "Explored Alex's feelings about mother's inconsistent contact. Used timeline activity. Alex identified three key moments that trigger anxiety. Good session.", engagement: "good", homeActions: ["Staff to validate Alex's feelings about mum without making promises about contact", "Key worker to complete worry box activity before next session"] },
-      { date: d(-21), attended: true, summary: "CBT techniques for managing anxiety at college. Introduced breathing exercise and grounding technique. Alex practised both and found grounding more helpful.", engagement: "excellent", homeActions: ["Staff to prompt grounding technique when Alex shows anxiety signs", "Print grounding cards for Alex's room and school bag"] },
-      { date: d(-35), attended: false, summary: "Alex refused to attend — said he didn't want to talk about 'heavy stuff' today. Rescheduled.", engagement: "reluctant", homeActions: ["Key worker to explore what triggered reluctance in next key work session", "Do not pressure — normalise that some weeks are harder"] },
-    ],
-    waitingWeeks: null, homeKeyWorker: "staff_anna",
-    consent: "Alex consented verbally and in writing. SW consent on file. Mother consented via SW.",
-    nextAppointment: d(7), reviewDate: d(30),
-    progressNotes: "Alex has made good progress with anxiety management techniques. CBT approach works well. The relationship with Dr Patel is established and trusting. Attendance is generally good with occasional reluctance — usually linked to emotional content in previous session. Home team excellent at supporting between sessions.",
-  },
-  {
-    id: "th2", youngPersonId: "yp_jordan", therapyType: "play_therapy",
-    provider: "Creative Minds Therapy CIC", therapist: "Maria Santos",
-    referralDate: d(-90), startDate: d(-60), frequency: "Weekly",
-    status: "active", referralReason: "Trauma processing following ABE interview. Play therapy recommended due to Jordan's age and communication preferences. Non-directive approach.",
-    goals: ["Safe space to process traumatic experiences", "Develop emotional vocabulary", "Build trust in adult relationships", "Reduce hypervigilance"],
-    recentSessions: [
-      { date: d(-3), attended: true, summary: "Jordan spent the session in the sand tray. Created a scene with 'safe' and 'unsafe' areas. Therapist observed clear symbolic processing. Verbal content minimal but non-verbal communication rich.", engagement: "good", homeActions: ["Continue providing calm, predictable routines", "Do not ask Jordan about therapy content — let them share voluntarily"] },
-      { date: d(-10), attended: true, summary: "Drew pictures of 'before' and 'now'. Jordan identified Oak House as a safe place. Drew staff members. Did not include any family figures. Important session for attachment work.", engagement: "good", homeActions: ["Staff mentioned in drawings to be informed (positively) — Ryan, Anna", "Continue to be consistently available for Jordan"] },
-      { date: d(-17), attended: true, summary: "Music and movement session. Jordan was more relaxed than usual. Initiated conversation about school — first unprompted verbal exchange in therapy. Therapist encouraged gently.", engagement: "excellent", homeActions: ["Note increased verbal confidence — continue to provide opportunities for Jordan to talk without pressure"] },
-    ],
-    waitingWeeks: null, homeKeyWorker: "staff_ryan",
-    consent: "SW consent as corporate parent. Jordan assented to attend. LA has parental responsibility.",
-    nextAppointment: d(4), reviewDate: d(20),
-    progressNotes: "Jordan is engaging well with play therapy. Non-directive approach is appropriate — Jordan is processing at their own pace. The therapist reports increasing trust and more symbolic communication about traumatic experiences. Home team's consistency is cited as a key protective factor supporting therapeutic progress.",
-  },
-  {
-    id: "th3", youngPersonId: "yp_casey", therapyType: "counselling",
-    provider: "42nd Street (Youth Mental Health)", therapist: "James Okonkwo",
-    referralDate: d(-120), startDate: d(-100), frequency: "Weekly",
-    status: "active", referralReason: "Self-referred via 42nd Street drop-in. Identity exploration, anxiety about leaving care, relationship difficulties with peers.",
-    goals: ["Explore identity and sense of self", "Manage anxiety about independence", "Develop healthy relationship skills", "Build resilience for leaving care transition"],
-    recentSessions: [
-      { date: d(-5), attended: true, summary: "Focused on Casey's feelings about leaving Oak House. Mixed emotions — excitement about independence but grief about losing daily contact with staff team. Healthy processing.", engagement: "excellent", homeActions: ["Key worker to create 'staying connected' plan with Casey — how to maintain relationships post-placement"] },
-      { date: d(-12), attended: true, summary: "Discussed a conflict with a friend at college. Explored assertiveness vs aggression. Casey identified patterns from childhood. Good insight.", engagement: "good", homeActions: ["Support Casey in practising assertive communication — staff to model"] },
-    ],
-    waitingWeeks: null, homeKeyWorker: "staff_darren",
-    consent: "Casey self-referred and consented independently (aged 16+). Gillick competent. SW informed.",
-    nextAppointment: d(2), reviewDate: d(14),
-    progressNotes: "Casey is highly engaged and motivated. Self-referral shows strong self-awareness. The counselling is well-timed ahead of the transition to independence. Casey is processing complex emotions about leaving care with good insight. Therapist impressed with Casey's emotional intelligence.",
-  },
-  {
-    id: "th4", youngPersonId: "yp_jordan", therapyType: "speech_language",
-    provider: "Manchester Community Health NHS Trust", therapist: "Lucy Brightman",
-    referralDate: d(-45), startDate: null, frequency: "TBC",
-    status: "pending", referralReason: "School SENCo flagged concerns about Jordan's receptive language — may be affecting academic progress and social communication. Assessment requested.",
-    goals: ["Full speech and language assessment", "Identify any underlying communication needs", "Inform EHCP application if warranted"],
-    recentSessions: [],
-    waitingWeeks: 6, homeKeyWorker: "staff_ryan",
-    consent: "SW consent obtained. Jordan informed — expressed mild anxiety about assessment.",
-    nextAppointment: null, reviewDate: d(15),
-    progressNotes: "Referral submitted 6 weeks ago. Current wait time estimated 8-12 weeks. School providing interim support. Home team using visual supports and simplified language as recommended by SENCo.",
-  },
-];
-
-/* ── constants ─────────────────────────────────────────────────────────── */
-
-const TYPE_LABELS: Record<TherapyType, string> = {
-  camhs: "CAMHS", play_therapy: "Play Therapy", counselling: "Counselling",
-  art_therapy: "Art Therapy", cbt: "CBT", emdr: "EMDR",
-  family_therapy: "Family Therapy", speech_language: "Speech & Language",
-  occupational: "Occupational Therapy", psychotherapy: "Psychotherapy",
-};
-
-const STATUS_META: Record<ReferralStatus, { label: string; colour: string }> = {
+const STATUS_META: Record<TherapeuticInputReferralStatus, { label: string; colour: string }> = {
   pending:    { label: "Pending",     colour: "bg-amber-100 text-amber-700" },
   accepted:   { label: "Accepted",    colour: "bg-blue-100 text-blue-700" },
   active:     { label: "Active",      colour: "bg-green-100 text-green-700" },
@@ -145,7 +47,7 @@ const STATUS_META: Record<ReferralStatus, { label: string; colour: string }> = {
   declined:   { label: "Declined",    colour: "bg-red-100 text-red-700" },
 };
 
-const ENG_META: Record<Engagement, { label: string; colour: string }> = {
+const ENG_META: Record<TherapeuticInputEngagement, { label: string; colour: string }> = {
   excellent:  { label: "Excellent",  colour: "bg-green-100 text-green-700" },
   good:       { label: "Good",      colour: "bg-blue-100 text-blue-700" },
   variable:   { label: "Variable",  colour: "bg-amber-100 text-amber-700" },
@@ -156,7 +58,7 @@ const ENG_META: Record<Engagement, { label: string; colour: string }> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function TherapeuticInputPage() {
-  const [data] = useState<TherapeuticRecord[]>(SEED);
+  const { data: records = [], isLoading } = useTherapeuticInputRecords();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -165,51 +67,51 @@ export default function TherapeuticInputPage() {
   const [showDialog, setShowDialog] = useState(false);
 
   const stats = useMemo(() => ({
-    total: data.length,
-    active: data.filter((r) => r.status === "active").length,
-    pending: data.filter((r) => r.status === "pending").length,
-    totalSessions: data.reduce((s, r) => s + r.recentSessions.length, 0),
+    total: records.length,
+    active: records.filter((r) => r.status === "active").length,
+    pending: records.filter((r) => r.status === "pending").length,
+    totalSessions: records.reduce((s, r) => s + r.recent_sessions.length, 0),
     attendanceRate: (() => {
-      const sessions = data.flatMap((r) => r.recentSessions);
+      const sessions = records.flatMap((r) => r.recent_sessions);
       if (!sessions.length) return 0;
       return Math.round((sessions.filter((s) => s.attended).length / sessions.length) * 100);
     })(),
-  }), [data]);
+  }), [records]);
 
   const filtered = useMemo(() => {
-    let list = [...data];
-    if (filterType !== "all") list = list.filter((r) => r.therapyType === filterType);
-    if (filterYP !== "all") list = list.filter((r) => r.youngPersonId === filterYP);
+    let list = [...records];
+    if (filterType !== "all") list = list.filter((r) => r.therapy_type === filterType);
+    if (filterYP !== "all") list = list.filter((r) => r.child_id === filterYP);
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter((r) => r.therapist.toLowerCase().includes(q) || r.provider.toLowerCase().includes(q) || TYPE_LABELS[r.therapyType].toLowerCase().includes(q));
+      list = list.filter((r) => r.therapist.toLowerCase().includes(q) || r.provider.toLowerCase().includes(q) || THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL[r.therapy_type].toLowerCase().includes(q));
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "type": return TYPE_LABELS[a.therapyType].localeCompare(TYPE_LABELS[b.therapyType]);
-        case "yp":   return a.youngPersonId.localeCompare(b.youngPersonId);
-        default:     return b.referralDate.localeCompare(a.referralDate);
+        case "type": return THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL[a.therapy_type].localeCompare(THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL[b.therapy_type]);
+        case "yp":   return a.child_id.localeCompare(b.child_id);
+        default:     return b.referral_date.localeCompare(a.referral_date);
       }
     });
     return list;
-  }, [data, filterType, filterYP, search, sortBy]);
+  }, [records, filterType, filterYP, search, sortBy]);
 
-  const exportData = useMemo(() => data.map((r) => ({
-    youngPerson: getYPName(r.youngPersonId),
-    therapyType: TYPE_LABELS[r.therapyType],
+  const exportData = useMemo(() => records.map((r) => ({
+    youngPerson: getYPName(r.child_id),
+    therapyType: THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL[r.therapy_type],
     provider: r.provider,
     therapist: r.therapist,
     status: STATUS_META[r.status].label,
-    referralDate: r.referralDate,
-    startDate: r.startDate || "Pending",
+    referralDate: r.referral_date,
+    startDate: r.start_date || "Pending",
     frequency: r.frequency,
-    referralReason: r.referralReason,
+    referralReason: r.referral_reason,
     goals: r.goals.join("; "),
-    sessionsAttended: r.recentSessions.filter((s) => s.attended).length,
-    nextAppointment: r.nextAppointment || "TBC",
-    homeKeyWorker: getStaffName(r.homeKeyWorker),
-    progressNotes: r.progressNotes,
-  })), [data]);
+    sessionsAttended: r.recent_sessions.filter((s) => s.attended).length,
+    nextAppointment: r.next_appointment || "TBC",
+    homeKeyWorker: getStaffName(r.home_key_worker),
+    progressNotes: r.progress_notes,
+  })), [records]);
 
   const exportCols: ExportColumn<typeof exportData[number]>[] = [
     { header: "Young Person",    accessor: (r: typeof exportData[number]) => r.youngPerson },
@@ -228,7 +130,17 @@ export default function TherapeuticInputPage() {
     { header: "Progress Notes",  accessor: (r: typeof exportData[number]) => r.progressNotes },
   ];
 
-  const ypIds = [...new Set(data.map((r) => r.youngPersonId))];
+  const ypIds = [...new Set(records.map((r) => r.child_id))];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Therapeutic Input" subtitle="Therapy referrals, sessions and progress tracking — CAMHS, play therapy, counselling and specialist input">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -277,7 +189,7 @@ export default function TherapeuticInputPage() {
             <SelectTrigger className="w-[170px]"><SelectValue placeholder="Therapy Type" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              {Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+              {Object.entries(THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filterYP} onValueChange={setFilterYP}>
@@ -304,8 +216,8 @@ export default function TherapeuticInputPage() {
                 <Heart className="h-5 w-5 text-pink-500" />
                 <div className="text-left">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{TYPE_LABELS[rec.therapyType]}</h3>
-                    <span className="text-sm text-muted-foreground">— {getYPName(rec.youngPersonId)}</span>
+                    <h3 className="font-semibold">{THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL[rec.therapy_type]}</h3>
+                    <span className="text-sm text-muted-foreground">— {getYPName(rec.child_id)}</span>
                     <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_META[rec.status].colour)}>{STATUS_META[rec.status].label}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">{rec.therapist} · {rec.provider} · {rec.frequency}</p>
@@ -317,21 +229,21 @@ export default function TherapeuticInputPage() {
             {expanded === rec.id && (
               <div className="border-t p-4 space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Referred:</span> {rec.referralDate}</div>
-                  <div><span className="text-muted-foreground">Started:</span> {rec.startDate || "Awaiting"}</div>
-                  <div><span className="text-muted-foreground">Key Worker:</span> {getStaffName(rec.homeKeyWorker)}</div>
-                  <div><span className="text-muted-foreground">Next:</span> {rec.nextAppointment || "TBC"}</div>
+                  <div><span className="text-muted-foreground">Referred:</span> {rec.referral_date}</div>
+                  <div><span className="text-muted-foreground">Started:</span> {rec.start_date || "Awaiting"}</div>
+                  <div><span className="text-muted-foreground">Key Worker:</span> {getStaffName(rec.home_key_worker)}</div>
+                  <div><span className="text-muted-foreground">Next:</span> {rec.next_appointment || "TBC"}</div>
                 </div>
 
-                {rec.waitingWeeks !== null && (
+                {rec.waiting_weeks !== null && (
                   <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                    <p className="text-sm text-amber-800"><Clock className="inline h-4 w-4 mr-1" />On waiting list — <strong>{rec.waitingWeeks} weeks</strong> since referral.</p>
+                    <p className="text-sm text-amber-800"><Clock className="inline h-4 w-4 mr-1" />On waiting list — <strong>{rec.waiting_weeks} weeks</strong> since referral.</p>
                   </div>
                 )}
 
                 <div className="rounded-lg bg-gray-50 p-3">
                   <h4 className="text-sm font-semibold mb-1">Referral Reason</h4>
-                  <p className="text-sm text-muted-foreground">{rec.referralReason}</p>
+                  <p className="text-sm text-muted-foreground">{rec.referral_reason}</p>
                 </div>
 
                 <div>
@@ -341,11 +253,11 @@ export default function TherapeuticInputPage() {
 
                 <div className="text-xs text-muted-foreground"><span className="font-medium text-foreground">Consent:</span> {rec.consent}</div>
 
-                {rec.recentSessions.length > 0 && (
+                {rec.recent_sessions.length > 0 && (
                   <div>
                     <h4 className="text-sm font-semibold mb-2">Recent Sessions</h4>
                     <div className="space-y-3">
-                      {rec.recentSessions.map((s, i) => (
+                      {rec.recent_sessions.map((s, i) => (
                         <div key={i} className={cn("rounded border p-3", s.attended ? "" : "bg-red-50")}>
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
@@ -355,10 +267,10 @@ export default function TherapeuticInputPage() {
                             <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", ENG_META[s.engagement].colour)}>{ENG_META[s.engagement].label}</span>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">{s.summary}</p>
-                          {s.homeActions.length > 0 && (
+                          {s.home_actions.length > 0 && (
                             <div className="rounded bg-blue-50 p-2">
                               <p className="text-xs font-semibold text-blue-800 mb-1">Home Actions:</p>
-                              <ul className="list-disc list-inside text-xs text-blue-900">{s.homeActions.map((a, j) => <li key={j}>{a}</li>)}</ul>
+                              <ul className="list-disc list-inside text-xs text-blue-900">{s.home_actions.map((a, j) => <li key={j}>{a}</li>)}</ul>
                             </div>
                           )}
                         </div>
@@ -369,8 +281,10 @@ export default function TherapeuticInputPage() {
 
                 <div className="rounded-lg bg-green-50 p-3">
                   <h4 className="text-sm font-semibold text-green-800 mb-1">Progress Notes</h4>
-                  <p className="text-sm text-green-900">{rec.progressNotes}</p>
+                  <p className="text-sm text-green-900">{rec.progress_notes}</p>
                 </div>
+
+                <SmartLinkPanel sourceType="therapeutic-input-record" sourceId={rec.id} childId={rec.child_id} compact />
               </div>
             )}
           </div>
@@ -386,7 +300,7 @@ export default function TherapeuticInputPage() {
           <DialogHeader><DialogTitle>New Therapy Referral</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-2">
             <select className="rounded border px-3 py-2 text-sm"><option value="">Young Person…</option>{ypIds.map((id) => <option key={id} value={id}>{getYPName(id)}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Therapy type…</option>{Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+            <select className="rounded border px-3 py-2 text-sm"><option value="">Therapy type…</option>{Object.entries(THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
             <input placeholder="Provider organisation" className="rounded border px-3 py-2 text-sm" />
             <input placeholder="Therapist name" className="rounded border px-3 py-2 text-sm" />
             <textarea placeholder="Referral reason" rows={3} className="rounded border px-3 py-2 text-sm" />

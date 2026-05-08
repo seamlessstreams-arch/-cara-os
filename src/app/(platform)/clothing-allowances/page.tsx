@@ -12,6 +12,7 @@ import {
   TrendingUp,
   AlertTriangle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
@@ -23,98 +24,18 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-type PurchaseCategory = "school_uniform" | "casual" | "formal" | "outdoor" | "footwear" | "underwear_socks" | "nightwear" | "sportswear" | "accessories" | "seasonal";
-
-interface Purchase {
-  id: string;
-  date: string;
-  category: PurchaseCategory;
-  description: string;
-  amount: number;
-  store: string;
-  purchasedBy: string;
-  childPresent: boolean;
-  childChose: boolean;
-  receiptRef: string;
-}
-
-interface AllowanceRecord {
-  id: string;
-  youngPersonId: string;
-  financialYear: string;
-  annualBudget: number;
-  quarterlyAllowance: number;
-  currentQuarter: number;
-  quarterSpend: number;
-  ytdSpend: number;
-  purchases: Purchase[];
-  preferences: string[];
-  sizes: Record<string, string>;
-  notes: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const CAT_LABELS: Record<PurchaseCategory, string> = {
-  school_uniform: "School Uniform", casual: "Casual Wear", formal: "Formal Wear",
-  outdoor: "Outdoor / Coats", footwear: "Footwear", underwear_socks: "Underwear & Socks",
-  nightwear: "Nightwear", sportswear: "Sportswear", accessories: "Accessories", seasonal: "Seasonal",
-};
-
-const SEED: AllowanceRecord[] = [
-  {
-    id: "ca1", youngPersonId: "yp_alex", financialYear: "2025-26",
-    annualBudget: 1200, quarterlyAllowance: 300, currentQuarter: 1,
-    quarterSpend: 187.50, ytdSpend: 187.50,
-    purchases: [
-      { id: "p1", date: d(-30), category: "school_uniform", description: "2x college polo shirts, 1x college hoodie", amount: 45.00, store: "College Shop", purchasedBy: "staff_anna", childPresent: true, childChose: true, receiptRef: "RC-0445" },
-      { id: "p2", date: d(-21), category: "footwear", description: "1x Nike Air Max trainers", amount: 65.00, store: "JD Sports", purchasedBy: "staff_anna", childPresent: true, childChose: true, receiptRef: "RC-0451" },
-      { id: "p3", date: d(-14), category: "casual", description: "2x t-shirts, 1x jeans, 1x shorts", amount: 47.50, store: "Primark", purchasedBy: "staff_edward", childPresent: true, childChose: true, receiptRef: "RC-0458" },
-      { id: "p4", date: d(-7), category: "underwear_socks", description: "5-pack boxer shorts, 7-pack socks", amount: 15.00, store: "Primark", purchasedBy: "staff_anna", childPresent: false, childChose: false, receiptRef: "RC-0462" },
-      { id: "p5", date: d(-3), category: "sportswear", description: "1x tracksuit bottoms for PE", amount: 15.00, store: "Sports Direct", purchasedBy: "staff_edward", childPresent: true, childChose: true, receiptRef: "RC-0465" },
-    ],
-    preferences: ["Likes Nike and Adidas brands", "Prefers dark colours", "Dislikes formal shirts", "Wants a new winter coat before October"],
-    sizes: { top: "M (adult)", trousers: "30W 32L", shoes: "Size 9", coat: "M (adult)" },
-    notes: "Alex engages well with clothing shopping — always wants to choose own items. Budget management good. Prefers shopping trips to online ordering.",
-  },
-  {
-    id: "ca2", youngPersonId: "yp_jordan", financialYear: "2025-26",
-    annualBudget: 1200, quarterlyAllowance: 300, currentQuarter: 1,
-    quarterSpend: 95.00, ytdSpend: 95.00,
-    purchases: [
-      { id: "p6", date: d(-25), category: "school_uniform", description: "3x school shirts, 2x school trousers, 1x school shoes", amount: 65.00, store: "Matalan", purchasedBy: "staff_ryan", childPresent: true, childChose: false, receiptRef: "RC-0447" },
-      { id: "p7", date: d(-10), category: "casual", description: "1x hoodie, 2x joggers", amount: 30.00, store: "Primark", purchasedBy: "staff_ryan", childPresent: true, childChose: true, receiptRef: "RC-0459" },
-    ],
-    preferences: ["No strong preferences expressed", "Comfortable in joggers and hoodies", "Does not like shopping — prefers quick trips", "Sensory preference for soft fabrics"],
-    sizes: { top: "Age 13-14", trousers: "Age 13-14", shoes: "Size 6", coat: "Age 13-14" },
-    notes: "Jordan finds shopping overwhelming — short, focused trips work best. Staff should pre-select options and let Jordan choose from a small range. Online ordering with home delivery also works well. Soft fabrics important — avoids scratchy labels.",
-  },
-  {
-    id: "ca3", youngPersonId: "yp_casey", financialYear: "2025-26",
-    annualBudget: 1200, quarterlyAllowance: 300, currentQuarter: 1,
-    quarterSpend: 245.00, ytdSpend: 245.00,
-    purchases: [
-      { id: "p8", date: d(-28), category: "casual", description: "2x pair of jeans, 3x t-shirts, 1x cardigan", amount: 55.00, store: "New Look", purchasedBy: "staff_darren", childPresent: true, childChose: true, receiptRef: "RC-0446" },
-      { id: "p9", date: d(-20), category: "footwear", description: "1x Dr Martens boots", amount: 85.00, store: "Dr Martens Store", purchasedBy: "staff_darren", childPresent: true, childChose: true, receiptRef: "RC-0452" },
-      { id: "p10", date: d(-15), category: "formal", description: "1x interview outfit — trousers, blouse, blazer", amount: 60.00, store: "Next", purchasedBy: "staff_darren", childPresent: true, childChose: true, receiptRef: "RC-0457" },
-      { id: "p11", date: d(-5), category: "accessories", description: "1x backpack for college", amount: 25.00, store: "Amazon", purchasedBy: "staff_darren", childPresent: false, childChose: true, receiptRef: "RC-0464" },
-      { id: "p12", date: d(-2), category: "nightwear", description: "2x pyjama sets", amount: 20.00, store: "Primark", purchasedBy: "staff_anna", childPresent: false, childChose: false, receiptRef: "RC-0466" },
-    ],
-    preferences: ["Strong sense of personal style", "Likes vintage/thrift shopping", "Interested in sustainable fashion", "Wants to learn about budgeting for clothes independently", "Chose own interview outfit — showed great judgement"],
-    sizes: { top: "Size 10", trousers: "Size 10 / 28W", shoes: "Size 5", coat: "Size 10" },
-    notes: "Casey is very engaged with clothing choices and demonstrates independence in selecting appropriate outfits. As part of independence pathway, Casey is being encouraged to budget own clothing allowance. Interview outfit purchase was a key milestone — Casey chose confidently and appropriately.",
-  },
-];
+import type { ClothingAllowanceRecord, ClothingPurchaseCategory, ClothingPurchase } from "@/types/extended";
+import { CLOTHING_PURCHASE_CATEGORY_LABEL } from "@/types/extended";
+import { useClothingAllowanceRecords, useCreateClothingAllowanceRecord } from "@/hooks/use-clothing-allowance-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ClothingAllowancesPage() {
-  const [data] = useState<AllowanceRecord[]>(SEED);
+  const { data: res, isLoading } = useClothingAllowanceRecords();
+  const items = res?.data ?? [];
+  const createMut = useCreateClothingAllowanceRecord();
+
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");
@@ -122,22 +43,37 @@ export default function ClothingAllowancesPage() {
   const [sortBy, setSortBy] = useState("date");
   const [showDialog, setShowDialog] = useState(false);
 
-  const stats = useMemo(() => {
-    const totalBudget = data.reduce((s, r) => s + r.quarterlyAllowance, 0);
-    const totalSpend = data.reduce((s, r) => s + r.quarterSpend, 0);
-    const allPurchases = data.flatMap((r) => r.purchases);
+  /* form state */
+  const [formChildId, setFormChildId] = useState("");
+  const [formCategory, setFormCategory] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formAmount, setFormAmount] = useState("");
+  const [formStore, setFormStore] = useState("");
+  const [formDate, setFormDate] = useState("");
+  const [formChildPresent, setFormChildPresent] = useState(false);
+  const [formChildChose, setFormChildChose] = useState(false);
+  const [formReceiptRef, setFormReceiptRef] = useState("");
+
+  if (isLoading) {
+    return <PageShell title="Clothing & Allowances" subtitle="Individual clothing budgets, purchases and preferences — child choice and dignity"><div /></PageShell>;
+  }
+
+  const stats = (() => {
+    const totalBudget = items.reduce((s, r) => s + r.quarterly_allowance, 0);
+    const totalSpend = items.reduce((s, r) => s + r.quarter_spend, 0);
+    const allP = items.flatMap((r) => r.purchases);
     return {
       quarterBudget: totalBudget,
       quarterSpend: totalSpend,
       remaining: totalBudget - totalSpend,
-      purchases: allPurchases.length,
-      childChose: allPurchases.filter((p) => p.childChose).length,
+      purchases: allP.length,
+      childChose: allP.filter((p) => p.child_chose).length,
     };
-  }, [data]);
+  })();
 
-  const allPurchases = useMemo(() => {
-    let list = data.flatMap((r) => r.purchases.map((p) => ({ ...p, youngPersonId: r.youngPersonId })));
-    if (filterYP !== "all") list = list.filter((p) => p.youngPersonId === filterYP);
+  const allPurchases = (() => {
+    let list = items.flatMap((r) => r.purchases.map((p) => ({ ...p, child_id: r.child_id })));
+    if (filterYP !== "all") list = list.filter((p) => p.child_id === filterYP);
     if (filterCat !== "all") list = list.filter((p) => p.category === filterCat);
     if (search) {
       const q = search.toLowerCase();
@@ -146,28 +82,28 @@ export default function ClothingAllowancesPage() {
     list.sort((a, b) => {
       switch (sortBy) {
         case "amount": return b.amount - a.amount;
-        case "category": return CAT_LABELS[a.category].localeCompare(CAT_LABELS[b.category]);
+        case "category": return CLOTHING_PURCHASE_CATEGORY_LABEL[a.category].localeCompare(CLOTHING_PURCHASE_CATEGORY_LABEL[b.category]);
         default:        return b.date.localeCompare(a.date);
       }
     });
     return list;
-  }, [data, filterYP, filterCat, search, sortBy]);
+  })();
 
-  const exportData = useMemo(() => data.flatMap((r) => r.purchases.map((p) => ({
-    youngPerson: getYPName(r.youngPersonId),
+  const exportData = items.flatMap((r) => r.purchases.map((p) => ({
+    youngPerson: getYPName(r.child_id),
     date: p.date,
-    category: CAT_LABELS[p.category],
+    category: CLOTHING_PURCHASE_CATEGORY_LABEL[p.category],
     description: p.description,
     amount: p.amount.toFixed(2),
     store: p.store,
-    purchasedBy: getStaffName(p.purchasedBy),
-    childPresent: p.childPresent ? "Yes" : "No",
-    childChose: p.childChose ? "Yes" : "No",
-    receiptRef: p.receiptRef,
-    quarterBudget: r.quarterlyAllowance.toFixed(2),
-    quarterSpend: r.quarterSpend.toFixed(2),
-    remaining: (r.quarterlyAllowance - r.quarterSpend).toFixed(2),
-  }))), [data]);
+    purchasedBy: getStaffName(p.purchased_by),
+    childPresent: p.child_present ? "Yes" : "No",
+    childChose: p.child_chose ? "Yes" : "No",
+    receiptRef: p.receipt_ref,
+    quarterBudget: r.quarterly_allowance.toFixed(2),
+    quarterSpend: r.quarter_spend.toFixed(2),
+    remaining: (r.quarterly_allowance - r.quarter_spend).toFixed(2),
+  })));
 
   const exportCols: ExportColumn<typeof exportData[number]>[] = [
     { header: "Young Person",   accessor: (r: typeof exportData[number]) => r.youngPerson },
@@ -184,6 +120,39 @@ export default function ClothingAllowancesPage() {
     { header: "Quarter Spend",  accessor: (r: typeof exportData[number]) => r.quarterSpend },
     { header: "Remaining",      accessor: (r: typeof exportData[number]) => r.remaining },
   ];
+
+  async function onSubmit() {
+    try {
+      await createMut.mutateAsync({
+        child_id: formChildId,
+        purchases: [{
+          id: "",
+          date: formDate,
+          category: formCategory as ClothingPurchaseCategory,
+          description: formDescription,
+          amount: parseFloat(formAmount),
+          store: formStore,
+          purchased_by: "",
+          child_present: formChildPresent,
+          child_chose: formChildChose,
+          receipt_ref: formReceiptRef,
+        }],
+      });
+      toast.success("Purchase logged");
+      setShowDialog(false);
+      setFormChildId("");
+      setFormCategory("");
+      setFormDescription("");
+      setFormAmount("");
+      setFormStore("");
+      setFormDate("");
+      setFormChildPresent(false);
+      setFormChildChose(false);
+      setFormReceiptRef("");
+    } catch {
+      toast.error("Failed to log purchase");
+    }
+  }
 
   return (
     <PageShell
@@ -218,13 +187,13 @@ export default function ClothingAllowancesPage() {
 
         {/* per-child budget cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {data.map((rec) => {
-            const pct = (rec.quarterSpend / rec.quarterlyAllowance) * 100;
-            const remaining = rec.quarterlyAllowance - rec.quarterSpend;
+          {items.map((rec) => {
+            const pct = (rec.quarter_spend / rec.quarterly_allowance) * 100;
+            const remaining = rec.quarterly_allowance - rec.quarter_spend;
             return (
               <div key={rec.id} className="rounded-lg border bg-white p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">{getYPName(rec.youngPersonId)}</h3>
+                  <h3 className="font-semibold">{getYPName(rec.child_id)}</h3>
                   <span className={cn("text-sm font-bold", remaining > 100 ? "text-green-600" : remaining > 0 ? "text-amber-600" : "text-red-600")}>
                     £{remaining.toFixed(2)} left
                   </span>
@@ -233,8 +202,8 @@ export default function ClothingAllowancesPage() {
                   <div className={cn("h-full rounded-full", pct > 90 ? "bg-red-400" : pct > 70 ? "bg-amber-400" : "bg-green-400")} style={{ width: `${Math.min(pct, 100)}%` }} />
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>£{rec.quarterSpend.toFixed(2)} spent</span>
-                  <span>Q{rec.currentQuarter} of £{rec.quarterlyAllowance}</span>
+                  <span>£{rec.quarter_spend.toFixed(2)} spent</span>
+                  <span>Q{rec.current_quarter} of £{rec.quarterly_allowance}</span>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {Object.entries(rec.sizes).map(([k, v]) => (
@@ -256,14 +225,14 @@ export default function ClothingAllowancesPage() {
             <SelectTrigger className="w-[170px]"><SelectValue placeholder="Young Person" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Children</SelectItem>
-              {data.map((r) => <SelectItem key={r.youngPersonId} value={r.youngPersonId}>{getYPName(r.youngPersonId)}</SelectItem>)}
+              {items.map((r) => <SelectItem key={r.child_id} value={r.child_id}>{getYPName(r.child_id)}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filterCat} onValueChange={setFilterCat}>
             <SelectTrigger className="w-[170px]"><SelectValue placeholder="Category" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {Object.entries(CAT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+              {Object.entries(CLOTHING_PURCHASE_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
             </SelectContent>
           </Select>
           <div className="flex items-center gap-1 text-sm">
@@ -277,14 +246,14 @@ export default function ClothingAllowancesPage() {
         </div>
 
         {/* expandable per-child detail */}
-        {data.filter((r) => filterYP === "all" || r.youngPersonId === filterYP).map((rec) => (
+        {items.filter((r) => filterYP === "all" || r.child_id === filterYP).map((rec) => (
           <div key={rec.id} className="rounded-lg border bg-white overflow-hidden">
             <button onClick={() => setExpanded(expanded === rec.id ? null : rec.id)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <Shirt className="h-5 w-5 text-brand" />
                 <div className="text-left">
-                  <h3 className="font-semibold">{getYPName(rec.youngPersonId)}</h3>
-                  <p className="text-xs text-muted-foreground">{rec.purchases.length} purchases · £{rec.quarterSpend.toFixed(2)}/£{rec.quarterlyAllowance} this quarter · {rec.financialYear}</p>
+                  <h3 className="font-semibold">{getYPName(rec.child_id)}</h3>
+                  <p className="text-xs text-muted-foreground">{rec.purchases.length} purchases · £{rec.quarter_spend.toFixed(2)}/£{rec.quarterly_allowance} this quarter · {rec.financial_year}</p>
                 </div>
               </div>
               {expanded === rec.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
@@ -311,13 +280,13 @@ export default function ClothingAllowancesPage() {
                       {rec.purchases.map((p) => (
                         <tr key={p.id} className="border-b last:border-0">
                           <td className="py-2 pr-3 whitespace-nowrap">{p.date}</td>
-                          <td className="py-2 pr-3">{CAT_LABELS[p.category]}</td>
+                          <td className="py-2 pr-3">{CLOTHING_PURCHASE_CATEGORY_LABEL[p.category]}</td>
                           <td className="py-2 pr-3">{p.description}</td>
                           <td className="py-2 pr-3 font-medium">£{p.amount.toFixed(2)}</td>
                           <td className="py-2 pr-3">{p.store}</td>
-                          <td className="py-2 pr-3">{getStaffName(p.purchasedBy)}</td>
-                          <td className="py-2 pr-3">{p.childChose ? <span className="text-green-600">Yes</span> : <span className="text-muted-foreground">No</span>}</td>
-                          <td className="py-2 text-xs text-muted-foreground">{p.receiptRef}</td>
+                          <td className="py-2 pr-3">{getStaffName(p.purchased_by)}</td>
+                          <td className="py-2 pr-3">{p.child_chose ? <span className="text-green-600">Yes</span> : <span className="text-muted-foreground">No</span>}</td>
+                          <td className="py-2 text-xs text-muted-foreground">{p.receipt_ref}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -336,6 +305,8 @@ export default function ClothingAllowancesPage() {
                     <p className="text-sm text-muted-foreground">{rec.notes}</p>
                   </div>
                 )}
+
+                <SmartLinkPanel sourceType="clothing-allowance" sourceId={rec.id} childId={rec.child_id} compact />
               </div>
             )}
           </div>
@@ -350,23 +321,25 @@ export default function ClothingAllowancesPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Log Clothing Purchase</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-2">
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Young Person…</option>{data.map((r) => <option key={r.youngPersonId} value={r.youngPersonId}>{getYPName(r.youngPersonId)}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Category…</option>{Object.entries(CAT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-            <input placeholder="Description" className="rounded border px-3 py-2 text-sm" />
+            <select value={formChildId} onChange={(e) => setFormChildId(e.target.value)} className="rounded border px-3 py-2 text-sm"><option value="">Young Person…</option>{items.map((r) => <option key={r.child_id} value={r.child_id}>{getYPName(r.child_id)}</option>)}</select>
+            <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)} className="rounded border px-3 py-2 text-sm"><option value="">Category…</option>{Object.entries(CLOTHING_PURCHASE_CATEGORY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+            <input value={formDescription} onChange={(e) => setFormDescription(e.target.value)} placeholder="Description" className="rounded border px-3 py-2 text-sm" />
             <div className="grid grid-cols-2 gap-3">
-              <input type="number" step="0.01" placeholder="Amount (£)" className="rounded border px-3 py-2 text-sm" />
-              <input placeholder="Store" className="rounded border px-3 py-2 text-sm" />
+              <input value={formAmount} onChange={(e) => setFormAmount(e.target.value)} type="number" step="0.01" placeholder="Amount (£)" className="rounded border px-3 py-2 text-sm" />
+              <input value={formStore} onChange={(e) => setFormStore(e.target.value)} placeholder="Store" className="rounded border px-3 py-2 text-sm" />
             </div>
-            <input type="date" className="rounded border px-3 py-2 text-sm" />
+            <input value={formDate} onChange={(e) => setFormDate(e.target.value)} type="date" className="rounded border px-3 py-2 text-sm" />
             <div className="flex gap-4">
-              <label className="flex items-center gap-1 text-sm"><input type="checkbox" className="rounded border" /> Child was present</label>
-              <label className="flex items-center gap-1 text-sm"><input type="checkbox" className="rounded border" /> Child chose item</label>
+              <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={formChildPresent} onChange={(e) => setFormChildPresent(e.target.checked)} className="rounded border" /> Child was present</label>
+              <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={formChildChose} onChange={(e) => setFormChildChose(e.target.checked)} className="rounded border" /> Child chose item</label>
             </div>
-            <input placeholder="Receipt reference" className="rounded border px-3 py-2 text-sm" />
+            <input value={formReceiptRef} onChange={(e) => setFormReceiptRef(e.target.value)} placeholder="Receipt reference" className="rounded border px-3 py-2 text-sm" />
           </div>
           <DialogFooter>
             <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Log Purchase</button>
+            <button onClick={onSubmit} disabled={createMut.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">
+              {createMut.isPending ? "Saving…" : "Log Purchase"}
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

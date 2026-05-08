@@ -12,6 +12,7 @@ import {
   Heart,
   ShieldAlert,
   TrendingUp,
+  Loader2,
 } from "lucide-react";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -24,167 +25,39 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { usePeerDynamics } from "@/hooks/use-peer-dynamics";
+import { usePeerGroupDynamics } from "@/hooks/use-peer-group-dynamics";
+import type {
+  PeerDynamic,
+  PeerGroupDynamic,
+  PeerRelationshipQuality,
+  PeerRiskLevel,
+  PeerEntryType,
+  PeerGroupAtmosphere,
+} from "@/types/extended";
+import {
+  PEER_RELATIONSHIP_QUALITY_LABEL,
+  PEER_RISK_LEVEL_LABEL,
+  PEER_ENTRY_TYPE_LABEL,
+  PEER_GROUP_ATMOSPHERE_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── colour maps ──────────────────────────────────────────────────────── */
 
-type RelationshipQuality = "positive" | "developing" | "strained" | "conflicted" | "neutral";
-type RiskLevel = "none" | "low" | "medium" | "high";
-type EntryType = "observation" | "incident" | "positive_interaction" | "mediation" | "review";
-
-interface PeerEntry {
-  id: string;
-  date: string;
-  type: EntryType;
-  description: string;
-  staffWitness: string;
-  interventionUsed: string;
-  outcome: string;
-}
-
-interface PeerDynamic {
-  id: string;
-  youngPerson1: string;
-  youngPerson2: string;
-  quality: RelationshipQuality;
-  riskLevel: RiskLevel;
-  strengths: string[];
-  concerns: string[];
-  strategies: string[];
-  entries: PeerEntry[];
-  lastReviewDate: string;
-  reviewedBy: string;
-  nextReviewDue: string;
-  notes: string;
-}
-
-interface GroupDynamic {
-  id: string;
-  assessmentDate: string;
-  assessedBy: string;
-  overallAtmosphere: "calm" | "mixed" | "tense" | "volatile";
-  groupStrengths: string[];
-  groupConcerns: string[];
-  currentDynamics: string;
-  recommendations: string[];
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const QUALITY_LABELS: Record<RelationshipQuality, string> = {
-  positive: "Positive", developing: "Developing", strained: "Strained",
-  conflicted: "Conflicted", neutral: "Neutral",
-};
-const QUALITY_COLOURS: Record<RelationshipQuality, string> = {
+const QUALITY_CLR: Record<PeerRelationshipQuality, string> = {
   positive: "bg-green-100 text-green-800", developing: "bg-blue-100 text-blue-800",
   strained: "bg-amber-100 text-amber-800", conflicted: "bg-red-100 text-red-800",
   neutral: "bg-gray-100 text-gray-700",
 };
 
-const RISK_LABELS: Record<RiskLevel, string> = { none: "None", low: "Low", medium: "Medium", high: "High" };
-const RISK_COLOURS: Record<RiskLevel, string> = {
+const RISK_CLR: Record<PeerRiskLevel, string> = {
   none: "bg-green-100 text-green-800", low: "bg-blue-100 text-blue-800",
   medium: "bg-amber-100 text-amber-800", high: "bg-red-100 text-red-800",
 };
 
-const ENTRY_TYPE_LABELS: Record<EntryType, string> = {
-  observation: "Observation", incident: "Incident", positive_interaction: "Positive Interaction",
-  mediation: "Mediation", review: "Review",
-};
-
-const ATMOS_LABELS: Record<string, string> = { calm: "Calm", mixed: "Mixed", tense: "Tense", volatile: "Volatile" };
-const ATMOS_COLOURS: Record<string, string> = {
+const ATMOS_CLR: Record<PeerGroupAtmosphere, string> = {
   calm: "bg-green-100 text-green-800", mixed: "bg-amber-100 text-amber-800",
   tense: "bg-orange-100 text-orange-800", volatile: "bg-red-100 text-red-800",
-};
-
-const PEER_DYNAMICS: PeerDynamic[] = [
-  {
-    id: "pd1", youngPerson1: "yp_alex", youngPerson2: "yp_jordan",
-    quality: "developing", riskLevel: "low",
-    strengths: ["Shared interest in gaming", "Alex naturally protective of Jordan", "Mutual respect for each other's space"],
-    concerns: ["Alex's boisterous behaviour can overwhelm Jordan's sensory needs", "Volume levels during gaming sessions"],
-    strategies: [
-      "Gaming sessions in communal area with staff oversight — max 1 hour",
-      "Alex to use headphones during gaming if Jordan is nearby",
-      "Staff to monitor noise levels and intervene calmly if escalating",
-      "Encourage joint quiet activities (board games, art)",
-    ],
-    entries: [
-      { id: "e1", date: d(-3), type: "positive_interaction", description: "Alex and Jordan played a cooperative Lego build for 45 minutes. Alex was patient when Jordan needed to organise pieces by colour first. Both laughing and engaged.", staffWitness: "staff_anna", interventionUsed: "None needed", outcome: "Naturally positive interaction — reinforced with praise for both" },
-      { id: "e2", date: d(-10), type: "observation", description: "During evening free time, Alex's music was too loud for Jordan. Jordan became withdrawn and went to their room. Alex didn't notice.", staffWitness: "staff_edward", interventionUsed: "Spoke to Alex about volume — reminded about noise agreement. Checked on Jordan.", outcome: "Alex apologised genuinely. Jordan returned after 20 mins. Discussed using headphones." },
-      { id: "e3", date: d(-20), type: "mediation", description: "Minor disagreement over TV programme choice. Both became frustrated. Jordan struggled to articulate their preference.", staffWitness: "staff_chervelle", interventionUsed: "Facilitated turn-taking discussion. Introduced visual schedule for shared TV time.", outcome: "TV schedule agreed — both contributed to it. Positive resolution." },
-    ],
-    lastReviewDate: d(-7), reviewedBy: "staff_anna", nextReviewDue: d(21),
-    notes: "Relationship improving steadily. Alex showing increased awareness of Jordan's needs. Continue to build on shared interests while managing sensory compatibility.",
-  },
-  {
-    id: "pd2", youngPerson1: "yp_alex", youngPerson2: "yp_casey",
-    quality: "positive", riskLevel: "none",
-    strengths: ["Natural friendship — age-appropriate banter", "Both enjoy outdoor activities", "Casey looks up to Alex — positive role model", "Share meals together without conflict"],
-    concerns: ["Alex occasionally uses language Casey then copies", "Casey can become overexcited and boundary-push when with Alex"],
-    strategies: [
-      "Encourage joint outdoor activities — cycling, garden games",
-      "Staff to gently address language modelling in the moment",
-      "Structured activities together to channel energy positively",
-    ],
-    entries: [
-      { id: "e4", date: d(-2), type: "positive_interaction", description: "Alex helped Casey with homework. Was patient explaining maths concepts. Casey was focused and grateful.", staffWitness: "staff_anna", interventionUsed: "None", outcome: "Great peer mentoring moment. Both praised." },
-      { id: "e5", date: d(-8), type: "observation", description: "Playing football in garden together after school. Good-natured, inclusive. Alex adjusted their play to Casey's level.", staffWitness: "staff_edward", interventionUsed: "None needed", outcome: "Positive play. Both came in happy and settled." },
-    ],
-    lastReviewDate: d(-7), reviewedBy: "staff_anna", nextReviewDue: d(21),
-    notes: "Strong positive relationship. Alex is a good influence on Casey. Continue to support and celebrate this dynamic.",
-  },
-  {
-    id: "pd3", youngPerson1: "yp_jordan", youngPerson2: "yp_casey",
-    quality: "strained", riskLevel: "medium",
-    strengths: ["Both enjoy art activities", "Can co-exist calmly in structured settings"],
-    concerns: [
-      "Casey's high energy can trigger Jordan's sensory overload",
-      "Casey doesn't always understand Jordan's need for quiet",
-      "Occasional tension at mealtimes — Casey talks loudly",
-      "Jordan becomes withdrawn when Casey is dysregulated",
-    ],
-    strategies: [
-      "Staggered mealtimes if one child is dysregulated",
-      "Separate spaces available during high-energy periods",
-      "Joint art sessions (structured, calm) as bridge-building",
-      "Staff to proactively manage transitions — prepare Jordan before Casey arrives in shared space",
-      "Casey supported to understand Jordan's needs through age-appropriate conversation (not blame)",
-    ],
-    entries: [
-      { id: "e6", date: d(-1), type: "observation", description: "Casey came in from school very excited and loud. Jordan was reading in the lounge. Jordan immediately tensed up and covered ears. Casey didn't notice.", staffWitness: "staff_anna", interventionUsed: "Redirected Casey to kitchen for snack and debrief. Checked on Jordan — offered headphones.", outcome: "Both settled within 10 minutes. No conflict, but proactive management needed." },
-      { id: "e7", date: d(-7), type: "incident", description: "Casey accidentally knocked over Jordan's art project when running through the hallway. Jordan became very distressed — crying and shouting. Casey was upset about causing distress.", staffWitness: "staff_chervelle", interventionUsed: "Separated — Chervelle with Jordan, Edward with Casey. Calm-down time. Facilitated apology when both ready.", outcome: "Casey apologised sincerely. Helped Jordan rebuild project. Both needed emotional support. Running in hallway discussed." },
-      { id: "e8", date: d(-14), type: "positive_interaction", description: "Structured art session — painting. Both sat at the table for 30 minutes working on individual pieces. Jordan showed Casey a painting technique. Brief positive verbal exchange.", staffWitness: "staff_chervelle", interventionUsed: "Structured setting — art activity pre-planned", outcome: "Positive shared experience. Jordan initiated the interaction which is significant." },
-    ],
-    lastReviewDate: d(-7), reviewedBy: "staff_darren", nextReviewDue: d(14),
-    notes: "Needs active management. Neither child is at fault — their needs are simply different. Focus on structured, calm shared experiences. Avoid forced interaction. Staff proactivity is key.",
-  },
-];
-
-const GROUP_DYNAMIC: GroupDynamic = {
-  id: "gd1", assessmentDate: d(-7), assessedBy: "staff_darren",
-  overallAtmosphere: "mixed",
-  groupStrengths: [
-    "Alex and Casey have a strong positive relationship that stabilises the home",
-    "All three can engage positively in structured activities",
-    "No bullying behaviours identified",
-    "Children generally respectful of each other's bedrooms and belongings",
-  ],
-  groupConcerns: [
-    "Sensory mismatch between Casey's energy levels and Jordan's need for calm",
-    "Transitions (school return, mealtimes) are pressure points for group dynamics",
-    "Jordan's withdrawal can be misread by others as rejection",
-  ],
-  currentDynamics: "The home operates best when there is a balance of structured and free time. Alex naturally bridges between Jordan and Casey. Morning routines are generally calm. After-school periods need most active management. Evenings settle well with individual bedtime routines.",
-  recommendations: [
-    "Maintain staggered activity options during peak times",
-    "Continue structured group activities 2x per week (art, cooking, board games)",
-    "All staff to complete sensory awareness refresher",
-    "Weekly peer dynamic review in team meeting",
-    "Consider therapeutic group session with external practitioner",
-  ],
 };
 
 /* ── flat row for export ─────────────────────────────────────────────── */
@@ -214,8 +87,12 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function PeerRelationshipsPage() {
-  const [dynamics] = useState<PeerDynamic[]>(PEER_DYNAMICS);
-  const [group] = useState<GroupDynamic>(GROUP_DYNAMIC);
+  const { data: pairRes, isLoading: pairLoading } = usePeerDynamics();
+  const { data: groupRes, isLoading: groupLoading } = usePeerGroupDynamics();
+  const pairs: PeerDynamic[] = pairRes?.data ?? [];
+  const groupDynamic: PeerGroupDynamic | undefined = (groupRes?.data ?? [])[0];
+  const isLoading = pairLoading || groupLoading;
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterQuality, setFilterQuality] = useState("all");
@@ -226,21 +103,21 @@ export default function PeerRelationshipsPage() {
 
   /* ── stats ────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
-    const positive = dynamics.filter((d) => d.quality === "positive").length;
-    const concerns = dynamics.filter((d) => ["strained", "conflicted"].includes(d.quality)).length;
-    const highRisk = dynamics.filter((d) => ["medium", "high"].includes(d.riskLevel)).length;
-    const totalEntries = dynamics.reduce((s, d) => s + d.entries.length, 0);
+    const positive = pairs.filter((d) => d.quality === "positive").length;
+    const concerns = pairs.filter((d) => ["strained", "conflicted"].includes(d.quality)).length;
+    const highRisk = pairs.filter((d) => ["medium", "high"].includes(d.risk_level)).length;
+    const totalEntries = pairs.reduce((s, d) => s + d.entries.length, 0);
     return { positive, concerns, highRisk, totalEntries };
-  }, [dynamics]);
+  }, [pairs]);
 
   /* ── filtered / sorted ────────────────────────────────────────────── */
   const filtered = useMemo(() => {
-    let list = dynamics;
+    let list = pairs;
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((d) =>
-        getYPName(d.youngPerson1).toLowerCase().includes(q) ||
-        getYPName(d.youngPerson2).toLowerCase().includes(q)
+        getYPName(d.child_id_1).toLowerCase().includes(q) ||
+        getYPName(d.child_id_2).toLowerCase().includes(q)
       );
     }
     if (filterQuality !== "all") list = list.filter((d) => d.quality === filterQuality);
@@ -248,7 +125,7 @@ export default function PeerRelationshipsPage() {
     switch (sortBy) {
       case "risk": {
         const o: Record<string, number> = { high: 0, medium: 1, low: 2, none: 3 };
-        out.sort((a, b) => o[a.riskLevel] - o[b.riskLevel]);
+        out.sort((a, b) => o[a.risk_level] - o[b.risk_level]);
         break;
       }
       case "quality": out.sort((a, b) => a.quality.localeCompare(b.quality)); break;
@@ -258,24 +135,40 @@ export default function PeerRelationshipsPage() {
       }); break;
     }
     return out;
-  }, [dynamics, search, filterQuality, sortBy]);
+  }, [pairs, search, filterQuality, sortBy]);
 
   /* ── export ───────────────────────────────────────────────────────── */
   const exportData = useMemo<FlatRow[]>(() =>
-    dynamics.map((d) => ({
-      child1: getYPName(d.youngPerson1),
-      child2: getYPName(d.youngPerson2),
-      quality: QUALITY_LABELS[d.quality],
-      riskLevel: RISK_LABELS[d.riskLevel],
+    pairs.map((d) => ({
+      child1: getYPName(d.child_id_1),
+      child2: getYPName(d.child_id_2),
+      quality: PEER_RELATIONSHIP_QUALITY_LABEL[d.quality],
+      riskLevel: PEER_RISK_LEVEL_LABEL[d.risk_level],
       strengths: d.strengths.join("; "),
       concerns: d.concerns.join("; "),
       strategies: d.strategies.join("; "),
-      lastReview: d.lastReviewDate,
-      nextReview: d.nextReviewDue,
+      lastReview: d.last_review_date,
+      nextReview: d.next_review_due,
       recentEntry: d.entries[0]?.description ?? "—",
-      entryType: d.entries[0] ? ENTRY_TYPE_LABELS[d.entries[0].type] : "—",
+      entryType: d.entries[0] ? PEER_ENTRY_TYPE_LABEL[d.entries[0].type] : "—",
       notes: d.notes,
-    })), [dynamics]);
+    })), [pairs]);
+
+  /* ── loading ─────────────────────────────────────────────────────── */
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Peer Relationships"
+        subtitle="Peer dynamic mapping, group living assessments and relationship tracking"
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </div>
+      </PageShell>
+    );
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <PageShell
@@ -310,43 +203,45 @@ export default function PeerRelationshipsPage() {
       </div>
 
       {/* ── group dynamic card ─────────────────────────────────────── */}
-      <div className="rounded-lg border bg-white p-4 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h3 className="font-semibold flex items-center gap-2">
-              <Users className="h-4 w-4 text-gray-400" />
-              Group Dynamic Assessment
-            </h3>
-            <p className="text-xs text-gray-500">{group.assessmentDate} — {getStaffName(group.assessedBy)}</p>
+      {groupDynamic && (
+        <div className="rounded-lg border bg-white p-4 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="font-semibold flex items-center gap-2">
+                <Users className="h-4 w-4 text-gray-400" />
+                Group Dynamic Assessment
+              </h3>
+              <p className="text-xs text-gray-500">{groupDynamic.assessment_date} — {getStaffName(groupDynamic.assessed_by)}</p>
+            </div>
+            <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", ATMOS_CLR[groupDynamic.overall_atmosphere])}>
+              {PEER_GROUP_ATMOSPHERE_LABEL[groupDynamic.overall_atmosphere]}
+            </span>
           </div>
-          <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", ATMOS_COLOURS[group.overallAtmosphere])}>
-            {ATMOS_LABELS[group.overallAtmosphere]}
-          </span>
+          <p className="text-sm mb-3">{groupDynamic.current_dynamics}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="rounded-md bg-green-50 p-3">
+              <h4 className="text-xs font-semibold text-green-700 mb-1">Group Strengths</h4>
+              <ul className="list-disc list-inside text-sm text-green-800 space-y-0.5">
+                {groupDynamic.group_strengths.map((s, i) => <li key={i}>{s}</li>)}
+              </ul>
+            </div>
+            <div className="rounded-md bg-amber-50 p-3">
+              <h4 className="text-xs font-semibold text-amber-700 mb-1">Group Concerns</h4>
+              <ul className="list-disc list-inside text-sm text-amber-800 space-y-0.5">
+                {groupDynamic.group_concerns.map((c, i) => <li key={i}>{c}</li>)}
+              </ul>
+            </div>
+          </div>
+          {groupDynamic.recommendations.length > 0 && (
+            <div className="mt-3 rounded-md bg-blue-50 p-3">
+              <h4 className="text-xs font-semibold text-blue-700 mb-1">Recommendations</h4>
+              <ul className="list-disc list-inside text-sm text-blue-800 space-y-0.5">
+                {groupDynamic.recommendations.map((r, i) => <li key={i}>{r}</li>)}
+              </ul>
+            </div>
+          )}
         </div>
-        <p className="text-sm mb-3">{group.currentDynamics}</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="rounded-md bg-green-50 p-3">
-            <h4 className="text-xs font-semibold text-green-700 mb-1">Group Strengths</h4>
-            <ul className="list-disc list-inside text-sm text-green-800 space-y-0.5">
-              {group.groupStrengths.map((s, i) => <li key={i}>{s}</li>)}
-            </ul>
-          </div>
-          <div className="rounded-md bg-amber-50 p-3">
-            <h4 className="text-xs font-semibold text-amber-700 mb-1">Group Concerns</h4>
-            <ul className="list-disc list-inside text-sm text-amber-800 space-y-0.5">
-              {group.groupConcerns.map((c, i) => <li key={i}>{c}</li>)}
-            </ul>
-          </div>
-        </div>
-        {group.recommendations.length > 0 && (
-          <div className="mt-3 rounded-md bg-blue-50 p-3">
-            <h4 className="text-xs font-semibold text-blue-700 mb-1">Recommendations</h4>
-            <ul className="list-disc list-inside text-sm text-blue-800 space-y-0.5">
-              {group.recommendations.map((r, i) => <li key={i}>{r}</li>)}
-            </ul>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* ── filters ────────────────────────────────────────────────── */}
       <div id="peer-list" className="flex flex-wrap items-center gap-3 mb-4">
@@ -358,7 +253,7 @@ export default function PeerRelationshipsPage() {
           <SelectTrigger className="w-[160px] h-9 text-sm"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Qualities</SelectItem>
-            {Object.entries(QUALITY_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            {Object.entries(PEER_RELATIONSHIP_QUALITY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -383,11 +278,11 @@ export default function PeerRelationshipsPage() {
               <button onClick={() => toggle(pd.id)} className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{getYPName(pd.youngPerson1)} ↔ {getYPName(pd.youngPerson2)}</h3>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", QUALITY_COLOURS[pd.quality])}>{QUALITY_LABELS[pd.quality]}</span>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", RISK_COLOURS[pd.riskLevel])}>Risk: {RISK_LABELS[pd.riskLevel]}</span>
+                    <h3 className="font-semibold">{getYPName(pd.child_id_1)} ↔ {getYPName(pd.child_id_2)}</h3>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", QUALITY_CLR[pd.quality])}>{PEER_RELATIONSHIP_QUALITY_LABEL[pd.quality]}</span>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", RISK_CLR[pd.risk_level])}>Risk: {PEER_RISK_LEVEL_LABEL[pd.risk_level]}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{pd.entries.length} entries · Review {pd.nextReviewDue}</p>
+                  <p className="text-xs text-gray-500 mt-1">{pd.entries.length} entries · Review {pd.next_review_due}</p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
               </button>
@@ -430,11 +325,11 @@ export default function PeerRelationshipsPage() {
                               e.type === "incident" ? "bg-red-100 text-red-800" :
                               e.type === "mediation" ? "bg-purple-100 text-purple-800" :
                               "bg-gray-100 text-gray-700"
-                            )}>{ENTRY_TYPE_LABELS[e.type]}</span>
-                            <span className="text-xs text-gray-500">{e.date} — {getStaffName(e.staffWitness)}</span>
+                            )}>{PEER_ENTRY_TYPE_LABEL[e.type]}</span>
+                            <span className="text-xs text-gray-500">{e.date} — {getStaffName(e.staff_witness)}</span>
                           </div>
                           <p className="text-sm mb-1">{e.description}</p>
-                          {e.interventionUsed && <p className="text-xs text-gray-600"><span className="font-medium">Intervention:</span> {e.interventionUsed}</p>}
+                          {e.intervention_used && <p className="text-xs text-gray-600"><span className="font-medium">Intervention:</span> {e.intervention_used}</p>}
                           {e.outcome && <p className="text-xs text-gray-600"><span className="font-medium">Outcome:</span> {e.outcome}</p>}
                         </div>
                       ))}
@@ -443,7 +338,7 @@ export default function PeerRelationshipsPage() {
 
                   {/* review info */}
                   <div className="rounded-md bg-gray-50 p-3 text-sm">
-                    <span className="text-gray-500">Last reviewed:</span> {pd.lastReviewDate} by {getStaffName(pd.reviewedBy)} · <span className="text-gray-500">Next review:</span> <span className={cn(pd.nextReviewDue <= d(0) ? "text-red-600 font-medium" : "")}>{pd.nextReviewDue}</span>
+                    <span className="text-gray-500">Last reviewed:</span> {pd.last_review_date} by {getStaffName(pd.reviewed_by)} · <span className="text-gray-500">Next review:</span> <span className={cn(pd.next_review_due <= today ? "text-red-600 font-medium" : "")}>{pd.next_review_due}</span>
                   </div>
 
                   {/* notes */}
@@ -474,20 +369,20 @@ export default function PeerRelationshipsPage() {
               <div>
                 <label className="text-sm font-medium">Child 1</label>
                 <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{["yp_alex","yp_jordan","yp_casey"].map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
+                  <SelectContent>{pairs.map((p) => p.child_id_1).filter((v, i, a) => a.indexOf(v) === i).map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Child 2</label>
                 <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{["yp_alex","yp_jordan","yp_casey"].map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
+                  <SelectContent>{pairs.map((p) => p.child_id_2).filter((v, i, a) => a.indexOf(v) === i).map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Entry Type</label>
               <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>{Object.entries(ENTRY_TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                <SelectContent>{Object.entries(PEER_ENTRY_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>

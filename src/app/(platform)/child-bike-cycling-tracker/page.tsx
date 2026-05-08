@@ -23,184 +23,64 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type {
+  CyclingBikeRecord,
+  BikeabilityLevel,
+  HelmetCondition,
+  BikeMaintenanceCompetence,
+} from "@/types/extended";
+import {
+  BIKEABILITY_LEVEL_LABEL,
+  HELMET_CONDITION_LABEL,
+  BIKE_MAINTENANCE_COMPETENCE_LABEL,
+} from "@/types/extended";
+import { useCyclingBikeRecords } from "@/hooks/use-cycling-bike-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-interface BikeRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  bikeOwned: boolean;
-  bikeDetails?: { make: string; model: string; size: string; colour: string; serialNumber?: string };
-  helmetOwned: boolean;
-  helmetCondition?: "New" | "Good" | "Replace soon" | "Damaged";
-  lightsFitted: boolean;
-  reflectiveGearOwned: boolean;
-  lockType?: string;
-  bikeStorageLocation: string;
-  bikeabilityLevel: "Not started" | "Level 1 (off-road)" | "Level 2 (on-road basic)" | "Level 3 (on-road advanced)" | "Beyond — independent rider";
-  bikeabilityCertificateDate?: string;
-  routesRiddenIndependently: string[];
-  routeRiskAssessmentDone: boolean;
-  childWearsHelmetConsistently: boolean;
-  maintenanceCompetence: "Adult-led" | "With prompts" | "Independent basics" | "Confident";
-  theftRiskScreening: string[];
-  childVoice: string;
-  staffObservation: string;
-  reviewDate: string;
-  keyWorker: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const levelOrder: Record<BikeabilityLevel, number> = {
+  not_started: 0,
+  level_1_off_road: 1,
+  level_2_on_road_basic: 2,
+  level_3_on_road_advanced: 3,
+  beyond_independent_rider: 4,
 };
 
-const data: BikeRecord[] = [
-  {
-    id: "bike-001",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-30),
-    bikeOwned: true,
-    bikeDetails: {
-      make: "Carrera",
-      model: "Subway 1 Hybrid",
-      size: "Frame size L (54cm)",
-      colour: "Matte black with red accents",
-      serialNumber: "WCB24-J7891",
-    },
-    helmetOwned: true,
-    helmetCondition: "Good",
-    lightsFitted: true,
-    reflectiveGearOwned: true,
-    lockType: "Kryptonite Evolution Mini-7 D-lock + secondary cable",
-    bikeStorageLocation: "Locked garden shed (CCTV-monitored), bracketed to wall",
-    bikeabilityLevel: "Level 3 (on-road advanced)",
-    bikeabilityCertificateDate: "2024-06-18",
-    routesRiddenIndependently: [
-      "Home to Riverside FC training ground (3.2 miles, cycle lane majority)",
-      "Home to school (1.4 miles, agreed quiet route)",
-      "Home to corner shop (0.6 miles)",
-      "Sustrans NCN Route 4 short loop with staff initially, now independent",
-    ],
-    routeRiskAssessmentDone: true,
-    childWearsHelmetConsistently: true,
-    maintenanceCompetence: "Confident",
-    theftRiskScreening: [
-      "Bike registered on BikeRegister (UK national database)",
-      "Photo evidence and serial number on file",
-      "Insurance via home contents policy — confirmed cover at training venues",
-      "Jordan briefed on never leaving bike unattended without D-lock to immovable object",
-    ],
-    childVoice:
-      "Cycling to football is freedom. I do my ABCs every Saturday — Air, Brakes, Chain. Coach lets me park inside the clubhouse.",
-    staffObservation:
-      "Jordan is a model independent rider. Bikeability Level 3 is genuinely embedded — observed signalling, primary position, and shoulder checks on staff ride-along. Maintenance routine is self-initiated.",
-    reviewDate: d(60),
-    keyWorker: "staff_chervelle",
-  },
-  {
-    id: "bike-002",
-    youngPerson: "yp_alex",
-    recordedDate: d(-21),
-    bikeOwned: true,
-    bikeDetails: {
-      make: "Apollo",
-      model: "Slick Hybrid (smaller frame)",
-      size: "Frame size S (46cm)",
-      colour: "Sage green — gender-neutral, chosen by Alex",
-    },
-    helmetOwned: true,
-    helmetCondition: "Good",
-    lightsFitted: false,
-    reflectiveGearOwned: true,
-    lockType: "Combination cable lock (upgrade to D-lock planned)",
-    bikeStorageLocation: "Garden shed alongside Jordan's bike",
-    bikeabilityLevel: "Level 2 (on-road basic)",
-    bikeabilityCertificateDate: "2024-09-22",
-    routesRiddenIndependently: [
-      "Home park loop (0.8 miles, off-road)",
-      "Home to library on quiet residential streets (with staff initially)",
-    ],
-    routeRiskAssessmentDone: true,
-    childWearsHelmetConsistently: false,
-    maintenanceCompetence: "With prompts",
-    theftRiskScreening: [
-      "Bike registered on BikeRegister",
-      "Photo and serial on file",
-      "Lock upgrade scheduled — current cable lock not adequate for off-site use",
-    ],
-    childVoice:
-      "I like riding round the park. Sometimes I forget the helmet if I'm just going to the end of the road — but staff keep reminding me.",
-    staffObservation:
-      "Alex is a competent leisure rider but helmet consistency is a current focus — agreed reward chart in place. Lights need replacing before darker evenings (October target). Level 3 Bikeability offered next term.",
-    reviewDate: d(30),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "bike-003",
-    youngPerson: "yp_casey",
-    recordedDate: d(-14),
-    bikeOwned: false,
-    helmetOwned: false,
-    lightsFitted: false,
-    reflectiveGearOwned: false,
-    bikeStorageLocation: "N/A — no bike currently",
-    bikeabilityLevel: "Level 1 (off-road)",
-    routesRiddenIndependently: [],
-    routeRiskAssessmentDone: false,
-    childWearsHelmetConsistently: false,
-    maintenanceCompetence: "Adult-led",
-    theftRiskScreening: [],
-    childVoice:
-      "Bikes feel wobbly and the road is loud. I'm trying with the after-school club bikes. Maybe one day, but no rush.",
-    staffObservation:
-      "Casey is anxious about cycling — sensory and safety concerns. Engaging gently via after-school club Bikeability Level 1 introduction (school playground, off-road). No pressure to own a bike. Progress measured in confidence, not miles. Will revisit purchase decision once Casey expresses readiness.",
-    reviewDate: d(45),
-    keyWorker: "staff_anna",
-  },
-];
-
-const levelOrder: Record<BikeRecord["bikeabilityLevel"], number> = {
-  "Not started": 0,
-  "Level 1 (off-road)": 1,
-  "Level 2 (on-road basic)": 2,
-  "Level 3 (on-road advanced)": 3,
-  "Beyond — independent rider": 4,
+const levelColour: Record<BikeabilityLevel, string> = {
+  not_started: "bg-slate-100 text-slate-700",
+  level_1_off_road: "bg-sky-100 text-sky-800",
+  level_2_on_road_basic: "bg-teal-100 text-teal-800",
+  level_3_on_road_advanced: "bg-emerald-100 text-emerald-800",
+  beyond_independent_rider: "bg-indigo-100 text-indigo-800",
 };
 
-const levelColour: Record<BikeRecord["bikeabilityLevel"], string> = {
-  "Not started": "bg-slate-100 text-slate-700",
-  "Level 1 (off-road)": "bg-sky-100 text-sky-800",
-  "Level 2 (on-road basic)": "bg-teal-100 text-teal-800",
-  "Level 3 (on-road advanced)": "bg-emerald-100 text-emerald-800",
-  "Beyond — independent rider": "bg-indigo-100 text-indigo-800",
+const maintenanceColour: Record<BikeMaintenanceCompetence, string> = {
+  adult_led: "bg-amber-100 text-amber-800",
+  with_prompts: "bg-yellow-100 text-yellow-800",
+  independent_basics: "bg-teal-100 text-teal-800",
+  confident: "bg-emerald-100 text-emerald-800",
 };
 
-const maintenanceColour: Record<BikeRecord["maintenanceCompetence"], string> = {
-  "Adult-led": "bg-amber-100 text-amber-800",
-  "With prompts": "bg-yellow-100 text-yellow-800",
-  "Independent basics": "bg-teal-100 text-teal-800",
-  Confident: "bg-emerald-100 text-emerald-800",
-};
-
-const exportCols: ExportColumn<BikeRecord>[] = [
-  { header: "Young Person", accessor: (r: BikeRecord) => getYPName(r.youngPerson) },
-  { header: "Recorded", accessor: (r: BikeRecord) => r.recordedDate },
-  { header: "Bike Owned", accessor: (r: BikeRecord) => (r.bikeOwned ? "Yes" : "No") },
-  { header: "Bike", accessor: (r: BikeRecord) => (r.bikeDetails ? `${r.bikeDetails.make} ${r.bikeDetails.model} (${r.bikeDetails.size})` : "—") },
-  { header: "Helmet", accessor: (r: BikeRecord) => (r.helmetOwned ? r.helmetCondition || "Owned" : "No") },
-  { header: "Lights", accessor: (r: BikeRecord) => (r.lightsFitted ? "Yes" : "No") },
-  { header: "Lock", accessor: (r: BikeRecord) => r.lockType || "—" },
-  { header: "Bikeability", accessor: (r: BikeRecord) => r.bikeabilityLevel },
-  { header: "Cert Date", accessor: (r: BikeRecord) => r.bikeabilityCertificateDate || "—" },
-  { header: "Helmet Worn Consistently", accessor: (r: BikeRecord) => (r.childWearsHelmetConsistently ? "Yes" : "No") },
-  { header: "Maintenance", accessor: (r: BikeRecord) => r.maintenanceCompetence },
-  { header: "Routes (count)", accessor: (r: BikeRecord) => r.routesRiddenIndependently.length },
-  { header: "Review Due", accessor: (r: BikeRecord) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: BikeRecord) => getStaffName(r.keyWorker) },
+const exportCols: ExportColumn<CyclingBikeRecord>[] = [
+  { header: "Young Person", accessor: (r: CyclingBikeRecord) => getYPName(r.child_id) },
+  { header: "Recorded", accessor: (r: CyclingBikeRecord) => r.recorded_date },
+  { header: "Bike Owned", accessor: (r: CyclingBikeRecord) => (r.bike_owned ? "Yes" : "No") },
+  { header: "Bike", accessor: (r: CyclingBikeRecord) => (r.bike_details ? `${r.bike_details.make} ${r.bike_details.model} (${r.bike_details.size})` : "—") },
+  { header: "Helmet", accessor: (r: CyclingBikeRecord) => (r.helmet_owned ? (r.helmet_condition ? HELMET_CONDITION_LABEL[r.helmet_condition] : "Owned") : "No") },
+  { header: "Lights", accessor: (r: CyclingBikeRecord) => (r.lights_fitted ? "Yes" : "No") },
+  { header: "Lock", accessor: (r: CyclingBikeRecord) => r.lock_type || "—" },
+  { header: "Bikeability", accessor: (r: CyclingBikeRecord) => BIKEABILITY_LEVEL_LABEL[r.bikeability_level] },
+  { header: "Cert Date", accessor: (r: CyclingBikeRecord) => r.bikeability_certificate_date || "—" },
+  { header: "Helmet Worn Consistently", accessor: (r: CyclingBikeRecord) => (r.child_wears_helmet_consistently ? "Yes" : "No") },
+  { header: "Maintenance", accessor: (r: CyclingBikeRecord) => BIKE_MAINTENANCE_COMPETENCE_LABEL[r.maintenance_competence] },
+  { header: "Routes (count)", accessor: (r: CyclingBikeRecord) => r.routes_ridden_independently.length },
+  { header: "Review Due", accessor: (r: CyclingBikeRecord) => r.review_date },
+  { header: "Key Worker", accessor: (r: CyclingBikeRecord) => getStaffName(r.key_worker) },
 ];
 
 export default function ChildBikeCyclingTrackerPage() {
+  const { data: res, isLoading } = useCyclingBikeRecords();
+  const data = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterLevel, setFilterLevel] = useState("all");
   const [sortBy, setSortBy] = useState("level");
@@ -212,42 +92,50 @@ export default function ChildBikeCyclingTrackerPage() {
       const q = search.toLowerCase();
       items = items.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.bikeabilityLevel.toLowerCase().includes(q) ||
-          (r.bikeDetails?.make.toLowerCase().includes(q) ?? false) ||
-          (r.bikeDetails?.model.toLowerCase().includes(q) ?? false) ||
-          r.routesRiddenIndependently.some((rt) => rt.toLowerCase().includes(q)),
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          BIKEABILITY_LEVEL_LABEL[r.bikeability_level].toLowerCase().includes(q) ||
+          (r.bike_details?.make.toLowerCase().includes(q) ?? false) ||
+          (r.bike_details?.model.toLowerCase().includes(q) ?? false) ||
+          r.routes_ridden_independently.some((rt) => rt.toLowerCase().includes(q)),
       );
     }
-    if (filterLevel !== "all") items = items.filter((r) => r.bikeabilityLevel === filterLevel);
+    if (filterLevel !== "all") items = items.filter((r) => r.bikeability_level === filterLevel);
     items.sort((a, b) => {
       switch (sortBy) {
         case "level":
-          return levelOrder[b.bikeabilityLevel] - levelOrder[a.bikeabilityLevel];
+          return levelOrder[b.bikeability_level] - levelOrder[a.bikeability_level];
         case "review":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         case "name":
-          return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         default:
           return 0;
       }
     });
     return items;
-  }, [search, filterLevel, sortBy]);
+  }, [data, search, filterLevel, sortBy]);
 
   const today = new Date();
   const in90 = new Date();
   in90.setDate(in90.getDate() + 90);
 
-  const childrenWithBikes = data.filter((r) => r.bikeOwned).length;
+  const childrenWithBikes = data.filter((r) => r.bike_owned).length;
   const bikeabilityCompleted = data.filter(
-    (r) => r.bikeabilityLevel !== "Not started" && r.bikeabilityLevel !== "Level 1 (off-road)",
+    (r) => r.bikeability_level !== "not_started" && r.bikeability_level !== "level_1_off_road",
   ).length;
-  const helmetAlwaysWorn = data.filter((r) => r.childWearsHelmetConsistently).length;
+  const helmetAlwaysWorn = data.filter((r) => r.child_wears_helmet_consistently).length;
   const reviewsDue90 = data.filter((r) => {
-    const dt = new Date(r.reviewDate);
+    const dt = new Date(r.review_date);
     return dt >= today && dt <= in90;
   }).length;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <PageShell
@@ -305,11 +193,11 @@ export default function ChildBikeCyclingTrackerPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Bikeability Levels</SelectItem>
-            <SelectItem value="Not started">Not started</SelectItem>
-            <SelectItem value="Level 1 (off-road)">Level 1 (off-road)</SelectItem>
-            <SelectItem value="Level 2 (on-road basic)">Level 2 (on-road basic)</SelectItem>
-            <SelectItem value="Level 3 (on-road advanced)">Level 3 (on-road advanced)</SelectItem>
-            <SelectItem value="Beyond — independent rider">Beyond — independent rider</SelectItem>
+            <SelectItem value="not_started">{BIKEABILITY_LEVEL_LABEL.not_started}</SelectItem>
+            <SelectItem value="level_1_off_road">{BIKEABILITY_LEVEL_LABEL.level_1_off_road}</SelectItem>
+            <SelectItem value="level_2_on_road_basic">{BIKEABILITY_LEVEL_LABEL.level_2_on_road_basic}</SelectItem>
+            <SelectItem value="level_3_on_road_advanced">{BIKEABILITY_LEVEL_LABEL.level_3_on_road_advanced}</SelectItem>
+            <SelectItem value="beyond_independent_rider">{BIKEABILITY_LEVEL_LABEL.beyond_independent_rider}</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -340,41 +228,41 @@ export default function ChildBikeCyclingTrackerPage() {
                   <Bike className="h-5 w-5 text-sky-600 shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">
-                      {getYPName(c.youngPerson)}
-                      {c.bikeDetails && (
+                      {getYPName(c.child_id)}
+                      {c.bike_details && (
                         <span className="text-muted-foreground font-normal">
                           {" "}
-                          &middot; {c.bikeDetails.make} {c.bikeDetails.model}
+                          &middot; {c.bike_details.make} {c.bike_details.model}
                         </span>
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Recorded {c.recordedDate} &middot; Key worker {getStaffName(c.keyWorker)} &middot; Review due {c.reviewDate}
+                      Recorded {c.recorded_date} &middot; Key worker {getStaffName(c.key_worker)} &middot; Review due {c.review_date}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3 flex-wrap justify-end">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", levelColour[c.bikeabilityLevel])}>
-                    {c.bikeabilityLevel}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", levelColour[c.bikeability_level])}>
+                    {BIKEABILITY_LEVEL_LABEL[c.bikeability_level]}
                   </span>
                   <span
                     className={cn(
                       "text-xs px-2 py-0.5 rounded-full font-medium",
-                      c.bikeOwned ? "bg-sky-100 text-sky-800" : "bg-slate-100 text-slate-700",
+                      c.bike_owned ? "bg-sky-100 text-sky-800" : "bg-slate-100 text-slate-700",
                     )}
                   >
-                    {c.bikeOwned ? "Owns bike" : "No bike"}
+                    {c.bike_owned ? "Owns bike" : "No bike"}
                   </span>
                   <span
                     className={cn(
                       "text-xs px-2 py-0.5 rounded-full font-medium",
-                      c.childWearsHelmetConsistently ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800",
+                      c.child_wears_helmet_consistently ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800",
                     )}
                   >
-                    Helmet {c.childWearsHelmetConsistently ? "consistent" : "inconsistent"}
+                    Helmet {c.child_wears_helmet_consistently ? "consistent" : "inconsistent"}
                   </span>
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", maintenanceColour[c.maintenanceCompetence])}>
-                    {c.maintenanceCompetence}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", maintenanceColour[c.maintenance_competence])}>
+                    {BIKE_MAINTENANCE_COMPETENCE_LABEL[c.maintenance_competence]}
                   </span>
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
@@ -382,7 +270,7 @@ export default function ChildBikeCyclingTrackerPage() {
 
               {isExpanded && (
                 <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
-                  {c.bikeDetails ? (
+                  {c.bike_details ? (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                         <Bike className="h-3 w-3 inline mr-1" />
@@ -392,20 +280,20 @@ export default function ChildBikeCyclingTrackerPage() {
                         <div className="bg-white rounded-lg p-2 border text-sm">
                           <p className="text-xs text-muted-foreground">Make / Model</p>
                           <p className="font-medium">
-                            {c.bikeDetails.make} {c.bikeDetails.model}
+                            {c.bike_details.make} {c.bike_details.model}
                           </p>
                         </div>
                         <div className="bg-white rounded-lg p-2 border text-sm">
                           <p className="text-xs text-muted-foreground">Frame</p>
-                          <p className="font-medium">{c.bikeDetails.size}</p>
+                          <p className="font-medium">{c.bike_details.size}</p>
                         </div>
                         <div className="bg-white rounded-lg p-2 border text-sm">
                           <p className="text-xs text-muted-foreground">Colour</p>
-                          <p className="font-medium">{c.bikeDetails.colour}</p>
+                          <p className="font-medium">{c.bike_details.colour}</p>
                         </div>
                         <div className="bg-white rounded-lg p-2 border text-sm">
                           <p className="text-xs text-muted-foreground">Serial</p>
-                          <p className="font-medium">{c.bikeDetails.serialNumber || "Not recorded"}</p>
+                          <p className="font-medium">{c.bike_details.serial_number || "Not recorded"}</p>
                         </div>
                       </div>
                     </div>
@@ -427,25 +315,25 @@ export default function ChildBikeCyclingTrackerPage() {
                       <div className="bg-white rounded-lg p-2 border text-sm">
                         <p className="text-xs text-muted-foreground">Helmet</p>
                         <p className="font-medium">
-                          {c.helmetOwned ? c.helmetCondition || "Owned" : "Not owned"}
+                          {c.helmet_owned ? (c.helmet_condition ? HELMET_CONDITION_LABEL[c.helmet_condition] : "Owned") : "Not owned"}
                         </p>
                       </div>
                       <div className="bg-white rounded-lg p-2 border text-sm">
                         <p className="text-xs text-muted-foreground">Lights Fitted</p>
-                        <p className={cn("font-medium", c.lightsFitted ? "text-emerald-700" : "text-amber-700")}>
-                          {c.lightsFitted ? "Yes" : "No / needs fitting"}
+                        <p className={cn("font-medium", c.lights_fitted ? "text-emerald-700" : "text-amber-700")}>
+                          {c.lights_fitted ? "Yes" : "No / needs fitting"}
                         </p>
                       </div>
                       <div className="bg-white rounded-lg p-2 border text-sm">
                         <p className="text-xs text-muted-foreground">Reflective Gear</p>
-                        <p className={cn("font-medium", c.reflectiveGearOwned ? "text-emerald-700" : "text-amber-700")}>
-                          {c.reflectiveGearOwned ? "Yes" : "No"}
+                        <p className={cn("font-medium", c.reflective_gear_owned ? "text-emerald-700" : "text-amber-700")}>
+                          {c.reflective_gear_owned ? "Yes" : "No"}
                         </p>
                       </div>
                       <div className="bg-white rounded-lg p-2 border text-sm">
                         <p className="text-xs text-muted-foreground">Helmet Worn Consistently</p>
-                        <p className={cn("font-medium", c.childWearsHelmetConsistently ? "text-emerald-700" : "text-amber-700")}>
-                          {c.childWearsHelmetConsistently ? "Yes" : "Working on it"}
+                        <p className={cn("font-medium", c.child_wears_helmet_consistently ? "text-emerald-700" : "text-amber-700")}>
+                          {c.child_wears_helmet_consistently ? "Yes" : "Working on it"}
                         </p>
                       </div>
                     </div>
@@ -454,11 +342,11 @@ export default function ChildBikeCyclingTrackerPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div className="bg-white rounded-lg p-3 border text-sm">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Lock</p>
-                      <p>{c.lockType || "Not applicable"}</p>
+                      <p>{c.lock_type || "Not applicable"}</p>
                     </div>
                     <div className="bg-white rounded-lg p-3 border text-sm">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Storage</p>
-                      <p>{c.bikeStorageLocation}</p>
+                      <p>{c.bike_storage_location}</p>
                     </div>
                   </div>
 
@@ -468,9 +356,9 @@ export default function ChildBikeCyclingTrackerPage() {
                       Bikeability
                     </p>
                     <p className="text-sm">
-                      <span className="font-medium">{c.bikeabilityLevel}</span>
-                      {c.bikeabilityCertificateDate && (
-                        <span className="text-muted-foreground"> &middot; Certificate dated {c.bikeabilityCertificateDate}</span>
+                      <span className="font-medium">{BIKEABILITY_LEVEL_LABEL[c.bikeability_level]}</span>
+                      {c.bikeability_certificate_date && (
+                        <span className="text-muted-foreground"> &middot; Certificate dated {c.bikeability_certificate_date}</span>
                       )}
                     </p>
                   </div>
@@ -480,9 +368,9 @@ export default function ChildBikeCyclingTrackerPage() {
                       <MapPin className="h-3 w-3 inline mr-1" />
                       Routes Ridden Independently
                     </p>
-                    {c.routesRiddenIndependently.length > 0 ? (
+                    {c.routes_ridden_independently.length > 0 ? (
                       <ul className="space-y-1">
-                        {c.routesRiddenIndependently.map((rt, i) => (
+                        {c.routes_ridden_independently.map((rt, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <MapPin className="h-3 w-3 text-sky-500 mt-1 shrink-0" />
                             <span>{rt}</span>
@@ -494,8 +382,8 @@ export default function ChildBikeCyclingTrackerPage() {
                     )}
                     <p className="text-xs text-muted-foreground mt-2">
                       Route risk assessment:{" "}
-                      <span className={cn("font-medium", c.routeRiskAssessmentDone ? "text-emerald-700" : "text-amber-700")}>
-                        {c.routeRiskAssessmentDone ? "Completed" : "Pending"}
+                      <span className={cn("font-medium", c.route_risk_assessment_done ? "text-emerald-700" : "text-amber-700")}>
+                        {c.route_risk_assessment_done ? "Completed" : "Pending"}
                       </span>
                     </p>
                   </div>
@@ -504,19 +392,19 @@ export default function ChildBikeCyclingTrackerPage() {
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                       Maintenance Competence
                     </p>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", maintenanceColour[c.maintenanceCompetence])}>
-                      {c.maintenanceCompetence}
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", maintenanceColour[c.maintenance_competence])}>
+                      {BIKE_MAINTENANCE_COMPETENCE_LABEL[c.maintenance_competence]}
                     </span>
                   </div>
 
-                  {c.theftRiskScreening.length > 0 && (
+                  {c.theft_risk_screening.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                         <ShieldCheck className="h-3 w-3 inline mr-1" />
                         Theft Risk Screening
                       </p>
                       <ul className="space-y-1">
-                        {c.theftRiskScreening.map((t, i) => (
+                        {c.theft_risk_screening.map((t, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <ShieldCheck className="h-3 w-3 text-teal-600 mt-1 shrink-0" />
                             <span>{t}</span>
@@ -528,13 +416,15 @@ export default function ChildBikeCyclingTrackerPage() {
 
                   <div className="bg-sky-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-sky-800 uppercase tracking-wide mb-1">Child&apos;s Voice</p>
-                    <p className="text-sm italic">&ldquo;{c.childVoice}&rdquo;</p>
+                    <p className="text-sm italic">&ldquo;{c.child_voice}&rdquo;</p>
                   </div>
 
                   <div className="bg-emerald-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Staff Observation</p>
-                    <p className="text-sm">{c.staffObservation}</p>
+                    <p className="text-sm">{c.staff_observation}</p>
                   </div>
+
+                  <SmartLinkPanel sourceType="cycling-bike-record" sourceId={c.id} childId={c.child_id} compact />
                 </div>
               )}
             </div>

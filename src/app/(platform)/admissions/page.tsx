@@ -13,160 +13,44 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
-import { useCreateReferral, useUpdateReferral } from "@/hooks/use-admissions";
+import { useAdmissions, useCreateReferral, useUpdateReferral } from "@/hooks/use-admissions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getStaffName } from "@/lib/seed-data";
+import type { AdmissionReferral, AdmissionReferralStatus, AdmissionReferralSource } from "@/types/extended";
+import { ADMISSION_REFERRAL_STATUS_LABEL, ADMISSION_REFERRAL_SOURCE_LABEL } from "@/types/extended";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
-  UserPlus, Calendar, Clock, AlertTriangle, CheckCircle2,
-  XCircle, FileText, Shield, MapPin, Loader2,
+  UserPlus, Clock, AlertTriangle, CheckCircle2,
+  XCircle, Shield, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-type ReferralStatus = "new" | "under_assessment" | "impact_assessment" | "panel_decision" | "accepted" | "declined" | "withdrawn" | "placed";
-type ReferralSource = "local_authority" | "agency" | "emergency" | "internal_transfer" | "court_directed";
-type Gender = "male" | "female" | "non_binary" | "prefer_not_to_say";
+// ── Config ────────────────────────────────────────────────────────────────────
 
-interface Referral {
-  id: string;
-  childName: string;
-  dateOfBirth: string;
-  age: number;
-  gender: Gender;
-  ethnicity: string;
-  referralDate: string;
-  source: ReferralSource;
-  referredBy: string;
-  localAuthority: string;
-  status: ReferralStatus;
-  presentingNeeds: string[];
-  riskFactors: string[];
-  placementHistory: string;
-  impactAssessmentComplete: boolean;
-  impactAssessmentNotes: string;
-  matchingConsiderations: string;
-  decisionDate: string;
-  decisionBy: string;
-  decisionReason: string;
-  estimatedPlacementDate: string;
-  notes: string;
-  createdAt: string;
-}
-
-const STATUS_META: Record<ReferralStatus, { label: string; color: string }> = {
-  new:                 { label: "New Referral",       color: "bg-blue-100 text-blue-800" },
-  under_assessment:    { label: "Under Assessment",   color: "bg-purple-100 text-purple-800" },
-  impact_assessment:   { label: "Impact Assessment",  color: "bg-indigo-100 text-indigo-800" },
-  panel_decision:      { label: "Panel Decision",     color: "bg-amber-100 text-amber-800" },
-  accepted:            { label: "Accepted",           color: "bg-green-100 text-green-800" },
-  declined:            { label: "Declined",           color: "bg-red-100 text-red-800" },
-  withdrawn:           { label: "Withdrawn",          color: "bg-gray-100 text-gray-800" },
-  placed:              { label: "Placed",             color: "bg-emerald-100 text-emerald-800" },
+const STATUS_COLOR: Record<AdmissionReferralStatus, string> = {
+  new:                 "bg-blue-100 text-blue-800",
+  under_assessment:    "bg-purple-100 text-purple-800",
+  impact_assessment:   "bg-indigo-100 text-indigo-800",
+  panel_decision:      "bg-amber-100 text-amber-800",
+  accepted:            "bg-green-100 text-green-800",
+  declined:            "bg-red-100 text-red-800",
+  withdrawn:           "bg-gray-100 text-gray-800",
+  placed:              "bg-emerald-100 text-emerald-800",
 };
 
-const SOURCE_META: Record<ReferralSource, string> = {
-  local_authority:   "Local Authority",
-  agency:            "Agency",
-  emergency:         "Emergency",
-  internal_transfer: "Internal Transfer",
-  court_directed:    "Court Directed",
+const BORDER_COLOR: Record<string, string> = {
+  accepted: "border-l-green-500", placed: "border-l-green-500",
+  declined: "border-l-red-500", withdrawn: "border-l-gray-400",
 };
-
-// ── Seed data ────────────────────────────────────────────────────────────────
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const SEED: Referral[] = [
-  {
-    id: "ref_001", childName: "Child A", dateOfBirth: "2011-08-15", age: 14, gender: "male",
-    ethnicity: "White British", referralDate: d(-3), source: "local_authority",
-    referredBy: "Jennifer Brooks — Placement Team", localAuthority: "Nottinghamshire County Council",
-    status: "under_assessment",
-    presentingNeeds: ["Emotional and behavioural difficulties", "School exclusion", "Previous placement breakdown", "Attachment difficulties"],
-    riskFactors: ["Self-harm history", "Absconding from previous placement", "Peer-on-peer aggression"],
-    placementHistory: "Two foster placements (both broke down), one residential placement (six months).",
-    impactAssessmentComplete: false, impactAssessmentNotes: "",
-    matchingConsiderations: "Need to consider impact on current cohort. Age-appropriate. Gender mix would be maintained.",
-    decisionDate: "", decisionBy: "", decisionReason: "",
-    estimatedPlacementDate: "", notes: "Urgent placement needed. Current placement giving 28 days notice.", createdAt: d(-3),
-  },
-  {
-    id: "ref_002", childName: "Child B", dateOfBirth: "2010-03-22", age: 16, gender: "female",
-    ethnicity: "Mixed — White and Black Caribbean", referralDate: d(-14), source: "local_authority",
-    referredBy: "Marcus Johnson — CLA Team", localAuthority: "Derby City Council",
-    status: "impact_assessment",
-    presentingNeeds: ["Learning difficulties", "Low self-esteem", "Family breakdown", "Mild anxiety"],
-    riskFactors: ["Vulnerability to exploitation", "Previous missing episodes"],
-    placementHistory: "Long-term foster placement ended due to carer retirement. No previous residential.",
-    impactAssessmentComplete: true, impactAssessmentNotes: "Impact assessment shows low risk to current group. Child B's needs align well with our model. Age and maturity would be positive addition. Safeguarding considerations re exploitation risk — addressed in risk management plan.",
-    matchingConsiderations: "Good match for current cohort. Similar age to Casey. Would benefit from structured environment and therapeutic approach.",
-    decisionDate: "", decisionBy: "", decisionReason: "",
-    estimatedPlacementDate: d(14), notes: "Positive referral. Strong matching potential. Panel scheduled for next week.", createdAt: d(-14),
-  },
-  {
-    id: "ref_003", childName: "Child C", dateOfBirth: "2012-11-01", age: 13, gender: "male",
-    ethnicity: "Asian — Pakistani", referralDate: d(-30), source: "emergency",
-    referredBy: "Emergency Duty Team — Derbyshire", localAuthority: "Derbyshire County Council",
-    status: "declined",
-    presentingNeeds: ["Sexual harmful behaviour", "Fire-setting", "Severe trauma history"],
-    riskFactors: ["Sexual harmful behaviour towards peers", "History of fire-setting", "Severe emotional dysregulation"],
-    placementHistory: "Three placement breakdowns in 12 months. Currently in unregulated provision.",
-    impactAssessmentComplete: true, impactAssessmentNotes: "Impact assessment concluded that placement would pose unacceptable risk to current young people, particularly given sexual harmful behaviour. Our home is not registered for this complexity level.",
-    matchingConsiderations: "Not suitable for current cohort. Risk to existing children too high. Registration does not cover this level of need.",
-    decisionDate: d(-25), decisionBy: getStaffName("staff_darren"), decisionReason: "Declined — presenting needs exceed our Statement of Purpose and registration. Risk to existing children unacceptable.",
-    estimatedPlacementDate: "", notes: "Referral declined with full rationale shared with LA. Suggested specialist provision.", createdAt: d(-30),
-  },
-  {
-    id: "ref_004", childName: "Child D", dateOfBirth: "2010-07-10", age: 15, gender: "non_binary",
-    ethnicity: "White British", referralDate: d(-45), source: "agency",
-    referredBy: "Compass Fostering — Rebecca Lane", localAuthority: "Leicester City Council",
-    status: "withdrawn",
-    presentingNeeds: ["Gender identity support needed", "Bullying at school", "Mild ADHD", "Attachment needs"],
-    riskFactors: ["Self-harm (historical, resolved)", "Low-level substance experimentation"],
-    placementHistory: "Two foster placements. Current foster carer unable to provide gender-affirming support.",
-    impactAssessmentComplete: false, impactAssessmentNotes: "",
-    matchingConsiderations: "Good potential match. Would benefit from our therapeutic model.",
-    decisionDate: d(-35), decisionBy: "", decisionReason: "Withdrawn by LA — child placed with specialist foster carer.",
-    estimatedPlacementDate: "", notes: "LA found alternative placement before we completed assessment.", createdAt: d(-45),
-  },
-  {
-    id: "ref_005", childName: "Casey", dateOfBirth: "2011-06-18", age: 14, gender: "female",
-    ethnicity: "Mixed — White and Asian", referralDate: d(-60), source: "local_authority",
-    referredBy: "Emma Watson — Derby CLA Team", localAuthority: "Derby City Council",
-    status: "placed",
-    presentingNeeds: ["Identity needs", "Previous placement concerns", "Low confidence", "Creative strengths"],
-    riskFactors: ["Vulnerability to emotional harm", "Difficulty trusting adults"],
-    placementHistory: "One foster placement — ended due to placement concerns raised by child.",
-    impactAssessmentComplete: true, impactAssessmentNotes: "Excellent match for current cohort. Casey's needs align with our strengths — identity work, creative expression, therapeutic model. Low risk to group.",
-    matchingConsiderations: "Strong match. Similar age to peers. Would benefit from structured care and creative opportunities.",
-    decisionDate: d(-50), decisionBy: getStaffName("staff_darren"), decisionReason: "Accepted — strong match. Casey's needs align well with our Statement of Purpose.",
-    estimatedPlacementDate: d(-31), notes: "Casey placed successfully. Settling in well.", createdAt: d(-60),
-  },
-];
-
-// ── Export ────────────────────────────────────────────────────────────────────
-const EXPORT_COLS: ExportColumn<Referral>[] = [
-  { header: "ID",                accessor: (r: Referral) => r.id },
-  { header: "Child",             accessor: (r: Referral) => r.childName },
-  { header: "Age",               accessor: (r: Referral) => String(r.age) },
-  { header: "Gender",            accessor: (r: Referral) => r.gender },
-  { header: "Referral Date",     accessor: (r: Referral) => r.referralDate },
-  { header: "Source",            accessor: (r: Referral) => SOURCE_META[r.source] },
-  { header: "Referred By",       accessor: (r: Referral) => r.referredBy },
-  { header: "Local Authority",   accessor: (r: Referral) => r.localAuthority },
-  { header: "Status",            accessor: (r: Referral) => STATUS_META[r.status].label },
-  { header: "Presenting Needs",  accessor: (r: Referral) => r.presentingNeeds.join("; ") },
-  { header: "Risk Factors",      accessor: (r: Referral) => r.riskFactors.join("; ") },
-  { header: "Decision",          accessor: (r: Referral) => r.decisionReason || "—" },
-  { header: "Decision By",       accessor: (r: Referral) => r.decisionBy || "—" },
-  { header: "Notes",             accessor: (r: Referral) => r.notes },
-];
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function AdmissionsPage() {
+  const { data: response, isLoading } = useAdmissions();
   const createReferral = useCreateReferral();
   const updateReferral = useUpdateReferral();
-  const [referrals, setReferrals] = useState<Referral[]>(SEED);
+
+  const records = response?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [tab, setTab] = useState("active");
@@ -177,10 +61,15 @@ export default function AdmissionsPage() {
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   const filtered = useMemo(() => {
-    let list = [...referrals];
+    let list = [...records];
     if (search) {
       const s = search.toLowerCase();
-      list = list.filter((r) => r.childName.toLowerCase().includes(s) || r.referredBy.toLowerCase().includes(s) || r.localAuthority.toLowerCase().includes(s) || r.notes.toLowerCase().includes(s));
+      list = list.filter((r) =>
+        r.child_name.toLowerCase().includes(s) ||
+        r.referred_by.toLowerCase().includes(s) ||
+        r.local_authority.toLowerCase().includes(s) ||
+        r.notes.toLowerCase().includes(s)
+      );
     }
     if (statusFilter !== "all") list = list.filter((r) => r.status === statusFilter);
     if (tab === "active") list = list.filter((r) => !["declined", "withdrawn", "placed"].includes(r.status));
@@ -188,22 +77,56 @@ export default function AdmissionsPage() {
 
     list.sort((a, b) => {
       switch (sortBy) {
-        case "date":   return b.referralDate.localeCompare(a.referralDate);
+        case "date":   return b.referral_date.localeCompare(a.referral_date);
         case "status": return a.status.localeCompare(b.status);
         case "age":    return a.age - b.age;
         default:       return 0;
       }
     });
     return list;
-  }, [referrals, search, statusFilter, tab, sortBy]);
+  }, [records, search, statusFilter, tab, sortBy]);
 
   const stats = useMemo(() => {
-    const total = referrals.length;
-    const active = referrals.filter((r) => !["declined", "withdrawn", "placed"].includes(r.status)).length;
-    const accepted = referrals.filter((r) => r.status === "accepted" || r.status === "placed").length;
-    const declined = referrals.filter((r) => r.status === "declined").length;
+    const total = records.length;
+    const active = records.filter((r) => !["declined", "withdrawn", "placed"].includes(r.status)).length;
+    const accepted = records.filter((r) => r.status === "accepted" || r.status === "placed").length;
+    const declined = records.filter((r) => r.status === "declined").length;
     return { total, active, accepted, declined };
-  }, [referrals]);
+  }, [records]);
+
+  const exportCols: ExportColumn<AdmissionReferral>[] = [
+    { header: "ID",                accessor: (r: AdmissionReferral) => r.id },
+    { header: "Child",             accessor: (r: AdmissionReferral) => r.child_name },
+    { header: "Age",               accessor: (r: AdmissionReferral) => String(r.age) },
+    { header: "Gender",            accessor: (r: AdmissionReferral) => r.gender },
+    { header: "Referral Date",     accessor: (r: AdmissionReferral) => r.referral_date },
+    { header: "Source",            accessor: (r: AdmissionReferral) => ADMISSION_REFERRAL_SOURCE_LABEL[r.referral_source] },
+    { header: "Referred By",       accessor: (r: AdmissionReferral) => r.referred_by },
+    { header: "Local Authority",   accessor: (r: AdmissionReferral) => r.local_authority },
+    { header: "Status",            accessor: (r: AdmissionReferral) => ADMISSION_REFERRAL_STATUS_LABEL[r.status] },
+    { header: "Presenting Needs",  accessor: (r: AdmissionReferral) => r.presenting_needs.join("; ") },
+    { header: "Risk Factors",      accessor: (r: AdmissionReferral) => r.risk_factors.join("; ") },
+    { header: "Decision",          accessor: (r: AdmissionReferral) => r.decision_reason || "—" },
+    { header: "Decision By",       accessor: (r: AdmissionReferral) => r.decision_by ? getStaffName(r.decision_by) : "—" },
+    { header: "Notes",             accessor: (r: AdmissionReferral) => r.notes },
+  ];
+
+  const advanceStatus = (id: string, newStatus: AdmissionReferralStatus, label: string) => {
+    updateReferral.mutate(
+      { id, status: newStatus },
+      { onSuccess: () => toast.success(label), onError: () => toast.error("Failed to update") },
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <PageShell title="Admissions & Referrals" subtitle="Pre-admission referrals, impact assessments, and matching decisions">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -212,7 +135,7 @@ export default function AdmissionsPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Admissions & Referrals" />
-          <ExportButton data={filtered} columns={EXPORT_COLS} filename="admissions-referrals" />
+          <ExportButton data={filtered} columns={exportCols} filename="admissions-referrals" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Referral</Button>
         </div>
       }
@@ -257,7 +180,9 @@ export default function AdmissionsPage() {
             <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              {Object.entries(STATUS_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+              {(Object.entries(ADMISSION_REFERRAL_STATUS_LABEL) as [AdmissionReferralStatus, string][]).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <div className="flex items-center gap-1">
@@ -278,22 +203,21 @@ export default function AdmissionsPage() {
           {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No referrals match your filters.</p>}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
-            const statusM = STATUS_META[r.status];
             return (
-              <Card key={r.id} className={cn("border-l-4", r.status === "accepted" || r.status === "placed" ? "border-l-green-500" : r.status === "declined" ? "border-l-red-500" : r.status === "withdrawn" ? "border-l-gray-400" : "border-l-blue-400")}>
+              <Card key={r.id} className={cn("border-l-4", BORDER_COLOR[r.status] ?? "border-l-blue-400")}>
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between cursor-pointer" role="button" tabIndex={0} aria-expanded={open} aria-label={`Expand referral details for ${r.childName}`} onClick={() => toggle(r.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(r.id); } }}>
+                  <div className="flex items-start justify-between cursor-pointer" role="button" tabIndex={0} aria-expanded={open} aria-label={`Expand referral details for ${r.child_name}`} onClick={() => toggle(r.id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(r.id); } }}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <Badge className={cn("text-xs", statusM.color)}>{statusM.label}</Badge>
-                        <Badge variant="outline" className="text-xs">{SOURCE_META[r.source]}</Badge>
-                        {r.riskFactors.length > 2 && <Badge variant="outline" className="text-xs text-red-600 border-red-300">High complexity</Badge>}
+                        <Badge className={cn("text-xs", STATUS_COLOR[r.status])}>{ADMISSION_REFERRAL_STATUS_LABEL[r.status]}</Badge>
+                        <Badge variant="outline" className="text-xs">{ADMISSION_REFERRAL_SOURCE_LABEL[r.referral_source]}</Badge>
+                        {r.risk_factors.length > 2 && <Badge variant="outline" className="text-xs text-red-600 border-red-300">High complexity</Badge>}
                       </div>
-                      <p className="font-semibold">{r.childName} — Age {r.age}</p>
+                      <p className="font-semibold">{r.child_name} — Age {r.age}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                        <span>Referred: {r.referralDate}</span>
-                        <span>{r.localAuthority}</span>
-                        <span>By: {r.referredBy}</span>
+                        <span>Referred: {r.referral_date}</span>
+                        <span>{r.local_authority}</span>
+                        <span>By: {r.referred_by}</span>
                       </div>
                     </div>
                     {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
@@ -302,42 +226,42 @@ export default function AdmissionsPage() {
                   {open && (
                     <div className="mt-4 space-y-3 border-t pt-3 text-sm">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div><p className="text-xs text-muted-foreground">DOB</p><p className="font-medium">{r.dateOfBirth}</p></div>
+                        <div><p className="text-xs text-muted-foreground">DOB</p><p className="font-medium">{r.date_of_birth}</p></div>
                         <div><p className="text-xs text-muted-foreground">Gender</p><p className="font-medium capitalize">{r.gender.replace("_", " ")}</p></div>
                         <div><p className="text-xs text-muted-foreground">Ethnicity</p><p className="font-medium">{r.ethnicity}</p></div>
-                        <div><p className="text-xs text-muted-foreground">LA</p><p className="font-medium">{r.localAuthority}</p></div>
+                        <div><p className="text-xs text-muted-foreground">LA</p><p className="font-medium">{r.local_authority}</p></div>
                       </div>
 
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Presenting Needs</p>
-                        <div className="flex flex-wrap gap-1">{r.presentingNeeds.map((n, i) => <Badge key={i} variant="secondary" className="text-xs">{n}</Badge>)}</div>
+                        <div className="flex flex-wrap gap-1">{r.presenting_needs.map((n, i) => <Badge key={i} variant="secondary" className="text-xs">{n}</Badge>)}</div>
                       </div>
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Risk Factors</p>
-                        <div className="flex flex-wrap gap-1">{r.riskFactors.map((rf, i) => <Badge key={i} variant="outline" className="text-xs text-red-600 border-red-200">{rf}</Badge>)}</div>
+                        <div className="flex flex-wrap gap-1">{r.risk_factors.map((rf, i) => <Badge key={i} variant="outline" className="text-xs text-red-600 border-red-200">{rf}</Badge>)}</div>
                       </div>
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Placement History</p>
-                        <p className="text-xs">{r.placementHistory}</p>
+                        <p className="text-xs">{r.placement_history}</p>
                       </div>
 
-                      {r.impactAssessmentComplete && (
+                      {r.impact_assessment_complete && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">Impact Assessment</p>
-                          <p className="bg-blue-50 p-2 rounded text-xs text-blue-900">{r.impactAssessmentNotes}</p>
+                          <p className="bg-blue-50 p-2 rounded text-xs text-blue-900">{r.impact_assessment_notes}</p>
                         </div>
                       )}
-                      {r.matchingConsiderations && (
+                      {r.matching_considerations && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">Matching Considerations</p>
-                          <p className="text-xs">{r.matchingConsiderations}</p>
+                          <p className="text-xs">{r.matching_considerations}</p>
                         </div>
                       )}
-                      {r.decisionReason && (
+                      {r.decision_reason && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">Decision</p>
-                          <p className="text-xs font-medium">{r.decisionReason}</p>
-                          {r.decisionBy && <p className="text-xs text-muted-foreground mt-1">By: {r.decisionBy} on {r.decisionDate}</p>}
+                          <p className="text-xs font-medium">{r.decision_reason}</p>
+                          {r.decision_by && <p className="text-xs text-muted-foreground mt-1">By: {getStaffName(r.decision_by)} on {r.decision_date}</p>}
                         </div>
                       )}
                       {r.notes && (
@@ -349,13 +273,13 @@ export default function AdmissionsPage() {
 
                       {!["declined", "withdrawn", "placed"].includes(r.status) && (
                         <div className="flex gap-2">
-                          {r.status === "new" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "under_assessment" } : x)); updateReferral.mutate({ id: r.id, status: "under_assessment" }, { onSuccess: () => toast.success("Assessment started") }); }}>Begin Assessment</Button>}
-                          {r.status === "under_assessment" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "impact_assessment" } : x)); updateReferral.mutate({ id: r.id, status: "impact_assessment" }, { onSuccess: () => toast.success("Impact assessment started") }); }}>Impact Assessment</Button>}
-                          {r.status === "impact_assessment" && <Button size="sm" variant="outline" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "panel_decision" } : x)); updateReferral.mutate({ id: r.id, status: "panel_decision" }, { onSuccess: () => toast.success("Sent to panel") }); }}>Send to Panel</Button>}
+                          {r.status === "new" && <Button size="sm" variant="outline" onClick={() => advanceStatus(r.id, "under_assessment", "Assessment started")}>Begin Assessment</Button>}
+                          {r.status === "under_assessment" && <Button size="sm" variant="outline" onClick={() => advanceStatus(r.id, "impact_assessment", "Impact assessment started")}>Impact Assessment</Button>}
+                          {r.status === "impact_assessment" && <Button size="sm" variant="outline" onClick={() => advanceStatus(r.id, "panel_decision", "Sent to panel")}>Send to Panel</Button>}
                           {r.status === "panel_decision" && (
                             <>
-                              <Button size="sm" variant="default" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "accepted", decisionDate: d(0) } : x)); updateReferral.mutate({ id: r.id, status: "accepted" }, { onSuccess: () => toast.success("Referral accepted") }); }}>Accept</Button>
-                              <Button size="sm" variant="outline" className="text-red-600" onClick={() => { setReferrals((prev) => prev.map((x) => x.id === r.id ? { ...x, status: "declined", decisionDate: d(0) } : x)); updateReferral.mutate({ id: r.id, status: "declined" }, { onSuccess: () => toast.success("Referral declined") }); }}>Decline</Button>
+                              <Button size="sm" variant="default" onClick={() => advanceStatus(r.id, "accepted", "Referral accepted")}>Accept</Button>
+                              <Button size="sm" variant="outline" className="text-red-600" onClick={() => advanceStatus(r.id, "declined", "Referral declined")}>Decline</Button>
                             </>
                           )}
                         </div>
@@ -384,7 +308,14 @@ export default function AdmissionsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Referral</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); createReferral.mutate({ child_name: "New Referral", status: "new", referral_date: new Date().toISOString().slice(0, 10), staff_id: "staff_darren" }, { onSuccess: () => toast.success("Referral logged"), onError: () => toast.error("Failed to log referral") }); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            createReferral.mutate(
+              { child_name: "New Referral", status: "new", referral_date: new Date().toISOString().slice(0, 10), staff_id: "staff_darren" },
+              { onSuccess: () => toast.success("Referral logged"), onError: () => toast.error("Failed to log referral") },
+            );
+            setShowNew(false);
+          }} className="space-y-3">
             <div>
               <label htmlFor="ref-name" className="text-sm font-medium">Child&apos;s Name / Reference</label>
               <Input id="ref-name" placeholder="Child name or anonymised reference" />
@@ -417,7 +348,11 @@ export default function AdmissionsPage() {
             <div>
               <label htmlFor="ref-source" className="text-sm font-medium">Source</label>
               <Select><SelectTrigger id="ref-source"><SelectValue placeholder="Referral source" /></SelectTrigger>
-                <SelectContent>{Object.entries(SOURCE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  {(Object.entries(ADMISSION_REFERRAL_SOURCE_LABEL) as [AdmissionReferralSource, string][]).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div>

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import {
@@ -24,238 +25,31 @@ import {
   CheckCircle2, AlertTriangle, Clock, Stethoscope, Shield,
   CalendarDays, Sparkles, FileText, User, Heart, ClipboardList,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type RegistrationStatus =
-  | "Active NHS"
-  | "Active private"
-  | "Awaiting registration"
-  | "Inactive";
-
-type RecallInterval = "3 monthly" | "6 monthly" | "12 monthly";
-
-interface OralHygienePractice {
-  practice: string;
-  completed: boolean;
-}
-
-interface CheckUpEntry {
-  date: string;
-  dentist: string;
-  findings: string;
-  treatmentRecommended: string;
-  treatmentReceived: string;
-}
-
-interface DentalRecord {
-  id: string;
-  youngPerson: string;
-  dentalPractice: string;
-  dentistName: string;
-  registeredDate: string;
-  registrationStatus: RegistrationStatus;
-  dailyOralHygiene: OralHygienePractice[];
-  lastCheckUpDate: string;
-  nextCheckUpDue: string;
-  recallInterval: RecallInterval;
-  checkUpsHistory: CheckUpEntry[];
-  currentTreatmentNotes: string;
-  anxietyAroundDentistry: string;
-  reasonableAdjustments: string[];
-  childAttitudeToDentistry: string;
-  orthodontics: string;
-  fluorideSupplements: boolean;
-  childAware: boolean;
-  reviewDate: string;
-  recordedBy: string;
-}
+import type {
+  DentalRecord, DentalRegistrationStatus, DentalRecallInterval,
+  DentalOralHygienePractice, DentalCheckUpEntry,
+} from "@/types/extended";
+import {
+  DENTAL_REGISTRATION_STATUS_LABEL,
+  DENTAL_RECALL_INTERVAL_LABEL,
+} from "@/types/extended";
+import { useDentalRecords } from "@/hooks/use-dental-records";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<RegistrationStatus, { colour: string }> = {
-  "Active NHS":            { colour: "bg-green-100 text-green-700 border-green-200" },
-  "Active private":        { colour: "bg-blue-100 text-blue-700 border-blue-200" },
-  "Awaiting registration": { colour: "bg-amber-100 text-amber-700 border-amber-200" },
-  "Inactive":              { colour: "bg-gray-100 text-gray-600 border-gray-200" },
+const STATUS_CONFIG: Record<DentalRegistrationStatus, { colour: string }> = {
+  active_nhs:             { colour: "bg-green-100 text-green-700 border-green-200" },
+  active_private:         { colour: "bg-blue-100 text-blue-700 border-blue-200" },
+  awaiting_registration:  { colour: "bg-amber-100 text-amber-700 border-amber-200" },
+  inactive:               { colour: "bg-gray-100 text-gray-600 border-gray-200" },
 };
-
-// ── Date helper ───────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const SEED: DentalRecord[] = [
-  {
-    id: "dental_001",
-    youngPerson: "yp_alex",
-    dentalPractice: "Allestree Dental Practice",
-    dentistName: "Dr. Priya Sharma",
-    registeredDate: d(-420),
-    registrationStatus: "Active NHS",
-    dailyOralHygiene: [
-      { practice: "Brush twice daily (morning and bedtime) with fluoride toothpaste", completed: true },
-      { practice: "Replace toothbrush every 3 months", completed: true },
-      { practice: "Floss / interdental brushes daily", completed: false },
-      { practice: "Limit sugary drinks/snacks between meals", completed: true },
-      { practice: "Mouthwash after lunch (school)", completed: true },
-    ],
-    lastCheckUpDate: d(-95),
-    nextCheckUpDue: d(85),
-    recallInterval: "6 monthly",
-    checkUpsHistory: [
-      {
-        date: d(-95),
-        dentist: "Dr. Priya Sharma",
-        findings: "All teeth healthy. Good oral hygiene. No decay or gum issues. Mild plaque on lower incisors.",
-        treatmentRecommended: "Routine scale and polish. Continue current oral hygiene routine.",
-        treatmentReceived: "Scale and polish completed at appointment. Fluoride varnish applied.",
-      },
-      {
-        date: d(-280),
-        dentist: "Dr. Priya Sharma",
-        findings: "Healthy dentition. One mild calculus deposit on lower front teeth.",
-        treatmentRecommended: "Hygienist clean. Reinforce flossing.",
-        treatmentReceived: "Cleaning done. Flossing demo provided to Alex and key worker.",
-      },
-    ],
-    currentTreatmentNotes: "No active treatment. Next routine 6-monthly recall scheduled.",
-    anxietyAroundDentistry: "Minimal — Alex tolerates appointments well. Likes to know what to expect beforehand.",
-    reasonableAdjustments: [
-      "Brief pre-visit explanation of what will happen",
-      "First or last appointment of the day to reduce waiting",
-    ],
-    childAttitudeToDentistry: "Confident and cooperative. Has positive view of dental visits since establishing routine at Oak House.",
-    orthodontics: "Not required — natural alignment good. No referral needed.",
-    fluorideSupplements: false,
-    childAware: true,
-    reviewDate: d(85),
-    recordedBy: "staff_anna",
-  },
-  {
-    id: "dental_002",
-    youngPerson: "yp_jordan",
-    dentalPractice: "Smile Dental Practice, Normanton Road",
-    dentistName: "Mr. K. Ahmed",
-    registeredDate: d(-150),
-    registrationStatus: "Active NHS",
-    dailyOralHygiene: [
-      { practice: "Brush twice daily with fluoride toothpaste (1450ppm)", completed: true },
-      { practice: "Use disclosing tablets weekly to check brushing technique", completed: true },
-      { practice: "Floss daily after evening brush", completed: true },
-      { practice: "Avoid sugary snacks between meals", completed: true },
-      { practice: "Drink water after meals at school", completed: true },
-    ],
-    lastCheckUpDate: d(-30),
-    nextCheckUpDue: d(150),
-    recallInterval: "6 monthly",
-    checkUpsHistory: [
-      {
-        date: d(-30),
-        dentist: "Mr. K. Ahmed",
-        findings: "Cavity treated successfully. Healing well. No new decay. Plaque levels much improved.",
-        treatmentRecommended: "Continue current oral hygiene. Standard 6-monthly recall.",
-        treatmentReceived: "Review and polish. No further treatment needed.",
-      },
-      {
-        date: d(-75),
-        dentist: "Mr. K. Ahmed",
-        findings: "Filling placed in lower-right first molar.",
-        treatmentRecommended: "Composite filling under local anaesthetic.",
-        treatmentReceived: "Filling completed. Jordan tolerated well with key worker present.",
-      },
-      {
-        date: d(-120),
-        dentist: "Mr. K. Ahmed",
-        findings: "Cavity in lower-right first molar (LR6). No prior dental record on transfer — first registration since placement. Moderate plaque.",
-        treatmentRecommended: "Filling required. Hygiene reinforcement. Diet review with key worker.",
-        treatmentReceived: "Treatment plan agreed. Hygiene pack provided.",
-      },
-    ],
-    currentTreatmentNotes: "Recently caught up after gap in dental care prior to placement. Cavity treated. Now stable on standard 6-monthly recall.",
-    anxietyAroundDentistry: "Some anxiety initially due to long gap in care. Now significantly reduced — knows the practice and dentist.",
-    reasonableAdjustments: [
-      "Key worker (Anna) accompanies to all appointments",
-      "Verbal countdown before any procedure",
-      "Headphones permitted during treatment",
-    ],
-    childAttitudeToDentistry: "Initially reluctant. Now engaged — proud of cavity-free check-up and improved hygiene routine.",
-    orthodontics: "Mild crowding noted — referral to be considered at next 12-month review if Jordan wishes.",
-    fluorideSupplements: false,
-    childAware: true,
-    reviewDate: d(150),
-    recordedBy: "staff_anna",
-  },
-  {
-    id: "dental_003",
-    youngPerson: "yp_casey",
-    dentalPractice: "Derby Paediatric Dental Specialists",
-    dentistName: "Dr. Helen Marsh (Specialist Paediatric Dentist)",
-    registeredDate: d(-210),
-    registrationStatus: "Active NHS",
-    dailyOralHygiene: [
-      { practice: "Brush twice daily — soft-bristled brush, mild flavoured toothpaste", completed: true },
-      { practice: "Use of weighted toothbrush handle for grip and sensory feedback", completed: true },
-      { practice: "Visual timer (2 mins) used to support routine", completed: true },
-      { practice: "Floss with key worker support 3x weekly", completed: false },
-      { practice: "Quiet environment at brushing times", completed: true },
-    ],
-    lastCheckUpDate: d(-60),
-    nextCheckUpDue: d(30),
-    recallInterval: "3 monthly",
-    checkUpsHistory: [
-      {
-        date: d(-60),
-        dentist: "Dr. Helen Marsh",
-        findings: "All teeth healthy. No decay. Casey allowed full examination for first time without distress.",
-        treatmentRecommended: "Continue 3-monthly recall. Reduce to 6-monthly if next two visits remain settled.",
-        treatmentReceived: "Examination, gentle polish, fluoride varnish.",
-      },
-      {
-        date: d(-150),
-        dentist: "Dr. Helen Marsh",
-        findings: "Examination achieved with sensory accommodations. No decay visible.",
-        treatmentRecommended: "Continue desensitisation. Maintain 3-monthly visits.",
-        treatmentReceived: "Mirror examination only — no instruments. Fluoride varnish applied at end.",
-      },
-      {
-        date: d(-200),
-        dentist: "Dr. Helen Marsh",
-        findings: "Initial assessment. Casey unable to sit in chair for full examination. Familiarisation visit only.",
-        treatmentRecommended: "Series of monthly desensitisation visits before full examination attempted.",
-        treatmentReceived: "Practice tour, met dentist, sat in chair briefly, took home sticker and toothbrush.",
-      },
-    ],
-    currentTreatmentNotes: "Sensory-aware paediatric pathway. Historically attended monthly desensitisation visits — now stable on 3-monthly. Considering reducing to 6-monthly if next two visits go well.",
-    anxietyAroundDentistry: "Significant — sensory sensitivities (sound of drill, bright light, latex gloves, mint flavour). Has improved markedly with consistent specialist care.",
-    reasonableAdjustments: [
-      "Specialist paediatric dentist with sensory-aware practice",
-      "Non-latex gloves used at all appointments",
-      "Bright examination light dimmed during oral check",
-      "Noise-cancelling headphones provided",
-      "No mint toothpaste — strawberry flavour used",
-      "Same dentist and dental nurse at every visit (continuity)",
-      "Visual schedule shown before each step",
-      "Key worker present throughout",
-    ],
-    childAttitudeToDentistry: "Anxious but engaging. Proud of progress — keeps reward charts and chooses sticker after each visit.",
-    orthodontics: "Not yet assessed — to be considered at age 12 once dental anxiety further reduced.",
-    fluorideSupplements: true,
-    childAware: true,
-    reviewDate: d(30),
-    recordedBy: "staff_darren",
-  },
-];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function DentalRecordsPage() {
-  const [records] = useState<DentalRecord[]>(SEED);
+  const { data: raw, isLoading } = useDentalRecords();
+  const records = raw?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState("nextDue");
@@ -267,23 +61,23 @@ export default function DentalRecordsPage() {
   const filtered = useMemo(() => {
     let list = [...records];
     if (statusFilter !== "all") {
-      list = list.filter(r => r.registrationStatus === statusFilter);
+      list = list.filter(r => r.registration_status === statusFilter);
     }
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(r =>
-        getYPName(r.youngPerson).toLowerCase().includes(q) ||
-        r.dentalPractice.toLowerCase().includes(q) ||
-        r.dentistName.toLowerCase().includes(q) ||
-        r.currentTreatmentNotes.toLowerCase().includes(q)
+        getYPName(r.child_id).toLowerCase().includes(q) ||
+        r.dental_practice.toLowerCase().includes(q) ||
+        r.dentist_name.toLowerCase().includes(q) ||
+        r.current_treatment_notes.toLowerCase().includes(q)
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "nextDue":   return a.nextCheckUpDue.localeCompare(b.nextCheckUpDue);
-        case "lastVisit": return b.lastCheckUpDate.localeCompare(a.lastCheckUpDate);
-        case "child":     return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
-        case "status":    return a.registrationStatus.localeCompare(b.registrationStatus);
+        case "nextDue":   return a.next_check_up_due.localeCompare(b.next_check_up_due);
+        case "lastVisit": return b.last_check_up_date.localeCompare(a.last_check_up_date);
+        case "child":     return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+        case "status":    return a.registration_status.localeCompare(b.registration_status);
         default: return 0;
       }
     });
@@ -293,38 +87,41 @@ export default function DentalRecordsPage() {
   /* ── Stats ──────────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
     const registered = records.filter(r =>
-      r.registrationStatus === "Active NHS" || r.registrationStatus === "Active private"
+      r.registration_status === "active_nhs" || r.registration_status === "active_private"
     ).length;
-    const upToDate = records.filter(r => r.nextCheckUpDue >= today).length;
+    const upToDate = records.filter(r => r.next_check_up_due >= today).length;
     const treatmentInProgress = records.filter(r =>
-      /treat|filling|in progress|caries|cavity/i.test(r.currentTreatmentNotes) &&
-      !/no further|stable|no active/i.test(r.currentTreatmentNotes)
+      /treat|filling|in progress|caries|cavity/i.test(r.current_treatment_notes) &&
+      !/no further|stable|no active/i.test(r.current_treatment_notes)
     ).length;
-    const adjusted = records.filter(r => r.reasonableAdjustments.length >= 3).length;
+    const adjusted = records.filter(r => r.reasonable_adjustments.length >= 3).length;
     return { registered, upToDate, treatmentInProgress, adjusted };
   }, [records, today]);
 
   /* ── Export ─────────────────────────────────────────────────────────────── */
   const exportCols: ExportColumn<DentalRecord>[] = [
     { header: "ID",                    accessor: (r: DentalRecord) => r.id },
-    { header: "Child",                 accessor: (r: DentalRecord) => getYPName(r.youngPerson) },
-    { header: "Practice",              accessor: (r: DentalRecord) => r.dentalPractice },
-    { header: "Dentist",               accessor: (r: DentalRecord) => r.dentistName },
-    { header: "Registered",            accessor: (r: DentalRecord) => r.registeredDate },
-    { header: "Status",                accessor: (r: DentalRecord) => r.registrationStatus },
-    { header: "Last Check-up",         accessor: (r: DentalRecord) => r.lastCheckUpDate },
-    { header: "Next Due",              accessor: (r: DentalRecord) => r.nextCheckUpDue },
-    { header: "Recall",                accessor: (r: DentalRecord) => r.recallInterval },
-    { header: "Current Treatment",     accessor: (r: DentalRecord) => r.currentTreatmentNotes },
-    { header: "Anxiety",               accessor: (r: DentalRecord) => r.anxietyAroundDentistry },
-    { header: "Reasonable Adjustments",accessor: (r: DentalRecord) => r.reasonableAdjustments.join("; ") },
-    { header: "Attitude",              accessor: (r: DentalRecord) => r.childAttitudeToDentistry },
+    { header: "Child",                 accessor: (r: DentalRecord) => getYPName(r.child_id) },
+    { header: "Practice",              accessor: (r: DentalRecord) => r.dental_practice },
+    { header: "Dentist",               accessor: (r: DentalRecord) => r.dentist_name },
+    { header: "Registered",            accessor: (r: DentalRecord) => r.registered_date },
+    { header: "Status",                accessor: (r: DentalRecord) => DENTAL_REGISTRATION_STATUS_LABEL[r.registration_status] },
+    { header: "Last Check-up",         accessor: (r: DentalRecord) => r.last_check_up_date },
+    { header: "Next Due",              accessor: (r: DentalRecord) => r.next_check_up_due },
+    { header: "Recall",                accessor: (r: DentalRecord) => DENTAL_RECALL_INTERVAL_LABEL[r.recall_interval] },
+    { header: "Current Treatment",     accessor: (r: DentalRecord) => r.current_treatment_notes },
+    { header: "Anxiety",               accessor: (r: DentalRecord) => r.anxiety_around_dentistry },
+    { header: "Reasonable Adjustments",accessor: (r: DentalRecord) => r.reasonable_adjustments.join("; ") },
+    { header: "Attitude",              accessor: (r: DentalRecord) => r.child_attitude_to_dentistry },
     { header: "Orthodontics",          accessor: (r: DentalRecord) => r.orthodontics },
-    { header: "Fluoride Supplements",  accessor: (r: DentalRecord) => r.fluorideSupplements ? "Yes" : "No" },
-    { header: "Child Aware",           accessor: (r: DentalRecord) => r.childAware ? "Yes" : "No" },
-    { header: "Review Date",           accessor: (r: DentalRecord) => r.reviewDate },
-    { header: "Recorded By",           accessor: (r: DentalRecord) => getStaffName(r.recordedBy) },
+    { header: "Fluoride Supplements",  accessor: (r: DentalRecord) => r.fluoride_supplements ? "Yes" : "No" },
+    { header: "Child Aware",           accessor: (r: DentalRecord) => r.child_aware ? "Yes" : "No" },
+    { header: "Review Date",           accessor: (r: DentalRecord) => r.review_date },
+    { header: "Recorded By",           accessor: (r: DentalRecord) => getStaffName(r.recorded_by) },
   ];
+
+  /* ── Loading ────────────────────────────────────────────────────────────── */
+  if (isLoading) return <PageShell title="Dental Records" subtitle="Registrations, check-ups, and treatment for each child"><div /></PageShell>;
 
   return (
     <PageShell
@@ -375,8 +172,8 @@ export default function DentalRecordsPage() {
           <SelectTrigger className="w-[180px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {(Object.keys(STATUS_CONFIG) as RegistrationStatus[]).map(s => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
+            {(Object.keys(STATUS_CONFIG) as DentalRegistrationStatus[]).map(s => (
+              <SelectItem key={s} value={s}>{DENTAL_REGISTRATION_STATUS_LABEL[s]}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -410,9 +207,9 @@ export default function DentalRecordsPage() {
 
         {filtered.map(rec => {
           const isOpen = expandedId === rec.id;
-          const sc = STATUS_CONFIG[rec.registrationStatus];
-          const overdue = rec.nextCheckUpDue < today;
-          const dueSoon = !overdue && rec.nextCheckUpDue < d(30);
+          const sc = STATUS_CONFIG[rec.registration_status];
+          const overdue = rec.next_check_up_due < today;
+          const dueSoon = !overdue && rec.next_check_up_due <= new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().slice(0, 10);
 
           return (
             <div
@@ -431,12 +228,12 @@ export default function DentalRecordsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-sm">{getYPName(rec.youngPerson)}</span>
+                    <span className="font-medium text-sm">{getYPName(rec.child_id)}</span>
                     <Badge variant="outline" className={cn("text-xs", sc.colour)}>
-                      {rec.registrationStatus}
+                      {DENTAL_REGISTRATION_STATUS_LABEL[rec.registration_status]}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {rec.recallInterval}
+                      {DENTAL_RECALL_INTERVAL_LABEL[rec.recall_interval]}
                     </Badge>
                     {overdue && (
                       <Badge className="text-xs bg-red-600 text-white">OVERDUE</Badge>
@@ -446,7 +243,7 @@ export default function DentalRecordsPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {rec.dentalPractice} · {rec.dentistName} · Next due {rec.nextCheckUpDue}
+                    {rec.dental_practice} · {rec.dentist_name} · Next due {rec.next_check_up_due}
                   </p>
                 </div>
                 {isOpen ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
@@ -458,15 +255,15 @@ export default function DentalRecordsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Practice</p>
-                      <p>{rec.dentalPractice}</p>
-                      <p className="text-xs text-muted-foreground">Dentist: {rec.dentistName}</p>
-                      <p className="text-xs text-muted-foreground">Registered: {rec.registeredDate}</p>
+                      <p>{rec.dental_practice}</p>
+                      <p className="text-xs text-muted-foreground">Dentist: {rec.dentist_name}</p>
+                      <p className="text-xs text-muted-foreground">Registered: {rec.registered_date}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Recall</p>
-                      <p>{rec.recallInterval}</p>
-                      <p className="text-xs text-muted-foreground">Last check-up: {rec.lastCheckUpDate}</p>
-                      <p className="text-xs text-muted-foreground">Next due: {rec.nextCheckUpDue}</p>
+                      <p>{DENTAL_RECALL_INTERVAL_LABEL[rec.recall_interval]}</p>
+                      <p className="text-xs text-muted-foreground">Last check-up: {rec.last_check_up_date}</p>
+                      <p className="text-xs text-muted-foreground">Next due: {rec.next_check_up_due}</p>
                     </div>
                   </div>
 
@@ -476,7 +273,7 @@ export default function DentalRecordsPage() {
                       <ClipboardList className="h-3.5 w-3.5" /> Daily Oral Hygiene
                     </p>
                     <ul className="space-y-1">
-                      {rec.dailyOralHygiene.map((p, i) => (
+                      {rec.daily_oral_hygiene.map((p, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm">
                           {p.completed
                             ? <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
@@ -493,7 +290,7 @@ export default function DentalRecordsPage() {
                     <p className="text-xs font-semibold text-muted-foreground uppercase mb-1 flex items-center gap-1">
                       <Stethoscope className="h-3.5 w-3.5" /> Current Treatment
                     </p>
-                    <p className="text-sm">{rec.currentTreatmentNotes}</p>
+                    <p className="text-sm">{rec.current_treatment_notes}</p>
                   </div>
 
                   {/* Anxiety & adjustments */}
@@ -502,17 +299,17 @@ export default function DentalRecordsPage() {
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1 flex items-center gap-1">
                         <Heart className="h-3.5 w-3.5" /> Anxiety Around Dentistry
                       </p>
-                      <p className="text-sm">{rec.anxietyAroundDentistry}</p>
+                      <p className="text-sm">{rec.anxiety_around_dentistry}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1 flex items-center gap-1">
                         <Sparkles className="h-3.5 w-3.5" /> Reasonable Adjustments
                       </p>
-                      {rec.reasonableAdjustments.length === 0 ? (
+                      {rec.reasonable_adjustments.length === 0 ? (
                         <p className="text-sm text-muted-foreground">None recorded</p>
                       ) : (
                         <ul className="text-sm list-disc list-inside space-y-0.5">
-                          {rec.reasonableAdjustments.map((a, i) => <li key={i}>{a}</li>)}
+                          {rec.reasonable_adjustments.map((a, i) => <li key={i}>{a}</li>)}
                         </ul>
                       )}
                     </div>
@@ -522,7 +319,7 @@ export default function DentalRecordsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Child's Attitude</p>
-                      <p>{rec.childAttitudeToDentistry}</p>
+                      <p>{rec.child_attitude_to_dentistry}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Orthodontics</p>
@@ -530,8 +327,8 @@ export default function DentalRecordsPage() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Fluoride / Awareness</p>
-                      <p>Fluoride supplements: <strong>{rec.fluorideSupplements ? "Yes" : "No"}</strong></p>
-                      <p>Child aware of plan: <strong>{rec.childAware ? "Yes" : "No"}</strong></p>
+                      <p>Fluoride supplements: <strong>{rec.fluoride_supplements ? "Yes" : "No"}</strong></p>
+                      <p>Child aware of plan: <strong>{rec.child_aware ? "Yes" : "No"}</strong></p>
                     </div>
                   </div>
 
@@ -541,15 +338,15 @@ export default function DentalRecordsPage() {
                       <CalendarDays className="h-3.5 w-3.5" /> Check-up History
                     </p>
                     <div className="space-y-2">
-                      {rec.checkUpsHistory.map((c, i) => (
+                      {rec.check_ups_history.map((c, i) => (
                         <div key={i} className="rounded border bg-background p-3 text-sm">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant="outline" className="text-xs">{c.date}</Badge>
                             <span className="text-xs text-muted-foreground">{c.dentist}</span>
                           </div>
                           <p><span className="font-medium">Findings: </span>{c.findings}</p>
-                          <p><span className="font-medium">Recommended: </span>{c.treatmentRecommended}</p>
-                          <p><span className="font-medium">Received: </span>{c.treatmentReceived}</p>
+                          <p><span className="font-medium">Recommended: </span>{c.treatment_recommended}</p>
+                          <p><span className="font-medium">Received: </span>{c.treatment_received}</p>
                         </div>
                       ))}
                     </div>
@@ -558,15 +355,18 @@ export default function DentalRecordsPage() {
                   {/* Footer meta */}
                   <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap pt-1 border-t">
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" /> Review date: {rec.reviewDate}
+                      <Clock className="h-3.5 w-3.5" /> Review date: {rec.review_date}
                     </span>
                     <span className="flex items-center gap-1">
-                      <User className="h-3.5 w-3.5" /> Recorded by: {getStaffName(rec.recordedBy)}
+                      <User className="h-3.5 w-3.5" /> Recorded by: {getStaffName(rec.recorded_by)}
                     </span>
                     <span className="flex items-center gap-1">
                       <FileText className="h-3.5 w-3.5" /> {rec.id}
                     </span>
                   </div>
+
+                  {/* Smart Links */}
+                  <SmartLinkPanel sourceType="dental-records" sourceId={rec.id} childId={rec.child_id} compact />
                 </div>
               )}
             </div>
@@ -584,7 +384,7 @@ export default function DentalRecordsPage() {
               <strong>Quality Standard 7 (Health & Wellbeing)</strong> requires the registered person to ensure each
               child is registered with a dentist and that their oral health needs are met. <strong>NICE guideline NG194</strong>
               {" "}and the NICE oral health guidance for looked-after children recommend recall intervals tailored to risk
-              (3–12 monthly), daily fluoride toothpaste use, and reasonable adjustments for anxiety or sensory needs.
+              (3-12 monthly), daily fluoride toothpaste use, and reasonable adjustments for anxiety or sensory needs.
               Missed dental appointments must be rebooked promptly and recorded. Children should be supported to
               understand their own oral health and participate in decisions about their care.
             </p>

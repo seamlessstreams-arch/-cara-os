@@ -5,121 +5,83 @@ import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Plus, AlertTriangle, CheckCircle2, Clock, Users, Calendar,
+  AlertTriangle, CheckCircle2, Clock, Users, Calendar, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useSupervisionTrackerRecords } from "@/hooks/use-supervision-tracker-records";
+import type { SupervisionTrackerRecord, SupervisionTrackerComplianceStatus } from "@/types/extended";
+import { SUPERVISION_TRACKER_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────────── */
+/* ── local config ─────────────────────────────────────────────────────────── */
 
-type ComplianceStatus = "compliant" | "due_soon" | "overdue" | "significantly_overdue";
+const STATUS_CLR: Record<SupervisionTrackerComplianceStatus, string> = {
+  compliant: "bg-green-100 text-green-800",
+  due_soon: "bg-amber-100 text-amber-800",
+  overdue: "bg-red-100 text-red-800",
+  significantly_overdue: "bg-red-200 text-red-900",
+};
 
-interface SupervisionRecord {
-  staffId: string;
-  lastSupervisionDate: string;
-  nextDueDate: string;
-  supervisorId: string;
-  frequency: string;
-  sessionsThisYear: number;
-  sessionsExpectedThisYear: number;
-  cancelledByStaff: number;
-  cancelledByManager: number;
-  themes: string[];
-  actionsPending: number;
-  notes: string;
-}
+const BORDER_ST: Record<SupervisionTrackerComplianceStatus, string> = {
+  compliant: "border-l-green-400",
+  due_soon: "border-l-amber-400",
+  overdue: "border-l-red-500",
+  significantly_overdue: "border-l-red-700",
+};
 
-/* ── helpers ───────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const STATUS_LABEL: Record<ComplianceStatus, string> = { compliant: "Compliant", due_soon: "Due Soon (≤7d)", overdue: "Overdue", significantly_overdue: "Significantly Overdue (>30d)" };
-const STATUS_CLR: Record<ComplianceStatus, string> = { compliant: "bg-green-100 text-green-800", due_soon: "bg-amber-100 text-amber-800", overdue: "bg-red-100 text-red-800", significantly_overdue: "bg-red-200 text-red-900" };
-const BORDER_ST: Record<ComplianceStatus, string> = { compliant: "border-l-green-400", due_soon: "border-l-amber-400", overdue: "border-l-red-500", significantly_overdue: "border-l-red-700" };
-
-function getStatus(nextDue: string): ComplianceStatus {
-  const today = d(0);
+function getStatus(nextDue: string): SupervisionTrackerComplianceStatus {
+  const today = new Date();
+  const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
+  const todayStr = d(0);
   const sevenDays = d(7);
   const thirtyDaysAgo = d(-30);
   if (nextDue < thirtyDaysAgo) return "significantly_overdue";
-  if (nextDue < today) return "overdue";
+  if (nextDue < todayStr) return "overdue";
   if (nextDue <= sevenDays) return "due_soon";
   return "compliant";
 }
 
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: SupervisionRecord[] = [
-  {
-    staffId: "staff_ryan", lastSupervisionDate: d(-14), nextDueDate: d(14), supervisorId: "staff_darren",
-    frequency: "Monthly", sessionsThisYear: 4, sessionsExpectedThisYear: 5, cancelledByStaff: 0, cancelledByManager: 1,
-    themes: ["Casey's CSE screening", "Deputy leadership development", "PRICE refresher outcomes", "Staff team dynamics"],
-    actionsPending: 1, notes: "Ryan consistently engages well in supervision. Current focus on leadership development as deputy. One session cancelled by Darren due to emergency (rescheduled within 5 days). Action pending: Ryan to draft night staff audit schedule.",
-  },
-  {
-    staffId: "staff_anna", lastSupervisionDate: d(-21), nextDueDate: d(7), supervisorId: "staff_darren",
-    frequency: "Monthly", sessionsThisYear: 5, sessionsExpectedThisYear: 5, cancelledByStaff: 0, cancelledByManager: 0,
-    themes: ["Casey's direct work progress", "Art therapy approaches", "LADO referral impact", "Professional boundaries"],
-    actionsPending: 0, notes: "Anna is up to date with supervision. No cancellations this year. Anna uses supervision reflectively and brings prepared agenda. Current focus on direct work with Casey and managing the emotional impact of the LADO referral regarding her practice.",
-  },
-  {
-    staffId: "staff_edward", lastSupervisionDate: d(-35), nextDueDate: d(-7), supervisorId: "staff_darren",
-    frequency: "Monthly", sessionsThisYear: 3, sessionsExpectedThisYear: 5, cancelledByStaff: 1, cancelledByManager: 1,
-    themes: ["Medication competency development", "Jordan's key working", "Online safety awareness"],
-    actionsPending: 2, notes: "Edward's supervision is 1 week overdue. Previous session was cancelled by Edward (sick day) and the one before by Darren (LADO strategy meeting). Edward needs additional support with medication competency re-sit. Actions pending: complete e-learning modules, prepare for Level 3 re-assessment.",
-  },
-  {
-    staffId: "staff_chervelle", lastSupervisionDate: d(-10), nextDueDate: d(18), supervisorId: "staff_darren",
-    frequency: "Monthly", sessionsThisYear: 5, sessionsExpectedThisYear: 5, cancelledByStaff: 0, cancelledByManager: 0,
-    themes: ["Positive handling training", "Casey de-escalation approaches", "Career development — senior role interest", "Self-care and wellbeing"],
-    actionsPending: 0, notes: "Chervelle is fully compliant. Excellent engagement. Expressed interest in progressing to Senior RCW — discussed development pathway. Currently supporting Casey's direct work alongside Anna.",
-  },
-  {
-    staffId: "staff_lackson", lastSupervisionDate: d(-28), nextDueDate: d(0), supervisorId: "staff_ryan",
-    frequency: "Monthly", sessionsThisYear: 4, sessionsExpectedThisYear: 5, cancelledByStaff: 0, cancelledByManager: 1,
-    themes: ["Night shift procedures", "Casey's self-harm response", "Lone working confidence", "Medication competency renewal"],
-    actionsPending: 1, notes: "Lackson's supervision is due today. Supervised by Ryan (deputy). One cancelled session this year (Ryan was on leave — rescheduled). Lackson works primarily waking nights — supervision scheduled during crossover shifts. Action: medication Level 3 renewal course on " + d(7) + ".",
-  },
-  {
-    staffId: "staff_mirela", lastSupervisionDate: d(-7), nextDueDate: d(7), supervisorId: "staff_ryan",
-    frequency: "Fortnightly (probationary)", sessionsThisYear: 6, sessionsExpectedThisYear: 6, cancelledByStaff: 0, cancelledByManager: 0,
-    themes: ["Induction progress", "Shadowing completion", "Medication awareness", "Building relationships with YP", "Understanding policies"],
-    actionsPending: 2, notes: "Mirela is in her probationary period — fortnightly supervision. Good progress. Supervisioned by Ryan. Currently shadowing for medication and working towards Level 3. Actions: complete safeguarding e-learning, read behaviour support plans for all YP.",
-  },
-];
-
-/* ── page ──────────────────────────────────────────────────────────────────── */
+/* ── page ─────────────────────────────────────────────────────────────────── */
 
 export default function SupervisionTrackerPage() {
-  const [data] = useState(SEED);
+  const { data: records = [], isLoading } = useSupervisionTrackerRecords();
 
-  const records = useMemo(() => {
-    return data.map((r) => ({ ...r, compliance: getStatus(r.nextDueDate) }));
-  }, [data]);
+  const withCompliance = useMemo(() => {
+    return records.map((r) => ({ ...r, compliance: getStatus(r.next_due_date) }));
+  }, [records]);
 
-  const compliant = records.filter((r) => r.compliance === "compliant").length;
-  const dueSoon = records.filter((r) => r.compliance === "due_soon").length;
-  const overdue = records.filter((r) => r.compliance === "overdue" || r.compliance === "significantly_overdue").length;
-  const totalSessions = data.reduce((sum, r) => sum + r.sessionsThisYear, 0);
-  const totalExpected = data.reduce((sum, r) => sum + r.sessionsExpectedThisYear, 0);
+  const compliant = withCompliance.filter((r) => r.compliance === "compliant").length;
+  const dueSoon = withCompliance.filter((r) => r.compliance === "due_soon").length;
+  const overdue = withCompliance.filter((r) => r.compliance === "overdue" || r.compliance === "significantly_overdue").length;
+  const totalSessions = records.reduce((sum, r) => sum + r.sessions_this_year, 0);
+  const totalExpected = records.reduce((sum, r) => sum + r.sessions_expected_this_year, 0);
   const overallRate = totalExpected > 0 ? Math.round((totalSessions / totalExpected) * 100) : 0;
 
-  const exportCols: ExportColumn<SupervisionRecord>[] = [
-    { header: "Staff", accessor: (r: SupervisionRecord) => getStaffName(r.staffId) },
-    { header: "Supervisor", accessor: (r: SupervisionRecord) => getStaffName(r.supervisorId) },
-    { header: "Frequency", accessor: (r: SupervisionRecord) => r.frequency },
-    { header: "Last Session", accessor: (r: SupervisionRecord) => r.lastSupervisionDate },
-    { header: "Next Due", accessor: (r: SupervisionRecord) => r.nextDueDate },
-    { header: "Sessions (Year)", accessor: (r: SupervisionRecord) => `${r.sessionsThisYear} / ${r.sessionsExpectedThisYear}` },
-    { header: "Actions Pending", accessor: (r: SupervisionRecord) => String(r.actionsPending) },
-    { header: "Themes", accessor: (r: SupervisionRecord) => r.themes.join(", ") },
+  const exportCols: ExportColumn<SupervisionTrackerRecord>[] = [
+    { header: "Staff", accessor: (r: SupervisionTrackerRecord) => getStaffName(r.staff_id) },
+    { header: "Supervisor", accessor: (r: SupervisionTrackerRecord) => getStaffName(r.supervisor_id) },
+    { header: "Frequency", accessor: (r: SupervisionTrackerRecord) => r.frequency },
+    { header: "Last Session", accessor: (r: SupervisionTrackerRecord) => r.last_supervision_date },
+    { header: "Next Due", accessor: (r: SupervisionTrackerRecord) => r.next_due_date },
+    { header: "Sessions (Year)", accessor: (r: SupervisionTrackerRecord) => `${r.sessions_this_year} / ${r.sessions_expected_this_year}` },
+    { header: "Actions Pending", accessor: (r: SupervisionTrackerRecord) => String(r.actions_pending) },
+    { header: "Themes", accessor: (r: SupervisionTrackerRecord) => r.themes.join(", ") },
   ];
 
+  if (isLoading) {
+    return (
+      <PageShell title="Supervision Compliance Tracker" subtitle="Reg 33 · Staff Supervision · Workforce Development">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
-    <PageShell title="Supervision Compliance Tracker" subtitle="Reg 33 · Staff Supervision · Workforce Development" actions={<div className="flex items-center gap-2"><PrintButton title="Supervision Tracker" /><ExportButton data={data} columns={exportCols} filename="supervision-tracker" /></div>}>
+    <PageShell title="Supervision Compliance Tracker" subtitle="Reg 33 · Staff Supervision · Workforce Development" actions={<div className="flex items-center gap-2"><PrintButton title="Supervision Tracker" /><ExportButton data={records} columns={exportCols} filename="supervision-tracker" /></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
@@ -141,22 +103,22 @@ export default function SupervisionTrackerPage() {
         )}
 
         <div className="space-y-3">
-          {records.map((r) => (
-            <Card key={r.staffId} className={cn("border-l-4", BORDER_ST[r.compliance])}>
+          {withCompliance.map((r) => (
+            <Card key={r.id} className={cn("border-l-4", BORDER_ST[r.compliance])}>
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <CardTitle className="text-base flex items-center gap-2">
-                      {getStaffName(r.staffId)}
-                      <Badge variant="outline" className={STATUS_CLR[r.compliance]}>{STATUS_LABEL[r.compliance]}</Badge>
-                      {r.actionsPending > 0 && <Badge variant="outline" className="bg-amber-50">{r.actionsPending} action(s)</Badge>}
+                      {getStaffName(r.staff_id)}
+                      <Badge variant="outline" className={STATUS_CLR[r.compliance]}>{SUPERVISION_TRACKER_COMPLIANCE_STATUS_LABEL[r.compliance]}</Badge>
+                      {r.actions_pending > 0 && <Badge variant="outline" className="bg-amber-50">{r.actions_pending} action(s)</Badge>}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Supervisor: {getStaffName(r.supervisorId)} · {r.frequency} · Last: {r.lastSupervisionDate} · Next: {r.nextDueDate}
+                      Supervisor: {getStaffName(r.supervisor_id)} · {r.frequency} · Last: {r.last_supervision_date} · Next: {r.next_due_date}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold">{r.sessionsThisYear}/{r.sessionsExpectedThisYear}</p>
+                    <p className="text-lg font-bold">{r.sessions_this_year}/{r.sessions_expected_this_year}</p>
                     <p className="text-xs text-muted-foreground">sessions</p>
                   </div>
                 </div>
@@ -164,10 +126,10 @@ export default function SupervisionTrackerPage() {
               <CardContent className="pt-0 space-y-3 text-sm">
                 {/* session stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Completed</p><p className="text-sm font-bold">{r.sessionsThisYear}</p></div>
-                  <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Expected</p><p className="text-sm font-bold">{r.sessionsExpectedThisYear}</p></div>
-                  <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Cancelled (Staff)</p><p className="text-sm font-bold">{r.cancelledByStaff}</p></div>
-                  <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Cancelled (Mgr)</p><p className="text-sm font-bold">{r.cancelledByManager}</p></div>
+                  <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Completed</p><p className="text-sm font-bold">{r.sessions_this_year}</p></div>
+                  <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Expected</p><p className="text-sm font-bold">{r.sessions_expected_this_year}</p></div>
+                  <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Cancelled (Staff)</p><p className="text-sm font-bold">{r.cancelled_by_staff}</p></div>
+                  <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Cancelled (Mgr)</p><p className="text-sm font-bold">{r.cancelled_by_manager}</p></div>
                 </div>
 
                 {/* themes */}

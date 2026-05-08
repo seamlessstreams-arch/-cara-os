@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getYPName, getStaffName } from "@/lib/seed-data";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import {
   Sparkles,
   Heart,
@@ -34,237 +34,45 @@ import {
   Search,
   Pill,
 } from "lucide-react";
+import type {
+  SkinConditionPlan,
+  SkinConditionType,
+  SkinSeverity,
+  SteroidPotency,
+} from "@/types/extended";
+import {
+  SKIN_CONDITION_TYPE_LABEL,
+  SKIN_SEVERITY_LABEL,
+  STEROID_POTENCY_LABEL,
+  DERM_REFERRAL_STATUS_LABEL,
+} from "@/types/extended";
+import { useSkinConditionPlans } from "@/hooks/use-skin-condition-plans";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Colour Maps ──────────────────────────────────────────────────────────────
 
-type Condition =
-  | "Atopic eczema"
-  | "Contact dermatitis"
-  | "Acne — mild"
-  | "Acne — moderate"
-  | "Acne — severe"
-  | "Psoriasis"
-  | "Vitiligo"
-  | "Keratosis pilaris"
-  | "Scarring (managing)"
-  | "Hidradenitis suppurativa"
-  | "Mixed / multiple"
-  | "Other";
-
-type Severity = "Settled" | "Mild" | "Moderate" | "Severe" | "Flaring";
-
-type Potency = "Mild" | "Moderate" | "Potent" | "Very potent";
-
-type ReferralStatus = "Awaiting" | "Active" | "Discharged";
-
-interface SkinRecord {
-  id: string;
-  youngPerson: string;
-  planDate: string;
-  condition: Condition;
-  bodyAreasAffected: string[];
-  severityNow: Severity;
-  triggers: string[];
-  dailyRoutine: string[];
-  emollientName?: string;
-  emollientFrequency?: string;
-  topicalSteroid?: {
-    name: string;
-    potency: Potency;
-    frequency: string;
-    bodyArea: string;
-  };
-  systemicTreatment?: string;
-  dermatologyReferral?: {
-    service: string;
-    status: ReferralStatus;
-    consultant: string;
-  };
-  schoolConsiderations: string[];
-  swimmingSafe: boolean;
-  bodyConfidenceWork: string[];
-  sunSafetyPlan: string[];
-  productsAvoided: string[];
-  childVoice: string;
-  staffObservation: string;
-  flagsConcerns: string[];
-  reviewDate: string;
-  keyWorker: string;
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const SEVERITY_COLOURS: Record<SkinSeverity, string> = {
+  settled: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  mild: "bg-sky-100 text-sky-800 border-sky-200",
+  moderate: "bg-amber-100 text-amber-800 border-amber-200",
+  severe: "bg-orange-100 text-orange-800 border-orange-200",
+  flaring: "bg-rose-100 text-rose-800 border-rose-200",
 };
 
-const today = d(0);
-const in90 = d(90);
-
-const SEVERITY_COLOURS: Record<Severity, string> = {
-  Settled: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  Mild: "bg-sky-100 text-sky-800 border-sky-200",
-  Moderate: "bg-amber-100 text-amber-800 border-amber-200",
-  Severe: "bg-orange-100 text-orange-800 border-orange-200",
-  Flaring: "bg-rose-100 text-rose-800 border-rose-200",
+const SEVERITY_RING: Record<SkinSeverity, string> = {
+  settled: "border-l-4 border-l-emerald-400",
+  mild: "border-l-4 border-l-sky-400",
+  moderate: "border-l-4 border-l-amber-400",
+  severe: "border-l-4 border-l-orange-500",
+  flaring: "border-l-4 border-l-rose-500",
 };
 
-const SEVERITY_RING: Record<Severity, string> = {
-  Settled: "border-l-4 border-l-emerald-400",
-  Mild: "border-l-4 border-l-sky-400",
-  Moderate: "border-l-4 border-l-amber-400",
-  Severe: "border-l-4 border-l-orange-500",
-  Flaring: "border-l-4 border-l-rose-500",
+const POTENCY_COLOUR: Record<SteroidPotency, string> = {
+  mild: "bg-emerald-50 text-emerald-700",
+  moderate: "bg-sky-50 text-sky-700",
+  potent: "bg-amber-50 text-amber-700",
+  very_potent: "bg-rose-50 text-rose-700",
 };
-
-const POTENCY_COLOUR: Record<Potency, string> = {
-  Mild: "bg-emerald-50 text-emerald-700",
-  Moderate: "bg-sky-50 text-sky-700",
-  Potent: "bg-amber-50 text-amber-700",
-  "Very potent": "bg-rose-50 text-rose-700",
-};
-
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const SEED: SkinRecord[] = [
-  {
-    id: "skn_001",
-    youngPerson: "yp_casey",
-    planDate: d(-21),
-    condition: "Atopic eczema",
-    bodyAreasAffected: [
-      "Back of knees (popliteal fossae)",
-      "Inner elbows (antecubital fossae)",
-      "Neck and behind ears",
-    ],
-    severityNow: "Settled",
-    triggers: [
-      "House dust",
-      "Wool fabrics and rough seams",
-      "Periods of stress (school assessments, contact visits)",
-      "Soap, bubble bath and fragranced shower gels",
-      "Sweating during sport — settles with rinse and re-emollient",
-    ],
-    dailyRoutine: [
-      "Morning: shower with warm (not hot) water, no soap on flare areas, pat dry, apply emollient within 3 minutes.",
-      "Day: re-apply emollient at lunchtime if skin feels tight, especially in winter.",
-      "Evening: bath with emollient bath additive, pat dry, full-body emollient before bed.",
-      "Cotton bedding only, washed in non-bio detergent with second rinse cycle.",
-      "Nails kept short to reduce scratch damage; cotton mittens available for night-time itch.",
-    ],
-    emollientName: "Doublebase gel",
-    emollientFrequency: "Three times daily and after every bath/shower",
-    topicalSteroid: {
-      name: "Eumovate (clobetasone butyrate 0.05%)",
-      potency: "Moderate",
-      frequency: "Once daily, flares only, 7–14 days then step down",
-      bodyArea: "Knees, elbows, neck — avoid face",
-    },
-    dermatologyReferral: undefined,
-    schoolConsiderations: [
-      "PE: emollient applied 30 minutes before to reduce friction; cotton sports kit preferred.",
-      "Swimming: rinse off chlorine immediately after, re-apply emollient liberally — no exclusion needed.",
-      "School holds spare tub of Doublebase in medical room (named, dated).",
-      "Teachers aware that scratching may increase during exam stress — non-judgemental redirection.",
-    ],
-    swimmingSafe: true,
-    bodyConfidenceWork: [
-      "Casey is settled with appearance, prefers short sleeves in summer.",
-      "Key worker reinforces neutral language — eczema described as 'sensitive skin that needs care', not as a flaw.",
-    ],
-    sunSafetyPlan: [
-      "SPF 50 mineral (zinc oxide) sunscreen — fragrance-free, applied 20 minutes before going outside.",
-      "Re-apply every 2 hours and after swimming or sweating.",
-      "Hat and UV-protective t-shirt available for beach days.",
-    ],
-    productsAvoided: [
-      "Fragranced soaps, bubble bath, shampoo on body",
-      "Biological laundry detergent",
-      "Wool and rough synthetic fabrics next to skin",
-      "Lanolin-based creams (history of mild contact reaction)",
-    ],
-    childVoice:
-      "It's mostly fine now. I just don't like when people stare at the bits behind my knees in summer. The cream feels weird but I know it works so I do it without being asked.",
-    staffObservation:
-      "Casey manages routine well with minimal prompting. Skin has been settled for 8 weeks with only one short flare following a stressful contact visit. Emollient adherence is excellent. Key worker reviews stock weekly to ensure Doublebase is never out at home or school.",
-    flagsConcerns: [],
-    reviewDate: d(-21 + 180),
-    keyWorker: "staff_chervelle",
-  },
-  {
-    id: "skn_002",
-    youngPerson: "yp_alex",
-    planDate: d(-45),
-    condition: "Acne — moderate",
-    bodyAreasAffected: [
-      "Face — forehead, cheeks, jawline",
-      "Upper back (shoulders)",
-      "Upper chest",
-    ],
-    severityNow: "Moderate",
-    triggers: [
-      "Post-pubertal hormonal changes (started 14m ago)",
-      "Sweating during boxing training without prompt shower",
-      "Comedogenic hair products (gel previously used — now switched)",
-      "Picking at lesions during periods of low mood — increases scarring risk",
-    ],
-    dailyRoutine: [
-      "Morning: gentle non-soap face wash (Cetaphil), pat dry, apply Duac gel to affected areas only.",
-      "Evening: face wash, then Differin (adapalene) 0.1% gel — pea-sized amount, whole face, avoiding eyes and lips.",
-      "Shower immediately after boxing training; clean towel each time.",
-      "Pillowcase changed twice a week.",
-      "No picking — fidget tool kept by mirror as redirect; staff offer non-shaming reminders.",
-    ],
-    emollientName: "Cetraben light cream (non-comedogenic)",
-    emollientFrequency: "Once daily after evening cleanse if skin feels dry from treatment",
-    topicalSteroid: undefined,
-    systemicTreatment:
-      "Awaiting dermatology review for possible isotretinoin (Roaccutane) — currently on combined topical regimen (Differin + Duac). MHRA Pregnancy Prevention Programme and mental-health monitoring will apply if commenced.",
-    dermatologyReferral: {
-      service: "Local NHS Trust — Paediatric Dermatology",
-      status: "Active",
-      consultant: "Dr Connors (Consultant Dermatologist)",
-    },
-    schoolConsiderations: [
-      "PE: Alex prefers to shower in private cubicle; school informed and accommodation in place.",
-      "Swimming: chlorine can dry treated skin — emollient and SPF after lessons.",
-      "Teachers briefed (with Alex's consent) not to comment on skin or any potential redness/peeling from treatment.",
-      "Alex permitted to carry water bottle (Differin and Duac increase photosensitivity and dryness).",
-    ],
-    swimmingSafe: true,
-    bodyConfidenceWork: [
-      "Alex sometimes self-conscious — particularly around upper-back acne when changing for boxing or PE.",
-      "Boxing gym: private shower cubicle agreed with coach; Alex does not need to expose back in shared changing area.",
-      "Key worker has open, non-shaming conversations — reinforces that acne is medical, not a hygiene failure, and not Alex's fault.",
-      "Encouraged identity beyond skin — boxing achievements, music interests celebrated.",
-      "Mood monitoring weekly via key-work session — escalate if any low-mood pattern emerges, particularly if isotretinoin is started.",
-    ],
-    sunSafetyPlan: [
-      "SPF 50 oil-free, non-comedogenic sunscreen — Differin and Duac significantly increase photosensitivity.",
-      "Hat and shade-seeking advised between 11am and 3pm.",
-      "Re-apply sunscreen every 2 hours outdoors and after sweating.",
-      "If isotretinoin is started: stricter sun avoidance, lip balm with SPF, and education on photosensitivity reactions.",
-    ],
-    productsAvoided: [
-      "Comedogenic hair gels and pomades",
-      "Heavy oil-based moisturisers and body butters",
-      "Harsh scrubs and exfoliating brushes (worsen inflammation)",
-      "Alcohol-based toners (strip skin barrier and increase irritation)",
-    ],
-    childVoice:
-      "It's getting better but my back is the bit I really hate. I don't want anyone making jokes in the changing room. I want to try the strong tablets if Dr Connors says they'll work — but I've read they can mess with your head so I want to talk it through properly first.",
-    staffObservation:
-      "Alex engages well with the topical regimen and adherence is consistent. Skin has improved on cheeks and forehead over 6 weeks; back acne slower to respond — hence the dermatology referral. Alex's voice is clear: wants treatment that works but has researched the risks and wants informed consent. Staff to support Dr Connors appointment, ensure mental-health baseline (PHQ-A) is documented before any isotretinoin start, and log MHRA Pregnancy Prevention Programme requirements as applicable.",
-    flagsConcerns: [
-      "Picking at lesions during low mood — increases scarring risk; redirect strategy in place.",
-      "Isotretinoin discussion pending — psychiatric and pregnancy-prevention safeguards must be in place before start.",
-    ],
-    reviewDate: d(-45 + 90),
-    keyWorker: "staff_edward",
-  },
-];
 
 // ── Page Component ────────────────────────────────────────────────────────────
 
@@ -274,24 +82,46 @@ export default function ChildSkinConditionsPage() {
   const [sortBy, setSortBy] = useState("severity");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const { data: res, isLoading } = useSkinConditionPlans();
+  const items = res?.data ?? [];
+
+  // ── Loading ────────────────────────────────────────────────────────────────
+
+  if (isLoading)
+    return (
+      <PageShell
+        title="Skin Condition Plans"
+        subtitle="Per-child dermatology care — emollients, topicals, dermatology referrals, school provision, body confidence and sun safety"
+      >
+        <div />
+      </PageShell>
+    );
+
   // ── Stats ───────────────────────────────────────────────────────────────────
 
-  const stats = useMemo(() => {
-    const activePlans = SEED.length;
-    const dermActive = SEED.filter(
-      (r) => r.dermatologyReferral?.status === "Active"
+  const today = new Date().toISOString().slice(0, 10);
+  const in90 = (() => {
+    const dt = new Date();
+    dt.setDate(dt.getDate() + 90);
+    return dt.toISOString().slice(0, 10);
+  })();
+
+  const stats = (() => {
+    const activePlans = items.length;
+    const dermActive = items.filter(
+      (r) => r.dermatology_referral?.status === "active"
     ).length;
-    const severeFlaring = SEED.filter(
-      (r) => r.severityNow === "Severe" || r.severityNow === "Flaring"
+    const severeFlaring = items.filter(
+      (r) => r.severity_now === "severe" || r.severity_now === "flaring"
     ).length;
-    const reviewsDue = SEED.filter((r) => r.reviewDate <= in90).length;
+    const reviewsDue = items.filter((r) => r.review_date <= in90).length;
     return { activePlans, dermActive, severeFlaring, reviewsDue };
-  }, []);
+  })();
 
   // ── Filtering & Sorting ─────────────────────────────────────────────────────
 
-  const filtered = useMemo(() => {
-    let list = [...SEED];
+  const filtered = (() => {
+    let list = [...items];
 
     if (conditionFilter !== "all") {
       list = list.filter((r) => r.condition === conditionFilter);
@@ -300,24 +130,24 @@ export default function ChildSkinConditionsPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.condition.toLowerCase().includes(q) ||
-          r.bodyAreasAffected.some((a) => a.toLowerCase().includes(q)) ||
-          (r.emollientName?.toLowerCase().includes(q) ?? false) ||
-          (r.topicalSteroid?.name.toLowerCase().includes(q) ?? false)
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          (SKIN_CONDITION_TYPE_LABEL[r.condition] ?? "").toLowerCase().includes(q) ||
+          r.body_areas_affected.some((a) => a.toLowerCase().includes(q)) ||
+          (r.emollient_name?.toLowerCase().includes(q) ?? false) ||
+          (r.topical_steroid?.name.toLowerCase().includes(q) ?? false)
       );
     }
 
-    const order: Severity[] = ["Settled", "Mild", "Moderate", "Severe", "Flaring"];
+    const order: SkinSeverity[] = ["settled", "mild", "moderate", "severe", "flaring"];
     list.sort((a, b) => {
       switch (sortBy) {
         case "severity":
-          return order.indexOf(b.severityNow) - order.indexOf(a.severityNow);
+          return order.indexOf(b.severity_now) - order.indexOf(a.severity_now);
         case "review_due":
-          return a.reviewDate.localeCompare(b.reviewDate);
+          return a.review_date.localeCompare(b.review_date);
         case "young_person":
-          return getYPName(a.youngPerson).localeCompare(
-            getYPName(b.youngPerson)
+          return getYPName(a.child_id).localeCompare(
+            getYPName(b.child_id)
           );
         case "condition":
           return a.condition.localeCompare(b.condition);
@@ -327,89 +157,88 @@ export default function ChildSkinConditionsPage() {
     });
 
     return list;
-  }, [search, conditionFilter, sortBy]);
+  })();
 
   // ── Export columns ──────────────────────────────────────────────────────────
 
-  const exportColumns: ExportColumn<SkinRecord>[] = [
+  const exportColumns: ExportColumn<SkinConditionPlan>[] = [
     {
       header: "Young Person",
-      accessor: (r: SkinRecord) => getYPName(r.youngPerson),
+      accessor: (r: SkinConditionPlan) => getYPName(r.child_id),
     },
-    { header: "Plan Date", accessor: (r: SkinRecord) => r.planDate },
-    { header: "Condition", accessor: (r: SkinRecord) => r.condition },
+    { header: "Plan Date", accessor: (r: SkinConditionPlan) => r.plan_date },
+    { header: "Condition", accessor: (r: SkinConditionPlan) => SKIN_CONDITION_TYPE_LABEL[r.condition] },
     {
       header: "Body Areas Affected",
-      accessor: (r: SkinRecord) => r.bodyAreasAffected.join("; "),
+      accessor: (r: SkinConditionPlan) => r.body_areas_affected.join("; "),
     },
-    { header: "Severity Now", accessor: (r: SkinRecord) => r.severityNow },
+    { header: "Severity Now", accessor: (r: SkinConditionPlan) => SKIN_SEVERITY_LABEL[r.severity_now] },
     {
       header: "Triggers",
-      accessor: (r: SkinRecord) => r.triggers.join("; "),
+      accessor: (r: SkinConditionPlan) => r.triggers.join("; "),
     },
     {
       header: "Daily Routine",
-      accessor: (r: SkinRecord) =>
-        r.dailyRoutine.map((s, i) => `${i + 1}. ${s}`).join(" | "),
+      accessor: (r: SkinConditionPlan) => r.daily_routine,
     },
     {
       header: "Emollient",
-      accessor: (r: SkinRecord) =>
-        r.emollientName
-          ? `${r.emollientName} — ${r.emollientFrequency ?? ""}`
+      accessor: (r: SkinConditionPlan) =>
+        r.emollient_name
+          ? `${r.emollient_name} — ${r.emollient_frequency ?? ""}`
           : "",
     },
     {
       header: "Topical Steroid",
-      accessor: (r: SkinRecord) =>
-        r.topicalSteroid
-          ? `${r.topicalSteroid.name} (${r.topicalSteroid.potency}) — ${r.topicalSteroid.frequency} — ${r.topicalSteroid.bodyArea}`
+      accessor: (r: SkinConditionPlan) =>
+        r.topical_steroid
+          ? `${r.topical_steroid.name} (${STEROID_POTENCY_LABEL[r.topical_steroid.potency]}) — ${r.topical_steroid.frequency} — ${r.topical_steroid.body_area}`
           : "",
     },
     {
       header: "Systemic Treatment",
-      accessor: (r: SkinRecord) => r.systemicTreatment ?? "",
+      accessor: (r: SkinConditionPlan) => r.systemic_treatment ?? "",
     },
     {
       header: "Dermatology Referral",
-      accessor: (r: SkinRecord) =>
-        r.dermatologyReferral
-          ? `${r.dermatologyReferral.service} — ${r.dermatologyReferral.status} — ${r.dermatologyReferral.consultant}`
+      accessor: (r: SkinConditionPlan) =>
+        r.dermatology_referral
+          ? `${r.dermatology_referral.service} — ${DERM_REFERRAL_STATUS_LABEL[r.dermatology_referral.status]} — ${r.dermatology_referral.consultant ?? ""}`
           : "None",
     },
     {
       header: "School Considerations",
-      accessor: (r: SkinRecord) => r.schoolConsiderations.join("; "),
+      accessor: (r: SkinConditionPlan) => r.school_considerations,
     },
     {
       header: "Swimming Safe",
-      accessor: (r: SkinRecord) => (r.swimmingSafe ? "Yes" : "No"),
+      accessor: (r: SkinConditionPlan) => (r.swimming_safe ? "Yes" : "No"),
     },
     {
       header: "Body Confidence Work",
-      accessor: (r: SkinRecord) => r.bodyConfidenceWork.join("; "),
+      accessor: (r: SkinConditionPlan) => r.body_confidence_work,
     },
     {
       header: "Sun Safety Plan",
-      accessor: (r: SkinRecord) => r.sunSafetyPlan.join("; "),
+      accessor: (r: SkinConditionPlan) => r.sun_safety_plan,
     },
     {
       header: "Products Avoided",
-      accessor: (r: SkinRecord) => r.productsAvoided.join("; "),
+      accessor: (r: SkinConditionPlan) => r.products_avoided.join("; "),
     },
-    { header: "Child Voice", accessor: (r: SkinRecord) => r.childVoice },
+    { header: "Child Voice", accessor: (r: SkinConditionPlan) => r.child_voice },
     {
       header: "Staff Observation",
-      accessor: (r: SkinRecord) => r.staffObservation,
+      accessor: (r: SkinConditionPlan) => r.staff_observation,
     },
     {
       header: "Flags / Concerns",
-      accessor: (r: SkinRecord) => r.flagsConcerns.join("; "),
+      accessor: (r: SkinConditionPlan) => r.flags_concerns.join("; "),
     },
-    { header: "Review Date", accessor: (r: SkinRecord) => r.reviewDate },
+    { header: "Review Date", accessor: (r: SkinConditionPlan) => r.review_date },
     {
       header: "Key Worker",
-      accessor: (r: SkinRecord) => getStaffName(r.keyWorker),
+      accessor: (r: SkinConditionPlan) => getStaffName(r.key_worker),
     },
   ];
 
@@ -422,7 +251,7 @@ export default function ChildSkinConditionsPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Skin Condition Plans" />
-          <ExportButton<SkinRecord>
+          <ExportButton<SkinConditionPlan>
             data={filtered}
             columns={exportColumns}
             filename="child-skin-conditions"
@@ -491,20 +320,13 @@ export default function ChildSkinConditionsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Conditions</SelectItem>
-            <SelectItem value="Atopic eczema">Atopic eczema</SelectItem>
-            <SelectItem value="Contact dermatitis">Contact dermatitis</SelectItem>
-            <SelectItem value="Acne — mild">Acne — mild</SelectItem>
-            <SelectItem value="Acne — moderate">Acne — moderate</SelectItem>
-            <SelectItem value="Acne — severe">Acne — severe</SelectItem>
-            <SelectItem value="Psoriasis">Psoriasis</SelectItem>
-            <SelectItem value="Vitiligo">Vitiligo</SelectItem>
-            <SelectItem value="Keratosis pilaris">Keratosis pilaris</SelectItem>
-            <SelectItem value="Scarring (managing)">Scarring (managing)</SelectItem>
-            <SelectItem value="Hidradenitis suppurativa">
-              Hidradenitis suppurativa
-            </SelectItem>
-            <SelectItem value="Mixed / multiple">Mixed / multiple</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
+            {(Object.entries(SKIN_CONDITION_TYPE_LABEL) as [SkinConditionType, string][]).map(
+              ([key, label]) => (
+                <SelectItem key={key} value={key}>
+                  {label}
+                </SelectItem>
+              )
+            )}
           </SelectContent>
         </Select>
 
@@ -534,14 +356,14 @@ export default function ChildSkinConditionsPage() {
 
         {filtered.map((rec) => {
           const expanded = expandedId === rec.id;
-          const reviewOverdue = rec.reviewDate < today;
+          const reviewOverdue = rec.review_date < today;
 
           return (
             <div
               key={rec.id}
               className={cn(
                 "rounded-lg border bg-card overflow-hidden",
-                SEVERITY_RING[rec.severityNow]
+                SEVERITY_RING[rec.severity_now]
               )}
             >
               {/* Card Header */}
@@ -554,38 +376,38 @@ export default function ChildSkinConditionsPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-sm">
-                        {getYPName(rec.youngPerson)}
+                        {getYPName(rec.child_id)}
                       </span>
 
                       <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100">
-                        {rec.condition}
+                        {SKIN_CONDITION_TYPE_LABEL[rec.condition]}
                       </span>
 
                       <span
                         className={cn(
                           "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border",
-                          SEVERITY_COLOURS[rec.severityNow]
+                          SEVERITY_COLOURS[rec.severity_now]
                         )}
                       >
-                        {rec.severityNow}
+                        {SKIN_SEVERITY_LABEL[rec.severity_now]}
                       </span>
 
-                      {rec.dermatologyReferral && (
+                      {rec.dermatology_referral && (
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                            rec.dermatologyReferral.status === "Active"
+                            rec.dermatology_referral.status === "active"
                               ? "bg-sky-100 text-sky-800"
-                              : rec.dermatologyReferral.status === "Awaiting"
+                              : rec.dermatology_referral.status === "awaiting"
                                 ? "bg-amber-100 text-amber-800"
                                 : "bg-emerald-100 text-emerald-800"
                           )}
                         >
-                          Derm: {rec.dermatologyReferral.status}
+                          Derm: {DERM_REFERRAL_STATUS_LABEL[rec.dermatology_referral.status]}
                         </span>
                       )}
 
-                      {rec.swimmingSafe && (
+                      {rec.swimming_safe && (
                         <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700">
                           Swimming OK
                         </span>
@@ -598,8 +420,8 @@ export default function ChildSkinConditionsPage() {
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                      {rec.bodyAreasAffected.join(" • ")}
-                      {rec.emollientName && ` — ${rec.emollientName}`}
+                      {rec.body_areas_affected.join(" • ")}
+                      {rec.emollient_name && ` — ${rec.emollient_name}`}
                     </p>
                   </div>
                 </div>
@@ -619,7 +441,7 @@ export default function ChildSkinConditionsPage() {
                       Body Areas Affected
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {rec.bodyAreasAffected.map((a, i) => (
+                      {rec.body_areas_affected.map((a, i) => (
                         <span
                           key={i}
                           className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-rose-50 text-rose-800 border border-rose-100"
@@ -652,93 +474,91 @@ export default function ChildSkinConditionsPage() {
                     <h4 className="text-sm font-semibold mb-2">
                       Daily Skincare Routine
                     </h4>
-                    <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1.5 marker:font-semibold marker:text-foreground">
-                      {rec.dailyRoutine.map((s, i) => (
-                        <li key={i}>{s}</li>
-                      ))}
-                    </ol>
+                    <p className="text-sm text-muted-foreground">
+                      {rec.daily_routine}
+                    </p>
                   </div>
 
                   {/* Treatments grid */}
                   <div className="grid md:grid-cols-2 gap-3">
                     {/* Emollient */}
-                    {rec.emollientName && (
+                    {rec.emollient_name && (
                       <div className="rounded-md border bg-sky-50/40 p-3">
                         <h4 className="text-sm font-semibold mb-1 flex items-center gap-1 text-sky-900">
                           <Sparkles className="h-4 w-4" /> Emollient
                         </h4>
                         <p className="text-sm text-sky-900">
-                          <strong>{rec.emollientName}</strong>
+                          <strong>{rec.emollient_name}</strong>
                         </p>
-                        {rec.emollientFrequency && (
+                        {rec.emollient_frequency && (
                           <p className="text-xs text-sky-800 mt-1">
-                            {rec.emollientFrequency}
+                            {rec.emollient_frequency}
                           </p>
                         )}
                       </div>
                     )}
 
                     {/* Topical steroid */}
-                    {rec.topicalSteroid && (
+                    {rec.topical_steroid && (
                       <div className="rounded-md border bg-rose-50/40 p-3">
                         <h4 className="text-sm font-semibold mb-1 flex items-center gap-1 text-rose-900">
                           <Pill className="h-4 w-4" /> Topical Steroid
                         </h4>
                         <p className="text-sm text-rose-900">
-                          <strong>{rec.topicalSteroid.name}</strong>
+                          <strong>{rec.topical_steroid.name}</strong>
                         </p>
                         <div className="flex flex-wrap gap-1.5 mt-1">
                           <span
                             className={cn(
                               "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                              POTENCY_COLOUR[rec.topicalSteroid.potency]
+                              POTENCY_COLOUR[rec.topical_steroid.potency]
                             )}
                           >
-                            {rec.topicalSteroid.potency}
+                            {STEROID_POTENCY_LABEL[rec.topical_steroid.potency]}
                           </span>
                         </div>
                         <p className="text-xs text-rose-800 mt-1.5">
-                          {rec.topicalSteroid.frequency}
+                          {rec.topical_steroid.frequency}
                         </p>
                         <p className="text-xs text-rose-800">
-                          Apply to: {rec.topicalSteroid.bodyArea}
+                          Apply to: {rec.topical_steroid.body_area}
                         </p>
                       </div>
                     )}
                   </div>
 
                   {/* Systemic treatment */}
-                  {rec.systemicTreatment && (
+                  {rec.systemic_treatment && (
                     <div className="rounded-md border-l-4 border-l-amber-400 bg-amber-50/60 p-3">
                       <h4 className="text-sm font-semibold mb-1 text-amber-900">
                         Systemic Treatment
                       </h4>
                       <p className="text-sm text-amber-900">
-                        {rec.systemicTreatment}
+                        {rec.systemic_treatment}
                       </p>
                     </div>
                   )}
 
                   {/* Dermatology referral */}
-                  {rec.dermatologyReferral ? (
+                  {rec.dermatology_referral ? (
                     <div className="rounded-md border bg-muted/40 p-3">
                       <h4 className="text-sm font-semibold mb-1">
                         Dermatology Referral
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        <strong>{rec.dermatologyReferral.service}</strong> —{" "}
-                        {rec.dermatologyReferral.consultant} —{" "}
+                        <strong>{rec.dermatology_referral.service}</strong> —{" "}
+                        {rec.dermatology_referral.consultant ?? ""} —{" "}
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ml-1",
-                            rec.dermatologyReferral.status === "Active"
+                            rec.dermatology_referral.status === "active"
                               ? "bg-sky-100 text-sky-800"
-                              : rec.dermatologyReferral.status === "Awaiting"
+                              : rec.dermatology_referral.status === "awaiting"
                                 ? "bg-amber-100 text-amber-800"
                                 : "bg-emerald-100 text-emerald-800"
                           )}
                         >
-                          {rec.dermatologyReferral.status}
+                          {DERM_REFERRAL_STATUS_LABEL[rec.dermatology_referral.status]}
                         </span>
                       </p>
                     </div>
@@ -760,15 +580,13 @@ export default function ChildSkinConditionsPage() {
                     <h4 className="text-sm font-semibold mb-2">
                       School &amp; PE / Swimming Considerations
                     </h4>
-                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                      {rec.schoolConsiderations.map((s, i) => (
-                        <li key={i}>{s}</li>
-                      ))}
-                    </ul>
+                    <p className="text-sm text-muted-foreground">
+                      {rec.school_considerations}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-2">
                       Swimming:{" "}
                       <strong>
-                        {rec.swimmingSafe
+                        {rec.swimming_safe
                           ? "Safe with skincare prep"
                           : "Not currently advised — see plan"}
                       </strong>
@@ -776,16 +594,14 @@ export default function ChildSkinConditionsPage() {
                   </div>
 
                   {/* Body confidence work */}
-                  {rec.bodyConfidenceWork.length > 0 && (
+                  {rec.body_confidence_work && (
                     <div className="rounded-md border-l-4 border-l-rose-300 bg-rose-50/40 p-3">
                       <h4 className="text-sm font-semibold mb-2 flex items-center gap-1 text-rose-900">
                         <Heart className="h-4 w-4" /> Body Confidence Support
                       </h4>
-                      <ul className="list-disc list-inside text-sm text-rose-900 space-y-1">
-                        {rec.bodyConfidenceWork.map((b, i) => (
-                          <li key={i}>{b}</li>
-                        ))}
-                      </ul>
+                      <p className="text-sm text-rose-900">
+                        {rec.body_confidence_work}
+                      </p>
                     </div>
                   )}
 
@@ -794,21 +610,19 @@ export default function ChildSkinConditionsPage() {
                     <h4 className="text-sm font-semibold mb-2 flex items-center gap-1 text-amber-900">
                       <Sun className="h-4 w-4" /> Sun Safety Plan
                     </h4>
-                    <ul className="list-disc list-inside text-sm text-amber-900 space-y-1">
-                      {rec.sunSafetyPlan.map((s, i) => (
-                        <li key={i}>{s}</li>
-                      ))}
-                    </ul>
+                    <p className="text-sm text-amber-900">
+                      {rec.sun_safety_plan}
+                    </p>
                   </div>
 
                   {/* Products avoided */}
-                  {rec.productsAvoided.length > 0 && (
+                  {rec.products_avoided.length > 0 && (
                     <div>
                       <h4 className="text-sm font-semibold mb-2">
                         Products Avoided
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        {rec.productsAvoided.map((p, i) => (
+                        {rec.products_avoided.map((p, i) => (
                           <span
                             key={i}
                             className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-700 border"
@@ -821,13 +635,13 @@ export default function ChildSkinConditionsPage() {
                   )}
 
                   {/* Flags */}
-                  {rec.flagsConcerns.length > 0 && (
+                  {rec.flags_concerns.length > 0 && (
                     <div className="rounded-md border-2 border-rose-200 bg-rose-50/60 p-3">
                       <h4 className="text-sm font-semibold mb-1 text-rose-900">
                         Flags &amp; Concerns
                       </h4>
                       <ul className="list-disc list-inside text-sm text-rose-900 space-y-1">
-                        {rec.flagsConcerns.map((f, i) => (
+                        {rec.flags_concerns.map((f, i) => (
                           <li key={i}>{f}</li>
                         ))}
                       </ul>
@@ -840,7 +654,7 @@ export default function ChildSkinConditionsPage() {
                       Child&apos;s Voice
                     </h4>
                     <p className="text-sm italic text-sky-900">
-                      &ldquo;{rec.childVoice}&rdquo;
+                      &ldquo;{rec.child_voice}&rdquo;
                     </p>
                   </div>
 
@@ -850,25 +664,28 @@ export default function ChildSkinConditionsPage() {
                       Staff Observation
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      {rec.staffObservation}
+                      {rec.staff_observation}
                     </p>
                   </div>
+
+                  {/* Smart link panel */}
+                  <SmartLinkPanel sourceType="skin-condition-plan" sourceId={rec.id} childId={rec.child_id} compact />
 
                   {/* Meta row */}
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
                     <span>
-                      <strong>Plan Date:</strong> {rec.planDate}
+                      <strong>Plan Date:</strong> {formatDate(rec.plan_date)}
                     </span>
                     <span
                       className={cn(
                         reviewOverdue && "text-rose-700 font-semibold"
                       )}
                     >
-                      <strong>Next Review:</strong> {rec.reviewDate}
+                      <strong>Next Review:</strong> {formatDate(rec.review_date)}
                     </span>
                     <span>
                       <strong>Key Worker:</strong>{" "}
-                      {getStaffName(rec.keyWorker)}
+                      {getStaffName(rec.key_worker)}
                     </span>
                   </div>
                 </div>

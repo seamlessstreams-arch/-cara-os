@@ -23,221 +23,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CookingBakingRecord,
+  CookingCategory,
+  CookingCompetency,
+  CookingOutcome,
+  COOKING_CATEGORY_LABEL,
+  COOKING_COMPETENCY_LABEL,
+  COOKING_OUTCOME_LABEL,
+} from "@/types/extended";
+import { useCookingBakingRecords } from "@/hooks/use-cooking-baking-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-interface CookingRecord {
-  id: string;
-  youngPerson: string;
-  recordedDate: string;
-  skill: string;
-  category:
-    | "Knife skills"
-    | "Hob/cooking"
-    | "Oven/baking"
-    | "Microwave"
-    | "Recipe planning"
-    | "Shopping list"
-    | "Budgeting"
-    | "Food hygiene"
-    | "Allergens awareness"
-    | "Cultural cooking";
-  competencyLevel: "Not yet introduced" | "Observed staff" | "Assisted" | "Did with prompts" | "Did independently" | "Can teach others";
-  firstAttemptDate?: string;
-  achievedIndependentlyDate?: string;
-  recipesAttempted: { name: string; date: string; outcome: "Burnt" | "Edible" | "Good" | "Excellent" | "Showed off to others" }[];
-  cuisinesExplored: string[];
-  childVoice: string;
-  staffObservation: string;
-  hygieneCertificate: boolean;
-  ledFamilyMeal: boolean;
-  flagsRisks: string[];
-  nextSkillToBuild: string;
-  reviewDate: string;
-  keyWorker: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const records: CookingRecord[] = [
-  {
-    id: "cook_001",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-7),
-    skill: "Caribbean rice & peas",
-    category: "Cultural cooking",
-    competencyLevel: "Can teach others",
-    firstAttemptDate: d(-180),
-    achievedIndependentlyDate: d(-90),
-    recipesAttempted: [
-      { name: "Rice & peas (mum's recipe)", date: d(-180), outcome: "Edible" },
-      { name: "Rice & peas (mum's recipe)", date: d(-150), outcome: "Good" },
-      { name: "Rice & peas (mum's recipe)", date: d(-90), outcome: "Excellent" },
-      { name: "Rice & peas + jerk chicken", date: d(-30), outcome: "Showed off to others" },
-      { name: "Sunday Caribbean dinner for whole home", date: d(-7), outcome: "Showed off to others" },
-    ],
-    cuisinesExplored: ["Caribbean", "Pakistani (mum's heritage)", "British"],
-    childVoice:
-      "Mum taught me on the phone the first time, then I made it for everyone here. Casey said it was better than takeaway. I taught Anna how to do it.",
-    staffObservation:
-      "Jordan owns this skill — confident, methodical, proud. Heritage food connection is significant. He's now teaching Casey and Anna. This is identity work as much as cooking.",
-    hygieneCertificate: true,
-    ledFamilyMeal: true,
-    flagsRisks: [],
-    nextSkillToBuild: "Pakistani biryani — wants to do it for Eid, has mum's recipe",
-    reviewDate: d(60),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "cook_002",
-    youngPerson: "yp_jordan",
-    recordedDate: d(-14),
-    skill: "Knife skills — full vegetable prep",
-    category: "Knife skills",
-    competencyLevel: "Did independently",
-    firstAttemptDate: d(-200),
-    achievedIndependentlyDate: d(-120),
-    recipesAttempted: [],
-    cuisinesExplored: [],
-    childVoice: "I can do onions without crying now. Joke. Sort of.",
-    staffObservation:
-      "Holds knife properly, claw grip, controlled. Has progressed from peeler-only to full knife confidence. Could teach Casey.",
-    hygieneCertificate: true,
-    ledFamilyMeal: true,
-    flagsRisks: [],
-    nextSkillToBuild: "Filleting fish (with Anna)",
-    reviewDate: d(60),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "cook_003",
-    youngPerson: "yp_alex",
-    recordedDate: d(-10),
-    skill: "Vegetarian wellington",
-    category: "Oven/baking",
-    competencyLevel: "Did with prompts",
-    firstAttemptDate: d(-130),
-    recipesAttempted: [
-      { name: "Veggie wellington (Christmas trial run)", date: d(-130), outcome: "Edible" },
-      { name: "Veggie wellington (Christmas Day main)", date: d(-130), outcome: "Good" },
-      { name: "Mushroom wellington (own recipe variation)", date: d(-30), outcome: "Excellent" },
-    ],
-    cuisinesExplored: ["British", "Italian", "Mediterranean"],
-    childVoice:
-      "I like that I can cook for myself and not just eat what others make. Vegetarian cooking is mine. I'm getting better at pastry.",
-    staffObservation:
-      "Alex is finding cooking grounding — quiet, focused, methodical. Pastry was new. Took ownership of being the home's vegetarian cook.",
-    hygieneCertificate: false,
-    ledFamilyMeal: false,
-    flagsRisks: ["Hot oven safety — supervised first 3 attempts, now confident with prompts"],
-    nextSkillToBuild: "Bread making — Alex curious",
-    reviewDate: d(45),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "cook_004",
-    youngPerson: "yp_alex",
-    recordedDate: d(-21),
-    skill: "Meal planning & shopping list for 5 people for 3 days",
-    category: "Recipe planning",
-    competencyLevel: "Did independently",
-    firstAttemptDate: d(-90),
-    achievedIndependentlyDate: d(-30),
-    recipesAttempted: [],
-    cuisinesExplored: [],
-    childVoice: "I planned the weekend menu. I forgot the cheese. Otherwise it worked.",
-    staffObservation:
-      "Alex now plans, lists, budgets — strong life skill. Forgetting cheese is normal. Confident at supermarket too.",
-    hygieneCertificate: false,
-    ledFamilyMeal: false,
-    flagsRisks: [],
-    nextSkillToBuild: "Budgeting under £30 for 4-person dinner",
-    reviewDate: d(45),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "cook_005",
-    youngPerson: "yp_casey",
-    recordedDate: d(-5),
-    skill: "Visual recipe cards — pasta with sauce",
-    category: "Hob/cooking",
-    competencyLevel: "Did with prompts",
-    firstAttemptDate: d(-60),
-    recipesAttempted: [
-      { name: "Pasta with sauce (visual recipe)", date: d(-60), outcome: "Edible" },
-      { name: "Pasta with sauce (visual recipe)", date: d(-30), outcome: "Good" },
-      { name: "Pasta with cheese for Ellie's visit", date: d(-5), outcome: "Excellent" },
-    ],
-    cuisinesExplored: ["Italian (basic)", "British"],
-    childVoice:
-      "I made it for Ellie when she came round and she said it was nice. I want to learn pizza next.",
-    staffObservation:
-      "Visual recipe cards adapted for Casey's processing — pictures + 5-step instructions. Casey followed independently with one-word prompts. Pride in feeding Ellie was huge.",
-    hygieneCertificate: false,
-    ledFamilyMeal: false,
-    flagsRisks: ["Hob safety — staff present, will not yet leave Casey unattended at hob"],
-    nextSkillToBuild: "Homemade pizza (visual recipe)",
-    reviewDate: d(30),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "cook_006",
-    youngPerson: "yp_casey",
-    recordedDate: d(-18),
-    skill: "Food hygiene basics — handwashing, raw/cooked separation, fridge temps",
-    category: "Food hygiene",
-    competencyLevel: "Did with prompts",
-    firstAttemptDate: d(-90),
-    recipesAttempted: [],
-    cuisinesExplored: [],
-    childVoice: "Wash hands. Don't touch raw chicken then bread. I know.",
-    staffObservation: "Solid basics. Visual fridge thermometer placed at Casey's eye level. Will progress to Level 1 hygiene workbook over summer.",
-    hygieneCertificate: false,
-    ledFamilyMeal: false,
-    flagsRisks: [],
-    nextSkillToBuild: "Level 1 Food Hygiene certificate (online, with Anna)",
-    reviewDate: d(60),
-    keyWorker: "staff_anna",
-  },
+const exportCols: ExportColumn<CookingBakingRecord>[] = [
+  { header: "Young Person", accessor: (r: CookingBakingRecord) => getYPName(r.child_id) },
+  { header: "Date", accessor: (r: CookingBakingRecord) => r.recorded_date },
+  { header: "Skill", accessor: (r: CookingBakingRecord) => r.skill },
+  { header: "Category", accessor: (r: CookingBakingRecord) => COOKING_CATEGORY_LABEL[r.category] },
+  { header: "Competency", accessor: (r: CookingBakingRecord) => COOKING_COMPETENCY_LABEL[r.competency_level] },
+  { header: "First Attempt", accessor: (r: CookingBakingRecord) => r.first_attempt_date ?? "—" },
+  { header: "Independent", accessor: (r: CookingBakingRecord) => r.achieved_independently_date ?? "—" },
+  { header: "Cuisines", accessor: (r: CookingBakingRecord) => r.cuisines_explored.join("; ") },
+  { header: "Hygiene Cert", accessor: (r: CookingBakingRecord) => (r.hygiene_certificate ? "Yes" : "No") },
+  { header: "Led Family Meal", accessor: (r: CookingBakingRecord) => (r.led_family_meal ? "Yes" : "No") },
+  { header: "Child Voice", accessor: (r: CookingBakingRecord) => r.child_voice },
+  { header: "Next Skill", accessor: (r: CookingBakingRecord) => r.next_skill_to_build },
+  { header: "Review", accessor: (r: CookingBakingRecord) => r.review_date },
+  { header: "Key Worker", accessor: (r: CookingBakingRecord) => getStaffName(r.key_worker) },
 ];
 
-const exportCols: ExportColumn<CookingRecord>[] = [
-  { header: "Young Person", accessor: (r: CookingRecord) => getYPName(r.youngPerson) },
-  { header: "Date", accessor: (r: CookingRecord) => r.recordedDate },
-  { header: "Skill", accessor: (r: CookingRecord) => r.skill },
-  { header: "Category", accessor: (r: CookingRecord) => r.category },
-  { header: "Competency", accessor: (r: CookingRecord) => r.competencyLevel },
-  { header: "First Attempt", accessor: (r: CookingRecord) => r.firstAttemptDate ?? "—" },
-  { header: "Independent", accessor: (r: CookingRecord) => r.achievedIndependentlyDate ?? "—" },
-  { header: "Cuisines", accessor: (r: CookingRecord) => r.cuisinesExplored.join("; ") },
-  { header: "Hygiene Cert", accessor: (r: CookingRecord) => (r.hygieneCertificate ? "Yes" : "No") },
-  { header: "Led Family Meal", accessor: (r: CookingRecord) => (r.ledFamilyMeal ? "Yes" : "No") },
-  { header: "Child Voice", accessor: (r: CookingRecord) => r.childVoice },
-  { header: "Next Skill", accessor: (r: CookingRecord) => r.nextSkillToBuild },
-  { header: "Review", accessor: (r: CookingRecord) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: CookingRecord) => getStaffName(r.keyWorker) },
-];
-
-const competencyColour: Record<CookingRecord["competencyLevel"], string> = {
-  "Not yet introduced": "bg-slate-100 text-slate-800 border-slate-200",
-  "Observed staff": "bg-blue-100 text-blue-800 border-blue-200",
-  Assisted: "bg-sky-100 text-sky-800 border-sky-200",
-  "Did with prompts": "bg-amber-100 text-amber-800 border-amber-200",
-  "Did independently": "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "Can teach others": "bg-purple-100 text-purple-800 border-purple-200",
+const competencyColour: Record<CookingCompetency, string> = {
+  not_yet_introduced: "bg-slate-100 text-slate-800 border-slate-200",
+  observed_staff: "bg-blue-100 text-blue-800 border-blue-200",
+  assisted: "bg-sky-100 text-sky-800 border-sky-200",
+  did_with_prompts: "bg-amber-100 text-amber-800 border-amber-200",
+  did_independently: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  can_teach_others: "bg-purple-100 text-purple-800 border-purple-200",
 };
 
-const outcomeColour: Record<CookingRecord["recipesAttempted"][number]["outcome"], string> = {
-  Burnt: "bg-red-100 text-red-800 border-red-200",
-  Edible: "bg-amber-100 text-amber-800 border-amber-200",
-  Good: "bg-blue-100 text-blue-800 border-blue-200",
-  Excellent: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "Showed off to others": "bg-purple-100 text-purple-800 border-purple-200",
+const outcomeColour: Record<CookingOutcome, string> = {
+  burnt: "bg-red-100 text-red-800 border-red-200",
+  edible: "bg-amber-100 text-amber-800 border-amber-200",
+  good: "bg-blue-100 text-blue-800 border-blue-200",
+  excellent: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  showed_off: "bg-purple-100 text-purple-800 border-purple-200",
 };
 
 export default function ChildCookingBakingSkillsPage() {
+  const { data: res, isLoading } = useCookingBakingRecords();
+  const records = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "name" | "competency" | "category">("date");
@@ -247,30 +82,34 @@ export default function ChildCookingBakingSkillsPage() {
     let r = records.filter((rec) => {
       const matchesSearch =
         !search ||
-        getYPName(rec.youngPerson).toLowerCase().includes(search.toLowerCase()) ||
+        getYPName(rec.child_id).toLowerCase().includes(search.toLowerCase()) ||
         rec.skill.toLowerCase().includes(search.toLowerCase()) ||
-        rec.category.toLowerCase().includes(search.toLowerCase());
+        COOKING_CATEGORY_LABEL[rec.category].toLowerCase().includes(search.toLowerCase());
       const matchesCat = categoryFilter === "all" || rec.category === categoryFilter;
       return matchesSearch && matchesCat;
     });
     r = [...r].sort((a, b) => {
-      if (sortBy === "name") return getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson));
-      if (sortBy === "competency") return a.competencyLevel.localeCompare(b.competencyLevel);
+      if (sortBy === "name") return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
+      if (sortBy === "competency") return a.competency_level.localeCompare(b.competency_level);
       if (sortBy === "category") return a.category.localeCompare(b.category);
-      return b.recordedDate.localeCompare(a.recordedDate);
+      return b.recorded_date.localeCompare(a.recorded_date);
     });
     return r;
-  }, [search, categoryFilter, sortBy]);
+  }, [search, categoryFilter, sortBy, records]);
 
   const stats = useMemo(() => {
     const skillsTracked = records.length;
     const independentSkills = records.filter(
-      (r) => r.competencyLevel === "Did independently" || r.competencyLevel === "Can teach others"
+      (r) => r.competency_level === "did_independently" || r.competency_level === "can_teach_others"
     ).length;
-    const hygieneCerts = records.filter((r) => r.hygieneCertificate).length;
-    const ledMeals = records.filter((r) => r.ledFamilyMeal).length;
+    const hygieneCerts = records.filter((r) => r.hygiene_certificate).length;
+    const ledMeals = records.filter((r) => r.led_family_meal).length;
     return { skillsTracked, independentSkills, hygieneCerts, ledMeals };
-  }, []);
+  }, [records]);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
+  }
 
   return (
     <PageShell
@@ -331,16 +170,16 @@ export default function ChildCookingBakingSkillsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
-            <SelectItem value="Knife skills">Knife skills</SelectItem>
-            <SelectItem value="Hob/cooking">Hob/cooking</SelectItem>
-            <SelectItem value="Oven/baking">Oven/baking</SelectItem>
-            <SelectItem value="Microwave">Microwave</SelectItem>
-            <SelectItem value="Recipe planning">Recipe planning</SelectItem>
-            <SelectItem value="Shopping list">Shopping list</SelectItem>
-            <SelectItem value="Budgeting">Budgeting</SelectItem>
-            <SelectItem value="Food hygiene">Food hygiene</SelectItem>
-            <SelectItem value="Allergens awareness">Allergens awareness</SelectItem>
-            <SelectItem value="Cultural cooking">Cultural cooking</SelectItem>
+            <SelectItem value="knife_skills">Knife skills</SelectItem>
+            <SelectItem value="hob_cooking">Hob/cooking</SelectItem>
+            <SelectItem value="oven_baking">Oven/baking</SelectItem>
+            <SelectItem value="microwave">Microwave</SelectItem>
+            <SelectItem value="recipe_planning">Recipe planning</SelectItem>
+            <SelectItem value="shopping_list">Shopping list</SelectItem>
+            <SelectItem value="budgeting">Budgeting</SelectItem>
+            <SelectItem value="food_hygiene">Food hygiene</SelectItem>
+            <SelectItem value="allergens_awareness">Allergens awareness</SelectItem>
+            <SelectItem value="cultural_cooking">Cultural cooking</SelectItem>
           </SelectContent>
         </Select>
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
@@ -368,22 +207,22 @@ export default function ChildCookingBakingSkillsPage() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-semibold text-slate-900">{getYPName(r.youngPerson)}</span>
+                    <span className="font-semibold text-slate-900">{getYPName(r.child_id)}</span>
                     <span className="text-slate-700">{r.skill}</span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", competencyColour[r.competencyLevel])}>
-                      {r.competencyLevel}
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", competencyColour[r.competency_level])}>
+                      {COOKING_COMPETENCY_LABEL[r.competency_level]}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded-full border bg-slate-100 text-slate-700 border-slate-200">
-                      {r.category}
+                      {COOKING_CATEGORY_LABEL[r.category]}
                     </span>
-                    {r.ledFamilyMeal ? (
+                    {r.led_family_meal ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-800 border-emerald-200">
                         Led family meal
                       </span>
                     ) : null}
                   </div>
                   <div className="text-sm text-slate-600">
-                    Recorded {r.recordedDate} · Review {r.reviewDate} · {getStaffName(r.keyWorker)}
+                    Recorded {r.recorded_date} · Review {r.review_date} · {getStaffName(r.key_worker)}
                   </div>
                 </div>
                 {isOpen ? <ChevronUp className="h-5 w-5 text-slate-400" /> : <ChevronDown className="h-5 w-5 text-slate-400" />}
@@ -393,33 +232,33 @@ export default function ChildCookingBakingSkillsPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
                     <div className="rounded-md border border-slate-200 bg-white p-3">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Child Voice</div>
-                      <p className="text-sm text-slate-700 italic">&ldquo;{r.childVoice}&rdquo;</p>
+                      <p className="text-sm text-slate-700 italic">&ldquo;{r.child_voice}&rdquo;</p>
                     </div>
                     <div className="rounded-md border border-slate-200 bg-white p-3">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Staff Observation</div>
-                      <p className="text-sm text-slate-700">{r.staffObservation}</p>
+                      <p className="text-sm text-slate-700">{r.staff_observation}</p>
                     </div>
-                    {r.recipesAttempted.length ? (
+                    {r.recipes_attempted.length ? (
                       <div className="rounded-md border border-slate-200 bg-white p-3 lg:col-span-2">
                         <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Attempts & outcomes</div>
                         <div className="space-y-1.5">
-                          {r.recipesAttempted.map((a, i) => (
+                          {r.recipes_attempted.map((a, i) => (
                             <div key={i} className="flex items-center gap-3 text-sm">
                               <span className="text-slate-500 w-24 shrink-0">{a.date}</span>
                               <span className="flex-1 text-slate-700">{a.name}</span>
                               <span className={cn("text-xs px-2 py-0.5 rounded-full border", outcomeColour[a.outcome])}>
-                                {a.outcome}
+                                {COOKING_OUTCOME_LABEL[a.outcome]}
                               </span>
                             </div>
                           ))}
                         </div>
                       </div>
                     ) : null}
-                    {r.cuisinesExplored.length ? (
+                    {r.cuisines_explored.length ? (
                       <div className="rounded-md border border-slate-200 bg-white p-3">
                         <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Cuisines explored</div>
                         <div className="flex flex-wrap gap-1.5">
-                          {r.cuisinesExplored.map((c, i) => (
+                          {r.cuisines_explored.map((c, i) => (
                             <span key={i} className="text-xs px-2 py-0.5 rounded-full border bg-amber-50 text-amber-800 border-amber-200">
                               {c}
                             </span>
@@ -430,16 +269,16 @@ export default function ChildCookingBakingSkillsPage() {
                     <div className="rounded-md border border-slate-200 bg-white p-3">
                       <div className="text-xs font-semibold text-slate-500 uppercase mb-2">Progress dates</div>
                       <div className="text-sm text-slate-700 space-y-1">
-                        <div><span className="text-slate-500">First attempt:</span> {r.firstAttemptDate ?? "—"}</div>
-                        <div><span className="text-slate-500">Independent:</span> {r.achievedIndependentlyDate ?? "—"}</div>
-                        <div><span className="text-slate-500">Hygiene cert:</span> {r.hygieneCertificate ? "Yes" : "Not yet"}</div>
+                        <div><span className="text-slate-500">First attempt:</span> {r.first_attempt_date ?? "—"}</div>
+                        <div><span className="text-slate-500">Independent:</span> {r.achieved_independently_date ?? "—"}</div>
+                        <div><span className="text-slate-500">Hygiene cert:</span> {r.hygiene_certificate ? "Yes" : "Not yet"}</div>
                       </div>
                     </div>
-                    {r.flagsRisks.length ? (
+                    {r.flags_risks.length ? (
                       <div className="rounded-md border border-amber-200 bg-amber-50 p-3 lg:col-span-2">
                         <div className="text-xs font-semibold text-amber-800 uppercase mb-2">Flags & risks</div>
                         <ul className="text-sm text-amber-900 space-y-1">
-                          {r.flagsRisks.map((f, i) => (
+                          {r.flags_risks.map((f, i) => (
                             <li key={i} className="flex gap-2"><span>!</span><span>{f}</span></li>
                           ))}
                         </ul>
@@ -447,9 +286,10 @@ export default function ChildCookingBakingSkillsPage() {
                     ) : null}
                     <div className="rounded-md border border-blue-200 bg-blue-50 p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-blue-800 uppercase mb-2">Next skill to build</div>
-                      <p className="text-sm text-blue-900">{r.nextSkillToBuild}</p>
+                      <p className="text-sm text-blue-900">{r.next_skill_to_build}</p>
                     </div>
                   </div>
+                  <SmartLinkPanel sourceType="cooking-baking-record" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               ) : null}
             </div>

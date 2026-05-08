@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Clock,
   Shield,
+  Loader2,
 } from "lucide-react";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -24,150 +25,28 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useStaffDisciplinaryRecords } from "@/hooks/use-staff-disciplinary-records";
+import type { StaffDisciplinaryRecord } from "@/types/extended";
+import {
+  STAFF_DISCIPLINARY_CATEGORY_LABEL,
+  STAFF_DISCIPLINARY_STAGE_LABEL,
+  STAFF_DISCIPLINARY_SEVERITY_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── local colour maps ────────────────────────────────────────────────── */
 
-type DisciplinaryCategory = "misconduct" | "gross_misconduct" | "performance" | "attendance" | "policy_breach" | "safeguarding" | "professional_boundaries" | "substance_misuse" | "other";
-type DisciplinaryStage = "informal_warning" | "investigation" | "first_written" | "final_written" | "dismissal_hearing" | "dismissed" | "resigned" | "no_case" | "appeal";
-type Severity = "minor" | "serious" | "gross";
-
-interface TimelineEntry {
-  date: string;
-  action: string;
-  by: string;
-  notes: string;
-}
-
-interface DisciplinaryRecord {
-  id: string;
-  staffMember: string;
-  dateRaised: string;
-  category: DisciplinaryCategory;
-  severity: Severity;
-  stage: DisciplinaryStage;
-  allegation: string;
-  investigator: string | null;
-  investigationStartDate: string | null;
-  investigationEndDate: string | null;
-  suspended: boolean;
-  suspensionDate: string | null;
-  suspensionReviewDates: string[];
-  hearingDate: string | null;
-  hearingPanel: string[];
-  outcome: string;
-  sanctionExpiryDate: string | null;
-  appealLodged: boolean;
-  appealDate: string | null;
-  appealOutcome: string;
-  timeline: TimelineEntry[];
-  supportOffered: string[];
-  laDoNotified: boolean;
-  dBSReferral: boolean;
-  ofstedNotified: boolean;
-  confidentialityLevel: "standard" | "restricted" | "highly_restricted";
-  tradeUnionRep: string | null;
-  lessonsLearned: string;
-  notes: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const CAT_LABELS: Record<DisciplinaryCategory, string> = {
-  misconduct: "Misconduct", gross_misconduct: "Gross Misconduct", performance: "Performance",
-  attendance: "Attendance", policy_breach: "Policy Breach", safeguarding: "Safeguarding",
-  professional_boundaries: "Professional Boundaries", substance_misuse: "Substance Misuse", other: "Other",
-};
-
-const STAGE_LABELS: Record<DisciplinaryStage, string> = {
-  informal_warning: "Informal Warning", investigation: "Investigation",
-  first_written: "First Written Warning", final_written: "Final Written Warning",
-  dismissal_hearing: "Dismissal Hearing", dismissed: "Dismissed",
-  resigned: "Resigned", no_case: "No Case to Answer", appeal: "Appeal",
-};
-const STAGE_COLOURS: Record<DisciplinaryStage, string> = {
+const STAGE_COLOURS: Record<string, string> = {
   informal_warning: "bg-blue-100 text-blue-800", investigation: "bg-purple-100 text-purple-800",
   first_written: "bg-amber-100 text-amber-800", final_written: "bg-orange-100 text-orange-800",
   dismissal_hearing: "bg-red-100 text-red-800", dismissed: "bg-red-200 text-red-900",
   resigned: "bg-gray-100 text-gray-700", no_case: "bg-green-100 text-green-800", appeal: "bg-indigo-100 text-indigo-800",
 };
 
-const SEV_LABELS: Record<Severity, string> = { minor: "Minor", serious: "Serious", gross: "Gross" };
-const SEV_COLOURS: Record<Severity, string> = {
+const SEV_COLOURS: Record<string, string> = {
   minor: "bg-amber-100 text-amber-800", serious: "bg-orange-100 text-orange-800", gross: "bg-red-100 text-red-800",
 };
 
-const SEED: DisciplinaryRecord[] = [
-  {
-    id: "dp1", staffMember: "staff_diane", dateRaised: d(-40), category: "attendance",
-    severity: "minor", stage: "first_written",
-    allegation: "Persistent lateness — 8 occasions of arriving more than 15 minutes late for shift in a 3-month period, impacting handover quality and colleague workload.",
-    investigator: "staff_ryan", investigationStartDate: d(-38), investigationEndDate: d(-28),
-    suspended: false, suspensionDate: null, suspensionReviewDates: [],
-    hearingDate: d(-25), hearingPanel: ["staff_darren"],
-    outcome: "First written warning issued. Valid for 6 months. Attendance management plan put in place with fortnightly reviews. Any recurrence within 6 months will trigger escalation to final written warning.",
-    sanctionExpiryDate: d(140), appealLodged: false, appealDate: null, appealOutcome: "",
-    timeline: [
-      { date: d(-40), action: "Lateness pattern identified by deputy", by: "staff_ryan", notes: "8 occasions in 12 weeks — all documented in rota system" },
-      { date: d(-38), action: "Investigation meeting with staff member", by: "staff_ryan", notes: "Diane acknowledged pattern. Cited childcare issues." },
-      { date: d(-35), action: "Informal support meeting", by: "staff_ryan", notes: "Explored flexible start times — not possible due to handover requirements" },
-      { date: d(-28), action: "Investigation report completed", by: "staff_ryan", notes: "Recommended formal hearing" },
-      { date: d(-25), action: "Disciplinary hearing held", by: "staff_darren", notes: "Diane attended with union rep. Full mitigation heard." },
-      { date: d(-23), action: "Outcome letter sent", by: "staff_darren", notes: "First written warning. Attendance plan attached." },
-    ],
-    supportOffered: ["Flexible shift pattern explored", "Childcare signposting", "Attendance management plan with regular reviews", "Union representation at hearing"],
-    laDoNotified: false, dBSReferral: false, ofstedNotified: false,
-    confidentialityLevel: "restricted", tradeUnionRep: "UNISON — Mark Fielding",
-    lessonsLearned: "Need earlier informal intervention when attendance patterns emerge. Rota system should flag patterns automatically.",
-    notes: "Diane responding well to attendance plan. First 2 reviews showed improvement. Next review in 2 weeks.",
-  },
-  {
-    id: "dp2", staffMember: "staff_lackson", dateRaised: d(-90), category: "policy_breach",
-    severity: "serious", stage: "no_case",
-    allegation: "Alleged failure to follow medication administration procedure — administering medication without a second witness check on one occasion.",
-    investigator: "staff_darren", investigationStartDate: d(-88), investigationEndDate: d(-70),
-    suspended: false, suspensionDate: null, suspensionReviewDates: [],
-    hearingDate: null, hearingPanel: [],
-    outcome: "No case to answer. Investigation found that the second checker was present but had not signed the MAR chart at the time of the audit. Both staff members confirmed the dual check occurred. Process issue rather than safety concern. MAR chart signing procedure clarified with all staff.",
-    sanctionExpiryDate: null, appealLodged: false, appealDate: null, appealOutcome: "",
-    timeline: [
-      { date: d(-90), action: "Concern raised during medication audit", by: "staff_darren", notes: "Missing second signature on MAR chart" },
-      { date: d(-88), action: "Investigation commenced", by: "staff_darren", notes: "Both staff members interviewed separately" },
-      { date: d(-80), action: "Witness statement obtained", by: "staff_darren", notes: "Confirmed dual check did occur — signing oversight" },
-      { date: d(-70), action: "Investigation concluded — no case to answer", by: "staff_darren", notes: "Outcome letter sent to Lackson with full explanation" },
-    ],
-    supportOffered: ["Reassurance that no case found", "Medication refresher offered (voluntary)", "Support during investigation period"],
-    laDoNotified: false, dBSReferral: false, ofstedNotified: false,
-    confidentialityLevel: "standard", tradeUnionRep: null,
-    lessonsLearned: "MAR chart signing procedure needed clarifying — 'sign at time of administration, not later.' Team briefing delivered. Audit process updated to check signatures within 24 hours to prevent escalation of administrative gaps.",
-    notes: "Lackson appreciated the thorough but fair investigation. Voluntarily completed medication refresher.",
-  },
-  {
-    id: "dp3", staffMember: "staff_edward", dateRaised: d(-15), category: "professional_boundaries",
-    severity: "serious", stage: "investigation",
-    allegation: "Concern raised that staff member shared personal mobile number with a young person. Alleged breach of professional boundaries policy.",
-    investigator: "staff_darren", investigationStartDate: d(-13), investigationEndDate: null,
-    suspended: false, suspensionDate: null, suspensionReviewDates: [],
-    hearingDate: null, hearingPanel: [],
-    outcome: "",
-    sanctionExpiryDate: null, appealLodged: false, appealDate: null, appealOutcome: "",
-    timeline: [
-      { date: d(-15), action: "Concern raised by colleague", by: "staff_anna", notes: "Overheard YP reference having Edward's number" },
-      { date: d(-14), action: "RM consulted — decision to investigate", by: "staff_darren", notes: "Low risk assessment — no suspension required" },
-      { date: d(-13), action: "Investigation commenced", by: "staff_darren", notes: "Edward informed of allegation" },
-      { date: d(-10), action: "Edward's initial response taken", by: "staff_darren", notes: "Edward states number was given in an emergency situation when transport broke down. Acknowledges policy breach." },
-      { date: d(-7), action: "YP interviewed (age-appropriate)", by: "staff_darren", notes: "YP confirms context. No concerning communications found." },
-    ],
-    supportOffered: ["Continued normal duties (no suspension)", "Union representation offered", "Supervision support from RM"],
-    laDoNotified: false, dBSReferral: false, ofstedNotified: false,
-    confidentialityLevel: "restricted", tradeUnionRep: null,
-    lessonsLearned: "",
-    notes: "Investigation ongoing. Preliminary findings suggest low-risk context but policy breach occurred. Need to ensure emergency communication procedure is clear to all staff so this situation doesn't recur.",
-  },
-];
-
-/* ── flat row for export ─────────────────────────────────────────────── */
+/* ── flat row for export ──────────────────────────────────────────────── */
 
 interface FlatRow {
   staffMember: string; dateRaised: string; category: string; severity: string;
@@ -193,7 +72,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function StaffDisciplinaryPage() {
-  const [data] = useState<DisciplinaryRecord[]>(SEED);
+  const { data: records = [], isLoading } = useStaffDisciplinaryRecords();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterStage, setFilterStage] = useState("all");
@@ -203,40 +82,50 @@ export default function StaffDisciplinaryPage() {
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   const stats = useMemo(() => {
-    const active = data.filter((r) => !["no_case", "dismissed", "resigned"].includes(r.stage)).length;
-    const resolved = data.filter((r) => ["no_case", "dismissed", "resigned"].includes(r.stage)).length;
-    const suspended = data.filter((r) => r.suspended).length;
-    const underInvestigation = data.filter((r) => r.stage === "investigation").length;
+    const active = records.filter((r) => !["no_case", "dismissed", "resigned"].includes(r.stage)).length;
+    const resolved = records.filter((r) => ["no_case", "dismissed", "resigned"].includes(r.stage)).length;
+    const suspended = records.filter((r) => r.suspended).length;
+    const underInvestigation = records.filter((r) => r.stage === "investigation").length;
     return { active, resolved, suspended, underInvestigation };
-  }, [data]);
+  }, [records]);
 
   const filtered = useMemo(() => {
-    let list = data;
+    let list: StaffDisciplinaryRecord[] = records;
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter((r) => getStaffName(r.staffMember).toLowerCase().includes(q) || r.allegation.toLowerCase().includes(q));
+      list = list.filter((r) => getStaffName(r.staff_member).toLowerCase().includes(q) || r.allegation.toLowerCase().includes(q));
     }
     if (filterStage !== "all") list = list.filter((r) => r.stage === filterStage);
     const out = [...list];
     switch (sortBy) {
-      case "date": out.sort((a, b) => b.dateRaised.localeCompare(a.dateRaised)); break;
+      case "date": out.sort((a, b) => b.date_raised.localeCompare(a.date_raised)); break;
       case "severity": { const o: Record<string, number> = { gross: 0, serious: 1, minor: 2 }; out.sort((a, b) => o[a.severity] - o[b.severity]); break; }
       case "stage": out.sort((a, b) => a.stage.localeCompare(b.stage)); break;
     }
     return out;
-  }, [data, search, filterStage, sortBy]);
+  }, [records, search, filterStage, sortBy]);
 
   const exportData = useMemo<FlatRow[]>(() =>
-    data.map((r) => ({
-      staffMember: getStaffName(r.staffMember), dateRaised: r.dateRaised,
-      category: CAT_LABELS[r.category], severity: SEV_LABELS[r.severity],
-      stage: STAGE_LABELS[r.stage], allegation: r.allegation,
+    records.map((r) => ({
+      staffMember: getStaffName(r.staff_member), dateRaised: r.date_raised,
+      category: STAFF_DISCIPLINARY_CATEGORY_LABEL[r.category], severity: STAFF_DISCIPLINARY_SEVERITY_LABEL[r.severity],
+      stage: STAFF_DISCIPLINARY_STAGE_LABEL[r.stage], allegation: r.allegation,
       investigator: r.investigator ? getStaffName(r.investigator) : "—",
       outcome: r.outcome || "Pending", suspended: r.suspended ? "Yes" : "No",
-      sanctionExpiry: r.sanctionExpiryDate ?? "—",
-      appeal: r.appealLodged ? `Yes — ${r.appealOutcome || "Pending"}` : "No",
+      sanctionExpiry: r.sanction_expiry_date ?? "—",
+      appeal: r.appeal_lodged ? `Yes — ${r.appeal_outcome || "Pending"}` : "No",
       notes: r.notes,
-    })), [data]);
+    })), [records]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Staff Disciplinary" subtitle="Confidential disciplinary procedure — investigation, hearing and outcomes">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -285,7 +174,7 @@ export default function StaffDisciplinaryPage() {
           <SelectTrigger className="w-[180px] h-9 text-sm"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Stages</SelectItem>
-            {Object.entries(STAGE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            {Object.entries(STAFF_DISCIPLINARY_STAGE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -310,12 +199,12 @@ export default function StaffDisciplinaryPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Gavel className="h-4 w-4 text-gray-400" />
-                    <h3 className="font-semibold">{getStaffName(r.staffMember)}</h3>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STAGE_COLOURS[r.stage])}>{STAGE_LABELS[r.stage]}</span>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SEV_COLOURS[r.severity])}>{SEV_LABELS[r.severity]}</span>
-                    {r.confidentialityLevel !== "standard" && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-white flex items-center gap-1"><Shield className="h-3 w-3" />{r.confidentialityLevel.replace("_"," ")}</span>}
+                    <h3 className="font-semibold">{getStaffName(r.staff_member)}</h3>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STAGE_COLOURS[r.stage])}>{STAFF_DISCIPLINARY_STAGE_LABEL[r.stage]}</span>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SEV_COLOURS[r.severity])}>{STAFF_DISCIPLINARY_SEVERITY_LABEL[r.severity]}</span>
+                    {r.confidentiality_level !== "standard" && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-white flex items-center gap-1"><Shield className="h-3 w-3" />{r.confidentiality_level.replace("_"," ")}</span>}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{r.dateRaised} · {CAT_LABELS[r.category]}</p>
+                  <p className="text-xs text-gray-500 mt-1">{r.date_raised} · {STAFF_DISCIPLINARY_CATEGORY_LABEL[r.category]}</p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
               </button>
@@ -329,22 +218,22 @@ export default function StaffDisciplinaryPage() {
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div><span className="text-gray-500">Investigator:</span> <span className="font-medium">{r.investigator ? getStaffName(r.investigator) : "Pending"}</span></div>
-                    {r.hearingDate && <div><span className="text-gray-500">Hearing:</span> <span className="font-medium">{r.hearingDate}</span></div>}
-                    {r.sanctionExpiryDate && <div><span className="text-gray-500">Sanction Expires:</span> <span className="font-medium">{r.sanctionExpiryDate}</span></div>}
-                    {r.tradeUnionRep && <div><span className="text-gray-500">TU Rep:</span> <span className="font-medium">{r.tradeUnionRep}</span></div>}
+                    {r.hearing_date && <div><span className="text-gray-500">Hearing:</span> <span className="font-medium">{r.hearing_date}</span></div>}
+                    {r.sanction_expiry_date && <div><span className="text-gray-500">Sanction Expires:</span> <span className="font-medium">{r.sanction_expiry_date}</span></div>}
+                    {r.trade_union_rep && <div><span className="text-gray-500">TU Rep:</span> <span className="font-medium">{r.trade_union_rep}</span></div>}
                   </div>
 
                   {r.suspended && (
                     <div className="rounded-md bg-red-50 border border-red-200 p-3">
                       <h4 className="text-xs font-semibold text-red-700 mb-1">Suspension Active</h4>
-                      <p className="text-sm text-red-800">Suspended since {r.suspensionDate}. Reviews: {r.suspensionReviewDates.join(", ") || "None yet"}</p>
+                      <p className="text-sm text-red-800">Suspended since {r.suspension_date}. Reviews: {r.suspension_review_dates.join(", ") || "None yet"}</p>
                     </div>
                   )}
 
                   <div className="flex flex-wrap gap-2">
-                    {r.laDoNotified && <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">LADO Notified</span>}
-                    {r.dBSReferral && <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">DBS Referral Made</span>}
-                    {r.ofstedNotified && <span className="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">Ofsted Notified</span>}
+                    {r.lado_notified && <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">LADO Notified</span>}
+                    {r.dbs_referral && <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">DBS Referral Made</span>}
+                    {r.ofsted_notified && <span className="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">Ofsted Notified</span>}
                   </div>
 
                   <div>
@@ -368,19 +257,19 @@ export default function StaffDisciplinaryPage() {
                     </div>
                   )}
 
-                  {r.supportOffered.length > 0 && (
+                  {r.support_offered.length > 0 && (
                     <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
                       <h4 className="text-xs font-semibold text-blue-700 mb-1">Support Offered</h4>
                       <ul className="list-disc list-inside text-sm text-blue-800 space-y-0.5">
-                        {r.supportOffered.map((s, i) => <li key={i}>{s}</li>)}
+                        {r.support_offered.map((s, i) => <li key={i}>{s}</li>)}
                       </ul>
                     </div>
                   )}
 
-                  {r.lessonsLearned && (
+                  {r.lessons_learned && (
                     <div className="rounded-md bg-purple-50 border border-purple-200 p-3">
                       <h4 className="text-xs font-semibold text-purple-700 mb-1">Lessons Learned</h4>
-                      <p className="text-sm text-purple-800">{r.lessonsLearned}</p>
+                      <p className="text-sm text-purple-800">{r.lessons_learned}</p>
                     </div>
                   )}
 
@@ -410,13 +299,13 @@ export default function StaffDisciplinaryPage() {
               <div>
                 <label className="text-sm font-medium">Category</label>
                 <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{Object.entries(CAT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                  <SelectContent>{Object.entries(STAFF_DISCIPLINARY_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Severity</label>
                 <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{Object.entries(SEV_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                  <SelectContent>{Object.entries(STAFF_DISCIPLINARY_SEVERITY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>

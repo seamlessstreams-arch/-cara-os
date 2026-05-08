@@ -23,327 +23,106 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-type SpLDCondition =
-  | "Dyslexia"
-  | "Dyscalculia"
-  | "Dysgraphia"
-  | "DCD / Dyspraxia"
-  | "Auditory processing difficulty"
-  | "Visual processing difficulty";
-
-type DiagnosisStatus =
-  | "Diagnosed"
-  | "Awaiting assessment"
-  | "Suspected"
-  | "Self-identified";
-
-type TechOutcome =
-  | "Loves it"
-  | "Useful"
-  | "Tried — not useful"
-  | "Resists";
-
-interface TechnologyTried {
-  name: string;
-  outcome: TechOutcome;
-}
-
-interface ExternalSupport {
-  agency: string;
-  role: string;
-  frequency: string;
-}
-
-interface SpLDPlan {
-  id: string;
-  youngPerson: string;
-  planDate: string;
-  conditions: SpLDCondition[];
-  diagnosisStatus: DiagnosisStatus;
-  diagnosingProfessional?: string;
-  diagnosisDate?: string;
-  strengths: string[];
-  challenges: string[];
-  technologyInUse: string[];
-  technologyTried: TechnologyTried[];
-  schoolAccessArrangements: string[];
-  examConcessionsAgreed: string[];
-  homeStudySupport: string[];
-  staffStrategies: string[];
-  externalSupport: ExternalSupport[];
-  identityWork: string[];
-  childVoice: string;
-  staffObservation: string;
-  nextStep: string;
-  reviewDate: string;
-  keyWorker: string;
-}
+import type {
+  SpldCondition,
+  SpldDiagnosisStatus,
+  SpldTechOutcome,
+} from "@/types/extended";
+import {
+  SPLD_CONDITION_LABEL,
+  SPLD_DIAGNOSIS_STATUS_LABEL,
+  SPLD_TECH_OUTCOME_LABEL,
+} from "@/types/extended";
+import { useSpldSupportPlans } from "@/hooks/use-spld-support-plans";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
-const d = (n: number) => {
+const dayOffset = (n: number) => {
   const dt = new Date();
   dt.setDate(dt.getDate() + n);
   return dt.toISOString().slice(0, 10);
 };
 
-const STATUS_COLOURS: Record<DiagnosisStatus, string> = {
-  "Diagnosed": "bg-sky-100 text-sky-800 border-sky-200",
-  "Awaiting assessment": "bg-amber-100 text-amber-800 border-amber-200",
-  "Suspected": "bg-violet-100 text-violet-800 border-violet-200",
-  "Self-identified": "bg-teal-100 text-teal-800 border-teal-200",
+const STATUS_COLOURS: Record<SpldDiagnosisStatus, string> = {
+  diagnosed: "bg-sky-100 text-sky-800 border-sky-200",
+  awaiting_assessment: "bg-amber-100 text-amber-800 border-amber-200",
+  suspected: "bg-violet-100 text-violet-800 border-violet-200",
+  self_identified: "bg-teal-100 text-teal-800 border-teal-200",
 };
 
-const CONDITION_COLOURS: Record<SpLDCondition, string> = {
-  "Dyslexia": "bg-sky-50 text-sky-700 border-sky-200",
-  "Dyscalculia": "bg-indigo-50 text-indigo-700 border-indigo-200",
-  "Dysgraphia": "bg-violet-50 text-violet-700 border-violet-200",
-  "DCD / Dyspraxia": "bg-teal-50 text-teal-700 border-teal-200",
-  "Auditory processing difficulty": "bg-amber-50 text-amber-700 border-amber-200",
-  "Visual processing difficulty": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
+const CONDITION_COLOURS: Record<SpldCondition, string> = {
+  dyslexia: "bg-sky-50 text-sky-700 border-sky-200",
+  dyscalculia: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  dysgraphia: "bg-violet-50 text-violet-700 border-violet-200",
+  dcd_dyspraxia: "bg-teal-50 text-teal-700 border-teal-200",
+  auditory_processing_difficulty: "bg-amber-50 text-amber-700 border-amber-200",
+  visual_processing_difficulty: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
 };
 
-const TECH_OUTCOME_COLOURS: Record<TechOutcome, string> = {
-  "Loves it": "bg-emerald-100 text-emerald-800",
-  "Useful": "bg-teal-100 text-teal-800",
-  "Tried — not useful": "bg-amber-100 text-amber-800",
-  "Resists": "bg-rose-100 text-rose-800",
+const TECH_OUTCOME_COLOURS: Record<SpldTechOutcome, string> = {
+  loves_it: "bg-emerald-100 text-emerald-800",
+  useful: "bg-teal-100 text-teal-800",
+  tried_not_useful: "bg-amber-100 text-amber-800",
+  resists: "bg-rose-100 text-rose-800",
 };
-
-/* ── seed data ─────────────────────────────────────────────────────────── */
-
-const SEED: SpLDPlan[] = [
-  {
-    id: "spld_jordan_01",
-    youngPerson: "yp_jordan",
-    planDate: d(-21),
-    conditions: ["Dyslexia"],
-    diagnosisStatus: "Diagnosed",
-    diagnosingProfessional:
-      "Dr Helen Marsden, Chartered Educational Psychologist (BPS-registered, AMBDA)",
-    diagnosisDate: d(-1825),
-    strengths: [
-      "Exceptional oral reasoning — talks ideas out before writing them",
-      "Big-picture pattern thinker — sees connections others miss",
-      "Outstanding football tactical awareness — reads play three moves ahead",
-      "Strong empathy and social intelligence with peers",
-      "Vivid visual-spatial imagination — draws plays and diagrams",
-      "Verbal vocabulary above chronological age (assessor noted)",
-      "Resilience — has worked twice as hard as peers and kept going",
-    ],
-    challenges: [
-      "Working memory weaker than verbal reasoning (significant discrepancy)",
-      "Reading speed below chronological age — fatigues over long texts",
-      "Spelling — phonologically plausible but inconsistent",
-      "Note-taking in class — cannot listen and write at the same time",
-      "Long-form essays — ideas faster than handwriting",
-      "Sequencing multi-step instructions given verbally without visual back-up",
-    ],
-    technologyInUse: [
-      "Read&Write Gold (Texthelp) — text-to-speech across school and home",
-      "Audible — audiobooks for English literature set texts and pleasure reading",
-      "OneNote with voice notes — captures lesson content without writing pressure",
-      "Microsoft Immersive Reader for online articles",
-      "ClaroSpeak on phone — for reading menus, signs, longer messages",
-      "Iron-on shirt labels — Jordan no longer mis-spells own surname on PE kit",
-    ],
-    technologyTried: [
-      { name: "Read&Write Gold", outcome: "Loves it" },
-      { name: "Audible audiobooks", outcome: "Loves it" },
-      { name: "OneNote voice notes", outcome: "Useful" },
-      { name: "Mind-mapping (MindView)", outcome: "Useful" },
-      { name: "Dragon NaturallySpeaking dictation", outcome: "Tried — not useful" },
-      { name: "Coloured overlays (blue tint)", outcome: "Resists" },
-    ],
-    schoolAccessArrangements: [
-      "Sit at the front of the class — reduces visual distraction load",
-      "Print handouts on cream paper, 12pt sans-serif (Arial), 1.5 line spacing",
-      "Laptop in lessons for any extended writing task",
-      "Copy of teacher slides emailed before each lesson (no copying from board)",
-      "Spelling not penalised in subjects other than English language",
-      "Verbal feedback alongside written marking — avoids 'red-pen overwhelm'",
-      "Reduced homework reading load — same content, audiobook or summary version",
-    ],
-    examConcessionsAgreed: [
-      "25% extra time (JCQ Form 8 evidence on file via SENCo)",
-      "Use of a reader for English literature and language papers",
-      "Use of a word processor with spell-check disabled (per JCQ rules)",
-      "Separate small room for exams — reduces pace anxiety",
-      "Rest breaks (supervised) on papers over 90 minutes",
-    ],
-    homeStudySupport: [
-      "Anna (key worker) reads-along sometimes for non-fiction homework",
-      "Audiobook + paperback paired reading — listen and follow along",
-      "20-minute homework chunks with 5-minute movement breaks",
-      "Spelling words practised with magnetic letters not pen-and-paper",
-      "Voice-note draft answers first, then type up using text-to-speech to check",
-      "No 'reading aloud in front of others' at home unless Jordan chooses",
-      "Library trip every fortnight — Jordan picks audiobook and matched paperback",
-    ],
-    staffStrategies: [
-      "Give instructions one step at a time, in writing if possible",
-      "Allow Jordan to talk through the answer before writing — never 'just write it down'",
-      "Praise effort and strategy, not output volume — a half-page of clear thinking is the goal",
-      "Never ask Jordan to read aloud cold — offer rehearsal time or right to pass",
-      "Use mind-maps or diagrams when explaining new concepts",
-      "Spell-check is a tool, not cheating — model using it openly",
-      "Notice the strengths daily — name them out loud",
-    ],
-    externalSupport: [
-      {
-        agency: "Allestree Woodlands School SENCo",
-        role: "Access arrangements coordination, JCQ Form 8 evidence holder, exam concessions liaison",
-        frequency: "Half-termly review meeting + email contact as needed",
-      },
-    ],
-    identityWork: [
-      "Jordan now describes dyslexia in own words: 'I think differently — that's why I'm good at football tactics.'",
-      "Watched Steven Spielberg, Keira Knightley and Jamie Oliver dyslexia interviews together with Anna",
-      "Joined British Dyslexia Association youth ambassadors mailing list (Jordan's choice)",
-      "Reframed primary-school 'lazy' label — read old reports together and named what was actually going on",
-      "Football-tactics journal — Jordan dictates plays into OneNote, prints diagrams. This is writing too.",
-    ],
-    childVoice:
-      "I'm not stupid. I used to think I was because I read slow and my spelling looks weird. Now I know my brain just works different. I'm good at seeing things on a football pitch before they happen — that's the same brain. Read&Write means I can read what I want, not just what I can manage. I like audiobooks more than my mates do, actually. The best thing staff do is not make me read out loud in front of people. The worst thing teachers used to do was give me a red-penned page back and call it 'careless.'",
-    staffObservation:
-      "Jordan's confidence has grown markedly since the strength-based reframe began — eye contact, willingness to attempt unfamiliar texts, and a reduced 'I can't' response are all visible. Working memory remains the area of greatest impact and JCQ access arrangements are critical for upcoming GCSEs. The team should hold the line on spelling not being penalised in non-English subjects — this is a reasonable adjustment under the Equality Act 2010, not a favour. Jordan's identity work is the foundation: every other accommodation lands better when Jordan owns the dyslexic identity positively.",
-    nextStep:
-      "Confirm JCQ Form 8 evidence is current with SENCo at next half-term meeting (covers GCSEs in 2026). Trial mind-mapping software (MindView) for revision planning. Anna to source a Year 11 dyslexic peer mentor through BDA youth network if Jordan would like one.",
-    reviewDate: d(75),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "spld_casey_01",
-    youngPerson: "yp_casey",
-    planDate: d(-10),
-    conditions: ["DCD / Dyspraxia"],
-    diagnosisStatus: "Awaiting assessment",
-    strengths: [
-      "Strong creative ideas — verbal and visual planning is rich",
-      "Patient with self when scaffolding is in place",
-      "Good listener — picks up tone and meaning that peers miss",
-      "Empathic — supports younger children with kindness",
-    ],
-    challenges: [
-      "Fine-motor handwriting endurance — hand pain after 10 minutes",
-      "Letter formation inconsistent and slow",
-      "Coordination — cutlery, shoelaces, ball skills all effortful",
-      "Organising belongings and PE kit without prompts",
-      "Spatial awareness in busy corridors and crowded rooms",
-    ],
-    technologyInUse: [
-      "Pencil grip (Stetro) trialled in school",
-      "Sloped writing board on Casey's desk at home",
-      "Velcro shoes (Casey's choice — laces being practised separately)",
-    ],
-    technologyTried: [
-      { name: "Pencil grip (Stetro)", outcome: "Useful" },
-      { name: "Sloped writing board", outcome: "Useful" },
-      { name: "Touch-typing programme (BBC Dance Mat)", outcome: "Loves it" },
-      { name: "Weighted pen", outcome: "Tried — not useful" },
-    ],
-    schoolAccessArrangements: [
-      "Reduced volume of handwritten work where laptop alternative exists",
-      "Extra time for fine-motor practical tasks (DT, art, science apparatus)",
-      "Pre-agreed PE adaptations — Casey not 'last picked' for team games",
-      "Lunchtime pass to leave classroom 2 minutes early to avoid corridor crush",
-    ],
-    examConcessionsAgreed: [
-      "Pending paediatric OT assessment — JCQ evidence will follow if recommended",
-    ],
-    homeStudySupport: [
-      "Touch-typing 10 minutes a day before screen time — making it routine, not a chore",
-      "Homework dictated to staff scribe when handwriting endurance fails",
-      "Shoelace practice as 'side activity' during Casey's chosen TV programme",
-      "Backpack repacked together at bedtime — visual checklist on door",
-    ],
-    staffStrategies: [
-      "Avoid 'just try harder' or 'you did it yesterday' language — DCD effort is not consistent",
-      "Praise the strategy used, not the output",
-      "Build rest breaks into any handwriting task",
-      "Never use handwriting as punishment ('lines') — it would be cruel and counter-productive",
-      "Watch for fatigue and frustration cues; offer the dictation route before tears",
-    ],
-    externalSupport: [
-      {
-        agency: "Royal Derby Hospital — Paediatric Occupational Therapy",
-        role: "DCD assessment pathway — referral made, on waiting list",
-        frequency: "Awaiting first appointment (estimated 14 weeks)",
-      },
-    ],
-    identityWork: [
-      "Casey aware of dyspraxia possibility and curious, not anxious — language used is 'your brain and body talk to each other in their own way'",
-      "Daniel Radcliffe and Cara Delevingne mentioned as people Casey knows of who have dyspraxia",
-      "Avoided the word 'clumsy' — replaced with 'still learning that pathway'",
-    ],
-    childVoice:
-      "My hands get tired before my brain is finished. I want to type more. I'm not bad at PE on purpose — please don't make me captain or last-picked. I like that staff don't laugh when I drop things.",
-    staffObservation:
-      "Casey's awareness of own difficulties is age-appropriate and the strength-based language is taking root well. The OT assessment is the gateway to formal accommodations and should be chased monthly. Touch-typing is the highest-leverage intervention — building the skill now means Year 9 onward Casey can choose laptop in lessons. Staff should resist any school suggestion of 'practising handwriting more' — endurance does not improve with volume in DCD; it requires assessment and strategy.",
-    nextStep:
-      "Anna to ring paediatric OT secretary fortnightly for cancellation slots. Establish touch-typing baseline (words per minute) this week so progress is visible to Casey. Discuss Casey's preferences for PE arrangements with school PE lead before next half-term.",
-    reviewDate: d(45),
-    keyWorker: "staff_anna",
-  },
-];
 
 /* ── flat row for export ───────────────────────────────────────────────── */
 
 interface FlatRow {
-  youngPerson: string;
-  planDate: string;
+  child: string;
+  plan_date: string;
   conditions: string;
-  diagnosisStatus: string;
-  diagnosingProfessional: string;
-  diagnosisDate: string;
+  diagnosis_status: string;
+  diagnosing_professional: string;
+  diagnosis_date: string;
   strengths: string;
   challenges: string;
-  technologyInUse: string;
-  technologyTried: string;
-  schoolAccessArrangements: string;
-  examConcessionsAgreed: string;
-  homeStudySupport: string;
-  staffStrategies: string;
-  externalSupport: string;
-  identityWork: string;
-  childVoice: string;
-  staffObservation: string;
-  nextStep: string;
-  reviewDate: string;
-  keyWorker: string;
+  technology_in_use: string;
+  technology_tried: string;
+  school_access_arrangements: string;
+  exam_concessions_agreed: string;
+  home_study_support: string;
+  staff_strategies: string;
+  external_support: string;
+  identity_work: string;
+  child_voice: string;
+  staff_observation: string;
+  next_step: string;
+  review_date: string;
+  key_worker: string;
 }
 
 const EXPORT_COLS: ExportColumn<FlatRow>[] = [
-  { header: "Young Person", accessor: (r: FlatRow) => r.youngPerson },
-  { header: "Plan Date", accessor: (r: FlatRow) => r.planDate },
+  { header: "Young Person", accessor: (r: FlatRow) => r.child },
+  { header: "Plan Date", accessor: (r: FlatRow) => r.plan_date },
   { header: "Conditions", accessor: (r: FlatRow) => r.conditions },
-  { header: "Diagnosis Status", accessor: (r: FlatRow) => r.diagnosisStatus },
-  { header: "Diagnosing Professional", accessor: (r: FlatRow) => r.diagnosingProfessional },
-  { header: "Diagnosis Date", accessor: (r: FlatRow) => r.diagnosisDate },
+  { header: "Diagnosis Status", accessor: (r: FlatRow) => r.diagnosis_status },
+  { header: "Diagnosing Professional", accessor: (r: FlatRow) => r.diagnosing_professional },
+  { header: "Diagnosis Date", accessor: (r: FlatRow) => r.diagnosis_date },
   { header: "Strengths", accessor: (r: FlatRow) => r.strengths },
   { header: "Challenges", accessor: (r: FlatRow) => r.challenges },
-  { header: "Technology In Use", accessor: (r: FlatRow) => r.technologyInUse },
-  { header: "Technology Tried", accessor: (r: FlatRow) => r.technologyTried },
-  { header: "School Access Arrangements", accessor: (r: FlatRow) => r.schoolAccessArrangements },
-  { header: "Exam Concessions", accessor: (r: FlatRow) => r.examConcessionsAgreed },
-  { header: "Home Study Support", accessor: (r: FlatRow) => r.homeStudySupport },
-  { header: "Staff Strategies", accessor: (r: FlatRow) => r.staffStrategies },
-  { header: "External Support", accessor: (r: FlatRow) => r.externalSupport },
-  { header: "Identity Work", accessor: (r: FlatRow) => r.identityWork },
-  { header: "Child Voice", accessor: (r: FlatRow) => r.childVoice },
-  { header: "Staff Observation", accessor: (r: FlatRow) => r.staffObservation },
-  { header: "Next Step", accessor: (r: FlatRow) => r.nextStep },
-  { header: "Review Date", accessor: (r: FlatRow) => r.reviewDate },
-  { header: "Key Worker", accessor: (r: FlatRow) => r.keyWorker },
+  { header: "Technology In Use", accessor: (r: FlatRow) => r.technology_in_use },
+  { header: "Technology Tried", accessor: (r: FlatRow) => r.technology_tried },
+  { header: "School Access Arrangements", accessor: (r: FlatRow) => r.school_access_arrangements },
+  { header: "Exam Concessions", accessor: (r: FlatRow) => r.exam_concessions_agreed },
+  { header: "Home Study Support", accessor: (r: FlatRow) => r.home_study_support },
+  { header: "Staff Strategies", accessor: (r: FlatRow) => r.staff_strategies },
+  { header: "External Support", accessor: (r: FlatRow) => r.external_support },
+  { header: "Identity Work", accessor: (r: FlatRow) => r.identity_work },
+  { header: "Child Voice", accessor: (r: FlatRow) => r.child_voice },
+  { header: "Staff Observation", accessor: (r: FlatRow) => r.staff_observation },
+  { header: "Next Step", accessor: (r: FlatRow) => r.next_step },
+  { header: "Review Date", accessor: (r: FlatRow) => r.review_date },
+  { header: "Key Worker", accessor: (r: FlatRow) => r.key_worker },
 ];
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildDyslexiaSpLDPlanPage() {
-  const [data] = useState<SpLDPlan[]>(SEED);
+  const { data: response, isLoading } = useSpldSupportPlans();
+  const data = response?.data ?? [];
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterCondition, setFilterCondition] = useState<string>("all");
@@ -354,9 +133,9 @@ export default function ChildDyslexiaSpLDPlanPage() {
   /* stats */
   const stats = useMemo(() => {
     const active = data.length;
-    const diagnosed = data.filter((r) => r.diagnosisStatus === "Diagnosed").length;
-    const examAccess = data.filter((r) => r.examConcessionsAgreed.length > 0).length;
-    const reviewSoon = data.filter((r) => r.reviewDate <= d(90)).length;
+    const diagnosed = data.filter((r) => r.diagnosis_status === "diagnosed").length;
+    const examAccess = data.filter((r) => r.exam_concessions_agreed.length > 0).length;
+    const reviewSoon = data.filter((r) => r.review_date <= dayOffset(90)).length;
     return { active, diagnosed, examAccess, reviewSoon };
   }, [data]);
 
@@ -367,22 +146,22 @@ export default function ChildDyslexiaSpLDPlanPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
-          r.conditions.some((c) => c.toLowerCase().includes(q)) ||
-          r.diagnosisStatus.toLowerCase().includes(q) ||
+          getYPName(r.child_id).toLowerCase().includes(q) ||
+          r.conditions.some((c) => SPLD_CONDITION_LABEL[c].toLowerCase().includes(q)) ||
+          SPLD_DIAGNOSIS_STATUS_LABEL[r.diagnosis_status].toLowerCase().includes(q) ||
           r.strengths.some((s) => s.toLowerCase().includes(q)),
       );
     }
     if (filterCondition !== "all") {
-      list = list.filter((r) => r.conditions.includes(filterCondition as SpLDCondition));
+      list = list.filter((r) => r.conditions.includes(filterCondition as SpldCondition));
     }
     const out = [...list];
     switch (sortBy) {
       case "name":
-        out.sort((a, b) => getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson)));
+        out.sort((a, b) => getYPName(a.child_id).localeCompare(getYPName(b.child_id)));
         break;
       case "review":
-        out.sort((a, b) => a.reviewDate.localeCompare(b.reviewDate));
+        out.sort((a, b) => a.review_date.localeCompare(b.review_date));
         break;
       case "strengths":
         out.sort((a, b) => b.strengths.length - a.strengths.length);
@@ -395,34 +174,44 @@ export default function ChildDyslexiaSpLDPlanPage() {
   const exportData = useMemo<FlatRow[]>(
     () =>
       data.map((r) => ({
-        youngPerson: getYPName(r.youngPerson),
-        planDate: r.planDate,
-        conditions: r.conditions.join("; "),
-        diagnosisStatus: r.diagnosisStatus,
-        diagnosingProfessional: r.diagnosingProfessional ?? "",
-        diagnosisDate: r.diagnosisDate ?? "",
+        child: getYPName(r.child_id),
+        plan_date: r.plan_date,
+        conditions: r.conditions.map((c) => SPLD_CONDITION_LABEL[c]).join("; "),
+        diagnosis_status: SPLD_DIAGNOSIS_STATUS_LABEL[r.diagnosis_status],
+        diagnosing_professional: r.diagnosing_professional ?? "",
+        diagnosis_date: r.diagnosis_date ?? "",
         strengths: r.strengths.join("; "),
         challenges: r.challenges.join("; "),
-        technologyInUse: r.technologyInUse.join("; "),
-        technologyTried: r.technologyTried
-          .map((t) => `${t.name} (${t.outcome})`)
+        technology_in_use: r.technology_in_use.join("; "),
+        technology_tried: r.technology_tried
+          .map((t) => `${t.name} (${SPLD_TECH_OUTCOME_LABEL[t.outcome]})`)
           .join(" | "),
-        schoolAccessArrangements: r.schoolAccessArrangements.join("; "),
-        examConcessionsAgreed: r.examConcessionsAgreed.join("; "),
-        homeStudySupport: r.homeStudySupport.join("; "),
-        staffStrategies: r.staffStrategies.join("; "),
-        externalSupport: r.externalSupport
+        school_access_arrangements: r.school_access_arrangements.join("; "),
+        exam_concessions_agreed: r.exam_concessions_agreed.join("; "),
+        home_study_support: r.home_study_support.join("; "),
+        staff_strategies: r.staff_strategies.join("; "),
+        external_support: r.external_support
           .map((e) => `${e.agency} — ${e.role} (${e.frequency})`)
           .join(" | "),
-        identityWork: r.identityWork.join("; "),
-        childVoice: r.childVoice,
-        staffObservation: r.staffObservation,
-        nextStep: r.nextStep,
-        reviewDate: r.reviewDate,
-        keyWorker: getStaffName(r.keyWorker),
+        identity_work: r.identity_work.join("; "),
+        child_voice: r.child_voice,
+        staff_observation: r.staff_observation,
+        next_step: r.next_step,
+        review_date: r.review_date,
+        key_worker: getStaffName(r.key_worker),
       })),
     [data],
   );
+
+  if (isLoading) {
+    return (
+      <PageShell title="SpLD Support Plans" subtitle="Loading...">
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-300 border-t-sky-600" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -470,12 +259,11 @@ export default function ChildDyslexiaSpLDPlanPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Conditions</SelectItem>
-            <SelectItem value="Dyslexia">Dyslexia</SelectItem>
-            <SelectItem value="Dyscalculia">Dyscalculia</SelectItem>
-            <SelectItem value="Dysgraphia">Dysgraphia</SelectItem>
-            <SelectItem value="DCD / Dyspraxia">DCD / Dyspraxia</SelectItem>
-            <SelectItem value="Auditory processing difficulty">Auditory processing</SelectItem>
-            <SelectItem value="Visual processing difficulty">Visual processing</SelectItem>
+            {(Object.keys(SPLD_CONDITION_LABEL) as SpldCondition[]).map((key) => (
+              <SelectItem key={key} value={key}>
+                {SPLD_CONDITION_LABEL[key]}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -506,7 +294,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <BookOpen className="h-4 w-4 text-sky-500" />
-                    <h3 className="font-semibold">{getYPName(r.youngPerson)}</h3>
+                    <h3 className="font-semibold">{getYPName(r.child_id)}</h3>
                     {r.conditions.map((c) => (
                       <span
                         key={c}
@@ -515,26 +303,26 @@ export default function ChildDyslexiaSpLDPlanPage() {
                           CONDITION_COLOURS[c],
                         )}
                       >
-                        {c}
+                        {SPLD_CONDITION_LABEL[c]}
                       </span>
                     ))}
                     <span
                       className={cn(
                         "px-2 py-0.5 rounded-full text-xs font-medium border",
-                        STATUS_COLOURS[r.diagnosisStatus],
+                        STATUS_COLOURS[r.diagnosis_status],
                       )}
                     >
-                      {r.diagnosisStatus}
+                      {SPLD_DIAGNOSIS_STATUS_LABEL[r.diagnosis_status]}
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
                       <Lightbulb className="h-3 w-3 inline mr-1" />
-                      {r.examConcessionsAgreed.length} exam access
+                      {r.exam_concessions_agreed.length} exam access
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Plan {r.planDate} · Key worker {getStaffName(r.keyWorker)} · Review{" "}
-                    <span className={cn(r.reviewDate <= d(0) ? "text-red-600 font-medium" : "")}>
-                      {r.reviewDate}
+                    Plan {r.plan_date} · Key worker {getStaffName(r.key_worker)} · Review{" "}
+                    <span className={cn(r.review_date <= dayOffset(0) ? "text-red-600 font-medium" : "")}>
+                      {r.review_date}
                     </span>
                   </p>
                 </div>
@@ -551,18 +339,18 @@ export default function ChildDyslexiaSpLDPlanPage() {
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm rounded-md bg-sky-50 border border-sky-200 p-3">
                     <div>
                       <span className="text-gray-500">Status:</span>{" "}
-                      <span className="font-medium">{r.diagnosisStatus}</span>
+                      <span className="font-medium">{SPLD_DIAGNOSIS_STATUS_LABEL[r.diagnosis_status]}</span>
                     </div>
-                    {r.diagnosisDate && (
+                    {r.diagnosis_date && (
                       <div>
                         <span className="text-gray-500">Diagnosed:</span>{" "}
-                        <span className="font-medium">{r.diagnosisDate}</span>
+                        <span className="font-medium">{r.diagnosis_date}</span>
                       </div>
                     )}
-                    {r.diagnosingProfessional && (
+                    {r.diagnosing_professional && (
                       <div className="md:col-span-3">
                         <span className="text-gray-500">Professional:</span>{" "}
-                        <span className="font-medium">{r.diagnosingProfessional}</span>
+                        <span className="font-medium">{r.diagnosing_professional}</span>
                       </div>
                     )}
                   </div>
@@ -597,7 +385,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                       Technology In Use
                     </h4>
                     <ul className="list-disc list-inside text-sm text-teal-900 space-y-0.5">
-                      {r.technologyInUse.map((t, idx) => (
+                      {r.technology_in_use.map((t, idx) => (
                         <li key={idx}>{t}</li>
                       ))}
                     </ul>
@@ -609,7 +397,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                       Technology Tried — Outcomes
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {r.technologyTried.map((t, idx) => (
+                      {r.technology_tried.map((t, idx) => (
                         <span
                           key={idx}
                           className={cn(
@@ -617,7 +405,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                             TECH_OUTCOME_COLOURS[t.outcome],
                           )}
                         >
-                          {t.name} — {t.outcome}
+                          {t.name} — {SPLD_TECH_OUTCOME_LABEL[t.outcome]}
                         </span>
                       ))}
                     </div>
@@ -630,7 +418,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                         School Access Arrangements
                       </h4>
                       <ul className="list-disc list-inside text-sm text-sky-900 space-y-0.5">
-                        {r.schoolAccessArrangements.map((s, idx) => (
+                        {r.school_access_arrangements.map((s, idx) => (
                           <li key={idx}>{s}</li>
                         ))}
                       </ul>
@@ -639,9 +427,9 @@ export default function ChildDyslexiaSpLDPlanPage() {
                       <h4 className="text-xs font-semibold text-indigo-700 mb-1 flex items-center gap-1">
                         <Lightbulb className="h-3 w-3" /> Exam Access (JCQ)
                       </h4>
-                      {r.examConcessionsAgreed.length > 0 ? (
+                      {r.exam_concessions_agreed.length > 0 ? (
                         <ul className="list-disc list-inside text-sm text-indigo-900 space-y-0.5">
-                          {r.examConcessionsAgreed.map((e, idx) => (
+                          {r.exam_concessions_agreed.map((e, idx) => (
                             <li key={idx}>{e}</li>
                           ))}
                         </ul>
@@ -658,7 +446,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                         Home Study Support
                       </h4>
                       <ul className="list-disc list-inside text-sm text-teal-900 space-y-0.5">
-                        {r.homeStudySupport.map((h, idx) => (
+                        {r.home_study_support.map((h, idx) => (
                           <li key={idx}>{h}</li>
                         ))}
                       </ul>
@@ -668,7 +456,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                         Staff Strategies
                       </h4>
                       <ul className="list-disc list-inside text-sm text-violet-900 space-y-0.5">
-                        {r.staffStrategies.map((s, idx) => (
+                        {r.staff_strategies.map((s, idx) => (
                           <li key={idx}>{s}</li>
                         ))}
                       </ul>
@@ -676,7 +464,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                   </div>
 
                   {/* external support */}
-                  {r.externalSupport.length > 0 && (
+                  {r.external_support.length > 0 && (
                     <div>
                       <h4 className="text-xs font-semibold text-gray-500 mb-2">External Support</h4>
                       <div className="overflow-x-auto rounded-md border">
@@ -689,7 +477,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {r.externalSupport.map((e, idx) => (
+                            {r.external_support.map((e, idx) => (
                               <tr key={idx} className="border-t">
                                 <td className="px-3 py-2 font-medium">{e.agency}</td>
                                 <td className="px-3 py-2 text-gray-700">{e.role}</td>
@@ -708,7 +496,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
                       <Award className="h-3 w-3" /> Identity Work — Reframing
                     </h4>
                     <ul className="list-disc list-inside text-sm text-rose-900 space-y-0.5">
-                      {r.identityWork.map((i, idx) => (
+                      {r.identity_work.map((i, idx) => (
                         <li key={idx}>{i}</li>
                       ))}
                     </ul>
@@ -719,20 +507,23 @@ export default function ChildDyslexiaSpLDPlanPage() {
                     <h4 className="text-xs font-semibold text-sky-700 mb-1">
                       Child&apos;s Voice
                     </h4>
-                    <p className="text-sm text-sky-900 italic">&ldquo;{r.childVoice}&rdquo;</p>
+                    <p className="text-sm text-sky-900 italic">&ldquo;{r.child_voice}&rdquo;</p>
                   </div>
 
                   {/* staff observation */}
                   <div className="rounded-md bg-gray-50 border border-gray-200 p-3">
                     <h4 className="text-xs font-semibold text-gray-500 mb-1">Staff Observation</h4>
-                    <p className="text-sm text-gray-800">{r.staffObservation}</p>
+                    <p className="text-sm text-gray-800">{r.staff_observation}</p>
                   </div>
 
                   {/* next step */}
                   <div className="rounded-md bg-teal-50 border border-teal-200 p-3">
                     <h4 className="text-xs font-semibold text-teal-700 mb-1">Next Step</h4>
-                    <p className="text-sm text-teal-900">{r.nextStep}</p>
+                    <p className="text-sm text-teal-900">{r.next_step}</p>
                   </div>
+
+                  {/* smart link panel */}
+                  <SmartLinkPanel sourceType="dyslexia-spld-plan" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               )}
             </div>

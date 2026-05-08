@@ -18,6 +18,7 @@ import {
   Briefcase,
   BarChart3,
   Info,
+  Loader2,
 } from "lucide-react";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -26,177 +27,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge }        from "@/components/ui/badge";
 import { cn }           from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useReg40StaffEntries } from "@/hooks/use-reg40-staff-entries";
+import type { Reg40StaffEntry, Reg40QualStatus } from "@/types/extended";
+import { REG40_QUAL_STATUS_LABEL } from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── local config ─────────────────────────────────────────────────────── */
 
-type QualStatus = "complete" | "in_progress" | "due_renewal" | "current";
-
-interface Qualification {
-  name: string;
-  status: QualStatus;
-  date: string | null;
-}
-
-interface StaffEntry {
-  staffId: string;
-  role: string;
-  contractHours: number;
-  qualifications: Qualification[];
-  tcRefresherDue: string;
-  firstAidExpiry: string | null;
-  shiftPattern: string;
-  keyChild: string | null;
-}
-
-interface GapItem {
-  id: string;
-  area: string;
-  detail: string;
-  severity: "high" | "medium" | "low";
-  action: string;
-}
-
-interface RecentChange {
-  id: string;
-  date: string;
-  description: string;
-  type: "departure" | "arrival" | "ratio_change";
-}
-
-/* ── helpers ───────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-/* ── seed data ─────────────────────────────────────────────────────────── */
-
-const STAFF_ENTRIES: StaffEntry[] = [
-  {
-    staffId: "staff_darren",
-    role: "Registered Manager",
-    contractHours: 40,
-    qualifications: [
-      { name: "Level 7 Leadership & Management", status: "in_progress", date: null },
-      { name: "First Aid at Work", status: "current", date: d(180) },
-      { name: "TCI Certified", status: "complete", date: null },
-      { name: "Safeguarding Level 3", status: "complete", date: null },
-    ],
-    tcRefresherDue: d(45),
-    firstAidExpiry: d(180),
-    shiftPattern: "Mon-Fri Office + On-call",
-    keyChild: null,
-  },
-  {
-    staffId: "staff_ryan",
-    role: "Deputy Manager",
-    contractHours: 40,
-    qualifications: [
-      { name: "Level 5 Leadership & Management", status: "complete", date: null },
-      { name: "First Aid at Work", status: "due_renewal", date: d(60) },
-      { name: "TCI Certified", status: "complete", date: null },
-      { name: "Safeguarding Level 3", status: "complete", date: null },
-    ],
-    tcRefresherDue: d(75),
-    firstAidExpiry: d(60),
-    shiftPattern: "Mon-Fri + alternate weekends",
-    keyChild: null,
-  },
-  {
-    staffId: "staff_anna",
-    role: "Residential Care Worker",
-    contractHours: 37.5,
-    qualifications: [
-      { name: "Level 3 Diploma (Residential Childcare)", status: "complete", date: null },
-      { name: "First Aid at Work", status: "current", date: d(200) },
-      { name: "TCI Certified", status: "complete", date: null },
-    ],
-    tcRefresherDue: d(60),
-    firstAidExpiry: d(200),
-    shiftPattern: "Rota — days/sleep-ins",
-    keyChild: "Jordan M",
-  },
-  {
-    staffId: "staff_chervelle",
-    role: "Residential Care Worker",
-    contractHours: 37.5,
-    qualifications: [
-      { name: "Level 3 Diploma (Residential Childcare)", status: "complete", date: null },
-      { name: "TCI Certified", status: "complete", date: null },
-      { name: "Safeguarding Level 3", status: "complete", date: null },
-    ],
-    tcRefresherDue: d(90),
-    firstAidExpiry: null,
-    shiftPattern: "Rota — days/sleep-ins",
-    keyChild: "Casey T",
-  },
-  {
-    staffId: "staff_edward",
-    role: "Residential Care Worker",
-    contractHours: 37.5,
-    qualifications: [
-      { name: "Level 3 Diploma (Residential Childcare)", status: "complete", date: null },
-      { name: "TCI Certified", status: "complete", date: null },
-    ],
-    tcRefresherDue: d(30),
-    firstAidExpiry: null,
-    shiftPattern: "Rota — long days",
-    keyChild: "Alex W",
-  },
-  {
-    staffId: "staff_lackson",
-    role: "Residential Care Worker",
-    contractHours: 37.5,
-    qualifications: [
-      { name: "Level 3 Diploma (Residential Childcare)", status: "in_progress", date: d(90) },
-      { name: "TCI Certified", status: "complete", date: null },
-    ],
-    tcRefresherDue: d(55),
-    firstAidExpiry: null,
-    shiftPattern: "Rota — days/evenings",
-    keyChild: "Alex W (secondary)",
-  },
-  {
-    staffId: "staff_mirela",
-    role: "Residential Care Worker",
-    contractHours: 37.5,
-    qualifications: [
-      { name: "Level 3 Diploma (Residential Childcare)", status: "in_progress", date: d(120) },
-      { name: "First Aid at Work", status: "current", date: d(300) },
-      { name: "TCI Certified", status: "complete", date: null },
-    ],
-    tcRefresherDue: d(110),
-    firstAidExpiry: d(300),
-    shiftPattern: "Rota — days/sleep-ins",
-    keyChild: "Jordan M (secondary)",
-  },
-];
-
-const MINIMUM_STAFFING = [
-  { id: "ms1", shift: "Day (07:00–14:00)", minimum: 2, current: "2–3", adequate: true },
-  { id: "ms2", shift: "Afternoon (14:00–22:00)", minimum: 3, current: "3", adequate: true },
-  { id: "ms3", shift: "Waking Night (22:00–07:00)", minimum: 1, current: "1", adequate: true, note: "Lone working restricted until Lackson completes Level 3" },
-  { id: "ms4", shift: "Weekend Day", minimum: 2, current: "2–3", adequate: true },
-];
-
-const GAP_ANALYSIS: GapItem[] = [
-  { id: "g1", area: "Level 3 Diploma", detail: "2 staff (Lackson, Mirela) working toward Level 3 — both within the 2-year statutory window", severity: "medium", action: "Progress reviews monthly; on track" },
-  { id: "g2", area: "First Aid Coverage", detail: "Ryan's First Aid renewal due — currently 3 holders providing adequate coverage", severity: "low", action: "Renewal course booked" },
-  { id: "g3", area: "Waking Night Lone Working", detail: "Lone working not permitted on waking nights until Lackson completes Level 3 — second staff required", severity: "high", action: "Schedule adjusted to pair Lackson with qualified staff" },
-  { id: "g4", area: "Vacancies", detail: "No current vacancies — all posts filled", severity: "low", action: "N/A" },
-];
-
-const RECENT_CHANGES: RecentChange[] = [
-  { id: "rc1", date: d(-90), description: "Diane — dismissed (conduct)", type: "departure" },
-  { id: "rc2", date: d(-60), description: "Mirela Tshawa Kalongo — started (replacement for Diane)", type: "arrival" },
-  { id: "rc3", date: d(-60), description: "Staff:child ratio improved to 2.3:1", type: "ratio_change" },
-];
-
-/* ── status meta ───────────────────────────────────────────────────────── */
-
-const STATUS_META: Record<QualStatus, { label: string; colour: string; icon: typeof CheckCircle2 }> = {
-  complete:     { label: "Complete",     colour: "bg-green-100 text-green-700",  icon: CheckCircle2 },
-  in_progress:  { label: "In Progress",  colour: "bg-blue-100 text-blue-700",    icon: Clock },
-  current:      { label: "Current",      colour: "bg-green-100 text-green-700",  icon: CheckCircle2 },
-  due_renewal:  { label: "Due Renewal",  colour: "bg-amber-100 text-amber-700",  icon: AlertTriangle },
+const STATUS_META: Record<Reg40QualStatus, { colour: string; icon: typeof CheckCircle2 }> = {
+  complete:     { colour: "bg-green-100 text-green-700",  icon: CheckCircle2 },
+  in_progress:  { colour: "bg-blue-100 text-blue-700",    icon: Clock },
+  current:      { colour: "bg-green-100 text-green-700",  icon: CheckCircle2 },
+  due_renewal:  { colour: "bg-amber-100 text-amber-700",  icon: AlertTriangle },
 };
 
 const SEVERITY_META: Record<string, { colour: string }> = {
@@ -205,36 +46,58 @@ const SEVERITY_META: Record<string, { colour: string }> = {
   low:    { colour: "bg-green-100 text-green-700 border-green-200" },
 };
 
-/* ── component ─────────────────────────────────────────────────────────── */
+/* ── reference data (kept local — not dynamic records) ─────────────── */
+
+const MINIMUM_STAFFING = [
+  { id: "ms1", shift: "Day (07:00–14:00)", minimum: 2, current: "2–3", adequate: true, note: null as string | null },
+  { id: "ms2", shift: "Afternoon (14:00–22:00)", minimum: 3, current: "3", adequate: true, note: null as string | null },
+  { id: "ms3", shift: "Waking Night (22:00–07:00)", minimum: 1, current: "1", adequate: true, note: "Lone working restricted until Lackson completes Level 3" },
+  { id: "ms4", shift: "Weekend Day", minimum: 2, current: "2–3", adequate: true, note: null as string | null },
+];
+
+const GAP_ANALYSIS = [
+  { id: "g1", area: "Level 3 Diploma", detail: "2 staff (Lackson, Mirela) working toward Level 3 — both within the 2-year statutory window", severity: "medium", action: "Progress reviews monthly; on track" },
+  { id: "g2", area: "First Aid Coverage", detail: "Ryan's First Aid renewal due — currently 3 holders providing adequate coverage", severity: "low", action: "Renewal course booked" },
+  { id: "g3", area: "Waking Night Lone Working", detail: "Lone working not permitted on waking nights until Lackson completes Level 3 — second staff required", severity: "high", action: "Schedule adjusted to pair Lackson with qualified staff" },
+  { id: "g4", area: "Vacancies", detail: "No current vacancies — all posts filled", severity: "low", action: "N/A" },
+];
+
+const RECENT_CHANGES = [
+  { id: "rc1", date: "2026-02-06", description: "Diane — dismissed (conduct)", type: "departure" },
+  { id: "rc2", date: "2026-03-08", description: "Mirela Tshawa Kalongo — started (replacement for Diane)", type: "arrival" },
+  { id: "rc3", date: "2026-03-08", description: "Staff:child ratio improved to 2.3:1", type: "ratio_change" },
+];
+
+/* ── page ─────────────────────────────────────────────────────────────── */
 
 export default function Reg40StaffingPlanPage() {
-  const [data] = useState<StaffEntry[]>(STAFF_ENTRIES);
+  const { data: records = [], isLoading } = useReg40StaffEntries();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("name");
 
-  /* ── stats ───────────────────────────────────────────────────────────── */
+  /* ── stats ──────────────────────────────────────────────────────────── */
 
   const stats = useMemo(() => {
-    const totalStaff = data.length;
-    const totalFTE = data.reduce((s, e) => s + e.contractHours, 0) / 37.5;
+    const totalStaff = records.length;
+    const totalFTE = records.reduce((s, e) => s + e.contract_hours, 0) / 37.5;
     const childCount = 3;
     const ratio = (totalStaff / childCount).toFixed(1);
-    const allQuals = data.flatMap((e) => e.qualifications);
-    const level3 = data.filter((e) => e.qualifications.some((q) => q.name.includes("Level 3") && q.status === "complete"));
-    const level3InProgress = data.filter((e) => e.qualifications.some((q) => q.name.includes("Level 3") && q.status === "in_progress"));
-    const level3Pct = Math.round(((level3.length) / (level3.length + level3InProgress.length)) * 100);
-    const qualGaps = allQuals.filter((q) => q.status === "in_progress" || q.status === "due_renewal").length;
-    const tciCovered = data.filter((e) => e.qualifications.some((q) => q.name === "TCI Certified")).length;
+    const level3 = records.filter((e) => e.qualifications.some((q) => q.name.includes("Level 3") && q.status === "complete"));
+    const level3InProgress = records.filter((e) => e.qualifications.some((q) => q.name.includes("Level 3") && q.status === "in_progress"));
+    const level3Pct = (level3.length + level3InProgress.length) > 0
+      ? Math.round((level3.length / (level3.length + level3InProgress.length)) * 100)
+      : 0;
+    const tciCovered = records.filter((e) => e.qualifications.some((q) => q.name === "TCI Certified")).length;
 
-    return { totalStaff, totalFTE: totalFTE.toFixed(1), ratio, childCount, level3Complete: level3.length, level3InProgress: level3InProgress.length, level3Pct, qualGaps, tciCovered };
-  }, [data]);
+    return { totalStaff, totalFTE: totalFTE.toFixed(1), ratio, childCount, level3Complete: level3.length, level3InProgress: level3InProgress.length, level3Pct, tciCovered };
+  }, [records]);
 
-  /* ── filter + sort ───────────────────────────────────────────────────── */
+  /* ── filter + sort ──────────────────────────────────────────────────── */
 
   const filtered = useMemo(() => {
-    let list = [...data];
+    let list = [...records];
     if (filterStatus !== "all") {
       if (filterStatus === "complete") {
         list = list.filter((s) => s.qualifications.every((q) => q.status === "complete" || q.status === "current"));
@@ -245,7 +108,7 @@ export default function Reg40StaffingPlanPage() {
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((s) =>
-        getStaffName(s.staffId).toLowerCase().includes(q) ||
+        getStaffName(s.staff_id).toLowerCase().includes(q) ||
         s.role.toLowerCase().includes(q) ||
         s.qualifications.some((qual) => qual.name.toLowerCase().includes(q))
       );
@@ -257,26 +120,26 @@ export default function Reg40StaffingPlanPage() {
           const bPct = b.qualifications.filter((q) => q.status === "complete" || q.status === "current").length / b.qualifications.length;
           return aPct - bPct;
         }
-        default: return getStaffName(a.staffId).localeCompare(getStaffName(b.staffId));
+        default: return getStaffName(a.staff_id).localeCompare(getStaffName(b.staff_id));
       }
     });
     return list;
-  }, [data, filterStatus, search, sortBy]);
+  }, [records, filterStatus, search, sortBy]);
 
-  /* ── export ──────────────────────────────────────────────────────────── */
+  /* ── export ─────────────────────────────────────────────────────────── */
 
-  const exportData = useMemo(() => data.flatMap((s) => s.qualifications.map((q) => ({
-    staffName: getStaffName(s.staffId),
+  const exportData = useMemo(() => records.flatMap((s) => s.qualifications.map((q) => ({
+    staffName: getStaffName(s.staff_id),
     role: s.role,
-    contractHours: s.contractHours,
+    contractHours: s.contract_hours,
     qualification: q.name,
-    status: STATUS_META[q.status].label,
+    status: REG40_QUAL_STATUS_LABEL[q.status],
     dueDate: q.date || "",
-    tcRefresherDue: s.tcRefresherDue,
-    firstAidExpiry: s.firstAidExpiry || "",
-    shiftPattern: s.shiftPattern,
-    keyChild: s.keyChild || "",
-  }))), [data]);
+    tcRefresherDue: s.tc_refresher_due,
+    firstAidExpiry: s.first_aid_expiry || "",
+    shiftPattern: s.shift_pattern,
+    keyChild: s.key_child || "",
+  }))), [records]);
 
   type ExportRow = typeof exportData[number];
 
@@ -292,6 +155,16 @@ export default function Reg40StaffingPlanPage() {
     { header: "Shift Pattern",    accessor: (r: ExportRow) => r.shiftPattern },
     { header: "Key Child",        accessor: (r: ExportRow) => r.keyChild },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Regulation 40 — Staffing Plan" subtitle="Staff deployment, qualifications coverage, minimum staffing levels, and adequacy assessment">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -316,7 +189,7 @@ export default function Reg40StaffingPlanPage() {
             { l: "Children",          v: stats.childCount, icon: Users, c: "text-purple-600" },
             { l: "Level 3 Complete",  v: stats.level3Complete, icon: GraduationCap, c: "text-green-600" },
             { l: "Level 3 In Progress", v: stats.level3InProgress, icon: Clock, c: "text-amber-600" },
-            { l: "TCI Coverage",      v: `${stats.tciCovered}/7`, icon: Shield, c: "text-green-600" },
+            { l: "TCI Coverage",      v: `${stats.tciCovered}/${records.length || 7}`, icon: Shield, c: "text-green-600" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
               <s.icon className={cn("mx-auto h-5 w-5 mb-1", s.c)} />
@@ -514,18 +387,18 @@ export default function Reg40StaffingPlanPage() {
         {/* ── expandable staff cards ─────────────────────────────────────── */}
 
         {filtered.map((staff) => {
-          const name = getStaffName(staff.staffId);
+          const name = getStaffName(staff.staff_id);
           const completeCount = staff.qualifications.filter((q) => q.status === "complete" || q.status === "current").length;
           const totalQuals = staff.qualifications.length;
-          const pct = Math.round((completeCount / totalQuals) * 100);
+          const pct = totalQuals > 0 ? Math.round((completeCount / totalQuals) * 100) : 0;
           const hasIssues = staff.qualifications.some((q) => q.status === "in_progress" || q.status === "due_renewal");
 
           return (
-            <div key={staff.staffId} className={cn(
+            <div key={staff.id} className={cn(
               "rounded-lg border bg-white overflow-hidden",
               staff.qualifications.some((q) => q.status === "due_renewal") ? "border-amber-200" : "",
             )}>
-              <button onClick={() => setExpandedId(expandedId === staff.staffId ? null : staff.staffId)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+              <button onClick={() => setExpandedId(expandedId === staff.id ? null : staff.id)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
                 <div className="flex items-center gap-3">
                   <GraduationCap className={cn("h-5 w-5", pct === 100 ? "text-green-600" : pct >= 75 ? "text-amber-500" : "text-red-500")} />
                   <div className="text-left">
@@ -536,7 +409,7 @@ export default function Reg40StaffingPlanPage() {
                       {hasIssues && pct < 100 && <Badge className="text-[10px] h-5 bg-amber-100 text-amber-700">Gaps</Badge>}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {completeCount}/{totalQuals} qualifications complete · {staff.contractHours}h/week · {staff.shiftPattern}
+                      {completeCount}/{totalQuals} qualifications complete · {staff.contract_hours}h/week · {staff.shift_pattern}
                     </p>
                   </div>
                 </div>
@@ -544,24 +417,24 @@ export default function Reg40StaffingPlanPage() {
                   <div className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden hidden sm:block">
                     <div className={cn("h-full rounded-full", pct === 100 ? "bg-green-400" : pct >= 75 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${pct}%` }} />
                   </div>
-                  {expandedId === staff.staffId ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  {expandedId === staff.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </div>
               </button>
 
-              {expandedId === staff.staffId && (
+              {expandedId === staff.id && (
                 <div className="border-t p-4 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     <div className="rounded border p-2">
                       <p className="text-muted-foreground font-medium">Contract</p>
-                      <p className="font-semibold">{staff.contractHours} hours/week</p>
+                      <p className="font-semibold">{staff.contract_hours} hours/week</p>
                     </div>
                     <div className="rounded border p-2">
                       <p className="text-muted-foreground font-medium">TCI Refresher Due</p>
-                      <p className="font-semibold">{staff.tcRefresherDue}</p>
+                      <p className="font-semibold">{staff.tc_refresher_due}</p>
                     </div>
                     <div className="rounded border p-2">
                       <p className="text-muted-foreground font-medium">Key Child</p>
-                      <p className="font-semibold">{staff.keyChild || "N/A"}</p>
+                      <p className="font-semibold">{staff.key_child || "N/A"}</p>
                     </div>
                   </div>
 
@@ -585,16 +458,16 @@ export default function Reg40StaffingPlanPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             {qual.date && <span className="text-xs text-muted-foreground">{qual.status === "in_progress" ? "Due: " : "Expires: "}{qual.date}</span>}
-                            <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", meta.colour)}>{meta.label}</span>
+                            <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", meta.colour)}>{REG40_QUAL_STATUS_LABEL[qual.status]}</span>
                           </div>
                         </div>
                       );
                     })}
                   </div>
 
-                  {staff.firstAidExpiry && (
+                  {staff.first_aid_expiry && (
                     <div className="text-xs text-muted-foreground">
-                      First Aid certificate expires: <span className="font-medium">{staff.firstAidExpiry}</span>
+                      First Aid certificate expires: <span className="font-medium">{staff.first_aid_expiry}</span>
                     </div>
                   )}
                 </div>

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -19,242 +20,78 @@ import {
   ArrowUpDown,
   CheckCircle2,
   Home,
+  Loader2,
 } from "lucide-react";
+import { useSleepAssessmentRecords } from "@/hooks/use-sleep-assessment-records";
+import type { SleepAssessmentRecord, SleepAssessmentStatus, SleepAssessmentQuality, SleepAssessmentTrend } from "@/types/extended";
+import {
+  SLEEP_ASSESSMENT_STATUS_LABEL,
+  SLEEP_ASSESSMENT_QUALITY_LABEL,
+  SLEEP_ASSESSMENT_TREND_LABEL,
+} from "@/types/extended";
 
-/* ─── date helper ─── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+/* ─── local config ─── */
+
+const STATUS_CLR: Record<SleepAssessmentStatus, string> = {
+  active: "bg-green-100 text-green-800",
+  concern: "bg-red-100 text-red-800",
+  improving: "bg-blue-100 text-blue-800",
+  needs_review: "bg-amber-100 text-amber-800",
 };
 
-/* ─── types ─── */
-interface SleepPattern {
-  weekday: { target: string; actual: string };
-  weekend: { target: string; actual: string };
-}
+const QUALITY_CLR: Record<SleepAssessmentQuality, string> = {
+  good: "text-green-700 bg-green-50",
+  fair: "text-amber-700 bg-amber-50",
+  poor: "text-red-700 bg-red-50",
+};
 
-interface SleepAssessment {
-  id: string;
-  youngPersonId: string;
-  assessedBy: string;
-  assessmentDate: string;
-  reviewDate: string;
-  status: "active" | "needs_review" | "improving" | "concern";
-  sleepPatterns: SleepPattern;
-  averageHours: number;
-  sleepQuality: "good" | "fair" | "poor";
-  settlingTime: string;
-  nightWakings: number;
-  bedtimeRoutine: string[];
-  barriers: string[];
-  strategies: string[];
-  environmentalFactors: string[];
-  medications: string | null;
-  referrals: string | null;
-  impactOnDaytime: string;
-  trend: "improving" | "stable" | "declining";
-  notes: string;
-}
-
-/* ─── seed data ─── */
-const assessments: SleepAssessment[] = [
-  {
-    id: "sa_001",
-    youngPersonId: "yp_alex",
-    assessedBy: "staff_anna",
-    assessmentDate: d(-14),
-    reviewDate: d(14),
-    status: "active",
-    sleepPatterns: {
-      weekday: { target: "21:30", actual: "22:00" },
-      weekend: { target: "22:00", actual: "22:30" },
-    },
-    averageHours: 8.5,
-    sleepQuality: "good",
-    settlingTime: "20-30 minutes",
-    nightWakings: 0,
-    bedtimeRoutine: [
-      "Shower at 20:45",
-      "Hot chocolate and chat with staff",
-      "Reading in bed from 21:15",
-      "Lights out 21:30",
-    ],
-    barriers: ["Occasionally anxious about next-day school events", "Blue light from phone before bed"],
-    strategies: [
-      "Worry journal before bed — write down concerns and 'park' them for tomorrow",
-      "Phone charging station outside bedroom from 21:00",
-      "Lavender pillow spray — Alex chose this",
-      "Staff available for chat if settling is difficult",
-    ],
-    environmentalFactors: ["Blackout curtains fitted", "White noise machine available (Alex chooses to use)", "Room temperature maintained at 18°C"],
-    medications: null,
-    referrals: null,
-    impactOnDaytime: "Well-rested. Good concentration at school. Positive mood in mornings.",
-    trend: "stable",
-    notes: "Alex's sleep has been consistently good since the worry journal was introduced 2 months ago. Phone boundary initially resisted but now accepted as helpful.",
-  },
-  {
-    id: "sa_002",
-    youngPersonId: "yp_jordan",
-    assessedBy: "staff_anna",
-    assessmentDate: d(-7),
-    reviewDate: d(7),
-    status: "concern",
-    sleepPatterns: {
-      weekday: { target: "21:00", actual: "23:00–01:00" },
-      weekend: { target: "21:30", actual: "00:00–02:00" },
-    },
-    averageHours: 5.5,
-    sleepQuality: "poor",
-    settlingTime: "90-120 minutes",
-    nightWakings: 2,
-    bedtimeRoutine: [
-      "Attempt wind-down at 20:30 with sensory activity",
-      "Staff sit with Jordan if requested",
-      "Audio book or music to settle",
-      "Night light remains on (darkness is a trigger)",
-    ],
-    barriers: [
-      "Hypervigilance — legacy of early trauma (night-time abuse)",
-      "Sensory processing difficulties — heightened auditory awareness at night",
-      "Anxiety about not being able to fall asleep compounds the problem",
-      "Nightmares 2-3 times per week",
-    ],
-    strategies: [
-      "Weighted blanket (Jordan's choice — 5kg)",
-      "Night light with colour-changing option (currently on warm amber)",
-      "Staff check every 30 min until asleep — agreed with Jordan",
-      "Grounding techniques practised with therapist for nightmare recovery",
-      "No pressure to sleep — 'rest is enough' messaging",
-      "CAMHS consultation re: melatonin appropriateness",
-    ],
-    environmentalFactors: [
-      "Night light always on (agreed — not negotiable for Jordan)",
-      "Door slightly ajar (Jordan's choice)",
-      "Room closest to staff sleep-in for reassurance",
-      "Reduced auditory stimulation — carpet, soft-close door",
-    ],
-    medications: "Melatonin 2mg being considered — CAMHS referral in progress",
-    referrals: "CAMHS sleep clinic — appointment " + d(21),
-    impactOnDaytime: "Significant tiredness affecting school attendance (2 late arrivals this week). Emotional dysregulation worse on poor sleep nights. Staff noted correlation between sleep and behavioural incidents.",
-    trend: "declining",
-    notes: "Jordan's sleep has worsened since contact with birth mother was suspended 3 weeks ago. Therapeutic input being increased. Night staff briefed on trauma-informed approach. Never wake Jordan abruptly — allow natural waking with gentle presence.",
-  },
-  {
-    id: "sa_003",
-    youngPersonId: "yp_casey",
-    assessedBy: "staff_chervelle",
-    assessmentDate: d(-10),
-    reviewDate: d(18),
-    status: "improving",
-    sleepPatterns: {
-      weekday: { target: "22:00", actual: "22:30" },
-      weekend: { target: "22:30", actual: "23:00" },
-    },
-    averageHours: 7.5,
-    sleepQuality: "fair",
-    settlingTime: "30-45 minutes",
-    nightWakings: 1,
-    bedtimeRoutine: [
-      "Gaming off by 21:30 (Casey sets own alarm)",
-      "Shower and change",
-      "Music or podcast in bed",
-      "Staff check-in at 22:00 — brief chat",
-    ],
-    barriers: [
-      "History of going missing at night — hyperarousal patterns",
-      "Gaming can overstimulate if played too close to bed",
-      "Peers contacting via social media late at night",
-      "Residual sleep pattern disruption from street homelessness period",
-    ],
-    strategies: [
-      "Gaming cut-off agreed at 21:30 — Casey self-manages with alarm",
-      "Phone on Do Not Disturb from 22:00 (Casey activates)",
-      "Graduated trust — Casey previously had phone removed at night, now self-manages",
-      "Morning routine reward — breakfast choice if good sleep pattern maintained",
-      "Psychoeducation about sleep hygiene delivered by key worker",
-    ],
-    environmentalFactors: [
-      "Window lock engaged at night (Casey aware — agreed as safety measure)",
-      "Comfortable bedding — Casey chose duvet and pillows",
-      "Room personalised to feel like 'home' — important for settling",
-    ],
-    medications: null,
-    referrals: null,
-    impactOnDaytime: "Improving. Casey now attending school 4/5 days (up from 2/5 two months ago). Morning mood better when sleep is good. Staff note fewer confrontations in first hour of day.",
-    trend: "improving",
-    notes: "Significant improvement since Casey was given more autonomy over bedtime routine. Key learning: control and choice are essential for Casey. The self-managed gaming alarm was Casey's idea and has worked better than staff-imposed limits ever did. Trust-based approach paying off.",
-  },
-];
-
-/* ─── export columns ─── */
-const exportCols: ExportColumn<SleepAssessment>[] = [
-  { header: "Young Person", accessor: (r: SleepAssessment) => getYPName(r.youngPersonId) },
-  { header: "Assessed By", accessor: (r: SleepAssessment) => getStaffName(r.assessedBy) },
-  { header: "Date", accessor: (r: SleepAssessment) => r.assessmentDate },
-  { header: "Status", accessor: (r: SleepAssessment) => r.status.replace("_", " ") },
-  { header: "Avg Hours", accessor: (r: SleepAssessment) => r.averageHours.toString() },
-  { header: "Quality", accessor: (r: SleepAssessment) => r.sleepQuality },
-  { header: "Trend", accessor: (r: SleepAssessment) => r.trend },
-  { header: "Settling Time", accessor: (r: SleepAssessment) => r.settlingTime },
-  { header: "Night Wakings", accessor: (r: SleepAssessment) => r.nightWakings.toString() },
-  { header: "Impact", accessor: (r: SleepAssessment) => r.impactOnDaytime },
-  { header: "Review Due", accessor: (r: SleepAssessment) => r.reviewDate },
-];
+const QUALITY_ICON_CLR: Record<SleepAssessmentQuality, { bg: string; fg: string }> = {
+  good: { bg: "bg-green-100", fg: "text-green-600" },
+  fair: { bg: "bg-amber-100", fg: "text-amber-600" },
+  poor: { bg: "bg-red-100", fg: "text-red-600" },
+};
 
 /* ─── component ─── */
+
 export default function SleepAssessmentsPage() {
+  const { data: records = [], isLoading } = useSleepAssessmentRecords();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
 
   const filtered = useMemo(() => {
-    let list = [...assessments];
+    let list = [...records];
     if (filterStatus !== "all") list = list.filter((r) => r.status === filterStatus);
     list.sort((a, b) => {
       switch (sortBy) {
         case "date":
-          return b.assessmentDate.localeCompare(a.assessmentDate);
+          return b.assessment_date.localeCompare(a.assessment_date);
         case "hours":
-          return a.averageHours - b.averageHours;
-        case "quality":
-          const qOrder = { poor: 0, fair: 1, good: 2 };
-          return qOrder[a.sleepQuality] - qOrder[b.sleepQuality];
+          return a.average_hours - b.average_hours;
+        case "quality": {
+          const qOrder: Record<SleepAssessmentQuality, number> = { poor: 0, fair: 1, good: 2 };
+          return qOrder[a.sleep_quality] - qOrder[b.sleep_quality];
+        }
         case "name":
-          return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         default:
           return 0;
       }
     });
     return list;
-  }, [filterStatus, sortBy]);
+  }, [records, filterStatus, sortBy]);
 
   const stats = useMemo(() => {
-    const avgHours = assessments.reduce((s, a) => s + a.averageHours, 0) / assessments.length;
-    const concerns = assessments.filter((a) => a.status === "concern").length;
-    const improving = assessments.filter((a) => a.trend === "improving").length;
+    if (records.length === 0) return { avgHours: "0", concerns: 0, improving: 0 };
+    const avgHours = records.reduce((s, a) => s + a.average_hours, 0) / records.length;
+    const concerns = records.filter((a) => a.status === "concern").length;
+    const improving = records.filter((a) => a.trend === "improving").length;
     return { avgHours: avgHours.toFixed(1), concerns, improving };
-  }, []);
+  }, [records]);
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
-  const statusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-green-100 text-green-800">Active</Badge>;
-      case "concern":
-        return <Badge className="bg-red-100 text-red-800">Concern</Badge>;
-      case "improving":
-        return <Badge className="bg-blue-100 text-blue-800">Improving</Badge>;
-      case "needs_review":
-        return <Badge className="bg-amber-100 text-amber-800">Needs Review</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  const trendIcon = (trend: string) => {
+  const trendIcon = (trend: SleepAssessmentTrend) => {
     switch (trend) {
       case "improving":
         return <TrendingUp className="h-4 w-4 text-green-600" />;
@@ -267,14 +104,29 @@ export default function SleepAssessmentsPage() {
     }
   };
 
-  const qualityColor = (q: string) => {
-    switch (q) {
-      case "good": return "text-green-700 bg-green-50";
-      case "fair": return "text-amber-700 bg-amber-50";
-      case "poor": return "text-red-700 bg-red-50";
-      default: return "";
-    }
-  };
+  const exportCols: ExportColumn<SleepAssessmentRecord>[] = [
+    { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+    { header: "Assessed By", accessor: (r) => getStaffName(r.assessed_by) },
+    { header: "Date", accessor: (r) => r.assessment_date },
+    { header: "Status", accessor: (r) => SLEEP_ASSESSMENT_STATUS_LABEL[r.status] },
+    { header: "Avg Hours", accessor: (r) => r.average_hours.toString() },
+    { header: "Quality", accessor: (r) => SLEEP_ASSESSMENT_QUALITY_LABEL[r.sleep_quality] },
+    { header: "Trend", accessor: (r) => SLEEP_ASSESSMENT_TREND_LABEL[r.trend] },
+    { header: "Settling Time", accessor: (r) => r.settling_time },
+    { header: "Night Wakings", accessor: (r) => r.night_wakings.toString() },
+    { header: "Impact", accessor: (r) => r.impact_on_daytime },
+    { header: "Review Due", accessor: (r) => r.review_date },
+  ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Sleep Assessments" subtitle="Individual sleep profiles, barriers, strategies, and monitoring for each young person">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -282,7 +134,7 @@ export default function SleepAssessmentsPage() {
       subtitle="Individual sleep profiles, barriers, strategies, and monitoring for each young person"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={assessments} columns={exportCols} filename="sleep-assessments" />
+          <ExportButton data={filtered} columns={exportCols} filename="sleep-assessments" />
           <PrintButton title="Sleep Assessments" />
         </div>
       }
@@ -291,7 +143,7 @@ export default function SleepAssessmentsPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-2xl font-bold">{assessments.length}</p>
+            <p className="text-2xl font-bold">{records.length}</p>
             <p className="text-xs text-muted-foreground">Active Assessments</p>
           </CardContent>
         </Card>
@@ -323,9 +175,9 @@ export default function SleepAssessmentsPage() {
             <div>
               <p className="text-sm font-medium text-red-800">Sleep Concern Active</p>
               <p className="text-xs text-red-700 mt-1">
-                {assessments
+                {records
                   .filter((a) => a.status === "concern")
-                  .map((a) => getYPName(a.youngPersonId))
+                  .map((a) => getYPName(a.child_id))
                   .join(", ")}{" "}
                 — review strategies and consider escalation to health professionals.
               </p>
@@ -342,10 +194,9 @@ export default function SleepAssessmentsPage() {
           onChange={(e) => setFilterStatus(e.target.value)}
         >
           <option value="all">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="concern">Concern</option>
-          <option value="improving">Improving</option>
-          <option value="needs_review">Needs Review</option>
+          {(Object.keys(SLEEP_ASSESSMENT_STATUS_LABEL) as SleepAssessmentStatus[]).map((k) => (
+            <option key={k} value={k}>{SLEEP_ASSESSMENT_STATUS_LABEL[k]}</option>
+          ))}
         </select>
 
         <div className="flex items-center gap-1 ml-auto">
@@ -367,6 +218,7 @@ export default function SleepAssessmentsPage() {
       <div className="space-y-4">
         {filtered.map((assessment) => {
           const expanded = expandedId === assessment.id;
+          const qIcon = QUALITY_ICON_CLR[assessment.sleep_quality];
 
           return (
             <Card key={assessment.id} className="overflow-hidden">
@@ -376,29 +228,21 @@ export default function SleepAssessmentsPage() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "p-2 rounded-full",
-                      assessment.sleepQuality === "good" ? "bg-green-100" :
-                      assessment.sleepQuality === "fair" ? "bg-amber-100" : "bg-red-100"
-                    )}>
-                      <Moon className={cn(
-                        "h-5 w-5",
-                        assessment.sleepQuality === "good" ? "text-green-600" :
-                        assessment.sleepQuality === "fair" ? "text-amber-600" : "text-red-600"
-                      )} />
+                    <div className={cn("p-2 rounded-full", qIcon.bg)}>
+                      <Moon className={cn("h-5 w-5", qIcon.fg)} />
                     </div>
                     <div>
                       <CardTitle className="text-base">
-                        {getYPName(assessment.youngPersonId)}
+                        {getYPName(assessment.child_id)}
                       </CardTitle>
                       <div className="flex items-center gap-2 mt-1">
-                        {statusBadge(assessment.status)}
+                        <Badge className={STATUS_CLR[assessment.status]}>{SLEEP_ASSESSMENT_STATUS_LABEL[assessment.status]}</Badge>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           {trendIcon(assessment.trend)}
-                          {assessment.trend}
+                          {SLEEP_ASSESSMENT_TREND_LABEL[assessment.trend]}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {assessment.averageHours}h avg
+                          {assessment.average_hours}h avg
                         </span>
                       </div>
                     </div>
@@ -406,7 +250,7 @@ export default function SleepAssessmentsPage() {
                   <div className="flex items-center gap-3">
                     <div className="text-right hidden sm:block">
                       <p className="text-xs text-muted-foreground">Assessed</p>
-                      <p className="text-sm">{assessment.assessmentDate}</p>
+                      <p className="text-sm">{assessment.assessment_date}</p>
                     </div>
                     {expanded ? (
                       <ChevronUp className="h-5 w-5 text-muted-foreground" />
@@ -428,15 +272,15 @@ export default function SleepAssessmentsPage() {
                       <div className="border rounded-md p-3">
                         <p className="text-xs font-medium text-muted-foreground mb-1">Weekday</p>
                         <div className="flex items-center justify-between">
-                          <span className="text-sm">Target: {assessment.sleepPatterns.weekday.target}</span>
-                          <span className="text-sm">Actual: {assessment.sleepPatterns.weekday.actual}</span>
+                          <span className="text-sm">Target: {assessment.sleep_patterns.weekday.target}</span>
+                          <span className="text-sm">Actual: {assessment.sleep_patterns.weekday.actual}</span>
                         </div>
                       </div>
                       <div className="border rounded-md p-3">
                         <p className="text-xs font-medium text-muted-foreground mb-1">Weekend</p>
                         <div className="flex items-center justify-between">
-                          <span className="text-sm">Target: {assessment.sleepPatterns.weekend.target}</span>
-                          <span className="text-sm">Actual: {assessment.sleepPatterns.weekend.actual}</span>
+                          <span className="text-sm">Target: {assessment.sleep_patterns.weekend.target}</span>
+                          <span className="text-sm">Actual: {assessment.sleep_patterns.weekend.actual}</span>
                         </div>
                       </div>
                     </div>
@@ -446,19 +290,19 @@ export default function SleepAssessmentsPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="border rounded-md p-2 text-center">
                       <p className="text-xs text-muted-foreground">Avg Hours</p>
-                      <p className="text-lg font-bold">{assessment.averageHours}</p>
+                      <p className="text-lg font-bold">{assessment.average_hours}</p>
                     </div>
-                    <div className={cn("border rounded-md p-2 text-center", qualityColor(assessment.sleepQuality))}>
+                    <div className={cn("border rounded-md p-2 text-center", QUALITY_CLR[assessment.sleep_quality])}>
                       <p className="text-xs">Quality</p>
-                      <p className="text-lg font-bold capitalize">{assessment.sleepQuality}</p>
+                      <p className="text-lg font-bold capitalize">{SLEEP_ASSESSMENT_QUALITY_LABEL[assessment.sleep_quality]}</p>
                     </div>
                     <div className="border rounded-md p-2 text-center">
                       <p className="text-xs text-muted-foreground">Settling</p>
-                      <p className="text-sm font-medium">{assessment.settlingTime}</p>
+                      <p className="text-sm font-medium">{assessment.settling_time}</p>
                     </div>
                     <div className="border rounded-md p-2 text-center">
                       <p className="text-xs text-muted-foreground">Night Wakings</p>
-                      <p className="text-lg font-bold">{assessment.nightWakings}</p>
+                      <p className="text-lg font-bold">{assessment.night_wakings}</p>
                     </div>
                   </div>
 
@@ -468,7 +312,7 @@ export default function SleepAssessmentsPage() {
                       <Moon className="h-4 w-4" /> Bedtime Routine
                     </p>
                     <ol className="space-y-1">
-                      {assessment.bedtimeRoutine.map((step, i) => (
+                      {assessment.bedtime_routine.map((step, i) => (
                         <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                           <span className="text-xs font-medium text-foreground bg-muted rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
                             {i + 1}
@@ -513,7 +357,7 @@ export default function SleepAssessmentsPage() {
                       <Home className="h-4 w-4" /> Environmental Factors
                     </p>
                     <ul className="space-y-1">
-                      {assessment.environmentalFactors.map((ef, i) => (
+                      {assessment.environmental_factors.map((ef, i) => (
                         <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                           <span className="text-blue-400 mt-1.5">•</span> {ef}
                         </li>
@@ -544,7 +388,7 @@ export default function SleepAssessmentsPage() {
                     <p className="text-sm font-medium mb-1 flex items-center gap-2">
                       <Sun className="h-4 w-4" /> Impact on Daytime Functioning
                     </p>
-                    <p className="text-sm text-muted-foreground">{assessment.impactOnDaytime}</p>
+                    <p className="text-sm text-muted-foreground">{assessment.impact_on_daytime}</p>
                   </div>
 
                   {/* notes */}
@@ -557,13 +401,15 @@ export default function SleepAssessmentsPage() {
                   <div className="grid grid-cols-2 gap-4 pt-2 border-t">
                     <div>
                       <p className="text-xs text-muted-foreground">Assessed By</p>
-                      <p className="text-sm font-medium">{getStaffName(assessment.assessedBy)}</p>
+                      <p className="text-sm font-medium">{getStaffName(assessment.assessed_by)}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Review Due</p>
-                      <p className="text-sm font-medium">{assessment.reviewDate}</p>
+                      <p className="text-sm font-medium">{assessment.review_date}</p>
                     </div>
                   </div>
+
+                  <SmartLinkPanel sourceType="sleep-assessments" sourceId={assessment.id} childId={assessment.child_id} compact />
                 </CardContent>
               )}
             </Card>
@@ -579,9 +425,7 @@ export default function SleepAssessmentsPage() {
           needs are understood and met, which includes adequate sleep. Regulation 10 (Health and
           Wellbeing) requires that the health needs of each child are identified and appropriate
           steps taken. Sleep assessments inform bedtime boundaries (Reg 19), night staffing
-          arrangements, and individual care plans. NICE guidance CG170 recommends sleep hygiene
-          assessment for looked-after children given the high prevalence of sleep difficulties
-          linked to trauma and attachment disruption.
+          arrangements, and individual care plans.
         </p>
       </div>
     </PageShell>

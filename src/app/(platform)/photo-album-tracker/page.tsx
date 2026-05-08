@@ -23,197 +23,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { PhotoAlbumRecord, PhotoAlbumType } from "@/types/extended";
+import { PHOTO_ALBUM_TYPE_LABEL, PHOTO_ALBUM_FORMAT_LABEL } from "@/types/extended";
+import { usePhotoAlbumRecords } from "@/hooks/use-photo-album-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-interface PhotoAlbum {
-  id: string;
-  youngPerson: string;
-  albumName: string;
-  albumType: "Life Story Book" | "Memory book" | "Annual album" | "Theme album" | "Achievement album" | "Family album" | "Identity album";
-  format: "Physical book" | "Cloud digital" | "Both";
-  startedDate: string;
-  childOwnsAlbum: boolean;
-  childChoosesContent: boolean;
-  totalPhotos: number;
-  recentAdditions: { date: string; description: string; addedBy: string; childInvolved: boolean }[];
-  themesCovered: string[];
-  consentRecord: string;
-  storageLocation: string;
-  childCanAccess: boolean;
-  childCanEdit: boolean;
-  sharedWithFamily: boolean;
-  shareableSummary: string;
-  significantMoments: string[];
-  reviewedDate: string;
-  reviewedWith: string;
-  childReflectionOnAlbum: string;
-  protectionMeasures: string[];
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const albumTypeColour: Record<PhotoAlbumType, string> = {
+  life_story_book: "bg-pink-100 text-pink-800",
+  memory_book: "bg-purple-100 text-purple-800",
+  annual_album: "bg-blue-100 text-blue-800",
+  theme_album: "bg-amber-100 text-amber-800",
+  achievement_album: "bg-emerald-100 text-emerald-800",
+  family_album: "bg-rose-100 text-rose-800",
+  identity_album: "bg-indigo-100 text-indigo-800",
 };
 
-const data: PhotoAlbum[] = [
-  {
-    id: "pa-001",
-    youngPerson: "yp_alex",
-    albumName: "Alex's Life Story Book",
-    albumType: "Life Story Book",
-    format: "Both",
-    startedDate: "2022-02-01",
-    childOwnsAlbum: true,
-    childChoosesContent: true,
-    totalPhotos: 47,
-    recentAdditions: [
-      { date: d(-7), description: "Boxing club inter-club competition photo", addedBy: "staff_lackson", childInvolved: true },
-      { date: d(-30), description: "Sunday lunch with Nan (visit photo)", addedBy: "staff_anna", childInvolved: true },
-      { date: d(-60), description: "Birthday card from Mum (photographed)", addedBy: "staff_anna", childInvolved: true },
-    ],
-    themesCovered: ["Pre-care happy memories", "Family connections", "Boxing journey", "Growth at Oak House", "Achievements"],
-    consentRecord: "Triple consent recorded (child, PR, LA) — see Media Publicity Consent",
-    storageLocation: "Alex's bedroom (physical) + secured cloud (Anna access only with Alex's permission)",
-    childCanAccess: true,
-    childCanEdit: true,
-    sharedWithFamily: true,
-    shareableSummary: "Mum has copy of safe photos (chosen by Alex)",
-    significantMoments: [
-      "First boxing photo (age 11) — identity-defining",
-      "Reunion photo with Mum after period of restricted contact",
-      "School progress milestone moments",
-    ],
-    reviewedDate: d(-30),
-    reviewedWith: "staff_anna",
-    childReflectionOnAlbum: "It's mine. I look at it when I miss Mum. The boxing pics make me feel strong.",
-    protectionMeasures: [
-      "Photos featuring father not included (per Alex's choice and safeguarding plan)",
-      "School-based photos limited to those Alex chose",
-      "Online sharing only via approved family channel",
-    ],
-  },
-  {
-    id: "pa-002",
-    youngPerson: "yp_jordan",
-    albumName: "Jordan's Story",
-    albumType: "Life Story Book",
-    format: "Both",
-    startedDate: "2023-07-15",
-    childOwnsAlbum: true,
-    childChoosesContent: true,
-    totalPhotos: 38,
-    recentAdditions: [
-      { date: d(-14), description: "Football team captain photo (newspaper cutting)", addedBy: "staff_chervelle", childInvolved: true },
-      { date: d(-45), description: "Cultural Saturday club — heritage exploration", addedBy: "staff_chervelle", childInvolved: true },
-      { date: d(-90), description: "Sister Tia's birthday card photo", addedBy: "staff_chervelle", childInvolved: true },
-    ],
-    themesCovered: ["Cultural identity", "Football journey", "Family (Mum's letters)", "Sibling bond with Tia", "Growth"],
-    consentRecord: "Triple consent recorded — see Media Publicity Consent",
-    storageLocation: "Jordan's bedroom (physical) + cloud copy",
-    childCanAccess: true,
-    childCanEdit: true,
-    sharedWithFamily: true,
-    shareableSummary: "Mum receives selected photos via prison letterbox approved arrangement",
-    significantMoments: [
-      "Football captaincy moment",
-      "Cultural Saturday club first attendance",
-      "Cousin Devon photo",
-      "Letters from Mum (some scanned with permission)",
-    ],
-    reviewedDate: d(-21),
-    reviewedWith: "staff_chervelle",
-    childReflectionOnAlbum: "It's everything. The football stuff is class. The Mum stuff helps when she's far.",
-    protectionMeasures: [
-      "Pre-care photos limited (Jordan's choice)",
-      "Prison-related identifying details obscured",
-      "Online presence restricted",
-    ],
-  },
-  {
-    id: "pa-003",
-    youngPerson: "yp_casey",
-    albumName: "Casey's Memory Book",
-    albumType: "Memory book",
-    format: "Physical book",
-    startedDate: "2021-08-01",
-    childOwnsAlbum: true,
-    childChoosesContent: true,
-    totalPhotos: 62,
-    recentAdditions: [
-      { date: d(-3), description: "Otters at New Forest Wildlife Park (Casey's chosen visit)", addedBy: "staff_anna", childInvolved: true },
-      { date: d(-28), description: "Casey's exhibition piece 'Finding Home'", addedBy: "staff_anna", childInvolved: true },
-      { date: d(-90), description: "Sensory garden — Casey's favourite plants", addedBy: "staff_anna", childInvolved: true },
-    ],
-    themesCovered: ["Otters and nature", "Casey's artwork (own)", "Sensory-friendly places visited", "Anna and Casey moments", "Pre-care few selected memories"],
-    consentRecord: "Triple consent — see Media Publicity Consent",
-    storageLocation: "Casey's bedroom (physical only — Casey's preference)",
-    childCanAccess: true,
-    childCanEdit: true,
-    sharedWithFamily: false,
-    shareableSummary: "Casey doesn't currently share — letterbox-only contact arrangement",
-    significantMoments: [
-      "Otter sanctuary visit (real-life otters meeting Otter the toy)",
-      "First exhibition piece",
-      "Otter (soft toy) journey across years — same since age 5",
-      "Anna's birthday card otter drawing",
-    ],
-    reviewedDate: d(-7),
-    reviewedWith: "staff_anna",
-    childReflectionOnAlbum: "[Pointed at otter pages and visually smiled. Tapped Otter (soft toy) chest.]",
-    protectionMeasures: [
-      "Birth family photos not included (Casey's choice; reviewable)",
-      "Physical book only — no cloud copy (Casey's preference)",
-      "No online presence",
-      "Anna only has access with Casey's permission",
-    ],
-  },
-  {
-    id: "pa-004",
-    youngPerson: "yp_alex",
-    albumName: "Alex's Annual Album 2025",
-    albumType: "Annual album",
-    format: "Both",
-    startedDate: "2025-01-01",
-    childOwnsAlbum: true,
-    childChoosesContent: true,
-    totalPhotos: 12,
-    recentAdditions: [
-      { date: d(-30), description: "January routine moments", addedBy: "staff_anna", childInvolved: true },
-    ],
-    themesCovered: ["Year in pictures", "Routine joy", "Growth markers"],
-    consentRecord: "Triple consent — see Media Publicity Consent",
-    storageLocation: "Alex's bedroom + cloud",
-    childCanAccess: true,
-    childCanEdit: true,
-    sharedWithFamily: false,
-    shareableSummary: "Personal — for Alex",
-    significantMoments: [],
-    reviewedDate: d(-30),
-    reviewedWith: "staff_anna",
-    childReflectionOnAlbum: "It's nice having a year on its own.",
-    protectionMeasures: ["Standard Alex photo-consent rules apply"],
-  },
-];
-
-const albumTypeColour: Record<string, string> = {
-  "Life Story Book": "bg-pink-100 text-pink-800",
-  "Memory book": "bg-purple-100 text-purple-800",
-  "Annual album": "bg-blue-100 text-blue-800",
-  "Theme album": "bg-amber-100 text-amber-800",
-  "Achievement album": "bg-emerald-100 text-emerald-800",
-  "Family album": "bg-rose-100 text-rose-800",
-  "Identity album": "bg-indigo-100 text-indigo-800",
-};
-
-const exportCols: ExportColumn<PhotoAlbum>[] = [
-  { header: "Young Person", accessor: (r: PhotoAlbum) => getYPName(r.youngPerson) },
-  { header: "Album", accessor: (r: PhotoAlbum) => r.albumName },
-  { header: "Type", accessor: (r: PhotoAlbum) => r.albumType },
-  { header: "Format", accessor: (r: PhotoAlbum) => r.format },
-  { header: "Started", accessor: (r: PhotoAlbum) => r.startedDate },
-  { header: "Total Photos", accessor: (r: PhotoAlbum) => String(r.totalPhotos) },
-  { header: "Child Owns", accessor: (r: PhotoAlbum) => r.childOwnsAlbum ? "Yes" : "No" },
-  { header: "Last Reviewed", accessor: (r: PhotoAlbum) => r.reviewedDate },
+const exportCols: ExportColumn<PhotoAlbumRecord>[] = [
+  { header: "Young Person", accessor: (r: PhotoAlbumRecord) => getYPName(r.child_id) },
+  { header: "Album", accessor: (r: PhotoAlbumRecord) => r.album_name },
+  { header: "Type", accessor: (r: PhotoAlbumRecord) => PHOTO_ALBUM_TYPE_LABEL[r.album_type] },
+  { header: "Format", accessor: (r: PhotoAlbumRecord) => PHOTO_ALBUM_FORMAT_LABEL[r.format] },
+  { header: "Started", accessor: (r: PhotoAlbumRecord) => r.started_date },
+  { header: "Total Photos", accessor: (r: PhotoAlbumRecord) => String(r.total_photos) },
+  { header: "Child Owns", accessor: (r: PhotoAlbumRecord) => r.child_owns_album ? "Yes" : "No" },
+  { header: "Last Reviewed", accessor: (r: PhotoAlbumRecord) => r.reviewed_date },
 ];
 
 export default function PhotoAlbumTrackerPage() {
@@ -222,27 +55,30 @@ export default function PhotoAlbumTrackerPage() {
   const [sortBy, setSortBy] = useState("name");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const { data: res, isLoading } = usePhotoAlbumRecords();
+  const records = res?.data ?? [];
+
   const filtered = useMemo(() => {
-    let items = [...data];
-    if (filterYP !== "all") items = items.filter((p) => p.youngPerson === filterYP);
-    if (filterType !== "all") items = items.filter((p) => p.albumType === filterType);
+    let items = [...records];
+    if (filterYP !== "all") items = items.filter((p) => p.child_id === filterYP);
+    if (filterType !== "all") items = items.filter((p) => p.album_type === filterType);
     items.sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return a.youngPerson.localeCompare(b.youngPerson);
+          return a.child_id.localeCompare(b.child_id);
         case "photos":
-          return b.totalPhotos - a.totalPhotos;
+          return b.total_photos - a.total_photos;
         default:
           return 0;
       }
     });
     return items;
-  }, [filterYP, filterType, sortBy]);
+  }, [records, filterYP, filterType, sortBy]);
 
-  const total = data.length;
-  const allChildOwn = data.every((p) => p.childOwnsAlbum);
-  const totalPhotos = data.reduce((sum, p) => sum + p.totalPhotos, 0);
-  const uniqueChildren = new Set(data.map((p) => p.youngPerson)).size;
+  const total = records.length;
+  const allChildOwn = records.every((p) => p.child_owns_album);
+  const totalPhotos = records.reduce((sum, p) => sum + p.total_photos, 0);
+  const uniqueChildren = new Set(records.map((p) => p.child_id)).size;
 
   return (
     <PageShell
@@ -250,18 +86,20 @@ export default function PhotoAlbumTrackerPage() {
       subtitle="Per-child photo memory albums — owned by children, curated with care, protected with consent"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="photo-album-tracker" />
+          <ExportButton data={records} columns={exportCols} filename="photo-album-tracker" />
           <PrintButton title="Photo Album Tracker" />
         </div>
       }
     >
+      {isLoading && <p className="text-center py-12 text-muted-foreground">Loading…</p>}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center">
           <p className="text-2xl font-bold">{total}</p>
           <p className="text-xs text-muted-foreground">Active Albums</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{allChildOwn ? "100%" : `${data.filter((p) => p.childOwnsAlbum).length}/${total}`}</p>
+          <p className="text-2xl font-bold text-green-600">{allChildOwn ? "100%" : `${records.filter((p) => p.child_owns_album).length}/${total}`}</p>
           <p className="text-xs text-muted-foreground">Child-Owned</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -297,13 +135,13 @@ export default function PhotoAlbumTrackerPage() {
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="All Types" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="Life Story Book">Life Story Book</SelectItem>
-            <SelectItem value="Memory book">Memory Book</SelectItem>
-            <SelectItem value="Annual album">Annual Album</SelectItem>
-            <SelectItem value="Theme album">Theme Album</SelectItem>
-            <SelectItem value="Achievement album">Achievement Album</SelectItem>
-            <SelectItem value="Family album">Family Album</SelectItem>
-            <SelectItem value="Identity album">Identity Album</SelectItem>
+            <SelectItem value="life_story_book">{PHOTO_ALBUM_TYPE_LABEL.life_story_book}</SelectItem>
+            <SelectItem value="memory_book">{PHOTO_ALBUM_TYPE_LABEL.memory_book}</SelectItem>
+            <SelectItem value="annual_album">{PHOTO_ALBUM_TYPE_LABEL.annual_album}</SelectItem>
+            <SelectItem value="theme_album">{PHOTO_ALBUM_TYPE_LABEL.theme_album}</SelectItem>
+            <SelectItem value="achievement_album">{PHOTO_ALBUM_TYPE_LABEL.achievement_album}</SelectItem>
+            <SelectItem value="family_album">{PHOTO_ALBUM_TYPE_LABEL.family_album}</SelectItem>
+            <SelectItem value="identity_album">{PHOTO_ALBUM_TYPE_LABEL.identity_album}</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -331,15 +169,15 @@ export default function PhotoAlbumTrackerPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Camera className="h-5 w-5 text-pink-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{p.albumName} ({getYPName(p.youngPerson)})</p>
+                    <p className="font-medium truncate">{p.album_name} ({getYPName(p.child_id)})</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Started {p.startedDate} &middot; {p.totalPhotos} photos &middot; {p.format}
+                      Started {p.started_date} &middot; {p.total_photos} photos &middot; {PHOTO_ALBUM_FORMAT_LABEL[p.format]}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", albumTypeColour[p.albumType])}>{p.albumType}</span>
-                  {p.childOwnsAlbum && <Heart className="h-4 w-4 text-pink-500" />}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", albumTypeColour[p.album_type])}>{PHOTO_ALBUM_TYPE_LABEL[p.album_type]}</span>
+                  {p.child_owns_album && <Heart className="h-4 w-4 text-pink-500" />}
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </button>
@@ -349,7 +187,7 @@ export default function PhotoAlbumTrackerPage() {
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Themes Covered</p>
                     <div className="flex flex-wrap gap-1">
-                      {p.themesCovered.map((t, i) => (
+                      {p.themes_covered.map((t, i) => (
                         <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{t}</span>
                       ))}
                     </div>
@@ -358,22 +196,22 @@ export default function PhotoAlbumTrackerPage() {
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Recent Additions</p>
                     <div className="space-y-1">
-                      {p.recentAdditions.map((r, i) => (
+                      {p.recent_additions.map((r, i) => (
                         <div key={i} className="bg-white rounded-lg p-2 border text-sm">
                           <p className="font-medium">{r.date} — {r.description}</p>
-                          <p className="text-xs text-muted-foreground">Added by {getStaffName(r.addedBy)}{r.childInvolved && " (with child)"}</p>
+                          <p className="text-xs text-muted-foreground">Added by {getStaffName(r.added_by)}{r.child_involved && " (with child)"}</p>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {p.significantMoments.length > 0 && (
+                  {p.significant_moments.length > 0 && (
                     <div className="bg-purple-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-1">
                         <Sparkles className="h-3 w-3 inline mr-1" />Significant Moments
                       </p>
                       <ul className="space-y-1">
-                        {p.significantMoments.map((m, i) => (
+                        {p.significant_moments.map((m, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <Star className="h-3 w-3 text-amber-500 mt-1 shrink-0" />
                             <span>{m}</span>
@@ -385,17 +223,17 @@ export default function PhotoAlbumTrackerPage() {
 
                   <div className="bg-pink-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-pink-800 uppercase tracking-wide mb-1">Child&apos;s Reflection</p>
-                    <p className="text-sm italic">&ldquo;{p.childReflectionOnAlbum}&rdquo;</p>
+                    <p className="text-sm italic">&ldquo;{p.child_reflection_on_album}&rdquo;</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Storage</p>
-                      <p className="text-sm">{p.storageLocation}</p>
+                      <p className="text-sm">{p.storage_location}</p>
                     </div>
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Sharing</p>
-                      <p className="text-sm">{p.sharedWithFamily ? p.shareableSummary : "Personal — not externally shared"}</p>
+                      <p className="text-sm">{p.shared_with_family ? p.shareable_summary : "Personal — not externally shared"}</p>
                     </div>
                   </div>
 
@@ -404,7 +242,7 @@ export default function PhotoAlbumTrackerPage() {
                       <Lock className="h-3 w-3 inline mr-1" />Protection Measures
                     </p>
                     <ul className="space-y-1">
-                      {p.protectionMeasures.map((m, i) => (
+                      {p.protection_measures.map((m, i) => (
                         <li key={i} className="text-sm flex items-start gap-1">
                           <Lock className="h-3 w-3 text-amber-500 mt-1 shrink-0" />
                           <span>{m}</span>
@@ -414,10 +252,12 @@ export default function PhotoAlbumTrackerPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span>Reviewed: {p.reviewedDate} with {getStaffName(p.reviewedWith)}</span>
-                    {p.childCanAccess && <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium">Child has access</span>}
-                    {p.childCanEdit && <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">Child edits</span>}
+                    <span>Reviewed: {p.reviewed_date} with {getStaffName(p.reviewed_with)}</span>
+                    {p.child_can_access && <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium">Child has access</span>}
+                    {p.child_can_edit && <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">Child edits</span>}
                   </div>
+
+                  <SmartLinkPanel sourceType="photo-album-tracker" sourceId={p.id} childId={p.child_id} compact />
                 </div>
               )}
             </div>

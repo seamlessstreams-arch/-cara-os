@@ -1,15 +1,7 @@
 "use client";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — LIFE STORY WORK
-// Tracks life story work for each young person — identity exploration,
-// memory building, heritage activities, and milestone recording. Supports
-// Reg 10 (Contact), Reg 11 (Positive Relationships), and Quality Standard
-// 3 (Identity) evidence.
-// ══════════════════════════════════════════════════════════════════════════════
-
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/layout/page-shell";
+import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,40 +12,25 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { cn, formatDate, todayStr } from "@/lib/utils";
-import { useAuthContext } from "@/contexts/auth-context";
-import { PrintButton } from "@/components/common/print-button";
-import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { cn } from "@/lib/utils";
+import { PrintButton } from "@/components/ui/print-button";
+import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import {
   Search, ArrowUpDown, X, Plus, BookOpen,
   CheckCircle2, Clock, User, Calendar,
   ChevronDown, ChevronUp, Shield, Heart, Star,
-  Camera, Palette, Music, MapPin,
+  Camera, Palette, MapPin,
+  Loader2,
 } from "lucide-react";
+import { useLifeStoryEntries, useCreateLifeStoryEntry } from "@/hooks/use-life-story-entries";
+import type { LifeStoryEntry, LifeStoryEntryType, LifeStoryEntryStatus } from "@/types/extended";
+import { LIFE_STORY_ENTRY_TYPE_LABEL, LIFE_STORY_ENTRY_STATUS_LABEL } from "@/types/extended";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+/* ── UI metadata ──────────────────────────────────────────────────────────── */
 
-type EntryType = "memory" | "milestone" | "heritage" | "identity" | "wish" | "achievement" | "photo_story" | "creative";
-type EntryStatus = "in_progress" | "completed" | "planned";
-
-interface LifeStoryEntry {
-  id: string;
-  child_id: string;
-  date: string;
-  type: EntryType;
-  title: string;
-  description: string;
-  child_voice: string;
-  facilitator: string;
-  status: EntryStatus;
-  linked_to_book: boolean;
-  created_at: string;
-}
-
-// ── Config ────────────────────────────────────────────────────────────────────
-
-const TYPE_CONFIG: Record<EntryType, { label: string; colour: string; icon: React.ElementType }> = {
+const TYPE_CONFIG: Record<LifeStoryEntryType, { label: string; colour: string; icon: React.ElementType }> = {
   memory:      { label: "Memory",        colour: "bg-blue-100 text-blue-700",     icon: BookOpen },
   milestone:   { label: "Milestone",     colour: "bg-green-100 text-green-700",   icon: Star     },
   heritage:    { label: "Heritage",      colour: "bg-purple-100 text-purple-700", icon: MapPin   },
@@ -64,99 +41,17 @@ const TYPE_CONFIG: Record<EntryType, { label: string; colour: string; icon: Reac
   creative:    { label: "Creative Work", colour: "bg-rose-100 text-rose-700",     icon: Palette  },
 };
 
-const STATUS_CONFIG: Record<EntryStatus, { label: string; colour: string }> = {
+const STATUS_CONFIG: Record<LifeStoryEntryStatus, { label: string; colour: string }> = {
   in_progress: { label: "In Progress", colour: "bg-blue-100 text-blue-700"   },
   completed:   { label: "Completed",   colour: "bg-green-100 text-green-700" },
   planned:     { label: "Planned",     colour: "bg-gray-100 text-gray-600"   },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: LifeStoryEntry[] = [
-  {
-    id: "ls_001", child_id: "yp_alex", date: d(-14), type: "memory",
-    title: "Memory box — items from before placement",
-    description: "Alex brought a memory box to a key work session containing photos, a football medal, and a birthday card from their grandmother. Staff helped Alex organise items and talk about each one. Alex shared positive memories of football matches with their dad.",
-    child_voice: "Alex said: 'This is my favourite one — it was the first time I scored a hat-trick. My dad was there watching.'",
-    facilitator: "staff_edward", status: "completed", linked_to_book: true,
-    created_at: d(-14) + "T15:00:00Z",
-  },
-  {
-    id: "ls_002", child_id: "yp_jordan", date: d(-10), type: "heritage",
-    title: "Caribbean cooking session — grandmother's recipe",
-    description: "Jordan participated in a cooking session making rice and peas using a recipe from their grandmother. Jordan led the cooking with staff support. Discussed family traditions and the importance of food in Caribbean culture.",
-    child_voice: "Jordan said: 'My nan always makes this on Sundays. I want to cook it for her when I see her next.'",
-    facilitator: "staff_anna", status: "completed", linked_to_book: true,
-    created_at: d(-10) + "T17:00:00Z",
-  },
-  {
-    id: "ls_003", child_id: "yp_casey", date: d(-7), type: "identity",
-    title: "All About Me — strengths and qualities worksheet",
-    description: "Key work session exploring Casey's strengths, qualities, and things they like about themselves. Casey identified being kind, good at English, and funny as key strengths. Also discussed things Casey wants to work on.",
-    child_voice: "Casey said: 'I never really thought about what I'm good at before. I think I'm actually quite a kind person.'",
-    facilitator: "staff_chervelle", status: "completed", linked_to_book: true,
-    created_at: d(-7) + "T16:00:00Z",
-  },
-  {
-    id: "ls_004", child_id: "yp_jordan", date: d(-5), type: "milestone",
-    title: "First PE award at new school",
-    description: "Jordan received Student of the Week for PE — their first award at Highfields Academy. This is a significant milestone as Jordan was initially anxious about starting at a new school.",
-    child_voice: "Jordan said: 'I didn't think anyone would notice me here. But the PE teacher said I was a leader!'",
-    facilitator: "staff_anna", status: "completed", linked_to_book: true,
-    created_at: d(-5) + "T16:30:00Z",
-  },
-  {
-    id: "ls_005", child_id: "yp_alex", date: d(-3), type: "creative",
-    title: "Creative writing — 'Where I Want to Be' poem",
-    description: "During a key work session, Alex wrote a poem about where they want to be in 5 years. The poem expressed hope, desire for stability, and wanting to play football professionally. Teacher had also praised Alex's creative writing that week.",
-    child_voice: "Alex read the poem aloud and said: 'I don't usually share stuff like this. But I actually think this one is quite good.'",
-    facilitator: "staff_edward", status: "completed", linked_to_book: true,
-    created_at: d(-3) + "T15:00:00Z",
-  },
-  {
-    id: "ls_006", child_id: "yp_casey", date: d(-1), type: "achievement",
-    title: "Selected for school debate team",
-    description: "Casey selected to represent Year 11 in an inter-school debate competition. This reflects Casey's growing confidence and communication skills since placement.",
-    child_voice: "Casey said: 'I never thought I'd be picked for something like this. I'm actually excited about it!'",
-    facilitator: "staff_chervelle", status: "completed", linked_to_book: true,
-    created_at: d(-1) + "T16:30:00Z",
-  },
-  {
-    id: "ls_007", child_id: "yp_jordan", date: d(7), type: "heritage",
-    title: "Visit to Derby Museum — Black History exhibition",
-    description: "Planned visit to Derby Museum to see the Black History Month exhibition. Aim: explore Jordan's heritage and cultural identity in a broader historical context.",
-    child_voice: "",
-    facilitator: "staff_anna", status: "planned", linked_to_book: false,
-    created_at: d(-2) + "T09:00:00Z",
-  },
-  {
-    id: "ls_008", child_id: "yp_alex", date: d(5), type: "photo_story",
-    title: "Photo walk — places that matter to me",
-    description: "Planned activity: Alex to take photos of places in Derby that are meaningful to them. Will use a disposable camera. Photos to be added to life story book with captions written by Alex.",
-    child_voice: "",
-    facilitator: "staff_edward", status: "planned", linked_to_book: false,
-    created_at: d(-1) + "T09:00:00Z",
-  },
-  {
-    id: "ls_009", child_id: "yp_casey", date: d(-20), type: "wish",
-    title: "Wish tree — things I want for my future",
-    description: "Casey created a 'wish tree' as part of key work. Wishes included: go to university, have a pet dog, visit New York, learn to drive, and 'be happy.' Staff explored each wish and discussed steps towards achievable goals.",
-    child_voice: "Casey said: 'I know some of these are big dreams, but my key worker says that's okay. Everyone should have big dreams.'",
-    facilitator: "staff_chervelle", status: "completed", linked_to_book: true,
-    created_at: d(-20) + "T16:00:00Z",
-  },
-];
-
-// ── Component ─────────────────────────────────────────────────────────────────
-
 export default function LifeStoryPage() {
-  const { currentUser } = useAuthContext();
+  const { data: res, isLoading } = useLifeStoryEntries();
+  const entries: LifeStoryEntry[] = res?.data ?? [];
+  const createMut = useCreateLifeStoryEntry();
 
-  const [entries, setEntries] = useState<LifeStoryEntry[]>(SEED);
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -166,7 +61,7 @@ export default function LifeStoryPage() {
   const [tab, setTab] = useState<"all" | "completed" | "planned">("all");
 
   const [nChild, setNChild] = useState("");
-  const [nType, setNType] = useState<EntryType | "">("");
+  const [nType, setNType] = useState<LifeStoryEntryType | "">("");
   const [nTitle, setNTitle] = useState("");
   const [nDesc, setNDesc] = useState("");
   const [nVoice, setNVoice] = useState("");
@@ -223,34 +118,33 @@ export default function LifeStoryPage() {
     { header: "ID", accessor: r => r.id },
     { header: "Child", accessor: r => getYPName(r.child_id) },
     { header: "Date", accessor: r => r.date },
-    { header: "Type", accessor: r => TYPE_CONFIG[r.type].label },
+    { header: "Type", accessor: r => LIFE_STORY_ENTRY_TYPE_LABEL[r.type] },
     { header: "Title", accessor: r => r.title },
     { header: "Description", accessor: r => r.description },
     { header: "Child's Voice", accessor: r => r.child_voice },
     { header: "Facilitator", accessor: r => getStaffName(r.facilitator) },
-    { header: "Status", accessor: r => STATUS_CONFIG[r.status].label },
+    { header: "Status", accessor: r => LIFE_STORY_ENTRY_STATUS_LABEL[r.status] },
     { header: "In Book", accessor: r => r.linked_to_book ? "Yes" : "No" },
   ];
 
   const handleCreate = () => {
     if (!nChild || !nType || !nTitle || !nDesc) return;
-    const entry: LifeStoryEntry = {
-      id: `ls_${Date.now()}`,
+    createMut.mutate({
       child_id: nChild,
-      date: todayStr(),
-      type: nType as EntryType,
+      date: new Date().toISOString().slice(0, 10),
+      type: nType as LifeStoryEntryType,
       title: nTitle,
       description: nDesc,
       child_voice: nVoice,
-      facilitator: currentUser?.id || "staff_darren",
+      facilitator: "staff_darren",
       status: "completed",
       linked_to_book: false,
-      created_at: new Date().toISOString(),
-    };
-    setEntries(prev => [entry, ...prev]);
+    });
     setShowNew(false);
     setNChild(""); setNType(""); setNTitle(""); setNDesc(""); setNVoice("");
   };
+
+  if (isLoading) return <PageShell title="Life Story Work" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -258,7 +152,7 @@ export default function LifeStoryPage() {
       subtitle="Identity, heritage, memories, and milestones"
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Life Story Work" subtitle="Oak House — Identity & Belonging" />
+          <PrintButton title="Life Story Work" />
           <ExportButton data={filtered} columns={exportCols} filename="life-story-work" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Entry
@@ -331,7 +225,7 @@ export default function LifeStoryPage() {
           <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {(Object.entries(TYPE_CONFIG) as [EntryType, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(TYPE_CONFIG) as [LifeStoryEntryType, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -384,7 +278,7 @@ export default function LifeStoryPage() {
                     {entry.linked_to_book && <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700">In Book</Badge>}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {getYPName(entry.child_id)} · {getStaffName(entry.facilitator)} · {formatDate(entry.date)}
+                    {getYPName(entry.child_id)} · {getStaffName(entry.facilitator)} · {entry.date}
                   </p>
                 </div>
                 {isOpen ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
@@ -404,8 +298,10 @@ export default function LifeStoryPage() {
                   )}
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />{getStaffName(entry.facilitator)}</span>
-                    <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{formatDate(entry.date)}</span>
+                    <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{entry.date}</span>
                   </div>
+
+                  <SmartLinkPanel sourceType="life-story-entries" sourceId={entry.id} childId={entry.child_id} compact />
                 </div>
               )}
             </div>
@@ -443,10 +339,10 @@ export default function LifeStoryPage() {
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Type *</label>
-              <Select value={nType} onValueChange={v => setNType(v as EntryType)}>
+              <Select value={nType} onValueChange={v => setNType(v as LifeStoryEntryType)}>
                 <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(TYPE_CONFIG) as [EntryType, { label: string }][]).map(([k, v]) => (
+                  {(Object.entries(TYPE_CONFIG) as [LifeStoryEntryType, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
                   ))}
                 </SelectContent>

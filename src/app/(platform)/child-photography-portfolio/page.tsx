@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -28,416 +28,88 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { ChildPhotoEntry, PhotoCategory } from "@/types/extended";
+import { PHOTO_CATEGORY_LABEL, PHOTO_CONSENT_METHOD_LABEL } from "@/types/extended";
+import { useChildPhotoEntries } from "@/hooks/use-child-photo-entries";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { useState } from "react";
 
-interface PhotoEntry {
-  id: string;
-  youngPerson: string;
-  date: string;
-  occasion: string;
-  photoCategory:
-    | "Birthday"
-    | "Achievement"
-    | "Activity"
-    | "Family contact"
-    | "Holiday/Trip"
-    | "Everyday moment"
-    | "Cultural event"
-    | "School milestone";
-  description: string;
-  photographer: string;
-  childPosed: boolean;
-  childChooseToTake: boolean;
-  groupPhoto: boolean;
-  othersInPhoto: string[];
-  consentGiven: boolean;
-  consentMethod: "Verbal" | "Written" | "Visual cards" | "Through advocate";
-  photoLocation: string;
-  copies: string[];
-  childCanRequestRemoval: boolean;
-  partOfLifeStoryBook: boolean;
-  partOfBedroomDisplay: boolean;
-  partOfGalleryWall: boolean;
-  childComment: string;
-  specialSignificance: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const data: PhotoEntry[] = [
-  // ALEX
-  {
-    id: "ph-001",
-    youngPerson: "yp_alex",
-    date: d(-14),
-    occasion: "Boxing club regional medal ceremony",
-    photoCategory: "Achievement",
-    description:
-      "Alex receiving regional silver medal at the boxing club. Coach Pete pinning medal. Alex grinning, gloves still on.",
-    photographer: "staff_anna",
-    childPosed: true,
-    childChooseToTake: true,
-    groupPhoto: true,
-    othersInPhoto: ["Coach Pete (consented)", "Boxing club teammate (anonymised — face blurred)"],
-    consentGiven: true,
-    consentMethod: "Verbal",
-    photoLocation: "Regional boxing championship venue",
-    copies: ["Life Story Book", "Bedroom display (framed)", "Mum's letter pack (with consent)", "Secure care record"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: true,
-    partOfGalleryWall: false,
-    childComment: "Best day. Want this one big on my wall.",
-    specialSignificance:
-      "First regional-level achievement. Alex chose to send copy to Mum. Identity-affirming — links to long-term sense of self as a boxer.",
-  },
-  {
-    id: "ph-002",
-    youngPerson: "yp_alex",
-    date: d(-45),
-    occasion: "13th birthday — cake at Oak House",
-    photoCategory: "Birthday",
-    description:
-      "Alex blowing out 13 candles. Sister Mia visiting, hands clasped beside him. Cake decorated in Arsenal colours (Alex's choice).",
-    photographer: "staff_darren",
-    childPosed: false,
-    childChooseToTake: true,
-    groupPhoto: true,
-    othersInPhoto: ["Sister Mia (parental consent obtained)", "Staff_Darren (consented)"],
-    consentGiven: true,
-    consentMethod: "Verbal",
-    photoLocation: "Oak House dining room",
-    copies: ["Life Story Book", "Bedroom display", "Sister Mia's photo album (parent-approved)"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: true,
-    partOfGalleryWall: false,
-    childComment: "Mia was buzzing. Good day.",
-    specialSignificance:
-      "First birthday at Oak House where Mia could attend. Marker of stabilising sibling contact.",
-  },
-  {
-    id: "ph-003",
-    youngPerson: "yp_alex",
-    date: d(-90),
-    occasion: "Sunday roast — everyday moment",
-    photoCategory: "Everyday moment",
-    description:
-      "Alex laughing at the dinner table — Jordan had cracked a joke. Casey in background. Roast dinner spread visible.",
-    photographer: "Self",
-    childPosed: false,
-    childChooseToTake: true,
-    groupPhoto: true,
-    othersInPhoto: ["yp_jordan (consented)", "yp_casey (consented — appears in background only)"],
-    consentGiven: true,
-    consentMethod: "Verbal",
-    photoLocation: "Oak House kitchen/diner",
-    copies: ["Alex's phone", "Life Story Book"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: false,
-    partOfGalleryWall: true,
-    childComment: "Just normal Sunday. Like family.",
-    specialSignificance:
-      "Self-taken — shows Alex's growing comfort and sense of belonging at Oak House. The 'normal' is the point.",
-  },
-  {
-    id: "ph-004",
-    youngPerson: "yp_alex",
-    date: d(-200),
-    occasion: "Visit with maternal grandmother (Nan)",
-    photoCategory: "Family contact",
-    description:
-      "Alex with Nan in her front garden. Nan holding Alex's hand. Roses in bloom. Both smiling.",
-    photographer: "External",
-    childPosed: true,
-    childChooseToTake: true,
-    groupPhoto: true,
-    othersInPhoto: ["Maternal grandmother (consented in writing)"],
-    consentGiven: true,
-    consentMethod: "Written",
-    photoLocation: "Nan's house, supervised contact visit",
-    copies: ["Life Story Book", "Bedroom display (framed beside bed)", "Nan's mantelpiece"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: true,
-    partOfGalleryWall: false,
-    childComment: "Nan smelled like cake.",
-    specialSignificance:
-      "Anchor point for family identity. Alex requested this as the photo by his bed. Pre-care continuity made tangible.",
-  },
-
-  // JORDAN
-  {
-    id: "ph-005",
-    youngPerson: "yp_jordan",
-    date: d(-7),
-    occasion: "Football team captain — first match wearing armband",
-    photoCategory: "Achievement",
-    description:
-      "Jordan in full kit, captain's armband on left bicep, holding match ball. Tunnel entrance behind.",
-    photographer: "staff_chervelle",
-    childPosed: true,
-    childChooseToTake: true,
-    groupPhoto: false,
-    othersInPhoto: [],
-    consentGiven: true,
-    consentMethod: "Verbal",
-    photoLocation: "Local FC home ground",
-    copies: ["Life Story Book", "Bedroom display (framed)", "Mum's letter pack"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: true,
-    partOfGalleryWall: true,
-    childComment: "Captain. That's me.",
-    specialSignificance:
-      "Identity-defining moment. Jordan chose this as the photo to send to Mum in prison. Leadership marker.",
-  },
-  {
-    id: "ph-006",
-    youngPerson: "yp_jordan",
-    date: d(-30),
-    occasion: "Cultural heritage event — Caribbean food festival",
-    photoCategory: "Cultural event",
-    description:
-      "Jordan with cousin Devon at Caribbean festival, holding plate of jerk chicken and rice. Jamaica flag bunting overhead.",
-    photographer: "staff_chervelle",
-    childPosed: true,
-    childChooseToTake: true,
-    groupPhoto: true,
-    othersInPhoto: ["Cousin Devon (parental consent obtained)"],
-    consentGiven: true,
-    consentMethod: "Verbal",
-    photoLocation: "City Caribbean Festival",
-    copies: ["Life Story Book", "Bedroom display", "Cousin Devon's family"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: true,
-    partOfGalleryWall: false,
-    childComment: "Mum would've loved this. Sent her the picture.",
-    specialSignificance:
-      "Cultural identity affirmation. Connection to Mum's Jamaican heritage. Cousin connection re-built.",
-  },
-  {
-    id: "ph-007",
-    youngPerson: "yp_jordan",
-    date: d(-75),
-    occasion: "Sister Tia's 9th birthday — supervised contact",
-    photoCategory: "Family contact",
-    description:
-      "Jordan helping Tia blow out candles. Tia laughing, frosting on her cheek. Foster mum (Tia's carer) in background, consented.",
-    photographer: "External",
-    childPosed: false,
-    childChooseToTake: false,
-    groupPhoto: true,
-    othersInPhoto: ["Sister Tia (foster carer consent)", "Tia's foster mum (consented)"],
-    consentGiven: true,
-    consentMethod: "Written",
-    photoLocation: "Family contact centre",
-    copies: ["Life Story Book", "Bedroom display (framed)", "Tia's photo album"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: true,
-    partOfGalleryWall: false,
-    childComment: "Big brother stuff.",
-    specialSignificance:
-      "Sibling bond reinforced. Jordan chose to keep this on his bedside table. Continuity of his role as big brother.",
-  },
-  {
-    id: "ph-008",
-    youngPerson: "yp_jordan",
-    date: d(-150),
-    occasion: "School Year 9 Citizenship Award assembly",
-    photoCategory: "School milestone",
-    description:
-      "Jordan on stage receiving certificate from Head Teacher. Smile, slightly shy. Anna in audience clapping (visible).",
-    photographer: "staff_anna",
-    childPosed: false,
-    childChooseToTake: true,
-    groupPhoto: true,
-    othersInPhoto: ["Head Teacher (consented for school context)", "staff_anna (consented)"],
-    consentGiven: true,
-    consentMethod: "Verbal",
-    photoLocation: "School main hall",
-    copies: ["Life Story Book", "Bedroom display", "School yearbook (school's own copy)"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: false,
-    partOfGalleryWall: true,
-    childComment: "Didn't think I'd get one of these.",
-    specialSignificance:
-      "Recognition of who Jordan is becoming — beyond the boy in the case file. School visibility shift.",
-  },
-
-  // CASEY
-  {
-    id: "ph-009",
-    youngPerson: "yp_casey",
-    date: d(-21),
-    occasion: "Art exhibition — 'Finding Home' piece displayed",
-    photoCategory: "Achievement",
-    description:
-      "Casey beside their watercolour piece 'Finding Home' at the local young artists' exhibition. Visual cards used to confirm consent. Casey not posed — chose distance from the work.",
-    photographer: "staff_anna",
-    childPosed: false,
-    childChooseToTake: true,
-    groupPhoto: false,
-    othersInPhoto: [],
-    consentGiven: true,
-    consentMethod: "Visual cards",
-    photoLocation: "City library exhibition space",
-    copies: ["Life Story Book", "Bedroom display (framed in pride of place)", "Art therapist's record (with consent)"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: true,
-    partOfGalleryWall: true,
-    childComment: "It's mine. People saw it.",
-    specialSignificance:
-      "Major identity moment. First public display of Casey's art. Casey controlled the photo — consent re-checked using visual cards before, during, and after.",
-  },
-  {
-    id: "ph-010",
-    youngPerson: "yp_casey",
-    date: d(-60),
-    occasion: "Quiet moment — painting in bedroom corner",
-    photoCategory: "Everyday moment",
-    description:
-      "Casey painting at desk, Otter (soft toy) beside them, sage green wall in background. Self-taken with phone timer.",
-    photographer: "Self",
-    childPosed: true,
-    childChooseToTake: true,
-    groupPhoto: false,
-    othersInPhoto: [],
-    consentGiven: true,
-    consentMethod: "Visual cards",
-    photoLocation: "Casey's bedroom",
-    copies: ["Casey's tablet", "Life Story Book (Casey added)"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: false,
-    partOfGalleryWall: false,
-    childComment: "Just me. With Otter.",
-    specialSignificance:
-      "Self-authored. Casey choosing to be seen on their own terms. Sensory-safe space documented by Casey themselves.",
-  },
-  {
-    id: "ph-011",
-    youngPerson: "yp_casey",
-    date: d(-110),
-    occasion: "Seaside day trip — first beach walk",
-    photoCategory: "Holiday/Trip",
-    description:
-      "Casey at the shoreline, ear defenders on, holding a shell up to camera. Sea misty behind. Footprints in sand.",
-    photographer: "staff_anna",
-    childPosed: true,
-    childChooseToTake: true,
-    groupPhoto: false,
-    othersInPhoto: [],
-    consentGiven: true,
-    consentMethod: "Visual cards",
-    photoLocation: "North Norfolk coast — Holkham beach",
-    copies: ["Life Story Book", "Bedroom display", "Anna's phone (deleted after transfer)"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: true,
-    partOfGalleryWall: true,
-    childComment: "The shell sounded like the sea.",
-    specialSignificance:
-      "First beach trip. Sensory milestone — Casey managed a new environment with regulation strategies. Anna deleted phone copy after secure transfer (data minimisation).",
-  },
-  {
-    id: "ph-012",
-    youngPerson: "yp_casey",
-    date: d(-180),
-    occasion: "Casey with Otter — bedroom display photo",
-    photoCategory: "Everyday moment",
-    description:
-      "Close-up of Otter (soft toy since age 5) on Casey's pillow. Casey not in photo (chose not to be). Casey directed the framing.",
-    photographer: "Self",
-    childPosed: false,
-    childChooseToTake: true,
-    groupPhoto: false,
-    othersInPhoto: [],
-    consentGiven: true,
-    consentMethod: "Visual cards",
-    photoLocation: "Casey's bedroom",
-    copies: ["Casey's tablet", "Life Story Book"],
-    childCanRequestRemoval: true,
-    partOfLifeStoryBook: true,
-    partOfBedroomDisplay: false,
-    partOfGalleryWall: false,
-    childComment: "Otter is the important one.",
-    specialSignificance:
-      "Casey's choice to photograph what matters to them — not themselves. Demonstrates child-led documentation and respects Casey's preference to be unseen.",
-  },
-];
-
-const exportCols: ExportColumn<PhotoEntry>[] = [
-  { header: "Young Person", accessor: (r: PhotoEntry) => getYPName(r.youngPerson) },
-  { header: "Date", accessor: (r: PhotoEntry) => r.date },
-  { header: "Occasion", accessor: (r: PhotoEntry) => r.occasion },
-  { header: "Category", accessor: (r: PhotoEntry) => r.photoCategory },
-  {
-    header: "Photographer",
-    accessor: (r: PhotoEntry) =>
-      r.photographer === "Self" || r.photographer === "External"
-        ? r.photographer
-        : getStaffName(r.photographer),
-  },
-  { header: "Consent", accessor: (r: PhotoEntry) => (r.consentGiven ? `Yes (${r.consentMethod})` : "No") },
-  { header: "Group Photo", accessor: (r: PhotoEntry) => (r.groupPhoto ? "Yes" : "No") },
-  { header: "Life Story Book", accessor: (r: PhotoEntry) => (r.partOfLifeStoryBook ? "Yes" : "No") },
-  { header: "Bedroom Display", accessor: (r: PhotoEntry) => (r.partOfBedroomDisplay ? "Yes" : "No") },
-  { header: "Gallery Wall", accessor: (r: PhotoEntry) => (r.partOfGalleryWall ? "Yes" : "No") },
-  { header: "Description", accessor: (r: PhotoEntry) => r.description },
-];
-
-const categoryColours: Record<PhotoEntry["photoCategory"], string> = {
-  Birthday: "bg-pink-100 text-pink-800",
-  Achievement: "bg-amber-100 text-amber-800",
-  Activity: "bg-blue-100 text-blue-800",
-  "Family contact": "bg-rose-100 text-rose-800",
-  "Holiday/Trip": "bg-cyan-100 text-cyan-800",
-  "Everyday moment": "bg-emerald-100 text-emerald-800",
-  "Cultural event": "bg-purple-100 text-purple-800",
-  "School milestone": "bg-indigo-100 text-indigo-800",
+const categoryColours: Record<PhotoCategory, string> = {
+  birthday: "bg-pink-100 text-pink-800",
+  achievement: "bg-amber-100 text-amber-800",
+  activity: "bg-blue-100 text-blue-800",
+  family_contact: "bg-rose-100 text-rose-800",
+  holiday_trip: "bg-cyan-100 text-cyan-800",
+  everyday_moment: "bg-emerald-100 text-emerald-800",
+  cultural_event: "bg-purple-100 text-purple-800",
+  school_milestone: "bg-indigo-100 text-indigo-800",
 };
 
 export default function ChildPhotographyPortfolioPage() {
+  const { data: raw, isLoading } = useChildPhotoEntries();
+  const items = raw?.data ?? [];
+
   const [filterYP, setFilterYP] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const exportCols: ExportColumn<ChildPhotoEntry>[] = useMemo(() => [
+    { header: "Young Person", accessor: (r: ChildPhotoEntry) => getYPName(r.child_id) },
+    { header: "Date", accessor: (r: ChildPhotoEntry) => r.date },
+    { header: "Occasion", accessor: (r: ChildPhotoEntry) => r.occasion },
+    { header: "Category", accessor: (r: ChildPhotoEntry) => PHOTO_CATEGORY_LABEL[r.photo_category] },
+    {
+      header: "Photographer",
+      accessor: (r: ChildPhotoEntry) =>
+        r.photographer === "Self" || r.photographer === "External"
+          ? r.photographer
+          : getStaffName(r.photographer),
+    },
+    { header: "Consent", accessor: (r: ChildPhotoEntry) => (r.consent_given ? `Yes (${PHOTO_CONSENT_METHOD_LABEL[r.consent_method]})` : "No") },
+    { header: "Group Photo", accessor: (r: ChildPhotoEntry) => (r.group_photo ? "Yes" : "No") },
+    { header: "Life Story Book", accessor: (r: ChildPhotoEntry) => (r.part_of_life_story_book ? "Yes" : "No") },
+    { header: "Bedroom Display", accessor: (r: ChildPhotoEntry) => (r.part_of_bedroom_display ? "Yes" : "No") },
+    { header: "Gallery Wall", accessor: (r: ChildPhotoEntry) => (r.part_of_gallery_wall ? "Yes" : "No") },
+    { header: "Description", accessor: (r: ChildPhotoEntry) => r.description },
+  ], []);
+
   const filtered = useMemo(() => {
-    let items = [...data];
-    if (filterYP !== "all") items = items.filter((p) => p.youngPerson === filterYP);
-    if (filterCategory !== "all") items = items.filter((p) => p.photoCategory === filterCategory);
-    items.sort((a, b) => {
+    let list = [...items];
+    if (filterYP !== "all") list = list.filter((p) => p.child_id === filterYP);
+    if (filterCategory !== "all") list = list.filter((p) => p.photo_category === filterCategory);
+    list.sort((a, b) => {
       switch (sortBy) {
         case "date":
           return b.date.localeCompare(a.date);
         case "oldest":
           return a.date.localeCompare(b.date);
         case "name":
-          return a.youngPerson.localeCompare(b.youngPerson);
+          return a.child_id.localeCompare(b.child_id);
         case "category":
-          return a.photoCategory.localeCompare(b.photoCategory);
+          return a.photo_category.localeCompare(b.photo_category);
         default:
           return 0;
       }
     });
-    return items;
-  }, [filterYP, filterCategory, sortBy]);
+    return list;
+  }, [items, filterYP, filterCategory, sortBy]);
 
-  const total = data.length;
-  const thisYear = data.filter((p) => p.date.startsWith(new Date().getFullYear().toString())).length;
-  const lifeStoryCount = data.filter((p) => p.partOfLifeStoryBook).length;
-  const achievementCount = data.filter((p) => p.photoCategory === "Achievement").length;
-  const allConsented = data.every((p) => p.consentGiven);
+  if (isLoading) {
+    return (
+      <PageShell title="Child Photography Portfolio" subtitle="Loading…">
+        <div />
+      </PageShell>
+    );
+  }
+
+  const ypIds = [...new Set(items.map((r) => r.child_id))];
+
+  const total = items.length;
+  const thisYear = items.filter((p) => p.date.startsWith(new Date().getFullYear().toString())).length;
+  const lifeStoryCount = items.filter((p) => p.part_of_life_story_book).length;
+  const achievementCount = items.filter((p) => p.photo_category === "achievement").length;
+  const allConsented = items.every((p) => p.consent_given);
 
   return (
     <PageShell
@@ -445,7 +117,7 @@ export default function ChildPhotographyPortfolioPage() {
       subtitle="Photo memories per child — milestones, achievements, everyday joy, documented with consent"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="child-photography-portfolio" />
+          <ExportButton data={items} columns={exportCols} filename="child-photography-portfolio" />
           <PrintButton title="Child Photography Portfolio" />
         </div>
       }
@@ -502,9 +174,9 @@ export default function ChildPhotographyPortfolioPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Children</SelectItem>
-            <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-            <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-            <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
+            {ypIds.map((id) => (
+              <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={filterCategory} onValueChange={setFilterCategory}>
@@ -513,14 +185,9 @@ export default function ChildPhotographyPortfolioPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="Birthday">Birthday</SelectItem>
-            <SelectItem value="Achievement">Achievement</SelectItem>
-            <SelectItem value="Activity">Activity</SelectItem>
-            <SelectItem value="Family contact">Family contact</SelectItem>
-            <SelectItem value="Holiday/Trip">Holiday/Trip</SelectItem>
-            <SelectItem value="Everyday moment">Everyday moment</SelectItem>
-            <SelectItem value="Cultural event">Cultural event</SelectItem>
-            <SelectItem value="School milestone">School milestone</SelectItem>
+            {Object.entries(PHOTO_CATEGORY_LABEL).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -557,12 +224,12 @@ export default function ChildPhotographyPortfolioPage() {
                   <Camera className="h-5 w-5 text-purple-600 shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">
-                      {getYPName(p.youngPerson)} &middot; {p.occasion}
+                      {getYPName(p.child_id)} &middot; {p.occasion}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
                       {p.date} &middot; Photographer: {photographerName}
-                      {p.groupPhoto && p.othersInPhoto.length > 0
-                        ? ` · Group of ${p.othersInPhoto.length + 1}`
+                      {p.group_photo && p.others_in_photo.length > 0
+                        ? ` · Group of ${p.others_in_photo.length + 1}`
                         : ""}
                     </p>
                   </div>
@@ -571,13 +238,13 @@ export default function ChildPhotographyPortfolioPage() {
                   <span
                     className={cn(
                       "text-xs px-2 py-0.5 rounded-full font-medium hidden sm:inline-block",
-                      categoryColours[p.photoCategory],
+                      categoryColours[p.photo_category],
                     )}
                   >
-                    {p.photoCategory}
+                    {PHOTO_CATEGORY_LABEL[p.photo_category]}
                   </span>
-                  {p.consentGiven && <CheckCircle className="h-4 w-4 text-green-500" />}
-                  {p.partOfLifeStoryBook && <BookOpen className="h-4 w-4 text-purple-500" />}
+                  {p.consent_given && <CheckCircle className="h-4 w-4 text-green-500" />}
+                  {p.part_of_life_story_book && <BookOpen className="h-4 w-4 text-purple-500" />}
                   {isExpanded ? (
                     <ChevronUp className="h-4 w-4" />
                   ) : (
@@ -611,14 +278,14 @@ export default function ChildPhotographyPortfolioPage() {
                         </li>
                         <li>
                           <span className="text-muted-foreground">Child posed:</span>{" "}
-                          {p.childPosed ? "Yes" : "No (candid)"}
+                          {p.child_posed ? "Yes" : "No (candid)"}
                         </li>
                         <li>
                           <span className="text-muted-foreground">Child chose to take it:</span>{" "}
-                          {p.childChooseToTake ? "Yes" : "No"}
+                          {p.child_choose_to_take ? "Yes" : "No"}
                         </li>
                         <li>
-                          <span className="text-muted-foreground">Location:</span> {p.photoLocation}
+                          <span className="text-muted-foreground">Location:</span> {p.photo_location}
                         </li>
                       </ul>
                     </div>
@@ -630,15 +297,15 @@ export default function ChildPhotographyPortfolioPage() {
                       <ul className="text-sm space-y-0.5">
                         <li>
                           <span className="text-muted-foreground">Given:</span>{" "}
-                          {p.consentGiven ? "Yes" : "No"}
+                          {p.consent_given ? "Yes" : "No"}
                         </li>
                         <li>
-                          <span className="text-muted-foreground">Method:</span> {p.consentMethod}
+                          <span className="text-muted-foreground">Method:</span> {PHOTO_CONSENT_METHOD_LABEL[p.consent_method]}
                         </li>
                         <li className="flex items-start gap-1">
                           <Trash2 className="h-3 w-3 text-rose-500 mt-1 shrink-0" />
                           <span>
-                            {p.childCanRequestRemoval
+                            {p.child_can_request_removal
                               ? "Child can request removal at any time"
                               : "Removal restricted (review required)"}
                           </span>
@@ -647,14 +314,14 @@ export default function ChildPhotographyPortfolioPage() {
                     </div>
                   </div>
 
-                  {p.groupPhoto && p.othersInPhoto.length > 0 && (
+                  {p.group_photo && p.others_in_photo.length > 0 && (
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                         <Users className="h-3 w-3 inline mr-1" />
                         Others in Photo (anonymised)
                       </p>
                       <ul className="space-y-0.5">
-                        {p.othersInPhoto.map((o, i) => (
+                        {p.others_in_photo.map((o, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-purple-600 mt-0.5">•</span>
                             <span>{o}</span>
@@ -670,18 +337,18 @@ export default function ChildPhotographyPortfolioPage() {
                       Where the Photo Lives
                     </p>
                     <div className="flex flex-wrap gap-1 mb-2">
-                      {p.partOfLifeStoryBook && (
+                      {p.part_of_life_story_book && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-medium">
                           <BookOpen className="h-3 w-3 inline mr-1" />
                           Life Story Book
                         </span>
                       )}
-                      {p.partOfBedroomDisplay && (
+                      {p.part_of_bedroom_display && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 font-medium">
                           Bedroom Display
                         </span>
                       )}
-                      {p.partOfGalleryWall && (
+                      {p.part_of_gallery_wall && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-medium">
                           Communal Gallery Wall
                         </span>
@@ -697,12 +364,12 @@ export default function ChildPhotographyPortfolioPage() {
                     </ul>
                   </div>
 
-                  {p.childComment && (
+                  {p.child_comment && (
                     <div className="bg-emerald-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">
                         Child&apos;s Words
                       </p>
-                      <p className="text-sm italic">&ldquo;{p.childComment}&rdquo;</p>
+                      <p className="text-sm italic">&ldquo;{p.child_comment}&rdquo;</p>
                     </div>
                   )}
 
@@ -711,17 +378,19 @@ export default function ChildPhotographyPortfolioPage() {
                       <Star className="h-3 w-3 inline mr-1" />
                       Special Significance
                     </p>
-                    <p className="text-sm">{p.specialSignificance}</p>
+                    <p className="text-sm">{p.special_significance}</p>
                   </div>
+
+                  <SmartLinkPanel sourceType="child-photo-entry" sourceId={p.id} childId={p.child_id} compact />
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
                     <span>Date: {p.date}</span>
-                    <span>Category: {p.photoCategory}</span>
+                    <span>Category: {PHOTO_CATEGORY_LABEL[p.photo_category]}</span>
                     <span>
                       <Heart className="h-3 w-3 inline mr-1 text-pink-500" />
-                      Consent: {p.consentMethod}
+                      Consent: {PHOTO_CONSENT_METHOD_LABEL[p.consent_method]}
                     </span>
-                    {p.childChooseToTake && (
+                    {p.child_choose_to_take && (
                       <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium">
                         Child-led
                       </span>

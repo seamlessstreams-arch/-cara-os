@@ -17,225 +17,23 @@ import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { usePolicyReviewRecords } from "@/hooks/use-policy-review-records";
+import type { PolicyReviewRecord, PolicyReviewCycle, PolicyReviewStatus } from "@/types/extended";
+import { POLICY_REVIEW_CYCLE_LABEL, POLICY_REVIEW_STATUS_LABEL } from "@/types/extended";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, AlertOctagon, Shield, ShieldCheck,
   CheckCircle2, Clock, Calendar, FileText, BookOpen,
-  User, Users, PenLine, History,
+  User, Users, PenLine, History, Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type ReviewCycle = "annual" | "6_monthly" | "2_yearly";
-type PolicyStatus = "current" | "due_soon" | "overdue";
-
-interface Policy {
-  id: string;
-  title: string;
-  owner: string;
-  lastReviewDate: string;
-  nextReviewDate: string;
-  version: string;
-  reviewCycle: ReviewCycle;
-  status: PolicyStatus;
-  staffSigned: number;
-  staffTotal: number;
-  changes: string;
-  approvedBy: string;
-}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<PolicyStatus, { label: string; colour: string }> = {
+const STATUS_CONFIG: Record<PolicyReviewStatus, { label: string; colour: string }> = {
   current:  { label: "Current",  colour: "bg-green-100 text-green-700" },
   due_soon: { label: "Due Soon", colour: "bg-amber-100 text-amber-700" },
   overdue:  { label: "Overdue",  colour: "bg-red-100 text-red-700" },
 };
-
-const CYCLE_LABELS: Record<ReviewCycle, string> = {
-  annual:    "Annual",
-  "6_monthly": "6-Monthly",
-  "2_yearly":  "2-Yearly",
-};
-
-// ── Date Helper ───────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const SEED_POLICIES: Policy[] = [
-  {
-    id: "pol_001",
-    title: "Safeguarding & Child Protection Policy",
-    owner: "staff_darren",
-    lastReviewDate: d(-30),
-    nextReviewDate: d(335),
-    version: "4.2",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 7,
-    staffTotal: 7,
-    changes: "Updated referral pathways following local authority restructure; added contextual safeguarding section.",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_002",
-    title: "Behaviour Management Policy",
-    owner: "staff_darren",
-    lastReviewDate: d(-60),
-    nextReviewDate: d(305),
-    version: "3.1",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 7,
-    staffTotal: 7,
-    changes: "Revised de-escalation framework; aligned with updated TCI model.",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_003",
-    title: "Missing from Care Policy",
-    owner: "staff_ryan",
-    lastReviewDate: d(-90),
-    nextReviewDate: d(275),
-    version: "2.3",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 7,
-    staffTotal: 7,
-    changes: "Added return home interview timelines; updated police notification thresholds.",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_004",
-    title: "Medication Policy",
-    owner: "staff_ryan",
-    lastReviewDate: d(-180),
-    nextReviewDate: d(185),
-    version: "5.0",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 6,
-    staffTotal: 7,
-    changes: "Full rewrite — incorporated NICE guidelines; added homely remedies protocol. Mirela pending (new starter).",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_005",
-    title: "Complaints Policy",
-    owner: "staff_darren",
-    lastReviewDate: d(-14),
-    nextReviewDate: d(351),
-    version: "2.1",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 7,
-    staffTotal: 7,
-    changes: "Simplified young person complaint form; added advocacy contact details.",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_006",
-    title: "Lone Working Policy",
-    owner: "staff_ryan",
-    lastReviewDate: d(-400),
-    nextReviewDate: d(-35),
-    version: "1.4",
-    reviewCycle: "annual",
-    status: "overdue",
-    staffSigned: 5,
-    staffTotal: 7,
-    changes: "Last review: minor wording changes. OVERDUE — review must be prioritised immediately.",
-    approvedBy: "staff_ryan",
-  },
-  {
-    id: "pol_007",
-    title: "Whistle-Blowing Policy",
-    owner: "staff_darren",
-    lastReviewDate: d(-200),
-    nextReviewDate: d(165),
-    version: "2.0",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 7,
-    staffTotal: 7,
-    changes: "Added external reporting routes (Ofsted, LADO); clarified protections for whistleblowers.",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_008",
-    title: "Fire Safety Policy",
-    owner: "staff_ryan",
-    lastReviewDate: d(-100),
-    nextReviewDate: d(265),
-    version: "3.0",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 7,
-    staffTotal: 7,
-    changes: "Updated PEEP for new resident; revised assembly point following building works.",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_009",
-    title: "E-Safety & Social Media Policy",
-    owner: "staff_darren",
-    lastReviewDate: d(-350),
-    nextReviewDate: d(15),
-    version: "2.4",
-    reviewCycle: "annual",
-    status: "due_soon",
-    staffSigned: 6,
-    staffTotal: 7,
-    changes: "Added AI tool guidance; updated age-appropriate platform list. Review imminent.",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_010",
-    title: "Recruitment & Selection Policy",
-    owner: "staff_darren",
-    lastReviewDate: d(-150),
-    nextReviewDate: d(215),
-    version: "1.2",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 7,
-    staffTotal: 7,
-    changes: "Added values-based interview guidance; updated Schedule 2 checklist reference.",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_011",
-    title: "Physical Intervention Policy",
-    owner: "staff_darren",
-    lastReviewDate: d(-45),
-    nextReviewDate: d(320),
-    version: "4.0",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 7,
-    staffTotal: 7,
-    changes: "Aligned with TCI 7th edition; added post-incident debrief requirements.",
-    approvedBy: "staff_darren",
-  },
-  {
-    id: "pol_012",
-    title: "Data Protection & GDPR Policy",
-    owner: "staff_darren",
-    lastReviewDate: d(-250),
-    nextReviewDate: d(115),
-    version: "2.1",
-    reviewCycle: "annual",
-    status: "current",
-    staffSigned: 7,
-    staffTotal: 7,
-    changes: "Updated data retention schedule; added subject access request timelines.",
-    approvedBy: "staff_darren",
-  },
-];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -257,9 +55,9 @@ function daysUntil(iso: string): number {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function PolicyReviewTrackerPage() {
-  const [policies] = useState<Policy[]>(SEED_POLICIES);
+  const { data: policies = [], isLoading } = usePolicyReviewRecords();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<PolicyStatus | "all">("all");
+  const [filterStatus, setFilterStatus] = useState<PolicyReviewStatus | "all">("all");
   const [filterOwner, setFilterOwner] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"next_review" | "name">("next_review");
@@ -285,7 +83,7 @@ export default function PolicyReviewTrackerPage() {
     }
 
     if (sortBy === "next_review") {
-      results.sort((a, b) => new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime());
+      results.sort((a, b) => new Date(a.next_review_date).getTime() - new Date(b.next_review_date).getTime());
     } else {
       results.sort((a, b) => a.title.localeCompare(b.title));
     }
@@ -299,25 +97,35 @@ export default function PolicyReviewTrackerPage() {
     const total = policies.length;
     const overdue = policies.filter(p => p.status === "overdue").length;
     const dueSoon = policies.filter(p => p.status === "due_soon").length;
-    const fullySigned = policies.filter(p => p.staffSigned === p.staffTotal).length;
+    const fullySigned = policies.filter(p => p.staff_signed === p.staff_total).length;
     return { total, overdue, dueSoon, fullySigned };
   }, [policies]);
 
   // ── Export Columns ────────────────────────────────────────────────────────
 
-  const exportCols: ExportColumn<Policy>[] = [
-    { header: "Policy", accessor: (r: Policy) => r.title },
-    { header: "Owner", accessor: (r: Policy) => getStaffName(r.owner) },
-    { header: "Version", accessor: (r: Policy) => r.version },
-    { header: "Review Cycle", accessor: (r: Policy) => CYCLE_LABELS[r.reviewCycle] },
-    { header: "Last Reviewed", accessor: (r: Policy) => r.lastReviewDate },
-    { header: "Next Due", accessor: (r: Policy) => r.nextReviewDate },
-    { header: "Days Until Due", accessor: (r: Policy) => daysUntil(r.nextReviewDate).toString() },
-    { header: "Status", accessor: (r: Policy) => STATUS_CONFIG[r.status].label },
-    { header: "Staff Signed", accessor: (r: Policy) => `${r.staffSigned}/${r.staffTotal}` },
-    { header: "Last Changes", accessor: (r: Policy) => r.changes },
-    { header: "Approved By", accessor: (r: Policy) => getStaffName(r.approvedBy) },
+  const exportCols: ExportColumn<PolicyReviewRecord>[] = [
+    { header: "Policy", accessor: (r) => r.title },
+    { header: "Owner", accessor: (r) => getStaffName(r.owner) },
+    { header: "Version", accessor: (r) => r.version },
+    { header: "Review Cycle", accessor: (r) => POLICY_REVIEW_CYCLE_LABEL[r.review_cycle] },
+    { header: "Last Reviewed", accessor: (r) => r.last_review_date },
+    { header: "Next Due", accessor: (r) => r.next_review_date },
+    { header: "Days Until Due", accessor: (r) => daysUntil(r.next_review_date).toString() },
+    { header: "Status", accessor: (r) => STATUS_CONFIG[r.status].label },
+    { header: "Staff Signed", accessor: (r) => `${r.staff_signed}/${r.staff_total}` },
+    { header: "Last Changes", accessor: (r) => r.changes },
+    { header: "Approved By", accessor: (r) => getStaffName(r.approved_by) },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Policy Review Tracker" subtitle="Monitor review cycles, version history, and staff sign-off for all home policies">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -378,7 +186,7 @@ export default function PolicyReviewTrackerPage() {
           <Filter className="h-4 w-4 text-muted-foreground" />
           <select
             value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value as PolicyStatus | "all")}
+            onChange={e => setFilterStatus(e.target.value as PolicyReviewStatus | "all")}
             className="rounded-md border bg-background px-2 py-1.5 text-sm"
           >
             <option value="all">All Statuses</option>
@@ -419,8 +227,8 @@ export default function PolicyReviewTrackerPage() {
         {filtered.map(policy => {
           const isOpen = expandedId === policy.id;
           const sc = STATUS_CONFIG[policy.status];
-          const days = daysUntil(policy.nextReviewDate);
-          const signedAll = policy.staffSigned === policy.staffTotal;
+          const days = daysUntil(policy.next_review_date);
+          const signedAll = policy.staff_signed === policy.staff_total;
 
           return (
             <div key={policy.id} className={cn("rounded-lg border bg-card overflow-hidden",
@@ -444,12 +252,12 @@ export default function PolicyReviewTrackerPage() {
                     {!signedAll && (
                       <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700">
                         <Users className="h-3 w-3 mr-0.5" />
-                        {policy.staffSigned}/{policy.staffTotal} signed
+                        {policy.staff_signed}/{policy.staff_total} signed
                       </Badge>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Next review: {formatDate(policy.nextReviewDate)}
+                    Next review: {formatDate(policy.next_review_date)}
                     {" · "}
                     {days < 0
                       ? <span className="text-red-600 font-semibold">{Math.abs(days)} days overdue</span>
@@ -473,25 +281,25 @@ export default function PolicyReviewTrackerPage() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Review Cycle</p>
-                      <p className="text-sm">{CYCLE_LABELS[policy.reviewCycle]}</p>
+                      <p className="text-sm">{POLICY_REVIEW_CYCLE_LABEL[policy.review_cycle]}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Approved By</p>
-                      <p className="text-sm">{getStaffName(policy.approvedBy)}</p>
+                      <p className="text-sm">{getStaffName(policy.approved_by)}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Last Reviewed</p>
-                      <p className="text-sm">{formatDate(policy.lastReviewDate)}</p>
+                      <p className="text-sm">{formatDate(policy.last_review_date)}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Next Due</p>
-                      <p className="text-sm">{formatDate(policy.nextReviewDate)}</p>
+                      <p className="text-sm">{formatDate(policy.next_review_date)}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Staff Sign-Off</p>
                       <p className="text-sm">
                         <span className={cn(signedAll ? "text-green-600" : "text-orange-600", "font-medium")}>
-                          {policy.staffSigned}/{policy.staffTotal}
+                          {policy.staff_signed}/{policy.staff_total}
                         </span>
                         {signedAll ? " — All staff signed" : " — Incomplete"}
                       </p>
@@ -504,8 +312,8 @@ export default function PolicyReviewTrackerPage() {
                   <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
                     <span><User className="inline h-3.5 w-3.5 mr-0.5" />Owner: {getStaffName(policy.owner)}</span>
                     <span><History className="inline h-3.5 w-3.5 mr-0.5" />v{policy.version}</span>
-                    <span><Calendar className="inline h-3.5 w-3.5 mr-0.5" />Due: {formatDate(policy.nextReviewDate)}</span>
-                    <span><PenLine className="inline h-3.5 w-3.5 mr-0.5" />Cycle: {CYCLE_LABELS[policy.reviewCycle]}</span>
+                    <span><Calendar className="inline h-3.5 w-3.5 mr-0.5" />Due: {formatDate(policy.next_review_date)}</span>
+                    <span><PenLine className="inline h-3.5 w-3.5 mr-0.5" />Cycle: {POLICY_REVIEW_CYCLE_LABEL[policy.review_cycle]}</span>
                   </div>
                 </div>
               )}

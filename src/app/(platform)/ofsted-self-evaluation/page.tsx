@@ -12,7 +12,7 @@ import {
   CheckCircle2, TrendingUp, ChevronDown, ChevronUp,
   Calendar, User, Star, ShieldCheck, Award,
   Target, AlertTriangle, Lightbulb, FileText,
-  BookOpen,
+  BookOpen, Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -21,6 +21,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useSelfEvaluationAreas } from "@/hooks/use-self-evaluation-areas";
+import type { SelfEvaluationArea, SelfEvaluationGrade } from "@/types/extended";
+import { SELF_EVALUATION_GRADE_LABEL } from "@/types/extended";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 const d = (n: number) => {
@@ -29,190 +32,33 @@ const d = (n: number) => {
   return dt.toISOString().slice(0, 10);
 };
 
-/* ── types ───────────────────────────────────────────────────────────── */
-type SelfGrade = "outstanding" | "good" | "requires_improvement" | "inadequate";
-
-interface ActionInProgress {
-  action: string;
-  owner: string;
-  targetDate: string;
-  status: string;
-}
-
-interface JudgementArea {
-  id: string;
-  area: string;
-  selfGrade: SelfGrade;
-  strengths: string[];
-  evidence: string[];
-  areasForDevelopment: string[];
-  actions: ActionInProgress[];
-}
-
 /* ── label & colour maps ─────────────────────────────────────────────── */
-const GRADE_LABELS: Record<SelfGrade, string> = {
-  outstanding: "Outstanding",
-  good: "Good",
-  requires_improvement: "Requires Improvement",
-  inadequate: "Inadequate",
-};
-
-const GRADE_COLOUR: Record<SelfGrade, string> = {
+const GRADE_COLOUR: Record<SelfEvaluationGrade, string> = {
   outstanding: "bg-indigo-50 text-indigo-700 border-indigo-200",
   good: "bg-emerald-50 text-emerald-700 border-emerald-200",
   requires_improvement: "bg-amber-50 text-amber-700 border-amber-200",
   inadequate: "bg-red-50 text-red-700 border-red-200",
 };
 
-const GRADE_CARD_BORDER: Record<SelfGrade, string> = {
+const GRADE_CARD_BORDER: Record<SelfEvaluationGrade, string> = {
   outstanding: "border-l-indigo-400",
   good: "border-l-emerald-400",
   requires_improvement: "border-l-amber-400",
   inadequate: "border-l-red-400",
 };
 
-const GRADE_ICON_COLOUR: Record<SelfGrade, string> = {
+const GRADE_ICON_COLOUR: Record<SelfEvaluationGrade, string> = {
   outstanding: "text-indigo-600",
   good: "text-emerald-600",
   requires_improvement: "text-amber-600",
   inadequate: "text-red-600",
 };
 
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: JudgementArea[] = [
-  {
-    id: "sef_1",
-    area: "Overall Experiences and Progress of Children",
-    selfGrade: "good",
-    strengths: [
-      "All children are in full-time education with attendance consistently above 95%",
-      "Positive placement stability — zero unplanned endings or breakdowns in the past 12 months",
-      "Strong, trusting relationships between children and staff, evidenced through daily interactions and key-working sessions",
-      "Children's voices are heard and influential in decisions about their care, placement, and daily lives",
-      "Health needs comprehensively met including physical, emotional, and dental health",
-      "Positive outcomes tracked and evidenced through Outcome Star assessments showing improvement across all three children",
-    ],
-    evidence: [
-      "Education attendance records showing 95%+ across all children for the past two terms",
-      "Outcome Star assessments demonstrating measurable improvements across all domains for all 3 children",
-      "Reg 44 independent visitor interviews confirm children report feeling safe and well-cared for",
-      "Zero unplanned placement endings in 12 months — all placements stable and progressing",
-      "Children's meeting minutes showing views sought, heard, and acted upon",
-      "Health records evidencing all appointments attended and health plans reviewed quarterly",
-    ],
-    areasForDevelopment: [
-      "Jordan's CAMHS access remains a challenge — current waiting times are outside the home's direct control but advocacy continues",
-      "Casey's exploitation risk requires ongoing multi-agency vigilance and coordinated safety planning",
-      "Alex's confidence in social settings is still developing — progress is positive but needs continued nurturing",
-    ],
-    actions: [
-      {
-        action: "Continue advocacy with CAMHS for Jordan's assessment — escalate through social worker and IRO if no progress by next LAC review",
-        owner: "staff_darren",
-        targetDate: d(30),
-        status: "In progress",
-      },
-      {
-        action: "Maintain multi-agency exploitation strategy meetings for Casey — ensure NRM referral progress is tracked",
-        owner: "staff_darren",
-        targetDate: d(14),
-        status: "In progress",
-      },
-      {
-        action: "Develop structured social confidence programme for Alex — link with community youth groups and introduce gradual independent outings",
-        owner: "staff_darren",
-        targetDate: d(45),
-        status: "In progress",
-      },
-    ],
-  },
-  {
-    id: "sef_2",
-    area: "How Well Children Are Helped and Protected",
-    selfGrade: "good",
-    strengths: [
-      "Robust safeguarding procedures understood and followed by all staff — evidenced through audits and supervision",
-      "Timely notifications to Ofsted and placing authorities — process improvements implemented following Reg 44 feedback",
-      "Effective missing from care response protocols with strong police liaison and return interview compliance",
-      "Strong multi-agency relationships with social workers, police, YOT, and health professionals",
-      "Exploitation awareness embedded in daily practice — staff trained in CSE/CCE indicators and referral pathways",
-      "All staff trained in Therapeutic Crisis Intervention (TCI) with usage proportionate and reducing over time",
-    ],
-    evidence: [
-      "Zero safeguarding concerns raised about staff conduct in the past 12 months",
-      "Return home interviews completed for 100% of missing episodes within 72 hours",
-      "TCI usage data shows proportionate application and a reducing trend quarter on quarter",
-      "Behaviour incident data shows a consistent downward trend across the reporting period",
-      "Multi-agency meeting attendance records showing consistent engagement and proactive information sharing",
-      "Staff training records showing 100% compliance with safeguarding, CSE/CCE, and TCI refresher training",
-    ],
-    areasForDevelopment: [
-      "One late Ofsted notification identified 3 months ago — process has since been strengthened with same-day reporting protocol",
-      "Casey's exploitation concerns require continued vigilance and sustained multi-agency coordination",
-      "Online safety landscape is continually evolving — staff knowledge needs regular updating",
-    ],
-    actions: [
-      {
-        action: "Implement quarterly online safety briefings for all staff — source updated training materials from CEOP and local safeguarding partnership",
-        owner: "staff_darren",
-        targetDate: d(21),
-        status: "In progress",
-      },
-      {
-        action: "Audit notification timeliness monthly for next quarter to evidence sustained improvement following the late notification",
-        owner: "staff_darren",
-        targetDate: d(60),
-        status: "In progress",
-      },
-    ],
-  },
-  {
-    id: "sef_3",
-    area: "The Effectiveness of Leaders and Managers",
-    selfGrade: "outstanding",
-    strengths: [
-      "Registered Manager studying Level 7 in Leadership and Management — demonstrating commitment to continuous professional development",
-      "Strong governance via the Responsible Individual with regular oversight visits and constructive challenge",
-      "Reg 44 independent visitor reports consistently positive with recommendations actioned within agreed timescales",
-      "Excellent staff retention — only one departure in 12 months (managed exit) demonstrating stable, motivated workforce",
-      "Training compliance consistently high across all mandatory and supplementary areas",
-      "Therapeutic care model (trauma-informed, relational practice) clearly articulated, understood by all staff, and evidenced in daily practice",
-      "Quality assurance framework robust — includes monthly audits, supervision analysis, outcome tracking, and external feedback loops",
-    ],
-    evidence: [
-      "All Reg 44 recommendations actioned within the specified timeframe — tracker shows 100% compliance",
-      "Staff qualification records showing continued progression — 2 staff completed Level 3, deputy completed Level 5",
-      "Supervision compliance at 100% for the reporting period with reflective, high-quality records",
-      "Quality of care review (Reg 45) completed on time with comprehensive self-assessment and action planning",
-      "Ofsted relationship managed proactively — notifications timely, engagement open and transparent",
-      "Staff retention data showing stable workforce with low turnover and high job satisfaction survey scores",
-      "RI visit reports evidencing regular scrutiny, constructive challenge, and support for the Registered Manager",
-    ],
-    areasForDevelopment: [
-      "Succession planning needs development — if the RM were absent for an extended period, contingency arrangements require formalisation",
-      "Deputy's Level 5 qualification recently completed — needs time and support to embed learning into practice leadership",
-      "Two new staff members currently in induction phase — require continued close supervision and mentoring during probation",
-    ],
-    actions: [
-      {
-        action: "Draft formal succession and business continuity plan addressing RM absence scenarios — present to RI for approval",
-        owner: "staff_darren",
-        targetDate: d(42),
-        status: "In progress",
-      },
-      {
-        action: "Develop structured deputy development programme with defined leadership opportunities, shadowing, and mentoring milestones",
-        owner: "staff_darren",
-        targetDate: d(56),
-        status: "In progress",
-      },
-    ],
-  },
-];
-
 /* ── component ───────────────────────────────────────────────────────── */
 export default function OfstedSelfEvaluationPage() {
-  const [entries] = useState<JudgementArea[]>(SEED);
+  const { data: res, isLoading } = useSelfEvaluationAreas();
+  const entries: SelfEvaluationArea[] = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterGrade, setFilterGrade] = useState("all");
   const [sortBy, setSortBy] = useState<"area" | "grade">("area");
@@ -228,16 +74,16 @@ export default function OfstedSelfEvaluationPage() {
           e.area.toLowerCase().includes(q) ||
           e.strengths.some((s) => s.toLowerCase().includes(q)) ||
           e.evidence.some((s) => s.toLowerCase().includes(q)) ||
-          e.areasForDevelopment.some((s) => s.toLowerCase().includes(q))
+          e.areas_for_development.some((s) => s.toLowerCase().includes(q))
       );
     }
-    if (filterGrade !== "all") list = list.filter((e) => e.selfGrade === filterGrade);
+    if (filterGrade !== "all") list = list.filter((e) => e.self_grade === filterGrade);
 
-    const gradeOrder: Record<SelfGrade, number> = { outstanding: 0, good: 1, requires_improvement: 2, inadequate: 3 };
+    const gradeOrder: Record<SelfEvaluationGrade, number> = { outstanding: 0, good: 1, requires_improvement: 2, inadequate: 3 };
     list.sort((a, b) => {
       switch (sortBy) {
         case "grade":
-          return gradeOrder[a.selfGrade] - gradeOrder[b.selfGrade];
+          return gradeOrder[a.self_grade] - gradeOrder[b.self_grade];
         case "area":
         default:
           return a.area.localeCompare(b.area);
@@ -248,18 +94,27 @@ export default function OfstedSelfEvaluationPage() {
 
   /* ── stats ──────────────────────────────────────────────────────── */
   const totalAreas = entries.length;
-  const areasAtGoodPlus = entries.filter((e) => e.selfGrade === "good" || e.selfGrade === "outstanding").length;
+  const areasAtGoodPlus = entries.filter((e) => e.self_grade === "good" || e.self_grade === "outstanding").length;
   const totalActions = entries.reduce((sum, e) => sum + e.actions.length, 0);
   const overallGrade = "Good (with Outstanding leadership)";
 
   /* ── export columns ─────────────────────────────────────────────── */
-  const exportCols: ExportColumn<JudgementArea>[] = [
-    { header: "Judgement Area", accessor: (r: JudgementArea) => r.area },
-    { header: "Self-Assessed Grade", accessor: (r: JudgementArea) => GRADE_LABELS[r.selfGrade] },
-    { header: "Strengths Summary", accessor: (r: JudgementArea) => r.strengths.join("; ") },
-    { header: "Development Summary", accessor: (r: JudgementArea) => r.areasForDevelopment.join("; ") },
-    { header: "Actions Count", accessor: (r: JudgementArea) => r.actions.length },
+  const exportCols: ExportColumn<SelfEvaluationArea>[] = [
+    { header: "Judgement Area", accessor: (r: SelfEvaluationArea) => r.area },
+    { header: "Self-Assessed Grade", accessor: (r: SelfEvaluationArea) => SELF_EVALUATION_GRADE_LABEL[r.self_grade] },
+    { header: "Strengths Summary", accessor: (r: SelfEvaluationArea) => r.strengths.join("; ") },
+    { header: "Development Summary", accessor: (r: SelfEvaluationArea) => r.areas_for_development.join("; ") },
+    { header: "Actions Count", accessor: (r: SelfEvaluationArea) => r.actions.length },
   ];
+
+  /* ── loading state ──────────────────────────────────────────────── */
+  if (isLoading) return (
+    <PageShell title="Ofsted Self-Evaluation" subtitle="Loading…">
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    </PageShell>
+  );
 
   return (
     <PageShell
@@ -387,7 +242,7 @@ export default function OfstedSelfEvaluationPage() {
                 key={item.id}
                 className={cn(
                   "rounded-xl border border-l-4 bg-white overflow-hidden",
-                  GRADE_CARD_BORDER[item.selfGrade]
+                  GRADE_CARD_BORDER[item.self_grade]
                 )}
               >
                 {/* collapsed header */}
@@ -396,24 +251,24 @@ export default function OfstedSelfEvaluationPage() {
                   onClick={() => setExpandedId(isExpanded ? null : item.id)}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Star className={cn("h-5 w-5 shrink-0", GRADE_ICON_COLOUR[item.selfGrade])} />
+                    <Star className={cn("h-5 w-5 shrink-0", GRADE_ICON_COLOUR[item.self_grade])} />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium text-sm">{item.area}</p>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
-                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", GRADE_COLOUR[item.selfGrade])}>
-                          {GRADE_LABELS[item.selfGrade]}
+                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", GRADE_COLOUR[item.self_grade])}>
+                          {SELF_EVALUATION_GRADE_LABEL[item.self_grade]}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          {item.strengths.length} strengths &middot; {item.areasForDevelopment.length} development areas &middot; {item.actions.length} actions
+                          {item.strengths.length} strengths &middot; {item.areas_for_development.length} development areas &middot; {item.actions.length} actions
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    {item.selfGrade === "outstanding" && <Award className="h-4 w-4 text-indigo-500" />}
-                    {item.selfGrade === "good" && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+                    {item.self_grade === "outstanding" && <Award className="h-4 w-4 text-indigo-500" />}
+                    {item.self_grade === "good" && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
                 </button>
@@ -471,7 +326,7 @@ export default function OfstedSelfEvaluationPage() {
                       </CardHeader>
                       <CardContent>
                         <ul className="space-y-2">
-                          {item.areasForDevelopment.map((a, i) => (
+                          {item.areas_for_development.map((a, i) => (
                             <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
                               <Target className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
                               {a}
@@ -502,7 +357,7 @@ export default function OfstedSelfEvaluationPage() {
                                   </span>
                                   <span className="flex items-center gap-1">
                                     <Calendar className="h-3 w-3" />
-                                    Target: {action.targetDate}
+                                    Target: {action.target_date}
                                   </span>
                                   <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200">
                                     {action.status}

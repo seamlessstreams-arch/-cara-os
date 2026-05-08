@@ -22,173 +22,24 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-
-/* ── types ─────────────────────────────────────────────────────────────────── */
-
-type IncidentCategory = "restraint" | "self_harm" | "missing" | "violence" | "property_damage" | "safeguarding" | "medical_emergency" | "fire" | "near_miss" | "other";
-type DebriefStatus = "scheduled" | "completed" | "deferred" | "not_required";
-type ImpactLevel = "low" | "medium" | "high" | "critical";
-
-interface CriticalIncidentDebrief {
-  id: string;
-  incidentDate: string;
-  debriefDate: string;
-  incidentCategory: IncidentCategory;
-  incidentSummary: string;
-  impactLevel: ImpactLevel;
-  youngPersonIds: string[];
-  staffInvolvedIds: string[];
-  facilitatorId: string;
-  attendees: string[];
-  status: DebriefStatus;
-  whatHappened: string;
-  whatWorkedWell: string[];
-  whatCouldImprove: string[];
-  rootCauses: string[];
-  emotionalImpact: string;
-  actionsAgreed: string[];
-  actionsCompleted: number;
-  policyChanges: string;
-  trainingNeeds: string[];
-  sharedWith: string[];
-  followUpDate: string | null;
-  notes: string;
-}
+import type { CriticalIncidentDebriefRecord, DebriefIncidentCategory, IncidentDebriefStatus, DebriefImpactLevel } from "@/types/extended";
+import { DEBRIEF_INCIDENT_CATEGORY_LABEL, INCIDENT_DEBRIEF_STATUS_LABEL, DEBRIEF_IMPACT_LEVEL_LABEL } from "@/types/extended";
+import { useCriticalIncidentDebriefRecords, useCreateCriticalIncidentDebriefRecord } from "@/hooks/use-critical-incident-debrief-records";
+import { toast } from "sonner";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const CAT_LABEL: Record<IncidentCategory, string> = {
-  restraint: "Physical Intervention", self_harm: "Self-Harm", missing: "Missing from Care",
-  violence: "Violence/Aggression", property_damage: "Property Damage", safeguarding: "Safeguarding Concern",
-  medical_emergency: "Medical Emergency", fire: "Fire/Evacuation", near_miss: "Near Miss", other: "Other",
-};
-
-const IMPACT_LABEL: Record<ImpactLevel, string> = { low: "Low", medium: "Medium", high: "High", critical: "Critical" };
-const IMPACT_CLR: Record<ImpactLevel, string> = { low: "bg-green-100 text-green-800", medium: "bg-amber-100 text-amber-800", high: "bg-red-100 text-red-800", critical: "bg-red-200 text-red-900" };
-const IMPACT_BORDER: Record<ImpactLevel, string> = { low: "border-l-green-400", medium: "border-l-amber-400", high: "border-l-red-500", critical: "border-l-red-700" };
-
-const STATUS_LABEL: Record<DebriefStatus, string> = { scheduled: "Scheduled", completed: "Completed", deferred: "Deferred", not_required: "Not Required" };
-const STATUS_CLR: Record<DebriefStatus, string> = { scheduled: "bg-blue-100 text-blue-800", completed: "bg-green-100 text-green-800", deferred: "bg-amber-100 text-amber-800", not_required: "bg-slate-100 text-slate-700" };
-
-/* ── seed data ─────────────────────────────────────────────────────────────── */
-
-const SEED: CriticalIncidentDebrief[] = [
-  {
-    id: "cid_001", incidentDate: d(-45), debriefDate: d(-42),
-    incidentCategory: "restraint", impactLevel: "high",
-    incidentSummary: "Physical intervention (PRICE hold) on Casey after she picked up a glass object and moved towards Jordan. Two-person hold by Ryan and Chervelle lasting 4 minutes.",
-    youngPersonIds: ["yp_casey", "yp_jordan"], staffInvolvedIds: ["staff_ryan", "staff_chervelle"],
-    facilitatorId: "staff_darren", status: "completed",
-    attendees: ["Darren Laville (RM)", "Ryan (Deputy)", "Chervelle", "Anna"],
-    whatHappened: "Casey had been escalating throughout the evening following a difficult phone call with her social worker about contact arrangements. Staff attempted verbal de-escalation for 12 minutes. Casey picked up a glass vase from the hallway table and moved towards Jordan who was in the living room doorway. Ryan and Chervelle intervened with a two-person PRICE hold. Jordan was moved to a safe area by Anna. The hold lasted 4 minutes until Casey was calm. No injuries to anyone.",
-    whatWorkedWell: [
-      "De-escalation was attempted thoroughly before intervention (12 minutes)",
-      "Two-person hold was executed correctly and safely",
-      "Jordan was removed from the situation quickly by Anna",
-      "Body map completed within 1 hour — no marks",
-      "Casey was debriefed the following day and given a voice",
-      "Incident report was comprehensive and timely",
-    ],
-    whatCouldImprove: [
-      "Glass vase should not have been accessible — environmental risk assessment needed",
-      "Earlier intervention possible when Casey first began picking up objects",
-      "Jordan's exit route could have been planned better — he was in the doorway",
-      "Night staff handover could include more detail about Casey's earlier presentation",
-    ],
-    rootCauses: [
-      "Casey's frustration about contact arrangements — ongoing issue with SW",
-      "Environmental risk: glass objects accessible in communal areas",
-      "Transition from phone call to evening routine not adequately supported",
-    ],
-    emotionalImpact: "Ryan reported feeling anxious about the hold — it was his first intervention in 6 months. Chervelle felt confident in the hold but was upset seeing Casey distressed. Anna was concerned about Jordan's emotional response — he was visibly shaken. Staff wellbeing check-ins scheduled for all involved within 48 hours. Casey expressed in debrief that she 'didn't want to hurt anyone' and felt bad about frightening Jordan.",
-    actionsAgreed: [
-      "Remove all glass objects from communal areas — replace with shatter-proof alternatives",
-      "Update Casey's behaviour support plan with additional de-escalation strategies for post-phone-call situations",
-      "Brief all staff on the updated BSP at next team meeting",
-      "Arrange a restorative conversation between Casey and Jordan (if both agree)",
-      "Ryan to receive reflective supervision session about the incident",
-      "Environmental risk assessment of all communal areas within 7 days",
-    ],
-    actionsCompleted: 5,
-    policyChanges: "Environmental risk assessment policy updated to include quarterly checks for accessible hazardous items in communal areas.",
-    trainingNeeds: ["PRICE refresher for all staff (scheduled for " + d(14) + ")", "De-escalation advanced techniques workshop"],
-    sharedWith: ["RI (Richard Holt)", "Casey's Social Worker", "Team meeting (anonymised learning points)"],
-    followUpDate: d(-21),
-    notes: "This was a well-managed incident overall. The debrief identified important environmental risks that have been addressed. Casey and Jordan had a restorative conversation 5 days later — both reported feeling better. The learning from this debrief has been shared with the wider team. PRICE refresher training booked. RI was satisfied with the debrief process and outcomes.",
-  },
-  {
-    id: "cid_002", incidentDate: d(-14), debriefDate: d(-11),
-    incidentCategory: "self_harm", impactLevel: "high",
-    incidentSummary: "Casey was found in her bedroom with superficial scratches on her left forearm. Staff (Anna) responded, provided first aid, and completed body map. Casey disclosed she had been feeling overwhelmed about the upcoming LADO outcome.",
-    youngPersonIds: ["yp_casey"], staffInvolvedIds: ["staff_anna", "staff_chervelle"],
-    facilitatorId: "staff_darren", status: "completed",
-    attendees: ["Darren Laville (RM)", "Anna", "Chervelle", "Ryan"],
-    whatHappened: "During a routine bedroom check at 21:15, Anna noticed Casey sitting on her bed with fresh scratches on her forearm. Casey had used a broken pencil sharpener blade. Anna calmly engaged Casey, removed the blade, and provided first aid. Chervelle was called as second responder. Casey disclosed she had been thinking about the LADO investigation and felt 'everything is my fault.' Body map completed. GP consulted by phone — advised monitoring, no A&E required. Casey's SW and CAMHS notified next day.",
-    whatWorkedWell: [
-      "Anna responded calmly and compassionately — didn't panic",
-      "Immediate safety actions (blade removed, first aid provided)",
-      "Casey felt able to talk to Anna about her feelings",
-      "Body map completed thoroughly and promptly",
-      "GP consulted appropriately for professional medical advice",
-      "CAMHS and SW notified within 24 hours",
-    ],
-    whatCouldImprove: [
-      "Room search protocol — pencil sharpener blade was not identified as a risk item",
-      "Casey's self-harm risk assessment needs updating — current level may be underrated",
-      "Earlier emotional check-in after Casey learned about LADO timeline could have been offered",
-      "Night staff need additional training on self-harm response and emotional first aid",
-    ],
-    rootCauses: [
-      "Casey's anxiety about the LADO investigation outcome",
-      "Feelings of guilt and self-blame",
-      "Access to sharp items in her bedroom (pencil sharpener)",
-      "Lack of proactive emotional support following LADO timeline update",
-    ],
-    emotionalImpact: "Anna was emotionally affected — she has a strong bond with Casey and felt she should have noticed earlier signs. Reflective supervision session arranged within 48 hours. Chervelle provided peer support to Anna after the shift. Casey's emotional state: distressed during the incident but calmer after talking to Anna. Casey said talking to Anna helped and she 'didn't really want to hurt herself badly.'",
-    actionsAgreed: [
-      "Update Casey's self-harm risk assessment — increase risk level to HIGH",
-      "Room safety check for all YP — remove or secure sharp items",
-      "Increase Casey's check frequency to 30 minutes during elevated risk periods",
-      "Arrange CAMHS urgent review of Casey's safety plan",
-      "Develop a distress tolerance toolkit with Casey (direct work session)",
-      "Ensure Anna receives reflective supervision within 48 hours",
-      "Brief all staff on updated risk level and check frequency",
-    ],
-    actionsCompleted: 6,
-    policyChanges: "Self-harm risk assessment protocol updated to include automatic review when children are involved in LADO or police investigations.",
-    trainingNeeds: ["Self-harm awareness and response (all staff)", "Emotional first aid for night staff"],
-    sharedWith: ["CAMHS (Dr Patterson)", "Casey's Social Worker (Lisa Green)", "RI (Richard Holt)"],
-    followUpDate: d(-4),
-    notes: "Casey's CAMHS appointment brought forward. New safety plan co-produced with Casey. Distress tolerance kit created (stress ball, colouring, music, phone list of trusted people). Casey engaged well in direct work session with Chervelle about coping strategies. No further self-harm incidents since. Anna completed reflective supervision and reported feeling more confident in her response. All room safety checks completed — 3 additional items removed across the home.",
-  },
-  {
-    id: "cid_003", incidentDate: d(-7), debriefDate: d(3),
-    incidentCategory: "missing", impactLevel: "medium",
-    incidentSummary: "Alex left the home without permission during an argument about screen time. He was gone for 45 minutes and returned voluntarily. Found at the local park. No safeguarding concerns identified during return interview.",
-    youngPersonIds: ["yp_alex"], staffInvolvedIds: ["staff_edward", "staff_ryan"],
-    facilitatorId: "staff_darren", status: "scheduled",
-    attendees: [],
-    whatHappened: "Alex became angry when Edward asked him to turn off his Xbox at 21:00 (agreed bedtime routine). Alex shouted, put on his trainers, and left through the front door at 21:10. Edward followed standard missing protocol — informed Ryan (on-call), called Alex's mobile. Police were not called initially as low risk (known destination). Ryan attended and drove to local park — found Alex sitting on a bench at 21:45. Alex returned voluntarily at 21:55. Return interview completed the next morning by Anna.",
-    whatWorkedWell: [],
-    whatCouldImprove: [],
-    rootCauses: [],
-    emotionalImpact: "",
-    actionsAgreed: [],
-    actionsCompleted: 0,
-    policyChanges: "",
-    trainingNeeds: [],
-    sharedWith: [],
-    followUpDate: null,
-    notes: "Debrief scheduled for " + d(3) + ". Initial observations: Edward's approach to the screen time boundary may have been too abrupt — need to explore this in debrief. Alex's pattern of leaving when frustrated should be considered alongside his BSP. Return interview was positive — Alex said he 'just needed air' and wasn't running away. No exploitation or safeguarding concerns.",
-  },
-];
+const IMPACT_CLR: Record<DebriefImpactLevel, string> = { low: "bg-green-100 text-green-800", medium: "bg-amber-100 text-amber-800", high: "bg-red-100 text-red-800", critical: "bg-red-200 text-red-900" };
+const IMPACT_BORDER: Record<DebriefImpactLevel, string> = { low: "border-l-green-400", medium: "border-l-amber-400", high: "border-l-red-500", critical: "border-l-red-700" };
+const STATUS_CLR: Record<IncidentDebriefStatus, string> = { scheduled: "bg-blue-100 text-blue-800", completed: "bg-green-100 text-green-800", deferred: "bg-amber-100 text-amber-800", not_required: "bg-slate-100 text-slate-700" };
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function CriticalIncidentDebriefPage() {
-  const [data] = useState(SEED);
+  const { data: raw, isLoading } = useCriticalIncidentDebriefRecords();
+  const records = raw?.data ?? [];
+  const createRecord = useCreateCriticalIncidentDebriefRecord();
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -197,36 +48,38 @@ export default function CriticalIncidentDebriefPage() {
   const [showNew, setShowNew] = useState(false);
 
   const filtered = useMemo(() => {
-    let rows = [...data];
+    let rows = [...records];
     if (search) {
       const q = search.toLowerCase();
       rows = rows.filter((r) =>
-        r.incidentSummary.toLowerCase().includes(q) ||
-        r.youngPersonIds.some((id) => getYPName(id).toLowerCase().includes(q)) ||
-        r.staffInvolvedIds.some((id) => getStaffName(id).toLowerCase().includes(q))
+        r.incident_summary.toLowerCase().includes(q) ||
+        r.young_person_ids.some((id) => getYPName(id).toLowerCase().includes(q)) ||
+        r.staff_involved_ids.some((id) => getStaffName(id).toLowerCase().includes(q))
       );
     }
-    if (filterCategory !== "all") rows = rows.filter((r) => r.incidentCategory === filterCategory);
-    if (filterImpact !== "all") rows = rows.filter((r) => r.impactLevel === filterImpact);
-    rows.sort((a, b) => sortBy === "newest" ? b.incidentDate.localeCompare(a.incidentDate) : a.incidentDate.localeCompare(b.incidentDate));
+    if (filterCategory !== "all") rows = rows.filter((r) => r.incident_category === filterCategory);
+    if (filterImpact !== "all") rows = rows.filter((r) => r.impact_level === filterImpact);
+    rows.sort((a, b) => sortBy === "newest" ? b.incident_date.localeCompare(a.incident_date) : a.incident_date.localeCompare(b.incident_date));
     return rows;
-  }, [data, search, filterCategory, filterImpact, sortBy]);
+  }, [records, search, filterCategory, filterImpact, sortBy]);
 
-  const total = data.length;
-  const completed = data.filter((r) => r.status === "completed").length;
-  const scheduled = data.filter((r) => r.status === "scheduled").length;
-  const totalActions = data.reduce((s, r) => s + r.actionsAgreed.length, 0);
-  const completedActions = data.reduce((s, r) => s + r.actionsCompleted, 0);
+  if (isLoading) return <PageShell title="Critical Incident Debriefs" subtitle="Post-Incident Learning · Reflective Practice · Continuous Improvement"><div /></PageShell>;
 
-  const exportCols: ExportColumn<CriticalIncidentDebrief>[] = [
-    { header: "Incident Date", accessor: (r: CriticalIncidentDebrief) => r.incidentDate },
-    { header: "Debrief Date", accessor: (r: CriticalIncidentDebrief) => r.debriefDate },
-    { header: "Category", accessor: (r: CriticalIncidentDebrief) => CAT_LABEL[r.incidentCategory] },
-    { header: "Impact", accessor: (r: CriticalIncidentDebrief) => IMPACT_LABEL[r.impactLevel] },
-    { header: "YP", accessor: (r: CriticalIncidentDebrief) => r.youngPersonIds.map(getYPName).join(", ") },
-    { header: "Staff", accessor: (r: CriticalIncidentDebrief) => r.staffInvolvedIds.map(getStaffName).join(", ") },
-    { header: "Status", accessor: (r: CriticalIncidentDebrief) => STATUS_LABEL[r.status] },
-    { header: "Actions", accessor: (r: CriticalIncidentDebrief) => `${r.actionsCompleted}/${r.actionsAgreed.length}` },
+  const total = records.length;
+  const completed = records.filter((r) => r.status === "completed").length;
+  const scheduled = records.filter((r) => r.status === "scheduled").length;
+  const totalActions = records.reduce((s, r) => s + r.actions_agreed.length, 0);
+  const completedActions = records.reduce((s, r) => s + r.actions_completed, 0);
+
+  const exportCols: ExportColumn<CriticalIncidentDebriefRecord>[] = [
+    { header: "Incident Date", accessor: (r: CriticalIncidentDebriefRecord) => r.incident_date },
+    { header: "Debrief Date", accessor: (r: CriticalIncidentDebriefRecord) => r.debrief_date },
+    { header: "Category", accessor: (r: CriticalIncidentDebriefRecord) => DEBRIEF_INCIDENT_CATEGORY_LABEL[r.incident_category] },
+    { header: "Impact", accessor: (r: CriticalIncidentDebriefRecord) => DEBRIEF_IMPACT_LEVEL_LABEL[r.impact_level] },
+    { header: "YP", accessor: (r: CriticalIncidentDebriefRecord) => r.young_person_ids.map(getYPName).join(", ") },
+    { header: "Staff", accessor: (r: CriticalIncidentDebriefRecord) => r.staff_involved_ids.map(getStaffName).join(", ") },
+    { header: "Status", accessor: (r: CriticalIncidentDebriefRecord) => INCIDENT_DEBRIEF_STATUS_LABEL[r.status] },
+    { header: "Actions", accessor: (r: CriticalIncidentDebriefRecord) => `${r.actions_completed}/${r.actions_agreed.length}` },
   ];
 
   return (
@@ -236,7 +89,7 @@ export default function CriticalIncidentDebriefPage() {
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Critical Incident Debriefs" />
-          <ExportButton data={data} columns={exportCols} filename="critical-incident-debriefs" />
+          <ExportButton data={records} columns={exportCols} filename="critical-incident-debriefs" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Schedule Debrief</Button>
         </div>
       }
@@ -270,7 +123,7 @@ export default function CriticalIncidentDebriefPage() {
             <SelectTrigger className="w-[180px]"><SelectValue placeholder="Category" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {(Object.entries(CAT_LABEL) as [IncidentCategory, string][]).map(([k, v]) => (
+              {(Object.entries(DEBRIEF_INCIDENT_CATEGORY_LABEL) as [DebriefIncidentCategory, string][]).map(([k, v]) => (
                 <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
@@ -279,7 +132,7 @@ export default function CriticalIncidentDebriefPage() {
             <SelectTrigger className="w-[140px]"><SelectValue placeholder="Impact" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Impact</SelectItem>
-              {(Object.entries(IMPACT_LABEL) as [ImpactLevel, string][]).map(([k, v]) => (
+              {(Object.entries(DEBRIEF_IMPACT_LEVEL_LABEL) as [DebriefImpactLevel, string][]).map(([k, v]) => (
                 <SelectItem key={k} value={k}>{v}</SelectItem>
               ))}
             </SelectContent>
@@ -305,25 +158,25 @@ export default function CriticalIncidentDebriefPage() {
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", IMPACT_BORDER[r.impactLevel])}>
+              <Card key={r.id} className={cn("border-l-4", IMPACT_BORDER[r.impact_level])}>
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : r.id)}>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1 flex-1">
                       <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        {CAT_LABEL[r.incidentCategory]}
-                        <Badge variant="outline" className={IMPACT_CLR[r.impactLevel]}>{IMPACT_LABEL[r.impactLevel]}</Badge>
-                        <Badge variant="outline" className={STATUS_CLR[r.status]}>{STATUS_LABEL[r.status]}</Badge>
+                        {DEBRIEF_INCIDENT_CATEGORY_LABEL[r.incident_category]}
+                        <Badge variant="outline" className={IMPACT_CLR[r.impact_level]}>{DEBRIEF_IMPACT_LEVEL_LABEL[r.impact_level]}</Badge>
+                        <Badge variant="outline" className={STATUS_CLR[r.status]}>{INCIDENT_DEBRIEF_STATUS_LABEL[r.status]}</Badge>
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Incident: {r.incidentDate} · Debrief: {r.debriefDate}
-                        {" "}· YP: {r.youngPersonIds.map(getYPName).join(", ")}
-                        {" "}· Staff: {r.staffInvolvedIds.map(getStaffName).join(", ")}
-                        {" "}· Facilitator: {getStaffName(r.facilitatorId)}
+                        Incident: {r.incident_date} · Debrief: {r.debrief_date}
+                        {" "}· YP: {r.young_person_ids.map(getYPName).join(", ")}
+                        {" "}· Staff: {r.staff_involved_ids.map(getStaffName).join(", ")}
+                        {" "}· Facilitator: {getStaffName(r.facilitator_id)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {r.actionsAgreed.length > 0 && (
-                        <Badge variant="outline" className="bg-muted/50">{r.actionsCompleted}/{r.actionsAgreed.length}</Badge>
+                      {r.actions_agreed.length > 0 && (
+                        <Badge variant="outline" className="bg-muted/50">{r.actions_completed}/{r.actions_agreed.length}</Badge>
                       )}
                       {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>
@@ -335,23 +188,23 @@ export default function CriticalIncidentDebriefPage() {
                     {/* incident summary */}
                     <div>
                       <p className="font-medium mb-1">Incident Summary</p>
-                      <p className="text-muted-foreground text-xs">{r.incidentSummary}</p>
+                      <p className="text-muted-foreground text-xs">{r.incident_summary}</p>
                     </div>
 
                     {/* what happened */}
-                    {r.whatHappened && (
+                    {r.what_happened && (
                       <div>
                         <p className="font-medium mb-1">What Happened (Debrief Account)</p>
-                        <p className="text-muted-foreground text-xs">{r.whatHappened}</p>
+                        <p className="text-muted-foreground text-xs">{r.what_happened}</p>
                       </div>
                     )}
 
                     {/* what worked well */}
-                    {r.whatWorkedWell.length > 0 && (
+                    {r.what_worked_well.length > 0 && (
                       <div>
                         <p className="font-medium mb-1 text-green-700">What Worked Well</p>
                         <ul className="space-y-1">
-                          {r.whatWorkedWell.map((w, i) => (
+                          {r.what_worked_well.map((w, i) => (
                             <li key={i} className="flex items-start gap-2 text-xs">
                               <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0 mt-0.5" />
                               <span>{w}</span>
@@ -362,11 +215,11 @@ export default function CriticalIncidentDebriefPage() {
                     )}
 
                     {/* what could improve */}
-                    {r.whatCouldImprove.length > 0 && (
+                    {r.what_could_improve.length > 0 && (
                       <div>
                         <p className="font-medium mb-1 text-amber-700">What Could Improve</p>
                         <ul className="space-y-1">
-                          {r.whatCouldImprove.map((w, i) => (
+                          {r.what_could_improve.map((w, i) => (
                             <li key={i} className="flex items-start gap-2 text-xs">
                               <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
                               <span>{w}</span>
@@ -377,11 +230,11 @@ export default function CriticalIncidentDebriefPage() {
                     )}
 
                     {/* root causes */}
-                    {r.rootCauses.length > 0 && (
+                    {r.root_causes.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">Root Causes Identified</p>
                         <div className="flex flex-wrap gap-1">
-                          {r.rootCauses.map((c, i) => (
+                          {r.root_causes.map((c, i) => (
                             <Badge key={i} variant="outline" className="bg-red-50 text-red-700 text-xs">{c}</Badge>
                           ))}
                         </div>
@@ -389,25 +242,25 @@ export default function CriticalIncidentDebriefPage() {
                     )}
 
                     {/* emotional impact */}
-                    {r.emotionalImpact && (
+                    {r.emotional_impact && (
                       <div className="bg-purple-50 border border-purple-200 rounded p-2">
                         <p className="font-medium text-xs text-purple-800 mb-1">Emotional Impact on Staff & YP</p>
-                        <p className="text-xs text-purple-700">{r.emotionalImpact}</p>
+                        <p className="text-xs text-purple-700">{r.emotional_impact}</p>
                       </div>
                     )}
 
                     {/* actions */}
-                    {r.actionsAgreed.length > 0 && (
+                    {r.actions_agreed.length > 0 && (
                       <div>
-                        <p className="font-medium mb-1">Actions Agreed ({r.actionsCompleted}/{r.actionsAgreed.length})</p>
+                        <p className="font-medium mb-1">Actions Agreed ({r.actions_completed}/{r.actions_agreed.length})</p>
                         <ul className="space-y-1">
-                          {r.actionsAgreed.map((a, i) => (
+                          {r.actions_agreed.map((a, i) => (
                             <li key={i} className="flex items-start gap-2 text-xs">
-                              {i < r.actionsCompleted
+                              {i < r.actions_completed
                                 ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0 mt-0.5" />
                                 : <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
                               }
-                              <span className={i < r.actionsCompleted ? "line-through text-muted-foreground" : ""}>{a}</span>
+                              <span className={i < r.actions_completed ? "line-through text-muted-foreground" : ""}>{a}</span>
                             </li>
                           ))}
                         </ul>
@@ -415,11 +268,11 @@ export default function CriticalIncidentDebriefPage() {
                     )}
 
                     {/* training needs */}
-                    {r.trainingNeeds.length > 0 && (
+                    {r.training_needs.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">Training Needs Identified</p>
                         <div className="flex flex-wrap gap-1">
-                          {r.trainingNeeds.map((t, i) => (
+                          {r.training_needs.map((t, i) => (
                             <Badge key={i} variant="outline" className="bg-blue-50 text-blue-700 text-xs">{t}</Badge>
                           ))}
                         </div>
@@ -427,11 +280,11 @@ export default function CriticalIncidentDebriefPage() {
                     )}
 
                     {/* shared with */}
-                    {r.sharedWith.length > 0 && (
+                    {r.shared_with.length > 0 && (
                       <div>
                         <p className="font-medium mb-1">Learning Shared With</p>
                         <div className="flex flex-wrap gap-1">
-                          {r.sharedWith.map((s, i) => (
+                          {r.shared_with.map((s, i) => (
                             <Badge key={i} variant="outline" className="bg-muted/50 text-xs"><Users className="h-3 w-3 mr-1" />{s}</Badge>
                           ))}
                         </div>
@@ -467,7 +320,7 @@ export default function CriticalIncidentDebriefPage() {
               <Label>Category</Label>
               <Select><SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(CAT_LABEL) as [IncidentCategory, string][]).map(([k, v]) => (
+                  {(Object.entries(DEBRIEF_INCIDENT_CATEGORY_LABEL) as [DebriefIncidentCategory, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
                   ))}
                 </SelectContent>
@@ -477,7 +330,7 @@ export default function CriticalIncidentDebriefPage() {
               <Label>Impact Level</Label>
               <Select><SelectTrigger><SelectValue placeholder="Select impact" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(IMPACT_LABEL) as [ImpactLevel, string][]).map(([k, v]) => (
+                  {(Object.entries(DEBRIEF_IMPACT_LEVEL_LABEL) as [DebriefImpactLevel, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
                   ))}
                 </SelectContent>

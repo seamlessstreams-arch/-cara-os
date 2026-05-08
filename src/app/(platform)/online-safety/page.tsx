@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Clock,
   Wifi,
+  Loader2,
 } from "lucide-react";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -24,177 +25,28 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useOnlineSafetyIncidents } from "@/hooks/use-online-safety-incidents";
+import { useOnlineSafetyAgreements } from "@/hooks/use-online-safety-agreements";
+import type {
+  OnlineSafetyIncident,
+  OnlineSafetyAgreement,
+  OnlineSafetyIncidentCategory,
+  OnlineSafetySeverity,
+  OnlineSafetyIncidentStatus,
+} from "@/types/extended";
+import { ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL, ONLINE_SAFETY_SEVERITY_LABEL, ONLINE_SAFETY_INCIDENT_STATUS_LABEL } from "@/types/extended";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── display maps ─────────────────────────────────────────────────────── */
 
-type IncidentCategory = "cyberbullying" | "inappropriate_content" | "contact_risk" | "sharing_images" | "gaming_risk" | "social_media" | "radicalisation" | "financial_scam" | "data_privacy" | "excessive_use";
-type Severity = "low" | "medium" | "high" | "critical";
-type IncidentStatus = "open" | "monitoring" | "resolved" | "escalated";
-
-interface OnlineIncident {
-  id: string;
-  youngPersonId: string;
-  date: string;
-  category: IncidentCategory;
-  severity: Severity;
-  status: IncidentStatus;
-  platform: string;
-  summary: string;
-  detail: string;
-  discoveredBy: string;
-  actionsToken: string[];
-  safeguardingReferral: boolean;
-  parentCarerNotified: boolean;
-  childDiscussion: string;
-  followUp: string;
-}
-
-interface OnlineAgreement {
-  youngPersonId: string;
-  agreementDate: string;
-  reviewDate: string;
-  devices: string[];
-  allowedPlatforms: string[];
-  restrictions: string[];
-  wifiCurfew: string;
-  parentalControls: string;
-  childSignature: boolean;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const INCIDENTS: OnlineIncident[] = [
-  {
-    id: "os1", youngPersonId: "yp_alex", date: d(-14),
-    category: "cyberbullying", severity: "medium", status: "resolved",
-    platform: "Instagram",
-    summary: "Alex received abusive messages from a peer at college via Instagram DMs.",
-    detail: "Alex showed staff a series of messages received over 3 days from a college peer making derogatory comments about Alex being in care. Messages included phrases like 'nobody wants you' and 'care kid'. Alex was visibly upset. Staff screenshotted messages with Alex's consent and blocked the account together.",
-    discoveredBy: "staff_anna",
-    actionsToken: [
-      "Screenshots taken and saved to safeguarding file",
-      "Account blocked together with Alex",
-      "College safeguarding lead notified — Ref: CSL-2025-034",
-      "Key work session focused on Alex's feelings and coping strategies",
-      "CEOP reporting discussed with Alex — declined to report",
-      "College confirmed disciplinary action against perpetrator",
-    ],
-    safeguardingReferral: false,
-    parentCarerNotified: true,
-    childDiscussion: "Alex was upset but handled it well. He said 'it's happened before and it really gets to me but I know it's not true.' Staff validated his feelings and reinforced that being in care is nothing to be ashamed of. Alex agreed to tell staff if it happens again rather than keeping it to himself.",
-    followUp: "College resolved matter. Alex reports no further contact from perpetrator. Key work session reviewed online safety strategies. Alex demonstrated good understanding of blocking, reporting, and telling a trusted adult.",
-  },
-  {
-    id: "os2", youngPersonId: "yp_jordan", date: d(-7),
-    category: "contact_risk", severity: "high", status: "monitoring",
-    platform: "Snapchat",
-    summary: "Unknown adult contacted Jordan via Snapchat — possible grooming indicators.",
-    detail: "During a routine key work session, Jordan mentioned a 'new friend' on Snapchat who had been sending messages for about a week. When staff explored this sensitively, it emerged the contact was an adult male (claimed age 19) who Jordan had never met in person. The individual had asked Jordan not to tell staff about their conversations and had requested a photo. Jordan had not sent a photo.",
-    discoveredBy: "staff_ryan",
-    actionsToken: [
-      "Immediate safeguarding response — concern form completed",
-      "Screenshots taken with Jordan's agreement",
-      "Account blocked and reported to Snapchat",
-      "CEOP report submitted — Ref: CEOP-2025-UK-88412",
-      "Social worker informed immediately",
-      "Police contacted via 101 — crime reference obtained: MC-2025-5567",
-      "Jordan's online agreement updated — Snapchat temporarily suspended",
-      "Additional key work sessions on grooming awareness",
-    ],
-    safeguardingReferral: true,
-    parentCarerNotified: false,
-    childDiscussion: "Jordan was initially defensive about the contact but when staff calmly explained the grooming indicators, Jordan became upset and said 'I thought he was just being nice.' Staff reassured Jordan that they did the right thing by mentioning it, and that adults who ask children to keep secrets are not safe. Jordan agreed to the temporary Snapchat suspension and additional support.",
-    followUp: "Police investigating. CEOP report acknowledged. Ongoing monitoring. Jordan engaging well with online safety key work sessions. Play therapist informed to support processing. Snapchat remains suspended pending police guidance.",
-  },
-  {
-    id: "os3", youngPersonId: "yp_casey", date: d(-21),
-    category: "excessive_use", severity: "low", status: "resolved",
-    platform: "TikTok / YouTube",
-    summary: "Casey spending excessive time on phone late at night — affecting sleep and college attendance.",
-    detail: "Night staff noticed Casey's room light on past 1am for 4 consecutive nights. Morning staff reported Casey being very tired and late for college twice. In discussion, Casey admitted spending 4-5 hours per night on TikTok and YouTube, saying 'I can't sleep so I just watch stuff.' Screen time data confirmed 5.2 hours average nightly use.",
-    discoveredBy: "staff_diane",
-    actionsToken: [
-      "Open conversation with Casey about sleep hygiene and screen time",
-      "Reviewed wifi curfew — agreed to voluntary phone-in at 10:30pm",
-      "Casey chose to set own screen time limits via phone settings",
-      "Sleep hygiene tips discussed and printed for Casey's room",
-      "Counsellor informed — explored anxiety as underlying cause",
-    ],
-    safeguardingReferral: false,
-    parentCarerNotified: false,
-    childDiscussion: "Casey was honest about the issue and acknowledged it was affecting college. Said 'I know it's bad but when I try to sleep I just think about stuff and the phone distracts me.' Staff explored this gently — Casey identified anxiety about leaving care as the underlying issue. Casey agreed to voluntary phone-in as a temporary measure and set own screen time limits. Framed as self-care, not punishment.",
-    followUp: "Casey has been handing phone in voluntarily at 10:30pm for 2 weeks. Sleep has improved. College attendance back to 100%. Counsellor exploring the anxiety component. Casey plans to gradually self-manage without phone-in once sleep pattern is established.",
-  },
-  {
-    id: "os4", youngPersonId: "yp_alex", date: d(-45),
-    category: "gaming_risk", severity: "low", status: "resolved",
-    platform: "Fortnite / Xbox Live",
-    summary: "Alex spent pocket money on in-game purchases without realising cumulative cost.",
-    detail: "Alex used birthday money (£30) plus additional pocket money (£20) on V-Bucks in Fortnite over a 2-week period. While not a safeguarding concern, this highlighted a financial literacy gap. Alex was not aware of the total spent until staff reviewed with him.",
-    discoveredBy: "staff_edward",
-    actionsToken: [
-      "Discussed in-game purchase mechanics and real-money costs",
-      "Set up purchase approval on Xbox account — requires PIN",
-      "Added to independence skills: budgeting and online spending",
-      "No further purchases since intervention",
-    ],
-    safeguardingReferral: false,
-    parentCarerNotified: false,
-    childDiscussion: "Alex was surprised at the total when it was added up. He said 'it didn't feel like real money.' Staff used this as a positive learning opportunity about online spending. Alex agreed to the PIN control and said it would help him think before buying. Good engagement — no distress.",
-    followUp: "No further unplanned purchases. Alex now asks staff before making any online purchase and has started tracking his spending as part of independence skills work.",
-  },
-];
-
-const AGREEMENTS: OnlineAgreement[] = [
-  {
-    youngPersonId: "yp_alex", agreementDate: d(-60), reviewDate: d(30),
-    devices: ["Personal smartphone (Samsung)", "Shared Xbox (lounge)", "College laptop"],
-    allowedPlatforms: ["Instagram", "YouTube", "Snapchat", "WhatsApp", "Spotify", "Fortnite"],
-    restrictions: ["No TikTok (Alex's choice — finds it distracting)", "Xbox purchase PIN required", "No sharing of home address or location"],
-    wifiCurfew: "Wi-Fi off at 11:00pm, on at 6:30am",
-    parentalControls: "Age-appropriate content filter on home WiFi. Xbox parental controls set to 16+. College laptop managed by IT.",
-    childSignature: true,
-  },
-  {
-    youngPersonId: "yp_jordan", agreementDate: d(-7), reviewDate: d(23),
-    devices: ["Personal smartphone (iPhone SE)", "Shared tablet (home)", "School Chromebook"],
-    allowedPlatforms: ["YouTube (supervised)", "Roblox", "WhatsApp (family group only)"],
-    restrictions: ["Snapchat suspended pending police investigation", "No social media accounts without staff knowledge", "Phone checked-in overnight (Jordan's agreement)", "No voice chat with strangers in games"],
-    wifiCurfew: "Wi-Fi off at 10:00pm, on at 7:00am",
-    parentalControls: "Full parental controls on all devices. SafeSearch enforced. App installation requires staff approval. Location sharing on for safety.",
-    childSignature: true,
-  },
-  {
-    youngPersonId: "yp_casey", agreementDate: d(-30), reviewDate: d(60),
-    devices: ["Personal smartphone (iPhone 13)", "Personal laptop", "College laptop"],
-    allowedPlatforms: ["Instagram", "TikTok", "YouTube", "Snapchat", "WhatsApp", "Spotify", "Netflix"],
-    restrictions: ["Voluntary phone-in at 10:30pm (temporary)", "No sharing personal information with online contacts", "Age-appropriate content only"],
-    wifiCurfew: "Voluntary — Casey self-manages (reviewed monthly)",
-    parentalControls: "Minimal — age 16+, Gillick competent. Casey manages own settings. Home WiFi content filter active. Staff available for guidance.",
-    childSignature: true,
-  },
-];
-
-/* ── constants ─────────────────────────────────────────────────────────── */
-
-const CAT_LABELS: Record<IncidentCategory, string> = {
-  cyberbullying: "Cyberbullying", inappropriate_content: "Inappropriate Content",
-  contact_risk: "Contact Risk / Grooming", sharing_images: "Sharing Images",
-  gaming_risk: "Gaming Risk", social_media: "Social Media Concern",
-  radicalisation: "Radicalisation", financial_scam: "Financial Scam",
-  data_privacy: "Data / Privacy", excessive_use: "Excessive Use",
-};
-
-const SEV_META: Record<Severity, { label: string; colour: string }> = {
+const SEV_META: Record<OnlineSafetySeverity, { label: string; colour: string }> = {
   low: { label: "Low", colour: "bg-green-100 text-green-700" },
   medium: { label: "Medium", colour: "bg-amber-100 text-amber-700" },
   high: { label: "High", colour: "bg-orange-100 text-orange-700" },
   critical: { label: "Critical", colour: "bg-red-100 text-red-700" },
 };
 
-const STATUS_META: Record<IncidentStatus, { label: string; colour: string }> = {
+const STATUS_META: Record<OnlineSafetyIncidentStatus, { label: string; colour: string }> = {
   open: { label: "Open", colour: "bg-blue-100 text-blue-700" },
   monitoring: { label: "Monitoring", colour: "bg-amber-100 text-amber-700" },
   resolved: { label: "Resolved", colour: "bg-green-100 text-green-700" },
@@ -204,8 +56,12 @@ const STATUS_META: Record<IncidentStatus, { label: string; colour: string }> = {
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function OnlineSafetyPage() {
-  const [data] = useState<OnlineIncident[]>(INCIDENTS);
-  const [agreements] = useState<OnlineAgreement[]>(AGREEMENTS);
+  const { data: incRes, isLoading: incLoading } = useOnlineSafetyIncidents();
+  const { data: agRes, isLoading: agLoading } = useOnlineSafetyAgreements();
+  const data: OnlineSafetyIncident[] = incRes?.data ?? [];
+  const agreements: OnlineSafetyAgreement[] = agRes?.data ?? [];
+  const isLoading = incLoading || agLoading;
+
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("all");
@@ -217,7 +73,7 @@ export default function OnlineSafetyPage() {
   const stats = useMemo(() => ({
     total: data.length,
     active: data.filter((i) => i.status === "open" || i.status === "monitoring").length,
-    safeguarding: data.filter((i) => i.safeguardingReferral).length,
+    safeguarding: data.filter((i) => i.safeguarding_referral).length,
     resolved: data.filter((i) => i.status === "resolved").length,
     highSev: data.filter((i) => i.severity === "high" || i.severity === "critical").length,
   }), [data]);
@@ -225,7 +81,7 @@ export default function OnlineSafetyPage() {
   const filtered = useMemo(() => {
     let list = [...data];
     if (filterCat !== "all") list = list.filter((i) => i.category === filterCat);
-    if (filterYP !== "all") list = list.filter((i) => i.youngPersonId === filterYP);
+    if (filterYP !== "all") list = list.filter((i) => i.child_id === filterYP);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((i) => i.summary.toLowerCase().includes(q) || i.platform.toLowerCase().includes(q));
@@ -233,7 +89,7 @@ export default function OnlineSafetyPage() {
     list.sort((a, b) => {
       switch (sortBy) {
         case "severity": return Object.keys(SEV_META).indexOf(b.severity) - Object.keys(SEV_META).indexOf(a.severity);
-        case "category": return CAT_LABELS[a.category].localeCompare(CAT_LABELS[b.category]);
+        case "category": return ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL[a.category].localeCompare(ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL[b.category]);
         default:         return b.date.localeCompare(a.date);
       }
     });
@@ -241,18 +97,18 @@ export default function OnlineSafetyPage() {
   }, [data, filterCat, filterYP, search, sortBy]);
 
   const exportData = useMemo(() => data.map((i) => ({
-    youngPerson: getYPName(i.youngPersonId),
+    youngPerson: getYPName(i.child_id),
     date: i.date,
-    category: CAT_LABELS[i.category],
+    category: ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL[i.category],
     severity: SEV_META[i.severity].label,
     status: STATUS_META[i.status].label,
     platform: i.platform,
     summary: i.summary,
-    discoveredBy: getStaffName(i.discoveredBy),
-    safeguardingReferral: i.safeguardingReferral ? "Yes" : "No",
-    actions: i.actionsToken.join("; "),
-    childDiscussion: i.childDiscussion,
-    followUp: i.followUp,
+    discoveredBy: getStaffName(i.discovered_by),
+    safeguardingReferral: i.safeguarding_referral ? "Yes" : "No",
+    actions: i.actions_taken.join("; "),
+    childDiscussion: i.child_discussion,
+    followUp: i.follow_up,
   })), [data]);
 
   const exportCols: ExportColumn<typeof exportData[number]>[] = [
@@ -270,7 +126,9 @@ export default function OnlineSafetyPage() {
     { header: "Follow Up",    accessor: (r: typeof exportData[number]) => r.followUp },
   ];
 
-  const ypIds = [...new Set(data.map((i) => i.youngPersonId))];
+  const ypIds = [...new Set(data.map((i) => i.child_id))];
+
+  if (isLoading) return <PageShell title="Online Safety" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -327,7 +185,7 @@ export default function OnlineSafetyPage() {
                 <SelectTrigger className="w-[180px]"><SelectValue placeholder="Category" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {Object.entries(CAT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                  {Object.entries(ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={filterYP} onValueChange={setFilterYP}>
@@ -354,12 +212,12 @@ export default function OnlineSafetyPage() {
                     <Shield className="h-5 w-5 text-brand" />
                     <div className="text-left">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold">{getYPName(incident.youngPersonId)}</h3>
+                        <h3 className="font-semibold">{getYPName(incident.child_id)}</h3>
                         <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_META[incident.status].colour)}>{STATUS_META[incident.status].label}</span>
                         <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", SEV_META[incident.severity].colour)}>{SEV_META[incident.severity].label}</span>
-                        {incident.safeguardingReferral && <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Safeguarding</span>}
+                        {incident.safeguarding_referral && <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">Safeguarding</span>}
                       </div>
-                      <p className="text-xs text-muted-foreground">{CAT_LABELS[incident.category]} · {incident.platform} · {incident.date}</p>
+                      <p className="text-xs text-muted-foreground">{ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL[incident.category]} · {incident.platform} · {incident.date}</p>
                     </div>
                   </div>
                   {expanded === incident.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
@@ -374,24 +232,26 @@ export default function OnlineSafetyPage() {
 
                     <div>
                       <h4 className="text-sm font-semibold mb-1">Actions Taken</h4>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">{incident.actionsToken.map((a, i) => <li key={i}>{a}</li>)}</ul>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">{incident.actions_taken.map((a, i) => <li key={i}>{a}</li>)}</ul>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                      <div><span className="text-muted-foreground">Discovered By:</span> {getStaffName(incident.discoveredBy)}</div>
-                      <div><span className="text-muted-foreground">Safeguarding Referral:</span> {incident.safeguardingReferral ? <span className="text-red-600 font-medium">Yes</span> : "No"}</div>
-                      <div><span className="text-muted-foreground">Parent/Carer Notified:</span> {incident.parentCarerNotified ? "Yes" : "No"}</div>
+                      <div><span className="text-muted-foreground">Discovered By:</span> {getStaffName(incident.discovered_by)}</div>
+                      <div><span className="text-muted-foreground">Safeguarding Referral:</span> {incident.safeguarding_referral ? <span className="text-red-600 font-medium">Yes</span> : "No"}</div>
+                      <div><span className="text-muted-foreground">Parent/Carer Notified:</span> {incident.parent_carer_notified ? "Yes" : "No"}</div>
                     </div>
 
                     <div className="rounded-lg bg-pink-50 border border-pink-200 p-3">
                       <h4 className="text-sm font-semibold text-pink-800 mb-1">Discussion with Child</h4>
-                      <p className="text-sm text-pink-900">{incident.childDiscussion}</p>
+                      <p className="text-sm text-pink-900">{incident.child_discussion}</p>
                     </div>
 
                     <div className="rounded-lg bg-blue-50 p-3">
                       <h4 className="text-sm font-semibold text-blue-800 mb-1">Follow Up</h4>
-                      <p className="text-sm text-blue-900">{incident.followUp}</p>
+                      <p className="text-sm text-blue-900">{incident.follow_up}</p>
                     </div>
+
+                    <SmartLinkPanel sourceType="online_safety_incident" sourceId={incident.id} childId={incident.child_id} compact />
                   </div>
                 )}
               </div>
@@ -402,14 +262,14 @@ export default function OnlineSafetyPage() {
         {view === "agreements" && (
           <div className="space-y-4">
             {agreements.map((ag) => (
-              <div key={ag.youngPersonId} className="rounded-lg border bg-white p-4 space-y-3">
+              <div key={ag.id} className="rounded-lg border bg-white p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Wifi className="h-5 w-5 text-brand" />
-                    <h3 className="font-semibold">{getYPName(ag.youngPersonId)}</h3>
-                    {ag.childSignature && <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Signed</span>}
+                    <h3 className="font-semibold">{getYPName(ag.child_id)}</h3>
+                    {ag.child_signature && <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">Signed</span>}
                   </div>
-                  <span className="text-xs text-muted-foreground">Review: {ag.reviewDate}</span>
+                  <span className="text-xs text-muted-foreground">Review: {ag.review_date}</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -419,7 +279,7 @@ export default function OnlineSafetyPage() {
                   </div>
                   <div>
                     <h4 className="text-xs font-semibold text-muted-foreground mb-1">Allowed Platforms</h4>
-                    <div className="flex flex-wrap gap-1">{ag.allowedPlatforms.map((p, i) => <span key={i} className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{p}</span>)}</div>
+                    <div className="flex flex-wrap gap-1">{ag.allowed_platforms.map((p, i) => <span key={i} className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{p}</span>)}</div>
                   </div>
                 </div>
 
@@ -429,9 +289,11 @@ export default function OnlineSafetyPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Wi-Fi Curfew:</span> {ag.wifiCurfew}</div>
-                  <div><span className="text-muted-foreground">Parental Controls:</span> {ag.parentalControls}</div>
+                  <div><span className="text-muted-foreground">Wi-Fi Curfew:</span> {ag.wifi_curfew}</div>
+                  <div><span className="text-muted-foreground">Parental Controls:</span> {ag.parental_controls}</div>
                 </div>
+
+                <SmartLinkPanel sourceType="online_safety_agreement" sourceId={ag.id} childId={ag.child_id} compact />
               </div>
             ))}
           </div>
@@ -447,7 +309,7 @@ export default function OnlineSafetyPage() {
           <DialogHeader><DialogTitle>Log Online Safety Incident</DialogTitle></DialogHeader>
           <div className="grid gap-3 py-2">
             <select className="rounded border px-3 py-2 text-sm"><option value="">Young Person…</option>{ypIds.map((id) => <option key={id} value={id}>{getYPName(id)}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Category…</option>{Object.entries(CAT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+            <select className="rounded border px-3 py-2 text-sm"><option value="">Category…</option>{Object.entries(ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
             <select className="rounded border px-3 py-2 text-sm"><option value="">Severity…</option>{Object.entries(SEV_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
             <input placeholder="Platform (e.g. Instagram, Snapchat)" className="rounded border px-3 py-2 text-sm" />
             <textarea placeholder="Summary" rows={2} className="rounded border px-3 py-2 text-sm" />

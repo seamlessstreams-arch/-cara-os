@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Heart,
   Brain,
@@ -20,438 +20,98 @@ import { cn } from "@/lib/utils";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import type {
+  TraumaTherapyLog,
+  TherapyModality,
+  TherapySessionFormat,
+  TherapyPresentation,
+} from "@/types/extended";
+import {
+  THERAPY_MODALITY_LABEL,
+  THERAPY_SESSION_FORMAT_LABEL,
+  THERAPY_PRESENTATION_LABEL,
+} from "@/types/extended";
+import { useTraumaTherapyLogs } from "@/hooks/use-trauma-therapy-logs";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── colour maps ───────────────────────────────────────────────────── */
 
-type Modality =
-  | "TF-CBT"
-  | "EMDR"
-  | "Play therapy"
-  | "Art therapy"
-  | "Narrative therapy"
-  | "DDP"
-  | "Theraplay"
-  | "CBT (general)"
-  | "Person-centred"
-  | "Sand tray"
-  | "Mixed"
-  | "Other";
-
-type SessionFormat =
-  | "1:1"
-  | "Family-included"
-  | "Group"
-  | "Online"
-  | "Outdoor / walk and talk";
-
-type Presentation =
-  | "Engaged"
-  | "Withdrawn"
-  | "Avoidant"
-  | "Distressed"
-  | "Mixed"
-  | "Building trust";
-
-interface TherapyLog {
-  id: string;
-  youngPerson: string;
-  sessionDate: string;
-  modality: Modality;
-  therapistName: string;
-  therapistService: string;
-  sessionFormatLabel: SessionFormat;
-  sessionLengthMinutes: number;
-  attended: boolean;
-  reasonIfMissed?: string;
-  generalThemeBroad: string;
-  childPresentation: Presentation;
-  preSessionMoodRating: 1 | 2 | 3 | 4 | 5;
-  postSessionMoodRating: 1 | 2 | 3 | 4 | 5;
-  regulationStrategiesUsedAfter: string[];
-  betweenSessionSupport: string[];
-  escalationFlags: string[];
-  childVoiceShared?: string;
-  staffObservation: string;
-  nextSession?: string;
-  recordedBy: string;
-}
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-/* ── colour maps ───────────────────────────────────────────────────────── */
-
-const MODALITY_COLOURS: Record<Modality, string> = {
-  "TF-CBT": "bg-violet-100 text-violet-800",
-  "EMDR": "bg-violet-100 text-violet-800",
-  "Play therapy": "bg-teal-100 text-teal-800",
-  "Art therapy": "bg-teal-100 text-teal-800",
-  "Narrative therapy": "bg-indigo-100 text-indigo-800",
-  "DDP": "bg-purple-100 text-purple-800",
-  "Theraplay": "bg-purple-100 text-purple-800",
-  "CBT (general)": "bg-blue-100 text-blue-800",
-  "Person-centred": "bg-emerald-100 text-emerald-800",
-  "Sand tray": "bg-amber-100 text-amber-800",
-  "Mixed": "bg-slate-100 text-slate-800",
-  "Other": "bg-gray-100 text-gray-700",
+const MODALITY_COLOURS: Record<TherapyModality, string> = {
+  tf_cbt: "bg-violet-100 text-violet-800",
+  emdr: "bg-violet-100 text-violet-800",
+  play_therapy: "bg-teal-100 text-teal-800",
+  art_therapy: "bg-teal-100 text-teal-800",
+  narrative_therapy: "bg-indigo-100 text-indigo-800",
+  ddp: "bg-purple-100 text-purple-800",
+  theraplay: "bg-purple-100 text-purple-800",
+  cbt_general: "bg-blue-100 text-blue-800",
+  person_centred: "bg-emerald-100 text-emerald-800",
+  sand_tray: "bg-amber-100 text-amber-800",
+  mixed: "bg-slate-100 text-slate-800",
+  other: "bg-gray-100 text-gray-700",
 };
 
-const PRESENTATION_COLOURS: Record<Presentation, string> = {
-  "Engaged": "bg-emerald-100 text-emerald-800",
-  "Withdrawn": "bg-slate-100 text-slate-700",
-  "Avoidant": "bg-amber-100 text-amber-800",
-  "Distressed": "bg-rose-100 text-rose-800",
-  "Mixed": "bg-indigo-100 text-indigo-800",
-  "Building trust": "bg-teal-100 text-teal-800",
+const PRESENTATION_COLOURS: Record<TherapyPresentation, string> = {
+  engaged: "bg-emerald-100 text-emerald-800",
+  withdrawn: "bg-slate-100 text-slate-700",
+  avoidant: "bg-amber-100 text-amber-800",
+  distressed: "bg-rose-100 text-rose-800",
+  mixed: "bg-indigo-100 text-indigo-800",
+  building_trust: "bg-teal-100 text-teal-800",
 };
 
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const SEED: TherapyLog[] = [
-  // ── Alex — TF-CBT / EMDR weekly with Dr Patel CAMHS ──────────────────
-  {
-    id: "tl1",
-    youngPerson: "yp_alex",
-    sessionDate: d(-3),
-    modality: "TF-CBT",
-    therapistName: "Dr Sasha Patel",
-    therapistService: "CAMHS — Specialist Trauma Team",
-    sessionFormatLabel: "1:1",
-    sessionLengthMinutes: 60,
-    attended: true,
-    generalThemeBroad: "Identity work — continuing the strand around family rejection and how Alex holds their sense of self alongside it. Therapist confirmed broad theme only; specific content held in therapy.",
-    childPresentation: "Engaged",
-    preSessionMoodRating: 2,
-    postSessionMoodRating: 4,
-    regulationStrategiesUsedAfter: [
-      "Boxing bag in the garage — 20 minutes",
-      "Quiet hour in bedroom with door open (Alex&apos;s choice)",
-      "Cup of tea with Anna afterwards — no questions, just company",
-    ],
-    betweenSessionSupport: [
-      "Anna available for grounding contact — Alex knows where she is",
-      "Boxing as a regulation tool, not just sport — agreed with therapist",
-      "Mermaids peer mentor video call mid-week",
-    ],
-    escalationFlags: [],
-    childVoiceShared: "I came out of that one feeling lighter. Don&apos;t ask me about it though — that&apos;s a Dr Patel room thing.",
-    staffObservation: "Alex returned settled. Used the boxing bag without prompting — therapist had agreed this is a good post-session step. Slept well that night per Alex&apos;s own report.",
-    nextSession: d(4),
-    recordedBy: "staff_anna",
-  },
-  {
-    id: "tl2",
-    youngPerson: "yp_alex",
-    sessionDate: d(-10),
-    modality: "EMDR",
-    therapistName: "Dr Sasha Patel",
-    therapistService: "CAMHS — Specialist Trauma Team",
-    sessionFormatLabel: "1:1",
-    sessionLengthMinutes: 75,
-    attended: true,
-    generalThemeBroad: "EMDR processing block — therapist flagged this as a heavier session in advance so the home could plan support. No detail of content shared, by agreement.",
-    childPresentation: "Mixed",
-    preSessionMoodRating: 3,
-    postSessionMoodRating: 2,
-    regulationStrategiesUsedAfter: [
-      "Walked the dog with Anna (no talking required)",
-      "Weighted blanket and a film on the sofa",
-      "Early night — heated wheat bag",
-    ],
-    betweenSessionSupport: [
-      "Cleared the evening of any demands — agreed in advance with Alex",
-      "Soft check-in next morning — Alex chose to talk briefly",
-      "Made favourite breakfast (poached egg on sourdough) — small comfort signal",
-    ],
-    escalationFlags: [
-      "Heavier processing session — monitor sleep and self-talk for 72 hours",
-    ],
-    childVoiceShared: "It was hard. I&apos;m glad I went. I&apos;m really tired now.",
-    staffObservation: "Therapist had given prior heads-up that this would be a deeper EMDR set. Alex was quiet for the evening but accepted comfort. By morning two, mood had lifted again. Pattern matches what therapist described.",
-    nextSession: d(-3),
-    recordedBy: "staff_anna",
-  },
-  {
-    id: "tl3",
-    youngPerson: "yp_alex",
-    sessionDate: d(-17),
-    modality: "TF-CBT",
-    therapistName: "Dr Sasha Patel",
-    therapistService: "CAMHS — Specialist Trauma Team",
-    sessionFormatLabel: "1:1",
-    sessionLengthMinutes: 60,
-    attended: true,
-    generalThemeBroad: "Boxing-as-grounding — therapist and Alex worked on integrating the boxing routine as a between-session grounding strategy. Theme also touched on identity (broad).",
-    childPresentation: "Engaged",
-    preSessionMoodRating: 3,
-    postSessionMoodRating: 4,
-    regulationStrategiesUsedAfter: [
-      "Boxing bag — 15 minutes",
-      "Made a playlist of session-end songs (Alex&apos;s idea, therapist supported)",
-    ],
-    betweenSessionSupport: [
-      "Boxing slot booked at the gym — twice a week",
-      "Anna noted strategy in Alex&apos;s individual support plan",
-    ],
-    escalationFlags: [],
-    childVoiceShared: "We made a plan together. I get to tell my body it&apos;s safe by moving it.",
-    staffObservation: "Constructive session — Alex came out with a concrete strategy and a sense of agency. Strategy now mirrored in regulation plan and shared with all staff.",
-    nextSession: d(-10),
-    recordedBy: "staff_chervelle",
-  },
-  {
-    id: "tl4",
-    youngPerson: "yp_alex",
-    sessionDate: d(-24),
-    modality: "TF-CBT",
-    therapistName: "Dr Sasha Patel",
-    therapistService: "CAMHS — Specialist Trauma Team",
-    sessionFormatLabel: "1:1",
-    sessionLengthMinutes: 60,
-    attended: false,
-    reasonIfMissed: "Alex unwell with a heavy cold — rebooked. Therapist contacted; no follow-up concerns.",
-    generalThemeBroad: "Session not attended — to be picked up at the rebook.",
-    childPresentation: "Withdrawn",
-    preSessionMoodRating: 2,
-    postSessionMoodRating: 2,
-    regulationStrategiesUsedAfter: [
-      "Rest and fluids — recovery focus only",
-    ],
-    betweenSessionSupport: [
-      "Therapist messaged Alex a brief audio note — &lsquo;rest, see you next week&rsquo;",
-      "Anna kept the day low-stimulation",
-    ],
-    escalationFlags: [],
-    staffObservation: "Genuine illness, not avoidance — Alex was disappointed to miss. Logged for pattern tracking only.",
-    nextSession: d(-17),
-    recordedBy: "staff_anna",
-  },
-
-  // ── Jordan — monthly narrative therapy ───────────────────────────────
-  {
-    id: "tl5",
-    youngPerson: "yp_jordan",
-    sessionDate: d(-7),
-    modality: "Narrative therapy",
-    therapistName: "Yusuf Rahman",
-    therapistService: "Private practice, mosque-aligned therapist (paid via leaving-care fund)",
-    sessionFormatLabel: "1:1",
-    sessionLengthMinutes: 50,
-    attended: true,
-    generalThemeBroad: "Identity and contact transitions — broad work on the story of family relationships and Jordan&apos;s place within it. Therapist confirmed only the broad theme.",
-    childPresentation: "Engaged",
-    preSessionMoodRating: 3,
-    postSessionMoodRating: 4,
-    regulationStrategiesUsedAfter: [
-      "Walked back via the park — 30 minutes — Jordan&apos;s preference",
-      "Phoned aunt afterwards (planned in advance)",
-    ],
-    betweenSessionSupport: [
-      "Calendar of contact transitions agreed and visible in Jordan&apos;s room",
-      "Aunt aware of session timing — supportive call lined up",
-      "Cultural mentor available between sessions if needed",
-    ],
-    escalationFlags: [],
-    childVoiceShared: "Yusuf gets it without me having to explain the basics. That matters.",
-    staffObservation: "Jordan came back grounded. The cultural and faith alignment of the therapist continues to be the right fit. Mood lift sustained into the evening.",
-    nextSession: d(21),
-    recordedBy: "staff_chervelle",
-  },
-  {
-    id: "tl6",
-    youngPerson: "yp_jordan",
-    sessionDate: d(-35),
-    modality: "Narrative therapy",
-    therapistName: "Yusuf Rahman",
-    therapistService: "Private practice, mosque-aligned therapist (paid via leaving-care fund)",
-    sessionFormatLabel: "1:1",
-    sessionLengthMinutes: 50,
-    attended: true,
-    generalThemeBroad: "Brother in Pakistan — broad theme of long-distance sibling relationship and how Jordan is making sense of it. No specifics shared with the home.",
-    childPresentation: "Building trust",
-    preSessionMoodRating: 2,
-    postSessionMoodRating: 3,
-    regulationStrategiesUsedAfter: [
-      "Quiet evening — Jordan asked for it",
-      "Wrote in the personal journal (private, not for staff)",
-    ],
-    betweenSessionSupport: [
-      "Video call with brother arranged for the following week",
-      "Photos of brother kept on Jordan&apos;s shelf",
-    ],
-    escalationFlags: [],
-    childVoiceShared: "Some of it is sad. Some of it I didn&apos;t know I was carrying.",
-    staffObservation: "Heavier session by Jordan&apos;s own description. Settled by morning. Cultural mentor briefed (with Jordan&apos;s consent) on broad theme so support is joined-up.",
-    nextSession: d(-7),
-    recordedBy: "staff_chervelle",
-  },
-  {
-    id: "tl7",
-    youngPerson: "yp_jordan",
-    sessionDate: d(-63),
-    modality: "Narrative therapy",
-    therapistName: "Yusuf Rahman",
-    therapistService: "Private practice, mosque-aligned therapist (paid via leaving-care fund)",
-    sessionFormatLabel: "Online",
-    sessionLengthMinutes: 45,
-    attended: true,
-    generalThemeBroad: "First session of this block — relational set-up and agreeing what gets shared with the home (broad themes only).",
-    childPresentation: "Building trust",
-    preSessionMoodRating: 3,
-    postSessionMoodRating: 3,
-    regulationStrategiesUsedAfter: [
-      "Reflection time on Jordan&apos;s own — door closed, lamp on",
-    ],
-    betweenSessionSupport: [
-      "Agreement in writing about what gets shared with staff (signed by Jordan, therapist, and key worker)",
-      "Cultural mentor included in Jordan&apos;s circle of support",
-    ],
-    escalationFlags: [],
-    staffObservation: "First session — set the scene for the work. Jordan was clear-headed about confidentiality boundaries. The home is set up to support without intruding.",
-    nextSession: d(-35),
-    recordedBy: "staff_chervelle",
-  },
-
-  // ── Casey — weekly play therapy with Anna Freud Centre ───────────────
-  {
-    id: "tl8",
-    youngPerson: "yp_casey",
-    sessionDate: d(-2),
-    modality: "Play therapy",
-    therapistName: "Beth Coombs",
-    therapistService: "Anna Freud Centre — Children&apos;s Trauma Service",
-    sessionFormatLabel: "1:1",
-    sessionLengthMinutes: 50,
-    attended: true,
-    generalThemeBroad: "Sensory processing and bereavement — gentle play themes around grandad and the apple tree. Therapist held the specifics in the therapy space.",
-    childPresentation: "Engaged",
-    preSessionMoodRating: 3,
-    postSessionMoodRating: 4,
-    regulationStrategiesUsedAfter: [
-      "Cuddle with Eeyore and a quiet snack",
-      "Painting at the kitchen table — Anna sat alongside",
-    ],
-    betweenSessionSupport: [
-      "Eeyore travel-bag in Casey&apos;s school rucksack",
-      "Predictable evening routine — bath, story, lights low",
-      "Memory-corner items for grandad kept available",
-    ],
-    escalationFlags: [],
-    childVoiceShared: "Beth&apos;s room is the sandcastle place. I left some sad in the sand today.",
-    staffObservation: "Casey returned bright. The play therapy room continues to be a space she trusts. Eeyore came too — therapist had agreed this is fine. Sleep settled.",
-    nextSession: d(5),
-    recordedBy: "staff_anna",
-  },
-  {
-    id: "tl9",
-    youngPerson: "yp_casey",
-    sessionDate: d(-9),
-    modality: "Play therapy",
-    therapistName: "Beth Coombs",
-    therapistService: "Anna Freud Centre — Children&apos;s Trauma Service",
-    sessionFormatLabel: "1:1",
-    sessionLengthMinutes: 50,
-    attended: true,
-    generalThemeBroad: "School transitions and sensory regulation — broad theme. Casey arrived wound up after a noisy school morning; Beth used the first ten minutes for sensory grounding.",
-    childPresentation: "Distressed",
-    preSessionMoodRating: 2,
-    postSessionMoodRating: 4,
-    regulationStrategiesUsedAfter: [
-      "Garden time — barefoot on the grass for ten minutes",
-      "Slow-cooked tea (Casey&apos;s favourite — sausage casserole)",
-    ],
-    betweenSessionSupport: [
-      "School informed Casey may be tired Wednesday afternoons (session day)",
-      "Sensory toolkit in school bag — fidget, ear defenders, chew necklace",
-      "Beth and Anna met for 15 minutes by phone (with Casey&apos;s knowledge) — broad-theme update only",
-    ],
-    escalationFlags: [
-      "School morning sensory overload pattern — review with SENCO",
-    ],
-    childVoiceShared: "I was a bit sandbag this morning. Beth helped me put the sandbag down.",
-    staffObservation: "Big pre-to-post mood lift — therapist&apos;s grounding work was visibly effective. Pattern of Wednesday-morning overload now logged for SENCO conversation.",
-    nextSession: d(-2),
-    recordedBy: "staff_anna",
-  },
-  {
-    id: "tl10",
-    youngPerson: "yp_casey",
-    sessionDate: d(-16),
-    modality: "Play therapy",
-    therapistName: "Beth Coombs",
-    therapistService: "Anna Freud Centre — Children&apos;s Trauma Service",
-    sessionFormatLabel: "1:1",
-    sessionLengthMinutes: 50,
-    attended: true,
-    generalThemeBroad: "Eeyore and the bereavement work — Casey brought Eeyore in. Therapist signalled (with Casey&apos;s consent) that this was a meaningful session in the bereavement strand.",
-    childPresentation: "Mixed",
-    preSessionMoodRating: 3,
-    postSessionMoodRating: 3,
-    regulationStrategiesUsedAfter: [
-      "Sat with Eeyore on the apple-tree memorial bench",
-      "Drew a picture for grandad — went into the memory corner",
-    ],
-    betweenSessionSupport: [
-      "Anna available — sat near, didn&apos;t hover",
-      "Memory corner refreshed with Casey",
-    ],
-    escalationFlags: [],
-    childVoiceShared: "Eeyore did some of the talking today. He&apos;s allowed.",
-    staffObservation: "Steady session. Casey held her own emotion well, with Eeyore as the proxy where she needed one. Continues to use the home environment for follow-on regulation in healthy ways.",
-    nextSession: d(-9),
-    recordedBy: "staff_anna",
-  },
-];
-
-/* ── flat row for export ───────────────────────────────────────────────── */
+/* ── flat row for export ───────────────────────────────────────────── */
 
 interface FlatRow {
-  youngPerson: string;
-  sessionDate: string;
+  child_id: string;
+  session_date: string;
   modality: string;
-  therapistName: string;
-  therapistService: string;
-  sessionFormat: string;
-  sessionLengthMinutes: string;
+  therapist_name: string;
+  therapist_service: string;
+  session_format: string;
+  session_length_minutes: string;
   attended: string;
-  reasonIfMissed: string;
-  generalThemeBroad: string;
-  childPresentation: string;
-  preSessionMoodRating: string;
-  postSessionMoodRating: string;
-  moodChange: string;
-  escalationFlagsCount: string;
-  childVoiceShared: string;
-  staffObservation: string;
-  nextSession: string;
-  recordedBy: string;
+  reason_if_missed: string;
+  general_theme_broad: string;
+  child_presentation: string;
+  pre_session_mood_rating: string;
+  post_session_mood_rating: string;
+  mood_change: string;
+  escalation_flags_count: string;
+  child_voice_shared: string;
+  staff_observation: string;
+  next_session: string;
+  recorded_by: string;
 }
 
 const exportCols: ExportColumn<FlatRow>[] = [
-  { header: "Young Person", accessor: (r: FlatRow) => r.youngPerson },
-  { header: "Session Date", accessor: (r: FlatRow) => r.sessionDate },
+  { header: "Young Person", accessor: (r: FlatRow) => r.child_id },
+  { header: "Session Date", accessor: (r: FlatRow) => r.session_date },
   { header: "Modality", accessor: (r: FlatRow) => r.modality },
-  { header: "Therapist", accessor: (r: FlatRow) => r.therapistName },
-  { header: "Service", accessor: (r: FlatRow) => r.therapistService },
-  { header: "Format", accessor: (r: FlatRow) => r.sessionFormat },
-  { header: "Length (min)", accessor: (r: FlatRow) => r.sessionLengthMinutes },
+  { header: "Therapist", accessor: (r: FlatRow) => r.therapist_name },
+  { header: "Service", accessor: (r: FlatRow) => r.therapist_service },
+  { header: "Format", accessor: (r: FlatRow) => r.session_format },
+  { header: "Length (min)", accessor: (r: FlatRow) => r.session_length_minutes },
   { header: "Attended", accessor: (r: FlatRow) => r.attended },
-  { header: "Reason If Missed", accessor: (r: FlatRow) => r.reasonIfMissed },
-  { header: "General Theme (broad)", accessor: (r: FlatRow) => r.generalThemeBroad },
-  { header: "Child Presentation", accessor: (r: FlatRow) => r.childPresentation },
-  { header: "Pre-Session Mood (1-5)", accessor: (r: FlatRow) => r.preSessionMoodRating },
-  { header: "Post-Session Mood (1-5)", accessor: (r: FlatRow) => r.postSessionMoodRating },
-  { header: "Mood Change", accessor: (r: FlatRow) => r.moodChange },
-  { header: "Escalation Flags", accessor: (r: FlatRow) => r.escalationFlagsCount },
-  { header: "Child Voice (if shared)", accessor: (r: FlatRow) => r.childVoiceShared },
-  { header: "Staff Observation", accessor: (r: FlatRow) => r.staffObservation },
-  { header: "Next Session", accessor: (r: FlatRow) => r.nextSession },
-  { header: "Recorded By", accessor: (r: FlatRow) => r.recordedBy },
+  { header: "Reason If Missed", accessor: (r: FlatRow) => r.reason_if_missed },
+  { header: "General Theme (broad)", accessor: (r: FlatRow) => r.general_theme_broad },
+  { header: "Child Presentation", accessor: (r: FlatRow) => r.child_presentation },
+  { header: "Pre-Session Mood (1-5)", accessor: (r: FlatRow) => r.pre_session_mood_rating },
+  { header: "Post-Session Mood (1-5)", accessor: (r: FlatRow) => r.post_session_mood_rating },
+  { header: "Mood Change", accessor: (r: FlatRow) => r.mood_change },
+  { header: "Escalation Flags", accessor: (r: FlatRow) => r.escalation_flags_count },
+  { header: "Child Voice (if shared)", accessor: (r: FlatRow) => r.child_voice_shared },
+  { header: "Staff Observation", accessor: (r: FlatRow) => r.staff_observation },
+  { header: "Next Session", accessor: (r: FlatRow) => r.next_session },
+  { header: "Recorded By", accessor: (r: FlatRow) => r.recorded_by },
 ];
 
-/* ── component ─────────────────────────────────────────────────────────── */
+/* ── component ─────────────────────────────────────────────────────── */
 
 export default function ChildTraumaTherapyLogPage() {
-  const [data] = useState<TherapyLog[]>(SEED);
+  const { data: res, isLoading } = useTraumaTherapyLogs();
+  const items = res?.data ?? [];
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterModality, setFilterModality] = useState<string>("all");
@@ -459,89 +119,86 @@ export default function ChildTraumaTherapyLogPage() {
 
   const toggle = (id: string) => setExpandedId((cur) => (cur === id ? null : id));
 
-  /* ── stats ────────────────────────────────────────────────────────── */
-  const stats = useMemo(() => {
+  /* ── loading ──────────────────────────────────────────────────── */
+  if (isLoading) return <PageShell title="Child Trauma Therapy Log" subtitle="Per-child trauma therapy attendance and observable presentation — therapeutic content stays in the therapy room"><div /></PageShell>;
+
+  /* ── stats ────────────────────────────────────────────────────── */
+  const stats = (() => {
     const today = new Date();
     const monthAgo = new Date();
     monthAgo.setDate(monthAgo.getDate() - 30);
     const in14d = new Date();
     in14d.setDate(in14d.getDate() + 14);
 
-    const sessionsThisMonth = data.filter((r) => {
-      const sd = new Date(r.sessionDate);
+    const sessionsThisMonth = items.filter((r) => {
+      const sd = new Date(r.session_date);
       return sd >= monthAgo && sd <= today;
     }).length;
 
-    const monthRecords = data.filter((r) => {
-      const sd = new Date(r.sessionDate);
+    const monthRecords = items.filter((r) => {
+      const sd = new Date(r.session_date);
       return sd >= monthAgo && sd <= today;
     });
     const attended = monthRecords.filter((r) => r.attended).length;
     const attendancePct = monthRecords.length === 0 ? 0 : Math.round((attended / monthRecords.length) * 100);
 
-    const escalationFlagsThisMonth = monthRecords.reduce((acc, r) => acc + r.escalationFlags.length, 0);
+    const escalationFlagsThisMonth = monthRecords.reduce((acc, r) => acc + r.escalation_flags.length, 0);
 
-    const upcoming = data.filter((r) => {
-      if (!r.nextSession) return false;
-      const ns = new Date(r.nextSession);
+    const upcoming = items.filter((r) => {
+      if (!r.next_session) return false;
+      const ns = new Date(r.next_session);
       return ns >= today && ns <= in14d;
     }).length;
 
     return { sessionsThisMonth, attendancePct, escalationFlagsThisMonth, upcoming };
-  }, [data]);
+  })();
 
-  /* ── filter / sort ────────────────────────────────────────────────── */
-  const filtered = useMemo(() => {
-    let list = data;
+  /* ── filter / sort ────────────────────────────────────────────── */
+  const filtered = (() => {
+    let list = items;
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) =>
-        getYPName(r.youngPerson).toLowerCase().includes(q) ||
-        r.modality.toLowerCase().includes(q) ||
-        r.therapistName.toLowerCase().includes(q) ||
-        r.therapistService.toLowerCase().includes(q) ||
-        r.generalThemeBroad.toLowerCase().includes(q)
+        getYPName(r.child_id).toLowerCase().includes(q) ||
+        THERAPY_MODALITY_LABEL[r.modality].toLowerCase().includes(q) ||
+        r.therapist_name.toLowerCase().includes(q) ||
+        r.therapist_service.toLowerCase().includes(q) ||
+        r.general_theme_broad.toLowerCase().includes(q)
       );
     }
     if (filterModality !== "all") list = list.filter((r) => r.modality === filterModality);
     const out = [...list];
     switch (sortBy) {
-      case "date": out.sort((a, b) => b.sessionDate.localeCompare(a.sessionDate)); break;
-      case "child": out.sort((a, b) => getYPName(a.youngPerson).localeCompare(getYPName(b.youngPerson))); break;
+      case "date": out.sort((a, b) => b.session_date.localeCompare(a.session_date)); break;
+      case "child": out.sort((a, b) => getYPName(a.child_id).localeCompare(getYPName(b.child_id))); break;
       case "modality": out.sort((a, b) => a.modality.localeCompare(b.modality)); break;
-      case "moodChange": out.sort((a, b) => (b.postSessionMoodRating - b.preSessionMoodRating) - (a.postSessionMoodRating - a.preSessionMoodRating)); break;
+      case "moodChange": out.sort((a, b) => (b.post_session_mood_rating - b.pre_session_mood_rating) - (a.post_session_mood_rating - a.pre_session_mood_rating)); break;
     }
     return out;
-  }, [data, search, filterModality, sortBy]);
+  })();
 
-  /* ── export rows ──────────────────────────────────────────────────── */
-  const exportRows = useMemo<FlatRow[]>(() =>
-    data.map((r) => ({
-      youngPerson: getYPName(r.youngPerson),
-      sessionDate: r.sessionDate,
-      modality: r.modality,
-      therapistName: r.therapistName,
-      therapistService: r.therapistService,
-      sessionFormat: r.sessionFormatLabel,
-      sessionLengthMinutes: String(r.sessionLengthMinutes),
-      attended: r.attended ? "Attended" : "Missed",
-      reasonIfMissed: r.reasonIfMissed ?? "",
-      generalThemeBroad: r.generalThemeBroad,
-      childPresentation: r.childPresentation,
-      preSessionMoodRating: String(r.preSessionMoodRating),
-      postSessionMoodRating: String(r.postSessionMoodRating),
-      moodChange: String(r.postSessionMoodRating - r.preSessionMoodRating),
-      escalationFlagsCount: String(r.escalationFlags.length),
-      childVoiceShared: r.childVoiceShared ?? "",
-      staffObservation: r.staffObservation,
-      nextSession: r.nextSession ?? "",
-      recordedBy: getStaffName(r.recordedBy),
-    })), [data]);
-
-  const modalities: Modality[] = [
-    "TF-CBT", "EMDR", "Play therapy", "Art therapy", "Narrative therapy",
-    "DDP", "Theraplay", "CBT (general)", "Person-centred", "Sand tray", "Mixed", "Other",
-  ];
+  /* ── export rows ──────────────────────────────────────────────── */
+  const exportRows: FlatRow[] = items.map((r) => ({
+    child_id: getYPName(r.child_id),
+    session_date: r.session_date,
+    modality: THERAPY_MODALITY_LABEL[r.modality],
+    therapist_name: r.therapist_name,
+    therapist_service: r.therapist_service,
+    session_format: THERAPY_SESSION_FORMAT_LABEL[r.session_format],
+    session_length_minutes: String(r.session_length_minutes),
+    attended: r.attended ? "Attended" : "Missed",
+    reason_if_missed: r.reason_if_missed ?? "",
+    general_theme_broad: r.general_theme_broad,
+    child_presentation: THERAPY_PRESENTATION_LABEL[r.child_presentation],
+    pre_session_mood_rating: String(r.pre_session_mood_rating),
+    post_session_mood_rating: String(r.post_session_mood_rating),
+    mood_change: String(r.post_session_mood_rating - r.pre_session_mood_rating),
+    escalation_flags_count: String(r.escalation_flags.length),
+    child_voice_shared: r.child_voice_shared ?? "",
+    staff_observation: r.staff_observation,
+    next_session: r.next_session ?? "",
+    recorded_by: getStaffName(r.recorded_by),
+  }));
 
   return (
     <PageShell
@@ -597,7 +254,9 @@ export default function ChildTraumaTherapyLogPage() {
           <SelectTrigger className="w-[200px] h-9 text-sm"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All modalities</SelectItem>
-            {modalities.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+            {(Object.entries(THERAPY_MODALITY_LABEL) as [TherapyModality, string][]).map(([key, label]) => (
+              <SelectItem key={key} value={key}>{label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -618,7 +277,7 @@ export default function ChildTraumaTherapyLogPage() {
       <div className="space-y-4 mb-8">
         {filtered.map((r) => {
           const open = expandedId === r.id;
-          const moodDelta = r.postSessionMoodRating - r.preSessionMoodRating;
+          const moodDelta = r.post_session_mood_rating - r.pre_session_mood_rating;
           return (
             <div key={r.id} className="rounded-lg border border-violet-100 bg-white">
               <button
@@ -628,13 +287,13 @@ export default function ChildTraumaTherapyLogPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Brain className="h-4 w-4 text-violet-500" />
-                    <h3 className="font-semibold">{getYPName(r.youngPerson)}</h3>
-                    <span className="text-sm text-gray-600">— {r.therapistName}</span>
-                    <span className="text-xs text-gray-400">({r.therapistService})</span>
+                    <h3 className="font-semibold">{getYPName(r.child_id)}</h3>
+                    <span className="text-sm text-gray-600">— {r.therapist_name}</span>
+                    <span className="text-xs text-gray-400">({r.therapist_service})</span>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", MODALITY_COLOURS[r.modality])}>{r.modality}</span>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", PRESENTATION_COLOURS[r.childPresentation])}>{r.childPresentation}</span>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", MODALITY_COLOURS[r.modality])}>{THERAPY_MODALITY_LABEL[r.modality]}</span>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", PRESENTATION_COLOURS[r.child_presentation])}>{THERAPY_PRESENTATION_LABEL[r.child_presentation]}</span>
                     <span className={cn(
                       "px-2 py-0.5 rounded-full text-xs font-medium",
                       r.attended ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
@@ -650,15 +309,15 @@ export default function ChildTraumaTherapyLogPage() {
                         Mood {moodDelta > 0 ? `+${moodDelta}` : moodDelta}
                       </span>
                     )}
-                    {r.escalationFlags.length > 0 && (
+                    {r.escalation_flags.length > 0 && (
                       <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 inline-flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> {r.escalationFlags.length} flag{r.escalationFlags.length === 1 ? "" : "s"}
+                        <AlertTriangle className="h-3 w-3" /> {r.escalation_flags.length} flag{r.escalation_flags.length === 1 ? "" : "s"}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Session {r.sessionDate} · {r.sessionFormatLabel} · {r.sessionLengthMinutes} min · Recorded by {getStaffName(r.recordedBy)}
-                    {r.nextSession ? ` · Next ${r.nextSession}` : ""}
+                    Session {r.session_date} · {THERAPY_SESSION_FORMAT_LABEL[r.session_format]} · {r.session_length_minutes} min · Recorded by {getStaffName(r.recorded_by)}
+                    {r.next_session ? ` · Next ${r.next_session}` : ""}
                   </p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400 shrink-0" /> : <ChevronDown className="h-5 w-5 text-gray-400 shrink-0" />}
@@ -669,9 +328,9 @@ export default function ChildTraumaTherapyLogPage() {
                   {/* general theme */}
                   <div className="rounded-md bg-gray-50 p-3 mt-3">
                     <h4 className="text-xs font-semibold text-gray-500 mb-1">General theme (broad — agreed with therapist)</h4>
-                    <p className="text-sm">{r.generalThemeBroad}</p>
-                    {!r.attended && r.reasonIfMissed && (
-                      <p className="text-xs text-amber-700 mt-2"><strong>Reason missed:</strong> {r.reasonIfMissed}</p>
+                    <p className="text-sm">{r.general_theme_broad}</p>
+                    {!r.attended && r.reason_if_missed && (
+                      <p className="text-xs text-amber-700 mt-2"><strong>Reason missed:</strong> {r.reason_if_missed}</p>
                     )}
                   </div>
 
@@ -685,7 +344,7 @@ export default function ChildTraumaTherapyLogPage() {
                           {[1, 2, 3, 4, 5].map((n) => (
                             <span key={n} className={cn(
                               "h-6 w-6 rounded-full flex items-center justify-center text-xs font-medium",
-                              n <= r.preSessionMoodRating ? "bg-violet-500 text-white" : "bg-violet-100 text-violet-400"
+                              n <= r.pre_session_mood_rating ? "bg-violet-500 text-white" : "bg-violet-100 text-violet-400"
                             )}>{n}</span>
                           ))}
                         </div>
@@ -696,7 +355,7 @@ export default function ChildTraumaTherapyLogPage() {
                           {[1, 2, 3, 4, 5].map((n) => (
                             <span key={n} className={cn(
                               "h-6 w-6 rounded-full flex items-center justify-center text-xs font-medium",
-                              n <= r.postSessionMoodRating ? "bg-teal-500 text-white" : "bg-teal-100 text-teal-400"
+                              n <= r.post_session_mood_rating ? "bg-teal-500 text-white" : "bg-teal-100 text-teal-400"
                             )}>{n}</span>
                           ))}
                         </div>
@@ -708,9 +367,9 @@ export default function ChildTraumaTherapyLogPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="rounded-md bg-teal-50 p-3">
                       <h4 className="text-xs font-semibold text-teal-700 mb-1">Regulation strategies used after</h4>
-                      {r.regulationStrategiesUsedAfter.length > 0 ? (
+                      {r.regulation_strategies_used_after.length > 0 ? (
                         <ul className="list-disc list-inside text-sm text-teal-900 space-y-0.5">
-                          {r.regulationStrategiesUsedAfter.map((s, i) => <li key={i}>{s}</li>)}
+                          {r.regulation_strategies_used_after.map((s, i) => <li key={i}>{s}</li>)}
                         </ul>
                       ) : (
                         <p className="text-sm italic text-teal-700/70">None recorded.</p>
@@ -718,10 +377,8 @@ export default function ChildTraumaTherapyLogPage() {
                     </div>
                     <div className="rounded-md bg-emerald-50 p-3">
                       <h4 className="text-xs font-semibold text-emerald-700 mb-1">Between-session support</h4>
-                      {r.betweenSessionSupport.length > 0 ? (
-                        <ul className="list-disc list-inside text-sm text-emerald-900 space-y-0.5">
-                          {r.betweenSessionSupport.map((s, i) => <li key={i}>{s}</li>)}
-                        </ul>
+                      {r.between_session_support ? (
+                        <p className="text-sm text-emerald-900">{r.between_session_support}</p>
                       ) : (
                         <p className="text-sm italic text-emerald-700/70">None recorded.</p>
                       )}
@@ -729,38 +386,41 @@ export default function ChildTraumaTherapyLogPage() {
                   </div>
 
                   {/* child voice — only if shared */}
-                  {r.childVoiceShared && (
+                  {r.child_voice_shared && (
                     <div className="rounded-md bg-rose-50 border border-rose-200 p-3">
                       <h4 className="text-xs font-semibold text-rose-700 mb-1">Child&apos;s voice (only what the child chose to share)</h4>
-                      <p className="text-sm italic text-rose-900">&ldquo;{r.childVoiceShared}&rdquo;</p>
+                      <p className="text-sm italic text-rose-900">&ldquo;{r.child_voice_shared}&rdquo;</p>
                     </div>
                   )}
 
                   {/* staff observation */}
                   <div className="rounded-md bg-amber-50 border border-amber-200 p-3">
                     <h4 className="text-xs font-semibold text-amber-700 mb-1">Staff observation (observable presentation only)</h4>
-                    <p className="text-sm text-amber-900">{r.staffObservation}</p>
+                    <p className="text-sm text-amber-900">{r.staff_observation}</p>
                   </div>
 
                   {/* escalation flags */}
-                  {r.escalationFlags.length > 0 && (
+                  {r.escalation_flags.length > 0 && (
                     <div className="rounded-md bg-red-50 border border-red-200 p-3">
                       <h4 className="text-xs font-semibold text-red-700 mb-1 flex items-center gap-1">
                         <AlertTriangle className="h-3.5 w-3.5" /> Escalation flags
                       </h4>
                       <ul className="list-disc list-inside text-sm text-red-900 space-y-0.5">
-                        {r.escalationFlags.map((f, i) => <li key={i}>{f}</li>)}
+                        {r.escalation_flags.map((f, i) => <li key={i}>{f}</li>)}
                       </ul>
                     </div>
                   )}
 
                   {/* next session */}
-                  {r.nextSession && (
+                  {r.next_session && (
                     <div className="rounded-md bg-indigo-50 border border-indigo-200 p-3 inline-flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-indigo-600" />
-                      <span className="text-sm text-indigo-900">Next session: <span className="font-medium">{r.nextSession}</span></span>
+                      <span className="text-sm text-indigo-900">Next session: <span className="font-medium">{r.next_session}</span></span>
                     </div>
                   )}
+
+                  {/* smart link panel */}
+                  <SmartLinkPanel sourceType="trauma-therapy-log" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               )}
             </div>

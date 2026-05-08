@@ -15,6 +15,7 @@ import {
   Clock,
   Wallet,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -23,323 +24,85 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useProfessionalFeeRecords } from "@/hooks/use-professional-fee-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import type {
+  ProfessionalFeeRecord,
+  PractitionerType,
+  FeeStatus,
+  FundingSource,
+  FeePaymentMethod,
+} from "@/types/extended";
+import {
+  PRACTITIONER_TYPE_LABEL,
+  FEE_STATUS_LABEL,
+  FUNDING_SOURCE_LABEL,
+  FEE_PAYMENT_METHOD_LABEL,
+} from "@/types/extended";
 
-interface FeeRecord {
-  id: string;
-  practitioner: string;
-  organisation: string;
-  practitionerType: "Therapist" | "Advocate" | "Coach" | "Tutor" | "Mentor" | "Specialist Assessor" | "Translator" | "Cultural Mentor" | "Activity Provider";
-  feeFor: string;
-  youngPerson: string;
-  invoiceDate: string;
-  invoicePeriod: string;
-  amountGross: number;
-  vat: number;
-  amountNet: number;
-  contractRef: string;
-  fundingSource: "Home budget" | "Local Authority funded" | "Charitable funding" | "Cornerstone Care Group" | "Health-funded";
-  fundingApproved: boolean;
-  approvedBy: string;
-  paymentDate: string;
-  paymentMethod: "BACS" | "Cheque" | "Card" | "Cash";
-  outcomesEvidenced: string[];
-  hoursDelivered: number;
-  hourlyRate: number;
-  status: "Pending approval" | "Approved" | "Paid" | "Disputed" | "Refunded";
-  recurringContract: boolean;
-  contractEndDate: string;
-  performanceReviewDate: string;
-  reviewedBy: string;
-  reviewNotes: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const STATUS_COLOUR: Record<FeeStatus, string> = {
+  pending_approval: "bg-amber-100 text-amber-800",
+  approved: "bg-blue-100 text-blue-800",
+  paid: "bg-green-100 text-green-800",
+  disputed: "bg-red-100 text-red-800",
+  refunded: "bg-purple-100 text-purple-800",
 };
-
-const data: FeeRecord[] = [
-  {
-    id: "fr-001",
-    practitioner: "Dr Priya Patel",
-    organisation: "Riverside CAMHS (NHS)",
-    practitionerType: "Therapist",
-    feeFor: "Weekly EMDR therapy sessions for Alex (March 2026)",
-    youngPerson: "yp_alex",
-    invoiceDate: d(-7),
-    invoicePeriod: "March 2026",
-    amountGross: 0,
-    vat: 0,
-    amountNet: 0,
-    contractRef: "NHS-CAMHS-2026-A-001",
-    fundingSource: "Health-funded",
-    fundingApproved: true,
-    approvedBy: "staff_darren",
-    paymentDate: "",
-    paymentMethod: "BACS",
-    outcomesEvidenced: [
-      "Trauma symptoms reduced (TSCC scores improving)",
-      "Alex engaging consistently",
-      "Relational repair with maternal contact strengthened",
-    ],
-    hoursDelivered: 4,
-    hourlyRate: 0,
-    status: "Approved",
-    recurringContract: true,
-    contractEndDate: d(180),
-    performanceReviewDate: d(60),
-    reviewedBy: "staff_darren",
-    reviewNotes: "NHS-funded — no payment required. Excellent outcomes. Continuing.",
-  },
-  {
-    id: "fr-002",
-    practitioner: "Karen Hughes",
-    organisation: "Coram Voice (charitable)",
-    practitionerType: "Advocate",
-    feeFor: "Independent advocacy sessions for Jordan (February-April 2026)",
-    youngPerson: "yp_jordan",
-    invoiceDate: d(-3),
-    invoicePeriod: "Feb-Apr 2026",
-    amountGross: 480,
-    vat: 0,
-    amountNet: 480,
-    contractRef: "COV-2026-J-002",
-    fundingSource: "Local Authority funded",
-    fundingApproved: true,
-    approvedBy: "staff_darren",
-    paymentDate: d(-1),
-    paymentMethod: "BACS",
-    outcomesEvidenced: [
-      "Jordan attended Coram Voice 6 times",
-      "Active in CP review and resolution meeting",
-      "Confidential support during pre-release planning for Mum",
-      "Cultural sensitivity in advocacy approach",
-    ],
-    hoursDelivered: 12,
-    hourlyRate: 40,
-    status: "Paid",
-    recurringContract: true,
-    contractEndDate: d(120),
-    performanceReviewDate: d(60),
-    reviewedBy: "staff_darren",
-    reviewNotes: "Outstanding service. Karen builds trust quickly. Cultural awareness strong. Renewal recommended.",
-  },
-  {
-    id: "fr-003",
-    practitioner: "Sarah Greenwood",
-    organisation: "Reach Out Arts CIC",
-    practitionerType: "Therapist",
-    feeFor: "Art therapy weekly sessions for Casey (Q1 2026)",
-    youngPerson: "yp_casey",
-    invoiceDate: d(-14),
-    invoicePeriod: "Q1 2026",
-    amountGross: 1080,
-    vat: 0,
-    amountNet: 1080,
-    contractRef: "ROA-2026-C-003",
-    fundingSource: "Home budget",
-    fundingApproved: true,
-    approvedBy: "staff_darren",
-    paymentDate: d(-7),
-    paymentMethod: "BACS",
-    outcomesEvidenced: [
-      "Casey's art therapy progress documented",
-      "Identified by CAMHS as primary therapeutic intervention",
-      "Casey's piece selected for community exhibition",
-      "Trauma symptoms reduced significantly (TSCC)",
-    ],
-    hoursDelivered: 12,
-    hourlyRate: 90,
-    status: "Paid",
-    recurringContract: true,
-    contractEndDate: d(180),
-    performanceReviewDate: d(90),
-    reviewedBy: "staff_darren",
-    reviewNotes: "Sarah's work with Casey is exceptional. Outcomes evidence in TSCC. Renewal essential.",
-  },
-  {
-    id: "fr-004",
-    practitioner: "James Walker",
-    organisation: "Riverside Boxing Club (volunteer)",
-    practitionerType: "Coach",
-    feeFor: "Boxing coaching membership and equipment for Alex (annual)",
-    youngPerson: "yp_alex",
-    invoiceDate: d(-30),
-    invoicePeriod: "Annual 2026",
-    amountGross: 480,
-    vat: 0,
-    amountNet: 480,
-    contractRef: "RBC-2026-A-004",
-    fundingSource: "Home budget",
-    fundingApproved: true,
-    approvedBy: "staff_darren",
-    paymentDate: d(-25),
-    paymentMethod: "BACS",
-    outcomesEvidenced: [
-      "Alex attends twice weekly",
-      "Significant identity-protective factor",
-      "Coach reports leadership emerging",
-      "Selected for inter-club competition",
-    ],
-    hoursDelivered: 96,
-    hourlyRate: 5,
-    status: "Paid",
-    recurringContract: true,
-    contractEndDate: d(335),
-    performanceReviewDate: d(180),
-    reviewedBy: "staff_darren",
-    reviewNotes: "Coach James is volunteer; fees cover club membership and equipment. Best ROI of any intervention. Continue.",
-  },
-  {
-    id: "fr-005",
-    practitioner: "Marcus Davies",
-    organisation: "Independent Cultural Mentor",
-    practitionerType: "Cultural Mentor",
-    feeFor: "Cultural mentoring for Jordan — heritage exploration and identity work",
-    youngPerson: "yp_jordan",
-    invoiceDate: d(-2),
-    invoicePeriod: "Q1 2026 (April start)",
-    amountGross: 800,
-    vat: 0,
-    amountNet: 800,
-    contractRef: "ICM-2026-J-005",
-    fundingSource: "Cornerstone Care Group",
-    fundingApproved: true,
-    approvedBy: "staff_darren",
-    paymentDate: "",
-    paymentMethod: "BACS",
-    outcomesEvidenced: [
-      "Newly commissioned — outcomes to follow",
-      "Will support cultural identity work with Jordan",
-      "Linked to upcoming Mum-release transition",
-    ],
-    hoursDelivered: 0,
-    hourlyRate: 50,
-    status: "Approved",
-    recurringContract: true,
-    contractEndDate: d(180),
-    performanceReviewDate: d(90),
-    reviewedBy: "staff_darren",
-    reviewNotes: "Newly commissioned. First quarter to evaluate impact. Important investment.",
-  },
-  {
-    id: "fr-006",
-    practitioner: "Helen Frost",
-    organisation: "Riverside LSCB (Independent)",
-    practitionerType: "Specialist Assessor",
-    feeFor: "Reg 44 Independent Visitor monthly visits (Q1 2026)",
-    youngPerson: "yp_alex",
-    invoiceDate: d(-21),
-    invoicePeriod: "Q1 2026",
-    amountGross: 720,
-    vat: 144,
-    amountNet: 576,
-    contractRef: "LSCB-REG44-2026-006",
-    fundingSource: "Home budget",
-    fundingApproved: true,
-    approvedBy: "staff_darren",
-    paymentDate: d(-14),
-    paymentMethod: "BACS",
-    outcomesEvidenced: [
-      "Three monthly Reg 44 visits completed",
-      "Reports filed within 14 days each time",
-      "All children spoke privately with Helen",
-      "No concerns raised; positive feedback",
-    ],
-    hoursDelivered: 9,
-    hourlyRate: 80,
-    status: "Paid",
-    recurringContract: true,
-    contractEndDate: d(270),
-    performanceReviewDate: d(180),
-    reviewedBy: "staff_darren",
-    reviewNotes: "Statutory requirement (Reg 44). Helen's approach excellent — children respond positively. Continue.",
-  },
-  {
-    id: "fr-007",
-    practitioner: "Sarah Mitchell",
-    organisation: "Skills4Life",
-    practitionerType: "Tutor",
-    feeFor: "Independent travel training (sensory-aware) for Casey",
-    youngPerson: "yp_casey",
-    invoiceDate: d(0),
-    invoicePeriod: "April 2026",
-    amountGross: 320,
-    vat: 0,
-    amountNet: 320,
-    contractRef: "SK4L-2026-C-007",
-    fundingSource: "Home budget",
-    fundingApproved: false,
-    approvedBy: "",
-    paymentDate: "",
-    paymentMethod: "BACS",
-    outcomesEvidenced: [
-      "Pending approval — newly proposed",
-    ],
-    hoursDelivered: 0,
-    hourlyRate: 80,
-    status: "Pending approval",
-    recurringContract: false,
-    contractEndDate: d(60),
-    performanceReviewDate: d(60),
-    reviewedBy: "",
-    reviewNotes: "Awaiting approval. Cost considered against transition planning needs and Casey's specific support requirements.",
-  },
-];
-
-const statusColour: Record<string, string> = {
-  "Pending approval": "bg-amber-100 text-amber-800",
-  Approved: "bg-blue-100 text-blue-800",
-  Paid: "bg-green-100 text-green-800",
-  Disputed: "bg-red-100 text-red-800",
-  Refunded: "bg-purple-100 text-purple-800",
-};
-
-const exportCols: ExportColumn<FeeRecord>[] = [
-  { header: "Practitioner", accessor: (r: FeeRecord) => r.practitioner },
-  { header: "Organisation", accessor: (r: FeeRecord) => r.organisation },
-  { header: "Type", accessor: (r: FeeRecord) => r.practitionerType },
-  { header: "For", accessor: (r: FeeRecord) => r.feeFor },
-  { header: "Young Person", accessor: (r: FeeRecord) => getYPName(r.youngPerson) },
-  { header: "Invoice Date", accessor: (r: FeeRecord) => r.invoiceDate },
-  { header: "Period", accessor: (r: FeeRecord) => r.invoicePeriod },
-  { header: "Net £", accessor: (r: FeeRecord) => `£${r.amountNet.toFixed(2)}` },
-  { header: "VAT £", accessor: (r: FeeRecord) => `£${r.vat.toFixed(2)}` },
-  { header: "Gross £", accessor: (r: FeeRecord) => `£${r.amountGross.toFixed(2)}` },
-  { header: "Funding", accessor: (r: FeeRecord) => r.fundingSource },
-  { header: "Status", accessor: (r: FeeRecord) => r.status },
-];
 
 export default function ProfessionalFeesLogPage() {
+  const { data: records = [], isLoading } = useProfessionalFeeRecords();
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let items = [...data];
-    if (filterType !== "all") items = items.filter((r) => r.practitionerType === filterType);
+    let items = [...records];
+    if (filterType !== "all") items = items.filter((r) => r.practitioner_type === filterType);
     if (filterStatus !== "all") items = items.filter((r) => r.status === filterStatus);
     items.sort((a, b) => {
       switch (sortBy) {
         case "date":
-          return b.invoiceDate.localeCompare(a.invoiceDate);
+          return b.invoice_date.localeCompare(a.invoice_date);
         case "amount":
-          return b.amountGross - a.amountGross;
+          return b.amount_gross - a.amount_gross;
         case "type":
-          return a.practitionerType.localeCompare(b.practitionerType);
+          return a.practitioner_type.localeCompare(b.practitioner_type);
         default:
           return 0;
       }
     });
     return items;
-  }, [filterType, filterStatus, sortBy]);
+  }, [records, filterType, filterStatus, sortBy]);
 
-  const total = data.length;
-  const totalSpend = data.reduce((sum, r) => sum + r.amountGross, 0);
-  const pending = data.filter((r) => r.status === "Pending approval").length;
-  const paid = data.filter((r) => r.status === "Paid").length;
+  const total = records.length;
+  const totalSpend = records.reduce((sum, r) => sum + r.amount_gross, 0);
+  const pending = records.filter((r) => r.status === "pending_approval").length;
+  const paid = records.filter((r) => r.status === "paid").length;
+
+  const exportCols: ExportColumn<ProfessionalFeeRecord>[] = [
+    { header: "Practitioner", accessor: (r) => r.practitioner },
+    { header: "Organisation", accessor: (r) => r.organisation },
+    { header: "Type", accessor: (r) => PRACTITIONER_TYPE_LABEL[r.practitioner_type] },
+    { header: "For", accessor: (r) => r.fee_for },
+    { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+    { header: "Invoice Date", accessor: (r) => r.invoice_date },
+    { header: "Period", accessor: (r) => r.invoice_period },
+    { header: "Net £", accessor: (r) => `£${r.amount_net.toFixed(2)}` },
+    { header: "VAT £", accessor: (r) => `£${r.vat.toFixed(2)}` },
+    { header: "Gross £", accessor: (r) => `£${r.amount_gross.toFixed(2)}` },
+    { header: "Funding", accessor: (r) => FUNDING_SOURCE_LABEL[r.funding_source] },
+    { header: "Status", accessor: (r) => FEE_STATUS_LABEL[r.status] },
+  ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Professional Fees Log" subtitle="Records of payments to external practitioners — therapists, advocates, coaches, tutors, mentors">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -347,7 +110,7 @@ export default function ProfessionalFeesLogPage() {
       subtitle="Records of payments to external practitioners — therapists, advocates, coaches, tutors, mentors"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="professional-fees-log" />
+          <ExportButton data={records} columns={exportCols} filename="professional-fees-log" />
           <PrintButton title="Professional Fees Log" />
         </div>
       }
@@ -385,25 +148,18 @@ export default function ProfessionalFeesLogPage() {
           <SelectTrigger className="w-[180px]"><SelectValue placeholder="All Types" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="Therapist">Therapist</SelectItem>
-            <SelectItem value="Advocate">Advocate</SelectItem>
-            <SelectItem value="Coach">Coach</SelectItem>
-            <SelectItem value="Tutor">Tutor</SelectItem>
-            <SelectItem value="Mentor">Mentor</SelectItem>
-            <SelectItem value="Cultural Mentor">Cultural Mentor</SelectItem>
-            <SelectItem value="Specialist Assessor">Specialist Assessor</SelectItem>
-            <SelectItem value="Activity Provider">Activity Provider</SelectItem>
+            {(Object.entries(PRACTITIONER_TYPE_LABEL) as [PractitionerType, string][]).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Statuses" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="Pending approval">Pending Approval</SelectItem>
-            <SelectItem value="Approved">Approved</SelectItem>
-            <SelectItem value="Paid">Paid</SelectItem>
-            <SelectItem value="Disputed">Disputed</SelectItem>
-            <SelectItem value="Refunded">Refunded</SelectItem>
+            {(Object.entries(FEE_STATUS_LABEL) as [FeeStatus, string][]).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -434,13 +190,13 @@ export default function ProfessionalFeesLogPage() {
                   <div className="min-w-0">
                     <p className="font-medium truncate">{r.practitioner} ({r.organisation})</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {r.practitionerType} &middot; {r.feeFor.slice(0, 60)} &middot; {r.invoicePeriod} &middot; {getYPName(r.youngPerson)}
+                      {PRACTITIONER_TYPE_LABEL[r.practitioner_type]} &middot; {r.fee_for.slice(0, 60)} &middot; {r.invoice_period} &middot; {getYPName(r.child_id)}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className="text-sm font-bold">£{r.amountGross.toFixed(0)}</span>
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusColour[r.status])}>{r.status}</span>
+                  <span className="text-sm font-bold">£{r.amount_gross.toFixed(0)}</span>
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", STATUS_COLOUR[r.status])}>{FEE_STATUS_LABEL[r.status]}</span>
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </button>
@@ -450,16 +206,16 @@ export default function ProfessionalFeesLogPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Engagement</p>
-                      <p className="text-sm">{r.feeFor}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Contract: {r.contractRef}</p>
-                      <p className="text-xs text-muted-foreground">{r.recurringContract ? `Recurring contract until ${r.contractEndDate}` : "Single engagement"}</p>
+                      <p className="text-sm">{r.fee_for}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Contract: {r.contract_ref}</p>
+                      <p className="text-xs text-muted-foreground">{r.recurring_contract ? `Recurring contract until ${r.contract_end_date}` : "Single engagement"}</p>
                     </div>
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Financial</p>
-                      <p className="text-sm">Net: £{r.amountNet.toFixed(2)}</p>
+                      <p className="text-sm">Net: £{r.amount_net.toFixed(2)}</p>
                       {r.vat > 0 && <p className="text-sm">VAT: £{r.vat.toFixed(2)}</p>}
-                      <p className="text-sm font-bold">Gross: £{r.amountGross.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{r.hoursDelivered}h @ £{r.hourlyRate}/h</p>
+                      <p className="text-sm font-bold">Gross: £{r.amount_gross.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{r.hours_delivered}h @ £{r.hourly_rate}/h</p>
                     </div>
                   </div>
 
@@ -467,10 +223,10 @@ export default function ProfessionalFeesLogPage() {
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">
                       <Wallet className="h-3 w-3 inline mr-1" />Funding
                     </p>
-                    <p className="text-sm">Source: <strong>{r.fundingSource}</strong></p>
-                    {r.fundingApproved ? (
+                    <p className="text-sm">Source: <strong>{FUNDING_SOURCE_LABEL[r.funding_source]}</strong></p>
+                    {r.funding_approved ? (
                       <p className="text-xs text-blue-700 mt-1">
-                        <CheckCircle className="h-3 w-3 inline mr-1" />Approved by {getStaffName(r.approvedBy)}
+                        <CheckCircle className="h-3 w-3 inline mr-1" />Approved by {getStaffName(r.approved_by)}
                       </p>
                     ) : (
                       <p className="text-xs text-amber-700 mt-1">
@@ -482,7 +238,7 @@ export default function ProfessionalFeesLogPage() {
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Outcomes Evidenced</p>
                     <ul className="space-y-1">
-                      {r.outcomesEvidenced.map((o, i) => (
+                      {r.outcomes_evidenced.map((o, i) => (
                         <li key={i} className="text-sm flex items-start gap-1">
                           <CheckCircle className="h-3 w-3 text-green-500 mt-1 shrink-0" />
                           <span>{o}</span>
@@ -491,27 +247,29 @@ export default function ProfessionalFeesLogPage() {
                     </ul>
                   </div>
 
-                  {r.reviewNotes && (
+                  {r.review_notes && (
                     <div className="bg-emerald-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Performance Review</p>
-                      <p className="text-sm">{r.reviewNotes}</p>
-                      {r.reviewedBy && <p className="text-xs text-emerald-700 mt-1">By: {getStaffName(r.reviewedBy)}</p>}
+                      <p className="text-sm">{r.review_notes}</p>
+                      {r.reviewed_by && <p className="text-xs text-emerald-700 mt-1">By: {getStaffName(r.reviewed_by)}</p>}
                     </div>
                   )}
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span><Receipt className="h-3 w-3 inline mr-1" />Invoice: {r.invoiceDate}</span>
-                    {r.paymentDate && <span>Paid: {r.paymentDate} ({r.paymentMethod})</span>}
-                    <span>Performance review: {r.performanceReviewDate}</span>
-                    {r.contractEndDate && <span>Contract ends: {r.contractEndDate}</span>}
+                    <span><Receipt className="h-3 w-3 inline mr-1" />Invoice: {r.invoice_date}</span>
+                    {r.payment_date && <span>Paid: {r.payment_date} ({FEE_PAYMENT_METHOD_LABEL[r.payment_method]})</span>}
+                    <span>Performance review: {r.performance_review_date}</span>
+                    {r.contract_end_date && <span>Contract ends: {r.contract_end_date}</span>}
                   </div>
 
-                  {r.status === "Disputed" && (
+                  {r.status === "disputed" && (
                     <div className="bg-red-50 rounded-lg p-3 flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
                       <p className="text-sm">Invoice in dispute — see notes for details.</p>
                     </div>
                   )}
+
+                  <SmartLinkPanel sourceType="professional_fee_record" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               )}
             </div>

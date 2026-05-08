@@ -23,208 +23,31 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-
-/* ── types ─────────────────────────────────────────────────────────────── */
-
-type AccountType =
-  | "Junior ISA"
-  | "Children's Current Account"
-  | "Savings Account"
-  | "Cash Card Account";
-
-type SupportLevel = "Independent" | "Supervised" | "Joint signatory";
-
-type TransactionType = "Deposit" | "Withdrawal" | "Interest";
-
-interface Transaction {
-  date: string;
-  type: TransactionType;
-  amount: number;
-  description: string;
-  supportedBy: string;
-}
-
-interface BankAccount {
-  id: string;
-  youngPerson: string;
-  accountType: AccountType;
-  bankProvider: string;
-  accountLast4: string;
-  opened: string;
-  childIsAccountHolder: boolean;
-  corporateParentSignatory: string;
-  depositSchedule: string;
-  currentBalance: number;
-  savingsTarget?: number;
-  recentTransactions: Transaction[];
-  monthlyAllowance: number;
-  financialLiteracySkills: Record<string, string>;
-  savingsGoals: string[];
-  parentalContributions: string;
-  lookedAfterChildEntitlements: string[];
-  supportLevel: SupportLevel;
-  reviewedDate: string;
-  reviewedBy: string;
-  childAgreed: boolean;
-  nextReviewDate: string;
-}
+import type {
+  ChildBankAccount,
+  ChildBankAccountType,
+  ChildBankSupportLevel,
+  ChildBankTransactionType,
+} from "@/types/extended";
+import {
+  CHILD_BANK_ACCOUNT_TYPE_LABEL,
+  CHILD_BANK_SUPPORT_LEVEL_LABEL,
+  CHILD_BANK_TRANSACTION_TYPE_LABEL,
+} from "@/types/extended";
+import { useChildBankAccounts } from "@/hooks/use-child-bank-accounts";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
 
 const fmtMoney = (n: number) =>
   n.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
 
-/* ── seed (illustrative — no real account numbers) ─────────────────────── */
-
-const SEED: BankAccount[] = [
-  {
-    id: "ba_alex",
-    youngPerson: "yp_alex",
-    accountType: "Junior ISA",
-    bankProvider: "NatWest Adapt — Junior Cash ISA",
-    accountLast4: "**** 4231",
-    opened: d(-720),
-    childIsAccountHolder: true,
-    corporateParentSignatory: "Local Authority Corporate Parent (signatory until age 16)",
-    depositSchedule: "£20 weekly pocket money + £15 weekly savings + LAC £200 annual top-up",
-    currentBalance: 1284.55,
-    savingsTarget: 2000,
-    recentTransactions: [
-      { date: d(-2),  type: "Deposit",    amount: 35,  description: "Weekly pocket money + savings transfer", supportedBy: "staff_darren" },
-      { date: d(-9),  type: "Deposit",    amount: 35,  description: "Weekly pocket money + savings transfer", supportedBy: "staff_anna" },
-      { date: d(-16), type: "Withdrawal", amount: 12,  description: "Trip to cinema with peers — Alex chose budget",  supportedBy: "staff_darren" },
-      { date: d(-30), type: "Interest",   amount: 4.18, description: "Monthly Junior ISA interest credit",      supportedBy: "staff_darren" },
-      { date: d(-45), type: "Deposit",    amount: 200, description: "LAC corporate parent annual savings top-up", supportedBy: "staff_darren" },
-    ],
-    monthlyAllowance: 80,
-    financialLiteracySkills: {
-      "Reading bank statements":   "Confident",
-      "Budgeting weekly money":    "Confident",
-      "Using a debit card":        "Developing",
-      "Online banking app":        "Confident",
-      "Understanding interest":    "Developing",
-      "Recognising scams":         "Developing",
-    },
-    savingsGoals: [
-      "New laptop for college (£600 — on track)",
-      "Driving lessons fund (£800 — long-term)",
-      "Emergency buffer (£200 — achieved)",
-    ],
-    parentalContributions: "Birthday gift £40 from mother (Apr) — banked by Alex with key worker support.",
-    lookedAfterChildEntitlements: [
-      "Junior ISA government / LA top-up: £200 per year while looked after",
-      "Setting Up Home Allowance ring-fenced (claimed at 18)",
-      "Care leaver bursary (16+) for education",
-    ],
-    supportLevel: "Supervised",
-    reviewedDate: d(-12),
-    reviewedBy: "staff_darren",
-    childAgreed: true,
-    nextReviewDate: d(78),
-  },
-  {
-    id: "ba_jordan",
-    youngPerson: "yp_jordan",
-    accountType: "Children's Current Account",
-    bankProvider: "Nationwide FlexOne (11–17)",
-    accountLast4: "**** 8867",
-    opened: d(-300),
-    childIsAccountHolder: true,
-    corporateParentSignatory: "Local Authority Corporate Parent (joint until age 16)",
-    depositSchedule: "£18 weekly pocket money + £10 weekly savings",
-    currentBalance: 412.30,
-    savingsTarget: 600,
-    recentTransactions: [
-      { date: d(-1),  type: "Deposit",    amount: 28,  description: "Weekly pocket money + savings transfer",   supportedBy: "staff_anna" },
-      { date: d(-4),  type: "Withdrawal", amount: 8.50, description: "School trip contribution — Jordan paid contactless", supportedBy: "staff_anna" },
-      { date: d(-8),  type: "Deposit",    amount: 28,  description: "Weekly pocket money + savings transfer",   supportedBy: "staff_darren" },
-      { date: d(-15), type: "Withdrawal", amount: 25,  description: "New trainers (with key worker — budgeted)", supportedBy: "staff_darren" },
-      { date: d(-22), type: "Deposit",    amount: 28,  description: "Weekly pocket money + savings transfer",   supportedBy: "staff_anna" },
-    ],
-    monthlyAllowance: 72,
-    financialLiteracySkills: {
-      "Reading bank statements":   "Developing",
-      "Budgeting weekly money":    "Developing",
-      "Using a debit card":        "Confident",
-      "Online banking app":        "Confident",
-      "Understanding interest":    "Emerging",
-      "Recognising scams":         "Emerging",
-    },
-    savingsGoals: [
-      "Bike upgrade (£350 — saving)",
-      "Birthday-present fund for siblings (£50 — achieved each year)",
-    ],
-    parentalContributions: "No regular contributions; grandmother sent £25 voucher at Christmas — Jordan chose to bank £15.",
-    lookedAfterChildEntitlements: [
-      "Junior ISA opened separately with LA top-up",
-      "Care leaver entitlements briefing scheduled at 15+",
-    ],
-    supportLevel: "Joint signatory",
-    reviewedDate: d(-25),
-    reviewedBy: "staff_anna",
-    childAgreed: true,
-    nextReviewDate: d(20),
-  },
-  {
-    id: "ba_casey",
-    youngPerson: "yp_casey",
-    accountType: "Savings Account",
-    bankProvider: "Nationwide Future Saver",
-    accountLast4: "**** 1059",
-    opened: d(-540),
-    childIsAccountHolder: true,
-    corporateParentSignatory: "Local Authority Corporate Parent (joint signatory)",
-    depositSchedule: "£15 weekly pocket money + £15 weekly savings + ad-hoc earnings",
-    currentBalance: 856.90,
-    savingsTarget: 1000,
-    recentTransactions: [
-      { date: d(-3),  type: "Deposit",    amount: 30,  description: "Weekly pocket money + savings transfer",   supportedBy: "staff_darren" },
-      { date: d(-10), type: "Deposit",    amount: 30,  description: "Weekly pocket money + savings transfer",   supportedBy: "staff_anna" },
-      { date: d(-17), type: "Withdrawal", amount: 18,  description: "Art supplies — Casey researched best price", supportedBy: "staff_anna" },
-      { date: d(-24), type: "Interest",   amount: 2.41, description: "Monthly savings interest",                supportedBy: "staff_darren" },
-      { date: d(-31), type: "Deposit",    amount: 50,  description: "Babysitting earnings — paid by family friend (consented & risk-assessed)", supportedBy: "staff_darren" },
-    ],
-    monthlyAllowance: 60,
-    financialLiteracySkills: {
-      "Reading bank statements":   "Confident",
-      "Budgeting weekly money":    "Confident",
-      "Using a debit card":        "Developing",
-      "Online banking app":        "Confident",
-      "Understanding interest":    "Confident",
-      "Recognising scams":         "Developing",
-    },
-    savingsGoals: [
-      "First-flat starter kit (£500 — saving towards Setting Up Home Allowance complement)",
-      "College course materials (£200 — achieved)",
-      "Holiday with friends (£300 — saving)",
-    ],
-    parentalContributions: "Birth-mother sends £10 monthly when able (irregular) — Casey decides whether to bank or spend with key worker.",
-    lookedAfterChildEntitlements: [
-      "Junior ISA with annual government / LA £200 top-up",
-      "Setting Up Home Allowance (£2,000 ring-fenced for age 18)",
-      "Care leaver education bursary",
-      "16+ leaving care financial pathway plan",
-    ],
-    supportLevel: "Independent",
-    reviewedDate: d(-5),
-    reviewedBy: "staff_darren",
-    childAgreed: true,
-    nextReviewDate: d(85),
-  },
-];
-
 /* ── constants ─────────────────────────────────────────────────────────── */
 
-const SUPPORT_META: Record<SupportLevel, { colour: string }> = {
-  "Independent":     { colour: "bg-green-100 text-green-700" },
-  "Supervised":      { colour: "bg-amber-100 text-amber-700" },
-  "Joint signatory": { colour: "bg-blue-100 text-blue-700" },
+const SUPPORT_META: Record<ChildBankSupportLevel, { colour: string }> = {
+  independent: { colour: "bg-green-100 text-green-700" },
+  supervised: { colour: "bg-amber-100 text-amber-700" },
+  joint_signatory: { colour: "bg-blue-100 text-blue-700" },
 };
 
 const SKILL_COLOUR: Record<string, string> = {
@@ -233,16 +56,18 @@ const SKILL_COLOUR: Record<string, string> = {
   "Emerging":   "bg-orange-100 text-orange-700",
 };
 
-const TX_COLOUR: Record<TransactionType, string> = {
-  "Deposit":    "bg-green-100 text-green-700",
-  "Withdrawal": "bg-red-100 text-red-700",
-  "Interest":   "bg-blue-100 text-blue-700",
+const TX_COLOUR: Record<ChildBankTransactionType, string> = {
+  deposit: "bg-green-100 text-green-700",
+  withdrawal: "bg-red-100 text-red-700",
+  interest: "bg-blue-100 text-blue-700",
 };
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
 export default function ChildBankAccountPage() {
-  const [data] = useState<BankAccount[]>(SEED);
+  const { data: resp, isLoading } = useChildBankAccounts();
+  const data = resp?.data ?? [];
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -254,10 +79,10 @@ export default function ChildBankAccountPage() {
     const in30 = new Date(); in30.setDate(today.getDate() + 30);
     return {
       activeAccounts: data.length,
-      totalSaved: data.reduce((s, r) => s + r.currentBalance, 0),
-      meetingGoals: data.filter((r) => r.savingsTarget && r.currentBalance >= r.savingsTarget * 0.5).length,
+      totalSaved: data.reduce((s, r) => s + r.current_balance, 0),
+      meetingGoals: data.filter((r) => r.savings_target && r.current_balance >= r.savings_target * 0.5).length,
       reviewsDue: data.filter((r) => {
-        const nr = new Date(r.nextReviewDate);
+        const nr = new Date(r.next_review_date);
         return nr >= today && nr <= in30;
       }).length,
     };
@@ -265,51 +90,62 @@ export default function ChildBankAccountPage() {
 
   const filtered = useMemo(() => {
     let list = [...data];
-    if (filterType !== "all") list = list.filter((r) => r.accountType === filterType);
-    if (filterYP !== "all")   list = list.filter((r) => r.youngPerson === filterYP);
+    if (filterType !== "all") list = list.filter((r) => r.account_type === filterType);
+    if (filterYP !== "all")   list = list.filter((r) => r.child_id === filterYP);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((r) =>
-        r.bankProvider.toLowerCase().includes(q) ||
-        r.accountType.toLowerCase().includes(q) ||
-        r.savingsGoals.join(" ").toLowerCase().includes(q),
+        r.bank_provider.toLowerCase().includes(q) ||
+        CHILD_BANK_ACCOUNT_TYPE_LABEL[r.account_type].toLowerCase().includes(q) ||
+        r.savings_goals.join(" ").toLowerCase().includes(q),
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "yp":      return a.youngPerson.localeCompare(b.youngPerson);
-        case "review":  return a.nextReviewDate.localeCompare(b.nextReviewDate);
-        case "type":    return a.accountType.localeCompare(b.accountType);
-        default:        return b.currentBalance - a.currentBalance;
+        case "yp":      return a.child_id.localeCompare(b.child_id);
+        case "review":  return a.next_review_date.localeCompare(b.next_review_date);
+        case "type":    return a.account_type.localeCompare(b.account_type);
+        default:        return b.current_balance - a.current_balance;
       }
     });
     return list;
   }, [data, filterType, filterYP, search, sortBy]);
 
-  const exportCols: ExportColumn<BankAccount>[] = [
-    { header: "Young Person",       accessor: (r: BankAccount) => getYPName(r.youngPerson) },
-    { header: "Account Type",       accessor: (r: BankAccount) => r.accountType },
-    { header: "Bank Provider",      accessor: (r: BankAccount) => r.bankProvider },
-    { header: "Account (last 4)",   accessor: (r: BankAccount) => r.accountLast4 },
-    { header: "Opened",             accessor: (r: BankAccount) => r.opened },
-    { header: "Child Account Holder", accessor: (r: BankAccount) => r.childIsAccountHolder ? "Yes" : "No" },
-    { header: "Corporate Parent Signatory", accessor: (r: BankAccount) => r.corporateParentSignatory },
-    { header: "Deposit Schedule",   accessor: (r: BankAccount) => r.depositSchedule },
-    { header: "Current Balance",    accessor: (r: BankAccount) => fmtMoney(r.currentBalance) },
-    { header: "Savings Target",     accessor: (r: BankAccount) => r.savingsTarget ? fmtMoney(r.savingsTarget) : "—" },
-    { header: "Monthly Allowance",  accessor: (r: BankAccount) => fmtMoney(r.monthlyAllowance) },
-    { header: "Savings Goals",      accessor: (r: BankAccount) => r.savingsGoals.join("; ") },
-    { header: "Parental Contributions", accessor: (r: BankAccount) => r.parentalContributions },
-    { header: "LAC Entitlements",   accessor: (r: BankAccount) => r.lookedAfterChildEntitlements.join("; ") },
-    { header: "Support Level",      accessor: (r: BankAccount) => r.supportLevel },
-    { header: "Reviewed Date",      accessor: (r: BankAccount) => r.reviewedDate },
-    { header: "Reviewed By",        accessor: (r: BankAccount) => getStaffName(r.reviewedBy) },
-    { header: "Child Agreed",       accessor: (r: BankAccount) => r.childAgreed ? "Yes" : "No" },
-    { header: "Next Review",        accessor: (r: BankAccount) => r.nextReviewDate },
+  const exportCols: ExportColumn<ChildBankAccount>[] = [
+    { header: "Young Person",       accessor: (r: ChildBankAccount) => getYPName(r.child_id) },
+    { header: "Account Type",       accessor: (r: ChildBankAccount) => CHILD_BANK_ACCOUNT_TYPE_LABEL[r.account_type] },
+    { header: "Bank Provider",      accessor: (r: ChildBankAccount) => r.bank_provider },
+    { header: "Account (last 4)",   accessor: (r: ChildBankAccount) => r.account_last4 },
+    { header: "Opened",             accessor: (r: ChildBankAccount) => r.opened },
+    { header: "Child Account Holder", accessor: (r: ChildBankAccount) => r.child_is_account_holder ? "Yes" : "No" },
+    { header: "Corporate Parent Signatory", accessor: (r: ChildBankAccount) => r.corporate_parent_signatory },
+    { header: "Deposit Schedule",   accessor: (r: ChildBankAccount) => r.deposit_schedule },
+    { header: "Current Balance",    accessor: (r: ChildBankAccount) => fmtMoney(r.current_balance) },
+    { header: "Savings Target",     accessor: (r: ChildBankAccount) => r.savings_target ? fmtMoney(r.savings_target) : "—" },
+    { header: "Monthly Allowance",  accessor: (r: ChildBankAccount) => fmtMoney(r.monthly_allowance) },
+    { header: "Savings Goals",      accessor: (r: ChildBankAccount) => r.savings_goals.join("; ") },
+    { header: "Parental Contributions", accessor: (r: ChildBankAccount) => r.parental_contributions },
+    { header: "LAC Entitlements",   accessor: (r: ChildBankAccount) => r.looked_after_child_entitlements.join("; ") },
+    { header: "Support Level",      accessor: (r: ChildBankAccount) => CHILD_BANK_SUPPORT_LEVEL_LABEL[r.support_level] },
+    { header: "Reviewed Date",      accessor: (r: ChildBankAccount) => r.reviewed_date },
+    { header: "Reviewed By",        accessor: (r: ChildBankAccount) => getStaffName(r.reviewed_by) },
+    { header: "Child Agreed",       accessor: (r: ChildBankAccount) => r.child_agreed ? "Yes" : "No" },
+    { header: "Next Review",        accessor: (r: ChildBankAccount) => r.next_review_date },
   ];
 
-  const ypIds = [...new Set(data.map((r) => r.youngPerson))];
-  const types = [...new Set(data.map((r) => r.accountType))];
+  const ypIds = [...new Set(data.map((r) => r.child_id))];
+  const types = [...new Set(data.map((r) => r.account_type))];
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Child Bank Account & Money Management"
+        subtitle="QS1 — Child-centred care · financial literacy · transition preparation"
+      >
+        <div className="flex items-center justify-center py-12 text-muted-foreground">Loading bank account data…</div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -364,7 +200,7 @@ export default function ChildBankAccountPage() {
             <SelectTrigger className="w-[200px]"><SelectValue placeholder="Account type" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Account Types</SelectItem>
-              {types.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              {types.map((t) => <SelectItem key={t} value={t}>{CHILD_BANK_ACCOUNT_TYPE_LABEL[t]}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={filterYP} onValueChange={setFilterYP}>
@@ -392,8 +228,8 @@ export default function ChildBankAccountPage() {
         {/* Cards */}
         {filtered.map((rec) => {
           const open = expandedId === rec.id;
-          const goalProgress = rec.savingsTarget
-            ? Math.min(100, Math.round((rec.currentBalance / rec.savingsTarget) * 100))
+          const goalProgress = rec.savings_target
+            ? Math.min(100, Math.round((rec.current_balance / rec.savings_target) * 100))
             : null;
 
           return (
@@ -406,18 +242,18 @@ export default function ChildBankAccountPage() {
                   <PiggyBank className="h-5 w-5 text-brand" />
                   <div className="text-left">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold">{getYPName(rec.youngPerson)}</h3>
-                      <span className="text-sm text-muted-foreground">— {rec.accountType}</span>
-                      <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", SUPPORT_META[rec.supportLevel].colour)}>
-                        {rec.supportLevel}
+                      <h3 className="font-semibold">{getYPName(rec.child_id)}</h3>
+                      <span className="text-sm text-muted-foreground">— {CHILD_BANK_ACCOUNT_TYPE_LABEL[rec.account_type]}</span>
+                      <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", SUPPORT_META[rec.support_level].colour)}>
+                        {CHILD_BANK_SUPPORT_LEVEL_LABEL[rec.support_level]}
                       </span>
-                      {rec.childAgreed && (
+                      {rec.child_agreed && (
                         <span className="rounded-full bg-pink-100 px-2 py-0.5 text-xs text-pink-700">Child agreed</span>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {rec.bankProvider} · {rec.accountLast4} · Balance {fmtMoney(rec.currentBalance)}
-                      {rec.savingsTarget && ` · Target ${fmtMoney(rec.savingsTarget)} (${goalProgress}%)`}
+                      {rec.bank_provider} · {rec.account_last4} · Balance {fmtMoney(rec.current_balance)}
+                      {rec.savings_target && ` · Target ${fmtMoney(rec.savings_target)} (${goalProgress}%)`}
                     </p>
                   </div>
                 </div>
@@ -429,22 +265,22 @@ export default function ChildBankAccountPage() {
                   {/* Top facts */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div><span className="text-muted-foreground">Opened:</span> {rec.opened}</div>
-                    <div><span className="text-muted-foreground">Child Holder:</span> {rec.childIsAccountHolder ? "Yes" : "No"}</div>
-                    <div><span className="text-muted-foreground">Monthly Allowance:</span> {fmtMoney(rec.monthlyAllowance)}</div>
-                    <div><span className="text-muted-foreground">Reviewed:</span> {rec.reviewedDate} ({getStaffName(rec.reviewedBy)})</div>
+                    <div><span className="text-muted-foreground">Child Holder:</span> {rec.child_is_account_holder ? "Yes" : "No"}</div>
+                    <div><span className="text-muted-foreground">Monthly Allowance:</span> {fmtMoney(rec.monthly_allowance)}</div>
+                    <div><span className="text-muted-foreground">Reviewed:</span> {rec.reviewed_date} ({getStaffName(rec.reviewed_by)})</div>
                   </div>
 
                   <div className="rounded-lg bg-gray-50 p-3 text-sm">
-                    <p><span className="font-semibold">Corporate parent signatory:</span> {rec.corporateParentSignatory}</p>
-                    <p className="mt-1"><span className="font-semibold">Deposit schedule:</span> {rec.depositSchedule}</p>
+                    <p><span className="font-semibold">Corporate parent signatory:</span> {rec.corporate_parent_signatory}</p>
+                    <p className="mt-1"><span className="font-semibold">Deposit schedule:</span> {rec.deposit_schedule}</p>
                   </div>
 
                   {/* Savings progress */}
-                  {rec.savingsTarget && goalProgress !== null && (
+                  {rec.savings_target && goalProgress !== null && (
                     <div>
                       <div className="flex items-center justify-between mb-1 text-sm">
                         <span className="font-semibold flex items-center gap-1"><Target className="h-4 w-4" /> Savings progress</span>
-                        <span className="text-muted-foreground">{fmtMoney(rec.currentBalance)} / {fmtMoney(rec.savingsTarget)}</span>
+                        <span className="text-muted-foreground">{fmtMoney(rec.current_balance)} / {fmtMoney(rec.savings_target)}</span>
                       </div>
                       <div className="h-2 w-full overflow-hidden rounded bg-gray-100">
                         <div className="h-full bg-brand" style={{ width: `${goalProgress}%` }} />
@@ -456,17 +292,17 @@ export default function ChildBankAccountPage() {
                   <div>
                     <h4 className="text-sm font-semibold mb-2 flex items-center gap-1"><TrendingUp className="h-4 w-4" /> Recent transactions (illustrative)</h4>
                     <div className="space-y-2">
-                      {rec.recentTransactions.map((t, i) => (
+                      {rec.recent_transactions.map((t, i) => (
                         <div key={i} className="rounded border p-2 text-sm flex items-start justify-between gap-3">
                           <div className="flex items-start gap-2">
-                            <span className={cn("rounded px-2 py-0.5 text-xs font-medium", TX_COLOUR[t.type])}>{t.type}</span>
+                            <span className={cn("rounded px-2 py-0.5 text-xs font-medium", TX_COLOUR[t.type])}>{CHILD_BANK_TRANSACTION_TYPE_LABEL[t.type]}</span>
                             <div>
                               <p className="text-sm">{t.description}</p>
-                              <p className="text-xs text-muted-foreground">{t.date} · supported by {getStaffName(t.supportedBy)}</p>
+                              <p className="text-xs text-muted-foreground">{t.date} · supported by {getStaffName(t.supported_by)}</p>
                             </div>
                           </div>
-                          <span className={cn("font-semibold whitespace-nowrap", t.type === "Withdrawal" ? "text-red-700" : "text-green-700")}>
-                            {t.type === "Withdrawal" ? "−" : "+"}{fmtMoney(t.amount)}
+                          <span className={cn("font-semibold whitespace-nowrap", t.type === "withdrawal" ? "text-red-700" : "text-green-700")}>
+                            {t.type === "withdrawal" ? "−" : "+"}{fmtMoney(t.amount)}
                           </span>
                         </div>
                       ))}
@@ -477,7 +313,7 @@ export default function ChildBankAccountPage() {
                   <div>
                     <h4 className="text-sm font-semibold mb-2 flex items-center gap-1"><GraduationCap className="h-4 w-4" /> Financial literacy skills</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {Object.entries(rec.financialLiteracySkills).map(([skill, level]) => (
+                      {Object.entries(rec.financial_literacy_skills).map(([skill, level]) => (
                         <div key={skill} className="flex items-center justify-between rounded border px-3 py-1.5 text-sm">
                           <span>{skill}</span>
                           <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", SKILL_COLOUR[level] || "bg-gray-100 text-gray-700")}>
@@ -492,14 +328,14 @@ export default function ChildBankAccountPage() {
                   <div>
                     <h4 className="text-sm font-semibold mb-1">Savings goals</h4>
                     <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                      {rec.savingsGoals.map((g, i) => <li key={i}>{g}</li>)}
+                      {rec.savings_goals.map((g, i) => <li key={i}>{g}</li>)}
                     </ul>
                   </div>
 
                   {/* Contributions */}
                   <div className="rounded-lg bg-blue-50 p-3">
                     <h4 className="text-sm font-semibold text-blue-800 mb-1">Parental / family contributions</h4>
-                    <p className="text-sm text-blue-900">{rec.parentalContributions}</p>
+                    <p className="text-sm text-blue-900">{rec.parental_contributions}</p>
                   </div>
 
                   {/* Entitlements */}
@@ -508,16 +344,19 @@ export default function ChildBankAccountPage() {
                       <ShieldCheck className="h-4 w-4" /> Looked-after child entitlements
                     </h4>
                     <ul className="list-disc list-inside space-y-1 text-sm text-green-900">
-                      {rec.lookedAfterChildEntitlements.map((e, i) => <li key={i}>{e}</li>)}
+                      {rec.looked_after_child_entitlements.map((e, i) => <li key={i}>{e}</li>)}
                     </ul>
                   </div>
 
                   {/* Review */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm rounded-lg border p-3">
-                    <div><span className="text-muted-foreground">Last review:</span> {rec.reviewedDate}</div>
-                    <div><span className="text-muted-foreground">Reviewed by:</span> {getStaffName(rec.reviewedBy)}</div>
-                    <div><span className="text-muted-foreground">Next review:</span> {rec.nextReviewDate}</div>
+                    <div><span className="text-muted-foreground">Last review:</span> {rec.reviewed_date}</div>
+                    <div><span className="text-muted-foreground">Reviewed by:</span> {getStaffName(rec.reviewed_by)}</div>
+                    <div><span className="text-muted-foreground">Next review:</span> {rec.next_review_date}</div>
                   </div>
+
+                  {/* Smart link panel */}
+                  <SmartLinkPanel sourceType="child-bank-account" sourceId={rec.id} childId={rec.child_id} compact />
                 </div>
               )}
             </div>

@@ -12,6 +12,7 @@ import {
   CheckCircle2, AlertTriangle, Clock, TrendingUp,
   ChevronDown, ChevronUp, Calendar, User, Flag,
   FileText, ClipboardList, Hammer, ShieldCheck, BookOpen,
+  Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -21,48 +22,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-/* ── types ───────────────────────────────────────────────────────────── */
-type ObjectiveSource = "reg44" | "ofsted" | "reg45" | "self" | "maintenance" | "regulatory";
-type ObjectivePriority = "high" | "medium" | "low";
-type ObjectiveStatus = "planned" | "in_progress" | "completed" | "overdue";
-
-interface ObjectiveUpdate {
-  date: string;
-  note: string;
-  updatedBy: string;
-}
-
-interface ImprovementObjective {
-  id: string;
-  title: string;
-  source: ObjectiveSource;
-  priority: ObjectivePriority;
-  status: ObjectiveStatus;
-  owner: string;
-  targetDate: string;
-  completedDate: string | null;
-  progress: number;
-  budget: number | null;
-  notes: string;
-  updates: ObjectiveUpdate[];
-}
-
-const SOURCE_LABELS: Record<ObjectiveSource, string> = {
-  reg44: "Reg 44 Recommendation",
-  ofsted: "Ofsted Inspection",
-  reg45: "Reg 45 Recommendation",
-  self: "Self-identified (RM)",
-  maintenance: "Maintenance Inspection",
-  regulatory: "Regulatory Requirement",
-};
+import { useImprovementObjectives } from "@/hooks/use-improvement-objectives";
+import type { ImprovementObjective, ObjectiveSource, ObjectivePriority, ObjectiveStatus } from "@/types/extended";
+import { OBJECTIVE_SOURCE_LABEL, OBJECTIVE_STATUS_LABEL } from "@/types/extended";
 
 const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
   reg44: "bg-violet-50 text-violet-700 border-violet-200",
@@ -86,12 +48,7 @@ const STATUS_COLOUR: Record<ObjectiveStatus, string> = {
   overdue: "bg-red-50 text-red-700 border-red-200",
 };
 
-const STATUS_LABELS: Record<ObjectiveStatus, string> = {
-  planned: "Planned",
-  in_progress: "In Progress",
-  completed: "Completed",
-  overdue: "Overdue",
-};
+const STATUS_LABELS = OBJECTIVE_STATUS_LABEL;
 
 const STATUS_CARD_BORDER: Record<ObjectiveStatus, string> = {
   planned: "border-l-blue-400",
@@ -103,122 +60,12 @@ const STATUS_CARD_BORDER: Record<ObjectiveStatus, string> = {
 const PRIORITY_ORDER: Record<ObjectivePriority, number> = { high: 0, medium: 1, low: 2 };
 const STATUS_ORDER: Record<ObjectiveStatus, number> = { overdue: 0, in_progress: 1, planned: 2, completed: 3 };
 
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: ImprovementObjective[] = [
-  {
-    id: "hip_1",
-    title: "Develop outdoor recreation space",
-    source: "reg44",
-    priority: "medium",
-    status: "in_progress",
-    owner: "staff_darren",
-    targetDate: d(90),
-    completedDate: null,
-    progress: 40,
-    budget: null,
-    notes: "Basketball hoop ordered, garden furniture quotes received. Linked to children's meeting request.",
-    updates: [
-      { date: d(-30), note: "Initial scoping completed. Measured garden area and identified suitable zones for activity equipment.", updatedBy: "staff_darren" },
-      { date: d(-14), note: "Basketball hoop ordered from supplier. Expected delivery within 2 weeks.", updatedBy: "staff_darren" },
-      { date: d(-5), note: "Three quotes received for garden furniture. Awaiting budget sign-off from RI.", updatedBy: "staff_darren" },
-    ],
-  },
-  {
-    id: "hip_2",
-    title: "Improve night-time supervision recording",
-    source: "ofsted",
-    priority: "high",
-    status: "completed",
-    owner: "staff_ryan",
-    targetDate: d(-30),
-    completedDate: d(-10),
-    progress: 100,
-    budget: null,
-    notes: "New digital night check system implemented, training completed for all staff.",
-    updates: [
-      { date: d(-60), note: "Ofsted inspector recommended formalising night-time supervision records as part of Good rating action plan.", updatedBy: "staff_darren" },
-      { date: d(-45), note: "Digital night check template designed and tested on tablet devices.", updatedBy: "staff_ryan" },
-      { date: d(-20), note: "All staff completed training on new digital night check system.", updatedBy: "staff_ryan" },
-      { date: d(-10), note: "System fully embedded. All night checks now recorded digitally with timestamps and welfare observations.", updatedBy: "staff_ryan" },
-    ],
-  },
-  {
-    id: "hip_3",
-    title: "Strengthen exploitation awareness training",
-    source: "self",
-    priority: "high",
-    status: "in_progress",
-    owner: "staff_chervelle",
-    targetDate: d(60),
-    completedDate: null,
-    progress: 60,
-    budget: null,
-    notes: "External trainer booked, 4 of 7 staff completed module 1.",
-    updates: [
-      { date: d(-40), note: "RM identified need for enhanced exploitation awareness training following local MACE panel briefing.", updatedBy: "staff_darren" },
-      { date: d(-25), note: "External trainer from Derby Safeguarding Partnership booked for two sessions.", updatedBy: "staff_chervelle" },
-      { date: d(-10), note: "Module 1 delivered. 4 of 7 staff attended. Remaining 3 booked for next session.", updatedBy: "staff_chervelle" },
-    ],
-  },
-  {
-    id: "hip_4",
-    title: "Kitchen refurbishment",
-    source: "maintenance",
-    priority: "medium",
-    status: "planned",
-    owner: "staff_darren",
-    targetDate: d(180),
-    completedDate: null,
-    progress: 0,
-    budget: 8500,
-    notes: "Quotes obtained, LA approval pending.",
-    updates: [
-      { date: d(-35), note: "Maintenance inspection flagged kitchen units and worktops as worn. Recommended refurbishment within 6 months.", updatedBy: "staff_darren" },
-      { date: d(-20), note: "Three contractor quotes obtained. Mid-range option selected at £8,500.", updatedBy: "staff_darren" },
-      { date: d(-7), note: "Budget proposal submitted to responsible individual for LA capital approval.", updatedBy: "staff_darren" },
-    ],
-  },
-  {
-    id: "hip_5",
-    title: "Develop parent engagement strategy",
-    source: "reg45",
-    priority: "medium",
-    status: "in_progress",
-    owner: "staff_anna",
-    targetDate: d(120),
-    completedDate: null,
-    progress: 30,
-    budget: null,
-    notes: "Parent partnership log now in use, quarterly newsletters planned.",
-    updates: [
-      { date: d(-50), note: "Reg 45 visitor recommended developing a structured parent engagement strategy.", updatedBy: "staff_darren" },
-      { date: d(-30), note: "Parent partnership log created and introduced to team. Initial entries recorded for all placed children.", updatedBy: "staff_anna" },
-      { date: d(-12), note: "First quarterly newsletter draft prepared. Content includes home updates, activities schedule, and key contact information.", updatedBy: "staff_anna" },
-    ],
-  },
-  {
-    id: "hip_6",
-    title: "Review and update Statement of Purpose",
-    source: "regulatory",
-    priority: "high",
-    status: "overdue",
-    owner: "staff_darren",
-    targetDate: d(-14),
-    completedDate: null,
-    progress: 0,
-    budget: null,
-    notes: "Last updated 14 months ago, must reflect recent staffing changes and new admission criteria.",
-    updates: [
-      { date: d(-60), note: "Annual review due date identified. Statement of Purpose last updated 14 months ago.", updatedBy: "staff_darren" },
-      { date: d(-30), note: "Reminder set. Must reflect new deputy manager appointment and updated admission criteria.", updatedBy: "staff_darren" },
-      { date: d(-7), note: "Still outstanding. RM to prioritise this week. Draft sections on staffing structure and admissions need rewriting.", updatedBy: "staff_darren" },
-    ],
-  },
-];
+const SOURCE_LABELS = OBJECTIVE_SOURCE_LABEL;
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function HomeImprovementPlanPage() {
-  const [entries] = useState<ImprovementObjective[]>(SEED);
+  const { data: raw, isLoading } = useImprovementObjectives();
+  const entries = useMemo(() => raw?.data ?? [], [raw]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
@@ -249,7 +96,7 @@ export default function HomeImprovementPlanPage() {
         case "status":
           return STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
         case "target":
-          return a.targetDate.localeCompare(b.targetDate);
+          return a.target_date.localeCompare(b.target_date);
         default:
           return 0;
       }
@@ -271,13 +118,21 @@ export default function HomeImprovementPlanPage() {
     { header: "Priority", accessor: (r: ImprovementObjective) => r.priority },
     { header: "Status", accessor: (r: ImprovementObjective) => STATUS_LABELS[r.status] },
     { header: "Owner", accessor: (r: ImprovementObjective) => getStaffName(r.owner) },
-    { header: "Target Date", accessor: (r: ImprovementObjective) => r.targetDate },
-    { header: "Completed Date", accessor: (r: ImprovementObjective) => r.completedDate ?? "" },
+    { header: "Target Date", accessor: (r: ImprovementObjective) => r.target_date },
+    { header: "Completed Date", accessor: (r: ImprovementObjective) => r.completed_date ?? "" },
     { header: "Progress (%)", accessor: (r: ImprovementObjective) => r.progress },
     { header: "Budget", accessor: (r: ImprovementObjective) => r.budget ? `£${r.budget.toLocaleString()}` : "" },
     { header: "Notes", accessor: (r: ImprovementObjective) => r.notes },
     { header: "Updates", accessor: (r: ImprovementObjective) => r.updates.map((u) => `${u.date}: ${u.note}`).join("; ") },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Home Improvement Plan" subtitle="Loading…">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -444,8 +299,8 @@ export default function HomeImprovementPlanPage() {
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        Owner: {getStaffName(obj.owner)} · Target: {obj.targetDate}
-                        {obj.completedDate ? ` · Completed: ${obj.completedDate}` : ""}
+                        Owner: {getStaffName(obj.owner)} · Target: {obj.target_date}
+                        {obj.completed_date ? ` · Completed: ${obj.completed_date}` : ""}
                         {obj.budget ? ` · Budget: £${obj.budget.toLocaleString()}` : ""}
                       </p>
                     </div>
@@ -541,7 +396,7 @@ export default function HomeImprovementPlanPage() {
                                 <div className="pb-3">
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <span className="text-xs font-medium text-slate-500">{update.date}</span>
-                                    <span className="text-xs text-slate-400">by {getStaffName(update.updatedBy)}</span>
+                                    <span className="text-xs text-slate-400">by {getStaffName(update.updated_by)}</span>
                                   </div>
                                   <p className="text-sm text-slate-700 mt-0.5">{update.note}</p>
                                 </div>
@@ -564,12 +419,12 @@ export default function HomeImprovementPlanPage() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Target Date:</span>{" "}
-                        <span className="font-medium">{obj.targetDate}</span>
+                        <span className="font-medium">{obj.target_date}</span>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Completed:</span>{" "}
-                        <span className={cn("font-medium", obj.completedDate ? "text-emerald-600" : "text-slate-500")}>
-                          {obj.completedDate ?? "Pending"}
+                        <span className={cn("font-medium", obj.completed_date ? "text-emerald-600" : "text-slate-500")}>
+                          {obj.completed_date ?? "Pending"}
                         </span>
                       </div>
                       {obj.budget && (

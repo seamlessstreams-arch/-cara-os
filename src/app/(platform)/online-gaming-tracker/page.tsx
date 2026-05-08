@@ -15,6 +15,7 @@ import {
   ArrowUpDown,
   Search,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -23,130 +24,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface GamingRecord {
-  id: string;
-  youngPerson: string;
-  reviewDate: string;
-  console: string;
-  primaryGames: { title: string; pegiRating: "3" | "7" | "12" | "16" | "18"; ageAppropriate: boolean }[];
-  weeklyHours: number;
-  voiceChatUsed: boolean;
-  onlineFriendsKnownInPerson: number;
-  onlineFriendsKnownOnly: number;
-  inGameSpendThisMonth: number;
-  spendCap: number;
-  flagsConcerns: string[];
-  protectiveFactors: string[];
-  parentalControlsActive: boolean;
-  screenTimeBalanceNote: string;
-  childVoice: string;
-  staffObservation: string;
-  nextReview: string;
-  keyWorker: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const data: GamingRecord[] = [
-  {
-    id: "gam-001",
-    youngPerson: "yp_jordan",
-    reviewDate: d(-7),
-    console: "PlayStation 5",
-    primaryGames: [
-      { title: "EA Sports FC (FIFA)", pegiRating: "3", ageAppropriate: true },
-      { title: "Fortnite", pegiRating: "12", ageAppropriate: true },
-      { title: "NBA 2K", pegiRating: "3", ageAppropriate: true },
-    ],
-    weeklyHours: 8,
-    voiceChatUsed: true,
-    onlineFriendsKnownInPerson: 6,
-    onlineFriendsKnownOnly: 2,
-    inGameSpendThisMonth: 4,
-    spendCap: 5,
-    flagsConcerns: [],
-    protectiveFactors: [
-      "Voice chat predominantly with mosque friends and football team mates",
-      "Two online-only friends verified by staff via parents/coach links",
-      "Open communication — Jordan happily talks about who he plays with",
-      "Gaming sits alongside strong offline life (football, family, mosque)",
-    ],
-    parentalControlsActive: true,
-    screenTimeBalanceNote: "Balanced. Gaming is one part of a full life. Self-regulates well — often turns off to attend football or family contact without prompting.",
-    childVoice: "FIFA's my main thing. I play with the boys from football and my cousin Devon. It's just chill — like meeting up but online when it's raining.",
-    staffObservation: "Healthy gaming profile. Voice chat use is a connection tool with known peers, not a risk vector. Light parental controls appropriate to age 16. Continue current approach.",
-    nextReview: d(83),
-    keyWorker: "staff_anna",
-  },
-  {
-    id: "gam-002",
-    youngPerson: "yp_alex",
-    reviewDate: d(-14),
-    console: "Nintendo Switch + PC (Steam)",
-    primaryGames: [
-      { title: "Stardew Valley", pegiRating: "7", ageAppropriate: true },
-      { title: "Hades", pegiRating: "12", ageAppropriate: true },
-      { title: "Animal Crossing: New Horizons", pegiRating: "3", ageAppropriate: true },
-      { title: "Celeste", pegiRating: "7", ageAppropriate: true },
-    ],
-    weeklyHours: 12,
-    voiceChatUsed: false,
-    onlineFriendsKnownInPerson: 0,
-    onlineFriendsKnownOnly: 1,
-    inGameSpendThisMonth: 0,
-    spendCap: 10,
-    flagsConcerns: [],
-    protectiveFactors: [
-      "Game choices explicitly therapeutic and self-soothing",
-      "Voice chat declined by choice — boundary respected",
-      "Single online friend met in moderated LGBTQ+ youth gaming space (verified)",
-      "Uses Stardew Valley as named regulation tool when overwhelmed",
-      "Talks to key worker openly about online friend",
-    ],
-    parentalControlsActive: true,
-    screenTimeBalanceNote: "Higher hours but quality is high — gaming functions as emotional regulation. Balanced with boxing club, school, key work. No displacement of sleep, food, or relationships.",
-    childVoice: "I don't do voice chat — too loud, too much. I like games where I can just exist. Stardew is where I go when my head is busy. My friend Sam from the gaming space gets it.",
-    staffObservation: "Gaming is a protective factor for Alex, not a risk. Game library is age-appropriate, low PEGI, non-violent for the most part. The single online friendship was disclosed openly and the space it formed in is moderated and trans/queer-affirming. Continue.",
-    nextReview: d(76),
-    keyWorker: "staff_edward",
-  },
-  {
-    id: "gam-003",
-    youngPerson: "yp_casey",
-    reviewDate: d(-3),
-    console: "Nintendo Switch (shared with Anna)",
-    primaryGames: [
-      { title: "Mario Kart 8 Deluxe", pegiRating: "3", ageAppropriate: true },
-      { title: "Animal Crossing: New Horizons", pegiRating: "3", ageAppropriate: true },
-      { title: "Super Mario Odyssey", pegiRating: "7", ageAppropriate: true },
-    ],
-    weeklyHours: 4,
-    voiceChatUsed: false,
-    onlineFriendsKnownInPerson: 0,
-    onlineFriendsKnownOnly: 0,
-    inGameSpendThisMonth: 0,
-    spendCap: 0,
-    flagsConcerns: [],
-    protectiveFactors: [
-      "Console used in shared living space, never in bedroom",
-      "Anna co-plays Mario Kart most weekends — relationship-building",
-      "All games age-appropriate (PEGI 3-7)",
-      "No online interactions — local multiplayer only",
-      "Full parental controls: no online play, no chat, no spending",
-    ],
-    parentalControlsActive: true,
-    screenTimeBalanceNote: "Strict screen time — 1 hour per day max. No gaming after 19:00. Balance with sensory art group, library reading hour, and key work.",
-    childVoice: "Anna lets me win at Mario Kart sometimes but I beat her on Rainbow Road on my own. Animal Crossing is for when I want everything to be calm.",
-    staffObservation: "Highly protected gaming profile appropriate to Casey's age, sensory needs, and developmental stage. Co-play with Anna is a relationship-building tool. No online exposure. Continue current approach. Will reassess at age 13.",
-    nextReview: d(87),
-    keyWorker: "staff_chervelle",
-  },
-];
+import { useOnlineGamingRecords } from "@/hooks/use-online-gaming-records";
+import type { OnlineGamingRecord, PegiRating } from "@/types/extended";
+import { PEGI_RATING_LABEL } from "@/types/extended";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 const pegiColour: Record<string, string> = {
   "3": "bg-green-100 text-green-800",
@@ -156,27 +37,30 @@ const pegiColour: Record<string, string> = {
   "18": "bg-red-100 text-red-800",
 };
 
-const exportCols: ExportColumn<GamingRecord>[] = [
-  { header: "Young Person", accessor: (r: GamingRecord) => getYPName(r.youngPerson) },
-  { header: "Review Date", accessor: (r: GamingRecord) => r.reviewDate },
-  { header: "Console", accessor: (r: GamingRecord) => r.console },
-  { header: "Primary Games", accessor: (r: GamingRecord) => r.primaryGames.map((g) => `${g.title} (PEGI ${g.pegiRating})`).join("; ") },
-  { header: "Weekly Hours", accessor: (r: GamingRecord) => `${r.weeklyHours}` },
-  { header: "Voice Chat", accessor: (r: GamingRecord) => r.voiceChatUsed ? "Yes" : "No" },
-  { header: "Friends (in person)", accessor: (r: GamingRecord) => `${r.onlineFriendsKnownInPerson}` },
-  { header: "Friends (online only)", accessor: (r: GamingRecord) => `${r.onlineFriendsKnownOnly}` },
-  { header: "In-game spend (£)", accessor: (r: GamingRecord) => `£${r.inGameSpendThisMonth} / £${r.spendCap} cap` },
-  { header: "Parental controls", accessor: (r: GamingRecord) => r.parentalControlsActive ? "Active" : "Off" },
-  { header: "Flags", accessor: (r: GamingRecord) => r.flagsConcerns.join("; ") },
-  { header: "Key Worker", accessor: (r: GamingRecord) => getStaffName(r.keyWorker) },
-  { header: "Next Review", accessor: (r: GamingRecord) => r.nextReview },
-];
-
 export default function OnlineGamingTrackerPage() {
   const [search, setSearch] = useState("");
   const [filterAgeAppropriate, setFilterAgeAppropriate] = useState("all");
   const [sortBy, setSortBy] = useState("review");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const { data: res, isLoading } = useOnlineGamingRecords();
+  const data: OnlineGamingRecord[] = res?.data ?? [];
+
+  const exportCols: ExportColumn<OnlineGamingRecord>[] = [
+    { header: "Young Person", accessor: (r: OnlineGamingRecord) => getYPName(r.child_id) },
+    { header: "Review Date", accessor: (r: OnlineGamingRecord) => r.review_date },
+    { header: "Console", accessor: (r: OnlineGamingRecord) => r.console },
+    { header: "Primary Games", accessor: (r: OnlineGamingRecord) => r.primary_games.map((g) => `${g.title} (PEGI ${g.pegi_rating})`).join("; ") },
+    { header: "Weekly Hours", accessor: (r: OnlineGamingRecord) => `${r.weekly_hours}` },
+    { header: "Voice Chat", accessor: (r: OnlineGamingRecord) => r.voice_chat_used ? "Yes" : "No" },
+    { header: "Friends (in person)", accessor: (r: OnlineGamingRecord) => `${r.online_friends_known_in_person}` },
+    { header: "Friends (online only)", accessor: (r: OnlineGamingRecord) => `${r.online_friends_known_only}` },
+    { header: "In-game spend (£)", accessor: (r: OnlineGamingRecord) => `£${r.in_game_spend_this_month} / £${r.spend_cap} cap` },
+    { header: "Parental controls", accessor: (r: OnlineGamingRecord) => r.parental_controls_active ? "Active" : "Off" },
+    { header: "Flags", accessor: (r: OnlineGamingRecord) => r.flags_concerns.join("; ") },
+    { header: "Key Worker", accessor: (r: OnlineGamingRecord) => getStaffName(r.key_worker) },
+    { header: "Next Review", accessor: (r: OnlineGamingRecord) => r.next_review },
+  ];
 
   const filtered = useMemo(() => {
     let items = [...data];
@@ -184,37 +68,39 @@ export default function OnlineGamingTrackerPage() {
       const q = search.toLowerCase();
       items = items.filter(
         (r) =>
-          getYPName(r.youngPerson).toLowerCase().includes(q) ||
+          getYPName(r.child_id).toLowerCase().includes(q) ||
           r.console.toLowerCase().includes(q) ||
-          r.primaryGames.some((g) => g.title.toLowerCase().includes(q))
+          r.primary_games.some((g) => g.title.toLowerCase().includes(q))
       );
     }
     if (filterAgeAppropriate === "yes") {
-      items = items.filter((r) => r.primaryGames.every((g) => g.ageAppropriate));
+      items = items.filter((r) => r.primary_games.every((g) => g.age_appropriate));
     } else if (filterAgeAppropriate === "no") {
-      items = items.filter((r) => r.primaryGames.some((g) => !g.ageAppropriate));
+      items = items.filter((r) => r.primary_games.some((g) => !g.age_appropriate));
     }
     items.sort((a, b) => {
       switch (sortBy) {
         case "review":
-          return b.reviewDate.localeCompare(a.reviewDate);
+          return b.review_date.localeCompare(a.review_date);
         case "hours":
-          return b.weeklyHours - a.weeklyHours;
+          return b.weekly_hours - a.weekly_hours;
         case "flags":
-          return b.flagsConcerns.length - a.flagsConcerns.length;
+          return b.flags_concerns.length - a.flags_concerns.length;
         case "spend":
-          return b.inGameSpendThisMonth - a.inGameSpendThisMonth;
+          return b.in_game_spend_this_month - a.in_game_spend_this_month;
         default:
           return 0;
       }
     });
     return items;
-  }, [search, filterAgeAppropriate, sortBy]);
+  }, [data, search, filterAgeAppropriate, sortBy]);
+
+  if (isLoading) return <PageShell title="Online Gaming Tracker" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   const activeGamers = data.length;
-  const weeklyHoursTotal = data.reduce((sum, r) => sum + r.weeklyHours, 0);
-  const onlineOnlyFriendsTotal = data.reduce((sum, r) => sum + r.onlineFriendsKnownOnly, 0);
-  const flagsTotal = data.reduce((sum, r) => sum + r.flagsConcerns.length, 0);
+  const weeklyHoursTotal = data.reduce((sum, r) => sum + r.weekly_hours, 0);
+  const onlineOnlyFriendsTotal = data.reduce((sum, r) => sum + r.online_friends_known_only, 0);
+  const flagsTotal = data.reduce((sum, r) => sum + r.flags_concerns.length, 0);
 
   return (
     <PageShell
@@ -290,8 +176,8 @@ export default function OnlineGamingTrackerPage() {
       <div className="space-y-3">
         {filtered.map((r) => {
           const isExpanded = expandedId === r.id;
-          const overSpend = r.inGameSpendThisMonth > r.spendCap;
-          const hasFlags = r.flagsConcerns.length > 0;
+          const overSpend = r.in_game_spend_this_month > r.spend_cap;
+          const hasFlags = r.flags_concerns.length > 0;
 
           return (
             <div key={r.id} className={cn("rounded-xl border bg-white overflow-hidden", hasFlags && "border-red-200")}>
@@ -302,9 +188,9 @@ export default function OnlineGamingTrackerPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Gamepad2 className="h-5 w-5 text-indigo-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(r.youngPerson)}</p>
+                    <p className="font-medium truncate">{getYPName(r.child_id)}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Reviewed {r.reviewDate} &middot; Key worker {getStaffName(r.keyWorker)}
+                      Reviewed {r.review_date} &middot; Key worker {getStaffName(r.key_worker)}
                     </p>
                   </div>
                 </div>
@@ -313,20 +199,20 @@ export default function OnlineGamingTrackerPage() {
                     {r.console.split(" ")[0]}
                   </span>
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-violet-100 text-violet-800">
-                    {r.weeklyHours} hrs/wk
+                    {r.weekly_hours} hrs/wk
                   </span>
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1", r.voiceChatUsed ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700")}>
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1", r.voice_chat_used ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700")}>
                     <Headphones className="h-3 w-3" />
-                    {r.voiceChatUsed ? "Voice" : "No voice"}
+                    {r.voice_chat_used ? "Voice" : "No voice"}
                   </span>
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1", r.parentalControlsActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")}>
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1", r.parental_controls_active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")}>
                     <ShieldCheck className="h-3 w-3" />
-                    {r.parentalControlsActive ? "Controls on" : "No controls"}
+                    {r.parental_controls_active ? "Controls on" : "No controls"}
                   </span>
                   {hasFlags && (
                     <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-800 inline-flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3" />
-                      {r.flagsConcerns.length} flag{r.flagsConcerns.length === 1 ? "" : "s"}
+                      {r.flags_concerns.length} flag{r.flags_concerns.length === 1 ? "" : "s"}
                     </span>
                   )}
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -342,15 +228,15 @@ export default function OnlineGamingTrackerPage() {
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Weekly Hours</p>
-                      <p className="font-medium">{r.weeklyHours}</p>
+                      <p className="font-medium">{r.weekly_hours}</p>
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Friends (in-person)</p>
-                      <p className="font-medium">{r.onlineFriendsKnownInPerson}</p>
+                      <p className="font-medium">{r.online_friends_known_in_person}</p>
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Friends (online-only)</p>
-                      <p className="font-medium">{r.onlineFriendsKnownOnly}</p>
+                      <p className="font-medium">{r.online_friends_known_only}</p>
                     </div>
                   </div>
 
@@ -359,13 +245,13 @@ export default function OnlineGamingTrackerPage() {
                       <Gamepad2 className="h-3 w-3 inline mr-1" />Primary Games
                     </p>
                     <ul className="space-y-1">
-                      {r.primaryGames.map((g, i) => (
+                      {r.primary_games.map((g, i) => (
                         <li key={i} className="text-sm flex items-center gap-2">
-                          <span className={cn("text-xs px-1.5 py-0.5 rounded font-bold", pegiColour[g.pegiRating])}>
-                            PEGI {g.pegiRating}
+                          <span className={cn("text-xs px-1.5 py-0.5 rounded font-bold", pegiColour[g.pegi_rating])}>
+                            PEGI {g.pegi_rating}
                           </span>
                           <span>{g.title}</span>
-                          {!g.ageAppropriate && (
+                          {!g.age_appropriate && (
                             <span className="text-xs text-red-600 font-medium inline-flex items-center gap-1">
                               <AlertTriangle className="h-3 w-3" />
                               Above age
@@ -378,18 +264,18 @@ export default function OnlineGamingTrackerPage() {
 
                   <div className="bg-blue-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Child&apos;s Voice</p>
-                    <p className="text-sm italic">&ldquo;{r.childVoice}&rdquo;</p>
+                    <p className="text-sm italic">&ldquo;{r.child_voice}&rdquo;</p>
                   </div>
 
                   <div className="bg-emerald-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Staff Observation</p>
-                    <p className="text-sm">{r.staffObservation}</p>
+                    <p className="text-sm">{r.staff_observation}</p>
                   </div>
 
                   <div className={cn("rounded-lg p-3 border", overSpend ? "bg-red-50 border-red-200" : "bg-white")}>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">In-Game Spending (this month)</p>
                     <p className="text-sm">
-                      <strong>£{r.inGameSpendThisMonth.toFixed(2)}</strong> spent of <strong>£{r.spendCap.toFixed(2)}</strong> monthly cap
+                      <strong>£{r.in_game_spend_this_month.toFixed(2)}</strong> spent of <strong>£{r.spend_cap.toFixed(2)}</strong> monthly cap
                       {overSpend && (
                         <span className="ml-2 text-red-700 inline-flex items-center gap-1 font-medium">
                           <AlertTriangle className="h-3 w-3" />
@@ -399,13 +285,13 @@ export default function OnlineGamingTrackerPage() {
                     </p>
                   </div>
 
-                  {r.protectiveFactors.length > 0 && (
+                  {r.protective_factors.length > 0 && (
                     <div className="bg-green-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-green-800 uppercase tracking-wide mb-1">
                         <ShieldCheck className="h-3 w-3 inline mr-1" />Protective Factors
                       </p>
                       <ul className="space-y-1">
-                        {r.protectiveFactors.map((p, i) => (
+                        {r.protective_factors.map((p, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-green-600 mt-0.5">•</span>
                             <span>{p}</span>
@@ -415,13 +301,13 @@ export default function OnlineGamingTrackerPage() {
                     </div>
                   )}
 
-                  {r.flagsConcerns.length > 0 && (
+                  {r.flags_concerns.length > 0 && (
                     <div className="bg-red-50 rounded-lg p-3 border border-red-200">
                       <p className="text-xs font-semibold text-red-800 uppercase tracking-wide mb-1">
                         <AlertTriangle className="h-3 w-3 inline mr-1" />Flags / Concerns
                       </p>
                       <ul className="space-y-1">
-                        {r.flagsConcerns.map((f, i) => (
+                        {r.flags_concerns.map((f, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-red-600 mt-0.5">•</span>
                             <span>{f}</span>
@@ -433,16 +319,18 @@ export default function OnlineGamingTrackerPage() {
 
                   <div className="bg-violet-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-violet-800 uppercase tracking-wide mb-1">Screen-Time Balance</p>
-                    <p className="text-sm">{r.screenTimeBalanceNote}</p>
+                    <p className="text-sm">{r.screen_time_balance_note}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span>Reviewed: {r.reviewDate}</span>
-                    <span>Next review: {r.nextReview}</span>
-                    <span>Key worker: {getStaffName(r.keyWorker)}</span>
-                    <span>Voice chat: {r.voiceChatUsed ? "Yes" : "No"}</span>
-                    <span>Parental controls: {r.parentalControlsActive ? "Active" : "Off"}</span>
+                    <span>Reviewed: {r.review_date}</span>
+                    <span>Next review: {r.next_review}</span>
+                    <span>Key worker: {getStaffName(r.key_worker)}</span>
+                    <span>Voice chat: {r.voice_chat_used ? "Yes" : "No"}</span>
+                    <span>Parental controls: {r.parental_controls_active ? "Active" : "Off"}</span>
                   </div>
+
+                  <SmartLinkPanel sourceType="online_gaming_record" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               )}
             </div>

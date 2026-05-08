@@ -1,14 +1,7 @@
 "use client";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — NOTIFICATIONS & ALERTS CENTRE
-// Central hub for all system notifications: overdue tasks, expiring
-// documents, review dates, compliance deadlines, and regulatory alerts.
-// Supports Reg 22 (Notification of Events) and overall governance.
-// ══════════════════════════════════════════════════════════════════════════════
-
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/layout/page-shell";
+import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,40 +9,30 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
-import { useAuthContext } from "@/contexts/auth-context";
-import { PrintButton } from "@/components/common/print-button";
-import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { PrintButton } from "@/components/ui/print-button";
+import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { useAlertNotifications } from "@/hooks/use-alert-notifications";
+import type {
+  AlertNotification,
+  AlertNotificationType,
+  AlertSeverity,
+  AlertStatus,
+} from "@/types/extended";
+import {
+  ALERT_NOTIFICATION_TYPE_LABEL,
+  ALERT_SEVERITY_LABEL,
+} from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Bell, BellRing,
   CheckCircle2, AlertTriangle, Clock, Calendar,
   Shield, FileText, User, Pill, Flame,
-  GraduationCap, Heart, Eye,
+  GraduationCap, Heart, Eye, Loader2,
 } from "lucide-react";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type NotificationType = "overdue_task" | "expiring_document" | "review_due" | "compliance_deadline" | "health_alert" | "training_expiry" | "incident_followup" | "medication_review" | "placement_review" | "fire_drill_due" | "system";
-type Severity = "critical" | "high" | "medium" | "low" | "info";
-type NotifStatus = "unread" | "read" | "actioned" | "dismissed";
-
-interface Notification {
-  id: string;
-  type: NotificationType;
-  severity: Severity;
-  status: NotifStatus;
-  title: string;
-  description: string;
-  link: string | null;
-  related_child: string | null;
-  related_staff: string | null;
-  due_date: string | null;
-  created_at: string;
-}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<NotificationType, { label: string; icon: React.ElementType }> = {
+const TYPE_CONFIG: Record<AlertNotificationType, { label: string; icon: React.ElementType }> = {
   overdue_task:         { label: "Overdue Task",         icon: Clock          },
   expiring_document:    { label: "Expiring Document",    icon: FileText       },
   review_due:           { label: "Review Due",           icon: Calendar       },
@@ -63,7 +46,7 @@ const TYPE_CONFIG: Record<NotificationType, { label: string; icon: React.Element
   system:               { label: "System",               icon: Bell           },
 };
 
-const SEVERITY_CONFIG: Record<Severity, { label: string; colour: string }> = {
+const SEVERITY_CONFIG: Record<AlertSeverity, { label: string; colour: string }> = {
   critical: { label: "Critical", colour: "bg-red-100 text-red-700 border-red-200"     },
   high:     { label: "High",     colour: "bg-orange-100 text-orange-700 border-orange-200" },
   medium:   { label: "Medium",   colour: "bg-amber-100 text-amber-700 border-amber-200"   },
@@ -71,38 +54,22 @@ const SEVERITY_CONFIG: Record<Severity, { label: string; colour: string }> = {
   info:     { label: "Info",     colour: "bg-gray-100 text-gray-600 border-gray-200"      },
 };
 
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: Notification[] = [
-  { id: "n_001", type: "incident_followup", severity: "critical", status: "unread", title: "Safeguarding disclosure — Alex — oversight incomplete", description: "Incident INC-2026-0043 (safeguarding disclosure) has no management oversight. This was flagged 2 days ago and requires RM oversight comments.", link: "/incidents", related_child: "yp_alex", related_staff: null, due_date: d(-1), created_at: d(-1) + "T09:00:00Z" },
-  { id: "n_002", type: "overdue_task", severity: "high", status: "unread", title: "Safeguarding log oversight — 2 entries pending", description: "Task TASK-002: Two safeguarding entries need RM oversight. Originally due yesterday.", link: "/tasks", related_child: "yp_alex", related_staff: "staff_darren", due_date: d(-1), created_at: d(-1) + "T08:00:00Z" },
-  { id: "n_003", type: "compliance_deadline", severity: "high", status: "unread", title: "Ofsted monitoring visit — 2 weeks", description: "Confirmed Ofsted monitoring visit in 2 weeks. Preparation plan, documentation audit, and staff briefing required.", link: "/inspection", related_child: null, related_staff: null, due_date: d(14), created_at: d(-7) + "T09:00:00Z" },
-  { id: "n_004", type: "placement_review", severity: "medium", status: "unread", title: "Alex's placement plan review overdue", description: "Placement plan objectives for Alex were due for review and have not been updated. Multiple objectives showing 'at risk' or 'some progress.'", link: "/placement-plan", related_child: "yp_alex", related_staff: null, due_date: d(-3), created_at: d(-3) + "T09:00:00Z" },
-  { id: "n_005", type: "training_expiry", severity: "medium", status: "read", title: "Team Teach certificates — update training matrix", description: "5 staff completed Team Teach refresher. Certificates received — need to be filed and training matrix updated.", link: "/training", related_child: null, related_staff: null, due_date: d(7), created_at: d(0) + "T08:30:00Z" },
-  { id: "n_006", type: "medication_review", severity: "medium", status: "read", title: "Casey's medication review — GP follow-up in 3 months", description: "Casey's medication dosage was reviewed — no change. Follow-up appointment due in 3 months. Calendar reminder set.", link: "/medication", related_child: "yp_casey", related_staff: null, due_date: d(90), created_at: d(-2) + "T09:00:00Z" },
-  { id: "n_007", type: "health_alert", severity: "medium", status: "unread", title: "Casey's new glasses — collection due", description: "Casey's new glasses were ordered 7 days ago. Should be ready for collection. Follow up with Specsavers.", link: "/appointments", related_child: "yp_casey", related_staff: null, due_date: d(3), created_at: d(-1) + "T09:00:00Z" },
-  { id: "n_008", type: "review_due", severity: "low", status: "read", title: "Reg 44 recommendations — 3 actions due in 25 days", description: "Three recommendations from the March Reg 44 visit need to be actioned within 28 days: fire drill log, medication storage, visitor signage.", link: "/ri/reg44", related_child: null, related_staff: null, due_date: d(25), created_at: d(-3) + "T10:00:00Z" },
-  { id: "n_009", type: "fire_drill_due", severity: "low", status: "actioned", title: "Quarterly fire drill completed", description: "Fire drill conducted on schedule. Result: satisfactory. Next drill due in 83 days.", link: "/fire-drills", related_child: null, related_staff: null, due_date: d(83), created_at: d(-7) + "T10:30:00Z" },
-  { id: "n_010", type: "system", severity: "info", status: "read", title: "Monthly placement summary sent to social workers", description: "Monthly placement summaries for all 3 children have been emailed to their allocated social workers.", link: "/correspondence", related_child: null, related_staff: null, due_date: null, created_at: d(-1) + "T13:00:00Z" },
-  { id: "n_011", type: "expiring_document", severity: "medium", status: "unread", title: "DBS certificate expiring — Lackson Phiri", description: "Lackson Phiri's enhanced DBS certificate expires in 45 days. Renewal process should begin now.", link: "/recruitment/safer-recruitment/dbs", related_child: null, related_staff: "staff_lackson", due_date: d(45), created_at: d(-2) + "T09:00:00Z" },
-  { id: "n_012", type: "overdue_task", severity: "high", status: "unread", title: "Medication audit — MAR sheet discrepancies", description: "Task TASK-004: March MAR audit found two medication events. Urgent review by deputy manager.", link: "/tasks", related_child: "yp_casey", related_staff: "staff_ryan", due_date: d(-1), created_at: d(-2) + "T09:00:00Z" },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function NotificationsPage() {
-  const { currentUser } = useAuthContext();
+  const { data: records = [], isLoading } = useAlertNotifications();
 
-  const [entries, setEntries] = useState<Notification[]>(SEED);
+  const [localStatuses, setLocalStatuses] = useState<Record<string, AlertStatus>>({});
   const [search, setSearch] = useState("");
   const [severityFilter, setSeverityFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [tab, setTab] = useState<"all" | "unread" | "actioned">("all");
+
+  const entries = useMemo(() =>
+    records.map((r) => ({ ...r, status: localStatuses[r.id] ?? r.status })),
+    [records, localStatuses]
+  );
 
   const filtered = useMemo(() => {
     let list = [...entries];
@@ -122,7 +89,7 @@ export default function NotificationsPage() {
         case "newest": return b.created_at.localeCompare(a.created_at);
         case "oldest": return a.created_at.localeCompare(b.created_at);
         case "severity": {
-          const so: Record<Severity, number> = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
+          const so: Record<AlertSeverity, number> = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
           return so[a.severity] - so[b.severity];
         }
         default: return 0;
@@ -139,21 +106,15 @@ export default function NotificationsPage() {
     actioned: entries.filter(e => e.status === "actioned").length,
   }), [entries]);
 
-  const markRead = (id: string) => {
-    setEntries(prev => prev.map(e => e.id === id && e.status === "unread" ? { ...e, status: "read" as NotifStatus } : e));
-  };
-  const markActioned = (id: string) => {
-    setEntries(prev => prev.map(e => e.id === id ? { ...e, status: "actioned" as NotifStatus } : e));
-  };
-  const dismiss = (id: string) => {
-    setEntries(prev => prev.map(e => e.id === id ? { ...e, status: "dismissed" as NotifStatus } : e));
+  const setStatus = (id: string, status: AlertStatus) => {
+    setLocalStatuses((prev) => ({ ...prev, [id]: status }));
   };
 
-  const exportCols: ExportColumn<Notification>[] = [
+  const exportCols: ExportColumn<AlertNotification>[] = [
     { header: "ID", accessor: r => r.id },
-    { header: "Type", accessor: r => TYPE_CONFIG[r.type].label },
-    { header: "Severity", accessor: r => SEVERITY_CONFIG[r.severity].label },
-    { header: "Status", accessor: r => r.status },
+    { header: "Type", accessor: r => TYPE_CONFIG[r.type]?.label ?? r.type },
+    { header: "Severity", accessor: r => SEVERITY_CONFIG[r.severity]?.label ?? r.severity },
+    { header: "Status", accessor: r => localStatuses[r.id] ?? r.status },
     { header: "Title", accessor: r => r.title },
     { header: "Description", accessor: r => r.description },
     { header: "Child", accessor: r => r.related_child ? getYPName(r.related_child) : "" },
@@ -161,13 +122,23 @@ export default function NotificationsPage() {
     { header: "Created", accessor: r => r.created_at.slice(0, 10) },
   ];
 
+  if (isLoading) {
+    return (
+      <PageShell title="Notifications & Alerts" subtitle="System alerts, deadlines, and action items">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell
       title="Notifications & Alerts"
       subtitle="System alerts, deadlines, and action items"
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Notifications" subtitle="Oak House — Alerts Centre" />
+          <PrintButton title="Notifications" />
           <ExportButton data={filtered} columns={exportCols} filename="notifications" />
         </div>
       }
@@ -224,7 +195,7 @@ export default function NotificationsPage() {
           <SelectTrigger className="w-[130px] h-9"><SelectValue placeholder="Severity" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            {(Object.entries(SEVERITY_CONFIG) as [Severity, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(SEVERITY_CONFIG) as [AlertSeverity, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -233,7 +204,7 @@ export default function NotificationsPage() {
           <SelectTrigger className="w-[160px] h-9"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {(Object.entries(TYPE_CONFIG) as [NotificationType, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(TYPE_CONFIG) as [AlertNotificationType, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -264,28 +235,29 @@ export default function NotificationsPage() {
         {filtered.map(n => {
           const tc = TYPE_CONFIG[n.type];
           const sc = SEVERITY_CONFIG[n.severity];
-          const Icon = tc.icon;
-          const isOverdue = n.due_date && n.due_date < todayStr() && n.status !== "actioned";
+          const Icon = tc?.icon || Bell;
+          const effectiveStatus = localStatuses[n.id] ?? n.status;
+          const isOverdue = n.due_date && n.due_date < todayStr() && effectiveStatus !== "actioned";
 
           return (
             <div key={n.id} className={cn(
               "rounded-lg border p-3 flex items-start gap-3 transition-colors",
-              n.status === "unread" ? "bg-card border-l-4" : "bg-muted/30",
-              n.status === "unread" && n.severity === "critical" && "border-l-red-500",
-              n.status === "unread" && n.severity === "high" && "border-l-orange-500",
-              n.status === "unread" && n.severity === "medium" && "border-l-amber-500",
-              n.status === "unread" && n.severity === "low" && "border-l-blue-500",
-              n.status === "unread" && n.severity === "info" && "border-l-gray-400",
-              n.status === "actioned" && "opacity-60",
+              effectiveStatus === "unread" ? "bg-card border-l-4" : "bg-muted/30",
+              effectiveStatus === "unread" && n.severity === "critical" && "border-l-red-500",
+              effectiveStatus === "unread" && n.severity === "high" && "border-l-orange-500",
+              effectiveStatus === "unread" && n.severity === "medium" && "border-l-amber-500",
+              effectiveStatus === "unread" && n.severity === "low" && "border-l-blue-500",
+              effectiveStatus === "unread" && n.severity === "info" && "border-l-gray-400",
+              effectiveStatus === "actioned" && "opacity-60",
             )}>
-              <div className={cn("rounded-full p-1.5 shrink-0 mt-0.5", sc.colour)}>
+              <div className={cn("rounded-full p-1.5 shrink-0 mt-0.5", sc?.colour)}>
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                  <span className={cn("font-medium text-sm", n.status === "actioned" && "line-through")}>{n.title}</span>
-                  <Badge variant="outline" className={cn("text-xs", sc.colour)}>{sc.label}</Badge>
-                  {n.status === "unread" && <Badge className="text-xs bg-blue-600 text-white">New</Badge>}
+                  <span className={cn("font-medium text-sm", effectiveStatus === "actioned" && "line-through")}>{n.title}</span>
+                  <Badge variant="outline" className={cn("text-xs", sc?.colour)}>{sc?.label}</Badge>
+                  {effectiveStatus === "unread" && <Badge className="text-xs bg-blue-600 text-white">New</Badge>}
                   {isOverdue && <Badge variant="outline" className="text-xs bg-red-50 text-red-700">Overdue</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground mb-1.5">{n.description}</p>
@@ -296,18 +268,18 @@ export default function NotificationsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                {n.status === "unread" && (
-                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => markRead(n.id)}>
+                {effectiveStatus === "unread" && (
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setStatus(n.id, "read")}>
                     Read
                   </Button>
                 )}
-                {n.status !== "actioned" && (
-                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => markActioned(n.id)}>
+                {effectiveStatus !== "actioned" && (
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setStatus(n.id, "actioned")}>
                     <CheckCircle2 className="h-3.5 w-3.5" />
                   </Button>
                 )}
-                {n.status !== "dismissed" && n.status !== "actioned" && (
-                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => dismiss(n.id)}>
+                {effectiveStatus !== "dismissed" && effectiveStatus !== "actioned" && (
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => setStatus(n.id, "dismissed")}>
                     <X className="h-3.5 w-3.5" />
                   </Button>
                 )}

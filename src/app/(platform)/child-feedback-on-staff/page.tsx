@@ -24,235 +24,76 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { ChildStaffFeedback } from "@/types/extended";
+import type { StaffFeedbackSentiment } from "@/types/extended";
+import {
+  STAFF_FEEDBACK_ATTRIBUTION_LABEL,
+  STAFF_FEEDBACK_CHANNEL_LABEL,
+  STAFF_FEEDBACK_SENTIMENT_LABEL,
+  STAFF_FEEDBACK_TOPIC_LABEL,
+} from "@/types/extended";
+import { useChildStaffFeedback } from "@/hooks/use-child-staff-feedback";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-interface StaffFeedback {
-  id: string;
-  childWhoGaveFeedback: string;
-  attribution: "Named" | "Anonymous to subject" | "Anonymous to all but RM";
-  feedbackDate: string;
-  channel: "Children's meeting" | "Key working" | "Suggestion box" | "Independent advocate" | "Reg 44 visit" | "Direct to RM";
-  staffSubject: string;
-  feedbackSentiment: "Positive" | "Mixed" | "Constructive" | "Concern";
-  feedbackTopic: "Relational warmth" | "Boundaries fairness" | "Communication style" | "Cultural awareness" | "Sensory awareness" | "Listening" | "Reliability" | "Consistency" | "Specific incident" | "Skill" | "General appreciation";
-  childWords: string;
-  contextOfFeedback: string;
-  staffMemberInformed: boolean;
-  staffMemberInformedDate: string;
-  staffResponse: string;
-  managerActions: string[];
-  feedbackSharedWith: string[];
-  childWishesForResponse: string;
-  followUpDate: string;
-  recordedBy: string;
-  protectedFromRetaliation: boolean;
-  patternIndicator: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const sentimentColour: Record<StaffFeedbackSentiment, string> = {
+  positive: "bg-green-100 text-green-800",
+  mixed: "bg-blue-100 text-blue-800",
+  constructive: "bg-amber-100 text-amber-800",
+  concern: "bg-red-100 text-red-800",
 };
 
-const data: StaffFeedback[] = [
-  {
-    id: "sf-001",
-    childWhoGaveFeedback: "yp_casey",
-    attribution: "Named",
-    feedbackDate: d(-3),
-    channel: "Children's meeting",
-    staffSubject: "staff_anna",
-    feedbackSentiment: "Positive",
-    feedbackTopic: "Sensory awareness",
-    childWords: "Anna gets it. She knows when I need quiet, when I need a card, when I need her to just sit. She doesn't make me explain.",
-    contextOfFeedback: "Casey nominated Anna formally for sensory-aware care during Children's Pledges review. Casey speaks rarely about staff but chose to here.",
-    staffMemberInformed: true,
-    staffMemberInformedDate: d(-3),
-    staffResponse: "Anna emotional. 'Casey trusting me to be silent is the highest compliment.' Wrote a thank-you note back to Casey.",
-    managerActions: [
-      "Logged in Staff Recognition",
-      "Anna's approach to be shared (with permission) as practice example",
-    ],
-    feedbackSharedWith: ["Anna directly", "Whole team meeting (with Casey's permission)", "Reg 44 visitor"],
-    childWishesForResponse: "Casey just wanted Anna to know — was happy with thanks note response.",
-    followUpDate: d(60),
-    recordedBy: "staff_darren",
-    protectedFromRetaliation: true,
-    patternIndicator: "Consistent with multiple positive observations of Anna's sensory practice",
-  },
-  {
-    id: "sf-002",
-    childWhoGaveFeedback: "yp_alex",
-    attribution: "Named",
-    feedbackDate: d(-7),
-    channel: "Key working",
-    staffSubject: "staff_lackson",
-    feedbackSentiment: "Positive",
-    feedbackTopic: "Reliability",
-    childWords: "Lackson always shows up. Boxing nights, even his day off he came. He doesn't break promises.",
-    contextOfFeedback: "Alex talked about boxing club inter-club competition support during key working session.",
-    staffMemberInformed: true,
-    staffMemberInformedDate: d(-7),
-    staffResponse: "Lackson moved. 'Just love watching Alex thrive.' Continues commitment.",
-    managerActions: [
-      "Logged in Staff Recognition",
-      "Reminded Lackson about boundaries — taking time off in lieu protected",
-    ],
-    feedbackSharedWith: ["Lackson directly", "RM oversight"],
-    childWishesForResponse: "Just wanted Lackson to know.",
-    followUpDate: d(60),
-    recordedBy: "staff_anna",
-    protectedFromRetaliation: true,
-    patternIndicator: "Reliability theme — strength of Lackson's practice",
-  },
-  {
-    id: "sf-003",
-    childWhoGaveFeedback: "yp_jordan",
-    attribution: "Named",
-    feedbackDate: d(-14),
-    channel: "Children's meeting",
-    staffSubject: "staff_chervelle",
-    feedbackSentiment: "Positive",
-    feedbackTopic: "Cultural awareness",
-    childWords: "Chervelle gets my background. She doesn't just learn about it from a website — she lives parts of it. I feel seen here.",
-    contextOfFeedback: "Jordan shared with whole children's meeting; significant moment.",
-    staffMemberInformed: true,
-    staffMemberInformedDate: d(-13),
-    staffResponse: "'Means everything. I came into care work because of relationships like this.'",
-    managerActions: [
-      "Logged in Staff Recognition",
-      "Cultural responsiveness valued as core capability — informs hiring strategy",
-    ],
-    feedbackSharedWith: ["Chervelle directly", "Whole team", "Newsletter"],
-    childWishesForResponse: "Wanted public acknowledgement — agreed.",
-    followUpDate: d(60),
-    recordedBy: "staff_darren",
-    protectedFromRetaliation: true,
-    patternIndicator: "Cultural matching theme — diversity in team is a strength",
-  },
-  {
-    id: "sf-004",
-    childWhoGaveFeedback: "yp_alex",
-    attribution: "Anonymous to subject",
-    feedbackDate: d(-30),
-    channel: "Direct to RM",
-    staffSubject: "[Staff member name held by RM]",
-    feedbackSentiment: "Constructive",
-    feedbackTopic: "Communication style",
-    childWords: "Sometimes [they] talk to me like I'm younger than I am. I get it but I'm 13, not 8.",
-    contextOfFeedback: "Alex came to RM privately. Asked that the named staff member be told the feedback but not who gave it.",
-    staffMemberInformed: true,
-    staffMemberInformedDate: d(-28),
-    staffResponse: "Staff member reflected — recognised pattern. Apologised in supervision. Has adjusted approach. Alex hasn't raised it again.",
-    managerActions: [
-      "Confidential conversation with staff member (without naming Alex)",
-      "Reflective supervision session focused on age-appropriate communication",
-      "Check-in with Alex 4 weeks later — said issue resolved",
-    ],
-    feedbackSharedWith: ["Staff member (anonymised source)", "RM only"],
-    childWishesForResponse: "Wanted the issue addressed without becoming awkward. Got that.",
-    followUpDate: d(0),
-    recordedBy: "staff_darren",
-    protectedFromRetaliation: true,
-    patternIndicator: "Single feedback — addressed; no recurrence",
-  },
-  {
-    id: "sf-005",
-    childWhoGaveFeedback: "yp_alex",
-    attribution: "Named",
-    feedbackDate: d(-45),
-    channel: "Reg 44 visit",
-    staffSubject: "staff_edward",
-    feedbackSentiment: "Positive",
-    feedbackTopic: "Listening",
-    childWords: "Edward listens properly. Doesn't just nod. He remembers what I said last time.",
-    contextOfFeedback: "Reg 44 visitor (Helen Frost) asked Alex who he trusts. Alex named Edward.",
-    staffMemberInformed: true,
-    staffMemberInformedDate: d(-43),
-    staffResponse: "Edward valued the feedback. 'Listening is the work.' Continues practice.",
-    managerActions: [
-      "Logged in Staff Recognition",
-      "Featured in Reg 44 report",
-    ],
-    feedbackSharedWith: ["Edward directly", "Reg 44 visitor (publicly logged)"],
-    childWishesForResponse: "Happy for Helen to share with Edward.",
-    followUpDate: d(60),
-    recordedBy: "staff_darren",
-    protectedFromRetaliation: true,
-    patternIndicator: "Listening — Edward's strength repeatedly noted",
-  },
-  {
-    id: "sf-006",
-    childWhoGaveFeedback: "yp_jordan",
-    attribution: "Named",
-    feedbackDate: d(-60),
-    channel: "Independent advocate",
-    staffSubject: "staff_ryan",
-    feedbackSentiment: "Positive",
-    feedbackTopic: "Boundaries fairness",
-    childWords: "Ryan is fair. He's strict but he explains. I'd rather have him saying no with a reason than someone else saying yes with no reason.",
-    contextOfFeedback: "Karen (advocate) reported Jordan's view at advocacy review.",
-    staffMemberInformed: true,
-    staffMemberInformedDate: d(-58),
-    staffResponse: "Ryan: 'That's my whole approach.' Continues practice.",
-    managerActions: [
-      "Logged in Staff Recognition",
-      "Validates Ryan's deputy role and approach",
-    ],
-    feedbackSharedWith: ["Ryan directly", "Karen (advocate)"],
-    childWishesForResponse: "Wanted Ryan to know — Karen passed on.",
-    followUpDate: d(120),
-    recordedBy: "staff_darren",
-    protectedFromRetaliation: true,
-    patternIndicator: "Boundaries-with-explanation theme — Ryan's practice strength",
-  },
-];
-
-const sentimentColour: Record<string, string> = {
-  Positive: "bg-green-100 text-green-800",
-  Mixed: "bg-blue-100 text-blue-800",
-  Constructive: "bg-amber-100 text-amber-800",
-  Concern: "bg-red-100 text-red-800",
-};
-
-const exportCols: ExportColumn<StaffFeedback>[] = [
-  { header: "Date", accessor: (r: StaffFeedback) => r.feedbackDate },
-  { header: "Child", accessor: (r: StaffFeedback) => getYPName(r.childWhoGaveFeedback) },
-  { header: "Attribution", accessor: (r: StaffFeedback) => r.attribution },
-  { header: "Subject", accessor: (r: StaffFeedback) => r.staffSubject.startsWith("staff_") ? getStaffName(r.staffSubject) : r.staffSubject },
-  { header: "Topic", accessor: (r: StaffFeedback) => r.feedbackTopic },
-  { header: "Sentiment", accessor: (r: StaffFeedback) => r.feedbackSentiment },
-  { header: "Channel", accessor: (r: StaffFeedback) => r.channel },
-  { header: "Staff Informed", accessor: (r: StaffFeedback) => r.staffMemberInformed ? "Yes" : "No" },
+const exportCols: ExportColumn<ChildStaffFeedback>[] = [
+  { header: "Date", accessor: (r: ChildStaffFeedback) => r.feedback_date },
+  { header: "Child", accessor: (r: ChildStaffFeedback) => getYPName(r.child_id) },
+  { header: "Attribution", accessor: (r: ChildStaffFeedback) => STAFF_FEEDBACK_ATTRIBUTION_LABEL[r.attribution] },
+  { header: "Subject", accessor: (r: ChildStaffFeedback) => r.staff_subject.startsWith("staff_") ? getStaffName(r.staff_subject) : r.staff_subject },
+  { header: "Topic", accessor: (r: ChildStaffFeedback) => STAFF_FEEDBACK_TOPIC_LABEL[r.feedback_topic] },
+  { header: "Sentiment", accessor: (r: ChildStaffFeedback) => STAFF_FEEDBACK_SENTIMENT_LABEL[r.feedback_sentiment] },
+  { header: "Channel", accessor: (r: ChildStaffFeedback) => STAFF_FEEDBACK_CHANNEL_LABEL[r.channel] },
+  { header: "Staff Informed", accessor: (r: ChildStaffFeedback) => r.staff_member_informed ? "Yes" : "No" },
 ];
 
 export default function ChildFeedbackOnStaffPage() {
+  const { data: res, isLoading } = useChildStaffFeedback();
+  const items = res?.data ?? [];
+
   const [filterSentiment, setFilterSentiment] = useState("all");
   const [filterChild, setFilterChild] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let items = [...data];
-    if (filterSentiment !== "all") items = items.filter((r) => r.feedbackSentiment === filterSentiment);
-    if (filterChild !== "all") items = items.filter((r) => r.childWhoGaveFeedback === filterChild);
-    items.sort((a, b) => {
+    let list = [...items];
+    if (filterSentiment !== "all") list = list.filter((r) => r.feedback_sentiment === filterSentiment);
+    if (filterChild !== "all") list = list.filter((r) => r.child_id === filterChild);
+    list.sort((a, b) => {
       switch (sortBy) {
         case "date":
-          return b.feedbackDate.localeCompare(a.feedbackDate);
+          return b.feedback_date.localeCompare(a.feedback_date);
         case "sentiment":
-          return a.feedbackSentiment.localeCompare(b.feedbackSentiment);
+          return a.feedback_sentiment.localeCompare(b.feedback_sentiment);
         default:
           return 0;
       }
     });
-    return items;
-  }, [filterSentiment, filterChild, sortBy]);
+    return list;
+  }, [items, filterSentiment, filterChild, sortBy]);
 
-  const total = data.length;
-  const positive = data.filter((r) => r.feedbackSentiment === "Positive").length;
-  const constructive = data.filter((r) => r.feedbackSentiment === "Constructive").length;
-  const allInformed = data.every((r) => r.staffMemberInformed);
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Child Feedback on Staff"
+        subtitle="Children's voice about individual staff — celebrated, addressed, never dismissed"
+      >
+        <p>Loading…</p>
+      </PageShell>
+    );
+  }
+
+  const total = items.length;
+  const positive = items.filter((r) => r.feedback_sentiment === "positive").length;
+  const constructive = items.filter((r) => r.feedback_sentiment === "constructive").length;
+  const allInformed = items.every((r) => r.staff_member_informed);
 
   return (
     <PageShell
@@ -260,7 +101,7 @@ export default function ChildFeedbackOnStaffPage() {
       subtitle="Children's voice about individual staff — celebrated, addressed, never dismissed"
       actions={
         <div className="flex items-center gap-2">
-          <ExportButton data={data} columns={exportCols} filename="child-feedback-on-staff" />
+          <ExportButton data={items} columns={exportCols} filename="child-feedback-on-staff" />
           <PrintButton title="Child Feedback on Staff" />
         </div>
       }
@@ -279,7 +120,7 @@ export default function ChildFeedbackOnStaffPage() {
           <p className="text-xs text-muted-foreground">Constructive</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-blue-600">{allInformed ? "100%" : `${data.filter((r) => r.staffMemberInformed).length}/${total}`}</p>
+          <p className="text-2xl font-bold text-blue-600">{allInformed ? "100%" : `${items.filter((r) => r.staff_member_informed).length}/${total}`}</p>
           <p className="text-xs text-muted-foreground">Staff Informed</p>
         </div>
       </div>
@@ -307,10 +148,10 @@ export default function ChildFeedbackOnStaffPage() {
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Sentiments" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Sentiments</SelectItem>
-            <SelectItem value="Positive">Positive</SelectItem>
-            <SelectItem value="Mixed">Mixed</SelectItem>
-            <SelectItem value="Constructive">Constructive</SelectItem>
-            <SelectItem value="Concern">Concern</SelectItem>
+            <SelectItem value="positive">{STAFF_FEEDBACK_SENTIMENT_LABEL.positive}</SelectItem>
+            <SelectItem value="mixed">{STAFF_FEEDBACK_SENTIMENT_LABEL.mixed}</SelectItem>
+            <SelectItem value="constructive">{STAFF_FEEDBACK_SENTIMENT_LABEL.constructive}</SelectItem>
+            <SelectItem value="concern">{STAFF_FEEDBACK_SENTIMENT_LABEL.concern}</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -338,15 +179,15 @@ export default function ChildFeedbackOnStaffPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Heart className="h-5 w-5 text-purple-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(r.childWhoGaveFeedback)} on {r.staffSubject.startsWith("staff_") ? getStaffName(r.staffSubject) : r.staffSubject}</p>
+                    <p className="font-medium truncate">{getYPName(r.child_id)} on {r.staff_subject.startsWith("staff_") ? getStaffName(r.staff_subject) : r.staff_subject}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {r.feedbackDate} &middot; {r.channel} &middot; {r.feedbackTopic} &middot; {r.attribution}
+                      {r.feedback_date} &middot; {STAFF_FEEDBACK_CHANNEL_LABEL[r.channel]} &middot; {STAFF_FEEDBACK_TOPIC_LABEL[r.feedback_topic]} &middot; {STAFF_FEEDBACK_ATTRIBUTION_LABEL[r.attribution]}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", sentimentColour[r.feedbackSentiment])}>
-                    {r.feedbackSentiment}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", sentimentColour[r.feedback_sentiment])}>
+                    {STAFF_FEEDBACK_SENTIMENT_LABEL[r.feedback_sentiment]}
                   </span>
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
@@ -358,26 +199,26 @@ export default function ChildFeedbackOnStaffPage() {
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">
                       <MessageCircle className="h-3 w-3 inline mr-1" />Child&apos;s Words
                     </p>
-                    <p className="text-sm italic">&ldquo;{r.childWords}&rdquo;</p>
+                    <p className="text-sm italic">&ldquo;{r.child_words}&rdquo;</p>
                   </div>
 
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Context</p>
-                    <p className="text-sm">{r.contextOfFeedback}</p>
+                    <p className="text-sm">{r.context_of_feedback}</p>
                   </div>
 
                   <div className="bg-emerald-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">
                       <Sparkles className="h-3 w-3 inline mr-1" />Staff Response
                     </p>
-                    <p className="text-sm italic">&ldquo;{r.staffResponse}&rdquo;</p>
+                    <p className="text-sm italic">&ldquo;{r.staff_response}&rdquo;</p>
                   </div>
 
-                  {r.managerActions.length > 0 && (
+                  {r.manager_actions.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Manager Actions</p>
                       <ul className="space-y-1">
-                        {r.managerActions.map((a, i) => (
+                        {r.manager_actions.map((a, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <Star className="h-3 w-3 text-amber-500 mt-1 shrink-0" />
                             <span>{a}</span>
@@ -389,29 +230,31 @@ export default function ChildFeedbackOnStaffPage() {
 
                   <div className="bg-pink-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-pink-800 uppercase tracking-wide mb-1">Child Wishes For Response</p>
-                    <p className="text-sm">{r.childWishesForResponse}</p>
+                    <p className="text-sm">{r.child_wishes_for_response}</p>
                   </div>
 
-                  {r.patternIndicator && (
+                  {r.pattern_indicator && (
                     <div className="bg-purple-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-1">Pattern Indicator</p>
-                      <p className="text-sm">{r.patternIndicator}</p>
+                      <p className="text-sm">{r.pattern_indicator}</p>
                     </div>
                   )}
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span><Lock className="h-3 w-3 inline mr-1" />Attribution: {r.attribution}</span>
-                    <span>Recorded: {getStaffName(r.recordedBy)}</span>
-                    {r.protectedFromRetaliation && <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-medium">Anti-Retaliation Protected</span>}
-                    {r.staffMemberInformed && <span>Staff informed: {r.staffMemberInformedDate}</span>}
+                    <span><Lock className="h-3 w-3 inline mr-1" />Attribution: {STAFF_FEEDBACK_ATTRIBUTION_LABEL[r.attribution]}</span>
+                    <span>Recorded: {getStaffName(r.recorded_by)}</span>
+                    {r.protected_from_retaliation && <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-medium">Anti-Retaliation Protected</span>}
+                    {r.staff_member_informed && <span>Staff informed: {r.staff_member_informed_date}</span>}
                   </div>
 
-                  {r.feedbackSentiment === "Concern" && (
+                  {r.feedback_sentiment === "concern" && (
                     <div className="bg-red-50 rounded-lg p-3 flex items-start gap-2">
                       <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
                       <p className="text-sm">Concern logged — see manager actions and follow-up.</p>
                     </div>
                   )}
+
+                  <SmartLinkPanel sourceType="child-staff-feedback" sourceId={r.id} childId={r.child_id} compact />
                 </div>
               )}
             </div>

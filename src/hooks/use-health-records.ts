@@ -2,25 +2,12 @@
 
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "./use-api";
+import type { HealthRecordEntry } from "@/types/extended";
 
-export interface HealthRecord {
-  id: string;
-  child_id: string;
-  record_type: "appointment" | "assessment" | "immunisation" | "allergy" | "action_plan" | "medication_change";
-  title: string;
-  date: string;
-  provider?: string;
-  outcome?: string;
-  follow_up_date?: string;
-  notes?: string;
-  staff_id: string;
-  status: "scheduled" | "completed" | "cancelled" | "overdue";
-  home_id?: string;
-  created_at?: string;
-}
+export type { HealthRecordEntry };
 
-type ListResponse = { data: HealthRecord[]; meta: { total: number; overdue: number; upcoming_7d: number } };
-type SingleResponse = { data: HealthRecord };
+type ListResponse = { data: HealthRecordEntry[]; meta: { total: number; overdue: number; upcoming_7d: number } };
+type SingleResponse = { data: HealthRecordEntry };
 
 export function useHealthRecords(params?: { childId?: string; type?: string }) {
   const qs = new URLSearchParams();
@@ -38,7 +25,7 @@ export function useHealthRecords(params?: { childId?: string; type?: string }) {
 export function useCreateHealthRecord() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<HealthRecord>) =>
+    mutationFn: (data: Partial<HealthRecordEntry>) =>
       api.post<SingleResponse>("/health-records", data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["health-records"] });
@@ -50,7 +37,7 @@ export function useCreateHealthRecord() {
 export function useUpdateHealthRecord() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & Partial<HealthRecord>) =>
+    mutationFn: ({ id, ...data }: { id: string } & Partial<HealthRecordEntry>) =>
       api.patch<SingleResponse>(`/health-records/${id}`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["health-records"] });

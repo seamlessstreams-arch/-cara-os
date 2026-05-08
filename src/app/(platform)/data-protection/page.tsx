@@ -25,31 +25,20 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 
+import type {
+  DataProtectionRecord,
+  DataProtectionRecordType,
+  DataProtectionRecordStatus,
+  DataProtectionBreachSeverity,
+} from "@/types/extended";
+import {
+  DATA_PROTECTION_RECORD_TYPE_LABEL,
+  DATA_PROTECTION_RECORD_STATUS_LABEL,
+  DATA_PROTECTION_BREACH_SEVERITY_LABEL,
+} from "@/types/extended";
+import { useDataProtectionRecords } from "@/hooks/use-data-protection-records";
+
 /* ── types ─────────────────────────────────────────────────────────────── */
-
-type RecordType = "dsar" | "breach" | "dpia" | "consent_review" | "retention_review";
-type RecordStatus = "received" | "in_progress" | "completed" | "overdue" | "closed";
-type BreachSeverity = "low" | "medium" | "high" | "critical";
-
-interface DataRecord {
-  id: string;
-  type: RecordType;
-  status: RecordStatus;
-  dateRaised: string;
-  dueDate: string;
-  completedDate: string | null;
-  handledBy: string;
-  subject: string;
-  description: string;
-  breachSeverity: BreachSeverity | null;
-  icoNotified: boolean;
-  icoNotificationDate: string | null;
-  individualsNotified: boolean;
-  rootCause: string;
-  remedialActions: string[];
-  lessonsLearned: string;
-  notes: string;
-}
 
 interface RetentionCategory {
   category: string;
@@ -59,25 +48,16 @@ interface RetentionCategory {
   nextReview: string;
 }
 
-/* ── seed ──────────────────────────────────────────────────────────────── */
+/* ── static data ──────────────────────────────────────────────────────── */
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
-const TYPE_LABELS: Record<RecordType, string> = {
-  dsar: "Subject Access Request", breach: "Data Breach", dpia: "Impact Assessment",
-  consent_review: "Consent Review", retention_review: "Retention Review",
-};
-const STATUS_LABELS: Record<RecordStatus, string> = {
-  received: "Received", in_progress: "In Progress", completed: "Completed",
-  overdue: "Overdue", closed: "Closed",
-};
-const STATUS_COLOURS: Record<RecordStatus, string> = {
+const STATUS_COLOURS: Record<DataProtectionRecordStatus, string> = {
   received: "bg-blue-100 text-blue-800", in_progress: "bg-amber-100 text-amber-800",
   completed: "bg-green-100 text-green-800", overdue: "bg-red-100 text-red-800",
   closed: "bg-gray-100 text-gray-700",
 };
-const SEV_LABELS: Record<BreachSeverity, string> = { low: "Low", medium: "Medium", high: "High", critical: "Critical" };
-const SEV_COLOURS: Record<BreachSeverity, string> = {
+const SEV_COLOURS: Record<DataProtectionBreachSeverity, string> = {
   low: "bg-green-100 text-green-800", medium: "bg-amber-100 text-amber-800",
   high: "bg-orange-100 text-orange-800", critical: "bg-red-100 text-red-800",
 };
@@ -93,96 +73,33 @@ const RETENTION: RetentionCategory[] = [
   { category: "Training Records", retentionPeriod: "6 years after employment ends", legalBasis: "Employment law", lastReviewed: d(-30), nextReview: d(335) },
 ];
 
-const SEED: DataRecord[] = [
-  {
-    id: "dp1", type: "dsar", status: "completed", dateRaised: d(-45), dueDate: d(-15),
-    completedDate: d(-18), handledBy: "staff_darren",
-    subject: "Subject Access Request — Former YP (aged 18)",
-    description: "Former resident (now 18) has requested access to their care records under GDPR Article 15. Request received via their solicitor. Records span 2 years of placement.",
-    breachSeverity: null, icoNotified: false, icoNotificationDate: null, individualsNotified: false,
-    rootCause: "", remedialActions: [],
-    lessonsLearned: "Process worked well. Template response letter updated. Third-party redaction took longest — consider pre-marking files for potential DSAR content.",
-    notes: "Responded within 30-day statutory deadline. 847 pages provided after third-party redaction. Solicitor confirmed satisfaction with response.",
-  },
-  {
-    id: "dp2", type: "breach", status: "closed", dateRaised: d(-60), dueDate: d(-58),
-    completedDate: d(-50), handledBy: "staff_darren",
-    subject: "Misdirected email containing YP information",
-    description: "Staff member sent an email containing a young person's health information to the wrong social worker (same local authority, different team). Error identified within 2 hours. Recipient confirmed deletion.",
-    breachSeverity: "low", icoNotified: false, icoNotificationDate: null, individualsNotified: false,
-    rootCause: "Auto-complete in email selected wrong recipient with similar name.",
-    remedialActions: [
-      "Staff briefing on email verification before sending — check recipient name carefully",
-      "Implement email delay rule (2-minute send delay) on all staff accounts",
-      "Consider using secure portal for sharing sensitive information rather than email",
-    ],
-    lessonsLearned: "Low-risk breach but highlighted need for email safety measures. Auto-complete is a common cause of misdirected emails. Delay rule now prevents immediate sending.",
-    notes: "Not reportable to ICO (low risk, contained quickly). Logged in breach register. Staff member not disciplined — systemic issue addressed.",
-  },
-  {
-    id: "dp3", type: "dsar", status: "in_progress", dateRaised: d(-10), dueDate: d(20),
-    completedDate: null, handledBy: "staff_darren",
-    subject: "Subject Access Request — Birth parent",
-    description: "Birth parent of current YP has requested access to information held about them (the parent) in the child's records. Not requesting the child's records — only information relating to themselves.",
-    breachSeverity: null, icoNotified: false, icoNotificationDate: null, individualsNotified: false,
-    rootCause: "", remedialActions: [],
-    lessonsLearned: "",
-    notes: "Complex request. Consulting with LA data protection officer about scope. Need to separate parent-specific information from child's records. Redaction of third-party data required.",
-  },
-  {
-    id: "dp4", type: "dpia", status: "completed", dateRaised: d(-30), dueDate: d(-10),
-    completedDate: d(-12), handledBy: "staff_darren",
-    subject: "DPIA — New digital care records system (Cornerstone)",
-    description: "Data Protection Impact Assessment for the implementation of the new Cornerstone digital care management system. Assessment covers data collection, storage, access controls, retention, and third-party processing.",
-    breachSeverity: null, icoNotified: false, icoNotificationDate: null, individualsNotified: false,
-    rootCause: "",
-    remedialActions: [
-      "Role-based access controls implemented",
-      "Data encryption at rest and in transit confirmed",
-      "Automatic session timeout after 15 minutes",
-      "Audit trail for all record access enabled",
-      "Annual penetration testing scheduled",
-    ],
-    lessonsLearned: "DPIA identified need for stronger audit trail than initially planned. Vendor accommodated. Good practice to complete DPIA before system goes live.",
-    notes: "DPIA approved by DPO. No high risks identified after mitigations. Annual review scheduled.",
-  },
-  {
-    id: "dp5", type: "consent_review", status: "completed", dateRaised: d(-20), dueDate: d(-5),
-    completedDate: d(-7), handledBy: "staff_anna",
-    subject: "Annual consent review — photography and social media",
-    description: "Annual review of consent for using children's images in internal communications, social media, and promotional materials. Individual consent refreshed with each child and their social worker.",
-    breachSeverity: null, icoNotified: false, icoNotificationDate: null, individualsNotified: false,
-    rootCause: "", remedialActions: [],
-    lessonsLearned: "Consent forms updated to include specific platforms. Children appreciated being asked and having choice.",
-    notes: "Alex: consents to internal only. Jordan: no consent for any images. Casey: consents to internal and Oak House website (no face — artwork only). All SWs confirmed.",
-  },
-];
-
 /* ── flat row for export ─────────────────────────────────────────────── */
 
 interface FlatRow {
-  type: string; status: string; dateRaised: string; dueDate: string;
-  completedDate: string; handledBy: string; subject: string;
-  breachSeverity: string; icoNotified: string; notes: string;
+  type: string; status: string; date_raised: string; due_date: string;
+  completed_date: string; handled_by: string; subject: string;
+  breach_severity: string; ico_notified: string; notes: string;
 }
 
 const EXPORT_COLS: ExportColumn<FlatRow>[] = [
   { header: "Type",          accessor: (r: FlatRow) => r.type },
   { header: "Status",        accessor: (r: FlatRow) => r.status },
-  { header: "Date Raised",   accessor: (r: FlatRow) => r.dateRaised },
-  { header: "Due Date",      accessor: (r: FlatRow) => r.dueDate },
-  { header: "Completed",     accessor: (r: FlatRow) => r.completedDate },
-  { header: "Handled By",    accessor: (r: FlatRow) => r.handledBy },
+  { header: "Date Raised",   accessor: (r: FlatRow) => r.date_raised },
+  { header: "Due Date",      accessor: (r: FlatRow) => r.due_date },
+  { header: "Completed",     accessor: (r: FlatRow) => r.completed_date },
+  { header: "Handled By",    accessor: (r: FlatRow) => r.handled_by },
   { header: "Subject",       accessor: (r: FlatRow) => r.subject },
-  { header: "Breach Severity",accessor: (r: FlatRow) => r.breachSeverity },
-  { header: "ICO Notified",  accessor: (r: FlatRow) => r.icoNotified },
+  { header: "Breach Severity",accessor: (r: FlatRow) => r.breach_severity },
+  { header: "ICO Notified",  accessor: (r: FlatRow) => r.ico_notified },
   { header: "Notes",         accessor: (r: FlatRow) => r.notes },
 ];
 
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function DataProtectionPage() {
-  const [data] = useState<DataRecord[]>(SEED);
+  const { data: raw, isLoading } = useDataProtectionRecords();
+  const records = raw?.data ?? [];
+
   const [retention] = useState<RetentionCategory[]>(RETENTION);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
@@ -193,34 +110,36 @@ export default function DataProtectionPage() {
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   const stats = useMemo(() => {
-    const open = data.filter((r) => ["received", "in_progress"].includes(r.status)).length;
-    const breaches = data.filter((r) => r.type === "breach").length;
-    const dsars = data.filter((r) => r.type === "dsar").length;
-    const overdue = data.filter((r) => r.status !== "completed" && r.status !== "closed" && r.dueDate < d(0)).length;
+    const open = records.filter((r) => ["received", "in_progress"].includes(r.status)).length;
+    const breaches = records.filter((r) => r.type === "breach").length;
+    const dsars = records.filter((r) => r.type === "dsar").length;
+    const overdue = records.filter((r) => r.status !== "completed" && r.status !== "closed" && r.due_date < new Date().toISOString().slice(0, 10)).length;
     return { open, breaches, dsars, overdue };
-  }, [data]);
+  }, [records]);
 
   const filtered = useMemo(() => {
-    let list = data;
+    let list = records;
     if (search) { const q = search.toLowerCase(); list = list.filter((r) => r.subject.toLowerCase().includes(q)); }
     if (filterType !== "all") list = list.filter((r) => r.type === filterType);
     const out = [...list];
     switch (sortBy) {
-      case "date": out.sort((a, b) => b.dateRaised.localeCompare(a.dateRaised)); break;
+      case "date": out.sort((a, b) => b.date_raised.localeCompare(a.date_raised)); break;
       case "type": out.sort((a, b) => a.type.localeCompare(b.type)); break;
       case "status": out.sort((a, b) => a.status.localeCompare(b.status)); break;
     }
     return out;
-  }, [data, search, filterType, sortBy]);
+  }, [records, search, filterType, sortBy]);
 
   const exportData = useMemo<FlatRow[]>(() =>
-    data.map((r) => ({
-      type: TYPE_LABELS[r.type], status: STATUS_LABELS[r.status],
-      dateRaised: r.dateRaised, dueDate: r.dueDate,
-      completedDate: r.completedDate ?? "—", handledBy: getStaffName(r.handledBy),
-      subject: r.subject, breachSeverity: r.breachSeverity ? SEV_LABELS[r.breachSeverity] : "N/A",
-      icoNotified: r.icoNotified ? "Yes" : "No", notes: r.notes,
-    })), [data]);
+    records.map((r) => ({
+      type: DATA_PROTECTION_RECORD_TYPE_LABEL[r.type], status: DATA_PROTECTION_RECORD_STATUS_LABEL[r.status],
+      date_raised: r.date_raised, due_date: r.due_date,
+      completed_date: r.completed_date ?? "—", handled_by: getStaffName(r.handled_by),
+      subject: r.subject, breach_severity: r.breach_severity ? DATA_PROTECTION_BREACH_SEVERITY_LABEL[r.breach_severity] : "N/A",
+      ico_notified: r.ico_notified ? "Yes" : "No", notes: r.notes,
+    })), [records]);
+
+  if (isLoading) return <PageShell title="Data Protection & GDPR" subtitle="Subject access requests, breach management, impact assessments and retention schedules"><div /></PageShell>;
 
   return (
     <PageShell
@@ -292,7 +211,7 @@ export default function DataProtectionPage() {
           <SelectTrigger className="w-[200px] h-9 text-sm"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            {Object.entries(DATA_PROTECTION_RECORD_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -318,11 +237,11 @@ export default function DataProtectionPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <Lock className="h-4 w-4 text-gray-400" />
                     <h3 className="font-semibold">{r.subject}</h3>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[r.status])}>{STATUS_LABELS[r.status]}</span>
-                    <span className="px-2 py-0.5 bg-gray-100 rounded-full text-xs font-medium text-gray-700">{TYPE_LABELS[r.type]}</span>
-                    {r.breachSeverity && <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SEV_COLOURS[r.breachSeverity])}>{SEV_LABELS[r.breachSeverity]}</span>}
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[r.status])}>{DATA_PROTECTION_RECORD_STATUS_LABEL[r.status]}</span>
+                    <span className="px-2 py-0.5 bg-gray-100 rounded-full text-xs font-medium text-gray-700">{DATA_PROTECTION_RECORD_TYPE_LABEL[r.type]}</span>
+                    {r.breach_severity && <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SEV_COLOURS[r.breach_severity])}>{DATA_PROTECTION_BREACH_SEVERITY_LABEL[r.breach_severity]}</span>}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Raised {r.dateRaised} · Due {r.dueDate} · {getStaffName(r.handledBy)}</p>
+                  <p className="text-xs text-gray-500 mt-1">Raised {r.date_raised} · Due {r.due_date} · {getStaffName(r.handled_by)}</p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
               </button>
@@ -332,38 +251,38 @@ export default function DataProtectionPage() {
                   <p className="mt-3 text-sm">{r.description}</p>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div><span className="text-gray-500">Raised:</span> <span className="font-medium">{r.dateRaised}</span></div>
-                    <div><span className="text-gray-500">Due:</span> <span className={cn("font-medium", !r.completedDate && r.dueDate < d(0) ? "text-red-600" : "")}>{r.dueDate}</span></div>
-                    <div><span className="text-gray-500">Completed:</span> <span className="font-medium">{r.completedDate ?? "—"}</span></div>
-                    <div><span className="text-gray-500">Handler:</span> <span className="font-medium">{getStaffName(r.handledBy)}</span></div>
+                    <div><span className="text-gray-500">Raised:</span> <span className="font-medium">{r.date_raised}</span></div>
+                    <div><span className="text-gray-500">Due:</span> <span className={cn("font-medium", !r.completed_date && r.due_date < new Date().toISOString().slice(0, 10) ? "text-red-600" : "")}>{r.due_date}</span></div>
+                    <div><span className="text-gray-500">Completed:</span> <span className="font-medium">{r.completed_date ?? "—"}</span></div>
+                    <div><span className="text-gray-500">Handler:</span> <span className="font-medium">{getStaffName(r.handled_by)}</span></div>
                   </div>
 
                   {r.type === "breach" && (
                     <>
                       <div className="rounded-md bg-amber-50 p-3">
                         <h4 className="text-xs font-semibold text-amber-700 mb-1">Root Cause</h4>
-                        <p className="text-sm text-amber-800">{r.rootCause}</p>
+                        <p className="text-sm text-amber-800">{r.root_cause}</p>
                       </div>
                       <div className="flex gap-2">
-                        <span className={cn("px-2 py-1 rounded text-xs font-medium", r.icoNotified ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800")}>{r.icoNotified ? "ICO Notified" : "ICO Not Required"}</span>
-                        <span className={cn("px-2 py-1 rounded text-xs font-medium", r.individualsNotified ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-700")}>{r.individualsNotified ? "Individuals Notified" : "Individuals Not Notified"}</span>
+                        <span className={cn("px-2 py-1 rounded text-xs font-medium", r.ico_notified ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800")}>{r.ico_notified ? "ICO Notified" : "ICO Not Required"}</span>
+                        <span className={cn("px-2 py-1 rounded text-xs font-medium", r.individuals_notified ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-700")}>{r.individuals_notified ? "Individuals Notified" : "Individuals Not Notified"}</span>
                       </div>
                     </>
                   )}
 
-                  {r.remedialActions.length > 0 && (
+                  {r.remedial_actions.length > 0 && (
                     <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
                       <h4 className="text-xs font-semibold text-blue-700 mb-1">Remedial Actions</h4>
                       <ul className="list-disc list-inside text-sm text-blue-800 space-y-0.5">
-                        {r.remedialActions.map((a, i) => <li key={i}>{a}</li>)}
+                        {r.remedial_actions.map((a, i) => <li key={i}>{a}</li>)}
                       </ul>
                     </div>
                   )}
 
-                  {r.lessonsLearned && (
+                  {r.lessons_learned && (
                     <div className="rounded-md bg-purple-50 border border-purple-200 p-3">
                       <h4 className="text-xs font-semibold text-purple-700 mb-1">Lessons Learned</h4>
-                      <p className="text-sm text-purple-800">{r.lessonsLearned}</p>
+                      <p className="text-sm text-purple-800">{r.lessons_learned}</p>
                     </div>
                   )}
 
@@ -385,7 +304,7 @@ export default function DataProtectionPage() {
           <div className="space-y-3 py-2">
             <div><label className="text-sm font-medium">Type</label>
               <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>{Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                <SelectContent>{Object.entries(DATA_PROTECTION_RECORD_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><label className="text-sm font-medium">Subject</label><input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Brief title" /></div>

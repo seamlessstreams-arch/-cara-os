@@ -12,7 +12,9 @@ import {
   CheckCircle2,
   Shield,
   Clock,
+  Loader2,
 } from "lucide-react";
+import { toast }        from "sonner";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
@@ -24,223 +26,157 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import type {
+  EnvironmentalRisk,
+  EnvRiskCategory,
+  EnvRiskLevel,
+  EnvAssessmentStatus,
+} from "@/types/extended";
+import {
+  ENV_RISK_CATEGORY_LABEL,
+  ENV_RISK_LEVEL_LABEL,
+  ENV_ASSESSMENT_STATUS_LABEL,
+} from "@/types/extended";
+import { useEnvironmentalRisks, useCreateEnvironmentalRisk } from "@/hooks/use-environmental-risks";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── label / colour maps ──────────────────────────────────────────────── */
 
-type RiskCategory = "building" | "garden_grounds" | "kitchen" | "bathroom" | "bedroom" | "communal" | "external_area" | "vehicle" | "equipment" | "chemical_hazard";
-type RiskLevel = "low" | "medium" | "high" | "critical";
-type AssessmentStatus = "current" | "due_review" | "overdue" | "archived";
+const CAT_LABELS  = ENV_RISK_CATEGORY_LABEL;
+const RISK_LABELS = ENV_RISK_LEVEL_LABEL;
 
-interface Control {
-  measure: string;
-  implementedBy: string;
-  dateImplemented: string;
-  effective: boolean;
-}
-
-interface EnvironmentalRisk {
-  id: string;
-  category: RiskCategory;
-  location: string;
-  hazard: string;
-  whoAtRisk: string[];
-  riskLevel: RiskLevel;
-  residualRisk: RiskLevel;
-  status: AssessmentStatus;
-  assessedBy: string;
-  assessmentDate: string;
-  reviewDate: string;
-  controls: Control[];
-  additionalActions: string[];
-  incidentHistory: string;
-  notes: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const CAT_LABELS: Record<RiskCategory, string> = {
-  building: "Building", garden_grounds: "Garden & Grounds", kitchen: "Kitchen",
-  bathroom: "Bathroom", bedroom: "Bedroom", communal: "Communal Area",
-  external_area: "External Area", vehicle: "Vehicle", equipment: "Equipment",
-  chemical_hazard: "Chemical / COSHH",
-};
-
-const RISK_LABELS: Record<RiskLevel, string> = { low: "Low", medium: "Medium", high: "High", critical: "Critical" };
-const RISK_COLOURS: Record<RiskLevel, string> = {
+const RISK_COLOURS: Record<EnvRiskLevel, string> = {
   low: "bg-green-100 text-green-800", medium: "bg-amber-100 text-amber-800",
   high: "bg-orange-100 text-orange-800", critical: "bg-red-100 text-red-800",
 };
 
-const STATUS_LABELS: Record<AssessmentStatus, string> = {
-  current: "Current", due_review: "Due Review", overdue: "Overdue", archived: "Archived",
-};
-const STATUS_COLOURS: Record<AssessmentStatus, string> = {
+const STATUS_LABELS  = ENV_ASSESSMENT_STATUS_LABEL;
+const STATUS_COLOURS: Record<EnvAssessmentStatus, string> = {
   current: "bg-green-100 text-green-800", due_review: "bg-amber-100 text-amber-800",
   overdue: "bg-red-100 text-red-800", archived: "bg-gray-100 text-gray-700",
 };
 
-const SEED: EnvironmentalRisk[] = [
-  {
-    id: "er1", category: "kitchen", location: "Main kitchen",
-    hazard: "Knife storage — sharp knives accessible in drawer. Risk of self-harm or accidental injury.",
-    whoAtRisk: ["Young people", "Staff"], riskLevel: "high", residualRisk: "low",
-    status: "current", assessedBy: "staff_darren", assessmentDate: d(-14), reviewDate: d(76),
-    controls: [
-      { measure: "Knives stored in locked magnetic knife block in locked cupboard", implementedBy: "staff_darren", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Key held by shift leader only — signed out/in each shift", implementedBy: "staff_darren", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Knife audit at each shift change — count and condition check", implementedBy: "staff_ryan", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Children supervised when using knives for cooking activities", implementedBy: "staff_anna", dateImplemented: "2024-09-15", effective: true },
-    ],
-    additionalActions: ["Consider replacing some metal knives with ceramic safety knives for routine use"],
-    incidentHistory: "No incidents since controls implemented.",
-    notes: "Risk level reduced from high to low with controls. Review if new YP admitted with self-harm history — may need enhanced measures.",
-  },
-  {
-    id: "er2", category: "bathroom", location: "First floor bathrooms (x2)",
-    hazard: "Ligature points — shower rail, towel hooks, door handles. Risk of self-harm.",
-    whoAtRisk: ["Young people"], riskLevel: "high", residualRisk: "medium",
-    status: "current", assessedBy: "staff_darren", assessmentDate: d(-14), reviewDate: d(76),
-    controls: [
-      { measure: "Anti-ligature shower rails installed (collapsible under weight)", implementedBy: "staff_darren", dateImplemented: "2024-10-01", effective: true },
-      { measure: "Anti-ligature hooks replaced standard hooks", implementedBy: "staff_darren", dateImplemented: "2024-10-01", effective: true },
-      { measure: "Individual risk assessments determine bathroom supervision levels", implementedBy: "staff_anna", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Bathroom doors can be unlocked from outside in emergency", implementedBy: "staff_darren", dateImplemented: "2024-09-15", effective: true },
-    ],
-    additionalActions: ["Annual anti-ligature audit by specialist contractor due in 3 months", "Door handle review — consider anti-ligature handles"],
-    incidentHistory: "One incident (pre-controls) involving shower rail. No incidents since anti-ligature fittings installed.",
-    notes: "Residual risk remains medium due to inherent nature of bathroom environments. Individual care plans address specific YP risk levels.",
-  },
-  {
-    id: "er3", category: "garden_grounds", location: "Rear garden including fence perimeter",
-    hazard: "Fence perimeter — sections where climbing could enable absconding. Garden shed contains tools.",
-    whoAtRisk: ["Young people"], riskLevel: "medium", residualRisk: "low",
-    status: "current", assessedBy: "staff_ryan", assessmentDate: d(-7), reviewDate: d(83),
-    controls: [
-      { measure: "6ft fence with anti-climb trellis on sections nearest street", implementedBy: "staff_ryan", dateImplemented: "2024-09-20", effective: true },
-      { measure: "Garden shed locked — key with shift leader", implementedBy: "staff_ryan", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Tool inventory checked weekly", implementedBy: "staff_edward", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Garden use supervised — staff aware when children outside", implementedBy: "staff_anna", dateImplemented: "2024-09-15", effective: true },
-    ],
-    additionalActions: ["Replace trellis section near back gate — weathering noted"],
-    incidentHistory: "No absconding attempts via garden. One instance of YP climbing tree near fence — tree pruned.",
-    notes: "Good controls in place. Seasonal review needed — vegetation growth in summer can create climbing aids. Winter: check ice/snow on paths.",
-  },
-  {
-    id: "er4", category: "chemical_hazard", location: "Cleaning storage cupboard (utility room)",
-    hazard: "Cleaning chemicals — bleach, oven cleaner, disinfectant. Risk of ingestion, skin contact, or misuse.",
-    whoAtRisk: ["Young people", "Staff"], riskLevel: "medium", residualRisk: "low",
-    status: "current", assessedBy: "staff_ryan", assessmentDate: d(-7), reviewDate: d(83),
-    controls: [
-      { measure: "All chemicals stored in locked cupboard with COSHH signage", implementedBy: "staff_ryan", dateImplemented: "2024-09-15", effective: true },
-      { measure: "COSHH data sheets available in folder next to cupboard", implementedBy: "staff_ryan", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Staff trained in safe handling — annual refresher", implementedBy: "staff_darren", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Inventory and stock rotation system in place", implementedBy: "staff_ryan", dateImplemented: "2024-09-15", effective: true },
-    ],
-    additionalActions: [],
-    incidentHistory: "No incidents. COSHH audit last month — compliant.",
-    notes: "Consider transitioning to eco-friendly cleaning products where effective — reduced risk profile.",
-  },
-  {
-    id: "er5", category: "external_area", location: "Front car park and entrance path",
-    hazard: "Vehicle movements in car park. Uneven paving on entrance path. Inadequate lighting at dusk.",
-    whoAtRisk: ["Young people", "Staff", "Visitors"], riskLevel: "medium", residualRisk: "low",
-    status: "due_review", assessedBy: "staff_ryan", assessmentDate: d(-80), reviewDate: d(10),
-    controls: [
-      { measure: "5mph speed limit signs installed", implementedBy: "staff_ryan", dateImplemented: "2024-10-01", effective: true },
-      { measure: "Motion-sensor security lights on entrance path", implementedBy: "staff_darren", dateImplemented: "2024-10-15", effective: true },
-      { measure: "Uneven paving slab repaired (reported via maintenance)", implementedBy: "staff_ryan", dateImplemented: "2024-11-01", effective: true },
-      { measure: "Children enter/exit via main door (away from car park) as standard", implementedBy: "staff_anna", dateImplemented: "2024-09-15", effective: true },
-    ],
-    additionalActions: ["Review path surface for winter — gritting schedule needed"],
-    incidentHistory: "One near-miss — visitor reversed near YP. Resolved with speed limit signs and one-way system.",
-    notes: "Review due within 2 weeks. Winter gritting plan needed.",
-  },
-  {
-    id: "er6", category: "bedroom", location: "All YP bedrooms (3 rooms)",
-    hazard: "Window opening — risk of fall from height (first floor). Furniture positioning near windows.",
-    whoAtRisk: ["Young people"], riskLevel: "medium", residualRisk: "low",
-    status: "current", assessedBy: "staff_darren", assessmentDate: d(-14), reviewDate: d(76),
-    controls: [
-      { measure: "Window restrictors installed — maximum opening 100mm", implementedBy: "staff_darren", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Furniture positioned away from windows — no climbing aids", implementedBy: "staff_anna", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Window restrictors checked monthly as part of H&S audit", implementedBy: "staff_ryan", dateImplemented: "2024-09-15", effective: true },
-      { measure: "Individual risk assessment if YP has history of climbing/jumping", implementedBy: "staff_darren", dateImplemented: "2024-09-15", effective: true },
-    ],
-    additionalActions: [],
-    incidentHistory: "No incidents.",
-    notes: "Restrictors tested and compliant at last H&S audit. Keys held by RM for emergency override.",
-  },
-];
-
 /* ── flat row ────────────────────────────────────────────────────────── */
 
 interface FlatRow {
-  category: string; location: string; hazard: string; whoAtRisk: string;
-  riskLevel: string; residualRisk: string; status: string;
-  assessedBy: string; assessmentDate: string; reviewDate: string;
-  controls: string; incidentHistory: string; notes: string;
+  category: string; location: string; hazard: string; who_at_risk: string;
+  risk_level: string; residual_risk: string; status: string;
+  assessed_by: string; assessment_date: string; review_date: string;
+  controls: string; incident_history: string; notes: string;
 }
 
 const EXPORT_COLS: ExportColumn<FlatRow>[] = [
   { header: "Category",        accessor: (r: FlatRow) => r.category },
   { header: "Location",        accessor: (r: FlatRow) => r.location },
   { header: "Hazard",          accessor: (r: FlatRow) => r.hazard },
-  { header: "Who at Risk",     accessor: (r: FlatRow) => r.whoAtRisk },
-  { header: "Risk Level",      accessor: (r: FlatRow) => r.riskLevel },
-  { header: "Residual Risk",   accessor: (r: FlatRow) => r.residualRisk },
+  { header: "Who at Risk",     accessor: (r: FlatRow) => r.who_at_risk },
+  { header: "Risk Level",      accessor: (r: FlatRow) => r.risk_level },
+  { header: "Residual Risk",   accessor: (r: FlatRow) => r.residual_risk },
   { header: "Status",          accessor: (r: FlatRow) => r.status },
-  { header: "Assessed By",     accessor: (r: FlatRow) => r.assessedBy },
-  { header: "Assessment Date", accessor: (r: FlatRow) => r.assessmentDate },
-  { header: "Review Date",     accessor: (r: FlatRow) => r.reviewDate },
+  { header: "Assessed By",     accessor: (r: FlatRow) => r.assessed_by },
+  { header: "Assessment Date", accessor: (r: FlatRow) => r.assessment_date },
+  { header: "Review Date",     accessor: (r: FlatRow) => r.review_date },
   { header: "Controls",        accessor: (r: FlatRow) => r.controls },
-  { header: "Incident History", accessor: (r: FlatRow) => r.incidentHistory },
+  { header: "Incident History", accessor: (r: FlatRow) => r.incident_history },
   { header: "Notes",           accessor: (r: FlatRow) => r.notes },
 ];
 
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function EnvironmentalRiskPage() {
-  const [data] = useState<EnvironmentalRisk[]>(SEED);
+  const { data: queryData, isLoading } = useEnvironmentalRisks();
+  const data = queryData?.data ?? [];
+  const createMutation = useCreateEnvironmentalRisk();
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterRisk, setFilterRisk] = useState("all");
   const [sortBy, setSortBy] = useState("risk");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  /* ── create-form state ── */
+  const [formCategory, setFormCategory] = useState<string>("");
+  const [formRiskLevel, setFormRiskLevel] = useState<string>("");
+  const [formLocation, setFormLocation] = useState("");
+  const [formHazard, setFormHazard] = useState("");
+  const [formWhoAtRisk, setFormWhoAtRisk] = useState("");
+
+  const resetForm = () => {
+    setFormCategory("");
+    setFormRiskLevel("");
+    setFormLocation("");
+    setFormHazard("");
+    setFormWhoAtRisk("");
+  };
+
+  const handleCreate = () => {
+    if (!formCategory || !formRiskLevel || !formLocation || !formHazard) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    createMutation.mutate(
+      {
+        category: formCategory as EnvRiskCategory,
+        risk_level: formRiskLevel as EnvRiskLevel,
+        location: formLocation,
+        hazard: formHazard,
+        who_at_risk: formWhoAtRisk.split(",").map((s) => s.trim()).filter(Boolean),
+      },
+      {
+        onSuccess: () => {
+          toast.success("Environmental risk assessment created");
+          setDialogOpen(false);
+          resetForm();
+        },
+        onError: () => toast.error("Failed to create assessment"),
+      },
+    );
+  };
+
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
-  const stats = useMemo(() => {
+  /* ── loading state ── */
+  if (isLoading) {
+    return (
+      <PageShell title="Environmental Risk Assessments" subtitle="Hazard identification, control measures and residual risk management across the home">
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </PageShell>
+    );
+  }
+
+  const stats = (() => {
     const total = data.filter((r) => r.status !== "archived").length;
-    const highCritical = data.filter((r) => ["high", "critical"].includes(r.riskLevel) && r.status !== "archived").length;
-    const controlled = data.filter((r) => r.residualRisk === "low" && r.status !== "archived").length;
+    const highCritical = data.filter((r) => ["high", "critical"].includes(r.risk_level) && r.status !== "archived").length;
+    const controlled = data.filter((r) => r.residual_risk === "low" && r.status !== "archived").length;
     const reviewDue = data.filter((r) => ["due_review", "overdue"].includes(r.status)).length;
     return { total, highCritical, controlled, reviewDue };
-  }, [data]);
+  })();
 
-  const filtered = useMemo(() => {
+  const filtered = (() => {
     let list = data;
     if (search) { const q = search.toLowerCase(); list = list.filter((r) => r.hazard.toLowerCase().includes(q) || r.location.toLowerCase().includes(q)); }
-    if (filterRisk !== "all") list = list.filter((r) => r.riskLevel === filterRisk);
+    if (filterRisk !== "all") list = list.filter((r) => r.risk_level === filterRisk);
     const out = [...list];
     switch (sortBy) {
-      case "risk": { const o: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }; out.sort((a, b) => o[a.riskLevel] - o[b.riskLevel]); break; }
-      case "review": out.sort((a, b) => a.reviewDate.localeCompare(b.reviewDate)); break;
+      case "risk": { const o: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }; out.sort((a, b) => o[a.risk_level] - o[b.risk_level]); break; }
+      case "review": out.sort((a, b) => a.review_date.localeCompare(b.review_date)); break;
       case "category": out.sort((a, b) => a.category.localeCompare(b.category)); break;
     }
     return out;
-  }, [data, search, filterRisk, sortBy]);
+  })();
 
-  const exportData = useMemo<FlatRow[]>(() =>
-    data.map((r) => ({
-      category: CAT_LABELS[r.category], location: r.location, hazard: r.hazard,
-      whoAtRisk: r.whoAtRisk.join(", "), riskLevel: RISK_LABELS[r.riskLevel],
-      residualRisk: RISK_LABELS[r.residualRisk], status: STATUS_LABELS[r.status],
-      assessedBy: getStaffName(r.assessedBy), assessmentDate: r.assessmentDate,
-      reviewDate: r.reviewDate, controls: r.controls.map((c) => c.measure).join("; "),
-      incidentHistory: r.incidentHistory, notes: r.notes,
-    })), [data]);
+  const exportData: FlatRow[] = data.map((r) => ({
+    category: CAT_LABELS[r.category], location: r.location, hazard: r.hazard,
+    who_at_risk: r.who_at_risk.join(", "), risk_level: RISK_LABELS[r.risk_level],
+    residual_risk: RISK_LABELS[r.residual_risk], status: STATUS_LABELS[r.status],
+    assessed_by: getStaffName(r.assessed_by), assessment_date: r.assessment_date,
+    review_date: r.review_date, controls: r.controls.map((c) => c.measure).join("; "),
+    incident_history: r.incident_history, notes: r.notes,
+  }));
+
+  const today = new Date().toISOString().slice(0, 10);
+  const in14 = (() => { const dt = new Date(); dt.setDate(dt.getDate() + 14); return dt.toISOString().slice(0, 10); })();
 
   return (
     <PageShell
@@ -315,11 +251,11 @@ export default function EnvironmentalRiskPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <MapPin className="h-4 w-4 text-gray-400" />
                     <h3 className="font-semibold">{r.location}</h3>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", RISK_COLOURS[r.riskLevel])}>Risk: {RISK_LABELS[r.riskLevel]}</span>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", RISK_COLOURS[r.residualRisk])}>Residual: {RISK_LABELS[r.residualRisk]}</span>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", RISK_COLOURS[r.risk_level])}>Risk: {RISK_LABELS[r.risk_level]}</span>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", RISK_COLOURS[r.residual_risk])}>Residual: {RISK_LABELS[r.residual_risk]}</span>
                     <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[r.status])}>{STATUS_LABELS[r.status]}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{CAT_LABELS[r.category]} · {r.controls.length} controls · Review {r.reviewDate}</p>
+                  <p className="text-xs text-gray-500 mt-1">{CAT_LABELS[r.category]} · {r.controls.length} controls · Review {r.review_date}</p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
               </button>
@@ -332,16 +268,16 @@ export default function EnvironmentalRiskPage() {
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div><span className="text-gray-500">Who at risk:</span> <span className="font-medium">{r.whoAtRisk.join(", ")}</span></div>
-                    <div><span className="text-gray-500">Assessed by:</span> <span className="font-medium">{getStaffName(r.assessedBy)}</span></div>
-                    <div><span className="text-gray-500">Date:</span> <span className="font-medium">{r.assessmentDate}</span></div>
-                    <div><span className="text-gray-500">Review:</span> <span className={cn("font-medium", r.reviewDate <= d(14) ? "text-amber-600" : "")}>{r.reviewDate}</span></div>
+                    <div><span className="text-gray-500">Who at risk:</span> <span className="font-medium">{r.who_at_risk.join(", ")}</span></div>
+                    <div><span className="text-gray-500">Assessed by:</span> <span className="font-medium">{getStaffName(r.assessed_by)}</span></div>
+                    <div><span className="text-gray-500">Date:</span> <span className="font-medium">{r.assessment_date}</span></div>
+                    <div><span className="text-gray-500">Review:</span> <span className={cn("font-medium", r.review_date <= in14 ? "text-amber-600" : "")}>{r.review_date}</span></div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1"><span className={cn("px-2 py-1 rounded text-xs font-medium", RISK_COLOURS[r.riskLevel])}>Initial: {RISK_LABELS[r.riskLevel]}</span></div>
+                    <div className="flex items-center gap-1"><span className={cn("px-2 py-1 rounded text-xs font-medium", RISK_COLOURS[r.risk_level])}>Initial: {RISK_LABELS[r.risk_level]}</span></div>
                     <span className="text-gray-400">→</span>
-                    <div className="flex items-center gap-1"><span className={cn("px-2 py-1 rounded text-xs font-medium", RISK_COLOURS[r.residualRisk])}>Residual: {RISK_LABELS[r.residualRisk]}</span></div>
+                    <div className="flex items-center gap-1"><span className={cn("px-2 py-1 rounded text-xs font-medium", RISK_COLOURS[r.residual_risk])}>Residual: {RISK_LABELS[r.residual_risk]}</span></div>
                   </div>
 
                   <div>
@@ -351,24 +287,24 @@ export default function EnvironmentalRiskPage() {
                         {c.effective ? <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" /> : <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />}
                         <div>
                           <p className="text-sm">{c.measure}</p>
-                          <p className="text-xs text-gray-400">{getStaffName(c.implementedBy)} · {c.dateImplemented} · {c.effective ? "Effective" : "Needs review"}</p>
+                          <p className="text-xs text-gray-400">{getStaffName(c.implemented_by)} · {c.date_implemented} · {c.effective ? "Effective" : "Needs review"}</p>
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  {r.additionalActions.length > 0 && (
+                  {r.additional_actions.length > 0 && (
                     <div className="rounded-md bg-amber-50 border border-amber-200 p-3">
                       <h4 className="text-xs font-semibold text-amber-700 mb-1">Additional Actions Required</h4>
                       <ul className="list-disc list-inside text-sm text-amber-800 space-y-0.5">
-                        {r.additionalActions.map((a, i) => <li key={i}>{a}</li>)}
+                        {r.additional_actions.map((a, i) => <li key={i}>{a}</li>)}
                       </ul>
                     </div>
                   )}
 
                   <div className="rounded-md bg-gray-50 p-3">
                     <h4 className="text-xs font-semibold text-gray-500 mb-1">Incident History</h4>
-                    <p className="text-sm">{r.incidentHistory}</p>
+                    <p className="text-sm">{r.incident_history}</p>
                   </div>
 
                   {r.notes && <div><h4 className="text-xs font-semibold text-gray-500 mb-1">Notes</h4><p className="text-sm text-gray-700">{r.notes}</p></div>}
@@ -389,23 +325,29 @@ export default function EnvironmentalRiskPage() {
           <div className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div><label className="text-sm font-medium">Category</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={formCategory} onValueChange={setFormCategory}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(CAT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><label className="text-sm font-medium">Risk Level</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={formRiskLevel} onValueChange={setFormRiskLevel}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(RISK_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Location</label><input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Main kitchen" /></div>
-            <div><label className="text-sm font-medium">Hazard Description</label><textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Describe the hazard…" /></div>
-            <div><label className="text-sm font-medium">Who is at Risk?</label><input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Young people, Staff, Visitors" /></div>
+            <div><label className="text-sm font-medium">Location</label><input value={formLocation} onChange={(e) => setFormLocation(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Main kitchen" /></div>
+            <div><label className="text-sm font-medium">Hazard Description</label><textarea rows={2} value={formHazard} onChange={(e) => setFormHazard(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Describe the hazard…" /></div>
+            <div><label className="text-sm font-medium">Who is at Risk?</label><input value={formWhoAtRisk} onChange={(e) => setFormWhoAtRisk(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Young people, Staff, Visitors" /></div>
           </div>
           <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Create Assessment</button>
+            <button onClick={() => { setDialogOpen(false); resetForm(); }} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+            <button
+              onClick={handleCreate}
+              disabled={createMutation.isPending}
+              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {createMutation.isPending ? "Creating…" : "Create Assessment"}
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

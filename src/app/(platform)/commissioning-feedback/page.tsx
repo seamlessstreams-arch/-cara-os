@@ -16,232 +16,25 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import type { CommissioningFeedbackRecord, CommissioningFeedbackType } from "@/types/extended";
+import { COMMISSIONING_FEEDBACK_TYPE_LABEL } from "@/types/extended";
+import { useCommissioningFeedbackRecords } from "@/hooks/use-commissioning-feedback-records";
+import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+/* ── colour map ─────────────────────────────────────────────────────── */
+const TYPE_COLORS: Record<CommissioningFeedbackType, string> = {
+  annual_review: "bg-blue-100 text-blue-800",
+  placement_update: "bg-slate-100 text-slate-800",
+  quality_concern: "bg-red-100 text-red-800",
+  compliment: "bg-green-100 text-green-800",
+  statutory_visit: "bg-purple-100 text-purple-800",
 };
-
-/* ── types ───────────────────────────────────────────────────────────── */
-const FEEDBACK_TYPES = [
-  "Annual Review",
-  "Placement Update",
-  "Quality Concern",
-  "Compliment",
-  "Statutory Visit",
-] as const;
-type FeedbackType = typeof FEEDBACK_TYPES[number];
-
-const TYPE_COLORS: Record<FeedbackType, string> = {
-  "Annual Review": "bg-blue-100 text-blue-800",
-  "Placement Update": "bg-slate-100 text-slate-800",
-  "Quality Concern": "bg-red-100 text-red-800",
-  "Compliment": "bg-green-100 text-green-800",
-  "Statutory Visit": "bg-purple-100 text-purple-800",
-};
-
-interface CommissioningFeedback {
-  id: string;
-  dateReceived: string;
-  youngPerson: string;
-  localAuthority: string;
-  commissioner: string;
-  feedbackType: FeedbackType;
-  overallRating: 1 | 2 | 3 | 4 | 5;
-  strengths: string[];
-  areasForDevelopment: string[];
-  specificComments: string;
-  responseRequired: boolean;
-  responseDate: string;
-  responseGivenBy: string;
-  responseSummary: string;
-  nextReviewDate: string;
-}
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: CommissioningFeedback[] = [
-  {
-    id: "cf_1",
-    dateReceived: d(-4),
-    youngPerson: "yp_alex",
-    localAuthority: "Manchester City Council",
-    commissioner: "Helen Brookes (Placement Commissioning Officer)",
-    feedbackType: "Annual Review",
-    overallRating: 5,
-    strengths: [
-      "Excellent communication with placing authority",
-      "Detailed monthly progress reports submitted on time",
-      "Strong evidence of education engagement and PEP delivery",
-      "Therapeutic care model well embedded in practice",
-    ],
-    areasForDevelopment: [
-      "Continue to develop independence skills as Alex approaches 16",
-    ],
-    specificComments:
-      "Manchester is extremely satisfied with the quality of care provided to Alex. The home has consistently met and exceeded the placement plan objectives. Stability has been transformative for Alex following multiple prior placement breakdowns. We are happy to recommend this provider to other commissioning teams.",
-    responseRequired: true,
-    responseDate: d(-2),
-    responseGivenBy: "staff_darren",
-    responseSummary:
-      "Acknowledged feedback formally by letter. Confirmed independence pathway plan starts at 15.5 years. Invited Helen to next LAC review.",
-    nextReviewDate: d(360),
-  },
-  {
-    id: "cf_2",
-    dateReceived: d(-1),
-    youngPerson: "yp_jordan",
-    localAuthority: "Leeds City Council",
-    commissioner: "Marcus Field (Senior Commissioner)",
-    feedbackType: "Quality Concern",
-    overallRating: 3,
-    strengths: [
-      "Staff are warm and welcoming",
-      "Jordan reports feeling safe in the home",
-    ],
-    areasForDevelopment: [
-      "Delay in providing the most recent quarterly report (5 days late)",
-      "Need more granular detail in education progress section",
-      "Missed weekly social worker call last Tuesday",
-    ],
-    specificComments:
-      "Whilst overall placement quality is good, Leeds has noted three administrative slips in the past 6 weeks. We require assurance that quality assurance processes are being followed and that communication will return to the standard initially demonstrated. A response is required within 10 working days.",
-    responseRequired: true,
-    responseDate: "",
-    responseGivenBy: "",
-    responseSummary: "",
-    nextReviewDate: d(30),
-  },
-  {
-    id: "cf_3",
-    dateReceived: d(-12),
-    youngPerson: "yp_casey",
-    localAuthority: "Bradford Metropolitan District Council",
-    commissioner: "Sarah Choudhury (Children's Resource Manager)",
-    feedbackType: "Compliment",
-    overallRating: 5,
-    strengths: [
-      "Exceptional handling of Casey's transition into the home",
-      "Sensitive, trauma-informed approach to early relationships",
-      "Proactive engagement with CAMHS and education",
-      "Casey reports being happier than at any previous placement",
-    ],
-    areasForDevelopment: [],
-    specificComments:
-      "I wanted to formally record Bradford's appreciation for the outstanding work this home has done with Casey over the past 4 months. The change in Casey since moving here is remarkable. The team's understanding of attachment and trauma is evident in every interaction we observe.",
-    responseRequired: false,
-    responseDate: d(-11),
-    responseGivenBy: "staff_darren",
-    responseSummary:
-      "Thanked Sarah and shared the compliment with the full team. Added to Reg 45 evidence file and Statement of Purpose review.",
-    nextReviewDate: d(180),
-  },
-  {
-    id: "cf_4",
-    dateReceived: d(-22),
-    youngPerson: "yp_alex",
-    localAuthority: "Manchester City Council",
-    commissioner: "James Whitfield (Quality Assurance Lead)",
-    feedbackType: "Statutory Visit",
-    overallRating: 4,
-    strengths: [
-      "Home environment was warm, clean and homely",
-      "Alex spoke positively about staff relationships",
-      "Care plan paperwork was clear and up to date",
-    ],
-    areasForDevelopment: [
-      "Some behaviour log entries lacked outcome detail",
-      "Risk assessment for community access could be more specific",
-    ],
-    specificComments:
-      "Visit conducted under regulation 25 commissioning oversight protocol. Overall a positive picture, with two minor documentation points to address. No safeguarding concerns identified. Alex was relaxed and engaged during the visit.",
-    responseRequired: true,
-    responseDate: d(-18),
-    responseGivenBy: "staff_ryan",
-    responseSummary:
-      "Behaviour log template updated to enforce outcome field. Community access risk assessment revised with location-specific detail. Both actions evidenced and shared with QA Lead.",
-    nextReviewDate: d(150),
-  },
-  {
-    id: "cf_5",
-    dateReceived: d(-8),
-    youngPerson: "yp_jordan",
-    localAuthority: "Leeds City Council",
-    commissioner: "Priya Anand (Allocated Social Worker Manager)",
-    feedbackType: "Placement Update",
-    overallRating: 4,
-    strengths: [
-      "Settling-in plan executed exactly as agreed",
-      "Daily updates during first two weeks were invaluable",
-      "Home accommodated last-minute family contact change",
-    ],
-    areasForDevelopment: [
-      "Would benefit from clearer escalation contact list out-of-hours",
-    ],
-    specificComments:
-      "Six-week placement update. Jordan is settling well and Leeds is content with progress. The home has demonstrated good flexibility around family contact. One small operational request around out-of-hours contacts.",
-    responseRequired: true,
-    responseDate: d(-6),
-    responseGivenBy: "staff_darren",
-    responseSummary:
-      "Out-of-hours contact card produced and shared with Leeds duty team. Confirmed RM mobile and on-call manager rota.",
-    nextReviewDate: d(45),
-  },
-  {
-    id: "cf_6",
-    dateReceived: d(-3),
-    youngPerson: "yp_casey",
-    localAuthority: "Bradford Metropolitan District Council",
-    commissioner: "Tom Reeves (IRO)",
-    feedbackType: "Statutory Visit",
-    overallRating: 5,
-    strengths: [
-      "Casey was actively involved in the review",
-      "Care plan goals are SMART and reviewed routinely",
-      "Strong professional network coordination",
-      "Voice of the child evidence is high quality",
-    ],
-    areasForDevelopment: [],
-    specificComments:
-      "Statutory LAC review. All review actions from previous meeting were completed. Casey participated meaningfully throughout. The quality of reflection and planning by the home team is among the best I see across my caseload.",
-    responseRequired: false,
-    responseDate: "",
-    responseGivenBy: "",
-    responseSummary: "",
-    nextReviewDate: d(90),
-  },
-  {
-    id: "cf_7",
-    dateReceived: d(-30),
-    youngPerson: "yp_alex",
-    localAuthority: "Manchester City Council",
-    commissioner: "Helen Brookes (Placement Commissioning Officer)",
-    feedbackType: "Annual Review",
-    overallRating: 4,
-    strengths: [
-      "Outcomes against placement plan consistently met",
-      "Education attendance maintained above 90%",
-      "Strong key working relationship",
-    ],
-    areasForDevelopment: [
-      "Greater visibility of independence skills progression metrics",
-      "Family contact reporting could be more structured",
-    ],
-    specificComments:
-      "Mid-year placement review. Manchester remains satisfied with placement quality. Two areas for development have been agreed and will be reviewed at the annual placement quality meeting.",
-    responseRequired: true,
-    responseDate: d(-28),
-    responseGivenBy: "staff_ryan",
-    responseSummary:
-      "Independence skills tracker rolled out for Alex with monthly progress measures. Family contact report template revised with structured headings.",
-    nextReviewDate: d(60),
-  },
-];
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function CommissioningFeedbackPage() {
-  const [entries] = useState<CommissioningFeedback[]>(SEED);
+  const { data: res, isLoading } = useCommissioningFeedbackRecords();
+  const entries = res?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterLA, setFilterLA] = useState("all");
@@ -249,7 +42,7 @@ export default function CommissioningFeedbackPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const localAuthorities = useMemo(
-    () => Array.from(new Set(entries.map((e) => e.localAuthority))).sort(),
+    () => Array.from(new Set(entries.map((e) => e.local_authority))).sort(),
     [entries],
   );
 
@@ -260,23 +53,23 @@ export default function CommissioningFeedbackPage() {
       list = list.filter(
         (e) =>
           e.commissioner.toLowerCase().includes(q) ||
-          e.localAuthority.toLowerCase().includes(q) ||
-          e.specificComments.toLowerCase().includes(q),
+          e.local_authority.toLowerCase().includes(q) ||
+          e.specific_comments.toLowerCase().includes(q),
       );
     }
-    if (filterType !== "all") list = list.filter((e) => e.feedbackType === filterType);
-    if (filterLA !== "all") list = list.filter((e) => e.localAuthority === filterLA);
+    if (filterType !== "all") list = list.filter((e) => e.feedback_type === filterType);
+    if (filterLA !== "all") list = list.filter((e) => e.local_authority === filterLA);
 
     list.sort((a, b) => {
       switch (sortBy) {
         case "date":
-          return b.dateReceived.localeCompare(a.dateReceived);
+          return b.date_received.localeCompare(a.date_received);
         case "rating":
-          return b.overallRating - a.overallRating;
+          return b.overall_rating - a.overall_rating;
         case "la":
-          return a.localAuthority.localeCompare(b.localAuthority);
+          return a.local_authority.localeCompare(b.local_authority);
         case "type":
-          return a.feedbackType.localeCompare(b.feedbackType);
+          return a.feedback_type.localeCompare(b.feedback_type);
         default:
           return 0;
       }
@@ -288,29 +81,29 @@ export default function CommissioningFeedbackPage() {
   const avgRating =
     entries.length === 0
       ? 0
-      : entries.reduce((sum, e) => sum + e.overallRating, 0) / entries.length;
-  const compliments = entries.filter((e) => e.feedbackType === "Compliment").length;
+      : entries.reduce((sum, e) => sum + e.overall_rating, 0) / entries.length;
+  const compliments = entries.filter((e) => e.feedback_type === "compliment").length;
   const concernsToResolve = entries.filter(
-    (e) => e.responseRequired && !e.responseDate,
+    (e) => e.response_required && !e.response_date,
   ).length;
   const lasEngaged = localAuthorities.length;
 
-  const exportCols: ExportColumn<CommissioningFeedback>[] = [
-    { header: "ID", accessor: (r: CommissioningFeedback) => r.id },
-    { header: "Date Received", accessor: (r: CommissioningFeedback) => r.dateReceived },
-    { header: "Young Person", accessor: (r: CommissioningFeedback) => getYPName(r.youngPerson) },
-    { header: "Local Authority", accessor: (r: CommissioningFeedback) => r.localAuthority },
-    { header: "Commissioner", accessor: (r: CommissioningFeedback) => r.commissioner },
-    { header: "Feedback Type", accessor: (r: CommissioningFeedback) => r.feedbackType },
-    { header: "Overall Rating", accessor: (r: CommissioningFeedback) => `${r.overallRating}/5` },
-    { header: "Strengths", accessor: (r: CommissioningFeedback) => r.strengths.join("; ") },
-    { header: "Areas for Development", accessor: (r: CommissioningFeedback) => r.areasForDevelopment.join("; ") },
-    { header: "Specific Comments", accessor: (r: CommissioningFeedback) => r.specificComments },
-    { header: "Response Required", accessor: (r: CommissioningFeedback) => (r.responseRequired ? "Yes" : "No") },
-    { header: "Response Date", accessor: (r: CommissioningFeedback) => r.responseDate || "Pending" },
-    { header: "Response Given By", accessor: (r: CommissioningFeedback) => (r.responseGivenBy ? getStaffName(r.responseGivenBy) : "") },
-    { header: "Response Summary", accessor: (r: CommissioningFeedback) => r.responseSummary },
-    { header: "Next Review Date", accessor: (r: CommissioningFeedback) => r.nextReviewDate },
+  const exportCols: ExportColumn<CommissioningFeedbackRecord>[] = [
+    { header: "ID", accessor: (r) => r.id },
+    { header: "Date Received", accessor: (r) => r.date_received },
+    { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
+    { header: "Local Authority", accessor: (r) => r.local_authority },
+    { header: "Commissioner", accessor: (r) => r.commissioner },
+    { header: "Feedback Type", accessor: (r) => COMMISSIONING_FEEDBACK_TYPE_LABEL[r.feedback_type] },
+    { header: "Overall Rating", accessor: (r) => `${r.overall_rating}/5` },
+    { header: "Strengths", accessor: (r) => r.strengths.join("; ") },
+    { header: "Areas for Development", accessor: (r) => r.areas_for_development.join("; ") },
+    { header: "Specific Comments", accessor: (r) => r.specific_comments },
+    { header: "Response Required", accessor: (r) => (r.response_required ? "Yes" : "No") },
+    { header: "Response Date", accessor: (r) => r.response_date || "Pending" },
+    { header: "Response Given By", accessor: (r) => (r.response_given_by ? getStaffName(r.response_given_by) : "") },
+    { header: "Response Summary", accessor: (r) => r.response_summary },
+    { header: "Next Review Date", accessor: (r) => r.next_review_date },
   ];
 
   const renderStars = (rating: number) => (
@@ -326,6 +119,17 @@ export default function CommissioningFeedbackPage() {
       ))}
     </div>
   );
+
+  if (isLoading) {
+    return (
+      <PageShell
+        title="Commissioning Feedback"
+        subtitle="Feedback from placing local authorities on placement quality, communication, and outcomes"
+      >
+        <div />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -411,8 +215,8 @@ export default function CommissioningFeedbackPage() {
               <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                {FEEDBACK_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                {(Object.entries(COMMISSIONING_FEEDBACK_TYPE_LABEL) as [CommissioningFeedbackType, string][]).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -449,7 +253,7 @@ export default function CommissioningFeedbackPage() {
           )}
           {filtered.map((entry) => {
             const isExpanded = expandedId === entry.id;
-            const unresolved = entry.responseRequired && !entry.responseDate;
+            const unresolved = entry.response_required && !entry.response_date;
             return (
               <div
                 key={entry.id}
@@ -466,10 +270,10 @@ export default function CommissioningFeedbackPage() {
                     <Building2 className="h-5 w-5 text-blue-600 shrink-0" />
                     <div className="min-w-0">
                       <p className="font-medium truncate">
-                        {entry.localAuthority}
+                        {entry.local_authority}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {entry.dateReceived} · {entry.commissioner} · Re: {getYPName(entry.youngPerson)}
+                        {entry.date_received} · {entry.commissioner} · Re: {getYPName(entry.child_id)}
                       </p>
                     </div>
                   </div>
@@ -479,9 +283,9 @@ export default function CommissioningFeedbackPage() {
                         Response due
                       </Badge>
                     )}
-                    {renderStars(entry.overallRating)}
-                    <Badge className={cn("text-xs", TYPE_COLORS[entry.feedbackType])}>
-                      {entry.feedbackType}
+                    {renderStars(entry.overall_rating)}
+                    <Badge className={cn("text-xs", TYPE_COLORS[entry.feedback_type])}>
+                      {COMMISSIONING_FEEDBACK_TYPE_LABEL[entry.feedback_type]}
                     </Badge>
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4" />
@@ -497,7 +301,7 @@ export default function CommissioningFeedbackPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="text-xs text-muted-foreground">Young Person</p>
-                        <p className="font-medium">{getYPName(entry.youngPerson)}</p>
+                        <p className="font-medium">{getYPName(entry.child_id)}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Commissioner</p>
@@ -505,11 +309,11 @@ export default function CommissioningFeedbackPage() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Date Received</p>
-                        <p className="font-medium">{entry.dateReceived}</p>
+                        <p className="font-medium">{entry.date_received}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Next Review</p>
-                        <p className="font-medium">{entry.nextReviewDate}</p>
+                        <p className="font-medium">{entry.next_review_date}</p>
                       </div>
                     </div>
 
@@ -518,7 +322,7 @@ export default function CommissioningFeedbackPage() {
                       <p className="text-xs text-muted-foreground mb-1 font-medium">
                         Specific Comments
                       </p>
-                      <p className="text-sm">{entry.specificComments}</p>
+                      <p className="text-sm">{entry.specific_comments}</p>
                     </div>
 
                     {/* strengths */}
@@ -537,7 +341,7 @@ export default function CommissioningFeedbackPage() {
                     )}
 
                     {/* development */}
-                    {entry.areasForDevelopment.length > 0 && (
+                    {entry.areas_for_development.length > 0 && (
                       <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
                         <div className="flex items-center gap-1 mb-2">
                           <ClipboardCheck className="h-4 w-4 text-amber-700" />
@@ -546,7 +350,7 @@ export default function CommissioningFeedbackPage() {
                           </p>
                         </div>
                         <ul className="text-sm list-disc pl-5 space-y-1">
-                          {entry.areasForDevelopment.map((a, i) => (
+                          {entry.areas_for_development.map((a, i) => (
                             <li key={i}>{a}</li>
                           ))}
                         </ul>
@@ -581,14 +385,14 @@ export default function CommissioningFeedbackPage() {
                         <div>
                           <span className="text-muted-foreground">Required:</span>{" "}
                           <span className="font-medium">
-                            {entry.responseRequired ? "Yes" : "No"}
+                            {entry.response_required ? "Yes" : "No"}
                           </span>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Given By:</span>{" "}
                           <span className="font-medium">
-                            {entry.responseGivenBy
-                              ? getStaffName(entry.responseGivenBy)
+                            {entry.response_given_by
+                              ? getStaffName(entry.response_given_by)
                               : "—"}
                           </span>
                         </div>
@@ -600,18 +404,21 @@ export default function CommissioningFeedbackPage() {
                               unresolved ? "text-red-700" : "",
                             )}
                           >
-                            {entry.responseDate || "Pending"}
+                            {entry.response_date || "Pending"}
                           </span>
                         </div>
                       </div>
                       <p className="text-sm">
-                        {entry.responseSummary || (
+                        {entry.response_summary || (
                           <span className="italic text-muted-foreground">
                             No response recorded yet.
                           </span>
                         )}
                       </p>
                     </div>
+
+                    {/* smart links */}
+                    <SmartLinkPanel sourceType="commissioning-feedback" sourceId={entry.id} childId={entry.child_id} compact />
                   </div>
                 )}
               </div>

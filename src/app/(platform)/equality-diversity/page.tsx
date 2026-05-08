@@ -8,177 +8,62 @@ import {
   Plus,
   ArrowUpDown,
   Search,
-  AlertTriangle,
   CheckCircle2,
   Users,
   TrendingUp,
+  Loader2,
 } from "lucide-react";
 import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getStaffName } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useEqualityInitiatives } from "@/hooks/use-equality-initiatives";
+import { useEqualityTraining } from "@/hooks/use-equality-training";
+import type {
+  EqualityInitiative,
+  EqualityTrainingRecord,
+  EqualityMonitoringData,
+  EqualityInitiativeStatus,
+  ProtectedCharacteristic,
+} from "@/types/extended";
+import {
+  EQUALITY_INITIATIVE_STATUS_LABEL,
+  PROTECTED_CHARACTERISTIC_LABEL,
+} from "@/types/extended";
 
-/* ── types ─────────────────────────────────────────────────────────────── */
+/* ── constants ─────────────────────────────────────────────────────────── */
 
-type InitiativeStatus = "planned" | "active" | "completed" | "ongoing";
-type ProtectedCharacteristic = "age" | "disability" | "gender_reassignment" | "marriage_civil_partnership" | "pregnancy_maternity" | "race" | "religion_belief" | "sex" | "sexual_orientation";
-
-interface EqualityAction {
-  id: string;
-  action: string;
-  characteristic: ProtectedCharacteristic;
-  owner: string;
-  dueDate: string;
-  status: "pending" | "in_progress" | "completed";
-  completedDate: string | null;
-  impact: string;
-}
-
-interface TrainingRecord {
-  id: string;
-  title: string;
-  date: string;
-  provider: string;
-  attendees: string[];
-  mandatory: boolean;
-  nextDue: string;
-}
-
-interface EqualityInitiative {
-  id: string;
-  title: string;
-  description: string;
-  status: InitiativeStatus;
-  leadBy: string;
-  startDate: string;
-  targetDate: string;
-  characteristics: ProtectedCharacteristic[];
-  objectives: string[];
-  actions: EqualityAction[];
-  outcomes: string[];
-  evidence: string[];
-  notes: string;
-}
-
-interface EqualityMonitoring {
-  staffDiversity: { characteristic: string; breakdown: Record<string, number> }[];
-  ypDiversity: { characteristic: string; breakdown: Record<string, number> }[];
-  lastAuditDate: string;
-  nextAuditDue: string;
-  auditedBy: string;
-}
-
-/* ── seed ──────────────────────────────────────────────────────────────── */
-
-const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
-
-const CHAR_LABELS: Record<ProtectedCharacteristic, string> = {
-  age: "Age", disability: "Disability", gender_reassignment: "Gender Reassignment",
-  marriage_civil_partnership: "Marriage & Civil Partnership",
-  pregnancy_maternity: "Pregnancy & Maternity", race: "Race",
-  religion_belief: "Religion or Belief", sex: "Sex", sexual_orientation: "Sexual Orientation",
-};
-
-const STATUS_LABELS: Record<InitiativeStatus, string> = { planned: "Planned", active: "Active", completed: "Completed", ongoing: "Ongoing" };
-const STATUS_COLOURS: Record<InitiativeStatus, string> = {
+const STATUS_COLOURS: Record<EqualityInitiativeStatus, string> = {
   planned: "bg-blue-100 text-blue-800", active: "bg-green-100 text-green-800",
   completed: "bg-emerald-100 text-emerald-800", ongoing: "bg-purple-100 text-purple-800",
 };
 
-const MONITORING: EqualityMonitoring = {
-  staffDiversity: [
+/* ── hardcoded monitoring (no store collection) ─────────────────────────── */
+
+const MONITORING: EqualityMonitoringData = {
+  staff_diversity: [
     { characteristic: "Ethnicity", breakdown: { "White British": 5, "Black British": 1, "Romanian": 1, "Mixed Heritage": 1 } },
     { characteristic: "Gender", breakdown: { "Female": 5, "Male": 3 } },
     { characteristic: "Age Range", breakdown: { "18-25": 1, "26-35": 3, "36-45": 2, "46-55": 2 } },
     { characteristic: "Disability", breakdown: { "No disability disclosed": 7, "Disability disclosed": 1 } },
   ],
-  ypDiversity: [
+  yp_diversity: [
     { characteristic: "Ethnicity", breakdown: { "White British": 2, "Mixed Heritage": 1 } },
     { characteristic: "Gender", breakdown: { "Male": 2, "Non-binary": 1 } },
     { characteristic: "Disability/SEND", breakdown: { "ADHD": 1, "ASD": 1, "None disclosed": 1 } },
     { characteristic: "Religion", breakdown: { "No religion": 2, "Christian": 1 } },
   ],
-  lastAuditDate: d(-30), nextAuditDue: d(60), auditedBy: "staff_darren",
+  last_audit_date: "2026-04-07",
+  next_audit_due: "2026-07-06",
+  audited_by: "staff_darren",
 };
-
-const TRAINING: TrainingRecord[] = [
-  { id: "t1", title: "Equality & Diversity Fundamentals", date: d(-60), provider: "In-house", attendees: ["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "staff_chervelle", "staff_diane", "staff_lackson", "staff_mirela"], mandatory: true, nextDue: d(305) },
-  { id: "t2", title: "Unconscious Bias Workshop", date: d(-30), provider: "External — Inclusive Training Co.", attendees: ["staff_darren", "staff_ryan", "staff_anna", "staff_edward", "staff_chervelle", "staff_diane", "staff_lackson", "staff_mirela"], mandatory: true, nextDue: d(335) },
-  { id: "t3", title: "Supporting LGBTQ+ Young People in Care", date: d(-45), provider: "Stonewall", attendees: ["staff_anna", "staff_chervelle", "staff_darren"], mandatory: false, nextDue: d(320) },
-  { id: "t4", title: "Cultural Competence in Residential Care", date: d(-15), provider: "In-house", attendees: ["staff_darren", "staff_ryan", "staff_anna", "staff_edward"], mandatory: false, nextDue: d(350) },
-];
-
-const INITIATIVES: EqualityInitiative[] = [
-  {
-    id: "ei1", title: "Cultural Celebration Calendar",
-    description: "Create and maintain a calendar of cultural and religious celebrations relevant to children and staff in the home, ensuring these are marked, respected and celebrated appropriately.",
-    status: "active", leadBy: "staff_chervelle", startDate: d(-60), targetDate: d(305),
-    characteristics: ["race", "religion_belief"],
-    objectives: [
-      "Identify all relevant cultural and religious dates for current cohort",
-      "Plan age-appropriate celebration activities for key dates",
-      "Ensure dietary requirements are met during religious observances",
-      "Create a visible celebration calendar in communal areas",
-    ],
-    actions: [
-      { id: "a1", action: "Research and compile cultural dates relevant to current children", characteristic: "race", owner: "staff_chervelle", dueDate: d(-50), status: "completed", completedDate: d(-52), impact: "Calendar now includes Eid, Diwali, Christmas, Chinese New Year, Black History Month" },
-      { id: "a2", action: "Create visual calendar display for communal area", characteristic: "religion_belief", owner: "staff_chervelle", dueDate: d(-40), status: "completed", completedDate: d(-42), impact: "Colourful calendar displayed in dining room. Children helped decorate it." },
-      { id: "a3", action: "Plan meals for Ramadan (if applicable)", characteristic: "religion_belief", owner: "staff_anna", dueDate: d(20), status: "pending", completedDate: null, impact: "" },
-      { id: "a4", action: "Arrange Black History Month activities — October", characteristic: "race", owner: "staff_chervelle", dueDate: d(150), status: "pending", completedDate: null, impact: "" },
-    ],
-    outcomes: ["Children have expressed interest in learning about different cultures", "Staff awareness of cultural dates improved", "Mealtimes now include diverse cuisines weekly"],
-    evidence: ["Cultural calendar photographs", "Children's feedback at meetings", "Menu planning records"],
-    notes: "Children are enthusiastic. Alex asked to cook a dish from their grandmother's heritage. Jordan contributed artwork for the calendar.",
-  },
-  {
-    id: "ei2", title: "Inclusive Language & Communication Review",
-    description: "Review all home documentation, signage, and communication materials to ensure inclusive language is used throughout. Update policies and guidance to reflect best practice.",
-    status: "completed", leadBy: "staff_darren", startDate: d(-90), targetDate: d(-30),
-    characteristics: ["sex", "gender_reassignment", "disability", "race"],
-    objectives: [
-      "Audit all policies for inclusive language",
-      "Update children's guide to use gender-neutral language where appropriate",
-      "Ensure signage is accessible (easy-read versions, visual aids)",
-      "Train staff on inclusive language expectations",
-    ],
-    actions: [
-      { id: "a5", action: "Audit all 42 policies for inclusive language", characteristic: "sex", owner: "staff_darren", dueDate: d(-70), status: "completed", completedDate: d(-72), impact: "14 policies updated to use gender-neutral language" },
-      { id: "a6", action: "Create easy-read version of children's guide", characteristic: "disability", owner: "staff_anna", dueDate: d(-50), status: "completed", completedDate: d(-48), impact: "Easy-read guide now available with Widgit symbols" },
-      { id: "a7", action: "Update bathroom signage to be gender-inclusive", characteristic: "gender_reassignment", owner: "staff_darren", dueDate: d(-40), status: "completed", completedDate: d(-42), impact: "Gender-neutral signage installed on communal bathroom" },
-      { id: "a8", action: "Staff briefing on inclusive language", characteristic: "race", owner: "staff_darren", dueDate: d(-35), status: "completed", completedDate: d(-35), impact: "All staff attended. Positive feedback." },
-    ],
-    outcomes: ["All policies now use inclusive language", "Children's guide available in standard and easy-read formats", "Gender-neutral bathroom available", "Staff confident in using inclusive language"],
-    evidence: ["Updated policy documents", "Easy-read children's guide", "Training attendance records", "Staff feedback forms"],
-    notes: "Completed successfully. Annual review built into policy schedule.",
-  },
-  {
-    id: "ei3", title: "Anti-Bullying & Discrimination Reporting",
-    description: "Strengthen systems for children and staff to report bullying, harassment or discrimination. Ensure all reports are taken seriously, investigated promptly, and outcomes fed back.",
-    status: "ongoing", leadBy: "staff_darren", startDate: d(-45), targetDate: d(320),
-    characteristics: ["race", "disability", "sexual_orientation", "religion_belief"],
-    objectives: [
-      "Create child-friendly reporting mechanism",
-      "Review and update anti-bullying policy",
-      "Ensure all incidents are tracked and analysed for patterns",
-      "Termly review of discrimination-related incidents",
-    ],
-    actions: [
-      { id: "a9", action: "Create 'worry box' system for anonymous reporting", characteristic: "race", owner: "staff_anna", dueDate: d(-30), status: "completed", completedDate: d(-32), impact: "Worry boxes in each bedroom corridor and communal area. Checked weekly." },
-      { id: "a10", action: "Anti-bullying policy review and update", characteristic: "disability", owner: "staff_darren", dueDate: d(-20), status: "completed", completedDate: d(-22), impact: "Policy now explicitly references all protected characteristics" },
-      { id: "a11", action: "Termly discrimination incident analysis", characteristic: "sexual_orientation", owner: "staff_darren", dueDate: d(30), status: "in_progress", completedDate: null, impact: "" },
-    ],
-    outcomes: ["3 worry box submissions received — all addressed within 48 hours", "Zero discrimination incidents in current quarter", "Children report feeling safer"],
-    evidence: ["Worry box log", "Incident data analysis", "Children's meeting minutes"],
-    notes: "Ongoing initiative. Worry box working well — children using it. One submission led to a positive conversation about online language.",
-  },
-];
 
 /* ── flat row for export ─────────────────────────────────────────────── */
 
@@ -204,9 +89,12 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 /* ── component ────────────────────────────────────────────────────────── */
 
 export default function EqualityDiversityPage() {
-  const [initiatives] = useState<EqualityInitiative[]>(INITIATIVES);
-  const [training] = useState<TrainingRecord[]>(TRAINING);
-  const [monitoring] = useState<EqualityMonitoring>(MONITORING);
+  const { data: initRes, isLoading: initLoading } = useEqualityInitiatives();
+  const { data: trainRes, isLoading: trainLoading } = useEqualityTraining();
+  const initiatives: EqualityInitiative[] = initRes?.data ?? [];
+  const training: EqualityTrainingRecord[] = trainRes?.data ?? [];
+  const monitoring = MONITORING;
+
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -214,6 +102,8 @@ export default function EqualityDiversityPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
+
+  const isLoading = initLoading || trainLoading;
 
   const stats = useMemo(() => {
     const active = initiatives.filter((i) => ["active", "ongoing"].includes(i.status)).length;
@@ -224,25 +114,27 @@ export default function EqualityDiversityPage() {
   }, [initiatives]);
 
   const filtered = useMemo(() => {
-    let list = initiatives;
+    let list = [...initiatives];
     if (search) { const q = search.toLowerCase(); list = list.filter((i) => i.title.toLowerCase().includes(q)); }
     if (filterStatus !== "all") list = list.filter((i) => i.status === filterStatus);
     const out = [...list];
     switch (sortBy) {
       case "status": out.sort((a, b) => a.status.localeCompare(b.status)); break;
-      case "date": out.sort((a, b) => b.startDate.localeCompare(a.startDate)); break;
+      case "date": out.sort((a, b) => b.start_date.localeCompare(a.start_date)); break;
     }
     return out;
   }, [initiatives, search, filterStatus, sortBy]);
 
   const exportData = useMemo<FlatRow[]>(() =>
     initiatives.map((i) => ({
-      initiative: i.title, status: STATUS_LABELS[i.status], lead: getStaffName(i.leadBy),
-      characteristics: i.characteristics.map((c) => CHAR_LABELS[c]).join(", "),
+      initiative: i.title, status: EQUALITY_INITIATIVE_STATUS_LABEL[i.status], lead: getStaffName(i.lead_by),
+      characteristics: i.characteristics.map((c) => PROTECTED_CHARACTERISTIC_LABEL[c]).join(", "),
       actionsTotal: `${i.actions.length}`,
       actionsComplete: `${i.actions.filter((a) => a.status === "completed").length}`,
-      outcomes: i.outcomes.join("; "), startDate: i.startDate, targetDate: i.targetDate, notes: i.notes,
+      outcomes: i.outcomes.join("; "), startDate: i.start_date, targetDate: i.target_date, notes: i.notes,
     })), [initiatives]);
+
+  if (isLoading) return <PageShell title="Equality & Diversity" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -275,11 +167,11 @@ export default function EqualityDiversityPage() {
       {/* monitoring overview */}
       <div className="rounded-lg border bg-white p-4 mb-6">
         <h3 className="font-semibold mb-3 flex items-center gap-2"><Users className="h-4 w-4 text-gray-400" /> Diversity Monitoring</h3>
-        <p className="text-xs text-gray-500 mb-3">Last audit: {monitoring.lastAuditDate} by {getStaffName(monitoring.auditedBy)} · Next: {monitoring.nextAuditDue}</p>
+        <p className="text-xs text-gray-500 mb-3">Last audit: {monitoring.last_audit_date} by {getStaffName(monitoring.audited_by)} · Next: {monitoring.next_audit_due}</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <h4 className="text-xs font-semibold text-gray-500 mb-2">Staff Diversity</h4>
-            {monitoring.staffDiversity.map((d) => (
+            {monitoring.staff_diversity.map((d) => (
               <div key={d.characteristic} className="mb-2">
                 <p className="text-xs font-medium text-gray-600">{d.characteristic}</p>
                 <div className="flex flex-wrap gap-1 mt-0.5">
@@ -292,7 +184,7 @@ export default function EqualityDiversityPage() {
           </div>
           <div>
             <h4 className="text-xs font-semibold text-gray-500 mb-2">Young People Diversity</h4>
-            {monitoring.ypDiversity.map((d) => (
+            {monitoring.yp_diversity.map((d) => (
               <div key={d.characteristic} className="mb-2">
                 <p className="text-xs font-medium text-gray-600">{d.characteristic}</p>
                 <div className="flex flex-wrap gap-1 mt-0.5">
@@ -322,7 +214,7 @@ export default function EqualityDiversityPage() {
                   <td className="py-2 pr-3">{t.provider}</td>
                   <td className="py-2 pr-3">{t.attendees.length} staff</td>
                   <td className="py-2 pr-3"><span className={cn("px-2 py-0.5 rounded text-xs font-medium", t.mandatory ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800")}>{t.mandatory ? "Mandatory" : "Optional"}</span></td>
-                  <td className={cn("py-2", t.nextDue <= d(30) ? "text-amber-600 font-medium" : "")}>{t.nextDue}</td>
+                  <td className="py-2">{t.next_due}</td>
                 </tr>
               ))}
             </tbody>
@@ -340,7 +232,7 @@ export default function EqualityDiversityPage() {
           <SelectTrigger className="w-[150px] h-9 text-sm"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            {Object.entries(STATUS_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            {Object.entries(EQUALITY_INITIATIVE_STATUS_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -368,9 +260,9 @@ export default function EqualityDiversityPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <Globe className="h-4 w-4 text-gray-400" />
                     <h3 className="font-semibold">{init.title}</h3>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[init.status])}>{STATUS_LABELS[init.status]}</span>
+                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[init.status])}>{EQUALITY_INITIATIVE_STATUS_LABEL[init.status]}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Lead: {getStaffName(init.leadBy)} · Actions: {done}/{init.actions.length} ({pct}%)</p>
+                  <p className="text-xs text-gray-500 mt-1">Lead: {getStaffName(init.lead_by)} · Actions: {done}/{init.actions.length} ({pct}%)</p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
               </button>
@@ -379,7 +271,7 @@ export default function EqualityDiversityPage() {
                 <div className="border-t px-4 pb-4 space-y-4">
                   <p className="mt-3 text-sm">{init.description}</p>
                   <div className="flex flex-wrap gap-1">
-                    {init.characteristics.map((c) => <span key={c} className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded text-xs font-medium">{CHAR_LABELS[c]}</span>)}
+                    {init.characteristics.map((c) => <span key={c} className="px-2 py-0.5 bg-purple-100 text-purple-800 rounded text-xs font-medium">{PROTECTED_CHARACTERISTIC_LABEL[c]}</span>)}
                   </div>
 
                   <div className="rounded-md bg-gray-50 p-3">
@@ -399,7 +291,7 @@ export default function EqualityDiversityPage() {
                         {a.status === "completed" ? <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" /> : <div className="h-4 w-4 rounded-full border-2 border-gray-300 mt-0.5 shrink-0" />}
                         <div>
                           <p className={cn("text-sm", a.status === "completed" ? "text-gray-500" : "")}>{a.action}</p>
-                          <p className="text-xs text-gray-400">{getStaffName(a.owner)} · Due {a.dueDate}{a.completedDate ? ` · Done ${a.completedDate}` : ""}</p>
+                          <p className="text-xs text-gray-400">{getStaffName(a.owner)} · Due {a.due_date}{a.completed_date ? ` · Done ${a.completed_date}` : ""}</p>
                           {a.impact && <p className="text-xs text-green-700 italic">{a.impact}</p>}
                         </div>
                       </div>

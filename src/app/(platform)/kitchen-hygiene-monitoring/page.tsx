@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Sparkles,
   Clock,
+  Loader2,
 } from "lucide-react";
 import {
   Select,
@@ -24,303 +25,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useKitchenHygieneChecks } from "@/hooks/use-kitchen-hygiene-checks";
+import type { KitchenHygieneCheck, HygieneShiftType, HygieneVerdict, FridgeOrganisation } from "@/types/extended";
+import { HYGIENE_SHIFT_TYPE_LABEL, HYGIENE_VERDICT_LABEL, FRIDGE_ORGANISATION_LABEL } from "@/types/extended";
 
-interface HygieneCheckEntry {
-  id: string;
-  date: string;
-  time: string;
-  staffMember: string;
-  shiftType: "Early" | "Late" | "Sleep-in" | "Wake-night";
-  fridgeTemperature: number;
-  fridgeWithinRange: boolean;
-  freezerTemperature: number;
-  freezerWithinRange: boolean;
-  cookingTempsRecorded: { meal: string; tempReading: number; minRequired: number; pass: boolean }[];
-  fridgeOrganisation: "Excellent" | "Good" | "Adequate" | "Needs attention";
-  fridgeRotation: boolean;
-  expiredItemsFound: { item: string; expiryDate: string; disposed: boolean }[];
-  surfacesCleaned: boolean;
-  cleaningProductsCorrect: boolean;
-  handwashingObserved: boolean;
-  apronsAndHairCovers: boolean;
-  childrenPreparingFoodSupervision: string;
-  cookingActivitySafetyBriefingDone: boolean;
-  pestsObserved: boolean;
-  pestActions: string;
-  bins: "Empty" | "Half full" | "Full" | "Overflow";
-  binEmptiedTime: string;
-  dishwasherCycleNotes: string;
-  cuttingBoardSegregation: boolean;
-  allergenLabelling: boolean;
-  defrostingPractice: string;
-  hotHoldingTemps: { item: string; temp: number; pass: boolean }[];
-  overallVerdict: "Pass" | "Pass with minor actions" | "Fail";
-  immediateActions: string[];
-  followUpActions: string[];
-  notes: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const verdictColour: Record<HygieneVerdict, string> = {
+  pass: "bg-green-100 text-green-800",
+  pass_with_minor_actions: "bg-amber-100 text-amber-800",
+  fail: "bg-red-100 text-red-800",
 };
 
-const data: HygieneCheckEntry[] = [
-  {
-    id: "kh-001",
-    date: d(0),
-    time: "08:00",
-    staffMember: "staff_anna",
-    shiftType: "Early",
-    fridgeTemperature: 4,
-    fridgeWithinRange: true,
-    freezerTemperature: -19,
-    freezerWithinRange: true,
-    cookingTempsRecorded: [],
-    fridgeOrganisation: "Excellent",
-    fridgeRotation: true,
-    expiredItemsFound: [],
-    surfacesCleaned: true,
-    cleaningProductsCorrect: true,
-    handwashingObserved: true,
-    apronsAndHairCovers: false,
-    childrenPreparingFoodSupervision: "Casey making own breakfast — supervised by Anna; sensory-aware",
-    cookingActivitySafetyBriefingDone: false,
-    pestsObserved: false,
-    pestActions: "",
-    bins: "Empty",
-    binEmptiedTime: "07:50",
-    dishwasherCycleNotes: "Dishwasher cycled overnight; loaded again 08:30",
-    cuttingBoardSegregation: true,
-    allergenLabelling: true,
-    defrostingPractice: "Tomorrow's chicken in fridge bottom shelf",
-    hotHoldingTemps: [],
-    overallVerdict: "Pass",
-    immediateActions: [],
-    followUpActions: [],
-    notes: "Routine morning check. Kitchen in good shape.",
-  },
-  {
-    id: "kh-002",
-    date: d(0),
-    time: "12:30",
-    staffMember: "staff_chervelle",
-    shiftType: "Late",
-    fridgeTemperature: 5,
-    fridgeWithinRange: true,
-    freezerTemperature: -18,
-    freezerWithinRange: true,
-    cookingTempsRecorded: [
-      { meal: "Lunch — chicken stir-fry", tempReading: 78, minRequired: 75, pass: true },
-    ],
-    fridgeOrganisation: "Good",
-    fridgeRotation: true,
-    expiredItemsFound: [],
-    surfacesCleaned: true,
-    cleaningProductsCorrect: true,
-    handwashingObserved: true,
-    apronsAndHairCovers: true,
-    childrenPreparingFoodSupervision: "Jordan helped chop vegetables — appropriate supervision",
-    cookingActivitySafetyBriefingDone: true,
-    pestsObserved: false,
-    pestActions: "",
-    bins: "Half full",
-    binEmptiedTime: "Will empty post-lunch",
-    dishwasherCycleNotes: "Cycled after lunch",
-    cuttingBoardSegregation: true,
-    allergenLabelling: true,
-    defrostingPractice: "Standard",
-    hotHoldingTemps: [
-      { item: "Lunch (kept warm 5 mins service)", temp: 76, pass: true },
-    ],
-    overallVerdict: "Pass",
-    immediateActions: [],
-    followUpActions: [],
-    notes: "Cooking with Jordan went well. Safety briefing covered.",
-  },
-  {
-    id: "kh-003",
-    date: d(-1),
-    time: "18:00",
-    staffMember: "staff_lackson",
-    shiftType: "Late",
-    fridgeTemperature: 6,
-    fridgeWithinRange: true,
-    freezerTemperature: -18,
-    freezerWithinRange: true,
-    cookingTempsRecorded: [
-      { meal: "Dinner — beef bolognese", tempReading: 82, minRequired: 75, pass: true },
-    ],
-    fridgeOrganisation: "Good",
-    fridgeRotation: true,
-    expiredItemsFound: [
-      { item: "Salad bag", expiryDate: d(-1), disposed: true },
-    ],
-    surfacesCleaned: true,
-    cleaningProductsCorrect: true,
-    handwashingObserved: true,
-    apronsAndHairCovers: true,
-    childrenPreparingFoodSupervision: "Alex set table; brief help with garlic bread",
-    cookingActivitySafetyBriefingDone: true,
-    pestsObserved: false,
-    pestActions: "",
-    bins: "Half full",
-    binEmptiedTime: "Post-dinner",
-    dishwasherCycleNotes: "Cycled after dinner",
-    cuttingBoardSegregation: true,
-    allergenLabelling: true,
-    defrostingPractice: "Standard",
-    hotHoldingTemps: [],
-    overallVerdict: "Pass with minor actions",
-    immediateActions: [
-      "Expired salad bag disposed",
-      "Reordered fresh salad",
-    ],
-    followUpActions: [
-      "Build expiry sweep into morning check",
-    ],
-    notes: "Salad caught at expiry — disposed promptly. Reorder placed.",
-  },
-  {
-    id: "kh-004",
-    date: d(-2),
-    time: "07:30",
-    staffMember: "staff_anna",
-    shiftType: "Early",
-    fridgeTemperature: 4,
-    fridgeWithinRange: true,
-    freezerTemperature: -19,
-    freezerWithinRange: true,
-    cookingTempsRecorded: [],
-    fridgeOrganisation: "Excellent",
-    fridgeRotation: true,
-    expiredItemsFound: [],
-    surfacesCleaned: true,
-    cleaningProductsCorrect: true,
-    handwashingObserved: true,
-    apronsAndHairCovers: false,
-    childrenPreparingFoodSupervision: "Casey making own breakfast",
-    cookingActivitySafetyBriefingDone: false,
-    pestsObserved: false,
-    pestActions: "",
-    bins: "Empty",
-    binEmptiedTime: "07:10",
-    dishwasherCycleNotes: "Standard",
-    cuttingBoardSegregation: true,
-    allergenLabelling: true,
-    defrostingPractice: "Standard",
-    hotHoldingTemps: [],
-    overallVerdict: "Pass",
-    immediateActions: [],
-    followUpActions: [],
-    notes: "",
-  },
-  {
-    id: "kh-005",
-    date: d(-3),
-    time: "20:00",
-    staffMember: "staff_ryan",
-    shiftType: "Late",
-    fridgeTemperature: 7,
-    fridgeWithinRange: false,
-    freezerTemperature: -18,
-    freezerWithinRange: true,
-    cookingTempsRecorded: [
-      { meal: "Dinner — fish pie", tempReading: 76, minRequired: 75, pass: true },
-    ],
-    fridgeOrganisation: "Adequate",
-    fridgeRotation: true,
-    expiredItemsFound: [],
-    surfacesCleaned: true,
-    cleaningProductsCorrect: true,
-    handwashingObserved: true,
-    apronsAndHairCovers: true,
-    childrenPreparingFoodSupervision: "None during this check",
-    cookingActivitySafetyBriefingDone: false,
-    pestsObserved: false,
-    pestActions: "",
-    bins: "Full",
-    binEmptiedTime: "20:30 (during check)",
-    dishwasherCycleNotes: "Cycled",
-    cuttingBoardSegregation: true,
-    allergenLabelling: true,
-    defrostingPractice: "Standard",
-    hotHoldingTemps: [],
-    overallVerdict: "Pass with minor actions",
-    immediateActions: [
-      "Fridge temp 7°C — out of range. Investigated: door slightly ajar. Closed firmly. Reading rechecked at 22:00 — back to 4°C.",
-      "Checked critical items (dairy, fresh meat) — within tolerance per Food Standards Agency guidance for brief excursion",
-    ],
-    followUpActions: [
-      "Add fridge door visual reminder (children sometimes leave door slightly open)",
-      "Recheck fridge temperature in morning",
-    ],
-    notes: "Brief temp deviation managed. No food compromised. Action: visual reminder added. Followed up next morning — back to range.",
-  },
-  {
-    id: "kh-006",
-    date: d(-7),
-    time: "14:00",
-    staffMember: "staff_chervelle",
-    shiftType: "Late",
-    fridgeTemperature: 4,
-    fridgeWithinRange: true,
-    freezerTemperature: -19,
-    freezerWithinRange: true,
-    cookingTempsRecorded: [],
-    fridgeOrganisation: "Excellent",
-    fridgeRotation: true,
-    expiredItemsFound: [],
-    surfacesCleaned: true,
-    cleaningProductsCorrect: true,
-    handwashingObserved: true,
-    apronsAndHairCovers: true,
-    childrenPreparingFoodSupervision: "Cultural cooking session — Jordan led with Chervelle. Jollof rice. Full safety briefing.",
-    cookingActivitySafetyBriefingDone: true,
-    pestsObserved: false,
-    pestActions: "",
-    bins: "Half full",
-    binEmptiedTime: "Mid-session",
-    dishwasherCycleNotes: "Cycled",
-    cuttingBoardSegregation: true,
-    allergenLabelling: true,
-    defrostingPractice: "Standard",
-    hotHoldingTemps: [
-      { item: "Jollof rice — hot held for 15 mins service", temp: 76, pass: true },
-    ],
-    overallVerdict: "Pass",
-    immediateActions: [],
-    followUpActions: [],
-    notes: "Cultural cooking session went well. Strong meal, strong learning.",
-  },
-];
-
-const verdictColour: Record<string, string> = {
-  Pass: "bg-green-100 text-green-800",
-  "Pass with minor actions": "bg-amber-100 text-amber-800",
-  Fail: "bg-red-100 text-red-800",
+const cleanColour: Record<FridgeOrganisation, string> = {
+  excellent: "bg-emerald-100 text-emerald-800",
+  good: "bg-blue-100 text-blue-800",
+  adequate: "bg-amber-100 text-amber-800",
+  needs_attention: "bg-red-100 text-red-800",
 };
-
-const cleanColour: Record<string, string> = {
-  Excellent: "bg-emerald-100 text-emerald-800",
-  Good: "bg-blue-100 text-blue-800",
-  Adequate: "bg-amber-100 text-amber-800",
-  "Needs attention": "bg-red-100 text-red-800",
-};
-
-const exportCols: ExportColumn<HygieneCheckEntry>[] = [
-  { header: "Date", accessor: (r: HygieneCheckEntry) => r.date },
-  { header: "Time", accessor: (r: HygieneCheckEntry) => r.time },
-  { header: "Staff", accessor: (r: HygieneCheckEntry) => getStaffName(r.staffMember) },
-  { header: "Fridge °C", accessor: (r: HygieneCheckEntry) => `${r.fridgeTemperature}°C` },
-  { header: "Freezer °C", accessor: (r: HygieneCheckEntry) => `${r.freezerTemperature}°C` },
-  { header: "Verdict", accessor: (r: HygieneCheckEntry) => r.overallVerdict },
-  { header: "Cleanliness", accessor: (r: HygieneCheckEntry) => r.fridgeOrganisation },
-  { header: "Bins", accessor: (r: HygieneCheckEntry) => r.bins },
-];
 
 export default function KitchenHygieneMonitoringPage() {
+  const { data: res, isLoading } = useKitchenHygieneChecks();
+  const data: KitchenHygieneCheck[] = res?.data ?? [];
+
   const [filterShift, setFilterShift] = useState("all");
   const [filterVerdict, setFilterVerdict] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -328,26 +53,39 @@ export default function KitchenHygieneMonitoringPage() {
 
   const filtered = useMemo(() => {
     let items = [...data];
-    if (filterShift !== "all") items = items.filter((c) => c.shiftType === filterShift);
-    if (filterVerdict !== "all") items = items.filter((c) => c.overallVerdict === filterVerdict);
+    if (filterShift !== "all") items = items.filter((c) => c.shift_type === filterShift);
+    if (filterVerdict !== "all") items = items.filter((c) => c.overall_verdict === filterVerdict);
     items.sort((a, b) => {
       switch (sortBy) {
         case "date":
           return (b.date + b.time).localeCompare(a.date + a.time);
-        case "verdict":
-          const ord = { Fail: 0, "Pass with minor actions": 1, Pass: 2 };
-          return ord[a.overallVerdict] - ord[b.overallVerdict];
+        case "verdict": {
+          const ord: Record<HygieneVerdict, number> = { fail: 0, pass_with_minor_actions: 1, pass: 2 };
+          return ord[a.overall_verdict] - ord[b.overall_verdict];
+        }
         default:
           return 0;
       }
     });
     return items;
-  }, [filterShift, filterVerdict, sortBy]);
+  }, [data, filterShift, filterVerdict, sortBy]);
 
   const total = data.length;
-  const passed = data.filter((c) => c.overallVerdict === "Pass").length;
-  const tempIssues = data.filter((c) => !c.fridgeWithinRange || !c.freezerWithinRange).length;
-  const expiredFound = data.reduce((sum, c) => sum + c.expiredItemsFound.length, 0);
+  const passed = data.filter((c) => c.overall_verdict === "pass").length;
+  const tempIssues = data.filter((c) => !c.fridge_within_range || !c.freezer_within_range).length;
+  const expiredFound = data.reduce((sum, c) => sum + c.expired_items_found.length, 0);
+
+  const exportCols: ExportColumn<KitchenHygieneCheck>[] = [
+    { header: "Date", accessor: (r: KitchenHygieneCheck) => r.date },
+    { header: "Time", accessor: (r: KitchenHygieneCheck) => r.time },
+    { header: "Staff", accessor: (r: KitchenHygieneCheck) => getStaffName(r.staff_member) },
+    { header: "Fridge °C", accessor: (r: KitchenHygieneCheck) => `${r.fridge_temperature}°C` },
+    { header: "Freezer °C", accessor: (r: KitchenHygieneCheck) => `${r.freezer_temperature}°C` },
+    { header: "Verdict", accessor: (r: KitchenHygieneCheck) => HYGIENE_VERDICT_LABEL[r.overall_verdict] },
+    { header: "Cleanliness", accessor: (r: KitchenHygieneCheck) => FRIDGE_ORGANISATION_LABEL[r.fridge_organisation] },
+  ];
+
+  if (isLoading) return <PageShell title="Kitchen Hygiene Monitoring" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -366,7 +104,7 @@ export default function KitchenHygieneMonitoringPage() {
           <p className="text-xs text-muted-foreground">Recent Checks</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{Math.round((passed / total) * 100)}%</p>
+          <p className="text-2xl font-bold text-green-600">{total > 0 ? Math.round((passed / total) * 100) : 0}%</p>
           <p className="text-xs text-muted-foreground">Full Pass Rate</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -393,19 +131,18 @@ export default function KitchenHygieneMonitoringPage() {
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Shifts" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Shifts</SelectItem>
-            <SelectItem value="Early">Early</SelectItem>
-            <SelectItem value="Late">Late</SelectItem>
-            <SelectItem value="Sleep-in">Sleep-in</SelectItem>
-            <SelectItem value="Wake-night">Wake-night</SelectItem>
+            {(Object.entries(HYGIENE_SHIFT_TYPE_LABEL) as [string, string][]).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={filterVerdict} onValueChange={setFilterVerdict}>
           <SelectTrigger className="w-[200px]"><SelectValue placeholder="All Verdicts" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Verdicts</SelectItem>
-            <SelectItem value="Pass">Pass</SelectItem>
-            <SelectItem value="Pass with minor actions">Pass with Minor Actions</SelectItem>
-            <SelectItem value="Fail">Fail</SelectItem>
+            {(Object.entries(HYGIENE_VERDICT_LABEL) as [string, string][]).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
@@ -423,7 +160,7 @@ export default function KitchenHygieneMonitoringPage() {
       <div className="space-y-3">
         {filtered.map((c) => {
           const isExpanded = expandedId === c.id;
-          const hasIssues = !c.fridgeWithinRange || !c.freezerWithinRange || c.expiredItemsFound.length > 0;
+          const hasIssues = !c.fridge_within_range || !c.freezer_within_range || c.expired_items_found.length > 0;
 
           return (
             <div key={c.id} className={cn("rounded-xl border bg-white overflow-hidden",
@@ -436,15 +173,15 @@ export default function KitchenHygieneMonitoringPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Utensils className="h-5 w-5 text-emerald-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{c.date} {c.time} — {c.shiftType} ({getStaffName(c.staffMember)})</p>
+                    <p className="font-medium truncate">{c.date} {c.time} — {HYGIENE_SHIFT_TYPE_LABEL[c.shift_type]} ({getStaffName(c.staff_member)})</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Fridge {c.fridgeTemperature}°C &middot; Freezer {c.freezerTemperature}°C &middot; Bins {c.bins}
+                      Fridge {c.fridge_temperature}°C &middot; Freezer {c.freezer_temperature}°C
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", verdictColour[c.overallVerdict])}>
-                    {c.overallVerdict}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", verdictColour[c.overall_verdict])}>
+                    {HYGIENE_VERDICT_LABEL[c.overall_verdict]}
                   </span>
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
@@ -453,17 +190,17 @@ export default function KitchenHygieneMonitoringPage() {
               {isExpanded && (
                 <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <div className={cn("rounded-lg p-2 text-center text-sm", c.fridgeWithinRange ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800")}>
-                      <Thermometer className="h-3 w-3 inline mr-1" />Fridge {c.fridgeTemperature}°C
+                    <div className={cn("rounded-lg p-2 text-center text-sm", c.fridge_within_range ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800")}>
+                      <Thermometer className="h-3 w-3 inline mr-1" />Fridge {c.fridge_temperature}°C
                       <p className="text-xs">(2-8°C target)</p>
                     </div>
-                    <div className={cn("rounded-lg p-2 text-center text-sm", c.freezerWithinRange ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800")}>
-                      <Thermometer className="h-3 w-3 inline mr-1" />Freezer {c.freezerTemperature}°C
+                    <div className={cn("rounded-lg p-2 text-center text-sm", c.freezer_within_range ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800")}>
+                      <Thermometer className="h-3 w-3 inline mr-1" />Freezer {c.freezer_temperature}°C
                       <p className="text-xs">(-18°C+)</p>
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Cleanliness</p>
-                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", cleanColour[c.fridgeOrganisation])}>{c.fridgeOrganisation}</span>
+                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", cleanColour[c.fridge_organisation])}>{FRIDGE_ORGANISATION_LABEL[c.fridge_organisation]}</span>
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center text-sm">
                       <p className="text-xs text-muted-foreground">Bins</p>
@@ -471,15 +208,15 @@ export default function KitchenHygieneMonitoringPage() {
                     </div>
                   </div>
 
-                  {c.cookingTempsRecorded.length > 0 && (
+                  {c.cooking_temps_recorded.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Cooking Temperatures</p>
                       <div className="space-y-1">
-                        {c.cookingTempsRecorded.map((t, i) => (
+                        {c.cooking_temps_recorded.map((t, i) => (
                           <div key={i} className="bg-white rounded-lg p-2 border text-sm flex items-center justify-between">
                             <span>{t.meal}</span>
                             <span className={cn("text-sm font-medium", t.pass ? "text-green-600" : "text-red-600")}>
-                              {t.tempReading}°C (min {t.minRequired}°C)
+                              {t.temp_reading}°C (min {t.min_required}°C)
                             </span>
                           </div>
                         ))}
@@ -487,11 +224,11 @@ export default function KitchenHygieneMonitoringPage() {
                     </div>
                   )}
 
-                  {c.hotHoldingTemps.length > 0 && (
+                  {c.hot_holding_temps.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Hot Holding</p>
                       <div className="space-y-1">
-                        {c.hotHoldingTemps.map((h, i) => (
+                        {c.hot_holding_temps.map((h, i) => (
                           <div key={i} className="bg-white rounded-lg p-2 border text-sm flex items-center justify-between">
                             <span>{h.item}</span>
                             <span className={cn("text-sm font-medium", h.pass ? "text-green-600" : "text-red-600")}>
@@ -506,43 +243,43 @@ export default function KitchenHygieneMonitoringPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-white rounded-lg p-3 border space-y-1 text-sm">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">General Hygiene</p>
-                      <p className="flex items-center gap-1">{c.surfacesCleaned ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Surfaces cleaned</p>
-                      <p className="flex items-center gap-1">{c.cleaningProductsCorrect ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Correct products used</p>
-                      <p className="flex items-center gap-1">{c.handwashingObserved ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Handwashing observed</p>
-                      <p className="flex items-center gap-1">{c.cuttingBoardSegregation ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Board segregation</p>
-                      <p className="flex items-center gap-1">{c.allergenLabelling ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Allergen labelling</p>
-                      <p className="flex items-center gap-1">{c.fridgeRotation ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Stock rotation</p>
-                      <p className="flex items-center gap-1">{!c.pestsObserved ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-red-500" />} No pests</p>
+                      <p className="flex items-center gap-1">{c.surfaces_cleaned ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Surfaces cleaned</p>
+                      <p className="flex items-center gap-1">{c.cleaning_products_correct ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Correct products used</p>
+                      <p className="flex items-center gap-1">{c.handwashing_observed ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Handwashing observed</p>
+                      <p className="flex items-center gap-1">{c.cutting_board_segregation ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Board segregation</p>
+                      <p className="flex items-center gap-1">{c.allergen_labelling ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Allergen labelling</p>
+                      <p className="flex items-center gap-1">{c.fridge_rotation ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Stock rotation</p>
+                      <p className="flex items-center gap-1">{!c.pests_observed ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-red-500" />} No pests</p>
                     </div>
                     <div className="bg-white rounded-lg p-3 border space-y-1 text-sm">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Children Cooking</p>
-                      <p>{c.childrenPreparingFoodSupervision || "No children preparing food this check"}</p>
-                      {c.cookingActivitySafetyBriefingDone && (
+                      <p>{c.children_preparing_food_supervision || "No children preparing food this check"}</p>
+                      {c.cooking_activity_safety_briefing_done && (
                         <p className="text-xs text-green-700 flex items-center gap-1"><CheckCircle className="h-3 w-3" />Safety briefing done</p>
                       )}
                     </div>
                   </div>
 
-                  {c.expiredItemsFound.length > 0 && (
+                  {c.expired_items_found.length > 0 && (
                     <div className="bg-amber-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
                         <AlertTriangle className="h-3 w-3 inline mr-1" />Expired Items Caught &amp; Disposed
                       </p>
                       <ul className="space-y-1">
-                        {c.expiredItemsFound.map((e, i) => (
+                        {c.expired_items_found.map((e, i) => (
                           <li key={i} className="text-sm">
-                            <strong>{e.item}</strong> (expired {e.expiryDate}) — {e.disposed ? "disposed" : "pending disposal"}
+                            <strong>{e.item}</strong> (expired {e.expiry_date}) — {e.disposed ? "disposed" : "pending disposal"}
                           </li>
                         ))}
                       </ul>
                     </div>
                   )}
 
-                  {c.immediateActions.length > 0 && (
+                  {c.immediate_actions.length > 0 && (
                     <div className="bg-blue-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Immediate Actions</p>
                       <ul className="space-y-1">
-                        {c.immediateActions.map((a, i) => (
+                        {c.immediate_actions.map((a, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <CheckCircle className="h-3 w-3 text-blue-500 mt-1 shrink-0" />
                             <span>{a}</span>
@@ -552,11 +289,11 @@ export default function KitchenHygieneMonitoringPage() {
                     </div>
                   )}
 
-                  {c.followUpActions.length > 0 && (
+                  {c.follow_up_actions.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Follow-Up Actions</p>
                       <ul className="space-y-1">
-                        {c.followUpActions.map((a, i) => (
+                        {c.follow_up_actions.map((a, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <Clock className="h-3 w-3 text-amber-500 mt-1 shrink-0" />
                             <span>{a}</span>
@@ -574,9 +311,9 @@ export default function KitchenHygieneMonitoringPage() {
                   )}
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
-                    <span><Sparkles className="h-3 w-3 inline mr-1" />Bins: {c.bins} (emptied {c.binEmptiedTime})</span>
-                    <span>Dishwasher: {c.dishwasherCycleNotes}</span>
-                    <span>Defrosting: {c.defrostingPractice}</span>
+                    <span><Sparkles className="h-3 w-3 inline mr-1" />Bins: {c.bins} (emptied {c.bin_emptied_time})</span>
+                    <span>Dishwasher: {c.dishwasher_cycle_notes}</span>
+                    <span>Defrosting: {c.defrosting_practice}</span>
                   </div>
                 </div>
               )}

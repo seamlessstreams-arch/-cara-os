@@ -1,18 +1,12 @@
 "use client";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — INSPECTION READINESS PACK
-// Tracks documents and evidence prepared for Ofsted inspection — readiness
-// pack contents and currency. Required by Reg 45 and Quality Standard 13.
-// ══════════════════════════════════════════════════════════════════════════════
-
 import { useState, useMemo } from "react";
 import {
   ClipboardCheck, Search, ArrowUpDown, Filter,
   CheckCircle2, AlertTriangle, ChevronDown, ChevronUp,
   Calendar, User, Star, FileText, BookOpen,
   Folder, MessageSquare, Eye, EyeOff, MapPin,
-  Sparkles, RefreshCw, XCircle, Clock,
+  Sparkles, RefreshCw, XCircle, Clock, Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -24,487 +18,60 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { useReadinessItems } from "@/hooks/use-readiness-items";
+import type { ReadinessItem, SccifJudgementArea, ReadinessCategory, InPackStatus } from "@/types/extended";
+import { SCCIF_JUDGEMENT_AREA_LABEL, READINESS_CATEGORY_LABEL, IN_PACK_STATUS_LABEL } from "@/types/extended";
 
-/* ── helpers ─────────────────────────────────────────────────────────── */
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
+/* ── colour maps ───────────────────────────────────────────────────────── */
 
-/* ── types ───────────────────────────────────────────────────────────── */
-type SccifJudgementArea =
-  | "Overall Experiences and Progress"
-  | "How well children are helped and protected"
-  | "Effectiveness of leaders and managers";
-
-type ReadinessCategory =
-  | "Statutory documentation"
-  | "Records of practice"
-  | "Children's voice evidence"
-  | "Outcome data"
-  | "Workforce"
-  | "Environment"
-  | "Quality assurance";
-
-type InPackStatus = "Ready" | "Needs refresh" | "Missing" | "In progress";
-
-interface ReadinessItem {
-  id: string;
-  itemName: string;
-  sccifJudgementArea: SccifJudgementArea;
-  category: ReadinessCategory;
-  description: string;
-  currentVersion: string;
-  lastUpdated: string;
-  nextReviewDue: string;
-  locationOfDocument: string;
-  responsibleOwner: string;
-  inPackStatus: InPackStatus;
-  evidenceQualityRating: number; // 1-5
-  examplesIncluded: string[];
-  childVoiceWoven: boolean;
-  accessibleToInspector: boolean;
-  accessibleToChildren: boolean;
-  commentary: string;
-}
-
-/* ── label & colour maps ─────────────────────────────────────────────── */
 const STATUS_COLOUR: Record<InPackStatus, string> = {
-  "Ready": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "Needs refresh": "bg-amber-50 text-amber-700 border-amber-200",
-  "Missing": "bg-red-50 text-red-700 border-red-200",
-  "In progress": "bg-blue-50 text-blue-700 border-blue-200",
+  ready: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  needs_refresh: "bg-amber-50 text-amber-700 border-amber-200",
+  missing: "bg-red-50 text-red-700 border-red-200",
+  in_progress: "bg-blue-50 text-blue-700 border-blue-200",
 };
 
 const STATUS_BORDER: Record<InPackStatus, string> = {
-  "Ready": "border-l-emerald-400",
-  "Needs refresh": "border-l-amber-400",
-  "Missing": "border-l-red-400",
-  "In progress": "border-l-blue-400",
+  ready: "border-l-emerald-400",
+  needs_refresh: "border-l-amber-400",
+  missing: "border-l-red-400",
+  in_progress: "border-l-blue-400",
 };
 
 const STATUS_ICON: Record<InPackStatus, React.ComponentType<{ className?: string }>> = {
-  "Ready": CheckCircle2,
-  "Needs refresh": RefreshCw,
-  "Missing": XCircle,
-  "In progress": Clock,
+  ready: CheckCircle2,
+  needs_refresh: RefreshCw,
+  missing: XCircle,
+  in_progress: Clock,
 };
 
 const STATUS_ICON_COLOUR: Record<InPackStatus, string> = {
-  "Ready": "text-emerald-600",
-  "Needs refresh": "text-amber-600",
-  "Missing": "text-red-600",
-  "In progress": "text-blue-600",
+  ready: "text-emerald-600",
+  needs_refresh: "text-amber-600",
+  missing: "text-red-600",
+  in_progress: "text-blue-600",
 };
 
 const SCCIF_COLOUR: Record<SccifJudgementArea, string> = {
-  "Overall Experiences and Progress": "bg-indigo-50 text-indigo-700 border-indigo-200",
-  "How well children are helped and protected": "bg-rose-50 text-rose-700 border-rose-200",
-  "Effectiveness of leaders and managers": "bg-violet-50 text-violet-700 border-violet-200",
+  overall_experiences: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  helped_and_protected: "bg-rose-50 text-rose-700 border-rose-200",
+  leaders_and_managers: "bg-violet-50 text-violet-700 border-violet-200",
 };
 
 const CATEGORY_COLOUR: Record<ReadinessCategory, string> = {
-  "Statutory documentation": "bg-slate-100 text-slate-700 border-slate-200",
-  "Records of practice": "bg-blue-50 text-blue-700 border-blue-200",
-  "Children's voice evidence": "bg-pink-50 text-pink-700 border-pink-200",
-  "Outcome data": "bg-teal-50 text-teal-700 border-teal-200",
-  "Workforce": "bg-amber-50 text-amber-700 border-amber-200",
-  "Environment": "bg-lime-50 text-lime-700 border-lime-200",
-  "Quality assurance": "bg-violet-50 text-violet-700 border-violet-200",
+  statutory_documentation: "bg-slate-100 text-slate-700 border-slate-200",
+  records_of_practice: "bg-blue-50 text-blue-700 border-blue-200",
+  childrens_voice_evidence: "bg-pink-50 text-pink-700 border-pink-200",
+  outcome_data: "bg-teal-50 text-teal-700 border-teal-200",
+  workforce: "bg-amber-50 text-amber-700 border-amber-200",
+  environment: "bg-lime-50 text-lime-700 border-lime-200",
+  quality_assurance: "bg-violet-50 text-violet-700 border-violet-200",
 };
-
-/* ── seed data ───────────────────────────────────────────────────────── */
-const SEED: ReadinessItem[] = [
-  {
-    id: "rdy_01",
-    itemName: "Statement of Purpose",
-    sccifJudgementArea: "Effectiveness of leaders and managers",
-    category: "Statutory documentation",
-    description: "Document setting out the home's aims, objectives, ethos, and the range of needs of the children for whom it provides care. Required under Reg 16 and Schedule 1 of the Children's Homes Regulations 2015.",
-    currentVersion: "v4.2",
-    lastUpdated: d(-22),
-    nextReviewDue: d(160),
-    locationOfDocument: "Office locked file + Platform — Statement of Purpose page",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 5,
-    examplesIncluded: [
-      "Schedule 1 mapping appendix",
-      "Therapeutic model articulated (trauma-informed, relational practice)",
-      "Range of needs detailed with admission criteria",
-      "Staffing structure and qualifications",
-    ],
-    childVoiceWoven: true,
-    accessibleToInspector: true,
-    accessibleToChildren: true,
-    commentary: "Reviewed and refreshed following the most recent Ofsted inspection feedback. Cross-referenced with Children's Guide to ensure consistency. Inspector copy ready in office; child-friendly summary embedded in Children's Guide.",
-  },
-  {
-    id: "rdy_02",
-    itemName: "Children's Guide",
-    sccifJudgementArea: "Overall Experiences and Progress",
-    category: "Statutory documentation",
-    description: "Accessible guide for children in the home explaining how the home runs, their rights, how to make complaints, and how to access an advocate. Required under Reg 16(3).",
-    currentVersion: "v3.1",
-    lastUpdated: d(-40),
-    nextReviewDue: d(140),
-    locationOfDocument: "Each child's bedroom + Office reception copy + Platform — Children's Guide page",
-    responsibleOwner: "staff_ryan",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 4,
-    examplesIncluded: [
-      "Plain English version reviewed by current residents",
-      "Pictorial / accessible version available",
-      "Complaints process and Children's Commissioner contact details",
-      "Independent advocate (NYAS) details and Reg 44 visitor introduction",
-    ],
-    childVoiceWoven: true,
-    accessibleToInspector: true,
-    accessibleToChildren: true,
-    commentary: "Children helped review and approve the latest version during a house meeting. One area for refresh — adding more imagery to the online safety section per feedback from Casey.",
-  },
-  {
-    id: "rdy_03",
-    itemName: "Reg 45 Quality of Care Review (most recent)",
-    sccifJudgementArea: "Effectiveness of leaders and managers",
-    category: "Quality assurance",
-    description: "Six-monthly review of the quality of care provided. Includes analysis of incidents, complaints, outcomes, and feedback from children, staff, and external partners.",
-    currentVersion: "v1.0 — H1 2026",
-    lastUpdated: d(-18),
-    nextReviewDue: d(165),
-    locationOfDocument: "Office locked file + Platform — Reg 45 Reports page",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 5,
-    examplesIncluded: [
-      "Quantitative data section (incidents, missing episodes, restraints, attendance)",
-      "Children's voice section with direct quotes and feedback",
-      "External feedback (social workers, IROs, schools, health)",
-      "Action plan with owners and timescales",
-    ],
-    childVoiceWoven: true,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "Strong report with clear self-reflection. Action plan owned by RM and tracked through monthly senior team meetings. Previous Reg 45 reports archived alongside for trend comparison.",
-  },
-  {
-    id: "rdy_04",
-    itemName: "Reg 44 Independent Visitor Reports (last 6 months)",
-    sccifJudgementArea: "How well children are helped and protected",
-    category: "Quality assurance",
-    description: "Monthly reports from the independent visitor evidencing scrutiny of safeguarding, children's welfare, and the home's compliance with regulations.",
-    currentVersion: "Reports Nov 2025 — Apr 2026",
-    lastUpdated: d(-9),
-    nextReviewDue: d(21),
-    locationOfDocument: "Office locked file + Platform — Reg 44 Reports page",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 5,
-    examplesIncluded: [
-      "Six consecutive monthly reports filed",
-      "Children's views directly captured and quoted",
-      "Recommendations tracked with response timescales",
-      "Cross-referenced against safeguarding register",
-    ],
-    childVoiceWoven: true,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "All recommendations actioned within agreed timescales — tracker shows 100% closure. Independent visitor relationship strong; visits unannounced and consistently thorough.",
-  },
-  {
-    id: "rdy_05",
-    itemName: "Care Plans (sample of 3)",
-    sccifJudgementArea: "Overall Experiences and Progress",
-    category: "Records of practice",
-    description: "Sample of current care plans for the three children in placement, evidencing how needs are identified and met, with clear outcomes and review history.",
-    currentVersion: "Current cycle — reviewed within last 90 days",
-    lastUpdated: d(-12),
-    nextReviewDue: d(78),
-    locationOfDocument: "Platform — Care Plans page (Alex, Jordan, Casey)",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 4,
-    examplesIncluded: [
-      "Identified needs across health, education, contact, identity, emotional development",
-      "SMART outcomes with progress evidence",
-      "Child's view evidenced in 'My Plan' section",
-      "Linked to Outcome Star and Reg 45 outcome data",
-    ],
-    childVoiceWoven: true,
-    accessibleToInspector: true,
-    accessibleToChildren: true,
-    commentary: "All three plans current. Jordan's CAMHS section needs strengthening once external assessment date is confirmed — flagged on action log.",
-  },
-  {
-    id: "rdy_06",
-    itemName: "Placement Plans (sample of 3)",
-    sccifJudgementArea: "Overall Experiences and Progress",
-    category: "Statutory documentation",
-    description: "Documents agreed with the placing authority describing how the day-to-day care of each child will be delivered, in line with the child's care plan.",
-    currentVersion: "Current per child",
-    lastUpdated: d(-15),
-    nextReviewDue: d(75),
-    locationOfDocument: "Platform — Placement Plans page",
-    responsibleOwner: "staff_ryan",
-    inPackStatus: "Needs refresh",
-    evidenceQualityRating: 3,
-    examplesIncluded: [
-      "Delegated authority schedule",
-      "Contact arrangements",
-      "Behaviour management approach individualised",
-      "Risk and protective factors",
-    ],
-    childVoiceWoven: false,
-    accessibleToInspector: true,
-    accessibleToChildren: true,
-    commentary: "Casey's placement plan needs refresh following recent exploitation strategy meeting — updated risk and protective factors not yet re-documented. Action: refresh by end of week. Child voice section underdeveloped across all three — wider improvement piece.",
-  },
-  {
-    id: "rdy_07",
-    itemName: "Individual Outcomes Evidence (Outcome Stars + progress data)",
-    sccifJudgementArea: "Overall Experiences and Progress",
-    category: "Outcome data",
-    description: "Evidence of measurable progress for each child across emotional, educational, health, and social domains — Outcome Star assessments, attendance data, and developmental milestones.",
-    currentVersion: "Q1 2026 cycle complete",
-    lastUpdated: d(-25),
-    nextReviewDue: d(65),
-    locationOfDocument: "Platform — Outcome Tracking page + Annual Outcomes Report",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 5,
-    examplesIncluded: [
-      "Outcome Star comparison charts (entry vs current)",
-      "Education attendance and attainment data",
-      "Health appointment compliance",
-      "Behaviour incident trend (downward across all three children)",
-    ],
-    childVoiceWoven: true,
-    accessibleToInspector: true,
-    accessibleToChildren: true,
-    commentary: "Strong evidence of progress for all three children. Visual data summaries are inspection-ready. Outcome Stars co-produced with each young person.",
-  },
-  {
-    id: "rdy_08",
-    itemName: "Voice of the Child Evidence Pack",
-    sccifJudgementArea: "Overall Experiences and Progress",
-    category: "Children's voice evidence",
-    description: "Curated pack evidencing how children's views shape the home — house meetings, key-work records, advocacy contacts, complaints, surveys, and direct quotes.",
-    currentVersion: "Rolling 12 months",
-    lastUpdated: d(-7),
-    nextReviewDue: d(30),
-    locationOfDocument: "Platform — Voice of the Child page + House Meeting minutes",
-    responsibleOwner: "staff_ryan",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 5,
-    examplesIncluded: [
-      "House meeting minutes (12 months)",
-      "Examples of decisions changed because of children's input",
-      "NYAS advocacy contact log",
-      "Children's feedback on staff and Reg 44 visitors",
-    ],
-    childVoiceWoven: true,
-    accessibleToInspector: true,
-    accessibleToChildren: true,
-    commentary: "Particularly strong area. Concrete examples include menu redesign, bedroom personalisation budget, and the activities programme — all driven by children's input.",
-  },
-  {
-    id: "rdy_09",
-    itemName: "Complaints Log + Responses (rolling 12 months)",
-    sccifJudgementArea: "How well children are helped and protected",
-    category: "Records of practice",
-    description: "Record of all complaints received from children, parents, professionals, or others — including investigation, response, outcome, and learning.",
-    currentVersion: "Rolling — 4 entries in last 12 months",
-    lastUpdated: d(-11),
-    nextReviewDue: d(50),
-    locationOfDocument: "Platform — Complaints Log page",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 4,
-    examplesIncluded: [
-      "Each complaint logged with timeline",
-      "Outcome and response shared with complainant",
-      "Learning identified and embedded",
-      "Themes analysed quarterly",
-    ],
-    childVoiceWoven: true,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "Low volume but openly recorded — including minor concerns from children that did not formally meet 'complaint' threshold but were treated as such. Demonstrates a culture of openness.",
-  },
-  {
-    id: "rdy_10",
-    itemName: "Safeguarding Records (notifications, strategy, MASH referrals)",
-    sccifJudgementArea: "How well children are helped and protected",
-    category: "Records of practice",
-    description: "All Reg 40 notifications to Ofsted, strategy meeting minutes, MASH/LADO referrals, and safeguarding chronologies for each child.",
-    currentVersion: "Rolling 12 months",
-    lastUpdated: d(-4),
-    nextReviewDue: d(30),
-    locationOfDocument: "Office locked safeguarding file + Platform — Safeguarding page",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 4,
-    examplesIncluded: [
-      "Reg 40 notifications log with Ofsted reference numbers",
-      "Strategy meeting minutes for Casey's exploitation concerns",
-      "LADO referrals (zero in past 12 months)",
-      "Missing from care episodes with return interviews",
-    ],
-    childVoiceWoven: false,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "One late notification 3 months ago — process strengthened with same-day reporting protocol. All return interviews completed within 72 hours.",
-  },
-  {
-    id: "rdy_11",
-    itemName: "Training Matrix (all staff, all mandatory and supplementary)",
-    sccifJudgementArea: "Effectiveness of leaders and managers",
-    category: "Workforce",
-    description: "Live matrix tracking every staff member's training status across mandatory, role-specific, and developmental areas. Shows compliance, expiry dates, and renewal pipeline.",
-    currentVersion: "Live — refreshed monthly",
-    lastUpdated: d(-2),
-    nextReviewDue: d(28),
-    locationOfDocument: "Platform — Training Matrix page",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 5,
-    examplesIncluded: [
-      "Mandatory training compliance: 100%",
-      "TCI refresher cycle tracked",
-      "Online safety training added quarterly",
-      "Level 3/4/5 qualification progression evidenced",
-    ],
-    childVoiceWoven: false,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "Inspection-ready. Two new starters tracked through induction milestones. Deputy recently completed Level 5; RM progressing through Level 7.",
-  },
-  {
-    id: "rdy_12",
-    itemName: "Reg 32 Fitness of Workers Checks",
-    sccifJudgementArea: "Effectiveness of leaders and managers",
-    category: "Workforce",
-    description: "Documentation evidencing all staff have undergone the Schedule 2 checks required under Reg 32 — DBS, references, identity, qualifications, right to work, health.",
-    currentVersion: "All staff current",
-    lastUpdated: d(-30),
-    nextReviewDue: d(60),
-    locationOfDocument: "Office locked HR file (per staff member)",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 4,
-    examplesIncluded: [
-      "Enhanced DBS with Children's Barred List for all staff",
-      "Two written references per staff member, verified verbally",
-      "Identity, right to work, qualifications evidenced",
-      "Health declaration signed and reviewed",
-    ],
-    childVoiceWoven: false,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "All Schedule 2 checks complete and audited. DBS update service registrations active. Annual rechecks scheduled. One staff member's reference file required minor admin tidy — actioned.",
-  },
-  {
-    id: "rdy_13",
-    itemName: "Recruitment Files (sample of 2 — most recent appointments)",
-    sccifJudgementArea: "Effectiveness of leaders and managers",
-    category: "Workforce",
-    description: "Full recruitment files for the two most recent appointments — application, shortlisting, interview notes, references, pre-employment checks, induction record.",
-    currentVersion: "2 appointments since Jan 2026",
-    lastUpdated: d(-44),
-    nextReviewDue: d(90),
-    locationOfDocument: "Office locked HR file",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "In progress",
-    evidenceQualityRating: 3,
-    examplesIncluded: [
-      "Application form and motivation statement",
-      "Interview panel notes with scoring",
-      "Pre-employment check pack",
-      "Induction record signed off",
-    ],
-    childVoiceWoven: false,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "One of the two files needs interview notes uploading from the panel chair — overdue admin task. Files otherwise complete and compliant. Action: chase by end of week.",
-  },
-  {
-    id: "rdy_14",
-    itemName: "Environment Audits (latest cycle)",
-    sccifJudgementArea: "How well children are helped and protected",
-    category: "Environment",
-    description: "Latest health and safety, fire, infection control, and bedroom personalisation audits showing the home is a safe, well-maintained, and homely environment.",
-    currentVersion: "Q1 2026 cycle",
-    lastUpdated: d(-6),
-    nextReviewDue: d(85),
-    locationOfDocument: "Platform — Audits page + Building Compliance file",
-    responsibleOwner: "staff_ryan",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 4,
-    examplesIncluded: [
-      "Fire risk assessment current with drill records",
-      "Infection control audit signed off",
-      "Bedroom personalisation evidence (each child)",
-      "Maintenance log with response times",
-    ],
-    childVoiceWoven: true,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "Home presents as warm, homely, and well-maintained. Children's bedrooms personalised with photos, posters, and chosen decor. Communal areas refreshed in last 6 months.",
-  },
-  {
-    id: "rdy_15",
-    itemName: "Business Continuity Plan",
-    sccifJudgementArea: "Effectiveness of leaders and managers",
-    category: "Statutory documentation",
-    description: "Plan addressing how the home will continue to operate safely in the event of disruption — staffing crisis, RM absence, building incident, IT failure, pandemic.",
-    currentVersion: "v2.0 — draft for RI sign-off",
-    lastUpdated: d(-50),
-    nextReviewDue: d(14),
-    locationOfDocument: "Platform — Business Continuity page (DRAFT)",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Needs refresh",
-    evidenceQualityRating: 3,
-    examplesIncluded: [
-      "RM absence cover arrangements",
-      "Staffing escalation contacts",
-      "IT/data continuity",
-      "Building / utilities emergency response",
-    ],
-    childVoiceWoven: false,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "Identified as a development area in the latest Self-Evaluation. Draft v2.0 written; awaiting RI review and formal sign-off. Target: completion within 14 days. Once finalised, status moves to Ready.",
-  },
-  {
-    id: "rdy_16",
-    itemName: "Location Risk Assessment",
-    sccifJudgementArea: "How well children are helped and protected",
-    category: "Statutory documentation",
-    description: "Reg 26 location risk assessment evidencing analysis of community risks (exploitation hotspots, gang activity, transport, isolation) and the home's mitigations.",
-    currentVersion: "v3.0",
-    lastUpdated: d(-35),
-    nextReviewDue: d(150),
-    locationOfDocument: "Office locked file + Platform — Location Risk Assessment page",
-    responsibleOwner: "staff_darren",
-    inPackStatus: "Ready",
-    evidenceQualityRating: 4,
-    examplesIncluded: [
-      "Police data on local community risks",
-      "Mapping of CSE/CCE hotspots",
-      "Transport links and missing-from-care risk analysis",
-      "Mitigations linked to individual placement plans",
-    ],
-    childVoiceWoven: false,
-    accessibleToInspector: true,
-    accessibleToChildren: false,
-    commentary: "Reviewed annually with police single point of contact and the local safeguarding partnership. Updated to reflect Casey's exploitation profile and the wider Op-level intelligence shared at the most recent strategy meeting.",
-  },
-];
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function InspectionReadinessPackPage() {
-  const [entries] = useState<ReadinessItem[]>(SEED);
+  const { data: res, isLoading } = useReadinessItems();
+  const entries: ReadinessItem[] = res?.data ?? [];
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterArea, setFilterArea] = useState<string>("all");
@@ -519,34 +86,34 @@ export default function InspectionReadinessPackPage() {
       const q = search.toLowerCase();
       list = list.filter(
         (e) =>
-          e.itemName.toLowerCase().includes(q) ||
+          e.item_name.toLowerCase().includes(q) ||
           e.description.toLowerCase().includes(q) ||
           e.commentary.toLowerCase().includes(q) ||
-          e.examplesIncluded.some((s) => s.toLowerCase().includes(q))
+          e.examples_included.some((s) => s.toLowerCase().includes(q))
       );
     }
-    if (filterStatus !== "all") list = list.filter((e) => e.inPackStatus === filterStatus);
-    if (filterArea !== "all") list = list.filter((e) => e.sccifJudgementArea === filterArea);
+    if (filterStatus !== "all") list = list.filter((e) => e.in_pack_status === filterStatus);
+    if (filterArea !== "all") list = list.filter((e) => e.sccif_judgement_area === filterArea);
     if (filterCategory !== "all") list = list.filter((e) => e.category === filterCategory);
 
     const statusOrder: Record<InPackStatus, number> = {
-      "Missing": 0,
-      "Needs refresh": 1,
-      "In progress": 2,
-      "Ready": 3,
+      missing: 0,
+      needs_refresh: 1,
+      in_progress: 2,
+      ready: 3,
     };
 
     list.sort((a, b) => {
       switch (sortBy) {
         case "status":
-          return statusOrder[a.inPackStatus] - statusOrder[b.inPackStatus];
+          return statusOrder[a.in_pack_status] - statusOrder[b.in_pack_status];
         case "quality":
-          return b.evidenceQualityRating - a.evidenceQualityRating;
+          return b.evidence_quality_rating - a.evidence_quality_rating;
         case "review":
-          return a.nextReviewDue.localeCompare(b.nextReviewDue);
+          return a.next_review_due.localeCompare(b.next_review_due);
         case "name":
         default:
-          return a.itemName.localeCompare(b.itemName);
+          return a.item_name.localeCompare(b.item_name);
       }
     });
     return list;
@@ -554,30 +121,32 @@ export default function InspectionReadinessPackPage() {
 
   /* ── stats ──────────────────────────────────────────────────────── */
   const totalItems = entries.length;
-  const readyCount = entries.filter((e) => e.inPackStatus === "Ready").length;
+  const readyCount = entries.filter((e) => e.in_pack_status === "ready").length;
   const readyPct = totalItems > 0 ? Math.round((readyCount / totalItems) * 100) : 0;
-  const needsRefreshCount = entries.filter((e) => e.inPackStatus === "Needs refresh").length;
+  const needsRefreshCount = entries.filter((e) => e.in_pack_status === "needs_refresh").length;
   const avgQuality = totalItems > 0
-    ? (entries.reduce((sum, e) => sum + e.evidenceQualityRating, 0) / totalItems).toFixed(1)
+    ? (entries.reduce((sum, e) => sum + e.evidence_quality_rating, 0) / totalItems).toFixed(1)
     : "0.0";
 
   /* ── export columns ─────────────────────────────────────────────── */
   const exportCols: ExportColumn<ReadinessItem>[] = [
-    { header: "Item", accessor: (r: ReadinessItem) => r.itemName },
-    { header: "SCCIF Judgement Area", accessor: (r: ReadinessItem) => r.sccifJudgementArea },
-    { header: "Category", accessor: (r: ReadinessItem) => r.category },
-    { header: "Status", accessor: (r: ReadinessItem) => r.inPackStatus },
-    { header: "Version", accessor: (r: ReadinessItem) => r.currentVersion },
-    { header: "Last Updated", accessor: (r: ReadinessItem) => r.lastUpdated },
-    { header: "Next Review Due", accessor: (r: ReadinessItem) => r.nextReviewDue },
-    { header: "Location", accessor: (r: ReadinessItem) => r.locationOfDocument },
-    { header: "Owner", accessor: (r: ReadinessItem) => getStaffName(r.responsibleOwner) },
-    { header: "Quality (1-5)", accessor: (r: ReadinessItem) => r.evidenceQualityRating },
-    { header: "Child Voice Woven", accessor: (r: ReadinessItem) => r.childVoiceWoven ? "Yes" : "No" },
-    { header: "Accessible to Inspector", accessor: (r: ReadinessItem) => r.accessibleToInspector ? "Yes" : "No" },
-    { header: "Accessible to Children", accessor: (r: ReadinessItem) => r.accessibleToChildren ? "Yes" : "No" },
+    { header: "Item", accessor: (r: ReadinessItem) => r.item_name },
+    { header: "SCCIF Judgement Area", accessor: (r: ReadinessItem) => SCCIF_JUDGEMENT_AREA_LABEL[r.sccif_judgement_area] },
+    { header: "Category", accessor: (r: ReadinessItem) => READINESS_CATEGORY_LABEL[r.category] },
+    { header: "Status", accessor: (r: ReadinessItem) => IN_PACK_STATUS_LABEL[r.in_pack_status] },
+    { header: "Version", accessor: (r: ReadinessItem) => r.current_version },
+    { header: "Last Updated", accessor: (r: ReadinessItem) => r.last_updated },
+    { header: "Next Review Due", accessor: (r: ReadinessItem) => r.next_review_due },
+    { header: "Location", accessor: (r: ReadinessItem) => r.location_of_document },
+    { header: "Owner", accessor: (r: ReadinessItem) => getStaffName(r.responsible_owner) },
+    { header: "Quality (1-5)", accessor: (r: ReadinessItem) => r.evidence_quality_rating },
+    { header: "Child Voice Woven", accessor: (r: ReadinessItem) => r.child_voice_woven ? "Yes" : "No" },
+    { header: "Accessible to Inspector", accessor: (r: ReadinessItem) => r.accessible_to_inspector ? "Yes" : "No" },
+    { header: "Accessible to Children", accessor: (r: ReadinessItem) => r.accessible_to_children ? "Yes" : "No" },
     { header: "Commentary", accessor: (r: ReadinessItem) => r.commentary },
   ];
+
+  if (isLoading) return <PageShell title="Inspection Readiness Pack" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell
@@ -628,10 +197,9 @@ export default function InspectionReadinessPackPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Ready">Ready</SelectItem>
-                <SelectItem value="Needs refresh">Needs refresh</SelectItem>
-                <SelectItem value="In progress">In progress</SelectItem>
-                <SelectItem value="Missing">Missing</SelectItem>
+                {(Object.entries(IN_PACK_STATUS_LABEL) as [InPackStatus, string][]).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -643,9 +211,9 @@ export default function InspectionReadinessPackPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All SCCIF Areas</SelectItem>
-                <SelectItem value="Overall Experiences and Progress">Overall Experiences and Progress</SelectItem>
-                <SelectItem value="How well children are helped and protected">Helped and Protected</SelectItem>
-                <SelectItem value="Effectiveness of leaders and managers">Leaders and Managers</SelectItem>
+                {(Object.entries(SCCIF_JUDGEMENT_AREA_LABEL) as [SccifJudgementArea, string][]).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -657,13 +225,9 @@ export default function InspectionReadinessPackPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="Statutory documentation">Statutory documentation</SelectItem>
-                <SelectItem value="Records of practice">Records of practice</SelectItem>
-                <SelectItem value="Children's voice evidence">Children&apos;s voice evidence</SelectItem>
-                <SelectItem value="Outcome data">Outcome data</SelectItem>
-                <SelectItem value="Workforce">Workforce</SelectItem>
-                <SelectItem value="Environment">Environment</SelectItem>
-                <SelectItem value="Quality assurance">Quality assurance</SelectItem>
+                {(Object.entries(READINESS_CATEGORY_LABEL) as [ReadinessCategory, string][]).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -693,13 +257,13 @@ export default function InspectionReadinessPackPage() {
           )}
           {filtered.map((item) => {
             const isExpanded = expandedId === item.id;
-            const StatusIcon = STATUS_ICON[item.inPackStatus];
+            const StatusIcon = STATUS_ICON[item.in_pack_status];
             return (
               <div
                 key={item.id}
                 className={cn(
                   "rounded-xl border border-l-4 bg-white overflow-hidden",
-                  STATUS_BORDER[item.inPackStatus]
+                  STATUS_BORDER[item.in_pack_status]
                 )}
               >
                 {/* collapsed header */}
@@ -708,25 +272,25 @@ export default function InspectionReadinessPackPage() {
                   onClick={() => setExpandedId(isExpanded ? null : item.id)}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <StatusIcon className={cn("h-5 w-5 shrink-0", STATUS_ICON_COLOUR[item.inPackStatus])} />
+                    <StatusIcon className={cn("h-5 w-5 shrink-0", STATUS_ICON_COLOUR[item.in_pack_status])} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium text-sm">{item.itemName}</p>
-                        <span className="text-xs text-muted-foreground">{item.currentVersion}</span>
+                        <p className="font-medium text-sm">{item.item_name}</p>
+                        <span className="text-xs text-muted-foreground">{item.current_version}</span>
                       </div>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
-                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", STATUS_COLOUR[item.inPackStatus])}>
-                          {item.inPackStatus}
+                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", STATUS_COLOUR[item.in_pack_status])}>
+                          {IN_PACK_STATUS_LABEL[item.in_pack_status]}
                         </Badge>
-                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", SCCIF_COLOUR[item.sccifJudgementArea])}>
-                          {item.sccifJudgementArea}
+                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", SCCIF_COLOUR[item.sccif_judgement_area])}>
+                          {SCCIF_JUDGEMENT_AREA_LABEL[item.sccif_judgement_area]}
                         </Badge>
                         <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", CATEGORY_COLOUR[item.category])}>
-                          {item.category}
+                          {READINESS_CATEGORY_LABEL[item.category]}
                         </Badge>
                         <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
                           <Star className="h-3 w-3 text-violet-500" />
-                          {item.evidenceQualityRating}/5
+                          {item.evidence_quality_rating}/5
                         </span>
                       </div>
                     </div>
@@ -734,7 +298,7 @@ export default function InspectionReadinessPackPage() {
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-xs text-muted-foreground hidden md:inline-flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      Review {item.nextReviewDue}
+                      Review {item.next_review_due}
                     </span>
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -770,42 +334,42 @@ export default function InspectionReadinessPackPage() {
                             <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
                             <div>
                               <p className="text-xs text-muted-foreground">Location</p>
-                              <p className="text-slate-700">{item.locationOfDocument}</p>
+                              <p className="text-slate-700">{item.location_of_document}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-2">
                             <User className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
                             <div>
                               <p className="text-xs text-muted-foreground">Responsible Owner</p>
-                              <p className="text-slate-700">{getStaffName(item.responsibleOwner)}</p>
+                              <p className="text-slate-700">{getStaffName(item.responsible_owner)}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-2">
                             <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
                             <div>
                               <p className="text-xs text-muted-foreground">Last Updated</p>
-                              <p className="text-slate-700">{item.lastUpdated}</p>
+                              <p className="text-slate-700">{item.last_updated}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-2">
                             <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
                             <div>
                               <p className="text-xs text-muted-foreground">Next Review Due</p>
-                              <p className="text-slate-700">{item.nextReviewDue}</p>
+                              <p className="text-slate-700">{item.next_review_due}</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-2">
                             <Star className="h-3.5 w-3.5 text-violet-500 shrink-0 mt-0.5" />
                             <div>
                               <p className="text-xs text-muted-foreground">Evidence Quality</p>
-                              <p className="text-slate-700 font-medium">{item.evidenceQualityRating} / 5</p>
+                              <p className="text-slate-700 font-medium">{item.evidence_quality_rating} / 5</p>
                             </div>
                           </div>
                           <div className="flex items-start gap-2">
                             <FileText className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
                             <div>
                               <p className="text-xs text-muted-foreground">Current Version</p>
-                              <p className="text-slate-700">{item.currentVersion}</p>
+                              <p className="text-slate-700">{item.current_version}</p>
                             </div>
                           </div>
                         </div>
@@ -822,7 +386,7 @@ export default function InspectionReadinessPackPage() {
                       </CardHeader>
                       <CardContent>
                         <ul className="space-y-2">
-                          {item.examplesIncluded.map((ex, i) => (
+                          {item.examples_included.map((ex, i) => (
                             <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
                               {ex}
@@ -844,30 +408,30 @@ export default function InspectionReadinessPackPage() {
                         <div className="flex flex-wrap gap-2">
                           <Badge variant="outline" className={cn(
                             "text-xs px-2 py-0.5 border inline-flex items-center gap-1",
-                            item.childVoiceWoven
+                            item.child_voice_woven
                               ? "bg-pink-50 text-pink-700 border-pink-200"
                               : "bg-slate-50 text-slate-500 border-slate-200"
                           )}>
                             <MessageSquare className="h-3 w-3" />
-                            {item.childVoiceWoven ? "Child voice woven" : "Child voice not woven"}
+                            {item.child_voice_woven ? "Child voice woven" : "Child voice not woven"}
                           </Badge>
                           <Badge variant="outline" className={cn(
                             "text-xs px-2 py-0.5 border inline-flex items-center gap-1",
-                            item.accessibleToInspector
+                            item.accessible_to_inspector
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                               : "bg-red-50 text-red-700 border-red-200"
                           )}>
-                            {item.accessibleToInspector ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                            {item.accessibleToInspector ? "Accessible to inspector" : "Inspector access blocked"}
+                            {item.accessible_to_inspector ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            {item.accessible_to_inspector ? "Accessible to inspector" : "Inspector access blocked"}
                           </Badge>
                           <Badge variant="outline" className={cn(
                             "text-xs px-2 py-0.5 border inline-flex items-center gap-1",
-                            item.accessibleToChildren
+                            item.accessible_to_children
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                               : "bg-slate-50 text-slate-500 border-slate-200"
                           )}>
-                            {item.accessibleToChildren ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                            {item.accessibleToChildren ? "Accessible to children" : "Not for children"}
+                            {item.accessible_to_children ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            {item.accessible_to_children ? "Accessible to children" : "Not for children"}
                           </Badge>
                         </div>
                       </CardContent>

@@ -21,43 +21,23 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useCreateEducationRecord } from "@/hooks/use-education";
+import { useEducationRecords, useCreateEducationRecord } from "@/hooks/use-education";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import type { EducationRecord, EducationRecordType, EducationAttendanceStatus } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Plus, GraduationCap, BookOpen,
   CheckCircle2, AlertTriangle, Clock, User, Calendar,
-  ChevronDown, ChevronUp, School, TrendingUp, TrendingDown,
-  XCircle, Shield, Award, FileText, Target, Loader2,
+  ChevronDown, ChevronUp, School, TrendingUp,
+  XCircle, Shield, Award, FileText, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type EntryType = "attendance" | "exclusion" | "pep_meeting" | "attainment" | "provision_change" | "achievement" | "concern";
-type AttendanceStatus = "present" | "absent_authorised" | "absent_unauthorised" | "late" | "excluded" | "part_day";
-
-interface EducationEntry {
-  id: string;
-  child_id: string;
-  date: string;
-  type: EntryType;
-  title: string;
-  description: string;
-  attendance_status: AttendanceStatus | null;
-  school_name: string;
-  recorded_by: string;
-  outcome: string | null;
-  follow_up_date: string | null;
-  linked_pep: boolean;
-  created_at: string;
-}
-
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<EntryType, { label: string; colour: string; icon: React.ElementType }> = {
+const TYPE_CONFIG: Record<EducationRecordType, { label: string; colour: string; icon: React.ElementType }> = {
   attendance:       { label: "Attendance",        colour: "bg-blue-100 text-blue-700",   icon: CheckCircle2 },
   exclusion:        { label: "Exclusion",         colour: "bg-red-100 text-red-700",     icon: XCircle      },
   pep_meeting:      { label: "PEP Meeting",       colour: "bg-purple-100 text-purple-700", icon: FileText   },
@@ -67,87 +47,20 @@ const TYPE_CONFIG: Record<EntryType, { label: string; colour: string; icon: Reac
   concern:          { label: "Concern",           colour: "bg-amber-100 text-amber-700", icon: AlertTriangle },
 };
 
-const ATTENDANCE_LABELS: Record<AttendanceStatus, string> = {
+const ATTENDANCE_LABELS: Record<EducationAttendanceStatus, string> = {
   present: "Present", absent_authorised: "Absent (Authorised)", absent_unauthorised: "Absent (Unauthorised)",
   late: "Late", excluded: "Excluded", part_day: "Part Day",
 };
-
-// ── Seed Data ─────────────────────────────────────────────────────────────────
-
-const d = (n: number) => {
-  const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10);
-};
-
-const SEED: EducationEntry[] = [
-  {
-    id: "edu_001", child_id: "yp_alex", date: d(-1), type: "attendance", title: "Full day attendance",
-    description: "Alex attended all lessons. Positive feedback from English teacher — engaged well in creative writing task.",
-    attendance_status: "present", school_name: "Derby Alternative Provision",
-    recorded_by: "staff_edward", outcome: null, follow_up_date: null, linked_pep: false, created_at: d(-1) + "T16:00:00Z",
-  },
-  {
-    id: "edu_002", child_id: "yp_alex", date: d(-3), type: "exclusion", title: "Fixed-term exclusion — 1 day",
-    description: "Alex excluded for one day following verbal altercation with teaching assistant. Refused to leave classroom when asked. School applied fixed-term exclusion under behaviour policy.",
-    attendance_status: "excluded", school_name: "Derby Alternative Provision",
-    recorded_by: "staff_edward", outcome: "Reintegration meeting booked with inclusion lead. Key worker to attend.", follow_up_date: d(-1), linked_pep: false, created_at: d(-3) + "T14:00:00Z",
-  },
-  {
-    id: "edu_003", child_id: "yp_jordan", date: d(-2), type: "attendance", title: "Full day attendance",
-    description: "Jordan attended full day. Completed maths assessment — scored 72%. Teacher notes improvement in concentration.",
-    attendance_status: "present", school_name: "Highfields Academy",
-    recorded_by: "staff_anna", outcome: null, follow_up_date: null, linked_pep: false, created_at: d(-2) + "T16:00:00Z",
-  },
-  {
-    id: "edu_004", child_id: "yp_casey", date: d(-2), type: "attendance", title: "Late arrival — transport issue",
-    description: "Casey arrived 25 minutes late due to vehicle breakdown on the school run. School notified in advance.",
-    attendance_status: "late", school_name: "Allestree Woodlands",
-    recorded_by: "staff_chervelle", outcome: null, follow_up_date: null, linked_pep: false, created_at: d(-2) + "T09:30:00Z",
-  },
-  {
-    id: "edu_005", child_id: "yp_jordan", date: d(-7), type: "pep_meeting", title: "PEP Review — Spring Term",
-    description: "Personal Education Plan review held with Virtual School Head, designated teacher, and key worker. Jordan making expected progress in English and exceeding in PE. Maths remains below expected — additional 1:1 tutoring agreed.",
-    attendance_status: null, school_name: "Highfields Academy",
-    recorded_by: "staff_anna", outcome: "1:1 maths tutoring to start next week. Reading challenge participation agreed. Next PEP review: Summer term.", follow_up_date: d(56), linked_pep: true, created_at: d(-7) + "T14:30:00Z",
-  },
-  {
-    id: "edu_006", child_id: "yp_casey", date: d(-5), type: "attainment", title: "English mock result — Grade 5",
-    description: "Casey achieved Grade 5 in English Language mock exam. Significant improvement from Grade 3 in autumn term. Teacher impressed with essay structure development.",
-    attendance_status: null, school_name: "Allestree Woodlands",
-    recorded_by: "staff_chervelle", outcome: "Positive feedback shared with Casey. Achievement celebrated at house meeting.", follow_up_date: null, linked_pep: true, created_at: d(-5) + "T15:30:00Z",
-  },
-  {
-    id: "edu_007", child_id: "yp_alex", date: d(-10), type: "pep_meeting", title: "Emergency PEP — post-exclusion",
-    description: "Emergency PEP called following second exclusion this term. Discussed triggers, reintegration support, and whether provision remains suitable. Virtual School Head recommended additional behaviour support and possible assessment for EHCP.",
-    attendance_status: null, school_name: "Derby Alternative Provision",
-    recorded_by: "staff_darren", outcome: "EHCP assessment referral to be made. Behaviour support plan updated. Reduced timetable for 2 weeks. Key worker to do daily school check-ins.", follow_up_date: d(14), linked_pep: true, created_at: d(-10) + "T10:00:00Z",
-  },
-  {
-    id: "edu_008", child_id: "yp_casey", date: d(-1), type: "achievement", title: "Selected for school debate team",
-    description: "Casey selected to represent Year 11 in inter-school debate competition. Topic: social media impact. Casey enthusiastic and has begun research.",
-    attendance_status: null, school_name: "Allestree Woodlands",
-    recorded_by: "staff_chervelle", outcome: "Competition date: 3 weeks. Staff to support with practice sessions at home.", follow_up_date: d(21), linked_pep: false, created_at: d(-1) + "T16:30:00Z",
-  },
-  {
-    id: "edu_009", child_id: "yp_alex", date: d(-15), type: "concern", title: "Persistent absence pattern",
-    description: "School flagged that Alex's attendance has dropped to 76% this term. Three unauthorised absences in last two weeks — Alex refusing to attend on mornings after difficult evenings. Pattern emerging.",
-    attendance_status: null, school_name: "Derby Alternative Provision",
-    recorded_by: "staff_edward", outcome: "Attendance meeting with school booked. Morning routine review with Alex. Consider transport support.", follow_up_date: d(-10), linked_pep: false, created_at: d(-15) + "T10:00:00Z",
-  },
-  {
-    id: "edu_010", child_id: "yp_jordan", date: d(-4), type: "achievement", title: "PE Award — Student of the Week",
-    description: "Jordan received Student of the Week award for PE. Teacher praised leadership during team sports and positive attitude. Jordan visibly proud — brought certificate home.",
-    attendance_status: null, school_name: "Highfields Academy",
-    recorded_by: "staff_anna", outcome: "Certificate displayed in Jordan's room. Achievement shared at team meeting. Positive feedback to social worker.", follow_up_date: null, linked_pep: false, created_at: d(-4) + "T16:00:00Z",
-  },
-];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function EducationPage() {
   const { currentUser } = useAuthContext();
+  const { data: response, isLoading } = useEducationRecords();
   const createRecord = useCreateEducationRecord();
 
-  const [entries, setEntries] = useState<EducationEntry[]>(SEED);
+  const records = response?.data ?? [];
+
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -158,112 +71,124 @@ export default function EducationPage() {
 
   // new entry form
   const [nChild, setNChild] = useState("");
-  const [nType, setNType] = useState<EntryType | "">("");
+  const [nType, setNType] = useState<EducationRecordType | "">("");
   const [nTitle, setNTitle] = useState("");
   const [nDesc, setNDesc] = useState("");
-  const [nAttendance, setNAttendance] = useState<AttendanceStatus | "">("");
+  const [nAttendance, setNAttendance] = useState<EducationAttendanceStatus | "">("");
   const [nOutcome, setNOutcome] = useState("");
 
-  const childIds = useMemo(() => [...new Set(entries.map(e => e.child_id))], [entries]);
+  const childIds = useMemo(() => [...new Set(records.map(e => e.child_id))], [records]);
 
   /* ── filtering ──────────────────────────────────────────────────────────── */
   const filtered = useMemo(() => {
-    let list = [...entries];
-    if (tab === "concerns") list = list.filter(e => e.type === "concern" || e.type === "exclusion");
-    if (tab === "achievements") list = list.filter(e => e.type === "achievement" || e.type === "attainment");
+    let list = [...records];
+    if (tab === "concerns") list = list.filter(e => e.record_type === "concern" || e.record_type === "exclusion");
+    if (tab === "achievements") list = list.filter(e => e.record_type === "achievement" || e.record_type === "attainment");
     if (childFilter !== "all") list = list.filter(e => e.child_id === childFilter);
-    if (typeFilter !== "all") list = list.filter(e => e.type === typeFilter);
+    if (typeFilter !== "all") list = list.filter(e => e.record_type === typeFilter);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(e =>
         e.title.toLowerCase().includes(q) ||
-        e.description.toLowerCase().includes(q) ||
+        (e.details ?? "").toLowerCase().includes(q) ||
         getYPName(e.child_id).toLowerCase().includes(q) ||
-        e.school_name.toLowerCase().includes(q)
+        (e.school ?? "").toLowerCase().includes(q)
       );
     }
     list.sort((a, b) => {
       switch (sortBy) {
-        case "newest": return b.created_at.localeCompare(a.created_at);
-        case "oldest": return a.created_at.localeCompare(b.created_at);
+        case "newest": return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+        case "oldest": return (a.created_at ?? "").localeCompare(b.created_at ?? "");
         case "child":  return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
-        case "type":   return a.type.localeCompare(b.type);
+        case "type":   return a.record_type.localeCompare(b.record_type);
         default: return 0;
       }
     });
     return list;
-  }, [entries, search, childFilter, typeFilter, sortBy, tab]);
+  }, [records, search, childFilter, typeFilter, sortBy, tab]);
 
   /* ── stats ──────────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
-    const thisWeek = entries.filter(e => {
+    const thisWeek = records.filter(e => {
       const diff = (Date.now() - new Date(e.date).getTime()) / 86400000;
       return diff >= 0 && diff <= 7;
     });
     return {
-      total: entries.length,
-      concerns: entries.filter(e => e.type === "concern" || e.type === "exclusion").length,
-      achievements: entries.filter(e => e.type === "achievement" || e.type === "attainment").length,
-      pepMeetings: entries.filter(e => e.type === "pep_meeting").length,
-      weekAttendance: thisWeek.filter(e => e.type === "attendance").length,
+      total: records.length,
+      concerns: records.filter(e => e.record_type === "concern" || e.record_type === "exclusion").length,
+      achievements: records.filter(e => e.record_type === "achievement" || e.record_type === "attainment").length,
+      pepMeetings: records.filter(e => e.record_type === "pep_meeting").length,
+      weekAttendance: thisWeek.filter(e => e.record_type === "attendance").length,
     };
-  }, [entries]);
+  }, [records]);
 
   /* ── per-child attendance ───────────────────────────────────────────────── */
   const childStats = useMemo(() => {
     const map = new Map<string, { present: number; total: number; exclusions: number; school: string }>();
-    entries.forEach(e => {
-      const cur = map.get(e.child_id) || { present: 0, total: 0, exclusions: 0, school: e.school_name };
+    records.forEach(e => {
+      const cur = map.get(e.child_id) || { present: 0, total: 0, exclusions: 0, school: e.school ?? "" };
       if (e.attendance_status) {
         cur.total++;
         if (e.attendance_status === "present") cur.present++;
         if (e.attendance_status === "excluded") cur.exclusions++;
       }
-      cur.school = e.school_name;
+      cur.school = e.school ?? "";
       map.set(e.child_id, cur);
     });
     return map;
-  }, [entries]);
+  }, [records]);
 
   /* ── export ─────────────────────────────────────────────────────────────── */
-  const exportCols: ExportColumn<EducationEntry>[] = [
-    { header: "ID", accessor: r => r.id },
-    { header: "Child", accessor: r => getYPName(r.child_id) },
-    { header: "Date", accessor: r => r.date },
-    { header: "Type", accessor: r => TYPE_CONFIG[r.type].label },
-    { header: "Title", accessor: r => r.title },
-    { header: "Description", accessor: r => r.description },
-    { header: "Attendance", accessor: r => r.attendance_status ? ATTENDANCE_LABELS[r.attendance_status] : "" },
-    { header: "School", accessor: r => r.school_name },
-    { header: "Recorded By", accessor: r => getStaffName(r.recorded_by) },
-    { header: "Outcome", accessor: r => r.outcome || "" },
-    { header: "Follow-up Date", accessor: r => r.follow_up_date || "" },
-    { header: "Linked to PEP", accessor: r => r.linked_pep ? "Yes" : "No" },
+  const exportCols: ExportColumn<EducationRecord>[] = [
+    { header: "ID", accessor: (r: EducationRecord) => r.id },
+    { header: "Child", accessor: (r: EducationRecord) => getYPName(r.child_id) },
+    { header: "Date", accessor: (r: EducationRecord) => r.date },
+    { header: "Type", accessor: (r: EducationRecord) => TYPE_CONFIG[r.record_type].label },
+    { header: "Title", accessor: (r: EducationRecord) => r.title },
+    { header: "Description", accessor: (r: EducationRecord) => r.details ?? "" },
+    { header: "Attendance", accessor: (r: EducationRecord) => r.attendance_status ? ATTENDANCE_LABELS[r.attendance_status] : "" },
+    { header: "School", accessor: (r: EducationRecord) => r.school ?? "" },
+    { header: "Recorded By", accessor: (r: EducationRecord) => getStaffName(r.staff_id) },
+    { header: "Outcome", accessor: (r: EducationRecord) => r.outcome ?? "" },
+    { header: "Follow-up Date", accessor: (r: EducationRecord) => r.follow_up_date ?? "" },
+    { header: "Linked to PEP", accessor: (r: EducationRecord) => r.linked_pep ? "Yes" : "No" },
   ];
 
   /* ── create ─────────────────────────────────────────────────────────────── */
   const handleCreate = () => {
     if (!nChild || !nType || !nTitle || !nDesc) return;
-    const entry: EducationEntry = {
-      id: `edu_${Date.now()}`,
-      child_id: nChild,
-      date: todayStr(),
-      type: nType as EntryType,
-      title: nTitle,
-      description: nDesc,
-      attendance_status: nAttendance ? (nAttendance as AttendanceStatus) : null,
-      school_name: entries.find(e => e.child_id === nChild)?.school_name || "Unknown",
-      recorded_by: currentUser?.id || "staff_darren",
-      outcome: nOutcome || null,
-      follow_up_date: null,
-      linked_pep: nType === "pep_meeting",
-      created_at: new Date().toISOString(),
-    };
-    setEntries(prev => [entry, ...prev]);
-    createRecord.mutate({ child_id: nChild, record_type: nType as "attendance" | "exclusion" | "pep_meeting" | "achievement" | "concern" | "placement_change", title: nTitle, date: todayStr(), details: nDesc, staff_id: currentUser?.id || "staff_darren", status: "open" }, { onSuccess: () => toast.success("Education entry saved"), onError: () => toast.error("Failed to save entry") });
+    createRecord.mutate(
+      {
+        child_id: nChild,
+        record_type: nType as EducationRecordType,
+        title: nTitle,
+        date: todayStr(),
+        details: nDesc,
+        school: records.find(e => e.child_id === nChild)?.school || undefined,
+        attendance_status: nAttendance ? (nAttendance as EducationAttendanceStatus) : null,
+        linked_pep: nType === "pep_meeting",
+        outcome: nOutcome || undefined,
+        staff_id: currentUser?.id || "staff_darren",
+        status: "open",
+      },
+      {
+        onSuccess: () => toast.success("Education entry saved"),
+        onError: () => toast.error("Failed to save entry"),
+      },
+    );
     setShowNew(false);
     setNChild(""); setNType(""); setNTitle(""); setNDesc(""); setNAttendance(""); setNOutcome("");
   };
+
+  if (isLoading) {
+    return (
+      <PageShell title="Education Tracker" subtitle="Attendance, attainment, PEPs, and education oversight">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
@@ -340,7 +265,7 @@ export default function EducationPage() {
       {/* ── Tabs ──────────────────────────────────────────────────────────────── */}
       <div className="flex gap-1 mb-4 border-b">
         {([
-          { key: "all", label: "All Entries", count: entries.length },
+          { key: "all", label: "All Entries", count: records.length },
           { key: "concerns", label: "Concerns & Exclusions", count: stats.concerns },
           { key: "achievements", label: "Achievements", count: stats.achievements },
         ] as const).map(t => (
@@ -377,7 +302,7 @@ export default function EducationPage() {
           <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {(Object.entries(TYPE_CONFIG) as [EntryType, { label: string }][]).map(([k, v]) => (
+            {(Object.entries(TYPE_CONFIG) as [EducationRecordType, { label: string }][]).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>
@@ -412,7 +337,7 @@ export default function EducationPage() {
 
         {filtered.map(entry => {
           const isOpen = expandedId === entry.id;
-          const tc = TYPE_CONFIG[entry.type];
+          const tc = TYPE_CONFIG[entry.record_type];
           const Icon = tc.icon;
 
           return (
@@ -438,7 +363,7 @@ export default function EducationPage() {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {getYPName(entry.child_id)} · {entry.school_name} · {formatDate(entry.date)}
+                    {getYPName(entry.child_id)} · {entry.school ?? "—"} · {formatDate(entry.date)}
                   </p>
                 </div>
                 {isOpen ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
@@ -448,7 +373,7 @@ export default function EducationPage() {
                 <div className="border-t px-4 py-3 space-y-3 bg-muted/30">
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Details</p>
-                    <p className="text-sm">{entry.description}</p>
+                    <p className="text-sm">{entry.details}</p>
                   </div>
                   {entry.outcome && (
                     <div>
@@ -457,7 +382,7 @@ export default function EducationPage() {
                     </div>
                   )}
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />{getStaffName(entry.recorded_by)}</span>
+                    <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />{getStaffName(entry.staff_id)}</span>
                     <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{formatDate(entry.date)}</span>
                     {entry.follow_up_date && (
                       <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Follow-up: {formatDate(entry.follow_up_date)}</span>
@@ -503,10 +428,10 @@ export default function EducationPage() {
             </div>
             <div>
               <label htmlFor="edu-type" className="text-sm font-medium mb-1 block">Entry Type *</label>
-              <Select value={nType} onValueChange={v => setNType(v as EntryType)}>
+              <Select value={nType} onValueChange={v => setNType(v as EducationRecordType)}>
                 <SelectTrigger id="edu-type"><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
-                  {(Object.entries(TYPE_CONFIG) as [EntryType, { label: string }][]).map(([k, v]) => (
+                  {(Object.entries(TYPE_CONFIG) as [EducationRecordType, { label: string }][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -515,10 +440,10 @@ export default function EducationPage() {
             {nType === "attendance" && (
               <div>
                 <label htmlFor="edu-attendance" className="text-sm font-medium mb-1 block">Attendance Status</label>
-                <Select value={nAttendance} onValueChange={v => setNAttendance(v as AttendanceStatus)}>
+                <Select value={nAttendance} onValueChange={v => setNAttendance(v as EducationAttendanceStatus)}>
                   <SelectTrigger id="edu-attendance"><SelectValue placeholder="Status" /></SelectTrigger>
                   <SelectContent>
-                    {(Object.entries(ATTENDANCE_LABELS) as [AttendanceStatus, string][]).map(([k, v]) => (
+                    {(Object.entries(ATTENDANCE_LABELS) as [EducationAttendanceStatus, string][]).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v}</SelectItem>
                     ))}
                   </SelectContent>
