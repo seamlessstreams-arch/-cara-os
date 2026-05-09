@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── types ─────────────────────────────────────────────────────────────── */
 
@@ -585,6 +586,11 @@ export default function TherapeuticCareModelPage() {
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
         <strong>Regulatory Context:</strong> The Children&apos;s Homes (England) Regulations 2015, Quality Standard 6 (Positive Relationships) requires that staff understand and apply the home&apos;s therapeutic model consistently. The SCCIF (Social Care Common Inspection Framework) evaluates whether the model is clearly articulated, understood by all staff, and evidenced in practice and outcomes. Ofsted expects that the therapeutic model is not merely a written document but a living framework — observable in daily interactions, reflected in care planning, and demonstrably improving children&apos;s outcomes. This page evidences the home&apos;s commitment to continuous development in therapeutic practice.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

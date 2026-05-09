@@ -32,6 +32,7 @@ import {
   STAFF_DISCIPLINARY_STAGE_LABEL,
   STAFF_DISCIPLINARY_SEVERITY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 
@@ -320,6 +321,11 @@ export default function StaffDisciplinaryPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

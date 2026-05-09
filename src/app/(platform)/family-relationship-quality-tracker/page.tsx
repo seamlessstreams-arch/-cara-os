@@ -29,6 +29,7 @@ import {
   CheckCircle2, ChevronDown, ChevronUp, ArrowUpDown, CalendarDays,
   Sparkles, ShieldAlert, MessageCircle, Activity, Compass, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Style helpers ─────────────────────────────────────────────────────────────
 
@@ -479,6 +480,11 @@ export default function FamilyRelationshipQualityTrackerPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

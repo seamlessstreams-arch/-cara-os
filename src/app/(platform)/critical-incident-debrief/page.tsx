@@ -26,6 +26,7 @@ import type { CriticalIncidentDebriefRecord, DebriefIncidentCategory, IncidentDe
 import { DEBRIEF_INCIDENT_CATEGORY_LABEL, INCIDENT_DEBRIEF_STATUS_LABEL, DEBRIEF_IMPACT_LEVEL_LABEL } from "@/types/extended";
 import { useCriticalIncidentDebriefRecords, useCreateCriticalIncidentDebriefRecord } from "@/hooks/use-critical-incident-debrief-records";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -344,6 +345,11 @@ export default function CriticalIncidentDebriefPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

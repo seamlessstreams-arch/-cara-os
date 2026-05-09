@@ -28,6 +28,7 @@ import {
   AlertTriangle, CheckCircle2, Clock, Calendar, Star, BookOpen,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Local view-model type (camelCase for the page) ──────────────────────────
 interface SessionView {
@@ -541,6 +542,11 @@ export default function KeyWorkingPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

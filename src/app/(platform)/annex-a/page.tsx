@@ -44,6 +44,7 @@ import {
 import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import type { ManagerDecision } from "@/types/care-events";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Readiness score ring ──────────────────────────────────────────────────────
 
@@ -636,6 +637,11 @@ export default function AnnexAReadinessPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

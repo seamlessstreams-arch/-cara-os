@@ -25,6 +25,7 @@ import {
 import type { HouseRule, HouseRuleCategory } from "@/types/extended";
 import { HOUSE_RULE_STATUS_LABEL } from "@/types/extended";
 import { useHouseRules } from "@/hooks/use-house-rules";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── category meta ─── */
 const categoryConfig: Record<HouseRuleCategory, { label: string; color: string; icon: typeof BookOpen }> = {
@@ -330,6 +331,11 @@ export default function HouseRulesPage() {
           proportionality.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

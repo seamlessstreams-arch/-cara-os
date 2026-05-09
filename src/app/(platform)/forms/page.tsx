@@ -30,6 +30,7 @@ import { CARE_FORM_TYPE_LABELS, CARE_FORM_TYPES } from "@/lib/constants";
 import { cn, todayStr, formatRelative } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { CareForm } from "@/types";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const FORM_EXPORT_COLS: ExportColumn<CareForm>[] = [
   { header: "Title", accessor: (f) => f.title },
@@ -584,6 +585,11 @@ export default function FormsPage() {
           </Card>
         )}
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

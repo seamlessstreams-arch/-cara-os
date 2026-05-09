@@ -23,6 +23,7 @@ import type { LeaveRequest } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 type Tab = "overview" | "requests" | "calendar" | "sickness";
 type StatusFilter = "all" | "pending" | "approved" | "declined";
@@ -597,6 +598,11 @@ export default function LeavePage() {
           </>
         )}
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

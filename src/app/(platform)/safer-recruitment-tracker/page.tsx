@@ -28,6 +28,7 @@ import {
 import { useSaferRecruitmentRecords } from "@/hooks/use-safer-recruitment-records";
 import type { SaferRecruitmentRecord, SaferRecruitmentStatus, SaferRecruitmentReferenceStatus, SaferRecruitmentDbsResult } from "@/types/extended";
 import { SAFER_RECRUITMENT_STATUS_LABEL, SAFER_RECRUITMENT_REFERENCE_STATUS_LABEL, SAFER_RECRUITMENT_DBS_RESULT_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -433,6 +434,11 @@ export default function SaferRecruitmentTrackerPage() {
           Standard pre-employment checklist applied to all candidates: {STANDARD_CHECKLIST.join(" · ")}.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -21,6 +21,7 @@ import { getStaffName } from "@/lib/seed-data";
 import type { ImpactAssessment, ImpactAssessmentStatus, ImpactRecommendation, ImpactArea } from "@/types/extended";
 import { IMPACT_ASSESSMENT_STATUS_LABEL, IMPACT_RECOMMENDATION_LABEL } from "@/types/extended";
 import { useImpactAssessments } from "@/hooks/use-impact-assessments";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const STATUSES: ImpactAssessmentStatus[] = ["draft", "in_progress", "completed", "approved", "declined"];
@@ -307,6 +308,11 @@ export default function ImpactAssessmentsPage() {
           the proposed admission with the home&apos;s Statement of Purpose.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

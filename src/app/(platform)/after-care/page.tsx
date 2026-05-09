@@ -34,6 +34,7 @@ import type {
   AfterCareSupportPkg,
   AfterCareRecord,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -322,6 +323,11 @@ export default function AfterCarePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

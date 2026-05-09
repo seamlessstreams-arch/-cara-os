@@ -40,6 +40,7 @@ import {
 } from "@/types/extended";
 import { useCreativeProjectRecords } from "@/hooks/use-creative-project-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const mediumIcon = (m: CreativeProjectMedium) => {
   if (m === "music_instrument" || m === "music_production" || m === "singing") return Music;
@@ -391,6 +392,11 @@ export default function ChildCreativeProjectsPage() {
           Linked to After-School Clubs, Activities, Cultural Identity, and Outcomes pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

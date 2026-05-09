@@ -35,6 +35,7 @@ import {
 } from "@/types/extended";
 import { useSpldSupportPlans } from "@/hooks/use-spld-support-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -554,6 +555,11 @@ export default function ChildDyslexiaSpLDPlanPage() {
           this plan in the child&apos;s own voice and chosen identity.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

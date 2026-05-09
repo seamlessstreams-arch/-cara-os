@@ -23,6 +23,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const CAT_LABELS: Record<string, string> = {
   petty_cash: "Petty Cash", young_person_activities: "YP Activities",
@@ -480,6 +481,11 @@ export default function ExpensesPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

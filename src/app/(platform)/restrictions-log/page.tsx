@@ -38,6 +38,7 @@ import {
   RESTRICTIONS_LOG_STATUS_LABEL,
   RESTRICTIONS_LOG_AUTHORISED_BY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ────────────────────────────────────────────── */
 
@@ -287,6 +288,11 @@ export default function RestrictionsLogPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

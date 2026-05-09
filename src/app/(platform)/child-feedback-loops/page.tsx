@@ -33,6 +33,7 @@ import {
 import type { FeedbackDecision } from "@/types/extended";
 import { useChildFeedbackLoops } from "@/hooks/use-child-feedback-loops";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const decisionColour: Record<string, string> = {
   acted_on_in_full: "bg-green-100 text-green-800",
@@ -267,6 +268,11 @@ export default function ChildFeedbackLoopsPage() {
           Child, and Children&apos;s Meetings.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

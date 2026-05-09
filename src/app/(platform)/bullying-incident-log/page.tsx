@@ -27,6 +27,7 @@ import type {
 } from "@/types/extended";
 import { useBullyingIncidents } from "@/hooks/use-bullying-incidents";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── label maps ───────────────────────────────────────────────────────────── */
 
@@ -481,6 +482,11 @@ export default function BullyingIncidentLogPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

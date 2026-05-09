@@ -42,6 +42,7 @@ import { getStaffName } from "@/lib/seed-data";
 import type { HandoverAudit, HandoverDomainScore, RagRating } from "@/types/extended";
 import { RAG_RATING_LABEL } from "@/types/extended";
 import { useHandoverAudits } from "@/hooks/use-handover-audits";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── RAG colour helpers ───────────────────────────────────────────────────────
 const ragColour = (rag: RagRating): string => {
@@ -670,6 +671,11 @@ export default function HandoverQualityAuditPage() {
           reviews and the SCCIF self-evaluation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

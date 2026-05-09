@@ -8,6 +8,7 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, Briefcase, Heart, Star, Wallet, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 interface YpJob {
   id: string;
@@ -147,6 +148,11 @@ export default function YoungPersonJobTrackerPage() {
         })}
       </div>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Young person employment supports Quality Standard 12 (preparation for adulthood) and complies with Children and Young Persons Act 1933, Education Act 1996, and local authority work permit requirements. Linked to Independence Pathway and Pocket Money / Bank Account.</p></div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

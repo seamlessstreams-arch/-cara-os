@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useLocalOfferSections } from "@/hooks/use-local-offer-sections";
 import type { LocalOfferSection, LocalOfferCategory } from "@/types/extended";
 import { LOCAL_OFFER_CATEGORY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -173,6 +174,11 @@ export default function LocalOfferPage() {
           <p>The Local Offer describes what a children&apos;s home provides for the children in its care. Under the Children and Families Act 2014, local authorities are required to publish a Local Offer for children with SEND, and children&apos;s homes should articulate their own offer clearly. The Statement of Purpose (Reg 16) and Children&apos;s Guide (Reg 19) complement this document. The Local Offer should be shared with placing authorities during the referral process and reviewed annually. Ofsted inspectors use the Statement of Purpose and Local Offer to understand the home&apos;s intended purpose and assess whether practice matches the stated offer.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

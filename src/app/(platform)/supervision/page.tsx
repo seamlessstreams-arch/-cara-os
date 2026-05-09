@@ -26,6 +26,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { api } from "@/hooks/use-api";
 import type { Supervision, SupervisionAction } from "@/types";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 type Tab = "supervision" | "probation" | "appraisals" | "goals";
 
@@ -1089,6 +1090,11 @@ export default function SupervisionPage() {
           </div>
         )}
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
     </>
   );

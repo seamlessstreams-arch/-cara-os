@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const levelColour: Record<string, string> = {
   low: "bg-green-100 text-green-800",
@@ -282,6 +283,11 @@ export default function ConsequenceFrameworkPage() {
           and NICE guideline NG205.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

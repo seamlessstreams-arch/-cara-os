@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   flame: Flame,
@@ -338,6 +339,11 @@ export default function BusinessContinuityPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -20,6 +20,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useLocalityRisks, useUpdateLocalityRisk } from "@/hooks/use-locality-risks";
 import type { LocalityRisk, LocalityRiskCategory, LocalityRiskLevel, LocalityMitigation } from "@/types/extended";
 import { LOCALITY_RISK_CATEGORY_LABEL, LOCALITY_RISK_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -252,6 +253,11 @@ export default function LocalityRiskPage() {
           and the home&apos;s Statement of Purpose.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

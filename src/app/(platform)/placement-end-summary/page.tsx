@@ -29,6 +29,7 @@ import {
 import type { PlacementEndSummary, PlacementEndReason } from "@/types/extended";
 import { PLACEMENT_END_REASON_LABEL } from "@/types/extended";
 import { usePlacementEndSummaries } from "@/hooks/use-placement-end-summaries";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── config ──────────────────────────────────────────────────────────────────
 const reasonColour: Record<PlacementEndReason, string> = {
@@ -341,6 +342,11 @@ export default function PlacementEndSummaryPage() {
           outcome-focused practice for SCCIF judgements. Children always receive a copy in age-appropriate format.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

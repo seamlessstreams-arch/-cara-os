@@ -26,6 +26,7 @@ import { useCompliments, useCreateCompliment } from "@/hooks/use-compliments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { Compliment, ComplimentSource, ComplimentCategory } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const SOURCES: ComplimentSource[] = [
@@ -329,6 +330,11 @@ export default function ComplimentsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

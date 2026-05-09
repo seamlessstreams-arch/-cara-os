@@ -29,6 +29,7 @@ import {
 import type { ChildLedMeetingRecord, ChildLedMeetingType } from "@/types/extended";
 import { CHILD_LED_MEETING_TYPE_LABEL } from "@/types/extended";
 import { useChildLedMeetings } from "@/hooks/use-child-led-meetings";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<ChildLedMeetingRecord>[] = [
   { header: "Date", accessor: (r: ChildLedMeetingRecord) => r.date },
@@ -296,6 +297,11 @@ export default function ChildLedMeetingRecordPage() {
           of Child, Children&apos;s Pledges, and Feedback Loops.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

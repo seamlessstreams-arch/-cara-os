@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useAgencyStaffLog } from "@/hooks/use-agency-staff-log";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AgencyVettingStatus, AgencyBookingReason, AgencyStaffRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -331,6 +332,11 @@ export default function AgencyStaffLogPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

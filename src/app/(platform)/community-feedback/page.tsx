@@ -26,6 +26,7 @@ import {
   COMMUNITY_FEEDBACK_TYPE_LABEL,
 } from "@/types/extended";
 import { useCommunityFeedbackRecords } from "@/hooks/use-community-feedback-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local lookup maps ──────────────────────────────────────────────── */
 const TYPE_COLOURS: Record<CommunityFeedbackType, string> = {
@@ -383,6 +384,11 @@ export default function CommunityFeedbackPage() {
           support self-esteem and a sense of belonging.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

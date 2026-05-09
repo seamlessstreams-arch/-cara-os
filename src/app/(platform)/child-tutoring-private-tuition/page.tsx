@@ -37,6 +37,7 @@ import {
 } from "@/types/extended";
 import { useTutoringRecords } from "@/hooks/use-tutoring-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const motivationColour: Record<TutoringMotivation, string> = {
   high: "bg-emerald-100 text-emerald-800",
@@ -431,6 +432,11 @@ export default function ChildTutoringPrivateTuitionPage() {
           PEP records, Outcomes, Leaving Care plan, Funding tracker, DBS register.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

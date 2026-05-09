@@ -25,6 +25,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useSleepLog, useCreateSleepLogEntry } from "@/hooks/use-sleep-log";
 import { toast } from "sonner";
 import type { SleepLogEntry, SleepShiftType, SleepDisturbanceLevel, SleepDisturbance } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const SHIFT_TYPES: SleepShiftType[] = ["sleep_in", "waking_night"];
@@ -358,6 +359,11 @@ export default function SleepLogPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

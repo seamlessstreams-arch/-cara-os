@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const typeColour: Record<string, string> = {
   routine_preventive_treatment: "bg-teal-100 text-teal-800 border-teal-200",
@@ -290,6 +291,11 @@ export default function BuildingPestControlPage() {
           Records retained 7+ years; available to Ofsted on request.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

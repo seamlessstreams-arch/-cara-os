@@ -16,6 +16,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useReg22Records } from "@/hooks/use-reg22-records";
 import type { Reg22Record, Reg22ComplianceStatus } from "@/types/extended";
 import { REG22_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 
@@ -277,6 +278,11 @@ export default function Reg22RecordsPage() {
         </div>
 
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

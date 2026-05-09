@@ -21,6 +21,7 @@ import {
   GraduationCap, Palette, MessageCircle, Brain,
   Home, Users, Award, TrendingUp, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -287,6 +288,11 @@ export default function PositiveAchievementsPage() {
           );
         })}
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

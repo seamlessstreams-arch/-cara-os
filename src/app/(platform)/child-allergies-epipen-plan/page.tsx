@@ -38,6 +38,7 @@ import type { AllergyPlan, AllergySeverity } from "@/types/extended";
 import { ALLERGY_SEVERITY_LABEL, AAI_BRAND_LABEL } from "@/types/extended";
 import { useAllergyPlans } from "@/hooks/use-allergy-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -796,6 +797,11 @@ export default function ChildAllergiesEpipenPlanPage() {
           and whenever an AAI is replaced.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

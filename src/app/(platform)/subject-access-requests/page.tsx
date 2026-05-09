@@ -34,6 +34,7 @@ import {
   SUBJECT_ACCESS_REQUEST_STATUS_LABEL,
   SUBJECT_ACCESS_REQUESTER_TYPE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours not serializable) ────────────────────────────── */
 
@@ -337,6 +338,11 @@ export default function SubjectAccessRequestsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

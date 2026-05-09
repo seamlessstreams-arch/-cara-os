@@ -29,6 +29,7 @@ import type { EatingSupportPlan, EatingPresentation } from "@/types/extended";
 import { EATING_PRESENTATION_LABEL } from "@/types/extended";
 import { useEatingSupportPlans } from "@/hooks/use-eating-support-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<EatingSupportPlan>[] = [
   { header: "Young Person", accessor: (r: EatingSupportPlan) => getYPName(r.child_id) },
@@ -354,6 +355,11 @@ export default function EatingSupportPlanPage() {
           dietary needs receive equal dignity to clinical presentations.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

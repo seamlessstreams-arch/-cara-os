@@ -22,6 +22,7 @@ import {
 import type { PettyCashEntry, PettyCashTransactionType, PettyCashCategory } from "@/types/extended";
 import { PETTY_CASH_TRANSACTION_TYPE_LABEL, PETTY_CASH_CATEGORY_LABEL } from "@/types/extended";
 import { usePettyCashEntries } from "@/hooks/use-petty-cash-entries";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Category UI metadata ────────────────────────────────────────────────────
 const CATEGORY_META: Record<PettyCashCategory, { label: string; color: string }> = {
@@ -278,6 +279,11 @@ export default function PettyCashPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

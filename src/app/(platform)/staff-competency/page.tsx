@@ -35,6 +35,7 @@ import {
 import { useStaffCompetencyRecords } from "@/hooks/use-staff-competency-records";
 import type { StaffCompetencyRecord, StaffCompetencyLevel } from "@/types/extended";
 import { STAFF_COMPETENCY_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -498,6 +499,11 @@ export default function StaffCompetencyPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

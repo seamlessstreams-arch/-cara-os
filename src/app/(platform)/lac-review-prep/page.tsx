@@ -31,6 +31,7 @@ import {
 import { useLacReviewPreps } from "@/hooks/use-lac-review-preps";
 import type { LacReviewPrep, LacPrepStatus } from "@/types/extended";
 import { LAC_REVIEW_TYPE_LABEL, LAC_PREP_STATUS_LABEL, CHILD_PREP_STATUS_LABEL, CHILD_ATTENDANCE_CHOICE_LABEL, LAC_PREP_ACTION_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const prepStatusColour: Record<LacPrepStatus, string> = {
   not_started: "bg-slate-100 text-slate-800",
@@ -356,6 +357,11 @@ export default function LacReviewPrepPage() {
           before the scheduled review. Linked to IRO Correspondence and Statutory Visit Log.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

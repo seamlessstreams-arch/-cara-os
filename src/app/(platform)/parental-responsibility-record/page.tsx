@@ -41,6 +41,7 @@ import {
   PR_LEGAL_STATUS_LABEL,
 } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STATUS_COLOUR: Record<PrLegalStatus, string> = {
   section_20_voluntary: "bg-yellow-100 text-yellow-800",
@@ -361,6 +362,11 @@ export default function ParentalResponsibilityRecordPage() {
       </div>
       </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

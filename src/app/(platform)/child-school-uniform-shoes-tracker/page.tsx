@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<UniformRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -301,6 +302,11 @@ export default function ChildSchoolUniformShoesTrackerPage() {
           considered alongside dignity. UNCRC Articles 12 (voice) + 28 (education).
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

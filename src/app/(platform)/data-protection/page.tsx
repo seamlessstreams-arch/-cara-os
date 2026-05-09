@@ -37,6 +37,7 @@ import {
   DATA_PROTECTION_BREACH_SEVERITY_LABEL,
 } from "@/types/extended";
 import { useDataProtectionRecords } from "@/hooks/use-data-protection-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── types ─────────────────────────────────────────────────────────────── */
 
@@ -317,6 +318,11 @@ export default function DataProtectionPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

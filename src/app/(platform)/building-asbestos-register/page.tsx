@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const surveyTypeColour: Record<string, string> = {
   management_survey: "bg-indigo-100 text-indigo-800 border-indigo-200",
@@ -381,6 +382,11 @@ export default function BuildingAsbestosRegisterPage() {
           to Ofsted, contractors, and emergency services on request.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

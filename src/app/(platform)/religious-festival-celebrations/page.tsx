@@ -28,6 +28,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useReligiousFestivalRecords } from "@/hooks/use-religious-festival-records";
 import type { ReligiousFestivalRecord, ReligiousFestivalFaith } from "@/types/extended";
 import { RELIGIOUS_FESTIVAL_FAITH_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour map ─────────────────────────────────────────────── */
 
@@ -312,6 +313,11 @@ export default function ReligiousFestivalCelebrationsPage() {
           Diversity policy underpin this work.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

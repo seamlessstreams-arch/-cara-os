@@ -10,6 +10,7 @@ import { PageShell } from "@/components/ui/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── types ───────────────────────────────────────────────────────────── */
 interface GuideSection {
@@ -208,6 +209,11 @@ export default function ChildrensGuidePage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

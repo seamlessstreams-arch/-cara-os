@@ -34,6 +34,7 @@ import {
   STAKEHOLDER_FEEDBACK_METHOD_LABEL,
   STAKEHOLDER_FEEDBACK_THEME_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ───────────────────────────────────────────────────── */
 
@@ -310,6 +311,11 @@ export default function StakeholderFeedbackPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

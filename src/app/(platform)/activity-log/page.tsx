@@ -27,6 +27,7 @@ import {
   Shield, GraduationCap, FileText, Clock, ClipboardCheck,
   AlertOctagon, Info, ChevronRight, Activity, Eye,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -398,6 +399,11 @@ export default function ActivityLogPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

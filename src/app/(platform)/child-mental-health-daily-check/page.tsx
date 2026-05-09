@@ -32,6 +32,7 @@ import {
 } from "@/types/extended";
 import { useMentalHealthCheckIns } from "@/hooks/use-mental-health-check-ins";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ──────────────────────────────────────────────────────── */
 const MOOD_CONFIG: Record<MoodRating, { color: string; bar: string; label: string }> = {
@@ -391,6 +392,11 @@ export default function ChildMentalHealthDailyCheckPage() {
           care plan reviews.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

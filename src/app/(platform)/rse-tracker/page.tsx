@@ -31,6 +31,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useRseTrackerRecords } from "@/hooks/use-rse-tracker-records";
 import type { RseTrackerRecord, RseTrackerTopic, RseTrackerMethod } from "@/types/extended";
 import { RSE_TRACKER_TOPIC_LABEL, RSE_TRACKER_METHOD_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ────────────────────────────────────────────────────── */
 
@@ -317,6 +318,11 @@ export default function RseTrackerPage() {
           alongside school PSHE. Linked to Online Safety, Safeguarding, Health, and Identity pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -19,6 +19,7 @@ import {
 import { useMatchingReferrals } from "@/hooks/use-matching-referrals";
 import type { MatchingReferral, ReferralStatus, MatchScore, ImpactOnCurrent, MatchDomain } from "@/types/extended";
 import { REFERRAL_STATUS_LABEL, MATCH_SCORE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -290,6 +291,11 @@ export default function MatchingReferralsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

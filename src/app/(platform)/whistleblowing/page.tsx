@@ -37,6 +37,7 @@ import {
   WHISTLEBLOWING_STATUS_LABEL,
   WHISTLEBLOWING_SEVERITY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -307,6 +308,11 @@ export default function WhistleblowingPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

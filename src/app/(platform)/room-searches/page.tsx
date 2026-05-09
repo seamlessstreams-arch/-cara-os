@@ -26,6 +26,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useRoomSearchRecords } from "@/hooks/use-room-search-records";
 import type { RoomSearchRecord, RoomSearchType, RoomSearchStatus, RoomSearchDistressLevel, RoomSearchActionStatus } from "@/types/extended";
 import { ROOM_SEARCH_TYPE_LABEL, ROOM_SEARCH_STATUS_LABEL, ROOM_SEARCH_DISTRESS_LEVEL_LABEL, ROOM_SEARCH_ACTION_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ────────────────────────────────────────────────────── */
 
@@ -588,6 +589,11 @@ export default function RoomSearchesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -38,6 +38,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STATUS_STYLES: Record<string, { color: string; icon: React.ElementType; label: string }> = {
   compliant:     { color: "bg-emerald-100 text-emerald-700", icon: CheckCircle2,  label: "Compliant"     },
@@ -782,6 +783,11 @@ export default function TrainingPage() {
       </div>
 
       {showAdd && <AddRecordDialog open onClose={() => setShowAdd(false)} />}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

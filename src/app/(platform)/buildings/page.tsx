@@ -22,6 +22,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { useMaintenance } from "@/hooks/use-maintenance";
 import type { MaintenanceItem } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -1125,6 +1126,11 @@ export default function BuildingsPage() {
           onSubmit={(data) => addCheck.mutate(data)}
         />
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

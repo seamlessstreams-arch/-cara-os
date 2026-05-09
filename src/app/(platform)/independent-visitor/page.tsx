@@ -20,6 +20,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useVisitorReports } from "@/hooks/use-visitor-reports";
 import type { VisitorReport, VisitorRecommendation, VisitorChildView } from "@/types/extended";
 import { VISITOR_VISIT_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function IndependentVisitorPage() {
@@ -258,6 +259,11 @@ export default function IndependentVisitorPage() {
           unannounced.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

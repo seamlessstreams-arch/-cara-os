@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { useReg44Visits, useUpdateRecommendation, useCreateVisit } from "@/hooks/use-reg44";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -667,6 +668,11 @@ export default function Reg44VisitorReportsPage() {
         </div>
 
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

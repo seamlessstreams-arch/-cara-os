@@ -28,6 +28,7 @@ import {
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useSafeTouchProtocolRecords } from "@/hooks/use-safe-touch-protocol-records";
 import type { SafeTouchProtocolRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 
@@ -307,6 +308,11 @@ export default function SafeTouchProtocolPage() {
           minimum.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

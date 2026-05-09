@@ -15,6 +15,7 @@ import { getYPName } from "@/lib/seed-data";
 import { useChildrensRights } from "@/hooks/use-childrens-rights";
 import type { ChildrensRightEntry, RightsComplianceLevel } from "@/types/extended";
 import { RIGHTS_COMPLIANCE_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -191,6 +192,11 @@ export default function ChildrensRightsPage() {
           <p>The UK ratified the UNCRC in 1991. While not directly incorporated into domestic law, the principles underpin the Children Act 1989, the Children&apos;s Homes (England) Regulations 2015, and the Quality Standards. Ofsted inspectors assess whether children&apos;s rights are upheld in practice — this includes listening to children, acting in their best interests, and ensuring they can participate in decisions about their lives. The Children&apos;s Commissioner for England promotes and protects children&apos;s rights. Every children&apos;s home should have a rights-based culture where children understand their rights and can exercise them. This charter should be reviewed quarterly and updated when evidence changes. Children should be involved in the review process.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -33,6 +33,7 @@ import { PHOTO_CATEGORY_LABEL, PHOTO_CONSENT_METHOD_LABEL } from "@/types/extend
 import { useChildPhotoEntries } from "@/hooks/use-child-photo-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useState } from "react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const categoryColours: Record<PhotoCategory, string> = {
   birthday: "bg-pink-100 text-pink-800",
@@ -415,6 +416,11 @@ export default function ChildPhotographyPortfolioPage() {
           require consent from all identifiable parties; otherwise, faces are anonymised.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

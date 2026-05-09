@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -354,6 +355,11 @@ export default function ChildAsthmaActionPlanPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

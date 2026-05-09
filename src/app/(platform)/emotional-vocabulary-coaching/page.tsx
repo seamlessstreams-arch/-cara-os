@@ -32,6 +32,7 @@ import type {
 import { EMOTIONAL_FRAMEWORK_LABEL } from "@/types/extended";
 import { useEmotionalVocabRecords } from "@/hooks/use-emotional-vocab-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -531,6 +532,11 @@ export default function EmotionalVocabularyCoachingPage() {
         expression) and 17 (access to information that supports their
         wellbeing).
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

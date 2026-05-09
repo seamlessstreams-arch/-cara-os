@@ -29,6 +29,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useCuriosityLogEntries } from "@/hooks/use-curiosity-log-entries";
 import type { CuriosityLogEntry, CuriosityFocusArea } from "@/types/extended";
 import { CURIOSITY_FOCUS_AREA_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour/icon maps ───────────────────────────────────────────────── */
 
@@ -351,6 +352,11 @@ export default function ProfessionalCuriosityLogPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

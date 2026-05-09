@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<BedroomProfile>[] = [
   { header: "Young Person", accessor: (r: BedroomProfile) => getYPName(r.child_id) },
@@ -336,6 +337,11 @@ export default function BedroomPersonalisationPage() {
           respected as private space.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

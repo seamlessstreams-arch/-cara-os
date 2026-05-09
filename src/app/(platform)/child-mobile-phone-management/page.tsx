@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const contractTone: Record<PhoneContractType, string> = {
   payg: "bg-slate-100 text-slate-800",
@@ -393,6 +394,11 @@ export default function ChildMobilePhoneManagementPage() {
           proportionate, and reviewed regularly with each child.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

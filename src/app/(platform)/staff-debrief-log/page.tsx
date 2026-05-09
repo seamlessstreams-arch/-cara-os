@@ -24,6 +24,7 @@ import {
   STAFF_DEBRIEF_STATUS_LABEL,
   STAFF_DEBRIEF_EMOTIONAL_IMPACT_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -308,6 +309,11 @@ export default function StaffDebriefLogPage() {
           <p>Staff debriefs are an essential part of post-incident learning and staff welfare. The Children&apos;s Homes Regulations 2015 and Quality Standards require that staff are supported following incidents and that learning is used to improve practice. All staff involved in restraints must be offered a debrief within 24 hours. Emotional debriefs should be offered after any distressing event. TCI (Therapeutic Crisis Intervention) reflections should be conducted quarterly to review the home&apos;s use of therapeutic approaches. Staff wellbeing is a leadership responsibility — the RM must ensure that debriefs are conducted sensitively and that staff have access to external support (EAP, counselling) when needed. Debrief records are confidential where marked.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

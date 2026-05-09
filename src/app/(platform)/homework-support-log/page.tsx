@@ -29,6 +29,7 @@ import type { HomeworkSession } from "@/types/extended";
 import { CHILD_INITIATION_LABEL, WORK_QUALITY_LABEL, CHILD_MOOD_DURING_LABEL } from "@/types/extended";
 import { useHomeworkSessions } from "@/hooks/use-homework-sessions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const moodColour: Record<string, string> = {
   engaged: "bg-green-100 text-green-800",
@@ -274,6 +275,11 @@ export default function HomeworkSupportLogPage() {
           Education Attendance, PEP Tracker, and Annual Outcomes Report.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

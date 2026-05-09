@@ -35,6 +35,7 @@ import {
   LANGUAGE_IDENTITY_IMPORTANCE_LABEL,
 } from "@/types/extended";
 import { useHeritageLanguageRecords } from "@/hooks/use-heritage-language-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const statusColour: Record<HeritageLanguageStatus, string> = {
   mother_tongue: "bg-amber-100 text-amber-800",
@@ -555,6 +556,11 @@ export default function ChildHeritageLanguageTrackerPage() {
           pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

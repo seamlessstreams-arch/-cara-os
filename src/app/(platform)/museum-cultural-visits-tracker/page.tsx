@@ -18,6 +18,7 @@ import {
 import { useCulturalVisits } from "@/hooks/use-cultural-visits";
 import type { CulturalVisit, CulturalVisitVenueType } from "@/types/extended";
 import { CULTURAL_VISIT_VENUE_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -266,6 +267,11 @@ export default function MuseumCulturalVisitsTrackerPage() {
           Visits also support UNCRC Article 31 (right to participate in cultural life).
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

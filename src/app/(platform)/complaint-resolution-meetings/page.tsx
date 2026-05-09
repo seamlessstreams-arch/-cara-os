@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const meetingTypeColour: Record<string, string> = {
   stage_1_informal: "bg-green-100 text-green-800",
@@ -331,6 +332,11 @@ export default function ComplaintResolutionMeetingsPage() {
           restorative practice framework.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

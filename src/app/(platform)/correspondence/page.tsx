@@ -36,6 +36,7 @@ import {
   ChevronDown, ChevronUp, Shield, ArrowUpRight, ArrowDownLeft,
   Send, Inbox, Reply,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -496,6 +497,11 @@ export default function CorrespondencePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const statusColour: Record<string, string> = {
   expressing_interest: "bg-purple-100 text-purple-800 border-purple-200",
@@ -355,6 +356,11 @@ export default function FirstRelationshipSupportPage() {
           person&rsquo;s knowledge unless safeguarding thresholds are met.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

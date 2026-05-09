@@ -23,6 +23,7 @@ import type { PreventScreeningRecord, PreventScreeningOutcome } from "@/types/ex
 import { PREVENT_SCREENING_OUTCOME_LABEL, PREVENT_CHANNEL_STATUS_LABEL } from "@/types/extended";
 import { usePreventScreenings } from "@/hooks/use-prevent-screenings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -416,6 +417,11 @@ export default function ChildPreventRadicalisationScreeningPage() {
       <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-4 text-sm text-sky-900 mb-6">
         <strong>Regulatory framework.</strong> The Prevent duty is set out in the Counter-Terrorism and Security Act 2015 (s.26) and operationalised through the Prevent Duty Guidance (DfE, updated 2023) and the Channel Process (HMG 2020). Per-child screening is integrated with our wider safeguarding approach under KCSIE 2024 and Working Together to Safeguard Children 2023. We apply the duty in a way that is consistent with the Equality Act 2010 — particularly the protected characteristics of race and of religion or belief — and in awareness of successive David Anderson reviews of Prevent, which document the risks of disproportionate application. The screening contributes to evidence under the Children&apos;s Homes (England) Regulations 2015 — Quality Standard 9 (protection of children) — while honouring UNCRC Article 12 (the child&apos;s right to be heard), Article 14 (freedom of thought, conscience and religion) and Article 19 (protection from harm). This page exists to ensure the duty is applied; it exists equally to ensure it is not over-applied.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

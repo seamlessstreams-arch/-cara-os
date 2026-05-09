@@ -35,6 +35,7 @@ import {
 } from "@/types/extended";
 import { useCharityGrantRecords } from "@/hooks/use-charity-grant-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STATUS_META: Record<CharityGrantStatus, { label: string; colour: string }> = {
   drafted: { label: "Drafted", colour: "bg-gray-100 text-gray-700" },
@@ -517,6 +518,11 @@ export default function ChildCharityGrantsApplicationsPage() {
           Pathway / Placement Plan.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

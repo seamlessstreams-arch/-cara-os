@@ -23,6 +23,7 @@ import {
   STORAGE_AUDIT_CABINET_TYPE_LABEL, STORAGE_AUDIT_VERDICT_LABEL,
   CLEANLINESS_RATING_LABEL, FOLLOW_UP_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -315,6 +316,11 @@ export default function MedicationStorageAuditPage() {
           to MAR Sheet, Medication Audit, Medication Stock Check, and Medication Near-Miss Log.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

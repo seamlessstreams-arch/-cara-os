@@ -25,6 +25,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useVisitorsFeedbackRecords } from "@/hooks/use-visitors-feedback-records";
 import type { VisitorsFeedbackRecord, VisitorsFeedbackRole } from "@/types/extended";
 import { VISITORS_FEEDBACK_ROLE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ───────────────────────────────────────────────────────── */
 
@@ -366,6 +367,11 @@ export default function VisitorsFeedbackPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

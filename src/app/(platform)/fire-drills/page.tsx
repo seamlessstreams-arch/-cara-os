@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { useFireDrills, useCreateFireDrill } from "@/hooks/use-fire-drills";
 import { FireDrillType, FireDrillResult, FireDrill } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -394,6 +395,11 @@ export default function FireDrillsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

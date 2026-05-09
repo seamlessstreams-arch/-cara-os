@@ -26,6 +26,7 @@ import type { PhotoConsentRecord, PhotoConsentCategory, PhotoConsentStatus } fro
 import { PHOTO_CONSENT_CATEGORY_LABEL, PHOTO_CONSENT_STATUS_LABEL } from "@/types/extended";
 import { usePhotoConsentRecords } from "@/hooks/use-photo-consent-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -185,6 +186,11 @@ export default function PhotoConsentPage() {
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Review</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

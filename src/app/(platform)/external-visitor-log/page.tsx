@@ -36,6 +36,7 @@ import {
   VISIT_PURPOSE_CATEGORY_LABEL,
 } from "@/types/extended";
 import { useExternalVisitors } from "@/hooks/use-external-visitors";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const typeColour: Record<VisitorType, string> = {
   professional: "bg-blue-100 text-blue-800",
@@ -330,6 +331,11 @@ export default function ExternalVisitorLogPage() {
           to children require enhanced DBS. Linked to Visitor Log (front door) and Reg 44 visit records.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

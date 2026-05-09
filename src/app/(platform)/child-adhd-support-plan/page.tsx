@@ -32,6 +32,7 @@ import type {
 } from "@/types/extended";
 import { useADHDPlans } from "@/hooks/use-adhd-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── label maps ───────────────────────────────────────────────────────── */
 
@@ -589,6 +590,11 @@ export default function ChildADHDSupportPlanPage() {
           </div>
         </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

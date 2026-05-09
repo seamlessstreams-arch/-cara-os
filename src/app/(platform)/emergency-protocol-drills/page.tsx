@@ -39,6 +39,7 @@ import {
   DRILL_OUTCOME_LABEL,
 } from "@/types/extended";
 import { useProtocolDrills } from "@/hooks/use-protocol-drills";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -481,6 +482,11 @@ export default function EmergencyProtocolDrillsPage() {
           maintained and available for inspection.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

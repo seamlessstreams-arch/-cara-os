@@ -26,6 +26,7 @@ import {
   EMERGENCY_PLACEMENT_URGENCY_LABEL,
 } from "@/types/extended";
 import { useEmergencyReferrals } from "@/hooks/use-emergency-referrals";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Meta maps ───────────────────────────────────────────────────────────────
 const STATUS_META: Record<EmergencyPlacementStatus, { label: string; color: string }> = {
@@ -313,6 +314,11 @@ export default function EmergencyPlacementsPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

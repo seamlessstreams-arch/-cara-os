@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 import type { EmergencyPlanType } from "@/types/extended";
 import { useEmergencyPlans } from "@/hooks/use-emergency-plans";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local icon mapping (plan_type → icon) ──────────────────────────── */
 const PLAN_TYPE_ICON: Record<EmergencyPlanType, React.ElementType> = {
@@ -231,6 +232,11 @@ export default function EmergencyPlanningPage() {
           annually.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

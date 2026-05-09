@@ -18,6 +18,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useStaffReflectionRecords } from "@/hooks/use-staff-reflection-records";
 import type { StaffReflectionRecord, StaffReflectionType, StaffReflectionMood } from "@/types/extended";
 import { STAFF_REFLECTION_TYPE_LABEL, STAFF_REFLECTION_MOOD_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -193,6 +194,11 @@ export default function StaffReflectionsPage() {
           <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={() => setDialogOpen(false)}>Save</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -24,6 +24,7 @@ import type { ChildExpertEntry, ExpertiseType } from "@/types/extended";
 import { EXPERTISE_TYPE_LABEL } from "@/types/extended";
 import { useChildExpertEntries } from "@/hooks/use-child-expert-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -326,6 +327,11 @@ export default function ChildrenAsExpertsPage() {
           <strong>UNCRC Article 12 &amp; Quality Standard 1 (Children&apos;s Views, Wishes and Feelings)</strong> — Children must be supported not just to give views about their own care, but to influence the home itself. Recording instances of children acting as experts by experience evidences that the home treats children&apos;s expertise as real expertise: prepared for, accommodated, recognised, paid for where appropriate, and translated into lasting change. Participation must always be genuinely optional, never tokenistic, and accessible — the child sets the terms.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

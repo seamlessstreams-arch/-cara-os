@@ -36,6 +36,7 @@ import {
   useCreateEmergencyChildContact,
   useUpdateEmergencyChildContact,
 } from "@/hooks/use-emergency-child-contacts";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -606,6 +607,11 @@ export default function EmergencyContactsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

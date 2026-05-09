@@ -22,6 +22,7 @@ import type { SubstanceScreening, ScreeningTool, SubstanceRiskLevel } from "@/ty
 import { SCREENING_TOOL_LABEL, SUBSTANCE_RISK_LEVEL_LABEL } from "@/types/extended";
 import { useSubstanceScreenings } from "@/hooks/use-substance-screenings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -551,6 +552,11 @@ export default function DrugAndAlcoholScreeningPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

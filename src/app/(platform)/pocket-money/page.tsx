@@ -35,6 +35,7 @@ import {
   ShoppingBag, Banknote, ArrowDownLeft, ArrowUpRight,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -461,6 +462,11 @@ export default function PocketMoneyPage() {
       </div>
 
       <NewTransactionDialog open={showNew} onClose={() => setShowNew(false)} onSubmit={(tx) => createTx.mutate(tx as Partial<PocketMoneyTransaction>)} />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

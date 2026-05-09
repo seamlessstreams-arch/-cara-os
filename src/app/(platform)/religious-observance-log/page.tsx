@@ -35,6 +35,7 @@ import {
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useReligiousObservanceRecords } from "@/hooks/use-religious-observance-records";
 import type { ReligiousObservanceRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────── */
 
@@ -322,6 +323,11 @@ export default function ReligiousObservanceLogPage() {
           UNCRC Article 30 protects every child&apos;s right to enjoy their own culture, profess and practise their own religion, or use their own language. Article 14 protects freedom of thought, conscience and religion — including the right to none. The Equality Act 2010 lists religion or belief (including the absence of belief) as a protected characteristic; Children&apos;s Homes Regulations 2015 Schedule 1 (Quality Standard 1 — Child-Centred Care) and Regulation 6 require care that respects each child&apos;s identity, including religion and culture. The Statement of Purpose, placement plans and dietary needs records must reflect and support this. Children should never feel pressured to adopt or abandon a belief — staff support practice, not promotion.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

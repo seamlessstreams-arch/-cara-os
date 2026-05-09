@@ -22,6 +22,7 @@ import type { PlacementStabilityRecord, StabilityFactor, PlacementEvent, Stabili
 import { STABILITY_RISK_LEVEL_LABEL } from "@/types/extended";
 import { usePlacementStabilityRecords } from "@/hooks/use-placement-stability-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ──────────────────────────────────────────────────────── */
 const RISK_LEVELS: StabilityRiskLevel[] = ["low", "medium", "high", "critical"];
@@ -293,6 +294,11 @@ export default function PlacementStabilityPage() {
           skilled relationship-building, and partnership with placing authorities.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

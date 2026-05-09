@@ -25,6 +25,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useImprovementObjectives } from "@/hooks/use-improvement-objectives";
 import type { ImprovementObjective, ObjectiveSource, ObjectivePriority, ObjectiveStatus } from "@/types/extended";
 import { OBJECTIVE_SOURCE_LABEL, OBJECTIVE_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
   reg44: "bg-violet-50 text-violet-700 border-violet-200",
@@ -452,6 +453,11 @@ export default function HomeImprovementPlanPage() {
           that identified areas for improvement are acted upon within reasonable timescales.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── types ───────────────────────────────────────────────────────────────────
 interface TimelineEvent {
@@ -436,6 +437,11 @@ export default function TraumaInformedTimelinePage() {
           need-to-know basis per the child&apos;s care plan.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

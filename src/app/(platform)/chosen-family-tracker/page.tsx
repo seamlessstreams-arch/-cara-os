@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const relationshipColour: Record<string, string> = {
   mentor: "bg-purple-100 text-purple-800",
@@ -364,6 +365,11 @@ export default function ChosenFamilyTrackerPage() {
           Work, Cultural &amp; Religious Identity, and PEP records.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

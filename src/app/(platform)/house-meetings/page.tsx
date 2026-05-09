@@ -22,6 +22,7 @@ import { useHouseMeetings, useCreateHouseMeeting } from "@/hooks/use-house-meeti
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { HouseMeeting, HouseMeetingType } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const TYPE_META: Record<HouseMeetingType, { label: string; color: string }> = {
   regular:   { label: "Regular",     color: "bg-blue-100 text-blue-800" },
@@ -365,6 +366,11 @@ export default function HouseMeetingsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

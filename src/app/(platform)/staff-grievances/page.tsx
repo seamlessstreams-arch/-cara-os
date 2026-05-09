@@ -32,6 +32,7 @@ import {
   STAFF_GRIEVANCE_STATUS_LABEL,
   STAFF_GRIEVANCE_SEVERITY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 
@@ -364,6 +365,11 @@ export default function StaffGrievancesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

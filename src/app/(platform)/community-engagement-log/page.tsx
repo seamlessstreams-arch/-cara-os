@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const typeIcons: Record<string, typeof Users> = {
   sports_fitness: Activity,
@@ -261,6 +262,11 @@ export default function CommunityEngagementLogPage() {
           Regulation 8 (educational achievement) and Regulation 11 (contact and relationships).
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

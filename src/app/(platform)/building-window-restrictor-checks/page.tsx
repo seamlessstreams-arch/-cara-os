@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const outcomeColour: Record<string, string> = {
   pass: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -318,6 +319,11 @@ export default function BuildingWindowRestrictorChecksPage() {
           immediately and is repaired within 24 hours. Records retained 7+ years and available to Ofsted on request.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

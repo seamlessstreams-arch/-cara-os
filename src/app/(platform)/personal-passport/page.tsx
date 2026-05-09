@@ -30,6 +30,7 @@ import {
 import type { PersonalPassport } from "@/types/extended";
 import { usePersonalPassports } from "@/hooks/use-personal-passports";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<PersonalPassport>[] = [
   { header: "Young Person", accessor: (r: PersonalPassport) => getYPName(r.child_id) },
@@ -422,6 +423,11 @@ export default function PersonalPassportPage() {
           Personal Passports are read by every new staff member before they work with each child.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

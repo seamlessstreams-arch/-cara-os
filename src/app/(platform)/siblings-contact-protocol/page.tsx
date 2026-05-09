@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useSiblingContactProtocolRecords } from "@/hooks/use-sibling-contact-protocol-records";
 import type { SiblingContactProtocolRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (icons are React.ElementType — cannot serialize) ───────── */
 
@@ -461,6 +462,11 @@ export default function SiblingsContactProtocolPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

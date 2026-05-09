@@ -29,6 +29,7 @@ import {
   MULTI_AGENCY_MEETING_TYPE_LABEL, MULTI_AGENCY_MEETING_STATUS_LABEL,
   MEETING_ACTION_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STATUS_CLR: Record<MultiAgencyMeetingStatus, string> = {
   scheduled: "bg-blue-100 text-blue-700",
@@ -320,6 +321,11 @@ export default function MultiAgencyMeetingsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

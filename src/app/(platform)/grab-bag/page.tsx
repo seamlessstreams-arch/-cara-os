@@ -25,6 +25,7 @@ import type { GrabBag, GrabBagItem, GrabBagStatus } from "@/types/extended";
 import { GRAB_BAG_STATUS_LABEL } from "@/types/extended";
 import { useGrabBags, useUpdateGrabBag } from "@/hooks/use-grab-bags";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── default items per bag ──────────────────────────────────────────── */
 const DEFAULT_ITEMS: Omit<GrabBagItem, "present" | "expiry_date" | "notes">[] = [
@@ -318,6 +319,11 @@ export default function GrabBagPage() {
           risk assessments, or medication change.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

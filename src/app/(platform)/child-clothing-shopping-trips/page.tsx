@@ -28,6 +28,7 @@ import type { ClothingShoppingTrip, ClothingShopType, ShoppingMood } from "@/typ
 import { CLOTHING_SHOP_TYPE_LABEL, SHOPPING_MOOD_LABEL } from "@/types/extended";
 import { useClothingShoppingTrips } from "@/hooks/use-clothing-shopping-trips";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const moodColour: Record<ShoppingMood, string> = {
   excited: "bg-amber-100 text-amber-800",
@@ -268,6 +269,11 @@ export default function ChildClothingShoppingTripsPage() {
           Cultural Identity, Sensory Profiles, and Personal Belongings.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

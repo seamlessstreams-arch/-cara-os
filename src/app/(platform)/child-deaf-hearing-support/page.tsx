@@ -37,6 +37,7 @@ import {
   HEARING_PREFERRED_LANGUAGE_LABEL,
   BSL_LEVEL_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -341,6 +342,11 @@ export default function ChildDeafHearingSupportPage() {
           service where applicable.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

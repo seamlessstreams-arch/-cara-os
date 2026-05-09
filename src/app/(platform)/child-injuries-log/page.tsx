@@ -21,6 +21,7 @@ import type { ChildInjuryRecord, ChildInjuryType, InjurySeverity } from "@/types
 import { CHILD_INJURY_TYPE_LABEL, INJURY_SEVERITY_LABEL } from "@/types/extended";
 import { useChildInjuryRecords } from "@/hooks/use-child-injury-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -392,6 +393,11 @@ export default function ChildInjuriesLogPage() {
           <p>Children&apos;s Homes (England) Regulations 2015, Reg 22 — duty to keep records of any accident or injury to a child. Quality Standard 7 (Health and well-being) — children must receive timely first aid, and the home must monitor patterns of injury. This log captures minor injuries (bruises, scrapes, falls, sport-related) and is distinct from the Accident Book (workplace H&amp;S record, RIDDOR), Incident Log (significant events) and Body Map (visual injury record). Any injury that is unexplained, inconsistent with account, or part of a pattern must be reviewed by the Registered Manager and may trigger a safeguarding referral under Working Together to Safeguard Children 2018. Records retained until the child&apos;s 25th birthday (or 75 years for looked-after children, per Reg 37).</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -48,6 +48,7 @@ import {
 } from "@/types/extended";
 import { useSkinConditionPlans } from "@/hooks/use-skin-condition-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Colour Maps ──────────────────────────────────────────────────────────────
 
@@ -714,6 +715,11 @@ export default function ChildSkinConditionsPage() {
           months.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -14,6 +14,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useDailyRiskBriefings } from "@/hooks/use-daily-risk-briefings";
 import type { DailyRiskBriefing, ChildRiskEntry, DailyAlert, DailyContact, DailyRiskLevel } from "@/types/extended";
 import { DAILY_RISK_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -182,6 +183,11 @@ export default function DailyRiskBriefingPage() {
           <p>This daily risk briefing must be reviewed by all staff at the start of each shift. The shift leader is responsible for delivering a verbal briefing covering all alerts, medication due, appointments, and risk levels. Any changes during the shift must be communicated to all staff on duty. Risk levels and check frequencies are reviewed daily by the RM or Deputy. This briefing does not replace the full care plans, risk assessments, and behaviour support plans — staff must be familiar with all individual plans.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useKpiEntries } from "@/hooks/use-kpi-entries";
 import type { KpiEntry, KpiRag, KpiTrend, KpiCategory } from "@/types/extended";
 import { KPI_RAG_LABEL, KPI_TREND_LABEL, KPI_CATEGORY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -224,6 +225,11 @@ export default function KPIDashboardPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

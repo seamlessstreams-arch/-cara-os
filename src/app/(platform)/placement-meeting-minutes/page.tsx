@@ -30,6 +30,7 @@ import type { PlacementMeeting, PlacementMeetingType, PlacementMeetingActionStat
 import { PLACEMENT_MEETING_TYPE_LABEL, PLACEMENT_MEETING_ACTION_STATUS_LABEL } from "@/types/extended";
 import { usePlacementMeetings } from "@/hooks/use-placement-meetings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const typeColour: Record<PlacementMeetingType, string> = {
   weekly_review: "bg-blue-100 text-blue-800",
@@ -337,6 +338,11 @@ export default function PlacementMeetingMinutesPage() {
           views are central per UNCRC Article 12.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

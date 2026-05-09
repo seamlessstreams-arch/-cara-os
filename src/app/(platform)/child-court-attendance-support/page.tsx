@@ -36,6 +36,7 @@ import {
 } from "@/types/extended";
 import { useCourtAttendanceRecords } from "@/hooks/use-court-attendance-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -474,6 +475,11 @@ export default function ChildCourtAttendanceSupportPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

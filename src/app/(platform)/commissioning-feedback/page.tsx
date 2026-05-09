@@ -20,6 +20,7 @@ import type { CommissioningFeedbackRecord, CommissioningFeedbackType } from "@/t
 import { COMMISSIONING_FEEDBACK_TYPE_LABEL } from "@/types/extended";
 import { useCommissioningFeedbackRecords } from "@/hooks/use-commissioning-feedback-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour map ─────────────────────────────────────────────────────── */
 const TYPE_COLORS: Record<CommissioningFeedbackType, string> = {
@@ -440,6 +441,11 @@ export default function CommissioningFeedbackPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

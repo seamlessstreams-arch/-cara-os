@@ -24,6 +24,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useStaffWellbeingRecords } from "@/hooks/use-staff-wellbeing-records";
 import type { StaffWellbeingRecord, StaffWellbeingCheckType } from "@/types/extended";
 import { STAFF_WELLBEING_CHECK_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ───────────────────────────────────────────────────── */
 
@@ -330,6 +331,11 @@ export default function StaffWellbeingPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

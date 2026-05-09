@@ -29,6 +29,7 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { EpilepsySeizurePlan } from "@/types/extended";
 import { useEpilepsySeizurePlans } from "@/hooks/use-epilepsy-seizure-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<EpilepsySeizurePlan>[] = [
@@ -560,6 +561,11 @@ export default function ChildEpilepsySeizurePlanPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

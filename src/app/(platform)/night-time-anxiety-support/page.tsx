@@ -28,6 +28,7 @@ import { useNightAnxietySupport } from "@/hooks/use-night-anxiety-support";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NightAnxietySupportRecord, AnxietyLevel, NightmareFrequency } from "@/types/extended";
 import { ANXIETY_LEVEL_LABEL, NIGHTMARE_FREQUENCY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 const d = (n: number) => {
@@ -512,6 +513,11 @@ export default function NightTimeAnxietySupportPage() {
           affecting them).
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

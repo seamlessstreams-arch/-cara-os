@@ -32,6 +32,7 @@ import {
 import { useCpdRecords } from "@/hooks/use-cpd-records";
 import type { CPDRecord, CPDType, CPDStatus } from "@/types/extended";
 import { CPD_TYPE_LABEL, CPD_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ────────────────────────────────────────────────────── */
 
@@ -278,6 +279,11 @@ export default function ProfessionalDevelopmentPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

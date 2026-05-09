@@ -20,6 +20,7 @@ import { getYPName } from "@/lib/seed-data";
 import { useDelegatedAuthority } from "@/hooks/use-delegated-authority";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { DelegatedAuthority, DelegatedAuthorityItem, DelegatedAuthStatus, DelegatedAuthCategory } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const STATUS_COLORS: Record<DelegatedAuthStatus, string> = {
@@ -236,6 +237,11 @@ export default function DelegatedAuthorityPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -36,6 +36,7 @@ import type {
 } from "@/types/extended";
 import { ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL, ONLINE_SAFETY_SEVERITY_LABEL, ONLINE_SAFETY_INCIDENT_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── display maps ─────────────────────────────────────────────────────── */
 
@@ -326,6 +327,11 @@ export default function OnlineSafetyPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -4,6 +4,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { api } from "@/hooks/use-api";
 import { useQuery } from "@tanstack/react-query";
 import { daysFromNow, todayStr } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -518,6 +519,11 @@ export default function InspectionReadinessPage() {
 
         </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -37,6 +37,7 @@ import {
   WB_INVESTIGATION_OUTCOME_LABEL,
   WB_INVESTIGATION_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -423,6 +424,11 @@ export default function WhistleblowingInvestigationsPage() {
           where allegations relate to a person who works with children.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

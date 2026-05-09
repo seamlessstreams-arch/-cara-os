@@ -27,6 +27,7 @@ import {
 import { useLifeStoryEntries, useCreateLifeStoryEntry } from "@/hooks/use-life-story-entries";
 import type { LifeStoryEntry, LifeStoryEntryType, LifeStoryEntryStatus } from "@/types/extended";
 import { LIFE_STORY_ENTRY_TYPE_LABEL, LIFE_STORY_ENTRY_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────────── */
 
@@ -367,6 +368,11 @@ export default function LifeStoryPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

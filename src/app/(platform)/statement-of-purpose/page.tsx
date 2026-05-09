@@ -12,6 +12,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── types ───────────────────────────────────────────────────────────── */
 interface SoPSection {
@@ -249,6 +250,11 @@ export default function StatementOfPurposePage() {
           at least annually and whenever a significant change is made to the home&apos;s operations.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

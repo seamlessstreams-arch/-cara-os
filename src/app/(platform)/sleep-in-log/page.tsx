@@ -25,6 +25,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useSleepInRecords } from "@/hooks/use-sleep-in-records";
 import type { SleepInRecord, SleepInStatus, SleepInRoomCondition } from "@/types/extended";
 import { SLEEP_IN_STATUS_LABEL, SLEEP_IN_ROOM_CONDITION_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -275,6 +276,11 @@ export default function SleepInLogPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

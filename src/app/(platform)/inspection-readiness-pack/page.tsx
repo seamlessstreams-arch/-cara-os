@@ -21,6 +21,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useReadinessItems } from "@/hooks/use-readiness-items";
 import type { ReadinessItem, SccifJudgementArea, ReadinessCategory, InPackStatus } from "@/types/extended";
 import { SCCIF_JUDGEMENT_AREA_LABEL, READINESS_CATEGORY_LABEL, IN_PACK_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -486,6 +487,11 @@ export default function InspectionReadinessPackPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

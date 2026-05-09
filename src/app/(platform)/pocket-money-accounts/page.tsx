@@ -36,6 +36,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { usePocketMoneyAccounts, useCreatePocketMoneyAccount } from "@/hooks/use-pocket-money-accounts";
 import type { PocketMoneyAccount, PocketMoneyAccountTxType, PocketMoneyAccountCategory } from "@/types/extended";
 import { POCKET_MONEY_ACCOUNT_CATEGORY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -370,6 +371,11 @@ export default function PocketMoneyAccountsPage() {
         onClose={() => setShowNew(false)}
         onSubmit={handleNewTransaction}
         transactions={data}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

@@ -11,6 +11,7 @@ import {
   GraduationCap, MessageSquare, Home, Car, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── types ─────────────────────────────────────────────────────────────────── */
 
@@ -254,6 +255,11 @@ export default function StaffHandbookPage() {
           <p>All staff must read this handbook in full during their first week of employment and confirm understanding by signing the acknowledgement form. The handbook is reviewed quarterly by the Registered Manager. Significant updates are communicated to all staff via team meetings and individual supervision. This handbook should be read alongside the home&apos;s Statement of Purpose, Children&apos;s Guide, and full policy library. If any content in this handbook conflicts with a specific policy document, the policy document takes precedence.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

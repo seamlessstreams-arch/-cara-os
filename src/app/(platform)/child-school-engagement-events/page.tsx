@@ -24,6 +24,7 @@ import type { SchoolEngagementEvent } from "@/types/extended";
 import { SCHOOL_EVENT_TYPE_LABEL } from "@/types/extended";
 import { useSchoolEngagementEvents } from "@/hooks/use-school-engagement-events";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -372,6 +373,11 @@ export default function ChildSchoolEngagementEventsPage() {
       <div className="rounded-lg border border-teal-200 bg-teal-50/60 p-4 text-sm text-teal-900 mb-6">
         <strong>Regulatory framework.</strong> Attendance at school events sits within the Statutory Guidance on Promoting the Education of Looked-After and Previously Looked-After Children (DfE 2018), the Children&apos;s Homes (England) Regulations 2015 — Quality Standard 5 (education) and Quality Standard 7 (positive relationships) — and the corporate parenting principles set out in the Children Act 2004 (as amended by the Children and Social Work Act 2017). UNCRC Article 12 (the right to be heard) and Article 28 (the right to education) underpin our practice. Photos are kept only with the child&apos;s informed consent and stored according to the home&apos;s privacy and life-story policy. The home turning up — in numbers, alongside birth family, social worker, mentors and friends&apos; families — is the visible evidence of corporate parenting in action.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -19,6 +19,7 @@ import { getStaffName } from "@/lib/seed-data";
 import type { HateIncident, HateTargetType, HatePerpetratorType, HateIncidentType, HateIncidentStatus } from "@/types/extended";
 import { HATE_TARGET_TYPE_LABEL, HATE_PERPETRATOR_TYPE_LABEL, HATE_INCIDENT_TYPE_LABEL, HATE_INCIDENT_STATUS_LABEL } from "@/types/extended";
 import { useHateIncidents } from "@/hooks/use-hate-incidents";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -342,6 +343,11 @@ export default function HateIncidentLogPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

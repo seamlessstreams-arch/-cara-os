@@ -29,6 +29,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useRiskAppetiteDomains } from "@/hooks/use-risk-appetite-domains";
 import type { RiskAppetiteDomain, RiskAppetiteLevel } from "@/types/extended";
 import { RISK_APPETITE_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (icons cannot be serialized to store) ───────────── */
 
@@ -218,6 +219,11 @@ export default function RiskAppetiteStatementPage() {
         <span>Review date: <span className="font-medium text-foreground">{STATEMENT_META.reviewDate}</span></span>
         <span>Next review: <span className="font-medium text-foreground">{STATEMENT_META.nextReview}</span></span>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

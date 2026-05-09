@@ -35,6 +35,7 @@ import {
 } from "@/types/extended";
 import { useFuneralRecords } from "@/hooks/use-funeral-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<FuneralRecord>[] = [
   { header: "Young Person", accessor: (r: FuneralRecord) => getYPName(r.child_id) },
@@ -318,6 +319,11 @@ export default function FuneralAttendanceRecordsPage() {
       </div>
       </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

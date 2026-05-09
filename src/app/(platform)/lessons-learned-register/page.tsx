@@ -21,6 +21,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useLessonsLearned } from "@/hooks/use-lessons-learned";
 import type { LessonLearned, LessonSource, LessonThemeArea, LessonStatus } from "@/types/extended";
 import { LESSON_SOURCE_LABEL, LESSON_THEME_AREA_LABEL, LESSON_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
@@ -383,6 +384,11 @@ export default function LessonsLearnedRegisterPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

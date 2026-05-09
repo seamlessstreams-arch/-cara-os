@@ -28,6 +28,7 @@ import { useOnlineGamingRecords } from "@/hooks/use-online-gaming-records";
 import type { OnlineGamingRecord, PegiRating } from "@/types/extended";
 import { PEGI_RATING_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const pegiColour: Record<string, string> = {
   "3": "bg-green-100 text-green-800",
@@ -347,6 +348,11 @@ export default function OnlineGamingTrackerPage() {
           Linked to Safeguarding, Risk Assessments, Pocket Money, and Child Voice pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

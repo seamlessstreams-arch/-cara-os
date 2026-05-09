@@ -17,6 +17,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useMedicationStockChecks } from "@/hooks/use-medication-stock-checks";
 import type { MedicationStockCheck, StockCheckType, StockCheckStatus, StockCheckItem } from "@/types/extended";
 import { STOCK_CHECK_TYPE_LABEL, STOCK_CHECK_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const CHECK_TYPE_CLR: Record<StockCheckType, string> = {
   weekly: "bg-blue-100 text-blue-800",
@@ -365,6 +366,11 @@ export default function MedicationStockCheckPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

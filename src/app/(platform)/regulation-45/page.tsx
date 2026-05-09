@@ -55,6 +55,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import Link from "next/link";
 import type { ManagerDecision } from "@/types/care-events";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Decision colours ──────────────────────────────────────────────────────────
 
@@ -1149,6 +1150,11 @@ export default function Regulation45EvidencePage() {
       {reviewingItem && (
         <ReviewDialog item={reviewingItem} onClose={() => setReviewingItem(null)} />
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

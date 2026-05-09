@@ -27,6 +27,7 @@ import type { StyleIdentityRecord, BodyConfidence } from "@/types/extended";
 import { BODY_CONFIDENCE_LABEL } from "@/types/extended";
 import { useStyleIdentityRecords } from "@/hooks/use-style-identity-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<StyleIdentityRecord>[] = [
   { header: "Young Person", accessor: (r: StyleIdentityRecord) => getYPName(r.child_id) },
@@ -395,6 +396,11 @@ export default function ChildStyleIdentityExpressionPage() {
           Records are co-authored with the young person and reviewed regularly. Today: {new Date().toISOString().slice(0, 10)}.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -35,6 +35,7 @@ import {
 } from "@/types/extended";
 import { useFamilyTimeSessions } from "@/hooks/use-family-time-sessions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -396,6 +397,11 @@ export default function FamilyTimeSupervisionPage() {
       </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

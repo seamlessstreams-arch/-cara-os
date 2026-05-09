@@ -34,6 +34,7 @@ import {
 } from "@/types/extended";
 import { useCookingBakingRecords } from "@/hooks/use-cooking-baking-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<CookingBakingRecord>[] = [
   { header: "Young Person", accessor: (r: CookingBakingRecord) => getYPName(r.child_id) },
@@ -306,6 +307,11 @@ export default function ChildCookingBakingSkillsPage() {
           and hob safety follow the home&rsquo;s individual risk assessment for each young person.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

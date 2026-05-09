@@ -21,6 +21,7 @@ import {
   SERIOUS_INCIDENT_REVIEW_TYPE_LABEL,
   SERIOUS_INCIDENT_REVIEW_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -231,6 +232,11 @@ export default function SeriousIncidentReviewsPage() {
           <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={() => setDialogOpen(false)}>Initiate</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -22,6 +22,7 @@ import { useLeave } from "@/hooks/use-leave";
 import { cn, todayStr } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 type ReportView = "overview" | "workforce" | "compliance" | "incidents" | "finance";
 
@@ -464,6 +465,11 @@ export default function ReportsPage() {
           </div>
         )}
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

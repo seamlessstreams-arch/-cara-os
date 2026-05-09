@@ -17,6 +17,7 @@ import type { CulturalIdentityPlan, CulturalIdentityArea, CulturalIdentityAreaSt
 import { CULTURAL_IDENTITY_AREA_STATUS_LABEL } from "@/types/extended";
 import { useCulturalIdentityPlans } from "@/hooks/use-cultural-identity-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function CulturalIdentityPage() {
@@ -193,6 +194,11 @@ export default function CulturalIdentityPage() {
           care planning.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

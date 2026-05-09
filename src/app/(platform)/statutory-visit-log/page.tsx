@@ -34,6 +34,7 @@ import {
   STATUTORY_VISIT_TYPE_LABEL,
   STATUTORY_VISIT_CHILD_PRESENTED_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours not serializable) ────────────────────────────── */
 
@@ -538,6 +539,11 @@ export default function StatutoryVisitLogPage() {
         </Card>
 
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

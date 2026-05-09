@@ -19,6 +19,7 @@ import type { ContinencePlan, ContinencePresentation } from "@/types/extended";
 import { CONTINENCE_PRESENTATION_LABEL } from "@/types/extended";
 import { useContinencePlans } from "@/hooks/use-continence-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 export default function ChildContinenceSupportPlanPage() {
   const { data: res, isLoading } = useContinencePlans();
@@ -355,6 +356,11 @@ export default function ChildContinenceSupportPlanPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

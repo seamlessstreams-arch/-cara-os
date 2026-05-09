@@ -26,6 +26,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useAbsenceTracking, useCreateAbsence } from "@/hooks/use-absence-tracking";
 import type { AbsenceType, AbsenceSetting, AbsenceRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local label / colour maps ──────────────────────────────────────── */
 const ABSENCE_TYPES: AbsenceType[] = [
@@ -351,6 +352,11 @@ export default function AbsenceTrackingPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

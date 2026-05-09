@@ -30,6 +30,7 @@ import {
   GIFT_DIRECTION_LABEL, GIFT_RECIPIENT_TYPE_LABEL, GIFT_SOURCE_LABEL, GIFT_APPROVAL_STATUS_LABEL,
 } from "@/types/extended";
 import { useGiftRecords, useCreateGiftRecord } from "@/hooks/use-gift-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local styling maps ───────────────────────────────────────────────────── */
 
@@ -201,6 +202,11 @@ export default function GiftsRegisterPage() {
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button disabled={createMutation.isPending} onClick={() => createMutation.mutate(draft, { onSuccess: () => { toast.success("Gift recorded"); setShowNew(false); setDraft({}); } })}>{createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}Save Record</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

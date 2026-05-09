@@ -56,6 +56,7 @@ import {
   STRATEGIC_RISK_APPETITE_ALIGNMENT_LABEL,
   STRATEGIC_RISK_KRI_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (icons cannot be serialized) ────────────────────── */
 
@@ -428,6 +429,11 @@ export default function RiskManagementBoardPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

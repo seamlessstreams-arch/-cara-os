@@ -33,6 +33,7 @@ import {
 } from "@/types/extended";
 import { usePlacementStabilityMeetings } from "@/hooks/use-placement-stability-meetings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<PlacementStabilityMeeting>[] = [
@@ -359,6 +360,11 @@ export default function PlacementStabilityMeetingsPage() {
           accountability, partnership working, and commitment to keeping children in the right home.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

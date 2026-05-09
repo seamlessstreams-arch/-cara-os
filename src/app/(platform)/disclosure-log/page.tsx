@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── config ──────────────────────────────────────────────────────────────────
 const severityColour: Record<string, string> = {
@@ -494,6 +495,11 @@ export default function DisclosureLogPage() {
           with the DSL, allocated social worker, and statutory agencies only.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

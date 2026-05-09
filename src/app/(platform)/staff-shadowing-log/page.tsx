@@ -32,6 +32,7 @@ import {
   STAFF_SHADOWING_SHIFT_TYPE_LABEL,
   STAFF_SHADOWING_READY_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -283,6 +284,11 @@ export default function StaffShadowingLogPage() {
           work solo until competency sign-off is complete.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

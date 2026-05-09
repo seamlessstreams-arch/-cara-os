@@ -17,6 +17,7 @@ import { cn, formatDate, todayStr } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -1006,6 +1007,11 @@ export default function VehiclesPage() {
           preVehicleId={checkVehicleId}
         />
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

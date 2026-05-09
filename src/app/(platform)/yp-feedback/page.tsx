@@ -29,6 +29,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { YPFeedbackEntry, YPFeedbackCategory, YPFeedbackMethod, YPFeedbackSentiment } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── config ────────────────────────────────────────────────────────────── */
 
@@ -301,6 +302,11 @@ export default function YPFeedbackPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

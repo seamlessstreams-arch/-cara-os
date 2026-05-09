@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 type UtilityType =
   | "Electricity"
@@ -676,6 +677,11 @@ export default function UtilityBillsTrackerPage() {
           (last-4 only). ALL FIGURES ARE ILLUSTRATIVE.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

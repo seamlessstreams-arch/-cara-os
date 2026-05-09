@@ -36,6 +36,7 @@ import {
 } from "@/types/extended";
 import { useCyclingBikeRecords } from "@/hooks/use-cycling-bike-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const levelOrder: Record<BikeabilityLevel, number> = {
   not_started: 0,
@@ -441,6 +442,11 @@ export default function ChildBikeCyclingTrackerPage() {
           Risk Assessments, and Health pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

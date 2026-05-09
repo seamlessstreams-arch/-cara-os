@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<WorkExpRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -324,6 +325,11 @@ export default function ChildWorkExperienceTrackerPage() {
           and UNCRC Articles 28 (right to education) and 29 (development of personality and talents).
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

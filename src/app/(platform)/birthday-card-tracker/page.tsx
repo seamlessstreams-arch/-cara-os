@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const occasionColour: Record<string, string> = {
   birthday: "bg-pink-100 text-pink-800",
@@ -254,6 +255,11 @@ export default function BirthdayCardTrackerPage() {
           every connection. Linked to Family Contact, Personal Belongings, Life Story Work, and Anniversaries.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

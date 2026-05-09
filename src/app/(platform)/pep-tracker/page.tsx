@@ -18,6 +18,7 @@ import { usePepRecords } from "@/hooks/use-pep-records";
 import type { PepRecord, PepStatus, PepAttainmentLevel, PepProgress, PepSenStatus, PepActionStatus } from "@/types/extended";
 import { PEP_STATUS_LABEL, PEP_ATTAINMENT_LEVEL_LABEL, PEP_PROGRESS_LABEL, PEP_SEN_STATUS_LABEL, PEP_ACTION_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -385,6 +386,11 @@ export default function PepTrackerPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

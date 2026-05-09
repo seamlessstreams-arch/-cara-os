@@ -31,6 +31,7 @@ import {
 import { useReferralTrackerRecords } from "@/hooks/use-referral-tracker-records";
 import type { ReferralTrackerRecord, ReferralTrackerStatus } from "@/types/extended";
 import { REFERRAL_TRACKER_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour map ────────────────────────────────────────────────── */
 
@@ -380,6 +381,11 @@ export default function ReferralTrackerPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -26,6 +26,7 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn, formatDate } from "@/lib/utils";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -443,6 +444,11 @@ export default function KeyDatesPage() {
           DBS/training renewals: Standard 5 &amp; 6 Quality Standards.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

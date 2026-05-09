@@ -34,6 +34,7 @@ import {
 } from "@/types/extended";
 import { useChildStaffFeedback } from "@/hooks/use-child-staff-feedback";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const sentimentColour: Record<StaffFeedbackSentiment, string> = {
   positive: "bg-green-100 text-green-800",
@@ -270,6 +271,11 @@ export default function ChildFeedbackOnStaffPage() {
           Staff Recognition Log, Voice of Child, Reg 44 visits, and Children&apos;s Pledges.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

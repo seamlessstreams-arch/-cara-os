@@ -24,6 +24,7 @@ import type { PlacementBudgetTracker, PlacementBudgetCategory } from "@/types/ex
 import { PLACEMENT_BUDGET_CATEGORY_LABEL } from "@/types/extended";
 import { usePlacementBudgetTrackers } from "@/hooks/use-placement-budget-trackers";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -385,6 +386,11 @@ export default function PlacementBudgetTrackerPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

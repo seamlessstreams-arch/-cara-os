@@ -23,6 +23,7 @@ import {
 import { usePetRecords } from "@/hooks/use-pet-records";
 import type { PetRecord, PetSpecies } from "@/types/extended";
 import { PET_SPECIES_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -406,6 +407,11 @@ export default function HomePetsCareLogPage() {
       <div className="rounded-lg border border-teal-200 bg-teal-50/60 p-4 text-sm text-teal-900 mb-6">
         <strong>Regulatory framework.</strong> Pet welfare in the home is held within the Animal Welfare Act 2006 and the RSPCA five welfare needs (suitable environment, suitable diet, ability to behave normally, housing with or apart from other animals, protection from pain, suffering, injury and disease). Children&apos;s involvement is risk-assessed under the Health &amp; Safety at Work Act 1974 and the home&apos;s own Health &amp; Safety policy, with allergy clearance recorded against each child&apos;s health profile. The therapeutic value of pet care contributes to Quality Standard 6 (enjoyment &amp; achievement) of the Children&apos;s Homes (England) Regulations 2015 and is described in the Statement of Purpose.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

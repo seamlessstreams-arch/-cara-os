@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── types ───────────────────────────────────────────────────────────────────
 interface WakeUpRoutine {
@@ -518,6 +519,11 @@ export default function WakeUpRoutinesPage() {
           and Sleep Assessments.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

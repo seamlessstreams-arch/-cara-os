@@ -21,6 +21,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useMenstrualHealthPlans } from "@/hooks/use-menstrual-health-plans";
 import type { MenstrualHealthPlan, MenstrualStage, MenstrualComfortLevel } from "@/types/extended";
 import { MENSTRUAL_STAGE_LABEL, MENSTRUAL_COMFORT_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -383,6 +384,11 @@ export default function MenstrualHealthTrackerPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

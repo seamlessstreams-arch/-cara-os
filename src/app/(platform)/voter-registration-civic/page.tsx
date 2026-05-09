@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 interface CivicRecord {
   id: string;
@@ -431,6 +432,11 @@ export default function VoterRegistrationCivicPage() {
           advance — Citizen Cards are free for care leavers.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

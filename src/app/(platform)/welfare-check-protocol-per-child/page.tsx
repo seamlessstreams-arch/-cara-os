@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── types ───────────────────────────────────────────────────────────────────
 type CheckType =
@@ -579,6 +580,11 @@ export default function WelfareCheckProtocolPerChildPage() {
           the Children's Homes Regulations.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

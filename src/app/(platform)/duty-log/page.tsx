@@ -27,6 +27,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useDutyLogEntries, useCreateDutyLogEntry } from "@/hooks/use-duty-log-entries";
 import type { DutyLogEntry, DutyLogShift, DutyLogCategory, DutyLogPriority } from "@/types/extended";
 import { DUTY_LOG_SHIFT_LABEL, DUTY_LOG_CATEGORY_LABEL, DUTY_LOG_PRIORITY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -293,6 +294,11 @@ export default function DutyLogPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -28,6 +28,7 @@ import {
 import { useSensoryRoomUsageRecords } from "@/hooks/use-sensory-room-usage-records";
 import type { SensoryRoomUsageRecord, SensoryRoomInitiatedBy } from "@/types/extended";
 import { SENSORY_ROOM_INITIATED_BY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const initiatedByColour: Record<SensoryRoomInitiatedBy, string> = {
   self: "bg-green-100 text-green-800",
@@ -257,6 +258,11 @@ export default function SensoryRoomUsagePage() {
           Support Plans, and Bedtime/Wake-Up Routines.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -40,6 +40,7 @@ import {
   REMEDIAL_WORK_STATUS_LABEL,
 } from "@/types/extended";
 import { useSafetyCheckRecords } from "@/hooks/use-safety-check-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -332,6 +333,11 @@ export default function GasElectricalSafetyChecksPage() {
           certificates retained 7+ years; copies available to Ofsted on request.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

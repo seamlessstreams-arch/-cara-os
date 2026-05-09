@@ -15,6 +15,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useCommunicationProfiles } from "@/hooks/use-communication-profiles";
 import type { CommunicationProfile, CommLevel, CommSupportLevel, CommEffectiveness, SendStatus } from "@/types/extended";
 import { COMM_LEVEL_LABEL, COMM_SUPPORT_LEVEL_LABEL, COMM_EFFECTIVENESS_LABEL, SEND_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
@@ -247,6 +248,11 @@ export default function LanguageCommunicationPage() {
           <p>The Children&apos;s Homes Regulations 2015 and Quality Standards require that children&apos;s communication needs are understood and met. This includes ensuring that children can express their views, understand what is happening to them, and participate in decisions about their care. For children with SEND, reasonable adjustments must be made in line with the Equality Act 2010 and the Children and Families Act 2014. Communication profiles should be reviewed at least annually or when needs change. SALT recommendations must be integrated into daily practice. All staff should be trained in the communication strategies relevant to the children in their care. Ofsted inspectors will assess whether children&apos;s communication needs are being met and whether staff are equipped to support them.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

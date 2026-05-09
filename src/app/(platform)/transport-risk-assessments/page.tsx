@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 type JourneyType =
   | "Routine recurring"
@@ -814,6 +815,11 @@ export default function TransportRiskAssessmentsPage() {
           when any element changes and at minimum every 90 days for active routes.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

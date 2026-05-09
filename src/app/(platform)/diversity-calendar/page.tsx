@@ -31,6 +31,7 @@ import {
   DIVERSITY_EVENT_CATEGORY_LABEL,
   DIVERSITY_EVENT_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ───────────────────────────────────────────────────────── */
 const CATEGORY_COLOURS: Record<DiversityEventCategory, string> = {
@@ -299,6 +300,11 @@ export default function DiversityCalendarPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const statusColour: Record<string, string> = {
   consistently_met: "bg-green-100 text-green-800",
@@ -259,6 +260,11 @@ export default function ChildrenPledgesPage() {
           Pledges are reviewed in children&apos;s meetings and during key work sessions.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

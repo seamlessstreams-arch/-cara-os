@@ -22,6 +22,7 @@ import {
   Library, Sparkles, ChevronRight, AlertTriangle, Users, GraduationCap,
   FileText, Zap,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 
 const FEATURES = [
@@ -251,6 +252,11 @@ export default function LearningHubPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

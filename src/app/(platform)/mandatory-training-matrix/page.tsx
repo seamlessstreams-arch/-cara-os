@@ -25,6 +25,7 @@ import {
   TRAINING_COURSE_CATEGORY_LABEL, TRAINING_COURSE_STATUS_LABEL,
   TRAINING_OVERALL_COMPLIANCE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -352,6 +353,11 @@ export default function MandatoryTrainingMatrixPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

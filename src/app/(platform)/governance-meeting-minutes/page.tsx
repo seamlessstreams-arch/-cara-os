@@ -30,6 +30,7 @@ import {
 import type { GovernanceMeeting, GovernanceAction } from "@/types/extended";
 import { GOVERNANCE_ACTION_STATUS_LABEL } from "@/types/extended";
 import { useGovernanceMeetings } from "@/hooks/use-governance-meetings";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── date helper (for overdue checks) ─── */
 const today = () => new Date().toISOString().slice(0, 10);
@@ -431,6 +432,11 @@ export default function GovernanceMeetingMinutesPage() {
       </div>
       </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

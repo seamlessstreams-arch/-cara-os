@@ -26,6 +26,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import type { Audit } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Audit category → training need type ──────────────────────────────────────
 const AUDIT_CATEGORY_NEED: Record<string, string> = {
@@ -507,7 +508,12 @@ export default function AuditsPage() {
             of effective governance.
           </div>
         </div>
-      </PageShell>
+        <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
+    </PageShell>
 
       {/* New Audit Modal */}
       {showNew && (

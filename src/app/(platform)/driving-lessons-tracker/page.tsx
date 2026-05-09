@@ -20,6 +20,7 @@ import type { DrivingRecord, DrivingStage, DrivingFundingSource, DrivingTheoryAt
 import { DRIVING_STAGE_LABEL, DRIVING_FUNDING_SOURCE_LABEL } from "@/types/extended";
 import { useDrivingRecords } from "@/hooks/use-driving-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -333,6 +334,11 @@ export default function DrivingLessonsTrackerPage() {
           <p>Driving lessons for care leavers are recorded against the young person&apos;s Pathway Plan under the Care Leavers (England) Regulations 2010. Funding decisions follow the Local Authority Leaving Care policy on driving lessons (Leaving Care Grant contributions, with documented contribution from the young person where appropriate). Lessons must be delivered by an Approved Driving Instructor (ADI) registered with the DVSA, and theory/practical tests booked through DVSA standards. All progress, costs and the young person&apos;s voice are reviewed at each Pathway Plan review.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

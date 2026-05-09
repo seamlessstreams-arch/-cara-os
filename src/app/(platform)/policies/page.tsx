@@ -27,6 +27,7 @@ import {
   Clock, ChevronDown, ChevronUp, Eye, Shield, Users, Calendar, Download,
   BookOpen, Loader2, RefreshCw, Star, Lock, UserCheck, Pencil,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -472,6 +473,11 @@ export default function PoliciesPage() {
           should be reviewed 6-monthly.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

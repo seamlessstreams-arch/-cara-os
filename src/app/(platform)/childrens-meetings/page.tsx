@@ -41,6 +41,7 @@ import {
   useChildrensMeetingRecords,
   useCreateChildrensMeetingRecord,
 } from "@/hooks/use-childrens-meeting-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 
@@ -410,6 +411,11 @@ export default function ChildrensMeetingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

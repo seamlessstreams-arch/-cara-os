@@ -29,6 +29,7 @@ import {
   SLEEP_ASSESSMENT_QUALITY_LABEL,
   SLEEP_ASSESSMENT_TREND_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── local config ─── */
 
@@ -428,6 +429,11 @@ export default function SleepAssessmentsPage() {
           arrangements, and individual care plans.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

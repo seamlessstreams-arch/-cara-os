@@ -35,6 +35,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { EhcpRecord, EhcpPlanStatus } from "@/types/extended";
 import { useEhcpRecords } from "@/hooks/use-ehcp-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -517,6 +518,11 @@ export default function EhcpTrackerPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

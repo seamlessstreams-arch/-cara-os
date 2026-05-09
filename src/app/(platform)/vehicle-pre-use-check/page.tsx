@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Local date helper ────────────────────────────────────────────────────────
 const d = (n: number): string => {
@@ -1178,6 +1179,11 @@ export default function VehiclePreUseCheckPage() {
           feed the Reg 45 quality of care review and the SCCIF self-evaluation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

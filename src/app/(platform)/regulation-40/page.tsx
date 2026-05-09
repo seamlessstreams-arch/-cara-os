@@ -38,6 +38,7 @@ import { useReg40Triage, useTriageReg40Task, type Reg40Task } from "@/hooks/use-
 import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import Link from "next/link";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Status colours ─────────────────────────────────────────────────────────────
 
@@ -434,6 +435,11 @@ export default function Regulation40Page() {
       {triagingTask && (
         <TriageDialog task={triagingTask} onClose={() => setTriagingTask(null)} />
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

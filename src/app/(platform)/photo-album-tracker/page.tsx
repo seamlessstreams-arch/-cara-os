@@ -27,6 +27,7 @@ import type { PhotoAlbumRecord, PhotoAlbumType } from "@/types/extended";
 import { PHOTO_ALBUM_TYPE_LABEL, PHOTO_ALBUM_FORMAT_LABEL } from "@/types/extended";
 import { usePhotoAlbumRecords } from "@/hooks/use-photo-album-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const albumTypeColour: Record<PhotoAlbumType, string> = {
   life_story_book: "bg-pink-100 text-pink-800",
@@ -273,6 +274,11 @@ export default function PhotoAlbumTrackerPage() {
           Media Publicity Consent, and Cards & Letters Tracker.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

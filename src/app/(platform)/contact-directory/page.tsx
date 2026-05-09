@@ -35,6 +35,7 @@ import {
   ChevronDown, ChevronUp, Shield, Building2,
   AlertTriangle, Copy, CheckCircle2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -485,6 +486,11 @@ export default function ContactDirectoryPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

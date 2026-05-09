@@ -45,6 +45,7 @@ import {
   HandHeart,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── domain icon ─── */
 const domainIcon = (domain: SuccessFactorDomain) => {
@@ -458,6 +459,11 @@ export default function PlacementSuccessFactorsPage() {
           lived experience.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

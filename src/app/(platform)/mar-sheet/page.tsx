@@ -20,6 +20,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useMarEntries } from "@/hooks/use-mar-entries";
 import type { MarEntry, MarRoute, MarScheduleType } from "@/types/extended";
 import { MAR_ROUTE_LABEL, MAR_SCHEDULE_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -293,6 +294,11 @@ export default function MarSheetPage() {
           to Ofsted inspection and pharmacy audit.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

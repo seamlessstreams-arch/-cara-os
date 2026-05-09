@@ -14,6 +14,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useSupervisionTrackerRecords } from "@/hooks/use-supervision-tracker-records";
 import type { SupervisionTrackerRecord, SupervisionTrackerComplianceStatus } from "@/types/extended";
 import { SUPERVISION_TRACKER_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -150,6 +151,11 @@ export default function SupervisionTrackerPage() {
           <p>Children&apos;s Homes (England) Regulations 2015, Reg 33 — the registered person must ensure staff receive appropriate supervision. Minimum frequency: monthly for all care staff, fortnightly during probation. Supervision must include: safeguarding, professional development, wellbeing, and case discussion. Cancelled sessions must be rescheduled within 7 days. Supervision compliance is monitored by the Responsible Individual and inspected by Ofsted.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

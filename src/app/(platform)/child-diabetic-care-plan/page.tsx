@@ -24,6 +24,7 @@ import {
 import type { DiabetesType } from "@/types/extended";
 import { useDiabeticCarePlans } from "@/hooks/use-diabetic-care-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -421,6 +422,11 @@ export default function ChildDiabeticCarePlanPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

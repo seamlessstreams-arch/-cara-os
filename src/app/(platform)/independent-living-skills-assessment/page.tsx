@@ -28,6 +28,7 @@ import { useIndependenceLivingAssessments } from "@/hooks/use-independence-livin
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependenceLivingAssessment, LivingSkillLevel, LivingSkillsReadiness } from "@/types/extended";
 import { LIVING_SKILL_LEVEL_LABEL, LIVING_SKILLS_READINESS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ───────────────────────────────────────────────────────── */
 
@@ -298,6 +299,11 @@ export default function IndependentLivingSkillsAssessmentPage() {
           Pathway, Independence Skills, and Pathway Plan (16+).
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

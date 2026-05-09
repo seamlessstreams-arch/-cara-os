@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<FoodBudgetWeekRecord>[] = [
   { header: "Week", accessor: (r: FoodBudgetWeekRecord) => r.week_starting },
@@ -256,6 +257,11 @@ export default function FoodBudgetTrackerPage() {
           </div>
         </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

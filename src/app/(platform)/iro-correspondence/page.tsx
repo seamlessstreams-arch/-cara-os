@@ -18,6 +18,7 @@ import { useIroCorrespondences } from "@/hooks/use-iro-correspondences";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IroCorrespondence, IroCorrespondenceType, IroActionStatus, IroRequiredAction } from "@/types/extended";
 import { IRO_CORRESPONDENCE_TYPE_LABEL, IRO_ACTION_STATUS_LABEL, IRO_DIRECTION_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ──────────────────────────────────────────────────────────── */
 
@@ -468,6 +469,11 @@ export default function IroCorrespondencePage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

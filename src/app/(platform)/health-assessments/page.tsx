@@ -29,6 +29,7 @@ import type { HealthAssessment, HealthAssessmentType, HealthAssessmentStatus, Sd
 import { HEALTH_ASSESSMENT_TYPE_LABEL, HEALTH_ASSESSMENT_STATUS_LABEL, SDQ_BAND_LABEL, HEALTH_FOLLOW_UP_STATUS_LABEL } from "@/types/extended";
 import { useHealthAssessments, useCreateHealthAssessment } from "@/hooks/use-health-assessments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -342,6 +343,11 @@ export default function HealthAssessmentsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

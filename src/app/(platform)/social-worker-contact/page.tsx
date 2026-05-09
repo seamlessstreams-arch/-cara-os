@@ -35,6 +35,7 @@ import {
   SOCIAL_WORKER_CONTACT_DIRECTION_LABEL,
   SOCIAL_WORKER_CONTACT_URGENCY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -355,6 +356,11 @@ export default function SocialWorkerContactPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

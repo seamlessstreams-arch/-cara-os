@@ -34,6 +34,7 @@ import {
   DENTAL_RECALL_INTERVAL_LABEL,
 } from "@/types/extended";
 import { useDentalRecords } from "@/hooks/use-dental-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -391,6 +392,11 @@ export default function DentalRecordsPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

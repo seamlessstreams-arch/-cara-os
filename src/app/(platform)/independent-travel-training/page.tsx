@@ -29,6 +29,7 @@ import { useIndependentTravelRecords } from "@/hooks/use-independent-travel-reco
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependentTravelRecord, TravelTrainingStage, TravelConfidence } from "@/types/extended";
 import { TRAVEL_TRAINING_STAGE_LABEL, TRAVEL_CONFIDENCE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ─────────────────────────────────────────────────────────────────── */
 
@@ -510,6 +511,11 @@ export default function IndependentTravelTrainingPage() {
           observation in line with UNCRC Article 12.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

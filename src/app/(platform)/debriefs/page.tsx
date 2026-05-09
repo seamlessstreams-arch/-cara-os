@@ -23,6 +23,7 @@ import type { DebriefRecord, ReflectiveDebriefType, DebriefFollowUpAction } from
 import { REFLECTIVE_DEBRIEF_TYPE_LABEL } from "@/types/extended";
 import { useDebriefRecords, useCreateDebriefRecord } from "@/hooks/use-debrief-records";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const TYPE_META: Record<ReflectiveDebriefType, { label: string; color: string }> = {
   post_incident:   { label: "Post-Incident",    color: "bg-red-100 text-red-800" },
@@ -238,6 +239,11 @@ export default function DebriefsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

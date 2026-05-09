@@ -31,6 +31,7 @@ import type {
 import {
   CME_STATUS_LABEL, ATTENDANCE_LEVEL_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps (snake_case keys — match DB schema) ─────────────────────── */
 
@@ -391,6 +392,11 @@ export default function ChildrenMissingEducationPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -31,6 +31,7 @@ import {
   COMPETENCY_DOMAIN_LABELS,
   type PathwayStage,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STAGE_COLOURS: Record<PathwayStage, string> = {
   inductee:           "bg-slate-100 text-slate-700 border-slate-200",
@@ -312,6 +313,11 @@ export default function WorkforceHubPage() {
         Reg 33 (induction), Reg 34 (supervision). ILACS Framework — Quality of Care theme: workforce capabilities
         and succession. Reg 44/45 — evidence of staff development activity.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

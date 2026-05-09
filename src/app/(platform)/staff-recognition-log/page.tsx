@@ -31,6 +31,7 @@ import {
   STAFF_RECOGNITION_RECOGNISED_BY_LABEL,
   STAFF_RECOGNITION_WAY_MARKED_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -272,6 +273,11 @@ export default function StaffRecognitionLogPage() {
           Annual Reviews, and Supervision.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

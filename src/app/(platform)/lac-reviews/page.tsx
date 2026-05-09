@@ -22,6 +22,7 @@ import {
   Gavel, Calendar, Clock, Users, CheckCircle2,
   AlertTriangle, FileText, Target, Star, Loader2
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const TYPE_META: Record<LACReviewType, { label: string; color: string }> = {
   initial:       { label: "Initial (20 days)",  color: "bg-blue-100 text-blue-800" },
@@ -382,6 +383,11 @@ export default function LACReviewsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

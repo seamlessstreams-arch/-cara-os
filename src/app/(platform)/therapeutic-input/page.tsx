@@ -34,6 +34,7 @@ import type {
   TherapeuticInputEngagement,
 } from "@/types/extended";
 import { THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -312,6 +313,11 @@ export default function TherapeuticInputPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

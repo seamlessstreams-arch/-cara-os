@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const statusColour: Record<string, string> = {
   active: "bg-green-100 text-green-800",
@@ -309,6 +310,11 @@ export default function AfterSchoolClubTrackerPage() {
           Linked to Activities, Community Engagement, and Outcomes pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

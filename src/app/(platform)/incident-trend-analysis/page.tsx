@@ -20,6 +20,7 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { IncidentTrendRecord, TrendActionStatus } from "@/types/extended";
 import { TREND_ACTION_STATUS_LABEL } from "@/types/extended";
 import { useIncidentTrends } from "@/hooks/use-incident-trends";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -409,6 +410,11 @@ export default function IncidentTrendAnalysisPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

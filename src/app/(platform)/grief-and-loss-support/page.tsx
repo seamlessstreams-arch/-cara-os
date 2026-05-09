@@ -24,6 +24,7 @@ import type { GriefRecord, LossType } from "@/types/extended";
 import { LOSS_TYPE_LABEL } from "@/types/extended";
 import { useGriefRecords } from "@/hooks/use-grief-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ────────────────────────────────────────────────────────── */
 
@@ -333,6 +334,11 @@ export default function GriefAndLossSupportPage() {
         pet bereavement, friendship loss and identity loss. Records are kept sensitively, reviewed regularly with the
         young person, and shared only with those who need to know in order to provide attuned care.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

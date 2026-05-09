@@ -22,6 +22,7 @@ import {
   FIRST_AID_CERT_TYPE_LABEL, FIRST_AID_CERT_STATUS_LABEL,
 } from "@/types/extended";
 import { useFirstAiderRecords } from "@/hooks/use-first-aider-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -326,6 +327,11 @@ export default function FirstAidersRosterPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

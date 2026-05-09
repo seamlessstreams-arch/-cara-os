@@ -33,6 +33,7 @@ import { useTripPlans, useCreateTripPlan } from "@/hooks/use-trip-plans";
 import type { TripPlan, TripType, TripStatus, TripRiskLevel, TripStaffRole } from "@/types/extended";
 import { TRIP_TYPE_LABEL, TRIP_STATUS_LABEL, TRIP_RISK_LEVEL_LABEL, TRIP_STAFF_ROLE_LABEL } from "@/types/extended";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
@@ -876,6 +877,11 @@ export default function HolidayPlanningPage() {
         open={showNew}
         onClose={() => setShowNew(false)}
         onSave={handleAddTrip}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

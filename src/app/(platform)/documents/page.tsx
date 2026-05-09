@@ -23,6 +23,7 @@ import { DOCUMENT_CATEGORIES } from "@/lib/constants";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import type { Document, DocumentReadReceipt } from "@/types";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 type Tab = "library" | "read_sign" | "upload";
 type CategoryFilter = "all" | string;
@@ -577,6 +578,11 @@ export default function DocumentsPage() {
           </Card>
         )}
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -21,6 +21,7 @@ import {
 import { useSavedTime } from "@/hooks/use-filing-cabinet";
 import { ROUTE_TYPE_LABEL } from "@/types/care-events";
 import { formatDate } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Route bar component ───────────────────────────────────────────────────────
 
@@ -288,6 +289,11 @@ export default function SavedTimePage() {
           </CardContent>
         </Card>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

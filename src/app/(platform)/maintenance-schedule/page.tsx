@@ -17,6 +17,7 @@ import {
 import { useMaintenanceScheduleItems } from "@/hooks/use-maintenance-schedule-items";
 import type { MaintenanceScheduleItem, MaintenanceScheduleCategory, MaintenanceComplianceStatus, MaintenanceDefect } from "@/types/extended";
 import { MAINTENANCE_SCHEDULE_CATEGORY_LABEL, MAINTENANCE_FREQUENCY_LABEL, MAINTENANCE_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -316,6 +317,11 @@ export default function MaintenanceSchedulePage() {
           home&apos;s registration; defect histories evidence responsive landlord behaviour during Ofsted inspection.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

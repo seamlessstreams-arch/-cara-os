@@ -20,6 +20,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useAgencyInductions } from "@/hooks/use-agency-inductions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AgencyInduction, AgencyInductionType } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -306,6 +307,11 @@ export default function AgencyStaffInductionPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

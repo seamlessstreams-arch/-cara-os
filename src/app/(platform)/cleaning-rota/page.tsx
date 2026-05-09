@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const cleaningTypeColour: Record<string, string> = {
   routine: "bg-blue-100 text-blue-800",
@@ -277,6 +278,11 @@ export default function CleaningRotaPage() {
           environment), and infection control best practice.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

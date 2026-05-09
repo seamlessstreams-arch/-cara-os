@@ -21,6 +21,7 @@ import type { EduAttendanceRecord, EduProvision, EduSession, EduAttendanceCode }
 import { EDU_PROVISION_LABEL, EDU_SESSION_LABEL } from "@/types/extended";
 import { useEduAttendanceRecords } from "@/hooks/use-edu-attendance-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -404,6 +405,11 @@ export default function EducationAttendanceTrackerPage() {
           <p>Children&apos;s Homes (England) Regulations 2015, Quality Standard 8 — the education standard requires the registered person to ensure each child has access to suitable educational provision and that their attendance and progress are actively monitored. Daily attendance must be recorded using the DfE statutory school attendance codes and shared with the Virtual School Head, who has statutory responsibility under the Children Act 2004 for monitoring the educational achievement of looked-after children. Unauthorised absences (codes O, U, N) and persistent absence (below 90%) trigger review of the Personal Education Plan (PEP). Sustained non-attendance must be reported to the Local Authority under the Children Missing Education (CME) duty (Education Act 1996, s.436A).</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

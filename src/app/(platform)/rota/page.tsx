@@ -23,6 +23,7 @@ import type { ExportColumn } from "@/components/common/export-button";
 import type { Shift } from "@/types";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const SHIFT_COLORS: Record<string, string> = {
   day: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -616,6 +617,11 @@ export default function RotaPage() {
           safe staffing ratios.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
 
     {/* Add Shift Modal */}

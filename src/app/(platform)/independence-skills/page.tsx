@@ -29,6 +29,7 @@ import { useIndependenceSkillsRecords } from "@/hooks/use-independence-skills-re
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependenceSkillsRecord, IndependenceSkillProficiency, IndependenceSkillCategory } from "@/types/extended";
 import { INDEPENDENCE_SKILL_PROFICIENCY_LABEL, INDEPENDENCE_SKILL_CATEGORY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -332,6 +333,11 @@ export default function IndependenceSkillsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

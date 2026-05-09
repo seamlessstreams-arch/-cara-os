@@ -31,6 +31,7 @@ import {
   REG46_AREA_RATING_LABEL,
   REG46_ACTION_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ─────────────────────────────────────────────────── */
 
@@ -366,6 +367,11 @@ export default function QualityReviewCyclePage() {
           })}
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

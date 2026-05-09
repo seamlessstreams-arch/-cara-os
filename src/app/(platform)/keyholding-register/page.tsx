@@ -25,6 +25,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useKeyRecords, useCreateKeyRecord } from "@/hooks/use-key-records";
 import type { KeyRecord, KeyType, KeyholdingStatus } from "@/types/extended";
 import { KEY_TYPE_LABEL, KEYHOLDING_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ──────────────────────────────────────────────────────── */
 
@@ -283,6 +284,11 @@ export default function KeyholdingRegisterPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -23,6 +23,7 @@ import {
 import { useStaffHandbookAcknowledgementRecords } from "@/hooks/use-staff-handbook-acknowledgement-records";
 import type { StaffHandbookAcknowledgementRecord, StaffHandbookDocumentCategory } from "@/types/extended";
 import { STAFF_HANDBOOK_DOCUMENT_CATEGORY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config (icon not serializable — kept local) ─────────────────────────────
 
@@ -415,6 +416,11 @@ export default function StaffHandbookAcknowledgementsPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

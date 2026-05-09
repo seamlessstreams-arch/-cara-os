@@ -31,6 +31,7 @@ import {
   PREVENT_RISK_LEVEL_LABEL,
   PREVENT_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── label / colour maps ───────────────────────────────────────────── */
 const REFERRAL_TYPE_COLOURS: Record<PreventReferralType, string> = {
@@ -541,6 +542,11 @@ export default function PreventDutyPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

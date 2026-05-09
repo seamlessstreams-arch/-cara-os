@@ -28,6 +28,7 @@ import { useOpticiansRecords } from "@/hooks/use-opticians-records";
 import type { OpticiansRecord, OpticalStatus, OpticalRecallInterval } from "@/types/extended";
 import { OPTICAL_STATUS_LABEL, OPTICAL_RECALL_INTERVAL_LABEL, GLASSES_TYPE_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const statusColour: Record<OpticalStatus, string> = {
   active_nhs: "bg-green-100 text-green-800",
@@ -274,6 +275,11 @@ export default function OpticiansRecordsPage() {
       </div>
       </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

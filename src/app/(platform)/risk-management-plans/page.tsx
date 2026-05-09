@@ -20,6 +20,7 @@ import { useRiskManagementPlanRecords } from "@/hooks/use-risk-management-plan-r
 import type { RiskManagementPlanRecord, RiskMgmtPlanCategory, RiskMgmtPlanStatus } from "@/types/extended";
 import { RISK_MGMT_PLAN_CATEGORY_LABEL, RISK_MGMT_PLAN_STATUS_LABEL } from "@/types/extended";
 import type { RiskLevel } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ────────────────────────────────────────────────────── */
 
@@ -241,6 +242,11 @@ export default function RiskManagementPlansPage() {
           <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={() => setDialogOpen(false)}>Create Plan</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

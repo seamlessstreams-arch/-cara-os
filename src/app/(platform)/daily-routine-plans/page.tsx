@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<DailyRoutinePlan>[] = [
@@ -274,6 +275,11 @@ export default function DailyRoutinePlansPage() {
           daily life feels &quot;homely&quot; and individualised, not institutional or one-size-fits-all.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

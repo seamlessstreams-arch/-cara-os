@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<VolunteerRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -294,6 +295,11 @@ export default function ChildVolunteeringCharityPage() {
           consent and pace are central. Recognition is logged formally for college / job applications.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

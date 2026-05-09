@@ -31,6 +31,7 @@ import {
 } from "@/types/extended";
 import { usePoliceContactRecords } from "@/hooks/use-police-contact-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -371,6 +372,11 @@ export default function ChildPoliceContactRecordsPage() {
           restorative practice.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

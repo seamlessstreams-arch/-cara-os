@@ -22,6 +22,7 @@ import {
 import { useMealPlans } from "@/hooks/use-meal-plans";
 import type { MealPlan, MealType, DietaryFlag, MealChildPreference } from "@/types/extended";
 import { MEAL_TYPE_LABEL, DIETARY_FLAG_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const MEAL_META: Record<MealType, { label: string; icon: React.ReactNode; time: string }> = {
   breakfast: { label: "Breakfast", icon: <Clock className="h-4 w-4" />,               time: "7:30 AM" },
@@ -323,6 +324,11 @@ export default function MenuPlanningPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

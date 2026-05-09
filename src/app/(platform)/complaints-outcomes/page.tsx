@@ -46,6 +46,7 @@ import {
   COMPLAINT_SOURCE_LABEL,
   COMPLAINT_THEME_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ──────────────────────────────────────────────── */
 const OUTCOME_COLOUR: Record<ComplaintOutcome, string> = {
@@ -522,6 +523,11 @@ export default function ComplaintsOutcomesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

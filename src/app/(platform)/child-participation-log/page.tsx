@@ -23,6 +23,7 @@ import {
   Heart,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<ParticipationEntry>[] = [
   { header: "Date", accessor: (r) => r.date },
@@ -303,6 +304,11 @@ export default function ChildParticipationLogPage() {
           views lead to tangible changes. This log provides that evidence.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

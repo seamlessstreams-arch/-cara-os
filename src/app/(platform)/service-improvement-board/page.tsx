@@ -34,6 +34,7 @@ import {
   SERVICE_IMPROVEMENT_SOURCE_LABEL,
   SERVICE_IMPROVEMENT_RAG_RATING_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -327,6 +328,11 @@ export default function ServiceImprovementBoardPage() {
           evidence. All initiatives are evidence-based, child-informed, and outcome-measured.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

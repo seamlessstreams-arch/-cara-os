@@ -19,6 +19,7 @@ import {
   Star,
   ArrowUpDown,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── date helper ─── */
 const d = (n: number) => {
@@ -480,6 +481,11 @@ export default function WarmWelcomePacksPage() {
           about, and prepared for — not just &quot;placed.&quot;
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

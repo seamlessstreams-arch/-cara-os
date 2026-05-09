@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { useAttachmentProfiles, useCreateAttachmentProfile } from "@/hooks/use-attachment-profiles";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AttachmentProfile, AttachmentStyle, AttachmentProfileStatus, AttachmentBehaviour, AttachmentKeyRelationship } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -462,6 +463,11 @@ export default function AttachmentProfilesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

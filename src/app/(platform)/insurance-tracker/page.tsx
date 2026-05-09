@@ -28,6 +28,7 @@ import {
 import { useInsurancePolicies } from "@/hooks/use-insurance-policies";
 import type { InsurancePolicy, InsurancePolicyStatus } from "@/types/extended";
 import { INSURANCE_POLICY_TYPE_LABEL, INSURANCE_POLICY_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -282,6 +283,11 @@ export default function InsuranceTrackerPage() {
           illustrative only.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

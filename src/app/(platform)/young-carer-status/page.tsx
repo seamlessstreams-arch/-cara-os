@@ -8,6 +8,7 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, Heart, Shield, AlertCircle, CheckCircle, Users } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 interface YoungCarerRecord {
   id: string;
@@ -249,6 +250,11 @@ export default function YoungCarerStatusPage() {
         })}
       </div>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Young carer identification supports Children and Families Act 2014 s.96 (young carer assessments), Care Act 2014, Quality Standard 7 (health and wellbeing), and Quality Standard 9 (family relationships). Linked to Family Time Supervision and Trauma-Informed Timeline.</p></div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

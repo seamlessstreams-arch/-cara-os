@@ -30,6 +30,7 @@ import type { ChildKeyDocument, KeyDocStatus, KeyDocOriginalOrCopy } from "@/typ
 import { KEY_DOC_STATUS_LABEL, KEY_DOC_ORIGINAL_OR_COPY_LABEL } from "@/types/extended";
 import { useChildKeyDocuments } from "@/hooks/use-child-key-documents";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -460,6 +461,11 @@ export default function ChildKeyDocumentTrackerPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -32,6 +32,7 @@ import {
 import type {
   CareEvent, CareEventCategory, EvidencePrompt,
 } from "@/types/care-events";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Status colours ─────────────────────────────────────────────────────────
 
@@ -878,6 +879,11 @@ export default function CareEventsPage() {
         action={actionDialog?.action ?? ""}
         event={actionDialog?.event ?? null}
         onClose={() => setActionDialog(null)}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

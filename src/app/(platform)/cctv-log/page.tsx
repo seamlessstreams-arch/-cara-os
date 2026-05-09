@@ -27,6 +27,7 @@ import {
 import { useCCTVAccesses, useCreateCCTVAccess } from "@/hooks/use-cctv-accesses";
 import { toast } from "sonner";
 import type { CCTVAccess, CCTVAccessReason, CCTVCamera } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -286,6 +287,11 @@ export default function CCTVLogPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

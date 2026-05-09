@@ -27,6 +27,7 @@ import {
 import type { CohortAnalysis, CohortPairDynamic } from "@/types/extended";
 import { COHORT_PAIR_DYNAMIC_LABEL } from "@/types/extended";
 import { useCohortAnalyses } from "@/hooks/use-cohort-analyses";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -378,6 +379,11 @@ export default function PlacementCohortAnalysisPage() {
       </div>
       </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

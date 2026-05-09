@@ -39,6 +39,7 @@ import {
   FUNDING_SOURCE_LABEL,
   FEE_PAYMENT_METHOD_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STATUS_COLOUR: Record<FeeStatus, string> = {
   pending_approval: "bg-amber-100 text-amber-800",
@@ -285,6 +286,11 @@ export default function ProfessionalFeesLogPage() {
           Therapeutic Input, Advocacy, and external practitioner contracts.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

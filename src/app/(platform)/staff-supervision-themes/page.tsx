@@ -23,6 +23,7 @@ import {
   STAFF_SUPERVISION_THEME_AREA_LABEL,
   STAFF_SUPERVISION_THEME_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours / icons not serializable) ────────────────────── */
 
@@ -375,6 +376,11 @@ export default function StaffSupervisionThemesPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -37,6 +37,7 @@ import {
   User, Calendar, FileText, Brain, Radar, TrendingUp,
   TrendingDown, Zap, BookOpen, RefreshCw, X,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -634,6 +635,11 @@ export default function PatternAlertsPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

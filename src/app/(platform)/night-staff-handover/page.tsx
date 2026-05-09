@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useNightStaffHandovers } from "@/hooks/use-night-staff-handovers";
 import type { NightStaffHandover } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Date helper (relative) ─────────────────────────────────────────────────
 
@@ -477,6 +478,11 @@ export default function NightStaffHandoverPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

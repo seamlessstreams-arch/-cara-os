@@ -20,6 +20,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useAdoptionRecords } from "@/hooks/use-adoption-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AdoptionStatus, AdoptionIntroductionPhase, AdoptionRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -345,6 +346,11 @@ export default function AdoptionSupportRecordsPage() {
           <p>Adoption and Children Act 2002 — sets the legal framework for adoption in England, including welfare paramountcy, placement orders, contact and adoption support services. Adoption Support Services Regulations 2005 — entitlement of adopted children and adoptive families to assessment for adoption support. Children&apos;s Homes (England) Regulations 2015 — the home must promote the welfare of each child, support permanence planning and prepare children for transitions in line with their care plan. Adoption Statutory Guidance 2013 — life story work, later life letters and well-planned introductions are core practice expectations. Records must be retained securely; later life information must be available to the child in adulthood.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

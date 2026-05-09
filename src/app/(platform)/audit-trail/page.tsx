@@ -26,6 +26,7 @@ import {
 import { useCareEventAuditLog, type AuditLogEntryEnriched } from "@/hooks/use-daily-summaries";
 import type { AuditAction } from "@/types/care-events";
 import { formatDate } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Action metadata ───────────────────────────────────────────────────────────
 
@@ -236,6 +237,11 @@ export default function AuditTrailPage() {
           </CardContent>
         </Card>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

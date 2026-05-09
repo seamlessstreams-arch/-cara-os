@@ -37,6 +37,7 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { useHealthcarePlans } from "@/hooks/use-healthcare-plans";
 import type { HealthcarePlan } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── severity helpers ─── */
 const SEVERITY_META: Record<string, { label: string; color: string }> = {
@@ -576,6 +577,11 @@ export default function HealthcarePlansPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

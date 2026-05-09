@@ -34,6 +34,7 @@ import {
   REGISTRATION_CHANGE_TYPE_LABEL,
   REGISTRATION_CHANGE_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour map ────────────────────────────────────────────────── */
 
@@ -268,6 +269,11 @@ export default function RegistrationChangesLogPage() {
           Notification Log, and Reg 45 reports.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

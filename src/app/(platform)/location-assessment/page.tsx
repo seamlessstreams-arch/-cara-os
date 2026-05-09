@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useLocationAssessmentAreas } from "@/hooks/use-location-assessment-areas";
 import type { LocationAssessmentArea, LocationRiskLevel } from "@/types/extended";
 import { LOCATION_RISK_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -173,6 +174,11 @@ export default function LocationAssessmentPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

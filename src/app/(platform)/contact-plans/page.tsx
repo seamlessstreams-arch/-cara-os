@@ -29,6 +29,7 @@ import {
   Heart,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<ContactPlan>[] = [
@@ -432,6 +433,11 @@ export default function ContactPlansPage() {
           arrangements are reviewed alongside the placement plan and at each LAC Review.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -34,6 +34,7 @@ import {
   Sparkles, Loader2, ThumbsUp, ThumbsDown, Shield, Brain,
   Eye, Zap, Ban, Hand, Mic, Users,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -538,6 +539,11 @@ export default function RelationalPracticePage() {
         open={showNew}
         onClose={() => setShowNew(false)}
         onSave={handleCreate}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

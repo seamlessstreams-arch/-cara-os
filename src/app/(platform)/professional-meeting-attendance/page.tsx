@@ -37,6 +37,7 @@ import {
   PROF_MEETING_ACTION_STATUS_LABEL,
   PROF_MEETING_MODE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ─────────────────────────────────────────────────── */
 
@@ -401,6 +402,11 @@ export default function ProfessionalMeetingAttendancePage() {
           — The home must ensure that children are represented effectively at all multi-agency meetings concerning them, that the child&apos;s voice is heard or sensitively represented, that decisions and actions are tracked, and that the home submits its written contribution within agreed timescales.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

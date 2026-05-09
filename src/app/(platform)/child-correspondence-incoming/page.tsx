@@ -34,6 +34,7 @@ import {
 } from "@/types/extended";
 import { useIncomingCorrespondence } from "@/hooks/use-incoming-correspondence";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const senderColour: Record<CorrespondenceSenderType, string> = {
   mother: "bg-pink-100 text-pink-800",
@@ -276,6 +277,11 @@ export default function ChildCorrespondenceIncomingPage() {
           Family Contact, Letterbox arrangements, Birthday Card Tracker, Personal Belongings.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

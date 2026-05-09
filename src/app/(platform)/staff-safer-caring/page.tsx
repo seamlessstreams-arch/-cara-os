@@ -19,6 +19,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useStaffSaferCaringRecords } from "@/hooks/use-staff-safer-caring-records";
 import type { StaffSaferCaringRecord, StaffSaferCaringPlanStatus } from "@/types/extended";
 import { STAFF_SAFER_CARING_PLAN_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -209,6 +210,11 @@ export default function StaffSaferCaringPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

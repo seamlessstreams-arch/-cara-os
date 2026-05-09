@@ -27,6 +27,7 @@ import type { RightsLiteracyRecord, RightsKnowledgeLevel } from "@/types/extende
 import { RIGHTS_KNOWLEDGE_LEVEL_LABEL } from "@/types/extended";
 import { useRightsLiteracyRecords } from "@/hooks/use-rights-literacy-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -432,6 +433,11 @@ export default function ChildRightsLiteracyTrackerPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

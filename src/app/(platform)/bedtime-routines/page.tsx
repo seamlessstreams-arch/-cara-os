@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 function ratingColour(r: number): string {
   if (r >= 4) return "text-green-600";
@@ -323,6 +324,11 @@ export default function BedtimeRoutinesPage() {
           Linked to Sleep Assessments and Daily Routine Plans.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

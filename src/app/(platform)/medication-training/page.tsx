@@ -25,6 +25,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useMedTrainingRecords } from "@/hooks/use-med-training-records";
 import type { MedTrainingRecord, MedCompetencyType, MedCompetencyStatus } from "@/types/extended";
 import { MED_COMPETENCY_TYPE_LABEL, MED_COMPETENCY_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STATUS_CLR: Record<MedCompetencyStatus, string> = { competent: "bg-green-100 text-green-800", not_yet_competent: "bg-red-100 text-red-800", expired: "bg-amber-100 text-amber-800", in_training: "bg-blue-100 text-blue-800", supervised_only: "bg-purple-100 text-purple-800" };
 const BORDER_ST: Record<MedCompetencyStatus, string> = { competent: "border-l-green-400", not_yet_competent: "border-l-red-500", expired: "border-l-amber-400", in_training: "border-l-blue-400", supervised_only: "border-l-purple-400" };
@@ -192,6 +193,11 @@ export default function MedicationTrainingPage() {
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Assessment</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

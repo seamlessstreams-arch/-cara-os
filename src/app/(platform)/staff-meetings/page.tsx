@@ -21,6 +21,7 @@ import {
 import { useStaffMeetingRecords } from "@/hooks/use-staff-meeting-records";
 import type { StaffMeetingRecord, StaffMeetingType, StaffMeetingAction } from "@/types/extended";
 import { STAFF_MEETING_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -289,6 +290,11 @@ export default function StaffMeetingsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -24,6 +24,7 @@ import {
   ArrowUpDown,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<Escalation>[] = [
@@ -351,6 +352,11 @@ export default function EscalationTrackerPage() {
           that escalation pathways work — concerns are raised, heard, and acted upon.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -26,6 +26,7 @@ import type { HairAppointment, SalonType } from "@/types/extended";
 import { SALON_TYPE_LABEL } from "@/types/extended";
 import { useHairAppointments } from "@/hooks/use-hair-appointments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const salonColour: Record<SalonType, string> = {
   high_street_barber: "bg-blue-100 text-blue-800",
@@ -244,6 +245,11 @@ export default function HairdressingRecordsPage() {
           Sensory Profiles, and Personal Belongings.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

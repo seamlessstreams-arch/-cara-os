@@ -28,6 +28,7 @@ import type { AspirationRecord, AspirationDomain, AspirationRealism } from "@/ty
 import { ASPIRATION_DOMAIN_LABEL, ASPIRATION_REALISM_LABEL } from "@/types/extended";
 import { useAspirationRecords } from "@/hooks/use-aspiration-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -413,6 +414,11 @@ export default function ChildAspirationsTrackerPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

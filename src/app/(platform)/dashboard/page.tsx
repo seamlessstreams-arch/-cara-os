@@ -65,6 +65,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import type { AppRole } from "@/lib/permissions";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1436,6 +1437,11 @@ export default function DashboardPage() {
 
       {/* Quick Actions Speed Dial — floating bottom-right */}
       {!config.showReadOnlyBanner && <QuickActionsDial />}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

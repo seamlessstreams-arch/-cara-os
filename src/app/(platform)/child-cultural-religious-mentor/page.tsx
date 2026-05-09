@@ -38,6 +38,7 @@ import {
   MENTOR_CONTACT_FREQUENCY_LABEL,
   MENTOR_RELATIONSHIP_QUALITY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<CulturalReligiousMentor>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -326,6 +327,11 @@ export default function ChildCulturalReligiousMentorPage() {
       </div>
       </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

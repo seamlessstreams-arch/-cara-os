@@ -29,6 +29,7 @@ import type { AutismPlan, AutismDiagnosisStatus, AutismSensoryPattern } from "@/
 import { AUTISM_DIAGNOSIS_STATUS_LABEL, AUTISM_SENSORY_PATTERN_LABEL } from "@/types/extended";
 import { useAutismPlans } from "@/hooks/use-autism-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -623,6 +624,11 @@ export default function ChildAutismSupportPlanPage() {
           centring of this plan. Functioning labels are avoided.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

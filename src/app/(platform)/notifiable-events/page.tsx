@@ -25,6 +25,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useNotifiableEvents } from "@/hooks/use-notifiable-events";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NotifiableEventType, NotifiableStatus, NotifiableNotification, NotifiableEvent } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── types ───────────────────────────────────────────────────────────── */
 const EVENT_TYPES = [
@@ -341,6 +342,11 @@ export default function NotifiableEventsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

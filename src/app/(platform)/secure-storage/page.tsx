@@ -34,6 +34,7 @@ import {
   SECURE_STORAGE_ITEM_STATUS_LABEL,
   SECURE_STORAGE_ACTION_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -349,6 +350,11 @@ export default function SecureStoragePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

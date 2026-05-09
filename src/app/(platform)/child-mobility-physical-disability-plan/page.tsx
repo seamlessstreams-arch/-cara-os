@@ -34,6 +34,7 @@ import {
 } from "@/types/extended";
 import { useMobilityDisabilityPlans } from "@/hooks/use-mobility-disability-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function statusColour(s: MobilityStatus): string {
@@ -434,6 +435,11 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
           Equality Act 2010 (disability) · Care Act 2014 (under-18 carers, transition) · SEND Code of Practice 2015 · Social model of disability (Oliver) · Children&rsquo;s Homes (England) Regulations 2015 — Quality Standards 6, 8 and 9 · NICE NG217 (Long Covid) and NG104 (chronic pain) where relevant · Disabled Children&rsquo;s Charter · UNCRC Articles 23, 24 and 31.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

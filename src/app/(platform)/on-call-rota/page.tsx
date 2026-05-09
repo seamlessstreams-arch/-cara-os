@@ -14,6 +14,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useOnCallShifts } from "@/hooks/use-on-call-shifts";
 import type { OnCallShift, OnCallRole, OnCallShiftPattern } from "@/types/extended";
 import { ON_CALL_ROLE_LABEL, ON_CALL_SHIFT_PATTERN_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── component ─────────────────────────────────────────────────────────────── */
 
@@ -269,6 +270,11 @@ export default function OnCallRotaPage() {
           <p>The on-call rota is the operational expression of Quality Standard 13 — the leadership and management standard — which requires that the home is led and managed by people who provide direction, support and guidance, including outside of office hours. It also supports the Independent Person's monitoring under Reg 33 by evidencing that escalation routes exist and are used appropriately. On-call records form part of the home's audit trail, demonstrating the responsiveness of senior staff, the calibration of decision thresholds, and the wellbeing impact of out-of-hours cover on the people who provide it.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -30,6 +30,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useNeedsAssessments } from "@/hooks/use-needs-assessments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NeedsAssessment, NeedsDomain, NeedsComplexity, NeedsDomainAssessment } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -498,6 +499,11 @@ export default function AssessmentOfNeedPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -45,6 +45,7 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -639,6 +640,11 @@ export default function EmergencyMedicationProtocolsPage() {
           health passport and risk assessment must reference the active protocol.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

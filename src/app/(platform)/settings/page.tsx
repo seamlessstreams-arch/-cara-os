@@ -16,6 +16,7 @@ import { HOME } from "@/lib/seed-data";
 import { useStaff } from "@/hooks/use-staff";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 type SettingsTab = "profile" | "home" | "notifications" | "security" | "roles" | "integrations";
 
@@ -339,6 +340,11 @@ export default function SettingsPage() {
 
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

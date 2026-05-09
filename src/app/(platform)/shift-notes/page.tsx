@@ -21,6 +21,7 @@ import {
 import { useShiftNoteRecords } from "@/hooks/use-shift-note-records";
 import type { ShiftNoteRecord, ShiftNoteShiftType } from "@/types/extended";
 import { SHIFT_NOTE_SHIFT_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (icons are React.ReactNode — cannot serialize) ─────────── */
 
@@ -319,6 +320,11 @@ export default function ShiftNotesPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

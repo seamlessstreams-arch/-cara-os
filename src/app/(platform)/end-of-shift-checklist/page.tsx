@@ -50,6 +50,7 @@ import {
   CHECKLIST_CATEGORY_LABEL,
 } from "@/types/extended";
 import type { EndOfShiftType, ChecklistCategory } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const shiftColour = (s: EndOfShiftType): string => {
@@ -711,6 +712,11 @@ export default function EndOfShiftChecklistPage() {
           reviews and the SCCIF self-evaluation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -34,6 +34,7 @@ import {
   OFSTED_ACTION_PRIORITY_LABEL,
   OFSTED_ACTION_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 const d = (n: number) => {
@@ -539,6 +540,11 @@ export default function OfstedActionPlanPage() {
           improvement have been acted upon effectively and within reasonable timescales.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

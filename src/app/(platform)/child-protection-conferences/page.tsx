@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── config ──────────────────────────────────────────────────────────────────
 const outcomeColour: Record<string, string> = {
@@ -334,6 +335,11 @@ export default function ChildProtectionConferencesPage() {
           participation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

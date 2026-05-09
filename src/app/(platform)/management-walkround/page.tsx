@@ -21,6 +21,7 @@ import type {
   WalkroundEnvironmentalCheck, WalkroundFollowUpAction,
 } from "@/types/extended";
 import { WALKROUND_TYPE_LABEL, ENVIRONMENTAL_CHECK_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -310,6 +311,11 @@ export default function ManagementWalkroundPage() {
           of care). Linked to Unannounced Visits Log, Reg 44 visits, and Service Improvement Board.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -20,6 +20,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useSelfHarmSafetyPlanRecords } from "@/hooks/use-self-harm-safety-plan-records";
 import type { SelfHarmSafetyPlanRecord, SelfHarmSafetyPlanStatus, SelfHarmSafetyPlanReviewFrequency } from "@/types/extended";
 import { SELF_HARM_SAFETY_PLAN_STATUS_LABEL, SELF_HARM_SAFETY_PLAN_REVIEW_FREQUENCY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -533,6 +534,11 @@ export default function SelfHarmSafetyPlanPage() {
           never used in place of clinical assessment.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

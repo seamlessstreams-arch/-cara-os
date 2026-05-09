@@ -33,6 +33,7 @@ import {
 } from "@/types/extended";
 import { useTraumaTherapyLogs } from "@/hooks/use-trauma-therapy-logs";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ───────────────────────────────────────────────────── */
 
@@ -438,6 +439,11 @@ export default function ChildTraumaTherapyLogPage() {
       <div className="rounded-lg border border-violet-200 bg-violet-50/60 p-4 text-sm text-violet-900 mb-6">
         <strong>Regulatory framework.</strong> Trauma therapy work in the home is governed by the standards of the practitioner&apos;s registering body — BPS, BACP or UKCP for psychologists and psychotherapists, BAAT for art therapists, and BAPT for play therapists. Specific modalities follow their evidence base: TF-CBT (Cohen, Mannarino &amp; Deblinger), EMDR (EMDR Institute / EMDR UK), and DDP (DDP Network). In line with the Children&apos;s Homes (England) Regulations 2015 — Quality Standard 8 (care planning) — staff hold therapeutic confidence by recording broad themes only, with the explicit consent of the child and the therapist on what gets shared with the home. UNCRC Article 24 (the right to the highest attainable standard of health) underpins our duty to keep these therapies accessible and well-supported between sessions.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

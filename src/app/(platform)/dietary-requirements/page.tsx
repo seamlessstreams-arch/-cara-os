@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const severityColour: Record<string, string> = {
   life_threatening: "bg-red-200 text-red-900",
@@ -354,6 +355,11 @@ export default function DietaryRequirementsPage() {
           and shared with all staff including agency cover. Linked to Healthcare Plans and Religious Observance Log.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

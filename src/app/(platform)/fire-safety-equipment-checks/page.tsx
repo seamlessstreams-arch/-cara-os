@@ -37,6 +37,7 @@ import {
   FIRE_COMPLIANCE_STATUS_LABEL,
 } from "@/types/extended";
 import { useFireEquipmentChecks } from "@/hooks/use-fire-equipment-checks";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const statusColour: Record<FireComplianceStatus, string> = {
   compliant: "bg-green-100 text-green-800",
@@ -252,6 +253,11 @@ export default function FireSafetyEquipmentChecksPage() {
           Standard 25. Linked to Fire Risk Assessment, Fire Drills, and Emergency Evacuation Plan.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

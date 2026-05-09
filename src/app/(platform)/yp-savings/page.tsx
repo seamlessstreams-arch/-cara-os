@@ -28,6 +28,7 @@ import { useYPSavingsAccountRecords } from "@/hooks/use-yp-savings-account-recor
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { YPSavingsAccountRecord, YPSavingsTransactionType } from "@/types/extended";
 import { YP_SAVINGS_TRANSACTION_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
@@ -279,6 +280,11 @@ export default function YPSavingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

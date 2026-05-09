@@ -28,6 +28,7 @@ import { useBelongingsRecords } from "@/hooks/use-belongings-records";
 import type { BelongingsRecord, BelongingCategory, BelongingCondition, BelongingItemStatus } from "@/types/extended";
 import { BELONGING_CATEGORY_LABEL, BELONGING_CONDITION_LABEL, BELONGING_ITEM_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ──────────────────────────────────────────────────────── */
 
@@ -396,6 +397,11 @@ export default function PersonalBelongingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

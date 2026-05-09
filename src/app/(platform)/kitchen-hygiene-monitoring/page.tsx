@@ -28,6 +28,7 @@ import {
 import { useKitchenHygieneChecks } from "@/hooks/use-kitchen-hygiene-checks";
 import type { KitchenHygieneCheck, HygieneShiftType, HygieneVerdict, FridgeOrganisation } from "@/types/extended";
 import { HYGIENE_SHIFT_TYPE_LABEL, HYGIENE_VERDICT_LABEL, FRIDGE_ORGANISATION_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const verdictColour: Record<HygieneVerdict, string> = {
   pass: "bg-green-100 text-green-800",
@@ -330,6 +331,11 @@ export default function KitchenHygieneMonitoringPage() {
           and Safety records.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

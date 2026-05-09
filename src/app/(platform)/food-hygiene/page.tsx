@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import type { FoodHygieneRecord, FoodHygieneCheckType, FoodHygieneCompliance } from "@/types/extended";
 import { FOOD_HYGIENE_CHECK_TYPE_LABEL, FOOD_HYGIENE_COMPLIANCE_LABEL } from "@/types/extended";
 import { useFoodHygieneRecords, useCreateFoodHygieneRecord } from "@/hooks/use-food-hygiene-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -189,6 +190,11 @@ export default function FoodHygienePage() {
           <DialogFooter><Button variant="outline" onClick={() => { setShowNew(false); setDraft({}); }}>Cancel</Button><Button disabled={createMutation.isPending} onClick={() => { createMutation.mutate(draft, { onSuccess: () => { toast.success("Food hygiene check recorded"); setShowNew(false); setDraft({}); } }); }}>Save Record</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

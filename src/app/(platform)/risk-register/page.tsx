@@ -26,6 +26,7 @@ import {
   CheckCircle2, Clock, User, Calendar, Target, Activity,
   Loader2, TrendingUp, TrendingDown, Eye, Zap,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ────────────────────────────────────────────────────── */
 
@@ -518,6 +519,11 @@ export default function RiskRegisterPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -39,6 +39,7 @@ import {
 } from "@/types/extended";
 import { useFriendshipMaps } from "@/hooks/use-friendship-maps";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -428,6 +429,11 @@ export default function FriendshipMappingPage() {
         be reviewed at least annually, after any significant change in the child&apos;s social
         world, and as part of placement and transition planning.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

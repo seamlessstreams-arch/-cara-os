@@ -32,6 +32,7 @@ import {
   FileCheck, AlertTriangle, CheckCircle2, Clock, Calendar,
   Shield, XCircle, RefreshCw
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Local meta (keeps color / icon info that doesn't belong in shared types) ─
 const CATEGORY_META: Record<ConsentCategory, { label: string; color: string }> = {
@@ -427,6 +428,11 @@ export default function ConsentRecordsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

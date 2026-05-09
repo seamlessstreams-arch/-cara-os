@@ -28,6 +28,7 @@ import {
   OFSTED_ENGAGEMENT_TYPE_LABEL,
   OFSTED_ENGAGEMENT_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── derived constants ──────────────────────────────────────────────── */
 const ENGAGEMENT_TYPES = Object.entries(OFSTED_ENGAGEMENT_TYPE_LABEL) as [OfstedEngagementType, string][];
@@ -534,6 +535,11 @@ export default function OfstedEngagementLogPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

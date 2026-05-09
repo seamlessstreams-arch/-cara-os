@@ -18,6 +18,7 @@ import type { ImmunisationRecord, VaccineStatus } from "@/types/extended";
 import { VACCINE_STATUS_LABEL } from "@/types/extended";
 import { useImmunisationRecords } from "@/hooks/use-immunisation-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STATUS_COLOUR: Record<VaccineStatus, string> = {
   up_to_date:          "bg-green-100 text-green-700",
@@ -472,6 +473,11 @@ export default function ImmunisationRecordPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

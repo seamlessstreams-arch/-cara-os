@@ -36,6 +36,7 @@ import {
 } from "@/types/extended";
 import { useGenogramEntries } from "@/hooks/use-genogram-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const exportCols: ExportColumn<GenogramEntry>[] = [
   { header: "Young Person", accessor: (r: GenogramEntry) => getYPName(r.child_id) },
@@ -359,6 +360,11 @@ export default function FamilyTreeGenogramPage() {
           Identity, Trauma-Informed Timeline, and Contact Directory.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

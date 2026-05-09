@@ -29,6 +29,7 @@ import {
   DATA_BREACH_RISK_LEVEL_LABEL, DATA_BREACH_STATUS_LABEL,
 } from "@/types/extended";
 import { useDataBreachRecords } from "@/hooks/use-data-breach-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -390,6 +391,11 @@ export default function DataBreachLogPage() {
         preventive action. The register is reviewed monthly by the Registered Manager and quarterly
         by the Responsible Individual.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

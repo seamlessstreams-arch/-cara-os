@@ -34,6 +34,7 @@ import {
   User, Calendar, Quote, Sparkles, Loader2, Eye, Mic,
   BookOpen, Shield, Target, Lightbulb, Puzzle, Brain,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -624,6 +625,11 @@ export default function VoiceOfTheChildPage() {
         open={showNew}
         onClose={() => setShowNew(false)}
         onSave={handleCreate}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

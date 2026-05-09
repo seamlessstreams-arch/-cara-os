@@ -20,6 +20,7 @@ import { usePostIncidentChildDebriefs } from "@/hooks/use-post-incident-child-de
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { PostIncidentChildDebrief, ChildDebriefMethod } from "@/types/extended";
 import { CHILD_DEBRIEF_METHOD_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -394,6 +395,11 @@ export default function PostIncidentDebriefWithChildPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -25,6 +25,7 @@ import {
 import { useNightChecks } from "@/hooks/use-night-checks";
 import type { NightCheck, NightCheckSleepStatus, NightCheckType, DoorPosition } from "@/types/extended";
 import { NIGHT_CHECK_SLEEP_STATUS_LABEL, NIGHT_CHECK_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -312,6 +313,11 @@ export default function NightChecksPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -16,6 +16,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NightCheckStatus, NightLogEntry } from "@/types/extended";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -282,6 +283,11 @@ export default function NightLogPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

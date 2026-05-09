@@ -19,6 +19,7 @@ import { getYPName } from "@/lib/seed-data";
 import type { AnnualOutcome, AnnualOutcomeDomain } from "@/types/extended";
 import { useAnnualOutcomes } from "@/hooks/use-annual-outcomes";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -276,6 +277,11 @@ export default function AnnualOutcomesReportPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

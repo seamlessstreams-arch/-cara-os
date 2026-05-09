@@ -41,6 +41,7 @@ import {
   PEER_ENTRY_TYPE_LABEL,
   PEER_GROUP_ATMOSPHERE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ──────────────────────────────────────────────────────── */
 
@@ -400,6 +401,11 @@ export default function PeerRelationshipsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

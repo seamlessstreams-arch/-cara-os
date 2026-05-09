@@ -22,6 +22,7 @@ import { useSignificantEvents, useCreateSignificantEvent } from "@/hooks/use-sig
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { SigEventCategory, SigEventSeverity, SigEventNotifyStatus, SignificantEvent } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 
 const CATEGORY_META: Record<SigEventCategory, { label: string; icon: React.ReactNode; color: string }> = {
@@ -382,6 +383,11 @@ export default function SignificantEventsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

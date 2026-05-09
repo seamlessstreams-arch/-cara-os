@@ -16,6 +16,7 @@ import {
 import { useLoneWorkingRiskAssessments } from "@/hooks/use-lone-working-risk-assessments";
 import type { LoneWorkingRiskAssessment, LWRAOverallRisk, LWRAScenario, LWRATraining } from "@/types/extended";
 import { LWRA_OVERALL_RISK_LABEL, LWRA_APPROVED_SHIFT_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -307,6 +308,11 @@ export default function LoneWorkingRiskAssessmentPage() {
           minimum, or when role/circumstances change.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

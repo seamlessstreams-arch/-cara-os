@@ -24,6 +24,7 @@ import {
 import { useChildDailySummaries, type ChildDailySummaryEnriched } from "@/hooks/use-daily-summaries";
 import { CARE_EVENT_CATEGORY_LABEL } from "@/types/care-events";
 import { formatDate } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Mood indicator ────────────────────────────────────────────────────────────
 
@@ -255,6 +256,11 @@ export default function ChildDailySummariesPage() {
           ))}
         </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

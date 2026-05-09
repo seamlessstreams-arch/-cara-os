@@ -35,6 +35,7 @@ import {
   REG35_NOTIFICATION_METHOD_LABEL,
   REG35_OFSTED_RESPONSE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 
@@ -316,6 +317,11 @@ export default function Reg35NotificationsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

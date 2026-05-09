@@ -29,6 +29,7 @@ import type { ExtracurricularClubRecord } from "@/types/extended";
 import { EXTRACURRICULAR_CATEGORY_LABEL, CLUB_SOCIAL_FIT_LABEL } from "@/types/extended";
 import type { ExtracurricularCategory, ClubSocialFit } from "@/types/extended";
 import { useExtracurricularClubRecords } from "@/hooks/use-extracurricular-club-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const categoryColour: Record<ExtracurricularCategory, string> = {
   sport: "bg-sky-100 text-sky-800",
@@ -424,6 +425,11 @@ export default function ChildExtracurricularClubsPage() {
           engagement is captured once and surfaced where relevant.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

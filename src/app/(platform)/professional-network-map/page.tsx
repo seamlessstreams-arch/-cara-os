@@ -24,6 +24,7 @@ import { useProfessionalNetworkContacts } from "@/hooks/use-professional-network
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { ProfessionalNetworkContact, NetworkContactFrequency } from "@/types/extended";
 import { NETWORK_CONTACT_FREQUENCY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -267,6 +268,11 @@ export default function ProfessionalNetworkMapPage() {
           <strong>Quality Standard 1 — Child-centred care</strong> — Each child&apos;s professional network must be clearly documented and kept up to date. Effective multi-agency working requires that all professionals involved in a child&apos;s care are known to staff, that contact is maintained at the agreed frequency, and that roles and responsibilities are clearly understood by the whole team.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

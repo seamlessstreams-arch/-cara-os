@@ -33,6 +33,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useLgbtqInclusionRecords } from "@/hooks/use-lgbtq-inclusion-records";
 import type { LgbtqInclusionRecord, OutStatus } from "@/types/extended";
 import { OUT_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
@@ -368,6 +369,11 @@ export default function LGBTQInclusionRecordPage() {
           young person.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

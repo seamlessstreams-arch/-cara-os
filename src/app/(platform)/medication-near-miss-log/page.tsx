@@ -21,6 +21,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useMedicationNearMisses } from "@/hooks/use-medication-near-misses";
 import type { MedicationNearMiss, NearMissType, NearMissRiskGrade } from "@/types/extended";
 import { NEAR_MISS_TYPE_LABEL, NEAR_MISS_RISK_GRADE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -298,6 +299,11 @@ export default function MedicationNearMissLogPage() {
           learning is shared with the placing authorities&apos; safeguarding networks where appropriate.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

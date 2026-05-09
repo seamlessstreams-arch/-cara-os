@@ -30,6 +30,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useRoomAllocationRecords } from "@/hooks/use-room-allocation-records";
 import type { RoomAllocationRecord } from "@/types/extended";
 import { ROOM_ALLOCATION_SUITABILITY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── page ────────────────────────────────────────────────────────────── */
 
@@ -341,6 +342,11 @@ export default function RoomAllocationRationalePage() {
           Checklist.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

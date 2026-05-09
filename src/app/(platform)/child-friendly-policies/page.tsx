@@ -30,6 +30,7 @@ import type { ChildFriendlyPolicy } from "@/types/extended";
 import { POLICY_AREA_LABEL, POLICY_AUDIENCE_AGE_LABEL, POLICY_FORMAT_LABEL } from "@/types/extended";
 import type { PolicyArea, PolicyFormat } from "@/types/extended";
 import { useChildFriendlyPolicies } from "@/hooks/use-child-friendly-policies";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── config ──────────────────────────────────────────────────────────────────
 const areaIcons: Record<string, typeof BookOpen> = {
@@ -316,6 +317,11 @@ export default function ChildFriendlyPoliciesPage() {
           reviewed in children&apos;s meetings. Provided in accessible formats per Equality Act 2010.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

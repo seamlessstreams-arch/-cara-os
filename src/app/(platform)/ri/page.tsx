@@ -31,6 +31,7 @@ import {
   CheckCircle2, ChevronRight, TrendingUp, BookOpen, Gavel,
   Building2, Sparkles, Eye, Award, Zap,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 
 // ── Score pill ─────────────────────────────────────────────────────────────────
@@ -343,6 +344,11 @@ export default function RiHubPage() {
         </div>
 
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

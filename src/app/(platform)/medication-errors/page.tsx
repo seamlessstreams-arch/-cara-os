@@ -39,6 +39,7 @@ import type {
   MedRemedialAction,
   MedicationError,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -640,6 +641,11 @@ export default function MedicationErrorsPage() {
         open={showNewDialog}
         onClose={() => setShowNewDialog(false)}
         onSubmit={handleCreate}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

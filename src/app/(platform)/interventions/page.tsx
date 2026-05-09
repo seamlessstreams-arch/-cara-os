@@ -37,6 +37,7 @@ import {
   Target, TrendingUp, TrendingDown, Minus, Eye, User, Calendar,
   Sparkles, FileText, LinkIcon, Loader2, RefreshCw, X,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -869,6 +870,11 @@ export default function InterventionsPage() {
         open={showNew}
         onClose={() => setShowNew(false)}
         onSave={handleCreate}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

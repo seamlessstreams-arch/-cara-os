@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { useComplaintTrends } from "@/hooks/use-complaint-trends";
 import type { ComplaintTrend } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 export default function ComplaintsTrendAnalysisPage() {
   const { data: res, isLoading } = useComplaintTrends();
@@ -301,6 +302,11 @@ export default function ComplaintsTrendAnalysisPage() {
           authorities. Children&apos;s complaints are tracked separately to ensure their voice is amplified.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

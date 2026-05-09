@@ -25,6 +25,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useInventoryItems, useCreateInventoryItem } from "@/hooks/use-inventory-items";
 import type { InventoryItem, InventoryCategory, InventoryCondition, InventoryLocation } from "@/types/extended";
 import { INVENTORY_CATEGORY_LABEL, INVENTORY_CONDITION_LABEL, INVENTORY_LOCATION_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -420,6 +421,11 @@ export default function InventoryPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

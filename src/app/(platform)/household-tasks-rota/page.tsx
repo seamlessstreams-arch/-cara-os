@@ -31,6 +31,7 @@ import type { HouseholdTask, TaskCategory, SupportLevel } from "@/types/extended
 import { TASK_CATEGORY_LABEL, TASK_FREQUENCY_LABEL, SUPPORT_LEVEL_LABEL } from "@/types/extended";
 import { useHouseholdTasks } from "@/hooks/use-household-tasks";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function supportColour(s: SupportLevel): string {
@@ -349,6 +350,11 @@ export default function HouseholdTasksRotaPage() {
           Pocket Money agreements, Pathway Plans, and Key-Work records. Staff: {getStaffName("staff_darren")}, {getStaffName("staff_anna")}.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

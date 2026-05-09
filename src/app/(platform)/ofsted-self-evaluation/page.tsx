@@ -24,6 +24,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useSelfEvaluationAreas } from "@/hooks/use-self-evaluation-areas";
 import type { SelfEvaluationArea, SelfEvaluationGrade } from "@/types/extended";
 import { SELF_EVALUATION_GRADE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 const d = (n: number) => {
@@ -405,6 +406,11 @@ export default function OfstedSelfEvaluationPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

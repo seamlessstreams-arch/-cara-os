@@ -28,6 +28,7 @@ import type { ClothingAllowanceRecord, ClothingPurchaseCategory, ClothingPurchas
 import { CLOTHING_PURCHASE_CATEGORY_LABEL } from "@/types/extended";
 import { useClothingAllowanceRecords, useCreateClothingAllowanceRecord } from "@/hooks/use-clothing-allowance-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
@@ -343,6 +344,11 @@ export default function ClothingAllowancesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

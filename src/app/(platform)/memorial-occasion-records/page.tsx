@@ -17,6 +17,7 @@ import {
 import { useMemorialOccasionRecords } from "@/hooks/use-memorial-occasion-records";
 import type { MemorialOccasionRecord, MemorialOccasionType } from "@/types/extended";
 import { MEMORIAL_OCCASION_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const occasionColour: Record<MemorialOccasionType, string> = {
   bereavement_death: "bg-purple-100 text-purple-800",
@@ -225,6 +226,11 @@ export default function MemorialOccasionRecordsPage() {
           and Loss Support, Placement Anniversaries, Trauma-Informed Timeline, and Cultural Identity.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

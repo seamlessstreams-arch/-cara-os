@@ -37,6 +37,7 @@ import {
   EQUALITY_INITIATIVE_STATUS_LABEL,
   PROTECTED_CHARACTERISTIC_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -337,6 +338,11 @@ export default function EqualityDiversityPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

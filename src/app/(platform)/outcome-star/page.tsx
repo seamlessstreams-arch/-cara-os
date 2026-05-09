@@ -16,6 +16,7 @@ import { useOutcomeStarAssessments } from "@/hooks/use-outcome-star-assessments"
 import type { OutcomeStarAssessment, OutcomeStarDomain } from "@/types/extended";
 import { OUTCOME_STAR_DOMAIN_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -208,6 +209,11 @@ export default function OutcomeStarPage() {
           <p>The Outcome Star is a collaborative assessment tool completed with the young person. Each domain is scored 1-10, where 1 indicates significant concern and 10 indicates the young person is thriving. Assessments should be completed quarterly and at key transition points. The child&apos;s voice is central — scores should reflect both the professional assessment and the child&apos;s own perception. Progress (and regression) across domains informs care planning, LAC reviews, and Reg 45 quality reporting. Trends over time are more meaningful than individual scores.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

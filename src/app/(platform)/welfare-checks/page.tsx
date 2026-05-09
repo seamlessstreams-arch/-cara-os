@@ -31,6 +31,7 @@ import {
 import { Input } from "@/components/ui/input";
 import type { WelfareCheckRound, WelfareCheckStatus } from "@/types/extended";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Status config ───────────────────────────────────────────────────────────
 
@@ -750,6 +751,11 @@ export default function WelfareChecksPage() {
           and Reg 44 visits.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -22,6 +22,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { cn, todayStr, formatDate } from "@/lib/utils";
 import { ROLE_LABELS } from "@/lib/constants";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STAFF_EXPORT_COLS: ExportColumn<StaffEnriched>[] = [
   { header: "Name", accessor: (s) => s.full_name },
@@ -435,6 +436,11 @@ export default function StaffPage() {
           </div>
         </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

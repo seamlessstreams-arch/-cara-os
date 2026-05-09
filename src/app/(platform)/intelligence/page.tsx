@@ -37,6 +37,7 @@ import { ActionOutcomeUpdateModal } from "@/components/intelligence/action-outco
 import { useAuthContext } from "@/contexts/auth-context";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ─── Skeleton helpers ─────────────────────────────────────────────────────────
 
@@ -1208,6 +1209,11 @@ export default function IntelligenceHubPage() {
         {/* ARIA Pattern Scanner — full width */}
         <AriaPatternScanSection />
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

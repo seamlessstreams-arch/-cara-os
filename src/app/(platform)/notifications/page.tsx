@@ -33,6 +33,7 @@ import {
   GraduationCap, Heart, Eye, Loader2, Zap,
   ExternalLink,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -370,6 +371,11 @@ export default function NotificationsPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

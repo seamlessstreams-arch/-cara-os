@@ -15,6 +15,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useSupervisionMatrixRecords } from "@/hooks/use-supervision-matrix-records";
 import type { SupervisionMatrixRecord, SupervisionMatrixStatus } from "@/types/extended";
 import { SUPERVISION_MATRIX_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -336,6 +337,11 @@ export default function SupervisionMatrixPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

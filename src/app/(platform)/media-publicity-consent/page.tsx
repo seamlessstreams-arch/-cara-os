@@ -17,6 +17,7 @@ import {
 import { useMediaPublicityConsents } from "@/hooks/use-media-publicity-consents";
 import type { MediaPublicityConsent, MediaConsentCategory, ChildConsentResponse } from "@/types/extended";
 import { MEDIA_CONSENT_CATEGORY_LABEL, CHILD_CONSENT_RESPONSE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const consentColour: Record<ChildConsentResponse, string> = {
   yes_explicit: "bg-green-100 text-green-800",
@@ -266,6 +267,11 @@ export default function MediaPublicityConsentPage() {
           for any external use. Linked to Photo Consent, Personal Belongings, and Children&apos;s Pledges.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

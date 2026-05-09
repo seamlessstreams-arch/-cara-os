@@ -23,6 +23,7 @@ import {
   STAFF_COMMS_CONTACT_METHOD_LABEL,
   STAFF_COMMS_FEEDBACK_STYLE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ───────────────────────────────────────────────────── */
 
@@ -312,6 +313,11 @@ export default function StaffCommunicationPreferencesPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

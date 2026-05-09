@@ -21,6 +21,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { usePositiveHandling } from "@/hooks/use-positive-handling";
 import type { PositiveHandlingPlan, PHPDeEscalation, PHPPhysicalResponse } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function PositiveHandlingPage() {
@@ -270,6 +271,11 @@ export default function PositiveHandlingPage() {
           in the restraint log.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

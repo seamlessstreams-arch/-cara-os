@@ -27,6 +27,7 @@ import type { HealthMonitoringEntry, HealthMonitoringType, HealthMonitoringStatu
 import { HEALTH_MONITORING_TYPE_LABEL, HEALTH_MONITORING_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -285,6 +286,11 @@ export default function HealthMonitoringPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

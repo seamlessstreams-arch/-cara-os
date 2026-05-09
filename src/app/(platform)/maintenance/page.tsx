@@ -25,6 +25,7 @@ import type { MaintenanceItem } from "@/types/extended";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 type MaintenanceStatus = "open" | "scheduled" | "completed";
 type MaintenancePriority = "urgent" | "high" | "medium" | "low";
@@ -511,7 +512,12 @@ export default function MaintenancePage() {
             water hygiene) are current. Ofsted will review maintenance logs during inspection.
           </div>
         </div>
-      </PageShell>
+        <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
+    </PageShell>
 
       {/* Log Issue Modal */}
       {showLog && (

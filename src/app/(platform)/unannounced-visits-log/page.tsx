@@ -25,6 +25,7 @@ import {
   UNANNOUNCED_VISIT_TYPE_LABEL,
   UNANNOUNCED_VISIT_OVERALL_ASSESSMENT_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -392,6 +393,11 @@ export default function UnannouncedVisitsLogPage() {
         </Card>
 
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -20,6 +20,7 @@ import type { PhotoIdRecord, PhotoIdType, PhotoIdStatus } from "@/types/extended
 import { PHOTO_ID_TYPE_LABEL, PHOTO_ID_STATUS_LABEL } from "@/types/extended";
 import { usePhotoIdRecords } from "@/hooks/use-photo-id-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ──────────────────────────────────────────────────────────── */
 
@@ -332,6 +333,11 @@ export default function ChildPhotoIdApplicationTrackerPage() {
           <p>Photo ID provision for looked-after children and care leavers is recorded under the Care Leavers (England) Regulations 2010 and section 23B(8) of the Children Act 1989, which places a duty on the local authority (as corporate parent) to assist care leavers in obtaining identity documents. The CitizenCard free-for-care-leavers scheme provides PASS-accredited photo ID at no cost. Photo Voter ID provision aligns with the Elections Act 2022 — a Citizen Card or passport is an accepted form. Pathway Plan reviews ensure ID is in place before a young person needs it for voting, banking, travel or employment. The work supports UNCRC Article 7 (right to identity registration) and Article 8 (preserving identity). Without ID, looked-after children disproportionately face barriers to voting, banking, accessing healthcare records, travel, employment and housing — this tracker exists to prevent that.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

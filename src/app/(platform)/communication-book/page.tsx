@@ -32,6 +32,7 @@ import {
   useCreateCommunicationBookEntry,
 } from "@/hooks/use-communication-book-entries";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -279,6 +280,11 @@ export default function CommunicationBookPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

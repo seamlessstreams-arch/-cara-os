@@ -39,6 +39,7 @@ import {
   ShieldAlert,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const ragClasses = (r: RagRating) => {
   switch (r) {
@@ -351,6 +352,11 @@ export default function CaseFileAuditPage() {
         <p>Quality Standard 13 (the leadership and management standard) requires the registered manager to lead and manage the home effectively, including the quality assurance of records and care planning for each child.</p>
         <p>Regulation 36 (records about children) requires accurate, current and retained case file records. Routine case file audits provide evidence that children&apos;s records meet these standards and that gaps generate timely action.</p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

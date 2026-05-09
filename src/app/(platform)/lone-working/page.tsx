@@ -25,6 +25,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useLoneWorkingRecords } from "@/hooks/use-lone-working-records";
 import type { LoneWorkingRecord, LoneWorkingScenario, LoneWorkingRiskLevel, LoneWorkingAssessmentStatus } from "@/types/extended";
 import { LONE_WORKING_SCENARIO_LABEL, LONE_WORKING_RISK_LEVEL_LABEL, LONE_WORKING_ASSESSMENT_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -151,6 +152,11 @@ export default function LoneWorkingPage() {
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Assessment</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

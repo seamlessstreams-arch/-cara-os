@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useNotificationLog } from "@/hooks/use-notification-log";
 import type { NotificationLogEntry } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const RECIPIENTS = ["Ofsted", "Placing Authority", "LADO", "Police"] as const;
 
@@ -373,6 +374,11 @@ export default function NotificationLogPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

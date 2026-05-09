@@ -37,6 +37,7 @@ import {
   Shield, Lightbulb, Sparkles, CheckCircle2, Clock, AlertTriangle,
   ChevronRight, Loader2, Eye, Search, ArrowUpDown,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const OUTCOME_EXPORT_COLS: ExportColumn<OutcomeTarget>[] = [
   { header: "Young Person", accessor: (t) => getYPName(t.child_id) },
@@ -1134,6 +1135,11 @@ export default function OutcomesPage() {
         open={showNewTarget}
         onClose={() => setShowNewTarget(false)}
         childIds={childIds}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

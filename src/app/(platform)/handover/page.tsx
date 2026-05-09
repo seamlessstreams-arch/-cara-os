@@ -28,6 +28,7 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { ShiftSummaryCard } from "@/components/dashboard/shift-summary-card";
 import { AriaHandoverBuilder } from "@/components/handover/aria-handover-builder";
 import { HandoverPrintContext } from "@/components/handover/handover-print-context";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const HANDOVER_EXPORT_COLS: ExportColumn<HandoverEntry>[] = [
   { header: "Shift Date", accessor: (h) => h.shift_date },
@@ -1180,6 +1181,11 @@ export default function HandoverPage() {
         <HandoverPrintContext incomingStaffIds={latest.incoming_staff} />
       )}
       </div>{/* close #handover-content */}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

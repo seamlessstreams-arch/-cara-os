@@ -23,6 +23,7 @@ import type { Shift } from "@/types";
 import { useCreateLeave } from "@/hooks/use-leave";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 type Tab = "timesheets" | "clock" | "overtime" | "payroll";
 type WeekFilter = "this_week" | "last_week" | "this_month";
@@ -715,6 +716,11 @@ export default function TimesheetsPage() {
           )}
         </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

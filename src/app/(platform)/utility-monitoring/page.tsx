@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useUtilityMonitoringRecords } from "@/hooks/use-utility-monitoring-records";
 import type { UtilityMonitoringRecord, UtilityMonitoringType } from "@/types/extended";
 import { UTILITY_MONITORING_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (icons / colours — not serialisable) ─────────────────── */
 
@@ -186,6 +187,11 @@ export default function UtilityMonitoringPage() {
           <p>Children&apos;s home utility costs are monitored monthly as part of the home&apos;s financial management. Readings are submitted to the finance team for budget tracking. Significant variances (±10%) must be investigated and explained. Energy efficiency measures should be implemented where practical. Contract renewals are managed centrally with quotes obtained at least 3 months before expiry. Smart meters are installed where available for accurate monitoring. Young people are encouraged to understand utility usage as part of independence skills development.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

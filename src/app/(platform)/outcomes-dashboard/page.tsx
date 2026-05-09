@@ -19,6 +19,7 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { useOutcomeMetrics } from "@/hooks/use-outcome-metrics";
 import type { OutcomeMetric, OutcomeSCCIFArea, OutcomeDashboardDomain, OutcomeTrend, OutcomeRAG } from "@/types/extended";
 import { OUTCOME_SCCIF_AREA_LABEL, OUTCOME_DASHBOARD_DOMAIN_LABEL, OUTCOME_TREND_LABEL, OUTCOME_RAG_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -365,6 +366,11 @@ export default function OutcomesDashboardPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

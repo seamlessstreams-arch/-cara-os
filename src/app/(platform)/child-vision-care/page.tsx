@@ -26,6 +26,7 @@ import {
 } from "@/types/extended";
 import { useVisionCareRecords } from "@/hooks/use-vision-care-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -429,6 +430,11 @@ export default function ChildVisionCarePage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

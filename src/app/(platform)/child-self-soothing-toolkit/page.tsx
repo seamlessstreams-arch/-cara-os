@@ -23,6 +23,7 @@ import type { SelfSoothingToolkit, ArousalState, WindowOfTolerance, ToolkitEffec
 import { AROUSAL_STATE_LABEL, WINDOW_OF_TOLERANCE_LABEL, TOOLKIT_EFFECTIVENESS_LABEL } from "@/types/extended";
 import { useSelfSoothingToolkits } from "@/hooks/use-self-soothing-toolkits";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour helpers ────────────────────────────────────────────────────── */
 
@@ -384,6 +385,11 @@ export default function ChildSelfSoothingToolkitPage() {
         and 7 (Positive Relationships), and gives effect to UNCRC Article 12 — the child&apos;s right to be heard in
         decisions affecting them. Toolkits must be reviewed regularly and updated as the child&apos;s needs evolve.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

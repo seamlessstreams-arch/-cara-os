@@ -25,6 +25,7 @@ import { useIndependencePathways } from "@/hooks/use-independence-pathways";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependencePathway, IndependencePathwayStatus } from "@/types/extended";
 import { INDEPENDENCE_PATHWAY_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -398,6 +399,11 @@ export default function IndependencePathwayPage() {
           </ul>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

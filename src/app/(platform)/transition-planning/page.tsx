@@ -29,6 +29,7 @@ import {
   GraduationCap, Home, Briefcase, Heart, Shield, Wallet, Users,
   AlertTriangle, CheckCircle2, Clock, Target, Calendar, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Local config ────────────────────────────────────────────────────────────
 const AREA_META: Record<TransitionPlanningArea, { icon: React.ReactNode; color: string }> = {
@@ -407,6 +408,11 @@ export default function TransitionPlanningPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -32,6 +32,7 @@ import {
   DIGITAL_LITERACY_COMPETENCY_LABEL,
 } from "@/types/extended";
 import { useDigitalLiteracySkillRecords } from "@/hooks/use-digital-literacy-skill-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -374,6 +375,11 @@ export default function DigitalLiteracySkillsPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

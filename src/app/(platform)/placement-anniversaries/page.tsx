@@ -29,6 +29,7 @@ import type { PlacementAnniversaryEntry } from "@/types/extended";
 import { ANNIVERSARY_SIGNIFICANCE_TYPE_LABEL, ANNIVERSARY_EMOTIONAL_SIGNIFICANCE_LABEL, ANNIVERSARY_RECURRENCE_LABEL } from "@/types/extended";
 import { usePlacementAnniversaryEntries } from "@/hooks/use-placement-anniversary-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const significanceColour: Record<string, string> = {
   celebratory: "bg-green-100 text-green-800",
@@ -296,6 +297,11 @@ export default function PlacementAnniversariesPage() {
           changes. Linked to Personal Passport, Trauma-Informed Timeline, and Bedtime Routines.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

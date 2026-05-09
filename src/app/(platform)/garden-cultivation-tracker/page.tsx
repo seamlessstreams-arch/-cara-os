@@ -31,6 +31,7 @@ import {
 import type { GardenPlotRecord, GardenPlanting, GardenPlotLocation, CropStatus } from "@/types/extended";
 import { GARDEN_PLOT_LOCATION_LABEL, CROP_STATUS_LABEL } from "@/types/extended";
 import { useGardenPlotRecords } from "@/hooks/use-garden-plot-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 
 const statusColour: Record<CropStatus, string> = {
@@ -380,6 +381,11 @@ export default function GardenCultivationTrackerPage() {
           Sensory Profiles, Cultural Identity and Outcomes pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

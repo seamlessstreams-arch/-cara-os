@@ -31,6 +31,7 @@ import {
   STAFF_INDUCTION_PHASE_LABEL,
   STAFF_INDUCTION_TASK_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (icons not serializable) ────────────────────────────── */
 
@@ -275,6 +276,11 @@ export default function StaffInductionPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

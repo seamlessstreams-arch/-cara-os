@@ -31,6 +31,7 @@ import { usePreAdmissionChecklists } from "@/hooks/use-pre-admission-checklists"
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { PreAdmissionChecklist, PreAdmissionStatus } from "@/types/extended";
 import { PRE_ADMISSION_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── export columns ──────────────────────────────────────────────────────────
 const exportCols: ExportColumn<PreAdmissionChecklist>[] = [
@@ -276,6 +277,11 @@ export default function PreAdmissionChecklistPage() {
           matching consideration per Quality Standard 14 guidance.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

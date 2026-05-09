@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { useMultiDisciplinaryFormulations } from "@/hooks/use-multi-disciplinary-formulations";
 import type { MultiDisciplinaryFormulation, FormulationModel } from "@/types/extended";
 import { FORMULATION_MODEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -290,6 +291,11 @@ export default function MultiDisciplinaryFormulationPage() {
         <strong>Regulatory and professional standards:</strong>{" "}
         Multi-disciplinary formulation aligns with the British Psychological Society&apos;s Good Practice Guidelines on the Use of Psychological Formulation (BPS, 2011) and underpins NICE-recommended care planning for children with mental health and developmental needs.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -27,6 +27,7 @@ import type { Task } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const TASK_EXPORT_COLS: ExportColumn<Task>[] = [
   { header: "Title", accessor: (t) => t.title },
@@ -535,6 +536,11 @@ export default function TasksPage() {
           </div>
         )}
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -15,6 +15,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { BehaviourMappingType, BMIntensity, BMTimeOfDay, BehaviourMapEntry } from "@/types/extended";
 import { useBehaviourMapEntries } from "@/hooks/use-behaviour-map-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -272,6 +273,11 @@ export default function BehaviourMappingPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

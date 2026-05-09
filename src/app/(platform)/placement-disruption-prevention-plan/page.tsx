@@ -22,6 +22,7 @@ import type { DisruptionPreventionPlan, DisruptionRiskLevel } from "@/types/exte
 import { DISRUPTION_RISK_LEVEL_LABEL } from "@/types/extended";
 import { useDisruptionPreventionPlans } from "@/hooks/use-disruption-prevention-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ──────────────────────────────────────────────────────── */
 const RISK_LEVEL_ORDER: DisruptionRiskLevel[] = ["low", "building", "heightened", "acute"];
@@ -501,6 +502,11 @@ export default function PlacementDisruptionPreventionPlanPage() {
           signs, or stability factors change.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

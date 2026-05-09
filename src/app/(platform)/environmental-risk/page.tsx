@@ -38,6 +38,7 @@ import {
   ENV_ASSESSMENT_STATUS_LABEL,
 } from "@/types/extended";
 import { useEnvironmentalRisks, useCreateEnvironmentalRisk } from "@/hooks/use-environmental-risks";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── label / colour maps ──────────────────────────────────────────────── */
 
@@ -351,6 +352,11 @@ export default function EnvironmentalRiskPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

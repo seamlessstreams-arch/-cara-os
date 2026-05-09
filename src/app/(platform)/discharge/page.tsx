@@ -36,6 +36,7 @@ import {
 } from "@/types/extended";
 import { useDischargeRecords, useCreateDischargeRecord } from "@/hooks/use-discharge-records";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local helpers ─────────────────────────────────────────────────────── */
 
@@ -448,6 +449,11 @@ export default function DischargePage() {
       </Dialog>
       </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

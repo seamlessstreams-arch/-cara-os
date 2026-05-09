@@ -37,6 +37,7 @@ import {
   PROPERTY_REPAIR_STATUS_LABEL,
   PROPERTY_LOCATION_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ───────────────────────────────────────────────────── */
 
@@ -203,6 +204,11 @@ export default function PropertyDamagePage() {
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Record</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

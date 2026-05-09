@@ -30,6 +30,7 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<PlacementImpactAssessment>[] = [
@@ -439,6 +440,11 @@ export default function PlacementImpactAssessmentPage() {
           must be sought (where appropriate) as part of this assessment.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

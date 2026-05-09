@@ -28,6 +28,7 @@ import { useOccupationalTherapyRecords } from "@/hooks/use-occupational-therapy-
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { OccupationalTherapyRecord, OtSessionType, OtRecommendation } from "@/types/extended";
 import { OT_SESSION_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -519,6 +520,11 @@ export default function OccupationalTherapyRecordsPage() {
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 mb-6">
         <strong>Quality Standard 7 — The Health and Wellbeing Standard:</strong> Children must be supported to access all health services they need, including specialist therapies. OT recommendations must be implemented consistently across the staff team, equipment provided as advised, and progress reviewed at agreed intervals. Sensory needs identified by an OT are clinical recommendations, not optional preferences — staff must be trained, supported and held accountable for implementation.
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

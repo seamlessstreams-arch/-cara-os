@@ -28,6 +28,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { formatDate } from "@/lib/utils";
 import { FILING_CATEGORY_LABEL, type FilingCategory } from "@/types/care-events";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Category filter tabs ──────────────────────────────────────────────────────
 
@@ -312,6 +313,11 @@ export default function FilingCabinetPage() {
           ))}
         </div>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

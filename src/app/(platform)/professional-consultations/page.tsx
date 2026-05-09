@@ -21,6 +21,7 @@ import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   Calendar, AlertTriangle, Stethoscope, MessageSquare, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── local colour maps ───────────────────────────────────────────────────────
 const TYPE_COLOR: Record<ProfConsultationType, string> = {
@@ -273,6 +274,11 @@ export default function ProfessionalConsultationsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useMedicationErrorInvestigations } from "@/hooks/use-medication-error-investigations";
 import type { MedicationErrorInvestigation, MedInvSeverity, MedInvStatus } from "@/types/extended";
 import { MED_INV_ERROR_TYPE_LABEL, MED_INV_SEVERITY_LABEL, MED_INV_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const severityColour: Record<MedInvSeverity, string> = {
   no_harm: "bg-green-100 text-green-800",
@@ -113,6 +114,11 @@ export default function MedicationErrorInvestigationPage() {
         })}
       </div>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Medication errors investigated per CQC standards, NICE NG5, and Reg 40 (notification where required). Just-culture lens. Linked to Medication Near-Miss Log, MAR Sheet, and Lessons Learned Register.</p></div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

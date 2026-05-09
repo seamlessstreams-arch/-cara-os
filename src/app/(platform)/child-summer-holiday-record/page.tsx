@@ -29,6 +29,7 @@ import {
 import { useHolidayRecords } from "@/hooks/use-holiday-records";
 import type { HolidayRecord, HolidayPeriod } from "@/types/extended";
 import { HOLIDAY_PERIOD_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const periodColour: Record<HolidayPeriod, string> = {
   summer: "bg-amber-100 text-amber-800 border-amber-200",
@@ -338,6 +339,11 @@ export default function ChildSummerHolidayRecordPage() {
           consent, and the child&rsquo;s own headline of the memory is recorded in their words.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

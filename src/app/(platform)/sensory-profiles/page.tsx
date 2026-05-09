@@ -28,6 +28,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useSensoryProfileRecords } from "@/hooks/use-sensory-profile-records";
 import type { SensoryProfileRecord, SensoryDomain, SensoryResponsePattern, SensoryProfileStatus } from "@/types/extended";
 import { SENSORY_DOMAIN_LABEL, SENSORY_RESPONSE_PATTERN_LABEL, SENSORY_PROFILE_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -455,6 +456,11 @@ export default function SensoryProfilesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

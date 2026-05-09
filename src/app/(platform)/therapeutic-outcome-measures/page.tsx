@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 interface OutcomeMeasure {
   id: string;
@@ -472,6 +473,11 @@ export default function TherapeuticOutcomeMeasuresPage() {
           mental health professional. Linked to Therapeutic Input and Multi-Disciplinary Formulation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -26,6 +26,7 @@ import {
   CheckCircle2, Clock, Calendar, FileText, BookOpen,
   User, Users, PenLine, History, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -344,6 +345,11 @@ export default function PolicyReviewTrackerPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

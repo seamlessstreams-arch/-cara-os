@@ -27,6 +27,7 @@ import {
   STAFF_EXIT_INTERVIEW_REASON_LABEL,
   STAFF_EXIT_INTERVIEW_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ─────────────────────────────────────────────── */
 
@@ -393,6 +394,11 @@ export default function StaffExitInterviewsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

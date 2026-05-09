@@ -39,6 +39,7 @@ import {
   useContextualSafeguardingRisks,
   useCreateContextualSafeguardingRisk,
 } from "@/hooks/use-contextual-safeguarding-risks";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour / border maps (kept local) ────────────────────────────────────── */
 
@@ -232,6 +233,11 @@ export default function ContextualSafeguardingPage() {
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={handleSave} disabled={createMutation.isPending}>{createMutation.isPending ? "Saving…" : "Save Context"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

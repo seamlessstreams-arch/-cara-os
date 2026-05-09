@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const verdictColour: Record<PolicyReviewVerdict, string> = {
   working_as_intended: "bg-green-100 text-green-800",
@@ -306,6 +307,11 @@ export default function PolicyImpactAnalysisPage() {
           improvement principles. Linked to Policies, Child-Friendly Policies, and Lessons Learned Register.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -31,6 +31,7 @@ import {
   LADO_REFERRAL_STATUS_LABEL,
   LADO_STAFF_ACTION_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
@@ -320,6 +321,11 @@ export default function LADOReferralsPage() {
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Submit Referral</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

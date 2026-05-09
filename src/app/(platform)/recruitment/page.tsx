@@ -22,6 +22,7 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import type { CandidateDetail, CheckStatus, CheckType, ComplianceAlert, Vacancy } from "@/hooks/use-recruitment";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const CANDIDATE_EXPORT_COLS: ExportColumn<CandidateDetail>[] = [
   { header: "Name", accessor: (c) => `${c.first_name} ${c.last_name}` },
@@ -842,6 +843,11 @@ export default function RecruitmentPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
 
     {/* ── Add Candidate Modal ────────────────────────────────────────────────── */}

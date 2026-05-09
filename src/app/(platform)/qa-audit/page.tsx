@@ -25,6 +25,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useQaAuditRecords } from "@/hooks/use-qa-audit-records";
 import type { QAAuditRecord, QAAuditRating, QAAuditActionStatus } from "@/types/extended";
 import { QA_AUDIT_RATING_LABEL, QA_AUDIT_ACTION_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ───────────────────────────────────────────────────── */
 
@@ -296,6 +297,11 @@ export default function QAAuditPage() {
           </div>
         )}
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

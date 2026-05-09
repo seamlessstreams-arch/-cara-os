@@ -35,6 +35,7 @@ import {
   TRANSPORT_LOG_BEHAVIOUR_LABEL,
   TRANSPORT_LOG_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Local config ────────────────────────────────────────────────────────────
 
@@ -670,6 +671,11 @@ export default function TransportLogPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

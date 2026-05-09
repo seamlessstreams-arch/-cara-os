@@ -26,6 +26,7 @@ import {
 } from "@/types/extended";
 import { useSmokingVapingRecords } from "@/hooks/use-smoking-vaping-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
@@ -336,6 +337,11 @@ export default function ChildSmokingVapingTrackerPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

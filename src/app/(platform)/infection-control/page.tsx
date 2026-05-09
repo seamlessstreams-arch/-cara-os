@@ -25,6 +25,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useInfectionRecords } from "@/hooks/use-infection-records";
 import type { InfectionRecord, InfectionType, InfectionSeverity, InfectionStatus } from "@/types/extended";
 import { INFECTION_TYPE_LABEL, INFECTION_SEVERITY_LABEL, INFECTION_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── colour maps ─────────────────────────────────────────────────────────── */
 
@@ -334,6 +335,11 @@ export default function InfectionControlPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -31,6 +31,7 @@ import {
   WELLBEING_PULSE_TREND_LABEL,
   WELLBEING_PULSE_DIMENSION_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 const d = (n: number) => {
@@ -445,6 +446,11 @@ export default function WellbeingPulseSurveyPage() {
           Reg 44 visitors. Patterns across surveys feed into care plan reviews and key work planning.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

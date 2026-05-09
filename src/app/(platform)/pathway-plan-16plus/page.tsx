@@ -23,6 +23,7 @@ import { usePathwayPlans } from "@/hooks/use-pathway-plans";
 import type { PathwayPlan, PathwayPlanStatus, PathwaySkillLevel } from "@/types/extended";
 import { PATHWAY_PLAN_STATUS_LABEL, PATHWAY_SKILL_LEVEL_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -478,6 +479,11 @@ export default function PathwayPlan16PlusPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

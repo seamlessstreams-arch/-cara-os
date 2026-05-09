@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useNightStaffGuidance } from "@/hooks/use-night-staff-guidance";
 import type { NightStaffGuidanceSection, GuidancePriority, GuidanceSectionKey } from "@/types/extended";
 import { GUIDANCE_PRIORITY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const PRI_CLR: Record<GuidancePriority, string> = {
   essential: "bg-red-100 text-red-800",
@@ -86,6 +87,11 @@ export default function NightStaffGuidancePage() {
           <p>This guidance document is reviewed monthly by the Registered Manager. Staff must sign to confirm they have read and understood updated guidance. This document supports compliance with Children&apos;s Homes (England) Regulations 2015 (Reg 12, 13, 23), Working Time Regulations 1998, and Lone Working Policy.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

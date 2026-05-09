@@ -29,6 +29,7 @@ import {
   STATUTORY_CHECK_CATEGORY_LABEL,
   STATUTORY_CHECK_FREQUENCY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours / icons not serializable) ────────────────────── */
 
@@ -376,6 +377,11 @@ export default function StatutoryChecksSummaryPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

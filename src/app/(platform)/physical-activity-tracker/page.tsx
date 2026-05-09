@@ -34,6 +34,7 @@ import {
 } from "@/types/extended";
 import { usePhysicalActivityEntries } from "@/hooks/use-physical-activity-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const categoryColour: Record<string, string> = {
   sport: "bg-red-100 text-red-800",
@@ -298,6 +299,11 @@ export default function PhysicalActivityTrackerPage() {
           </div>
         </>
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

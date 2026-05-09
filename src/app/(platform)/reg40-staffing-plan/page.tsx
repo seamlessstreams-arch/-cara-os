@@ -30,6 +30,7 @@ import { getStaffName } from "@/lib/seed-data";
 import { useReg40StaffEntries } from "@/hooks/use-reg40-staff-entries";
 import type { Reg40StaffEntry, Reg40QualStatus } from "@/types/extended";
 import { REG40_QUAL_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -499,6 +500,11 @@ export default function Reg40StaffingPlanPage() {
         </Card>
 
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

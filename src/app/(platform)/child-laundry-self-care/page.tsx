@@ -35,6 +35,7 @@ import {
 } from "@/types/extended";
 import { useLaundrySelfCareRecords } from "@/hooks/use-laundry-self-care-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function stageColour(stage: LaundryStage): string {
@@ -381,6 +382,11 @@ export default function ChildLaundrySelfCarePage() {
           Independence Skills Tracker and Daily Routines.
         </p>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

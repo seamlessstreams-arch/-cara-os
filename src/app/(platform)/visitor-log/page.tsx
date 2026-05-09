@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { useVisitors, useCreateVisitor } from "@/hooks/use-visitors";
 import type { VisitorCategory, VisitStatus, VisitorEntry } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -453,6 +454,11 @@ export default function VisitorLogPage() {
           onSuccess: () => { toast.success("Visitor signed in"); setShowNew(false); },
           onError: () => toast.error("Failed to sign in visitor"),
         })}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

@@ -36,6 +36,7 @@ import {
 } from "@/types/extended";
 import { useChildBankAccounts } from "@/hooks/use-child-bank-accounts";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -368,6 +369,11 @@ export default function ChildBankAccountPage() {
           <strong>Quality Standard 1 — child-centred care &amp; preparation for adulthood.</strong> Children&apos;s homes must support each looked-after child to have their own bank account where appropriate, build financial literacy aligned to their age and stage, and access entitlements such as the Junior ISA government top-up, Setting Up Home Allowance and care leaver bursaries. Money management is reviewed with the child, their views recorded, and the corporate parent acts as a responsible signatory until the young person is ready to act independently. Account credentials and full numbers are <em>never</em> stored in this system — only last-4 identifiers and labelled illustrative balances for review purposes.
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

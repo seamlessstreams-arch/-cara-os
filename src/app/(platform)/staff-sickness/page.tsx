@@ -34,6 +34,7 @@ import {
   STAFF_SICKNESS_ABSENCE_REASON_LABEL,
   STAFF_SICKNESS_RTW_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -293,6 +294,11 @@ export default function StaffSicknessPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

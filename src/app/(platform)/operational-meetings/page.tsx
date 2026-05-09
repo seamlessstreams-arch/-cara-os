@@ -19,6 +19,7 @@ import {
   Calendar, Heart, Smile, ShieldAlert, ClipboardList,
   Megaphone, Sparkles, MessageSquare, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Meta maps ───────────────────────────────────────────────────────────────
 
@@ -364,6 +365,11 @@ export default function OperationalMeetingsPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }
