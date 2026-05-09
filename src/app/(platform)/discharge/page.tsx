@@ -18,7 +18,7 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName, getStaffName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -28,6 +28,7 @@ import {
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   DischargeRecord,
+  DischargeReason,
   DischargePlanStatus,
 } from "@/types/extended";
 import {
@@ -87,6 +88,20 @@ export default function DischargePage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createDischarge = useCreateDischargeRecord();
+  const [dcForm, setDcForm] = useState({ child_id: "", reason: "reunification" as DischargeReason, planned_date: "", destination: "", social_worker: "", social_worker_contact: "", notes: "" });
+  const setDC = (k: string, v: unknown) => setDcForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreatePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dcForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!dcForm.planned_date) { toast.error("Planned date is required."); return; }
+    await createDischarge.mutateAsync({ child_id: dcForm.child_id, reason: dcForm.reason, status: "not_started", planned_date: dcForm.planned_date, actual_date: null, destination: dcForm.destination.trim(), destination_address: "", receiving_provider: null, social_worker: dcForm.social_worker.trim(), social_worker_contact: dcForm.social_worker_contact.trim(), key_worker: "staff_darren", checklist: [], transition_actions: [], risk_assessment_completed: false, belongings_returned: false, belongings_witnessed: null, exit_interview: { completed: false, date: null, conducted_by: null, child_views: "" }, aftercare_provision: [], stay_in_touch_plan: "", child_views: "", professional_views: "", notes: dcForm.notes.trim(), created_at: new Date().toISOString() });
+    toast.success("Discharge plan created.");
+    setDcForm({ child_id: "", reason: "reunification", planned_date: "", destination: "", social_worker: "", social_worker_contact: "", notes: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -403,48 +418,48 @@ export default function DischargePage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>New Discharge Plan</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
+          <form onSubmit={handleCreatePlan} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
-              <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
-                <SelectContent>{["yp_alex","yp_jordan","yp_casey"].map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
+              <label className="text-sm font-medium">Young Person *</label>
+              <Select value={dcForm.child_id} onValueChange={(v) => setDC("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium">Reason</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={dcForm.reason} onValueChange={(v) => setDC("reason", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(DISCHARGE_REASON_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Planned Date</label>
-                <input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
+                <label className="text-sm font-medium">Planned Date *</label>
+                <input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={dcForm.planned_date} onChange={(e) => setDC("planned_date", e.target.value)} />
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Destination</label>
-              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Supported Lodgings – 14 Maple Avenue" />
+              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Supported Lodgings – 14 Maple Avenue" value={dcForm.destination} onChange={(e) => setDC("destination", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium">Social Worker</label>
-                <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Name" />
+                <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Name" value={dcForm.social_worker} onChange={(e) => setDC("social_worker", e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium">SW Contact</label>
-                <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Email" />
+                <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Email" value={dcForm.social_worker_contact} onChange={(e) => setDC("social_worker_contact", e.target.value)} />
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Notes</label>
-              <textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Additional context…" />
+              <textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Additional context…" value={dcForm.notes} onChange={(e) => setDC("notes", e.target.value)} />
             </div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Create Plan</button>
-          </DialogFooter>
+            <DialogFooter>
+              <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button type="submit" disabled={createDischarge.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">{createDischarge.isPending ? "Saving…" : "Create Plan"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       </>

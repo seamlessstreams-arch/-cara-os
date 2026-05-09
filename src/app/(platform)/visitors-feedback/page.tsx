@@ -12,6 +12,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -22,7 +23,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useVisitorsFeedbackRecords } from "@/hooks/use-visitors-feedback-records";
+import { toast } from "sonner";
+import { useVisitorsFeedbackRecords, useCreateVisitorsFeedbackRecord } from "@/hooks/use-visitors-feedback-records";
 import type { VisitorsFeedbackRecord, VisitorsFeedbackRole } from "@/types/extended";
 import { VISITORS_FEEDBACK_ROLE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -65,6 +67,19 @@ export default function VisitorsFeedbackPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
+
+  const createFeedback = useCreateVisitorsFeedbackRecord();
+  const [vfForm, setVfForm] = useState({ visitor_name: "", visitor_role: "reg44" as VisitorsFeedbackRole, visit_date: new Date().toISOString().slice(0, 10), rating: "3", positives: "", concerns: "", suggestions: "", notes: "" });
+  const setVF = (k: string, v: unknown) => setVfForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!vfForm.visitor_name.trim()) { toast.error("Visitor name is required."); return; }
+    await createFeedback.mutateAsync({ visitor_name: vfForm.visitor_name.trim(), visitor_role: vfForm.visitor_role, visit_date: vfForm.visit_date, rating: parseInt(vfForm.rating) || 3, positives: vfForm.positives.split("\n").filter(Boolean), concerns: vfForm.concerns.split("\n").filter(Boolean), suggestions: vfForm.suggestions.split("\n").filter(Boolean), action_taken: null, responded_by: null, child_related: null, notes: vfForm.notes.trim() });
+    toast.success("Visitor feedback recorded.");
+    setVfForm({ visitor_name: "", visitor_role: "reg44", visit_date: new Date().toISOString().slice(0, 10), rating: "3", positives: "", concerns: "", suggestions: "", notes: "" });
+    setShowNew(false);
+  };
 
   const filtered = useMemo(() => {
     let list = [...entries];
@@ -356,15 +371,26 @@ export default function VisitorsFeedbackPage() {
           <DialogHeader>
             <DialogTitle>Record Visitor Feedback</DialogTitle>
           </DialogHeader>
-          <div className="py-6 text-center text-muted-foreground text-sm">
-            <MessageSquare className="h-10 w-10 mx-auto mb-3 text-blue-300" />
-            <p>Full form will capture visitor details, role,</p>
-            <p>rating, positives, concerns, suggestions,</p>
-            <p>and actions taken.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Close</Button>
-          </DialogFooter>
+          <form onSubmit={handleSaveFeedback} className="space-y-3 py-2">
+            <div><label className="text-sm font-medium">Visitor Name *</label><Input className="mt-1" placeholder="Full name" value={vfForm.visitor_name} onChange={(e) => setVF("visitor_name", e.target.value)} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm font-medium">Role</label>
+                <Select value={vfForm.visitor_role} onValueChange={(v) => setVF("visitor_role", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(VISITORS_FEEDBACK_ROLE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><label className="text-sm font-medium">Visit Date</label><Input type="date" className="mt-1" value={vfForm.visit_date} onChange={(e) => setVF("visit_date", e.target.value)} /></div>
+            </div>
+            <div><label className="text-sm font-medium">Rating (1–5)</label><Input type="number" min="1" max="5" className="mt-1" value={vfForm.rating} onChange={(e) => setVF("rating", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Positives</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={vfForm.positives} onChange={(e) => setVF("positives", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Concerns</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={vfForm.concerns} onChange={(e) => setVF("concerns", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Suggestions</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={vfForm.suggestions} onChange={(e) => setVF("suggestions", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Notes</label><Textarea className="mt-1" rows={2} placeholder="Additional notes…" value={vfForm.notes} onChange={(e) => setVF("notes", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createFeedback.isPending}>{createFeedback.isPending ? "Saving…" : "Save Feedback"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

@@ -15,14 +15,15 @@ import {
 import { cn } from "@/lib/utils";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Moon, Sun, Search, ArrowUpDown, X, Plus,
   AlertTriangle, Clock, Calendar,
   Eye, CloudMoon, BedDouble,
   Loader2, ChevronDown, ChevronUp,
 } from "lucide-react";
-import { useNightChecks } from "@/hooks/use-night-checks";
+import { useNightChecks, useCreateNightCheck } from "@/hooks/use-night-checks";
 import type { NightCheck, NightCheckSleepStatus, NightCheckType, DoorPosition } from "@/types/extended";
 import { NIGHT_CHECK_SLEEP_STATUS_LABEL, NIGHT_CHECK_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -87,6 +88,20 @@ export default function NightChecksPage() {
   const checks: NightCheck[] = res?.data ?? [];
 
   const [showNew, setShowNew] = useState(false);
+
+  const createNightCheck = useCreateNightCheck();
+  const [ncForm, setNcForm] = useState({ child_id: "", check_type: "scheduled" as NightCheckType, sleep_status: "sleeping" as NightCheckSleepStatus, door_position: "ajar" as DoorPosition, notes: "" });
+  const setNC = (k: string, v: unknown) => setNcForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveCheck = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ncForm.child_id) { toast.error("Please select a young person."); return; }
+    const now = new Date();
+    await createNightCheck.mutateAsync({ date: now.toISOString().slice(0, 10), time: now.toTimeString().slice(0, 5), child_id: ncForm.child_id, staff_id: "staff_darren", sleep_status: ncForm.sleep_status, check_type: ncForm.check_type, notes: ncForm.notes.trim(), concern_raised: false, concern_detail: "", room_temp_ok: true, door_position: ncForm.door_position, created_at: now.toISOString() });
+    toast.success("Night check recorded.");
+    setNcForm({ child_id: "", check_type: "scheduled", sleep_status: "sleeping", door_position: "ajar", notes: "" });
+    setShowNew(false);
+  };
   const [dateFilter, setDateFilter] = useState(d(0));
   const [childFilter, setChildFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<NightCheckSleepStatus | "all">("all");
@@ -281,34 +296,34 @@ export default function NightChecksPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle className="flex items-center gap-2 text-base"><Moon className="h-4 w-4 text-indigo-600" /> Record Night Check</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3 py-2">
+          <form onSubmit={handleSaveCheck} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Young Person</label>
-                <Select defaultValue="yp_alex"><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem><SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem><SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem></SelectContent></Select>
+                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Young Person *</label>
+                <Select value={ncForm.child_id} onValueChange={(v) => setNC("child_id", v)}><SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent></Select>
               </div>
               <div>
                 <label className="text-[11px] font-medium text-slate-600 mb-1 block">Check Type</label>
-                <Select defaultValue="scheduled"><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(NIGHT_CHECK_TYPE_LABEL) as NightCheckType[]).map((t) => <SelectItem key={t} value={t}>{NIGHT_CHECK_TYPE_LABEL[t]}</SelectItem>)}</SelectContent></Select>
+                <Select value={ncForm.check_type} onValueChange={(v) => setNC("check_type", v)}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(NIGHT_CHECK_TYPE_LABEL) as NightCheckType[]).map((t) => <SelectItem key={t} value={t}>{NIGHT_CHECK_TYPE_LABEL[t]}</SelectItem>)}</SelectContent></Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] font-medium text-slate-600 mb-1 block">Sleep Status</label>
-                <Select defaultValue="sleeping"><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(SLEEP_STATUS_CONFIG) as NightCheckSleepStatus[]).map((s) => <SelectItem key={s} value={s}>{SLEEP_STATUS_CONFIG[s].label}</SelectItem>)}</SelectContent></Select>
+                <Select value={ncForm.sleep_status} onValueChange={(v) => setNC("sleep_status", v)}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(SLEEP_STATUS_CONFIG) as NightCheckSleepStatus[]).map((s) => <SelectItem key={s} value={s}>{SLEEP_STATUS_CONFIG[s].label}</SelectItem>)}</SelectContent></Select>
               </div>
               <div>
                 <label className="text-[11px] font-medium text-slate-600 mb-1 block">Door Position</label>
-                <Select defaultValue="ajar"><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="ajar">Ajar</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent></Select>
+                <Select value={ncForm.door_position} onValueChange={(v) => setNC("door_position", v)}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="ajar">Ajar</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent></Select>
               </div>
             </div>
             <div>
               <label className="text-[11px] font-medium text-slate-600 mb-1 block">Notes</label>
-              <Textarea placeholder="Observations during this check…" className="text-xs min-h-[60px]" />
+              <Textarea placeholder="Observations during this check…" className="text-xs min-h-[60px]" value={ncForm.notes} onChange={(e) => setNC("notes", e.target.value)} />
             </div>
             <DialogFooter>
-              <Button variant="outline" size="sm" className="text-xs" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button size="sm" className="text-xs" type="submit">Record Check</Button>
+              <Button variant="outline" size="sm" className="text-xs" type="button" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button size="sm" className="text-xs" type="submit" disabled={createNightCheck.isPending}>{createNightCheck.isPending ? "Saving…" : "Record Check"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

@@ -12,6 +12,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -21,7 +22,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
-import { useQualityOfCareReviews } from "@/hooks/use-quality-of-care-reviews";
+import { toast } from "sonner";
+import { useQualityOfCareReviews, useCreateQualityOfCareReview } from "@/hooks/use-quality-of-care-reviews";
 import type {
   QualityOfCareReview,
   QocReviewType,
@@ -58,6 +60,19 @@ export default function QualityOfCarePage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
+
+  const createReview = useCreateQualityOfCareReview();
+  const [qocForm, setQocForm] = useState({ date: new Date().toISOString().slice(0, 10), type: "monthly" as QocReviewType, lead_reviewer: "", overall_rating: "good" as QocRating, strengths: "", areas_for_improvement: "", children_feedback: "", staff_feedback: "", next_review_date: "", notes: "" });
+  const setQOC = (k: string, v: unknown) => setQocForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!qocForm.lead_reviewer.trim()) { toast.error("Lead reviewer is required."); return; }
+    await createReview.mutateAsync({ date: qocForm.date, type: qocForm.type, lead_reviewer: qocForm.lead_reviewer.trim(), overall_rating: qocForm.overall_rating, domains: [], strengths: qocForm.strengths.split("\n").filter(Boolean), areas_for_improvement: qocForm.areas_for_improvement.split("\n").filter(Boolean), children_feedback: qocForm.children_feedback.trim(), staff_feedback: qocForm.staff_feedback.trim(), actions: [], next_review_date: qocForm.next_review_date, notes: qocForm.notes.trim() });
+    toast.success("Quality of care review saved.");
+    setQocForm({ date: new Date().toISOString().slice(0, 10), type: "monthly", lead_reviewer: "", overall_rating: "good", strengths: "", areas_for_improvement: "", children_feedback: "", staff_feedback: "", next_review_date: "", notes: "" });
+    setShowNew(false);
+  };
 
   const filtered = useMemo(() => {
     let list = [...records];
@@ -371,14 +386,32 @@ export default function QualityOfCarePage() {
           <DialogHeader>
             <DialogTitle>New Quality of Care Review</DialogTitle>
           </DialogHeader>
-          <div className="py-6 text-center text-muted-foreground text-sm">
-            <Star className="h-10 w-10 mx-auto mb-3 text-blue-300" />
-            <p>Full review form will capture domain-by-domain assessment,</p>
-            <p>evidence, stakeholder feedback, and action plans.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Close</Button>
-          </DialogFooter>
+          <form onSubmit={handleSaveReview} className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm font-medium">Date</label><Input type="date" className="mt-1" value={qocForm.date} onChange={(e) => setQOC("date", e.target.value)} /></div>
+              <div><label className="text-sm font-medium">Type</label>
+                <Select value={qocForm.type} onValueChange={(v) => setQOC("type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(QOC_REVIEW_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><label className="text-sm font-medium">Lead Reviewer *</label><Input className="mt-1" placeholder="Name" value={qocForm.lead_reviewer} onChange={(e) => setQOC("lead_reviewer", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Overall Rating</label>
+              <Select value={qocForm.overall_rating} onValueChange={(v) => setQOC("overall_rating", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>{Object.entries(QOC_RATING_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><label className="text-sm font-medium">Strengths</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={qocForm.strengths} onChange={(e) => setQOC("strengths", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Areas for Improvement</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={qocForm.areas_for_improvement} onChange={(e) => setQOC("areas_for_improvement", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Children&apos;s Feedback</label><Textarea className="mt-1" rows={2} placeholder="Summary of children&apos;s views…" value={qocForm.children_feedback} onChange={(e) => setQOC("children_feedback", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Staff Feedback</label><Textarea className="mt-1" rows={2} placeholder="Summary of staff views…" value={qocForm.staff_feedback} onChange={(e) => setQOC("staff_feedback", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Next Review Date</label><Input type="date" className="mt-1" value={qocForm.next_review_date} onChange={(e) => setQOC("next_review_date", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Notes</label><Textarea className="mt-1" rows={2} placeholder="Additional context…" value={qocForm.notes} onChange={(e) => setQOC("notes", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createReview.isPending}>{createReview.isPending ? "Saving…" : "Save Review"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

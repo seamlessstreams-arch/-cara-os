@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { toast } from "sonner";
 import { useKeyRecords, useCreateKeyRecord } from "@/hooks/use-key-records";
 import type { KeyRecord, KeyType, KeyholdingStatus } from "@/types/extended";
 import { KEY_TYPE_LABEL, KEYHOLDING_STATUS_LABEL } from "@/types/extended";
@@ -47,6 +48,18 @@ export default function KeyholdingRegisterPage() {
   const { data: res, isLoading } = useKeyRecords();
   const data: KeyRecord[] = res?.data ?? [];
   const createItem = useCreateKeyRecord();
+  const [krForm, setKrForm] = useState({ key_name: "", key_number: "", total_copies: "1", key_type: "master" as KeyType, location: "", notes: "" });
+  const setKR = (k: string, v: unknown) => setKrForm((p) => ({ ...p, [k]: v }));
+
+  const handleAddKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!krForm.key_name.trim()) { toast.error("Key name is required."); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    await createItem.mutateAsync({ key_name: krForm.key_name.trim(), key_type: krForm.key_type, key_number: krForm.key_number.trim(), total_copies: parseInt(krForm.total_copies) || 1, permanent_holders: [], sign_out_log: [], restricted_access: false, authorised_staff: [], location: krForm.location.trim(), last_audit: today, next_audit_due: "", status: "in_use", lost_key_incidents: [], notes: krForm.notes.trim(), created_at: new Date().toISOString() });
+    toast.success("Key record added.");
+    setKrForm({ key_name: "", key_number: "", total_copies: "1", key_type: "master", location: "", notes: "" });
+    setDialogOpen(false);
+  };
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -268,20 +281,20 @@ export default function KeyholdingRegisterPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add Key Record</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Key Name</Label><Input placeholder="e.g. Front Door Master Key" /></div>
+          <form onSubmit={handleAddKey} className="space-y-3">
+            <div><Label>Key Name *</Label><Input placeholder="e.g. Front Door Master Key" value={krForm.key_name} onChange={(e) => setKR("key_name", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Key Number</Label><Input placeholder="e.g. MK-001" /></div>
-              <div><Label>Total Copies</Label><Input type="number" defaultValue={1} /></div>
+              <div><Label>Key Number</Label><Input placeholder="e.g. MK-001" value={krForm.key_number} onChange={(e) => setKR("key_number", e.target.value)} /></div>
+              <div><Label>Total Copies</Label><Input type="number" value={krForm.total_copies} onChange={(e) => setKR("total_copies", e.target.value)} /></div>
             </div>
-            <div><Label>Key Type</Label><Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.entries(KEY_TYPE_LABEL) as [KeyType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Storage Location</Label><Input placeholder="Where is this key stored?" /></div>
-            <div><Label>Notes</Label><Textarea rows={2} placeholder="Additional notes…" /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => setDialogOpen(false)}>Add Key</Button>
-          </DialogFooter>
+            <div><Label>Key Type</Label><Select value={krForm.key_type} onValueChange={(v) => setKR("key_type", v)}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.entries(KEY_TYPE_LABEL) as [KeyType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Storage Location</Label><Input placeholder="Where is this key stored?" value={krForm.location} onChange={(e) => setKR("location", e.target.value)} /></div>
+            <div><Label>Notes</Label><Textarea rows={2} placeholder="Additional notes…" value={krForm.notes} onChange={(e) => setKR("notes", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createItem.isPending}>{createItem.isPending ? "Saving…" : "Add Key"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

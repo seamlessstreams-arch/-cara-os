@@ -12,9 +12,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useTransitionPlanningRecords } from "@/hooks/use-transition-planning-records";
+import { useTransitionPlanningRecords, useCreateTransitionPlanningRecord } from "@/hooks/use-transition-planning-records";
 import type {
   TransitionPlanningRecord,
   TransitionPlanningArea,
@@ -84,6 +85,20 @@ export default function TransitionPlanningPage() {
   const [sortBy, setSortBy] = useState("target");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createGoal = useCreateTransitionPlanningRecord();
+  const [tpForm, setTpForm] = useState({ child_id: "", area: "housing" as TransitionPlanningArea, goal: "", description: "", target_date: "", key_worker: "staff_darren", notes: "" });
+  const setTP = (k: string, v: unknown) => setTpForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateGoal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tpForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!tpForm.goal.trim()) { toast.error("Goal is required."); return; }
+    await createGoal.mutateAsync({ child_id: tpForm.child_id, area: tpForm.area, goal: tpForm.goal.trim(), description: tpForm.description.trim(), status: "not_started", target_date: tpForm.target_date, start_date: new Date().toISOString().slice(0, 10), key_worker: tpForm.key_worker, actions: [], progress: "", percent_complete: 0, review_date: "", notes: tpForm.notes.trim(), created_at: new Date().toISOString() });
+    toast.success("Transition goal created.");
+    setTpForm({ child_id: "", area: "housing", goal: "", description: "", target_date: "", key_worker: "staff_darren", notes: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -361,34 +376,34 @@ export default function TransitionPlanningPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Transition Goal</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleCreateGoal} className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
-              <Select><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
-                <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              <label className="text-sm font-medium">Young Person *</label>
+              <Select value={tpForm.child_id} onValueChange={(v) => setTP("child_id", v)}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-sm font-medium">Life Area</label>
-              <Select><SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
+              <Select value={tpForm.area} onValueChange={(v) => setTP("area", v)}><SelectTrigger><SelectValue placeholder="Select area" /></SelectTrigger>
                 <SelectContent>{(Object.entries(TRANSITION_PLANNING_AREA_LABEL) as [TransitionPlanningArea, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Goal</label>
-              <Input placeholder="What does the young person want to achieve?" />
+              <label className="text-sm font-medium">Goal *</label>
+              <Input placeholder="What does the young person want to achieve?" value={tpForm.goal} onChange={(e) => setTP("goal", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Description</label>
-              <Textarea placeholder="Describe the goal and expected outcome…" rows={3} />
+              <Textarea placeholder="Describe the goal and expected outcome…" rows={3} value={tpForm.description} onChange={(e) => setTP("description", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Target Date</label>
-              <Input type="date" />
+              <Input type="date" value={tpForm.target_date} onChange={(e) => setTP("target_date", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Key Worker</label>
-              <Select><SelectTrigger><SelectValue placeholder="Assign key worker" /></SelectTrigger>
+              <Select value={tpForm.key_worker} onValueChange={(v) => setTP("key_worker", v)}><SelectTrigger><SelectValue placeholder="Assign key worker" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
                   <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
@@ -399,11 +414,11 @@ export default function TransitionPlanningPage() {
             </div>
             <div>
               <label className="text-sm font-medium">Initial Notes</label>
-              <Textarea placeholder="Any context or background…" rows={2} />
+              <Textarea placeholder="Any context or background…" rows={2} value={tpForm.notes} onChange={(e) => setTP("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Create Goal</Button>
+              <Button type="submit" disabled={createGoal.isPending}>{createGoal.isPending ? "Saving…" : "Create Goal"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

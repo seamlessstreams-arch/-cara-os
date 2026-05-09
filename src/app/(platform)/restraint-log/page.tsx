@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   ShieldAlert, AlertTriangle, CheckCircle2, Clock, Calendar,
@@ -69,6 +69,20 @@ export default function RestraintLogPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createRestraint = useCreateRestraint();
+  const [rlForm, setRlForm] = useState({ date: new Date().toISOString().slice(0, 10), child_id: "", start_time: "", end_time: "", reason: "harm_to_self" as RestraintReason, antecedent: "", de_escalation_attempts: "", description: "" });
+  const setRL = (k: string, v: unknown) => setRlForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveRestraint = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rlForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!rlForm.description.trim()) { toast.error("Description is required."); return; }
+    await createRestraint.mutateAsync({ date: rlForm.date, start_time: rlForm.start_time, end_time: rlForm.end_time, duration: 0, child_id: rlForm.child_id, staff_involved: [], reason: rlForm.reason, restraint_type: "standing", antecedent: rlForm.antecedent.trim(), behaviour: "", de_escalation_attempts: rlForm.de_escalation_attempts.split("\n").filter(Boolean), justification: "", description: rlForm.description.trim(), injuries: [], child_debriefed: false, child_debrief_notes: "", staff_debriefed: false, witnessed_by: [], review_status: "pending_rm", review_notes: "", reviewed_by: "", linked_incident_id: "", notifications_sent: [], body_map_completed: false, medical_check_completed: false, recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    toast.success("Restraint record saved.");
+    setRlForm({ date: new Date().toISOString().slice(0, 10), child_id: "", start_time: "", end_time: "", reason: "harm_to_self", antecedent: "", de_escalation_attempts: "", description: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -250,34 +264,32 @@ export default function RestraintLogPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Physical Intervention</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleSaveRestraint} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" /></div>
-              <div><label className="text-sm font-medium">Young Person</label>
-                <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <div><label className="text-sm font-medium">Date</label><Input type="date" value={rlForm.date} onChange={(e) => setRL("date", e.target.value)} /></div>
+              <div><label className="text-sm font-medium">Young Person *</label>
+                <Select value={rlForm.child_id} onValueChange={(v) => setRL("child_id", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                    <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                    <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
+                    {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Start Time</label><Input type="time" /></div>
-              <div><label className="text-sm font-medium">End Time</label><Input type="time" /></div>
+              <div><label className="text-sm font-medium">Start Time</label><Input type="time" value={rlForm.start_time} onChange={(e) => setRL("start_time", e.target.value)} /></div>
+              <div><label className="text-sm font-medium">End Time</label><Input type="time" value={rlForm.end_time} onChange={(e) => setRL("end_time", e.target.value)} /></div>
             </div>
             <div><label className="text-sm font-medium">Reason</label>
-              <Select><SelectTrigger><SelectValue placeholder="Reason" /></SelectTrigger>
+              <Select value={rlForm.reason} onValueChange={(v) => setRL("reason", v)}><SelectTrigger><SelectValue placeholder="Reason" /></SelectTrigger>
                 <SelectContent>{Object.entries(REASON_META).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Antecedent</label><Textarea placeholder="What led up to the incident?" rows={2} /></div>
-            <div><label className="text-sm font-medium">De-escalation Attempts</label><Textarea placeholder="List all de-escalation attempts (one per line)" rows={2} /></div>
-            <div><label className="text-sm font-medium">Description</label><Textarea placeholder="Detailed description of the intervention…" rows={3} /></div>
+            <div><label className="text-sm font-medium">Antecedent</label><Textarea placeholder="What led up to the incident?" rows={2} value={rlForm.antecedent} onChange={(e) => setRL("antecedent", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">De-escalation Attempts</label><Textarea placeholder="List all de-escalation attempts (one per line)" rows={2} value={rlForm.de_escalation_attempts} onChange={(e) => setRL("de_escalation_attempts", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Description *</label><Textarea placeholder="Detailed description of the intervention…" rows={3} value={rlForm.description} onChange={(e) => setRL("description", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Save Record</Button>
+              <Button type="submit" disabled={createRestraint.isPending}>{createRestraint.isPending ? "Saving…" : "Save Record"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

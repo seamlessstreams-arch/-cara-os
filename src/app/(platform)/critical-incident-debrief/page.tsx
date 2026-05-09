@@ -24,8 +24,8 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { CriticalIncidentDebriefRecord, DebriefIncidentCategory, IncidentDebriefStatus, DebriefImpactLevel } from "@/types/extended";
 import { DEBRIEF_INCIDENT_CATEGORY_LABEL, INCIDENT_DEBRIEF_STATUS_LABEL, DEBRIEF_IMPACT_LEVEL_LABEL } from "@/types/extended";
-import { useCriticalIncidentDebriefRecords, useCreateCriticalIncidentDebriefRecord } from "@/hooks/use-critical-incident-debrief-records";
 import { toast } from "sonner";
+import { useCriticalIncidentDebriefRecords, useCreateCriticalIncidentDebriefRecord } from "@/hooks/use-critical-incident-debrief-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
@@ -40,6 +40,17 @@ export default function CriticalIncidentDebriefPage() {
   const { data: raw, isLoading } = useCriticalIncidentDebriefRecords();
   const records = raw?.data ?? [];
   const createRecord = useCreateCriticalIncidentDebriefRecord();
+  const [cidForm, setCidForm] = useState({ incident_date: "", debrief_date: "", incident_category: "other" as DebriefIncidentCategory, impact_level: "medium" as DebriefImpactLevel, incident_summary: "" });
+  const setCID = (k: string, v: unknown) => setCidForm((p) => ({ ...p, [k]: v }));
+
+  const handleScheduleDebrief = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cidForm.incident_summary.trim()) { toast.error("Incident summary is required."); return; }
+    await createRecord.mutateAsync({ incident_date: cidForm.incident_date || new Date().toISOString().slice(0, 10), debrief_date: cidForm.debrief_date || "", incident_category: cidForm.incident_category, incident_summary: cidForm.incident_summary.trim(), impact_level: cidForm.impact_level, young_person_ids: [], staff_involved_ids: [], facilitator_id: "", attendees: [], status: "scheduled", what_happened: "", what_worked_well: [], what_could_improve: [], root_causes: [], emotional_impact: "", actions_agreed: [], actions_completed: 0, policy_changes: "", training_needs: [], shared_with: [], follow_up_date: null, notes: "", created_at: new Date().toISOString() });
+    toast.success("Debrief scheduled.");
+    setCidForm({ incident_date: "", debrief_date: "", incident_category: "other", impact_level: "medium", incident_summary: "" });
+    setShowNew(false);
+  };
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -314,12 +325,12 @@ export default function CriticalIncidentDebriefPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Schedule Debrief</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Incident Date</Label><Input type="date" /></div>
-            <div><Label>Debrief Date</Label><Input type="date" /></div>
+          <form onSubmit={handleScheduleDebrief} className="space-y-3">
+            <div><Label>Incident Date</Label><Input type="date" value={cidForm.incident_date} onChange={(e) => setCID("incident_date", e.target.value)} /></div>
+            <div><Label>Debrief Date</Label><Input type="date" value={cidForm.debrief_date} onChange={(e) => setCID("debrief_date", e.target.value)} /></div>
             <div>
               <Label>Category</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+              <Select value={cidForm.incident_category} onValueChange={(v) => setCID("incident_category", v)}><SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(DEBRIEF_INCIDENT_CATEGORY_LABEL) as [DebriefIncidentCategory, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -329,7 +340,7 @@ export default function CriticalIncidentDebriefPage() {
             </div>
             <div>
               <Label>Impact Level</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select impact" /></SelectTrigger>
+              <Select value={cidForm.impact_level} onValueChange={(v) => setCID("impact_level", v)}><SelectTrigger><SelectValue placeholder="Select impact" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(DEBRIEF_IMPACT_LEVEL_LABEL) as [DebriefImpactLevel, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -337,12 +348,12 @@ export default function CriticalIncidentDebriefPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Incident Summary</Label><Textarea placeholder="Brief description of the incident..." /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={() => setShowNew(false)}>Schedule</Button>
-          </DialogFooter>
+            <div><Label>Incident Summary *</Label><Textarea placeholder="Brief description of the incident..." value={cidForm.incident_summary} onChange={(e) => setCID("incident_summary", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Schedule"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

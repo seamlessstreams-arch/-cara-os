@@ -11,6 +11,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -20,7 +21,8 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useStakeholderFeedbackRecords } from "@/hooks/use-stakeholder-feedback-records";
+import { toast } from "sonner";
+import { useStakeholderFeedbackRecords, useCreateStakeholderFeedbackRecord } from "@/hooks/use-stakeholder-feedback-records";
 import type {
   StakeholderFeedbackRecord,
   StakeholderFeedbackSource,
@@ -55,6 +57,19 @@ export default function StakeholderFeedbackPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
+
+  const createRecord = useCreateStakeholderFeedbackRecord();
+  const [sfForm, setSfForm] = useState({ date: new Date().toISOString().slice(0, 10), source: "social_worker" as StakeholderFeedbackSource, source_name: "", method: "conversation" as StakeholderFeedbackMethod, sentiment: "positive" as StakeholderFeedbackSentiment, summary: "", direct_quote: "", action_taken: "" });
+  const setSF = (k: string, v: unknown) => setSfForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sfForm.summary.trim()) { toast.error("Summary is required."); return; }
+    await createRecord.mutateAsync({ date: sfForm.date, source: sfForm.source, source_name: sfForm.source_name.trim(), related_yp: null, method: sfForm.method, sentiment: sfForm.sentiment, themes: [], summary: sfForm.summary.trim(), direct_quote: sfForm.direct_quote.trim() || null, action_taken: sfForm.action_taken.trim() || null, responded_by: "staff_darren", response_date: null, acknowledged: false });
+    toast.success("Stakeholder feedback recorded.");
+    setSfForm({ date: new Date().toISOString().slice(0, 10), source: "social_worker", source_name: "", method: "conversation", sentiment: "positive", summary: "", direct_quote: "", action_taken: "" });
+    setShowNew(false);
+  };
 
   const filtered = useMemo(() => {
     let list = [...records];
@@ -301,14 +316,36 @@ export default function StakeholderFeedbackPage() {
           <DialogHeader>
             <DialogTitle>Record Feedback</DialogTitle>
           </DialogHeader>
-          <div className="py-6 text-center text-muted-foreground text-sm">
-            <MessageSquare className="h-10 w-10 mx-auto mb-3 text-blue-300" />
-            <p>Full form will capture source, method, themes,</p>
-            <p>feedback details, and action plan.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Close</Button>
-          </DialogFooter>
+          <form onSubmit={handleSaveFeedback} className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm font-medium">Date</label><Input type="date" className="mt-1" value={sfForm.date} onChange={(e) => setSF("date", e.target.value)} /></div>
+              <div><label className="text-sm font-medium">Source</label>
+                <Select value={sfForm.source} onValueChange={(v) => setSF("source", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(STAKEHOLDER_FEEDBACK_SOURCE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><label className="text-sm font-medium">Source Name</label><Input className="mt-1" placeholder="Name of person or organisation" value={sfForm.source_name} onChange={(e) => setSF("source_name", e.target.value)} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm font-medium">Method</label>
+                <Select value={sfForm.method} onValueChange={(v) => setSF("method", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(STAKEHOLDER_FEEDBACK_METHOD_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><label className="text-sm font-medium">Sentiment</label>
+                <Select value={sfForm.sentiment} onValueChange={(v) => setSF("sentiment", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(STAKEHOLDER_FEEDBACK_SENTIMENT_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><label className="text-sm font-medium">Summary *</label><Textarea className="mt-1" rows={3} placeholder="Summary of feedback…" value={sfForm.summary} onChange={(e) => setSF("summary", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Direct Quote</label><Textarea className="mt-1" rows={2} placeholder="Optional direct quote…" value={sfForm.direct_quote} onChange={(e) => setSF("direct_quote", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Action Taken</label><Textarea className="mt-1" rows={2} placeholder="Response or action…" value={sfForm.action_taken} onChange={(e) => setSF("action_taken", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Feedback"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

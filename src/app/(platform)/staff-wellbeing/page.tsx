@@ -12,6 +12,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -20,8 +21,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
-import { useStaffWellbeingRecords } from "@/hooks/use-staff-wellbeing-records";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useStaffWellbeingRecords, useCreateStaffWellbeingRecord } from "@/hooks/use-staff-wellbeing-records";
 import type { StaffWellbeingRecord, StaffWellbeingCheckType } from "@/types/extended";
 import { STAFF_WELLBEING_CHECK_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -49,6 +51,19 @@ export default function StaffWellbeingPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
+
+  const createWellbeing = useCreateStaffWellbeingRecord();
+  const [swForm, setSwForm] = useState({ staff_id: "", date: new Date().toISOString().slice(0, 10), type: "monthly_checkin" as StaffWellbeingCheckType, overall_score: "7", stressors: "", positives: "", support_needed: "", action_agreed: "", notes: "", confidential: false });
+  const setSW = (k: string, v: unknown) => setSwForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveWellbeing = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!swForm.staff_id) { toast.error("Please select a staff member."); return; }
+    await createWellbeing.mutateAsync({ staff_id: swForm.staff_id, date: swForm.date, type: swForm.type, overall_score: parseInt(swForm.overall_score) || 7, workload_score: 5, support_score: 5, moral_score: 5, stressors: swForm.stressors.split("\n").filter(Boolean), positives: swForm.positives.split("\n").filter(Boolean), support_needed: swForm.support_needed.trim(), action_agreed: swForm.action_agreed.trim(), follow_up_date: null, conducted_by: "staff_darren", confidential: swForm.confidential, notes: swForm.notes.trim() });
+    toast.success("Wellbeing check-in saved.");
+    setSwForm({ staff_id: "", date: new Date().toISOString().slice(0, 10), type: "monthly_checkin", overall_score: "7", stressors: "", positives: "", support_needed: "", action_agreed: "", notes: "", confidential: false });
+    setShowNew(false);
+  };
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -321,14 +336,31 @@ export default function StaffWellbeingPage() {
           <DialogHeader>
             <DialogTitle>New Wellbeing Check-in</DialogTitle>
           </DialogHeader>
-          <div className="py-6 text-center text-muted-foreground text-sm">
-            <HeartPulse className="h-10 w-10 mx-auto mb-3 text-pink-300" />
-            <p>Full form will capture wellbeing scores, stressors,</p>
-            <p>positives, support needs, and agreed actions.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Close</Button>
-          </DialogFooter>
+          <form onSubmit={handleSaveWellbeing} className="space-y-3 py-2">
+            <div><label className="text-sm font-medium">Staff Member *</label>
+              <Select value={swForm.staff_id} onValueChange={(v) => setSW("staff_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm font-medium">Date</label><Input type="date" className="mt-1" value={swForm.date} onChange={(e) => setSW("date", e.target.value)} /></div>
+              <div><label className="text-sm font-medium">Type</label>
+                <Select value={swForm.type} onValueChange={(v) => setSW("type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(STAFF_WELLBEING_CHECK_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><label className="text-sm font-medium">Overall Score (1–10)</label><Input type="number" min="1" max="10" className="mt-1" value={swForm.overall_score} onChange={(e) => setSW("overall_score", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Stressors</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={swForm.stressors} onChange={(e) => setSW("stressors", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Positives</label><Textarea className="mt-1" rows={2} placeholder="One per line…" value={swForm.positives} onChange={(e) => setSW("positives", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Support Needed</label><Textarea className="mt-1" rows={2} placeholder="What support is needed?" value={swForm.support_needed} onChange={(e) => setSW("support_needed", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Action Agreed</label><Textarea className="mt-1" rows={2} placeholder="Agreed actions…" value={swForm.action_agreed} onChange={(e) => setSW("action_agreed", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Notes</label><Textarea className="mt-1" rows={2} placeholder="Additional notes…" value={swForm.notes} onChange={(e) => setSW("notes", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createWellbeing.isPending}>{createWellbeing.isPending ? "Saving…" : "Save Check-in"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

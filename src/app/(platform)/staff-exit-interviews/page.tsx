@@ -11,6 +11,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -20,8 +21,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
-import { useStaffExitInterviewRecords } from "@/hooks/use-staff-exit-interview-records";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useStaffExitInterviewRecords, useCreateStaffExitInterviewRecord } from "@/hooks/use-staff-exit-interview-records";
 import type { StaffExitInterviewRecord, StaffExitInterviewReason, StaffExitInterviewStatus } from "@/types/extended";
 import {
   STAFF_EXIT_INTERVIEW_REASON_LABEL,
@@ -63,6 +65,19 @@ export default function StaffExitInterviewsPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
+
+  const createInterview = useCreateStaffExitInterviewRecord();
+  const [eiForm, setEiForm] = useState({ staff_name: "", reason: "resigned_career" as StaffExitInterviewReason, interview_date: new Date().toISOString().slice(0, 10), interviewer: "staff_darren", status: "completed" as StaffExitInterviewStatus, overall_rating: "", positives: "", improvements: "", notes: "" });
+  const setEI = (k: string, v: unknown) => setEiForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveInterview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eiForm.staff_name.trim()) { toast.error("Staff name is required."); return; }
+    await createInterview.mutateAsync({ staff_name: eiForm.staff_name.trim(), reason: eiForm.reason, interview_date: eiForm.interview_date, interviewer: eiForm.interviewer, status: eiForm.status, overall_rating: eiForm.overall_rating ? parseInt(eiForm.overall_rating) : null, positives: eiForm.positives.split("\n").filter(Boolean), improvements: eiForm.improvements.split("\n").filter(Boolean), would_recommend: null, themes: [], notes: eiForm.notes.trim(), confidential: true });
+    toast.success("Exit interview recorded.");
+    setEiForm({ staff_name: "", reason: "resigned_career", interview_date: new Date().toISOString().slice(0, 10), interviewer: "staff_darren", status: "completed", overall_rating: "", positives: "", improvements: "", notes: "" });
+    setShowNew(false);
+  };
 
   /* ── filtering & sorting ───────────────────────────────────────────── */
   const filtered = useMemo(() => {
@@ -384,14 +399,37 @@ export default function StaffExitInterviewsPage() {
           <DialogHeader>
             <DialogTitle>Record Exit Interview</DialogTitle>
           </DialogHeader>
-          <div className="py-6 text-center text-muted-foreground text-sm">
-            <UserMinus className="h-10 w-10 mx-auto mb-3 text-blue-300" />
-            <p>Full form will capture staff details, reason for leaving,</p>
-            <p>feedback, rating, themes, and confidentiality settings.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Close</Button>
-          </DialogFooter>
+          <form onSubmit={handleSaveInterview} className="space-y-3 py-2">
+            <div><label className="text-sm font-medium">Staff Name *</label><Input className="mt-1" placeholder="Full name of departing staff member" value={eiForm.staff_name} onChange={(e) => setEI("staff_name", e.target.value)} /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm font-medium">Reason for Leaving</label>
+                <Select value={eiForm.reason} onValueChange={(v) => setEI("reason", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(STAFF_EXIT_INTERVIEW_REASON_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><label className="text-sm font-medium">Status</label>
+                <Select value={eiForm.status} onValueChange={(v) => setEI("status", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{Object.entries(STAFF_EXIT_INTERVIEW_STATUS_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm font-medium">Interview Date</label><Input type="date" className="mt-1" value={eiForm.interview_date} onChange={(e) => setEI("interview_date", e.target.value)} /></div>
+              <div><label className="text-sm font-medium">Overall Rating (1–5)</label><Input type="number" min="1" max="5" className="mt-1" placeholder="Optional" value={eiForm.overall_rating} onChange={(e) => setEI("overall_rating", e.target.value)} /></div>
+            </div>
+            <div><label className="text-sm font-medium">Interviewer</label>
+              <Select value={eiForm.interviewer} onValueChange={(v) => setEI("interviewer", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><label className="text-sm font-medium">Positives</label><Textarea className="mt-1" rows={2} placeholder="What did they value? (one per line)" value={eiForm.positives} onChange={(e) => setEI("positives", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Improvements</label><Textarea className="mt-1" rows={2} placeholder="What could be improved? (one per line)" value={eiForm.improvements} onChange={(e) => setEI("improvements", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Notes</label><Textarea className="mt-1" rows={2} placeholder="Additional notes (confidential)…" value={eiForm.notes} onChange={(e) => setEI("notes", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createInterview.isPending}>{createInterview.isPending ? "Saving…" : "Save Interview"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel
