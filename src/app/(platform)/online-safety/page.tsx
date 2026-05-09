@@ -18,14 +18,15 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useOnlineSafetyIncidents } from "@/hooks/use-online-safety-incidents";
+import { useOnlineSafetyIncidents, useCreateOnlineSafetyIncident } from "@/hooks/use-online-safety-incidents";
 import { useOnlineSafetyAgreements } from "@/hooks/use-online-safety-agreements";
 import type {
   OnlineSafetyIncident,
@@ -58,6 +59,7 @@ const STATUS_META: Record<OnlineSafetyIncidentStatus, { label: string; colour: s
 
 export default function OnlineSafetyPage() {
   const { data: incRes, isLoading: incLoading } = useOnlineSafetyIncidents();
+  const createIncident = useCreateOnlineSafetyIncident();
   const { data: agRes, isLoading: agLoading } = useOnlineSafetyAgreements();
   const data: OnlineSafetyIncident[] = incRes?.data ?? [];
   const agreements: OnlineSafetyAgreement[] = agRes?.data ?? [];
@@ -70,6 +72,48 @@ export default function OnlineSafetyPage() {
   const [sortBy, setSortBy] = useState("date");
   const [showDialog, setShowDialog] = useState(false);
   const [view, setView] = useState<"incidents" | "agreements">("incidents");
+
+  const [osForm, setOsForm] = useState({
+    child_id: "",
+    category: "" as OnlineSafetyIncidentCategory | "",
+    severity: "" as OnlineSafetySeverity | "",
+    platform: "",
+    summary: "",
+    detail: "",
+    actions_taken: "",
+    safeguarding_referral: false,
+    parent_carer_notified: false,
+    discovered_by: "staff_darren",
+  });
+  const setOSF = (k: keyof typeof osForm, v: string | boolean) => setOsForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateIncident = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!osForm.child_id || !osForm.category || !osForm.severity || !osForm.summary.trim()) {
+      toast.error("Young person, category, severity and summary are required.");
+      return;
+    }
+    await createIncident.mutateAsync({
+      child_id: osForm.child_id,
+      date: new Date().toISOString().slice(0, 10),
+      category: osForm.category as OnlineSafetyIncidentCategory,
+      severity: osForm.severity as OnlineSafetySeverity,
+      status: "open" as OnlineSafetyIncidentStatus,
+      platform: osForm.platform,
+      summary: osForm.summary.trim(),
+      detail: osForm.detail,
+      discovered_by: osForm.discovered_by,
+      actions_taken: osForm.actions_taken.split("\n").map((a) => a.trim()).filter(Boolean),
+      safeguarding_referral: osForm.safeguarding_referral,
+      parent_carer_notified: osForm.parent_carer_notified,
+      child_discussion: "",
+      follow_up: "",
+      created_at: new Date().toISOString(),
+    });
+    toast.success("Online safety incident logged.");
+    setOsForm({ child_id: "", category: "", severity: "", platform: "", summary: "", detail: "", actions_taken: "", safeguarding_referral: false, parent_carer_notified: false, discovered_by: "staff_darren" });
+    setShowDialog(false);
+  };
 
   const stats = useMemo(() => ({
     total: data.length,
@@ -306,25 +350,41 @@ export default function OnlineSafetyPage() {
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Online Safety Incident</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Young Person…</option>{ypIds.map((id) => <option key={id} value={id}>{getYPName(id)}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Category…</option>{Object.entries(ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Severity…</option>{Object.entries(SEV_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
-            <input placeholder="Platform (e.g. Instagram, Snapchat)" className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Summary" rows={2} className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Full detail" rows={3} className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Actions taken" rows={2} className="rounded border px-3 py-2 text-sm" />
-            <div className="flex gap-4">
-              <label className="flex items-center gap-1 text-sm"><input type="checkbox" className="rounded border" /> Safeguarding referral</label>
-              <label className="flex items-center gap-1 text-sm"><input type="checkbox" className="rounded border" /> Parent/carer notified</label>
+          <form onSubmit={handleCreateIncident} className="grid gap-3 py-2">
+            <Select value={osForm.child_id} onValueChange={(v) => setOSF("child_id", v)}>
+              <SelectTrigger className="text-sm"><SelectValue placeholder="Young Person…" /></SelectTrigger>
+              <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent>
+            </Select>
+            <Select value={osForm.category} onValueChange={(v) => setOSF("category", v)}>
+              <SelectTrigger className="text-sm"><SelectValue placeholder="Category…" /></SelectTrigger>
+              <SelectContent>{Object.entries(ONLINE_SAFETY_INCIDENT_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+            </Select>
+            <Select value={osForm.severity} onValueChange={(v) => setOSF("severity", v)}>
+              <SelectTrigger className="text-sm"><SelectValue placeholder="Severity…" /></SelectTrigger>
+              <SelectContent>{Object.entries(SEV_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
+            </Select>
+            <div>
+              <label className="text-xs text-slate-600 mb-1 block">Discovered By</label>
+              <Select value={osForm.discovered_by} onValueChange={(v) => setOSF("discovered_by", v)}>
+                <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Log Incident</button>
-          </DialogFooter>
+            <input required placeholder="Platform (e.g. Instagram, Snapchat)" className="rounded border px-3 py-2 text-sm" value={osForm.platform} onChange={(e) => setOSF("platform", e.target.value)} />
+            <textarea required placeholder="Summary *" rows={2} className="rounded border px-3 py-2 text-sm" value={osForm.summary} onChange={(e) => setOSF("summary", e.target.value)} />
+            <textarea placeholder="Full detail" rows={3} className="rounded border px-3 py-2 text-sm" value={osForm.detail} onChange={(e) => setOSF("detail", e.target.value)} />
+            <textarea placeholder="Actions taken (one per line)" rows={2} className="rounded border px-3 py-2 text-sm" value={osForm.actions_taken} onChange={(e) => setOSF("actions_taken", e.target.value)} />
+            <div className="flex gap-4">
+              <label className="flex items-center gap-1 text-sm"><input type="checkbox" className="rounded border" checked={osForm.safeguarding_referral} onChange={(e) => setOSF("safeguarding_referral", e.target.checked)} /> Safeguarding referral</label>
+              <label className="flex items-center gap-1 text-sm"><input type="checkbox" className="rounded border" checked={osForm.parent_carer_notified} onChange={(e) => setOSF("parent_carer_notified", e.target.checked)} /> Parent/carer notified</label>
+            </div>
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createIncident.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90 disabled:opacity-50">{createIncident.isPending ? "Logging…" : "Log Incident"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

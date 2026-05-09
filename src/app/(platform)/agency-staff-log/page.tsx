@@ -21,9 +21,9 @@ import {
   Clock, Search, Users, UserCheck, Shield, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
-import { useAgencyStaffLog } from "@/hooks/use-agency-staff-log";
+import { useAgencyStaffLog, useCreateAgencyStaffRecord } from "@/hooks/use-agency-staff-log";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AgencyVettingStatus, AgencyBookingReason, AgencyStaffRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -43,6 +43,7 @@ const REASON_LABEL: Record<AgencyBookingReason, string> = {
 
 export default function AgencyStaffLogPage() {
   const { data: result, isLoading } = useAgencyStaffLog();
+  const createRecord = useCreateAgencyStaffRecord();
   const records = result?.data ?? [];
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -51,6 +52,57 @@ export default function AgencyStaffLogPage() {
   const [filterReason, setFilterReason] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showNew, setShowNew] = useState(false);
+
+  const [asForm, setAsForm] = useState({
+    agency_name: "",
+    worker_name: "",
+    worker_ref: "",
+    date_of_shift: new Date().toISOString().slice(0, 10),
+    shift_type: "day",
+    booking_reason: "" as AgencyBookingReason | "",
+    dbs_number: "",
+    authorised_by_id: "staff_darren",
+    notes: "",
+  });
+  const setASF = (k: keyof typeof asForm, v: string) => setAsForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateRecord = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!asForm.agency_name.trim() || !asForm.worker_name.trim() || !asForm.booking_reason) {
+      toast.error("Agency name, worker name and booking reason are required.");
+      return;
+    }
+    await createRecord.mutateAsync({
+      agency_name: asForm.agency_name.trim(),
+      worker_name: asForm.worker_name.trim(),
+      worker_ref: asForm.worker_ref,
+      date_of_shift: asForm.date_of_shift,
+      shift_type: asForm.shift_type,
+      shift_hours: asForm.shift_type === "day" || asForm.shift_type === "night" ? 12 : asForm.shift_type === "short" ? 6 : 8,
+      booking_reason: asForm.booking_reason as AgencyBookingReason,
+      covering_for_id: null,
+      vetting_status: "pending" as AgencyVettingStatus,
+      dbs_number: asForm.dbs_number,
+      dbs_date: "",
+      dbs_enhanced: false,
+      induction_completed: false,
+      induction_date: null,
+      induction_by: null,
+      safeguarding_briefing: false,
+      young_people_briefing: false,
+      medication_trained: false,
+      price_trained_level: null,
+      feedback_score: null,
+      feedback_notes: "",
+      concerns: "",
+      authorised_by_id: asForm.authorised_by_id,
+      cost_per_hour: 0,
+      notes: asForm.notes,
+    });
+    toast.success("Agency shift logged.");
+    setAsForm({ agency_name: "", worker_name: "", worker_ref: "", date_of_shift: new Date().toISOString().slice(0, 10), shift_type: "day", booking_reason: "", dbs_number: "", authorised_by_id: "staff_darren", notes: "" });
+    setShowNew(false);
+  };
 
   const filtered = useMemo(() => {
     let rows = [...records];
@@ -297,14 +349,15 @@ export default function AgencyStaffLogPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Agency Shift</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Agency Name</Label><Input placeholder="e.g. CareStaff Solutions" /></div>
-            <div><Label>Worker Name</Label><Input placeholder="Full name" /></div>
-            <div><Label>Worker Reference</Label><Input placeholder="e.g. CSS-4821" /></div>
-            <div><Label>Date of Shift</Label><Input type="date" /></div>
+          <form onSubmit={handleCreateRecord} className="space-y-3">
+            <div><Label>Agency Name *</Label><Input required placeholder="e.g. CareStaff Solutions" value={asForm.agency_name} onChange={(e) => setASF("agency_name", e.target.value)} /></div>
+            <div><Label>Worker Name *</Label><Input required placeholder="Full name" value={asForm.worker_name} onChange={(e) => setASF("worker_name", e.target.value)} /></div>
+            <div><Label>Worker Reference</Label><Input placeholder="e.g. CSS-4821" value={asForm.worker_ref} onChange={(e) => setASF("worker_ref", e.target.value)} /></div>
+            <div><Label>Date of Shift</Label><Input type="date" value={asForm.date_of_shift} onChange={(e) => setASF("date_of_shift", e.target.value)} /></div>
             <div>
               <Label>Shift Type</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select shift" /></SelectTrigger>
+              <Select value={asForm.shift_type} onValueChange={(v) => setASF("shift_type", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="day">Day Shift (08:00–20:00)</SelectItem>
                   <SelectItem value="night">Waking Night (20:00–08:00)</SelectItem>
@@ -314,8 +367,9 @@ export default function AgencyStaffLogPage() {
               </Select>
             </div>
             <div>
-              <Label>Booking Reason</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select reason" /></SelectTrigger>
+              <Label>Booking Reason *</Label>
+              <Select value={asForm.booking_reason} onValueChange={(v) => setASF("booking_reason", v)}>
+                <SelectTrigger><SelectValue placeholder="Select reason" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(REASON_LABEL) as [AgencyBookingReason, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -323,13 +377,20 @@ export default function AgencyStaffLogPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>DBS Number</Label><Input placeholder="DBS reference" /></div>
-            <div><Label>Notes</Label><Textarea placeholder="Shift notes, feedback..." /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={() => setShowNew(false)}>Log Shift</Button>
-          </DialogFooter>
+            <div>
+              <Label>Authorised By</Label>
+              <Select value={asForm.authorised_by_id} onValueChange={(v) => setASF("authorised_by_id", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>DBS Number</Label><Input placeholder="DBS reference" value={asForm.dbs_number} onChange={(e) => setASF("dbs_number", e.target.value)} /></div>
+            <div><Label>Notes</Label><Textarea placeholder="Shift notes, feedback..." value={asForm.notes} onChange={(e) => setASF("notes", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Logging…" : "Log Shift"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

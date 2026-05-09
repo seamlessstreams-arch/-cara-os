@@ -17,14 +17,15 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useYPSavingsAccountRecords } from "@/hooks/use-yp-savings-account-records";
+import { useYPSavingsAccountRecords, useCreateYPSavingsAccountRecord } from "@/hooks/use-yp-savings-account-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { YPSavingsAccountRecord, YPSavingsTransactionType } from "@/types/extended";
 import { YP_SAVINGS_TRANSACTION_TYPE_LABEL } from "@/types/extended";
@@ -34,11 +35,48 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 export default function YPSavingsPage() {
   const { data: records = [], isLoading } = useYPSavingsAccountRecords();
+  const createAccount = useCreateYPSavingsAccountRecord();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("balance");
   const [showDialog, setShowDialog] = useState(false);
+
+  const [ypForm, setYpForm] = useState({
+    child_id: "",
+    tx_type: "" as YPSavingsTransactionType | "",
+    description: "",
+    amount: "",
+    date: new Date().toISOString().slice(0, 10),
+    receipt_ref: "",
+    recorded_by: "staff_darren",
+  });
+  const setYPF = (k: keyof typeof ypForm, v: string) => setYpForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateTransaction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ypForm.child_id || !ypForm.tx_type || !ypForm.amount || !ypForm.description.trim()) {
+      toast.error("Young person, type, description and amount are required.");
+      return;
+    }
+    const amount = parseFloat(ypForm.amount);
+    if (isNaN(amount) || amount === 0) { toast.error("Enter a valid amount."); return; }
+    await createAccount.mutateAsync({
+      child_id: ypForm.child_id,
+      account_type: "cash",
+      provider: "Home petty cash",
+      opened_date: ypForm.date,
+      current_balance: amount,
+      monthly_target: 0,
+      transactions: [{ id: crypto.randomUUID(), date: ypForm.date, type: ypForm.tx_type as YPSavingsTransactionType, description: ypForm.description.trim(), amount, balance: amount, recorded_by: ypForm.recorded_by, authorised_by: null, receipt_ref: ypForm.receipt_ref }],
+      savings_goals: [],
+      child_manages: false,
+      notes: "",
+    });
+    toast.success("Transaction recorded.");
+    setYpForm({ child_id: "", tx_type: "", description: "", amount: "", date: new Date().toISOString().slice(0, 10), receipt_ref: "", recorded_by: "staff_darren" });
+    setShowDialog(false);
+  };
 
   const stats = useMemo(() => {
     const totalBalance = records.reduce((s, a) => s + a.current_balance, 0);
@@ -266,18 +304,22 @@ export default function YPSavingsPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>New Transaction</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Young Person…</option>{records.map((a) => <option key={a.child_id} value={a.child_id}>{getYPName(a.child_id)}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Transaction type…</option>{(Object.keys(YP_SAVINGS_TRANSACTION_TYPE_LABEL) as YPSavingsTransactionType[]).map((k) => <option key={k} value={k}>{YP_SAVINGS_TRANSACTION_TYPE_LABEL[k]}</option>)}</select>
-            <input placeholder="Description" className="rounded border px-3 py-2 text-sm" />
-            <input type="number" step="0.01" placeholder="Amount (£)" className="rounded border px-3 py-2 text-sm" />
-            <input type="date" className="rounded border px-3 py-2 text-sm" />
-            <input placeholder="Receipt reference" className="rounded border px-3 py-2 text-sm" />
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Record Transaction</button>
-          </DialogFooter>
+          <form onSubmit={handleCreateTransaction} className="grid gap-3 py-2">
+            <select className="rounded border px-3 py-2 text-sm" value={ypForm.child_id} onChange={(e) => setYPF("child_id", e.target.value)}>
+              <option value="">Young Person…</option>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <option key={y.id} value={y.id}>{y.first_name} {y.last_name}</option>)}
+            </select>
+            <select className="rounded border px-3 py-2 text-sm" value={ypForm.tx_type} onChange={(e) => setYPF("tx_type", e.target.value)}>
+              <option value="">Transaction type…</option>{(Object.keys(YP_SAVINGS_TRANSACTION_TYPE_LABEL) as YPSavingsTransactionType[]).map((k) => <option key={k} value={k}>{YP_SAVINGS_TRANSACTION_TYPE_LABEL[k]}</option>)}
+            </select>
+            <input required placeholder="Description *" className="rounded border px-3 py-2 text-sm" value={ypForm.description} onChange={(e) => setYPF("description", e.target.value)} />
+            <input required type="number" step="0.01" placeholder="Amount (£) *" className="rounded border px-3 py-2 text-sm" value={ypForm.amount} onChange={(e) => setYPF("amount", e.target.value)} />
+            <input type="date" className="rounded border px-3 py-2 text-sm" value={ypForm.date} onChange={(e) => setYPF("date", e.target.value)} />
+            <input placeholder="Receipt reference" className="rounded border px-3 py-2 text-sm" value={ypForm.receipt_ref} onChange={(e) => setYPF("receipt_ref", e.target.value)} />
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createAccount.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90 disabled:opacity-50">{createAccount.isPending ? "Saving…" : "Record Transaction"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

@@ -21,7 +21,7 @@ import {
   Clock, Search, Lock, Shield, Scale, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import {
   DoLRecord, DoLRestrictionType, DoLLegalBasis, DoLReviewStatus,
   DoLReviewHistoryEntry,
@@ -41,12 +41,60 @@ const STATUS_BORDER: Record<DoLReviewStatus, string> = { current: "border-l-ambe
 
 export default function DeprivationOfLibertyPage() {
   const { data: raw, isLoading } = useDoLRecords();
+  const createRestriction = useCreateDoLRecord();
   const records = raw?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showNew, setShowNew] = useState(false);
+
+  const [dolForm, setDolForm] = useState({
+    child_id: "",
+    restriction_type: "" as DoLRestrictionType | "",
+    description: "",
+    necessary_justification: "",
+    child_views: "",
+    legal_basis: "care_plan" as DoLLegalBasis,
+    authorised_by_id: "staff_darren",
+    date_imposed: new Date().toISOString().slice(0, 10),
+    review_date: "",
+  });
+  const setDF = (k: keyof typeof dolForm, v: string) => setDolForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateRestriction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dolForm.child_id || !dolForm.restriction_type || !dolForm.description.trim()) {
+      toast.error("Young person, restriction type and description are required.");
+      return;
+    }
+    await createRestriction.mutateAsync({
+      child_id: dolForm.child_id,
+      restriction_type: dolForm.restriction_type as DoLRestrictionType,
+      description: dolForm.description.trim(),
+      legal_basis: dolForm.legal_basis,
+      authorised_by_id: dolForm.authorised_by_id,
+      date_imposed: dolForm.date_imposed,
+      review_date: dolForm.review_date || new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+      status: "current" as DoLReviewStatus,
+      proportionate: true,
+      necessary_justification: dolForm.necessary_justification,
+      child_consulted: false,
+      child_views: dolForm.child_views,
+      sw_consulted: false,
+      sw_views: "",
+      ilo_consulted: false,
+      court_authorised: false,
+      court_ref: "",
+      alternatives_considered: [],
+      impact_on_child: "",
+      review_history: [],
+      notes: "",
+    });
+    toast.success("Restriction logged.");
+    setDolForm({ child_id: "", restriction_type: "", description: "", necessary_justification: "", child_views: "", legal_basis: "care_plan", authorised_by_id: "staff_darren", date_imposed: new Date().toISOString().slice(0, 10), review_date: "" });
+    setShowNew(false);
+  };
 
   const filtered = useMemo(() => {
     let rows = [...records];
@@ -250,20 +298,18 @@ export default function DeprivationOfLibertyPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Restriction</DialogTitle></DialogHeader>
-          <div className="space-y-3">
+          <form onSubmit={handleCreateRestriction} className="space-y-3">
             <div>
-              <Label>Young Person</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select YP" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                  <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                  <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
-                </SelectContent>
+              <Label>Young Person *</Label>
+              <Select value={dolForm.child_id} onValueChange={(v) => setDF("child_id", v)}>
+                <SelectTrigger><SelectValue placeholder="Select YP" /></SelectTrigger>
+                <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Restriction Type</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+              <Label>Restriction Type *</Label>
+              <Select value={dolForm.restriction_type} onValueChange={(v) => setDF("restriction_type", v)}>
+                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(DOL_RESTRICTION_TYPE_LABEL) as [DoLRestrictionType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -271,14 +317,30 @@ export default function DeprivationOfLibertyPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Description</Label><Textarea placeholder="Describe the restriction in detail..." /></div>
-            <div><Label>Justification</Label><Textarea placeholder="Why is this necessary and proportionate?" /></div>
-            <div><Label>Child&apos;s Views</Label><Textarea placeholder="What does the child think about this restriction?" /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={() => setShowNew(false)}>Log Restriction</Button>
-          </DialogFooter>
+            <div><Label>Legal Basis</Label>
+              <Select value={dolForm.legal_basis} onValueChange={(v) => setDF("legal_basis", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{(Object.entries(DOL_LEGAL_BASIS_LABEL) as [DoLLegalBasis, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>Authorised By</Label>
+              <Select value={dolForm.authorised_by_id} onValueChange={(v) => setDF("authorised_by_id", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><Label>Date Imposed</Label><Input type="date" value={dolForm.date_imposed} onChange={(e) => setDF("date_imposed", e.target.value)} /></div>
+              <div><Label>Review Date</Label><Input type="date" value={dolForm.review_date} onChange={(e) => setDF("review_date", e.target.value)} /></div>
+            </div>
+            <div><Label>Description *</Label><Textarea placeholder="Describe the restriction in detail..." value={dolForm.description} onChange={(e) => setDF("description", e.target.value)} /></div>
+            <div><Label>Justification</Label><Textarea placeholder="Why is this necessary and proportionate?" value={dolForm.necessary_justification} onChange={(e) => setDF("necessary_justification", e.target.value)} /></div>
+            <div><Label>Child&apos;s Views</Label><Textarea placeholder="What does the child think about this restriction?" value={dolForm.child_views} onChange={(e) => setDF("child_views", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createRestriction.isPending}>{createRestriction.isPending ? "Logging…" : "Log Restriction"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel
