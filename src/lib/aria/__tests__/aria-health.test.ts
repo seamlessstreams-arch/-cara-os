@@ -1,0 +1,283 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Tests: aria-health.ts
+//
+// Tests the health module without needing live Supabase or provider keys.
+// Supabase and fetch are mocked at the module boundary.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { computeCommandRegistryStats } from "../aria-health";
+import type { AriaCommandSpec } from "../aria-types";
+
+// ─── computeCommandRegistryStats ─────────────────────────────────────────────
+
+describe("computeCommandRegistryStats", () => {
+  it("counts total commands correctly", () => {
+    const commands: Record<string, AriaCommandSpec> = {
+      improve_writing: {
+        id: "improve_writing",
+        label: "Improve writing",
+        description: "Improve writing.",
+        modules: [],
+        requiredPermission: "aria.rewrite",
+        approvalRequired: true,
+        canCreateTasks: false,
+        canCommit: false,
+        riskLevel: "low",
+        systemPromptFragment: "",
+      },
+      draft_daily_log: {
+        id: "draft_daily_log",
+        label: "Draft daily log",
+        description: "Draft a daily log entry.",
+        modules: ["daily_log"],
+        requiredPermission: "aria.generate_drafts",
+        approvalRequired: true,
+        canCreateTasks: false,
+        canCommit: false,
+        riskLevel: "low",
+        systemPromptFragment: "",
+      },
+      draft_incident_record: {
+        id: "draft_incident_record",
+        label: "Draft incident record",
+        description: "Draft an incident record.",
+        modules: ["incident"],
+        requiredPermission: "aria.generate_drafts",
+        approvalRequired: true,
+        canCreateTasks: true,
+        canCommit: false,
+        riskLevel: "high",
+        systemPromptFragment: "",
+      },
+    };
+
+    const stats = computeCommandRegistryStats(commands);
+
+    expect(stats.totalCommands).toBe(3);
+  });
+
+  it("sets hasGeneralCommands true when any command has empty modules array", () => {
+    const commands: Record<string, AriaCommandSpec> = {
+      improve_writing: {
+        id: "improve_writing",
+        label: "Improve writing",
+        description: "",
+        modules: [], // ← general
+        requiredPermission: "aria.rewrite",
+        approvalRequired: true,
+        canCreateTasks: false,
+        canCommit: false,
+        riskLevel: "low",
+        systemPromptFragment: "",
+      },
+    };
+
+    const stats = computeCommandRegistryStats(commands);
+    expect(stats.hasGeneralCommands).toBe(true);
+    expect(stats.commandsByModule["general"]).toBe(1);
+  });
+
+  it("sets hasGeneralCommands false when all commands have specific modules", () => {
+    const commands: Record<string, AriaCommandSpec> = {
+      draft_daily_log: {
+        id: "draft_daily_log",
+        label: "Draft daily log",
+        description: "",
+        modules: ["daily_log"],
+        requiredPermission: "aria.generate_drafts",
+        approvalRequired: true,
+        canCreateTasks: false,
+        canCommit: false,
+        riskLevel: "low",
+        systemPromptFragment: "",
+      },
+    };
+
+    const stats = computeCommandRegistryStats(commands);
+    expect(stats.hasGeneralCommands).toBe(false);
+    expect(stats.commandsByModule["daily_log"]).toBe(1);
+  });
+
+  it("accumulates module counts across multiple commands", () => {
+    const commands: Record<string, AriaCommandSpec> = {
+      cmd1: {
+        id: "draft_daily_log",
+        label: "A",
+        description: "",
+        modules: ["incident", "daily_log"],
+        requiredPermission: "aria.generate_drafts",
+        approvalRequired: true,
+        canCreateTasks: false,
+        canCommit: false,
+        riskLevel: "low",
+        systemPromptFragment: "",
+      },
+      cmd2: {
+        id: "check_incident_chronology",
+        label: "B",
+        description: "",
+        modules: ["incident"],
+        requiredPermission: "aria.analyse_risk",
+        approvalRequired: true,
+        canCreateTasks: false,
+        canCommit: false,
+        riskLevel: "medium",
+        systemPromptFragment: "",
+      },
+    };
+
+    const stats = computeCommandRegistryStats(commands);
+    expect(stats.commandsByModule["incident"]).toBe(2);
+    expect(stats.commandsByModule["daily_log"]).toBe(1);
+  });
+
+  it("reports modulesWithDedicatedCommands correctly", () => {
+    const commands: Record<string, AriaCommandSpec> = {
+      cmd1: {
+        id: "draft_daily_log",
+        label: "A",
+        description: "",
+        modules: ["daily_log", "shift_summary"],
+        requiredPermission: "aria.generate_drafts",
+        approvalRequired: true,
+        canCreateTasks: false,
+        canCommit: false,
+        riskLevel: "low",
+        systemPromptFragment: "",
+      },
+    };
+
+    const stats = computeCommandRegistryStats(commands);
+    expect(stats.modulesWithDedicatedCommands).toContain("daily_log");
+    expect(stats.modulesWithDedicatedCommands).toContain("shift_summary");
+    expect(stats.modulesWithDedicatedCommands).not.toContain("incident");
+  });
+
+  it("handles empty command registry gracefully", () => {
+    const stats = computeCommandRegistryStats({});
+    expect(stats.totalCommands).toBe(0);
+    expect(stats.hasGeneralCommands).toBe(false);
+    expect(stats.modulesWithDedicatedCommands).toEqual([]);
+    expect(stats.commandsByModule).toEqual({});
+  });
+});
+
+// ─── checkAriaHealth (unit — no live calls) ───────────────────────────────────
+
+describe("checkAriaHealth — env var checks (no Supabase or provider calls)", () => {
+  // We import the function lazily inside each test to allow env manipulation.
+  // The module uses process.env at call-time so this is safe.
+
+  beforeEach(() => {
+    // Clear ARIA-related env vars so each test starts clean
+    delete process.env.OPENAI_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns not_configured when no providers are set", async () => {
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth({ deepTest: false });
+
+    expect(health.overallStatus).toBe("not_configured");
+    expect(health.openai.configured).toBe(false);
+    expect(health.anthropic.configured).toBe(false);
+    expect(health.openai.testCallStatus).toBe("not_configured");
+    expect(health.anthropic.testCallStatus).toBe("not_configured");
+  });
+
+  it("marks openai as configured when OPENAI_API_KEY is set", async () => {
+    process.env.OPENAI_API_KEY = "sk-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth({ deepTest: false });
+
+    expect(health.openai.configured).toBe(true);
+    // No deep test, so status should be skipped
+    expect(health.openai.testCallStatus).toBe("skipped");
+  });
+
+  it("marks anthropic as configured when ANTHROPIC_API_KEY is set", async () => {
+    process.env.ANTHROPIC_API_KEY = "sk-ant-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth({ deepTest: false });
+
+    expect(health.anthropic.configured).toBe(true);
+    expect(health.anthropic.testCallStatus).toBe("skipped");
+  });
+
+  it("does not mark placeholder values as configured", async () => {
+    process.env.OPENAI_API_KEY = "your-openai-key-placeholder";
+    process.env.ANTHROPIC_API_KEY = "placeholder";
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth({ deepTest: false });
+
+    expect(health.openai.configured).toBe(false);
+    expect(health.anthropic.configured).toBe(false);
+  });
+
+  it("includes supabase not configured recommendation", async () => {
+    process.env.OPENAI_API_KEY = "sk-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth({ deepTest: false });
+
+    expect(health.recommendations.some((r) => r.toLowerCase().includes("supabase"))).toBe(true);
+  });
+
+  it("adds OPENAI_API_KEY recommendation when not configured", async () => {
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth();
+
+    expect(health.recommendations.some((r) => r.includes("OPENAI_API_KEY"))).toBe(true);
+  });
+
+  it("adds ANTHROPIC_API_KEY recommendation when not configured", async () => {
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth();
+
+    expect(health.recommendations.some((r) => r.includes("ANTHROPIC_API_KEY"))).toBe(true);
+  });
+
+  it("includes lastCheckedAt as an ISO string", async () => {
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth();
+
+    expect(health.lastCheckedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it("returns partial when one provider is configured but Supabase is not", async () => {
+    process.env.OPENAI_API_KEY = "sk-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth({ deepTest: false });
+
+    expect(health.overallStatus).toBe("partial");
+  });
+
+  it("uses commandStats passed in for command registry health", async () => {
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth({
+      commandStats: {
+        totalCommands: 50,
+        commandsByModule: { general: 20, daily_log: 5, incident: 8 },
+        hasGeneralCommands: true,
+        modulesWithDedicatedCommands: ["daily_log", "incident"],
+      },
+    });
+
+    expect(health.commandRegistry.totalCommands).toBe(50);
+    expect(health.commandRegistry.hasGeneralCommands).toBe(true);
+    expect(health.commandRegistry.commandsByModule["general"]).toBe(20);
+  });
+
+  it("returns zero module coverage when no commandStats provided", async () => {
+    const { checkAriaHealth } = await import("../aria-health");
+    const health = await checkAriaHealth();
+
+    expect(health.commandRegistry.totalCommands).toBe(0);
+  });
+});

@@ -198,6 +198,87 @@ The next iteration should add Vitest specs for:
 - `applyApprovalDecision` lifecycle transitions.
 - Transcribe route validation (empty file, oversized file,
   unsupported mime, missing key).
+
+---
+
+## Phase 1 — Health and Diagnostics System
+
+Shipped in the same release as the universal layer upgrade.
+
+### Files
+
+| File | Purpose |
+| --- | --- |
+| `src/lib/aria/aria-health.ts` | Server-only health check module |
+| `src/app/api/v1/aria/health/route.ts` | `GET /api/v1/aria/health` HTTP endpoint |
+| `src/hooks/use-aria-health.ts` | Client-side React Query hook |
+| `src/components/aria/aria-health-panel.tsx` | Full health dashboard UI component |
+| `src/lib/aria/__tests__/aria-health.test.ts` | 17 Vitest unit tests (all passing) |
+
+### `GET /api/v1/aria/health`
+
+Returns a typed `AriaHealthStatus` object.
+
+**Auth**: Requires `x-aria-role` and `x-aria-user-id` request headers. Allowed roles: `registered_manager`, `responsible_individual`, `deputy_manager`. Checks `aria.view_audit_logs` permission.
+
+**Query parameters**:
+- `?deep=true` — runs a live 1-token provider test call (OpenAI and/or Anthropic). Restricted to `responsible_individual`. Costs real tokens. Use sparingly.
+
+**Response headers**:
+- `Cache-Control: no-store`
+- `X-ARIA-Health: <overallStatus>`
+
+### Overall status values
+
+| Status | Meaning |
+| --- | --- |
+| `full_capacity` | Both providers configured + Supabase connected + audit writable |
+| `partial` | At least one provider configured but Supabase not connected |
+| `degraded` | Provider + DB present but deep test failed or audit not writable |
+| `not_configured` | No providers configured |
+| `error` | Unexpected error during health check |
+
+### ARIA platform module coverage
+
+The health system tracks coverage across 27 platform modules:
+
+`daily_log`, `shift_summary`, `key_work`, `incident`, `complaint`,
+`management_oversight`, `ri_oversight`, `regulation_44`, `regulation_45`,
+`safeguarding`, `missing_episode`, `behaviour_support`, `risk_assessment`,
+`care_plan`, `placement_plan`, `hr_supervision`, `hr_investigation`,
+`hr_recruitment`, `hr_training`, `audit`, `document`, `task`, `calendar`,
+`health_record`, `education_record`, `family_contact`, `independent_living`.
+
+Coverage percentage = modules with at least one dedicated ARIA command ÷ 27.
+
+### AriaHealthPanel component
+
+Drop-in dashboard component for manager pages.
+
+```tsx
+import { AriaHealthPanel, AriaStatusBadge } from "@/components/aria/aria-health-panel";
+
+// Full dashboard
+<AriaHealthPanel userRole="registered_manager" userId={user.id} className="mb-6" />
+
+// Compact status badge
+<AriaStatusBadge userRole="registered_manager" userId={user.id} />
+```
+
+Allowed roles: `registered_manager`, `responsible_individual`, `deputy_manager`.
+Deep test button only visible to `responsible_individual`.
+
+### `useAriaHealth` hook
+
+```ts
+import { useAriaHealth, useAriaHealthDeepTest } from "@/hooks/use-aria-health";
+
+const { data, isLoading, isError } = useAriaHealth(role, userId);
+const deepTest = useAriaHealthDeepTest(role, userId);
+deepTest.mutate(); // triggers a live provider test
+```
+
+Fetches from `/api/v1/aria/health`. Cache stale time: 5 minutes. Only enabled when role + userId are present.
 - `useAudioRecorder` state machine.
 
 ## Safety note

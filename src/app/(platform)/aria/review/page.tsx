@@ -13,6 +13,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaHealthPanel } from "@/components/aria/aria-health-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -293,6 +294,13 @@ export default function AriaReviewQueuePage() {
       title="Aria Review Queue"
       subtitle="Every Aria suggestion requires human review. Approve, reject, amend or mark as no action required."
     >
+      {/* ARIA health diagnostics — visible to managers only */}
+      <AriaHealthPanel
+        userRole="registered_manager"
+        userId="current_user"
+        className="mb-6"
+      />
+
       {/* Stat strip */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <StatCard label="Total" value={counts.total} colour="text-slate-700" bg="bg-slate-50" icon={BarChart3} />
