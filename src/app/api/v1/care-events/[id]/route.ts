@@ -29,12 +29,20 @@ export async function GET(
   const routes = db.careEventRoutes.findByCareEvent(id);
   const auditLog = db.careEventAuditLog.findByCareEvent(id);
 
+  // Resolve names
+  const staffMember = event.staff_id ? db.staff.findById(event.staff_id) : null;
+  const youngPerson = event.child_id ? db.youngPeople.findById(event.child_id) : null;
+  const verifier    = event.verified_by ? db.staff.findById(event.verified_by) : null;
+
   return NextResponse.json({
     data: {
       ...event,
       routes,
       audit_log: auditLog,
       routing_preview: buildRoutingPreview(routes.map((r) => r.route_type)),
+      staff_name:    staffMember ? `${staffMember.first_name} ${staffMember.last_name}` : event.staff_id,
+      child_name:    youngPerson ? `${youngPerson.first_name} ${youngPerson.last_name}` : event.child_id ?? null,
+      verified_by_name: verifier ? `${verifier.first_name} ${verifier.last_name}` : event.verified_by ?? null,
     },
   });
 }

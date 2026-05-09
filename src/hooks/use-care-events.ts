@@ -40,6 +40,9 @@ interface CareEventDetailResponse {
     routes: CareEventRoute[];
     audit_log: CareEventAuditLog[];
     routing_preview: string[];
+    staff_name: string | null;
+    child_name: string | null;
+    verified_by_name: string | null;
   };
 }
 

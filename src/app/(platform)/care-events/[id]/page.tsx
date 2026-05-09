@@ -690,7 +690,8 @@ export default function CareEventDetailPage({
           {event.routing_summary && (
             <Card className="border-emerald-100">
               <CardContent className="p-4 space-y-2">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
                   Routing summary
                 </p>
                 {[
@@ -701,19 +702,51 @@ export default function CareEventDetailPage({
                 ].map((row) => (
                   <div key={row.label} className="flex items-center justify-between text-sm">
                     <span className="text-slate-500">{row.label}</span>
-                    <span className="font-semibold text-slate-800">{row.value}</span>
+                    <span className={`font-semibold ${row.value > 0 ? "text-emerald-700" : "text-slate-400"}`}>{row.value}</span>
                   </div>
                 ))}
                 {event.routing_summary.areas_updated.length > 0 && (
                   <div className="pt-1 flex flex-wrap gap-1">
-                    {event.routing_summary.areas_updated.map((area) => (
-                      <span
-                        key={area}
-                        className="text-xs bg-slate-100 text-slate-600 rounded px-1.5 py-0.5"
-                      >
-                        {area}
-                      </span>
-                    ))}
+                    {event.routing_summary.areas_updated.map((area) => {
+                      // Map display area name to a path if possible
+                      const areaPathMap: Record<string, string> = {
+                        "Incidents": "/incidents",
+                        "Missing from care": "/missing-from-care",
+                        "Restraint log": "/restraint-log",
+                        "Tasks": "/tasks",
+                        "Education records": "/education",
+                        "Health records": "/health-records",
+                        "Filing cabinet": "/filing-cabinet",
+                        "Management oversight": "/management-oversight",
+                        "Regulation 40": "/regulation-40",
+                        "Regulation 45": "/regulation-45",
+                        "Annex A": "/annex-a",
+                        "Daily log": "/daily-log",
+                        "Child daily summaries": "/child-daily-summaries",
+                        "Safeguarding": "/safeguarding",
+                        "Family contact": "/family-contact",
+                        "Complaints": "/complaints",
+                        "Behaviour log": "/behaviour-log",
+                        "Medication": "/medication",
+                      };
+                      const href = areaPathMap[area];
+                      return href ? (
+                        <Link
+                          key={area}
+                          href={href}
+                          className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 rounded px-1.5 py-0.5 transition-colors"
+                        >
+                          {area}
+                        </Link>
+                      ) : (
+                        <span
+                          key={area}
+                          className="text-xs bg-slate-100 text-slate-600 rounded px-1.5 py-0.5"
+                        >
+                          {area}
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -730,20 +763,26 @@ export default function CareEventDetailPage({
                 <div className="flex items-center gap-2">
                   <User className="w-3.5 h-3.5 text-slate-400" />
                   <span className="text-slate-500">Staff</span>
-                  <span className="ml-auto font-medium text-slate-700">{event.staff_id}</span>
+                  <span className="ml-auto font-medium text-slate-700">
+                    {(event as never as { staff_name?: string }).staff_name ?? event.staff_id}
+                  </span>
                 </div>
                 {event.child_id && (
                   <div className="flex items-center gap-2">
                     <User className="w-3.5 h-3.5 text-slate-400" />
                     <span className="text-slate-500">Young person</span>
-                    <span className="ml-auto font-medium text-slate-700">{event.child_id}</span>
+                    <span className="ml-auto font-medium text-slate-700">
+                      {(event as never as { child_name?: string }).child_name ?? event.child_id}
+                    </span>
                   </div>
                 )}
                 {event.verified_by && (
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                     <span className="text-slate-500">Verified by</span>
-                    <span className="ml-auto font-medium text-slate-700">{event.verified_by}</span>
+                    <span className="ml-auto font-medium text-slate-700">
+                      {(event as never as { verified_by_name?: string }).verified_by_name ?? event.verified_by}
+                    </span>
                   </div>
                 )}
               </div>
