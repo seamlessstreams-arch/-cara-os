@@ -29,6 +29,13 @@ import {
   useEvidenceItems,
 } from "@/hooks/use-intelligence-layer";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
+import { useIncidents } from "@/hooks/use-incidents";
+import { useYoungPeople } from "@/hooks/use-young-people";
+import { useKeyWorkingSessions } from "@/hooks/use-key-working";
+import { runProactiveAlertScan, type ProactiveAlert } from "@/lib/aria/aria-proactive-alerts";
+import type { IncidentRecord } from "@/lib/aria/aria-pattern-engine";
+import type { ChildRecord, IncidentSummary } from "@/lib/aria/aria-voice-gap-analysis";
+import Link from "next/link";
 import type {
   AttentionCategory,
   Urgency,
@@ -358,6 +365,54 @@ export default function ManagerControlCentrePage() {
   const { data: voiceData } = useVoiceEntries();
   const { data: evidenceData } = useEvidenceItems();
 
+  // ── ARIA proactive alert engine ─────────────────────────────────────────
+  const { data: incidentsData } = useIncidents();
+  const { data: ypData }        = useYoungPeople();
+  const { data: kwData }        = useKeyWorkingSessions();
+
+  const ariaAlerts = useMemo<ProactiveAlert[]>(() => {
+    const incidents   = incidentsData?.data ?? [];
+    const youngPeople = ypData?.data ?? [];
+    const kwSessions  = kwData?.data ?? [];
+    if (incidents.length === 0) return [];
+
+    const incidentRecords: IncidentRecord[] = incidents.map((i) => ({
+      id: i.id, reference: i.reference, type: i.type, severity: i.severity,
+      child_id: i.child_id, reported_by: i.reported_by, date: i.date,
+      time: i.time ?? undefined, location: i.location ?? undefined,
+      description: i.description, status: i.status,
+      requires_oversight: i.requires_oversight,
+      oversight_by: i.oversight_by, oversight_at: i.oversight_at,
+      home_id: "oak-house",
+    }));
+
+    const childRecords: ChildRecord[] = kwSessions.map((s) => ({
+      id: s.id, childId: s.child_id,
+      childName: youngPeople.find((yp) => yp.id === s.child_id)
+        ? `${youngPeople.find((yp) => yp.id === s.child_id)!.preferred_name ?? youngPeople.find((yp) => yp.id === s.child_id)!.first_name} ${youngPeople.find((yp) => yp.id === s.child_id)!.last_name}`
+        : s.child_id,
+      recordType: "key_work", date: s.date,
+      hasDirectQuote: (s.child_voice?.length ?? 0) > 0,
+      themes: s.topics ?? [], wordCount: s.child_voice?.split(/\s+/).length ?? 0,
+    }));
+
+    const incidentSummaries: IncidentSummary[] = incidents.map((i) => ({
+      id: i.id, childId: i.child_id, date: i.date,
+      type: i.type, severity: i.severity, hasPostIncidentVoice: false,
+    }));
+
+    const children = youngPeople.map((yp) => ({
+      id: yp.id, name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
+    }));
+
+    try {
+      return runProactiveAlertScan({
+        incidents: incidentRecords, childRecords, incidentSummaries,
+        children, complianceChecks: [], homeId: "oak-house",
+      }).alerts;
+    } catch { return []; }
+  }, [incidentsData, ypData, kwData]);
+
   const [items, setItems] = useState<AttentionItem[]>(DEMO_ITEMS);
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterUrgency, setFilterUrgency] = useState("all");
@@ -383,6 +438,29 @@ export default function ManagerControlCentrePage() {
       })));
     }
   }, [apiData]);
+
+  // Merge live ARIA proactive alerts into the attention items list
+  useEffect(() => {
+    if (ariaAlerts.length === 0) return;
+    const severityToUrgency = (s: string): Urgency =>
+      s === "urgent" ? "critical" : s === "high" ? "high" : s === "medium" ? "medium" : "low";
+    const ariaItems: AttentionItem[] = ariaAlerts.map((a) => ({
+      id:             `aria_${a.id}`,
+      title:          a.title,
+      category:       "aria_pattern" as AttentionCategory,
+      urgency:        severityToUrgency(a.severity),
+      status:         "open" as AttentionStatus,
+      reason:         a.description,
+      suggestedAction: a.recommendation,
+      childName:      undefined,
+      staffName:      undefined,
+      createdAt:      a.detectedAt,
+    }));
+    setItems((prev) => [
+      ...prev.filter((i) => i.category !== "aria_pattern"),
+      ...ariaItems,
+    ]);
+  }, [ariaAlerts]);
 
   const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
@@ -579,6 +657,30 @@ export default function ManagerControlCentrePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── ARIA proactive intelligence panel ─────────────────────────────── */}
+      {ariaAlerts.length > 0 && (
+        <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 mb-4 flex items-start gap-3">
+          <Brain className="h-5 w-5 text-violet-600 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-violet-900">
+              ARIA has detected {ariaAlerts.length} proactive {ariaAlerts.length === 1 ? "alert" : "alerts"} from live records
+            </p>
+            <p className="text-xs text-violet-700 mt-0.5">
+              {ariaAlerts.filter((a) => a.severity === "urgent").length} urgent ·{" "}
+              {ariaAlerts.filter((a) => a.severity === "high").length} high ·{" "}
+              {ariaAlerts.filter((a) => a.severity === "medium").length} medium —
+              patterns, voice gaps and compliance concerns surfaced automatically
+            </p>
+          </div>
+          <Link href="/intelligence/aria/pattern-intelligence">
+            <Button size="sm" variant="outline" className="gap-1.5 text-violet-700 border-violet-300 hover:bg-violet-100 shrink-0">
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              View all
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* ── critical alert banner ─────────────────────────────────────────── */}
       {stats[0].value > 0 && (
