@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -148,6 +148,7 @@ export default function MenstrualHealthTrackerPage() {
     <PageShell
       title="Menstrual Health Tracker"
       subtitle="Quality Standard 7 (Health & wellbeing) · Period Products (Free Provision) Scotland Act principles applied as best practice · Sensitive record"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Menstrual Health Tracker" />

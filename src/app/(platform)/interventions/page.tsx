@@ -668,6 +668,7 @@ export default function InterventionsPage() {
     <PageShell
       title="Interventions"
       subtitle="Child-centred interventions — tracking what we are doing, why, and whether it is working"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">

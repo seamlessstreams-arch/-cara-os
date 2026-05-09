@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -122,6 +122,7 @@ export default function PositiveAchievementsPage() {
     <PageShell
       title="Positive Achievements"
       subtitle="Celebrating strengths, progress, and moments of pride"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Positive Achievements" />

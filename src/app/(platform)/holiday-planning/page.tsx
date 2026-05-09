@@ -662,6 +662,7 @@ export default function HolidayPlanningPage() {
     <PageShell
       title="Holiday & Trip Planning"
       subtitle="Planned outings, day trips, holidays, and residential trips for young people"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={TRIP_EXPORT_COLS} filename="holiday-trip-planning" />

@@ -185,6 +185,7 @@ export default function SanctionsRewardsPage() {
     <PageShell
       title="Sanctions & Rewards"
       subtitle="Positive reinforcement and proportionate consequences"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Sanctions & Rewards" subtitle="Oak House — Behaviour Management" />

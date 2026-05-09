@@ -173,6 +173,7 @@ export default function TasksPage() {
     <PageShell
       title="Tasks"
       subtitle={`${filtered.length} task${filtered.length !== 1 ? "s" : ""} ${hasFilters ? "(filtered)" : ""}`}
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={TASKS_QUICK_CREATE_CONTEXT}
       actions={
         <div className="flex items-center gap-2">

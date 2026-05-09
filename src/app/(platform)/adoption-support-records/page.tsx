@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -136,6 +136,7 @@ export default function AdoptionSupportRecordsPage() {
     <PageShell
       title="Adoption Support Records"
       subtitle="Tracking children whose care plan is adoption — preparation, introductions, post-placement support"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Adoption Support Records" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="adoption-support-records" />,

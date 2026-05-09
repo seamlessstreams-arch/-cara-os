@@ -107,6 +107,7 @@ export default function LeadershipReadinessPage() {
     <PageShell
       title="Leadership Readiness Panel"
       subtitle="ARIA gap analysis for Team Leader → RM → RI succession track"
+      ariaContext={{ pageTitle: "Oak House — Succession Planning", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

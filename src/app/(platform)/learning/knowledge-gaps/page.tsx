@@ -341,6 +341,7 @@ export default function KnowledgeGapsPage() {
     <PageShell
       title="Knowledge Gaps"
       subtitle="Track and address knowledge gaps across the team"
+      ariaContext={{ pageTitle: "Oak House — Knowledge Gap Analysis", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

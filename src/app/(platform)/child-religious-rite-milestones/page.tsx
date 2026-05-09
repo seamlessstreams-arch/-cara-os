@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -143,6 +143,7 @@ export default function ChildReligiousRiteMilestonesPage() {
     <PageShell
       title="Religious Rites & Milestones"
       subtitle="Per-child rite-of-passage record — honouring faith milestones in care, including those that pre-date the placement"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-religious-rite-milestones" />

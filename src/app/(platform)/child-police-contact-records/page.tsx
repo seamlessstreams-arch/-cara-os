@@ -11,7 +11,7 @@ import {
   Search,
   Phone,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn, formatDate } from "@/lib/utils";
@@ -155,6 +155,7 @@ export default function ChildPoliceContactRecordsPage() {
     <PageShell
       title="Child Police Contact Records"
       subtitle="Concordat on Children in Care — proportionate response, advocacy, restorative practice"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="police-contact-records" />

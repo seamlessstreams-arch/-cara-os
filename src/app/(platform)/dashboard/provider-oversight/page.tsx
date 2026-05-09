@@ -323,6 +323,7 @@ export default function ProviderOversightPage() {
     <PageShell
       title="RI / Provider Oversight"
       subtitle="Strategic view across all homes — compliance, risks, and readiness"
+      ariaContext={{ pageTitle: "Strategic view across all homes — compliance, risks, and readiness", sourceType: "child_record" }}
     >
       <div className="space-y-6">
         {/* Home Selector */}

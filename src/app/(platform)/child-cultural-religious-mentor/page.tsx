@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -120,6 +120,7 @@ export default function ChildCulturalReligiousMentorPage() {
     <PageShell
       title="Cultural & Religious Mentors"
       subtitle="Per-child community-based cultural or religious mentor matching — when staff don't share a child's heritage, identifying an Imam, Pandit, Rabbi, Pastor, elder or community leader for spiritual or cultural guidance. Co-produced with the child, dignifying, never imposed. Distinct from chosen-family-tracker."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-cultural-religious-mentor" />

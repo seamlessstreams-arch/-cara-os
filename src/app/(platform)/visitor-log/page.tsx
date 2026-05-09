@@ -310,6 +310,7 @@ export default function VisitorLogPage() {
     <PageShell
       title="Visitor Log"
       subtitle="Record of all visitors to the home"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={VISITOR_EXPORT_COLS} filename="visitor-log" />

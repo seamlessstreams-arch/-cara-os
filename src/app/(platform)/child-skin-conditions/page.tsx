@@ -12,7 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import {
@@ -249,6 +249,7 @@ export default function ChildSkinConditionsPage() {
     <PageShell
       title="Skin Condition Plans"
       subtitle="Per-child dermatology care — emollients, topicals, dermatology referrals, school provision, body confidence and sun safety"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Skin Condition Plans" />

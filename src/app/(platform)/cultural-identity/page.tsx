@@ -6,7 +6,7 @@ import {
   CheckCircle2, AlertTriangle, Heart, Star,
   BookOpen, Users, Music,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +57,7 @@ export default function CulturalIdentityPage() {
     <PageShell
       title="Cultural & Identity Plans"
       subtitle="Supporting each child's cultural heritage, identity, and sense of self"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Cultural & Identity Plans" />

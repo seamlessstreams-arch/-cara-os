@@ -164,6 +164,7 @@ export default function StaffProfilesPage() {
     <PageShell
       title="Staff Competency Profiles"
       subtitle="Individual development profiles — click any staff member for a full deep-dive"
+      ariaContext={{ pageTitle: "Oak House — Competency Profiles", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

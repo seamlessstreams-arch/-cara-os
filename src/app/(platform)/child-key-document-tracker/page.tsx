@@ -10,7 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
@@ -181,6 +181,7 @@ export default function ChildKeyDocumentTrackerPage() {
     <PageShell
       title="Child Key Document Tracker"
       subtitle="Critical legal, identity, health & education documents held for each young person — Reg 36 records and transition-to-adulthood preparation"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Child Key Document Tracker" />

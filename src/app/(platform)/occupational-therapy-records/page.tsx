@@ -16,7 +16,7 @@ import {
   FileCheck2,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -238,6 +238,7 @@ export default function OccupationalTherapyRecordsPage() {
     <PageShell
       title="Occupational Therapy Records"
       subtitle="OT input per child — assessments, recommendations, sensory diets and progress (QS 7)"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Occupational Therapy Records" />

@@ -236,6 +236,7 @@ export default function ReferencesPage() {
     <PageShell
       title="References"
       subtitle="Track and verify all candidate references"
+      ariaContext={{ pageTitle: "Oak House — Candidate Reference Tracker", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

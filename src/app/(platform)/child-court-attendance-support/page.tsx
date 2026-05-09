@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -178,6 +178,7 @@ export default function ChildCourtAttendanceSupportPage() {
     <PageShell
       title="Court Attendance Support"
       subtitle="Per-child preparation and support for family, criminal, youth and tribunal proceedings — child-led, trauma-informed, dignified"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="court-attendance-support" />

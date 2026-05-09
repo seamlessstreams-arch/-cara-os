@@ -14,7 +14,7 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -169,6 +169,7 @@ export default function ChildrensMeetingsPage() {
     <PageShell
       title="Children's Meetings"
       subtitle="Child-led meetings — giving children a voice in how the home is run"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Children's Meetings" />

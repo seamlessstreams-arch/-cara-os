@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,6 +134,7 @@ export default function ProfessionalCuriosityLogPage() {
     <PageShell
       title="Professional Curiosity Log"
       subtitle="Reflective practice — challenging our assumptions about children, families, professionals and ourselves"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Professional Curiosity Log" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="professional-curiosity-log" />,

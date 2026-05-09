@@ -6,7 +6,7 @@ import {
   ChevronUp, ChevronDown, ArrowUpDown,
   Search, TrendingUp,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -146,6 +146,7 @@ export default function ChildMentalHealthDailyCheckPage() {
     <PageShell
       title="Daily Mental Health Check-Ins"
       subtitle="Quick child-led mood and wellbeing pulse — a daily moment to ask, listen, and notice patterns"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Daily Mental Health Check-Ins" />

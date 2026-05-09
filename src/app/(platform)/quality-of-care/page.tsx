@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, Eye, Target, MessageSquare,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -135,6 +135,7 @@ export default function QualityOfCarePage() {
     <PageShell
       title="Quality of Care Reviews"
       subtitle="Periodic assessments of care quality across all domains"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Quality of Care Reviews" />

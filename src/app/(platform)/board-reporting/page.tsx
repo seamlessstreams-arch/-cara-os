@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -177,6 +177,7 @@ export default function BoardReportingPage() {
     <PageShell
       title="Board Reporting"
       subtitle="Formal reports submitted to the Responsible Individual and Cornerstone Care Group Board — required by Quality Standard 13 and Regulation 45"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={reports} columns={exportCols} filename="board-reporting" />

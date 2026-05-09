@@ -11,7 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import {
@@ -133,6 +133,7 @@ export default function FireRiskAssessmentPage() {
     <PageShell
       title="Fire Risk Assessment"
       subtitle="Hazards, controls, and remedial actions under the Regulatory Reform (Fire Safety) Order 2005"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Fire Risk Assessment" />

@@ -126,6 +126,7 @@ export default function PracticeObservationsPage() {
     <PageShell
       title="Practice Observations"
       subtitle="Direct observation of staff practice — quality assurance and development evidence"
+      ariaContext={{ pageTitle: "Oak House — Staff Practice Evidence", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

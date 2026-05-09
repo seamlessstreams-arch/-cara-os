@@ -125,6 +125,7 @@ export default function ReportsPage() {
     <PageShell
       title="Reports & Analytics"
       subtitle="Workforce, compliance, incident, and finance reporting for managers, RI, and Ofsted"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "reports", defaultTaskCategory: "admin" }}
       actions={
         <div className="flex items-center gap-2">

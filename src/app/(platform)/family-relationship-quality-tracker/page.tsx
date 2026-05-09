@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -153,6 +153,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
     <PageShell
       title="Family Relationship Quality Tracker"
       subtitle="Quarterly assessments of each child's key family relationships — temperature, indicators, and the impact of our interventions. Quality Standard 9."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton

@@ -12,7 +12,7 @@ import {
   Network,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -139,6 +139,7 @@ export default function ProfessionalNetworkMapPage() {
     <PageShell
       title="Professional Network Map"
       subtitle="Quality Standard 1 — Multi-agency professional contacts for each child"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton<ProfessionalNetworkContact> data={records} columns={exportCols} filename="professional-network-map" />

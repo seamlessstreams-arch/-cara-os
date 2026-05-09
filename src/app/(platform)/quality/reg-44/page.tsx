@@ -379,6 +379,7 @@ export default function Reg44Page() {
     <PageShell
       title="Regulation 44 — Independent Visits"
       subtitle="Quality Assurance  ·  Monthly Independent Visitor Reports & Actions"
+      ariaContext={{ pageTitle: "No actions found", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" className="gap-1.5">

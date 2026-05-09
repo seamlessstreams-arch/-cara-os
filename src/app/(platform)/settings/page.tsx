@@ -457,7 +457,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <PageShell title="Settings" subtitle="Account, home configuration, and preferences" showQuickCreate={false}>
+    <PageShell title="Settings" subtitle="Account, home configuration, and preferences" ariaContext={{ pageTitle: "Settings", sourceType: "general" }} showQuickCreate={false}>
       <div className="flex gap-6">
         <aside className="w-52 shrink-0">
           <nav className="space-y-0.5">

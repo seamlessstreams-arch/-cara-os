@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -98,7 +98,9 @@ export default function LoneWorkingPage() {
   if (isLoading) return <PageShell title="Lone Working Assessments" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
-    <PageShell title="Lone Working Assessments" subtitle="Health & Safety at Work Act 1974 · Management of H&S at Work Regs 1999" actions={<div className="flex items-center gap-2"><PrintButton title="Lone Working" /><ExportButton data={filtered} columns={exportCols} filename="lone-working" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Assessment</Button></div>}>
+    <PageShell title="Lone Working Assessments" subtitle="Health & Safety at Work Act 1974 · Management of H&S at Work Regs 1999" 
+      ariaContext={{ pageTitle: "Lone Working Assessments", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Lone Working" /><ExportButton data={filtered} columns={exportCols} filename="lone-working" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Assessment</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[

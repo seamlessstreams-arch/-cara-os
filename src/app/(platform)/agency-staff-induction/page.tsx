@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,6 +100,7 @@ export default function AgencyStaffInductionPage() {
     <PageShell
       title="Agency Staff Induction"
       subtitle="Reg 32 · Quality Standard 13 · KCSIE 2024 — Induction of agency staff who cover shifts"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Agency Staff Induction" />

@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, User, Phone, Video,
   FileText, Brain, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -123,6 +123,7 @@ export default function StaffCommunicationPreferencesPage() {
     <PageShell
       title="Staff Communication Preferences"
       subtitle="Recording individual communication needs and reasonable adjustments for all team members"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Communication Preferences" />

@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, GraduationCap, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -148,6 +148,7 @@ export default function AbsenceTrackingPage() {
     <PageShell
       title="Absence Tracking"
       subtitle="Monitor school and education attendance for all young people"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Absence Tracking" />

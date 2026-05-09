@@ -8,7 +8,7 @@ import {
   BookOpen, Heart, Brain, Home, Award, Calendar,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -131,6 +131,7 @@ export default function QualityReviewCyclePage() {
     <PageShell
       title="Regulation 46 — Quality of Care Review"
       subtitle="Six-monthly independent systematic review of the quality of care provided"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Regulation 46 Quality Review Cycle" />

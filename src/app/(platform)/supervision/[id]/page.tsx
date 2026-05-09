@@ -269,6 +269,7 @@ export default function SupervisionDetailPage({
     <PageShell
       title="Supervision Record"
       subtitle={`${staffName} · ${typeLabel} · ${formatDate(date)}`}
+      ariaContext={{ pageTitle: "Recent Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Supervision Record" subtitle="Oak House — Supervision Session" targetId="supervision-detail-content" />

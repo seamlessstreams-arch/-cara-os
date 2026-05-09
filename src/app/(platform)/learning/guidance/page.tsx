@@ -199,6 +199,7 @@ export default function GuidanceNotesPage() {
     <PageShell
       title="Guidance Notes"
       subtitle="Generate professional practice guidance for staff or children"
+      ariaContext={{ pageTitle: "Oak House — Practice Guidance", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

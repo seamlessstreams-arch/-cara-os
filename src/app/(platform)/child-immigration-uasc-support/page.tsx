@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -165,6 +165,7 @@ export default function ChildImmigrationUascSupportPage() {
     <PageShell
       title="Child Immigration & UASC Support"
       subtitle="Per-child immigration status, age assessment, asylum claim, family tracing, leave-to-remain reviews — handled with trauma-informed care"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Immigration & UASC Support" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="child-immigration-uasc-support" />,

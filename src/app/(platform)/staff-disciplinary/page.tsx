@@ -14,7 +14,7 @@ import {
   Shield,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -149,6 +149,7 @@ export default function StaffDisciplinaryPage() {
     <PageShell
       title="Staff Disciplinary"
       subtitle="Confidential disciplinary procedure — investigation, hearing and outcomes"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Disciplinary" />

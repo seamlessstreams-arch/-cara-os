@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle2, ChevronDown, ChevronUp,
   ThumbsUp, MessageSquare, ClipboardCheck,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -136,6 +136,7 @@ export default function CommissioningFeedbackPage() {
     <PageShell
       title="Commissioning Feedback"
       subtitle="Feedback from placing local authorities on placement quality, communication, and outcomes"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Commissioning Feedback" />

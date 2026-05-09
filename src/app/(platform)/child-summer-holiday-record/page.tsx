@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -105,6 +105,7 @@ export default function ChildSummerHolidayRecordPage() {
     <PageShell
       title="Child Summer / Holiday Record"
       subtitle="The annual narrative — trips, places, friends, photos, what worked and what didn't. Child-led memory keeping, distinct from operational holiday planning."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-summer-holiday-record" />

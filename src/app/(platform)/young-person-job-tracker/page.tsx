@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -107,6 +107,7 @@ export default function YoungPersonJobTrackerPage() {
 
   return (
     <PageShell title="Young Person Job Tracker" subtitle="Part-time work, volunteering, and apprenticeships — supporting independence, identity, and earnings"
+      ariaContext={{ pageTitle: "Young Person Job Tracker", sourceType: "child_record" }}
       actions={<div className="flex items-center gap-2"><ExportButton data={data} columns={exportCols} filename="young-person-jobs" /><PrintButton title="Young Person Jobs" /></div>}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Active Jobs</p></div>

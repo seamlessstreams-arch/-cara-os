@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -154,6 +154,7 @@ export default function SiblingsContactProtocolPage() {
     <PageShell
       title="Siblings Contact Protocol"
       subtitle="Children Act 1989 s23(7) — sibling duty · Quality Standard 9 (Care Planning)"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Siblings Contact Protocol" />

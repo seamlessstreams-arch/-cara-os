@@ -6,7 +6,7 @@ import {
   AlertTriangle, Users, Layers, Info, CalendarClock,
   Shield, Lightbulb, ClipboardList, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -126,6 +126,7 @@ export default function MultiDisciplinaryFormulationPage() {
     <PageShell
       title="Multi-Disciplinary Formulation"
       subtitle="Collaborative psychological case formulation across CAMHS, social work, education and home staff — aligned with NICE and BPS principles"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Multi-Disciplinary Formulation" />

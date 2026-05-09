@@ -6,7 +6,7 @@ import {
   ClipboardCheck, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2,
   Clock, Send, BookOpen, Calendar, MessageSquare, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -180,6 +180,7 @@ export default function OfstedEngagementLogPage() {
     <PageShell
       title="Ofsted Engagement Log"
       subtitle="All contact with Ofsted between full inspections — notifications, calls, emails, monitoring visits and statutory submissions"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Ofsted Engagement Log" />

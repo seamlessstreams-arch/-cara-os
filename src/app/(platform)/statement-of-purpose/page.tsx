@@ -7,7 +7,7 @@ import {
   Shield, Heart, GraduationCap, Home,
   AlertTriangle,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -134,6 +134,7 @@ export default function StatementOfPurposePage() {
     <PageShell
       title="Statement of Purpose"
       subtitle="Regulation 16 — The home's aims, objectives, and operational details"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Statement of Purpose — Oak House" />

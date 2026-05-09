@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -155,6 +155,7 @@ export default function ProfessionalMeetingAttendancePage() {
     <PageShell
       title="Professional Meeting Attendance"
       subtitle="Home representation at multi-agency professional meetings — Quality Standard 4 & 13, Working Together 2023"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="professional-meeting-attendance" />

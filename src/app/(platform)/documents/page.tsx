@@ -262,6 +262,7 @@ export default function DocumentsPage() {
     <PageShell
       title="Documents"
       subtitle="Secure document storage, version control, and mandatory read-and-sign"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "document" }}
       quickCreateContext={{ module: "documents", defaultTaskCategory: "compliance" }}
       actions={
         <div className="flex items-center gap-2">

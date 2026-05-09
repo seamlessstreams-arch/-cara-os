@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,6 +128,7 @@ export default function ProfessionalConsultationsPage() {
     <PageShell
       title="Professional Consultations"
       subtitle="Recording advice, guidance, and discussions with external professionals"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Professional Consultations" />

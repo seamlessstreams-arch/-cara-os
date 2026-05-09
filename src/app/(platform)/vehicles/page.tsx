@@ -931,6 +931,7 @@ export default function VehiclesPage() {
     <PageShell
       title="Vehicle Compliance"
       subtitle="Fleet management, vehicle checks, and transport compliance"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "vehicles", defaultTaskCategory: "maintenance" }}
       actions={
         <div className="flex items-center gap-2">

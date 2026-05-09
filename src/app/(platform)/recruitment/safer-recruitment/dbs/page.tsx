@@ -156,6 +156,7 @@ export default function DBSTrackerPage() {
     <PageShell
       title="DBS Tracker"
       subtitle="Enhanced DBS certificate management — Schedule 7 compliant"
+      ariaContext={{ pageTitle: "Oak House — DBS Certificate Management", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

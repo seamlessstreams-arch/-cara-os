@@ -803,6 +803,7 @@ export default function InspectionPage() {
     <PageShell
       title="Inspection Readiness"
       subtitle="Ofsted inspection tracker, readiness scoring, and evidence preparation"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "inspection", defaultTaskCategory: "inspection", defaultFormType: "review_meeting_notes" }}
       actions={
         <div className="flex gap-2">

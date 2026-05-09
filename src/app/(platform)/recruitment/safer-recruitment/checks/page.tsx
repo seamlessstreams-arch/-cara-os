@@ -145,6 +145,7 @@ export default function ChecksPage() {
     <PageShell
       title="Compliance Checks"
       subtitle="Single Central Record — compliance status for all candidates"
+      ariaContext={{ pageTitle: "SCR grid export is available from the Audit page.", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <PrintButton title="Compliance Checks" subtitle="Oak House — Single Central Record" targetId="sr-checks-content" />

@@ -7,7 +7,7 @@ import {
   Database, Archive, MapPin, XCircle,
   ClipboardCheck, X, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -82,6 +82,7 @@ export default function Reg22RecordsPage() {
     <PageShell
       title="Regulation 22 Records"
       subtitle="Schedule 3 statutory records — compliance tracker"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Regulation 22 Records" subtitle="Oak House — Schedule 3 Compliance" />

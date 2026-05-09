@@ -349,6 +349,7 @@ export default function FormsPage() {
     <PageShell
       title="Care Forms"
       subtitle={`${filtered.length} form${filtered.length !== 1 ? "s" : ""} ${hasFilters ? "(filtered)" : ""}`}
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={FORMS_QUICK_CREATE_CONTEXT}
       actions={
         <div className="flex items-center gap-2">

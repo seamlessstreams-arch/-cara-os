@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,7 +82,9 @@ export default function SupervisionTrackerPage() {
   }
 
   return (
-    <PageShell title="Supervision Compliance Tracker" subtitle="Reg 33 · Staff Supervision · Workforce Development" actions={<div className="flex items-center gap-2"><PrintButton title="Supervision Tracker" /><ExportButton data={records} columns={exportCols} filename="supervision-tracker" /></div>}>
+    <PageShell title="Supervision Compliance Tracker" subtitle="Reg 33 · Staff Supervision · Workforce Development" 
+      ariaContext={{ pageTitle: "Supervision Compliance Tracker", sourceType: "staff" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Supervision Tracker" /><ExportButton data={records} columns={exportCols} filename="supervision-tracker" /></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[

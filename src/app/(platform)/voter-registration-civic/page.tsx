@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -243,6 +243,7 @@ export default function VoterRegistrationCivicPage() {
     <PageShell
       title="Voter Registration & Civic Participation"
       subtitle="Per-young-person civic engagement — voter registration (16+ attainer in some elections), voter ID, elections, contacting representatives, causes of interest, community activities. Children in care vote less than peers — this work changes that."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="voter-registration-civic" />

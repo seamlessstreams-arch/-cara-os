@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -93,6 +93,7 @@ export default function MedicationStorageAuditPage() {
     <PageShell
       title="Medication Storage Audit"
       subtitle="Regular audits of all medication storage locations — security, temperature, expiry, records"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="medication-storage-audit" />

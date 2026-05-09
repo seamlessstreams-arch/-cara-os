@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -111,6 +111,7 @@ export default function PostIncidentDebriefWithChildPage() {
     <PageShell
       title="Post-Incident Debrief with Child"
       subtitle="Restorative · Child-Led Reflection · Quality Standard 5 · Repair & Forward Planning"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Post-Incident Debrief with Child" />

@@ -5,7 +5,7 @@ import {
   ChevronDown, ChevronUp, Users, Plus, ArrowUpDown, Search,
   Clock, CheckCircle2, Calendar, AlertTriangle, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -164,6 +164,7 @@ export default function MultiAgencyMeetingsPage() {
     <PageShell
       title="Multi-Agency Meetings"
       subtitle="LAC reviews, PEPs, strategy meetings, CIN/CPP conferences and professionals meetings"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="multi-agency-meetings" />

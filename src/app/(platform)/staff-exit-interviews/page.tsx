@@ -6,7 +6,7 @@ import {
   ChevronDown, ChevronUp, Star, TrendingUp,
   MessageSquare, ThumbsUp, Shield, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -154,6 +154,7 @@ export default function StaffExitInterviewsPage() {
     <PageShell
       title="Staff Exit Interviews"
       subtitle="Record and analyse feedback from departing staff to support retention and workforce stability"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Exit Interviews" />

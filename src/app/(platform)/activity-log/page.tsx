@@ -221,6 +221,7 @@ export default function ActivityLogPage() {
     <PageShell
       title="Activity Log"
       subtitle="Home-wide event timeline — real-time awareness and audit trail"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => refetch()}>

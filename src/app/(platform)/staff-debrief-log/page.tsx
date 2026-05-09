@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -119,6 +119,7 @@ export default function StaffDebriefLogPage() {
     <PageShell
       title="Staff Debrief Log"
       subtitle="Post-Incident · Emotional Support · TCI Reflections · Staff Welfare"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "pi_debrief" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Debrief Log" />

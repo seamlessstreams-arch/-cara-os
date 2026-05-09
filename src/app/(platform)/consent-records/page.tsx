@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -183,6 +183,7 @@ export default function ConsentRecordsPage() {
     <PageShell
       title="Consent Records"
       subtitle="Tracking permissions, approvals, and authorisations for each young person"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Consent Records" />

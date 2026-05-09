@@ -252,6 +252,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
     <PageShell
       title={incident.reference}
       subtitle={`${INCIDENT_TYPE_LABELS[incident.type]} · ${formatDate(incident.date)}`}
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "incident" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,6 +89,7 @@ export default function KPIDashboardPage() {
     <PageShell
       title="KPI Dashboard"
       subtitle="Ofsted-aligned key performance indicators across care quality, safeguarding, education, staffing, and compliance"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "pi_debrief" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="KPI Dashboard" />

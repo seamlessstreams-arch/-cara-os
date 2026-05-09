@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -121,6 +121,7 @@ export default function MaintenanceSchedulePage() {
     <PageShell
       title="Maintenance Schedule"
       subtitle="Planned maintenance — boilers, electrical, gas, fire safety, water hygiene, pest control. Quality Standard 25 evidence trail."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="maintenance-schedule" />

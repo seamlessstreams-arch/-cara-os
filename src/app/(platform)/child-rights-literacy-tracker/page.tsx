@@ -11,7 +11,7 @@ import {
   Search,
   Award,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn, formatDate } from "@/lib/utils";
@@ -141,6 +141,7 @@ export default function ChildRightsLiteracyTrackerPage() {
     <PageShell
       title="Child Rights Literacy Tracker"
       subtitle="Per-child rights knowledge, advocacy connections and empowerment learning — UNCRC, CHR 2015, Children Act 1989"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-rights-literacy" />

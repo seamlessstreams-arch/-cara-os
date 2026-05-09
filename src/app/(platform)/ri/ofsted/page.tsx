@@ -119,6 +119,7 @@ export default function OfstedReadinessPage() {
     <PageShell
       title="Ofsted Readiness"
       subtitle="ILACS inspection preparation and mock review"
+      ariaContext={{ pageTitle: "Ofsted Readiness", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

@@ -236,6 +236,7 @@ export default function InterviewsPage() {
     <PageShell
       title="Interviews"
       subtitle="Panel interviews with safer recruitment compliance"
+      ariaContext={{ pageTitle: "Oak House — Safer Recruitment Interviews", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

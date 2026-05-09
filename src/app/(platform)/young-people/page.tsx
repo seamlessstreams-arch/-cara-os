@@ -789,6 +789,7 @@ export default function YoungPeoplePage() {
           ? `${meta.current} current placement${meta.current !== 1 ? "s" : ""} · ${meta.high_risk} with risk flags`
           : "Loading..."
       }
+      ariaContext={{ pageTitle: "Young People", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans", defaultFormType: "welfare_check", preferredTab: "form" }}
       actions={
         <div className="flex items-center gap-2">

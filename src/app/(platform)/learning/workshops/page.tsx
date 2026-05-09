@@ -316,6 +316,7 @@ export default function WorkshopPlannerPage() {
     <PageShell
       title="Workshop Planner"
       subtitle="Plan structured learning workshops with ARIA"
+      ariaContext={{ pageTitle: "Oak House — Learning Workshops", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

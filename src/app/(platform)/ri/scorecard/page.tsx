@@ -178,6 +178,7 @@ export default function ScorecardPage() {
     <PageShell
       title="Governance Scorecard"
       subtitle="15 live governance metrics — Oak House"
+      ariaContext={{ pageTitle: "Oak House — RI Report", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

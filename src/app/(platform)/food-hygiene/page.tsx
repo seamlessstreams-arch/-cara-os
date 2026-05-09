@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -98,7 +98,9 @@ export default function FoodHygienePage() {
   }
 
   return (
-    <PageShell title="Food Hygiene & Safety" subtitle="Food Safety Act 1990 · HACCP · Reg 12 — Safe Environment" actions={<div className="flex items-center gap-2"><PrintButton title="Food Hygiene Records" /><ExportButton data={filtered} columns={exportCols} filename="food-hygiene" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Check</Button></div>}>
+    <PageShell title="Food Hygiene & Safety" subtitle="Food Safety Act 1990 · HACCP · Reg 12 — Safe Environment" 
+      ariaContext={{ pageTitle: "Food Hygiene & Safety", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Food Hygiene Records" /><ExportButton data={filtered} columns={exportCols} filename="food-hygiene" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Check</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[

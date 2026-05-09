@@ -7,7 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -136,6 +136,7 @@ export default function GovernanceMeetingMinutesPage() {
     <PageShell
       title="Governance Meeting Minutes"
       subtitle="Records of RI and management governance meetings demonstrating oversight per Regulation 45 and Quality Standard 25"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="governance-meeting-minutes" />

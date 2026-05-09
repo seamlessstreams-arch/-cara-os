@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -91,6 +91,7 @@ export default function BusinessContinuityPage() {
     <PageShell
       title="Business Continuity Plan"
       subtitle="Emergency Preparedness · Operational Resilience · Civil Contingencies"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "general" }}
       actions={<PrintButton title="Business Continuity Plan" />}
     >
       <div id="print-area">

@@ -11,7 +11,7 @@ import {
   Search,
   CheckCircle,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -231,6 +231,7 @@ export default function ChildPhysioOtPlanPage() {
     <PageShell
       title="Physio & OT Plans"
       subtitle="Per-child physiotherapy and occupational therapy plans — physical, sensory, motor and self-care needs (QS 8)"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Physio & OT Plans" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +56,7 @@ export default function LanguageCommunicationPage() {
     <PageShell
       title="Language & Communication"
       subtitle="Communication Profiles · SEND · AAC · Staff Guidance"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={<PrintButton title="Communication Profiles" />}
     >
       <div id="print-area">

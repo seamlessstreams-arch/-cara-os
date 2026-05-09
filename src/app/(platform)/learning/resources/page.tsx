@@ -310,6 +310,7 @@ export default function ResourceGeneratorPage() {
     <PageShell
       title="Resource Generator"
       subtitle="Generate learning resources with ARIA for staff and young people"
+      ariaContext={{ pageTitle: "Oak House — Learning Resources", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

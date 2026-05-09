@@ -307,6 +307,7 @@ export default function TimesheetsPage() {
     <PageShell
       title="Timesheets"
       subtitle="Clock in/out, hours tracking, overtime, and payroll export"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Timesheets" subtitle="Oak House — Staff Timesheets" targetId="timesheets-content" />

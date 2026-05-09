@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -99,6 +99,7 @@ export default function ChildContinenceSupportPlanPage() {
     <PageShell
       title="Child Continence Support Plan"
       subtitle="Per-child, dignity-led continence support · NICE NG111 · NICE CG99 · ERIC framework · UNCRC Art. 12, 16, 24"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Continence Support Plans" />

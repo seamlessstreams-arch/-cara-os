@@ -6,7 +6,7 @@ import {
   CheckCircle2, XCircle, HelpCircle, Shield, PhoneCall,
   Mail, Search, ArrowUpDown, Timer, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -127,6 +127,7 @@ export default function EmergencyPlacementsPage() {
     <PageShell
       title="Emergency & Out-of-Hours Placements"
       subtitle="Urgent referrals, emergency admissions, and out-of-hours placement requests"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency & Out-of-Hours Placements" />

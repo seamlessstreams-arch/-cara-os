@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, Shield, FileText,
   Building2, Users, Siren, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -116,6 +116,7 @@ export default function NotificationLogPage() {
     <PageShell
       title="Notification Log"
       subtitle="Statutory notifications to regulatory bodies — tracking compliance with Regulation 40 and related requirements"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Notification Log" />

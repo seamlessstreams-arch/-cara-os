@@ -194,6 +194,7 @@ export default function CandidatesPage() {
     <PageShell
       title="All Candidates"
       subtitle="Manage your recruitment pipeline with full compliance visibility"
+      ariaContext={{ pageTitle: "New candidates are added when they apply via your recruitment portal or are entered by HR.", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="All Candidates" subtitle="Oak House — Recruitment Pipeline" targetId="candidates-content" />

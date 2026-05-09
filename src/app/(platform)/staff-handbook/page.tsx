@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -182,6 +182,7 @@ export default function StaffHandbookPage() {
     <PageShell
       title="Staff Handbook"
       subtitle="Oak House · Essential Information for All Staff"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={<PrintButton title="Staff Handbook" />}
     >
       <div id="print-area">

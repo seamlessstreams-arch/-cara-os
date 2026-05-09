@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle2, Clock, Send,
   ChevronDown, ChevronUp, Shield, FileText, Loader2, Save,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { AriaPanel } from "@/components/aria/aria-panel";
@@ -485,6 +485,7 @@ export default function NotifiableEventsPage() {
     <PageShell
       title="Notifiable Events"
       subtitle="Regulation 40 — events requiring notification to Ofsted and authorities"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Notifiable Events" />

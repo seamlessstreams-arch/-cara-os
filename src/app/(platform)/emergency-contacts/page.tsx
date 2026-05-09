@@ -11,7 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -295,6 +295,7 @@ export default function EmergencyContactsPage() {
     <PageShell
       title="Emergency Contacts Board"
       subtitle="Key contacts for Oak House — print and display in office"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "contact_log" }}
       actions={
         <PrintButton title="Emergency Contacts Board" subtitle="Oak House" targetId="emergency-board" />
       }

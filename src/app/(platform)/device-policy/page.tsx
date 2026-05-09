@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,6 +115,7 @@ export default function DevicePolicyPage() {
     <PageShell
       title="Device & Phone Policy"
       subtitle="Screen time agreements, device usage monitoring, and online safety — Reg 12"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Device & Phone Policy" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="device-policy" />,

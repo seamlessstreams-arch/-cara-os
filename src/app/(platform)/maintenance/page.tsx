@@ -295,6 +295,7 @@ export default function MaintenancePage() {
       <PageShell
         title="Maintenance"
         subtitle="Property maintenance, safety checks, and scheduled works"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "home_check" }}
         quickCreateContext={{ module: "maintenance", defaultTaskCategory: "maintenance", defaultFormType: "health_safety_check" }}
         actions={
           <div className="flex items-center gap-2">

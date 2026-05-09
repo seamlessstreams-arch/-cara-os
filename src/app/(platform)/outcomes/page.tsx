@@ -916,6 +916,7 @@ export default function OutcomesPage() {
     <PageShell
       title="Outcomes Tracker"
       subtitle="Are children making progress? — Care plan targets, reviews and voice of the child"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

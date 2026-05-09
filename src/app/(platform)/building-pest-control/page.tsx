@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -133,6 +133,7 @@ export default function BuildingPestControlPage() {
     <PageShell
       title="Building Pest Control & Prevention"
       subtitle="Proactive routine treatments and reactive call-outs — mice, rats, ants, wasps, silverfish, bedbugs, cockroaches, moths. Child-safety-first protocols: chemical-free options first, no rodenticide indoors with children resident, transparency with young people."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "home_check" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="building-pest-control" />

@@ -492,6 +492,7 @@ export default function RiAlertsPage() {
     <PageShell
       title="RI Alerts"
       subtitle="Auto-detected governance, compliance, and safeguarding alerts"
+      ariaContext={{ pageTitle: "Oak House Compliance", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

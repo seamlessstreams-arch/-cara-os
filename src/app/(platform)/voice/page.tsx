@@ -447,6 +447,7 @@ export default function VoiceOfTheChildPage() {
     <PageShell
       title="Voice of the Child"
       subtitle="What our young people are saying — their wishes, feelings, concerns, and views"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">

@@ -7,7 +7,7 @@ import {
   Flame, CloudRain, Zap, Bug,
   Heart, Building2, RefreshCw, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -51,6 +51,7 @@ export default function EmergencyPlanningPage() {
     <PageShell
       title="Emergency Planning"
       subtitle="Business continuity and emergency response procedures"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Planning — Oak House" />

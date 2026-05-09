@@ -1199,6 +1199,7 @@ export default function IncidentsPage() {
     <PageShell
       title="Incidents"
       subtitle="Log, review, and oversee all incident records"
+      ariaContext={{ pageTitle: "Care Events — Behaviour &amp; Safeguarding", sourceType: "incident" }}
       quickCreateContext={{ module: "incidents", defaultTaskCategory: "safeguarding", defaultFormType: "safeguarding_referral" }}
       actions={
         <div className="flex items-center gap-2">

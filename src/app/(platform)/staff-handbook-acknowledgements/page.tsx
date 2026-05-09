@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -156,6 +156,7 @@ export default function StaffHandbookAcknowledgementsPage() {
     <PageShell
       title="Staff Handbook Acknowledgements"
       subtitle="Track staff acknowledgement of key documents, policies, and procedure updates"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Handbook Acknowledgements" subtitle="Oak House — Document Acknowledgement Records" />

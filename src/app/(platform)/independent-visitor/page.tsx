@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, MessageSquare, FileText,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +76,7 @@ export default function IndependentVisitorPage() {
     <PageShell
       title="Independent Visitor Reports"
       subtitle="Regulation 44 — monthly independent person's visits and reports"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Independent Visitor Reports" />

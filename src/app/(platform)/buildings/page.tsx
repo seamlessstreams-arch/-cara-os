@@ -1053,6 +1053,7 @@ export default function BuildingsPage() {
     <PageShell
       title="Building & H&S Compliance"
       subtitle="Oak House — safety checks, certificates, and hazard management"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "home_check" }}
       quickCreateContext={{ module: "buildings", defaultTaskCategory: "health_and_safety", defaultFormType: "health_safety_check" }}
       actions={
         <div className="flex items-center gap-2">

@@ -243,6 +243,7 @@ export default function LeavePage() {
     <PageShell
       title="Leave & Absence"
       subtitle="Manage annual leave, sickness, lateness, and return-to-work workflows"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "leave", defaultTaskCategory: "staffing" }}
       actions={
         <div className="flex items-center gap-2">

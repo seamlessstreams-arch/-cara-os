@@ -298,6 +298,7 @@ export default function ChildProgressPage() {
     <PageShell
       title="Progress & Outcomes"
       subtitle="Track goals, milestones, and outcome scores over time"
+      ariaContext={{ pageTitle: "Track goals, milestones, and outcome scores over time", sourceType: "child_record" }}
     >
       <div className="space-y-6">
         {/* Child Selector & Actions */}

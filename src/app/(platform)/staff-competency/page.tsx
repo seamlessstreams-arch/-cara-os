@@ -19,7 +19,7 @@ import {
   BarChart3,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -197,6 +197,7 @@ export default function StaffCompetencyPage() {
     <PageShell
       title="Staff Competency Assessments"
       subtitle="Reg 32/33 — skills sign-offs, practical competency checks, and professional development benchmarks"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="staff-competency" />

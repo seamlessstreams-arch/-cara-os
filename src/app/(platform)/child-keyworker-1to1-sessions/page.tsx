@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -118,6 +118,7 @@ export default function ChildKeyworker1to1SessionsPage() {
     <PageShell
       title="1:1 Keyworker Sessions"
       subtitle="Protected weekly/fortnightly time between key worker and young person — themes, voice, agreed actions, follow-up"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="1:1 Keyworker Sessions" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="keyworker-1to1-sessions" />,

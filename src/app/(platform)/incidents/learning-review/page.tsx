@@ -207,6 +207,7 @@ export default function IncidentLearningReviewPage() {
     <PageShell
       title="Incident Learning Review"
       subtitle="Review incidents, identify patterns, and capture organisational learning"
+      ariaContext={{ pageTitle: "Review incidents, identify patterns, and capture organisational learning", sourceType: "incident" }}
     >
       <div className="space-y-6">
         {/* Filters */}

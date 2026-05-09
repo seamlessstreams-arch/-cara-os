@@ -333,6 +333,7 @@ export default function PoliciesPage() {
     <PageShell
       title="Policies & Procedures"
       subtitle="All home policies — version control, review dates, and staff read-acknowledgements"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "compliance", defaultTaskCategory: "compliance" }}
       actions={
         <div className="flex items-center gap-2">

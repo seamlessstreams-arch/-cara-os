@@ -162,6 +162,7 @@ export default function ChildDailySummariesPage() {
     <PageShell
       title="Child Daily Summaries"
       subtitle="Auto-generated per-child daily summaries from Care Event routing"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
     >
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

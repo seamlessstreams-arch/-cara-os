@@ -12,7 +12,7 @@ import {
   Stethoscope,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -167,6 +167,7 @@ export default function HomePetsCareLogPage() {
     <PageShell
       title="Home Pets Care Log"
       subtitle="The animals who share our home — welfare, vet records, child involvement, and the quiet therapeutic value they bring"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Home Pets Care Log" />

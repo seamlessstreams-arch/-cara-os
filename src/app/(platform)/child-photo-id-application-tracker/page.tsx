@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,6 +153,7 @@ export default function ChildPhotoIdApplicationTrackerPage() {
     <PageShell
       title="Child Photo ID Application Tracker"
       subtitle="Passport, provisional licence, Citizen Card, voter ID and under-16 photo ID applications, renewals and storage — Care Leavers (England) Regulations 2010 and s.23B(8) Children Act 1989"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Photo ID Applications" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="child-photo-id-application-tracker" />,

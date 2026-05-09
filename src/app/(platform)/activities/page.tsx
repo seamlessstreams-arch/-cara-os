@@ -432,6 +432,7 @@ export default function ActivitiesPage() {
     <PageShell
       title="Activities & Enrichment"
       subtitle="Meaningful activities, hobbies, and new experiences for young people"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">

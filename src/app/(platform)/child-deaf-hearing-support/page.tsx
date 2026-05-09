@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -126,6 +126,7 @@ export default function ChildDeafHearingSupportPage() {
     <PageShell
       title="Deaf & Hearing Support"
       subtitle="Per-child hearing status and Deaf identity work — hearing aids, cochlear implants, BSL/SSE language preference, audiology, school plans, home adaptations, Deaf community connection. Honours Deaf identity as culture, not deficit."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-deaf-hearing-support" />

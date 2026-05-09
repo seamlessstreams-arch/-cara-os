@@ -197,6 +197,7 @@ export default function CorrespondencePage() {
     <PageShell
       title="Correspondence Log"
       subtitle="Professional communications and formal correspondence"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Correspondence Log" subtitle="Oak House — Professional Communications" />

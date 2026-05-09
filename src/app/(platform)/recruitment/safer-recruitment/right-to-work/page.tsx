@@ -148,6 +148,7 @@ export default function RightToWorkPage() {
     <PageShell
       title="Right to Work"
       subtitle="Verify before first day of employment — legal requirement"
+      ariaContext={{ pageTitle: "Oak House — RTW Verification", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Right to Work" subtitle="Oak House — RTW Verification" targetId="rtw-content" />

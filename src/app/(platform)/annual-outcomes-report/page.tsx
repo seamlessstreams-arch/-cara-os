@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,6 +106,7 @@ export default function AnnualOutcomesReportPage() {
     <PageShell
       title="Annual Outcomes Report"
       subtitle="Year-End Progress · Care Plan Goals · Quality of Care Indicators"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Annual Outcomes Report" />

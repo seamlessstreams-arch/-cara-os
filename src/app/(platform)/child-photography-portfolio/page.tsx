@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -116,6 +116,7 @@ export default function ChildPhotographyPortfolioPage() {
     <PageShell
       title="Child Photography Portfolio"
       subtitle="Photo memories per child — milestones, achievements, everyday joy, documented with consent"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-photography-portfolio" />

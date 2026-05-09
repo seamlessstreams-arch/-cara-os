@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -140,6 +140,7 @@ export default function StaffSupervisionThemesPage() {
     <PageShell
       title="Staff Supervision Themes"
       subtitle="Aggregated learning from supervision · Organisational reflection · Training and policy implications"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Supervision Themes" />

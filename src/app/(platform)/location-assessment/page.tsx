@@ -7,7 +7,7 @@ import {
   Car, GraduationCap, Heart, Phone,
   Eye, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -67,6 +67,7 @@ export default function LocationAssessmentPage() {
     <PageShell
       title="Location Assessment"
       subtitle="Regulation 46 — Suitability of the home's location for children's care"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Location Assessment — Oak House" />

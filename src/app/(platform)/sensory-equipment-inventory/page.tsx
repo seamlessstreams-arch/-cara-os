@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName } from "@/lib/seed-data";
@@ -86,6 +86,7 @@ export default function SensoryEquipmentInventoryPage() {
 
   return (
     <PageShell title="Sensory Equipment Inventory" subtitle="All sensory regulation items — owned, shared, mobile — with condition, replacement, and child assignment"
+      ariaContext={{ pageTitle: "Sensory Equipment Inventory", sourceType: "child_record" }}
       actions={<div className="flex items-center gap-2"><ExportButton data={records} columns={exportCols} filename="sensory-equipment-inventory" /><PrintButton title="Sensory Equipment Inventory" /></div>}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Total Items</p></div>

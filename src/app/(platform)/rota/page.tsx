@@ -277,6 +277,7 @@ export default function RotaPage() {
     <PageShell
       title="Rota"
       subtitle={weekLabel}
+      ariaContext={{ pageTitle: "Rota", sourceType: "staff" }}
       quickCreateContext={{ module: "rota", defaultTaskCategory: "staffing" }}
       actions={
         <div className="flex items-center gap-2">

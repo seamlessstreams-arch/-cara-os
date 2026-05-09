@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,9 @@ export default function NightStaffGuidancePage() {
   if (isLoading) return <PageShell title="Night Staff Guidance" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
-    <PageShell title="Night Staff Guidance" subtitle="Waking Night & Sleep-In Procedures — Oak House" actions={<PrintButton title="Night Staff Guidance" />}>
+    <PageShell title="Night Staff Guidance" subtitle="Waking Night & Sleep-In Procedures — Oak House" 
+      ariaContext={{ pageTitle: "Night Staff Guidance", sourceType: "child_record" }}
+      actions={<PrintButton title="Night Staff Guidance" />}>
       <div id="print-area">
         <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
           <p className="font-semibold text-indigo-800 mb-1">For All Night Staff — Please Read Before Every Shift</p>

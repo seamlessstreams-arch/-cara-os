@@ -588,6 +588,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
     <PageShell
       title="PI Debrief Register"
       subtitle="Physical intervention debrief tracking — Reg 20 compliance"
+      ariaContext={{ pageTitle: "Oak House — Reg 20 Compliance", sourceType: "incident" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

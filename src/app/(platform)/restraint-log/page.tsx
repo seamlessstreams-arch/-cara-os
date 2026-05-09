@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { AriaPanel } from "@/components/aria/aria-panel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -110,6 +110,7 @@ export default function RestraintLogPage() {
     <PageShell
       title="Restraint Log"
       subtitle="Physical intervention records — Regulation 35 compliance"
+      ariaContext={{ pageTitle: "Care Events — Restraint &amp; Physical Intervention", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Restraint Log" />

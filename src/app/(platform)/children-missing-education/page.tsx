@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -157,6 +157,7 @@ export default function ChildrenMissingEducationPage() {
     <PageShell
       title="Children Missing Education"
       subtitle="Education Act 1996 · Children Act 2004 · CME Monitoring & Attendance Tracking"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Children Missing Education" />

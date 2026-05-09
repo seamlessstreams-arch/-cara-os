@@ -17,7 +17,7 @@ import {
   Loader2,
   Filter,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -99,6 +99,7 @@ export default function DiversityCalendarPage() {
     <PageShell
       title="Diversity & Cultural Calendar"
       subtitle="Religious observances, awareness days, and cultural celebrations — and how we mark them in the home"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Diversity & Cultural Calendar" />

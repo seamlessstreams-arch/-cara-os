@@ -15,7 +15,7 @@ import {
   ArrowUpRight,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -147,6 +147,7 @@ export default function RegulatoryCorrespondenceTrackerPage() {
     <PageShell
       title="Regulatory Correspondence Tracker"
       subtitle="Quality Standard 13 (Leadership and Management) — written correspondence with all regulators and statutory partners"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="regulatory-correspondence" />

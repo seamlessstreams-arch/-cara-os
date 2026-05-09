@@ -210,6 +210,7 @@ export default function CompetencyFrameworkPage() {
     <PageShell
       title="Competency Framework"
       subtitle="10-domain scoring matrix across all staff — gaps, strengths & team averages"
+      ariaContext={{ pageTitle: "Oak House — Staff Competency Matrix", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

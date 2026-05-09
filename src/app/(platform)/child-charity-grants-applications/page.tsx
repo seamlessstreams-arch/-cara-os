@@ -12,7 +12,7 @@ import {
   FileText,
   Calendar,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -209,6 +209,7 @@ export default function ChildCharityGrantsApplicationsPage() {
     <PageShell
       title="Charity Grants & Applications"
       subtitle="Per-child charity grant applications, decisions and items funded — Buttle UK, Family Fund, Coram Voice, Lift the Limit, Princess Royal Trust, BBC Children in Need"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton

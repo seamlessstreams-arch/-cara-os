@@ -155,6 +155,7 @@ export default function AuditLogPage() {
     <PageShell
       title="Audit Log"
       subtitle="Complete record of all safer recruitment actions — inspection-ready"
+      ariaContext={{ pageTitle: "Inspection bundles are generated from the Documents section. Contact your system administrator.", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Audit Log" subtitle="Oak House — Safer Recruitment Audit Trail" targetId="sr-audit-content" />

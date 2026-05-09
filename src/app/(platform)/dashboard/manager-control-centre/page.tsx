@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -585,6 +585,7 @@ export default function ManagerControlCentrePage() {
     <PageShell
       title="Manager Control Centre"
       subtitle="What needs your attention today"
+      ariaContext={{ pageTitle: "Nothing needs your attention", sourceType: "child_record" }}
       actions={
         <Button variant="outline" size="sm" className="gap-1.5">
           <Download className="h-4 w-4" />

@@ -192,6 +192,7 @@ export default function FilingCabinetPage() {
     <PageShell
       title="Filing Cabinet"
       subtitle="Auto-filed records from Care Events — searchable archive with source links"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "document" }}
     >
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

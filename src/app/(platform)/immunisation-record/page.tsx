@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import {
@@ -123,6 +123,7 @@ export default function ImmunisationRecordPage() {
     <PageShell
       title="Immunisation Record"
       subtitle="UK schedule tracking · Vaccine history · Side effects · Catch-up programmes · Child voice"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Immunisation Record" />

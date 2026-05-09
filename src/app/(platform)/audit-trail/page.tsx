@@ -142,6 +142,7 @@ export default function AuditTrailPage() {
     <PageShell
       title="Audit Trail"
       subtitle="Tamper-evident log of all Care Event actions — complete chronological record"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "general" }}
     >
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

@@ -181,6 +181,7 @@ export default function ContactDirectoryPage() {
     <PageShell
       title="Contact Directory"
       subtitle="Professional contacts and emergency numbers"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Contact Directory" subtitle="Oak House — Professional Contacts" />

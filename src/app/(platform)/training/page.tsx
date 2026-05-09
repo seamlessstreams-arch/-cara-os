@@ -444,6 +444,7 @@ export default function TrainingPage() {
           ? `${meta.rate}% overall compliance · ${meta.expired} expired · ${meta.expiring} expiring`
           : "Loading…"
       }
+      ariaContext={{ pageTitle: "Training & Compliance", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex gap-2">

@@ -365,6 +365,7 @@ export default function RelationalPracticePage() {
     <PageShell
       title="Relational Practice"
       subtitle="Trust moments, regulation strategies, preferred adults, and what works for each young person"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">

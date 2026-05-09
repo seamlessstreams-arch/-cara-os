@@ -137,6 +137,7 @@ export default function EvidencePortfolioPage() {
     <PageShell
       title="Evidence Portfolio"
       subtitle="CPD evidence, certificates & practice documentation for all staff"
+      ariaContext={{ pageTitle: "Oak House — CPD & Practice Evidence", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -114,6 +114,7 @@ export default function EatingSupportPlanPage() {
     <PageShell
       title="Eating Support Plans"
       subtitle="Per-child eating support — ARFID, sensory-led restriction, recovery from disordered eating, cultural/faith dietary needs, allergy. Sensory-led, dignified, body-neutral, externally-supported where appropriate. Distinct from menstrual or general health plans."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="eating-support-plan" />

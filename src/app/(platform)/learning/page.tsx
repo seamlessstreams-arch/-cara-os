@@ -138,6 +138,7 @@ export default function LearningHubPage() {
     <PageShell
       title="Learning Studio"
       subtitle="AI-powered learning and development for staff and children"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

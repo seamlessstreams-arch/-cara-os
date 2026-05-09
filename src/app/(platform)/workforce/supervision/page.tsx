@@ -112,6 +112,7 @@ export default function WorkforceSupervisionPage() {
     <PageShell
       title="Supervision Hub"
       subtitle="Reflective supervision tracker — Reg 34 compliance at a glance"
+      ariaContext={{ pageTitle: "Oak House — Reg 34 Compliance", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

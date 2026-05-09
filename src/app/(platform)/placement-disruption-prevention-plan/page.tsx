@@ -8,7 +8,7 @@ import {
   Heart, Target, Clock, Users, UserCheck,
   Activity, FileSignature, Eye, Wrench, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -149,6 +149,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
     <PageShell
       title="Placement Disruption Prevention Plan"
       subtitle="Per-child proactive plans to prevent placement breakdown when warning signs emerge"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Placement Disruption Prevention Plans" />

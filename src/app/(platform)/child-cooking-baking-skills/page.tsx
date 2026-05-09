@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -116,6 +116,7 @@ export default function ChildCookingBakingSkillsPage() {
     <PageShell
       title="Cooking & Baking Skills"
       subtitle="Per-child progression of cooking and baking skills — knife work, hob/oven, recipe planning, hygiene, cultural cooking. Heritage food connection, family meals led, and the journey from observed → assisted → independent → can teach others."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-cooking-baking-skills" />

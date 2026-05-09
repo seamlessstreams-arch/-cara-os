@@ -14,7 +14,7 @@ import {
   Key,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -162,6 +162,7 @@ export default function SecureStoragePage() {
     <PageShell
       title="Secure Storage Log"
       subtitle="Controlled items register — access tracking, stock checks and audit trail"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="secure-storage" />

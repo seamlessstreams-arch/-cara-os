@@ -464,6 +464,7 @@ export default function ChallengeLogPage() {
     <PageShell
       title="Challenge Log"
       subtitle="RI governance challenges to the management team"
+      ariaContext={{ pageTitle: "Challenge Log", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -139,6 +139,7 @@ export default function ChildMobilePhoneManagementPage() {
     <PageShell
       title="Child Mobile Phone Management"
       subtitle="Per-child phone records — contracts, costs, parental controls, screen time, app inventory, hand-in protocols, and online safety"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-mobile-phone-management" />

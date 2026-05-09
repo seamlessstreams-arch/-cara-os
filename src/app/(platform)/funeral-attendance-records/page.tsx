@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -107,6 +107,7 @@ export default function FuneralAttendanceRecordsPage() {
     <PageShell
       title="Funeral Attendance Records"
       subtitle="Sensitive record of children's involvement in funerals — child-led decision-making, preparation, ritual, faith tradition, post-funeral support. Honours dignity, grief, and the right to say goodbye in the way that's right for each child."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="funeral-attendance-records" />

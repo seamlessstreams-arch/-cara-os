@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -135,6 +135,7 @@ export default function DrivingLessonsTrackerPage() {
     <PageShell
       title="Driving Lessons Tracker"
       subtitle="Provisional licence, theory and practical progress for over-17s — Pathway Plan and Care Leavers (England) Regulations 2010"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Driving Lessons Tracker" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="driving-lessons-tracker" />,

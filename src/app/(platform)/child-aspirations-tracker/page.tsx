@@ -12,7 +12,7 @@ import {
   Search,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -146,6 +146,7 @@ export default function ChildAspirationsTrackerPage() {
     <PageShell
       title="Child Aspirations Tracker"
       subtitle="Hopes, dreams and ambitions — child-led, evolving over time, woven into care planning"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="child-aspirations" />

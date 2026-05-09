@@ -151,6 +151,7 @@ export default function RiHubPage() {
     <PageShell
       title="RI Command Centre"
       subtitle="Responsible Individual governance dashboard — Oak House"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

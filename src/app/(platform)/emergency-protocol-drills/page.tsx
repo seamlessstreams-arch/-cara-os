@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -200,6 +200,7 @@ export default function EmergencyProtocolDrillsPage() {
     <PageShell
       title="Emergency Protocol Drills"
       subtitle="Testing emergency responses beyond fire drills — QS25 & Regulation 22"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Protocol Drills" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,6 +70,7 @@ export default function OnCallRotaPage() {
     <PageShell
       title="On-Call Rota"
       subtitle="Duty cover providing 24/7 escalation route — managers and senior practitioners ensuring staff and children are never without support"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="On-Call Rota" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="on-call-rota" />,

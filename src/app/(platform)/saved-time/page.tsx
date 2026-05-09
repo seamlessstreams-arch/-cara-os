@@ -100,6 +100,7 @@ export default function SavedTimePage() {
     <PageShell
       title="Saved-Time Dashboard"
       subtitle="Time saved through automated routing from Care Events — duplication eliminated"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
     >
       {/* Hero stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

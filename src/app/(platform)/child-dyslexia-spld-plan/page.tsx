@@ -11,7 +11,7 @@ import {
   Search,
   Award,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -218,6 +218,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
     <PageShell
       title="SpLD Support Plans"
       subtitle="Per-child Specific Learning Difficulty plan — dyslexia, dyscalculia, dysgraphia, DCD/dyspraxia. Strength-based, neurodiversity-affirming, technology-led."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="SpLD Support Plans" />

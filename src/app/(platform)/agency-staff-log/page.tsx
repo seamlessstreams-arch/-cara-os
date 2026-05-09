@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -154,6 +154,7 @@ export default function AgencyStaffLogPage() {
     <PageShell
       title="Agency Staff Log"
       subtitle="Reg 32 · Fitness of Workers · Safer Recruitment · Agency Vetting"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Agency Staff Log" />

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useEvidenceItems, useCreateEvidence } from "@/hooks/use-intelligence-layer";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -704,6 +704,7 @@ export default function OfstedEvidenceRoomPage() {
     <PageShell
       title="Ofsted Evidence Room"
       subtitle="Organised evidence for inspection readiness"
+      ariaContext={{ pageTitle: "No evidence found", sourceType: "child_record" }}
       actions={
         <Button
           size="sm"

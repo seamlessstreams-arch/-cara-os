@@ -272,6 +272,7 @@ export default function OffersPage() {
     <PageShell
       title="Offers & Final Clearance"
       subtitle="Conditional offers, outstanding conditions, and final pre-start clearance"
+      ariaContext={{ pageTitle: "Oak House — Pre-Start Clearance", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

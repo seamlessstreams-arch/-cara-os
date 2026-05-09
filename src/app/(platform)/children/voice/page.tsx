@@ -277,6 +277,7 @@ export default function VoiceOfTheChildPage() {
     <PageShell
       title="Voice of the Child"
       subtitle="Capturing what matters most — in their own words"
+      ariaContext={{ pageTitle: "Capturing what matters most — in their own words", sourceType: "child_record" }}
     >
       <div className="space-y-6">
         {/* Child Selector */}

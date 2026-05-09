@@ -540,6 +540,7 @@ export default function WelfareChecksPage() {
     <PageShell
       title="Welfare Checks"
       subtitle="Night-time welfare monitoring — every child, every check, documented"
+      ariaContext={{ pageTitle: "Welfare Checks", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredRounds} columns={WELFARE_EXPORT_COLS} filename="welfare-checks" />

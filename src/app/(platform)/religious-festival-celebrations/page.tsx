@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -115,6 +115,7 @@ export default function ReligiousFestivalCelebrationsPage() {
   return (
     <PageShell
       title="Religious & Cultural Festival Celebrations"
+      ariaContext={{ pageTitle: "Religious & Cultural Festival Celebrations", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="religious-festival-celebrations" />

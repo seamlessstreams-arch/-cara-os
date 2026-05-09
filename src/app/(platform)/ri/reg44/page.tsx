@@ -524,6 +524,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
     <PageShell
       title="Reg 44 Independent Visits"
       subtitle="Independent person visits — tracking, findings, actions and RI review"
+      ariaContext={{ pageTitle: "Reg 44 Independent Visits", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -140,6 +140,7 @@ export default function ChildOrthodonticTreatmentPage() {
     <PageShell
       title="Orthodontic Treatment"
       subtitle="Per-child orthodontic journey — referral, IOTN scoring, NHS eligibility, brace type, appointment attendance, oral hygiene compliance, retention phase. Coordinated with general dental records and dietary planning."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-orthodontic-treatment" />

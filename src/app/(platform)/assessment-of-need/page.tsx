@@ -10,7 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -199,6 +199,7 @@ export default function AssessmentOfNeedPage() {
     <PageShell
       title="Assessment of Need"
       subtitle="Care Planning Regulations 2010, Reg 14 (28-day report) · Quality Standard 4 — comprehensive baseline assessment on admission"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Assessment of Need" />

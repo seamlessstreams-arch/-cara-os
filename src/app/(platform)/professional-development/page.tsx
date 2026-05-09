@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,6 +123,7 @@ export default function ProfessionalDevelopmentPage() {
     <PageShell
       title="Professional Development"
       subtitle="CPD records, qualifications, conferences, and learning activities"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "staff" }}
       actions={[
         <PrintButton key="p" title="Professional Development Records" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="professional-development" />,

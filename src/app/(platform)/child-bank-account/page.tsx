@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   GraduationCap,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -152,6 +152,7 @@ export default function ChildBankAccountPage() {
     <PageShell
       title="Child Bank Account & Money Management"
       subtitle="QS1 — Child-centred care · financial literacy · transition preparation"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="child-bank-accounts" />

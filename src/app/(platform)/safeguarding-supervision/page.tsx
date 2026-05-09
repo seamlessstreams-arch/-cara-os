@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { AriaPanel } from "@/components/aria/aria-panel";
@@ -71,6 +71,7 @@ export default function SafeguardingSupervisionPage() {
     <PageShell
       title="Safeguarding Supervision"
       subtitle="Specialist reflective supervision for staff working with children at high risk — distinct from line management"
+      ariaContext={{ pageTitle: "Care Events — Safeguarding", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Safeguarding Supervision" />

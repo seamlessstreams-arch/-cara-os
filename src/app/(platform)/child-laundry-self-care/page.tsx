@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -134,6 +134,7 @@ export default function ChildLaundrySelfCarePage() {
     <PageShell
       title="Laundry Self-Care"
       subtitle="Per-child laundry independence — sorting, machine use, drying, ironing, folding. Co-produced with each young person; linked to Pathway Plans for over-16s."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="laundry-self-care" />

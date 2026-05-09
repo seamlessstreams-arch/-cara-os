@@ -329,6 +329,7 @@ export default function PocketMoneyPage() {
     <PageShell
       title="Pocket Money & Savings"
       subtitle="Financial records for each young person"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={PM_EXPORT_COLS} filename="pocket-money" />

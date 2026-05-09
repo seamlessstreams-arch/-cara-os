@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -227,6 +227,7 @@ export default function TransAffirmingCarePlanPage() {
     <PageShell
       title="Trans-Affirming Care Plans"
       subtitle="Per-child trans-affirming care plans for trans, non-binary and gender-questioning young people. Child-led pace, identity-affirming actions, family/school/community coordination, safety risk assessment, watchful-waiting clinical model. Distinct from broader LGBTQ+ inclusion records."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "care_plan" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="trans-affirming-care-plan" />

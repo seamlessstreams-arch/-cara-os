@@ -91,6 +91,7 @@ export default function StaffPage() {
     <PageShell
       title="Staff"
       subtitle={meta ? `${meta.total} active team members · ${meta.on_shift} on shift today` : "Loading…"}
+      ariaContext={{ pageTitle: "Staff", sourceType: "staff" }}
       quickCreateContext={{ module: "staff", defaultTaskCategory: "admin" }}
       actions={
         <div className="flex items-center gap-2">

@@ -8,7 +8,7 @@ import {
   Folder, MessageSquare, Eye, EyeOff, MapPin,
   Sparkles, RefreshCw, XCircle, Clock, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,6 +153,7 @@ export default function InspectionReadinessPackPage() {
     <PageShell
       title="Inspection Readiness Pack"
       subtitle="Curated documents and evidence prepared for Ofsted inspection — readiness pack contents and currency"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Inspection Readiness Pack" />

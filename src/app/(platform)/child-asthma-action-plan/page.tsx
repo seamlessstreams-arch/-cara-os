@@ -5,7 +5,7 @@ import type { AsthmaPlan, AsthmaDiagnosis } from "@/types/extended";
 import { ASTHMA_DIAGNOSIS_LABEL } from "@/types/extended";
 import { useAsthmaPlans } from "@/hooks/use-asthma-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,6 +101,7 @@ export default function ChildAsthmaActionPlanPage() {
     <PageShell
       title="Child Asthma Action Plan"
       subtitle="Personal Asthma Action Plan · BTS/SIGN 158 · NICE NG80 · Quality Standard 8"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Asthma Action Plans" />

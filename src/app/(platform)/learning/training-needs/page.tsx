@@ -810,6 +810,7 @@ export default function TrainingNeedsPage() {
     <PageShell
       title="Training Needs"
       subtitle="The core intelligence loop — from identification to completion"
+      ariaContext={{ pageTitle: "Oak House — Training Needs Analysis", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

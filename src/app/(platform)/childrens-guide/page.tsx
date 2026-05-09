@@ -6,7 +6,7 @@ import {
   Phone, Star, Home, Smile, HelpCircle,
   ChevronDown, ChevronUp, CheckCircle2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -133,6 +133,7 @@ export default function ChildrensGuidePage() {
     <PageShell
       title="Children's Guide"
       subtitle="Everything young people need to know about living at Oak House"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Children's Guide — Oak House" />

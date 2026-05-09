@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import {
@@ -601,6 +601,7 @@ export default function VehiclePreUseCheckPage() {
     <PageShell
       title="Vehicle Pre-Use Check"
       subtitle="Recorded by the driver before any journey carrying children. Defects withdraw the vehicle from use until rectified and re-inspected."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton

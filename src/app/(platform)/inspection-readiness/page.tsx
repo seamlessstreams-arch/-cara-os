@@ -256,6 +256,7 @@ export default function InspectionReadinessPage() {
     <PageShell
       title="Inspection Readiness"
       subtitle="Live connected view of compliance status — Annex A, Regulation 45, Management Oversight, Reg 40, Filing and Saved Time"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
     >
       {isLoading ? (
         <div className="flex items-center justify-center py-24 text-slate-400 text-sm">Loading readiness data…</div>

@@ -302,6 +302,7 @@ export default function AuditsPage() {
       <PageShell
         title="Audits & Quality Assurance"
         subtitle="Internal audits, quality checks, and action tracking"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "general" }}
         quickCreateContext={{ module: "audits", defaultTaskCategory: "compliance", defaultFormType: "health_safety_check" }}
         actions={
           <div className="flex gap-2">

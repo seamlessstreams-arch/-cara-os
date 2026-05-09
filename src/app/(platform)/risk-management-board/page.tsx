@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import {
@@ -179,6 +179,7 @@ export default function RiskManagementBoardPage() {
     <PageShell
       title="Strategic Risk Management Board"
       subtitle="Organisational risk register — board-level oversight of risks to the home as a regulated business"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={visible} columns={exportCols} filename="strategic-risk-register" />

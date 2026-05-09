@@ -18,7 +18,7 @@ import {
   Timer,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
@@ -162,6 +162,7 @@ export default function ReferralTrackerPage() {
     <PageShell
       title="Referral Tracker"
       subtitle="Tracking incoming placement referrals from initial contact through to matching panel decision and outcome"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="referral-tracker" />

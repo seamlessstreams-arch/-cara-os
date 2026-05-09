@@ -13,7 +13,7 @@ import {
   HeartHandshake,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -182,6 +182,7 @@ export default function CamhsReferralTrackerPage() {
     <PageShell
       title="CAMHS Referral Tracker"
       subtitle="Quality Standard 7 (Health) — CAMHS referrals from initial concern to ongoing engagement"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="camhs-referrals" />

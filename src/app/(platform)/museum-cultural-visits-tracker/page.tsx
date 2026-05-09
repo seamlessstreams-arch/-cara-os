@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -101,6 +101,7 @@ export default function MuseumCulturalVisitsTrackerPage() {
     <PageShell
       title="Museum & Cultural Visits Tracker"
       subtitle="Per-child museum, gallery, theatre, and cultural educational visits — Quality Standards 6 & 8"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="museum-cultural-visits" />

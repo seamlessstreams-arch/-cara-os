@@ -512,6 +512,7 @@ export default function AppraisalsPage() {
     <PageShell
       title="Appraisals & Probation"
       subtitle="Annual appraisals, mid-year reviews, probation assessments & competency tracking"
+      ariaContext={{ pageTitle: "Oak House Staff Development", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

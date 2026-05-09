@@ -361,6 +361,7 @@ export default function StaffCompetencePassportPage() {
     <PageShell
       title="Staff Competence Passport"
       subtitle="Competencies, compliance, warnings, and restrictions"
+      ariaContext={{ pageTitle: "Competencies, compliance, warnings, and restrictions", sourceType: "child_record" }}
     >
       <div className="space-y-6">
         {/* Staff Selector */}

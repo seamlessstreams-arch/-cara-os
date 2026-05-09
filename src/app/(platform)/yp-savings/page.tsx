@@ -13,7 +13,7 @@ import {
   Wallet,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -153,6 +153,7 @@ export default function YPSavingsPage() {
     <PageShell
       title="Young Person Savings"
       subtitle="Individual savings accounts, transactions, goals and financial independence tracking"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="yp-savings" />

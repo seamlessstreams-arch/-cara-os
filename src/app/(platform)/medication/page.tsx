@@ -1458,6 +1458,7 @@ export default function MedicationPage() {
     <PageShell
       title="Medication"
       subtitle={`${medications.length} active medications · ${ypCount} young people`}
+      ariaContext={{ pageTitle: "Care Events — Medication", sourceType: "medication" }}
       quickCreateContext={{ module: "medication", defaultTaskCategory: "medication" }}
       actions={
         <div className="flex gap-2">

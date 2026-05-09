@@ -13,7 +13,7 @@ import {
   Clock,
   FileText,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -186,6 +186,7 @@ export default function DataProtectionPage() {
     <PageShell
       title="Data Protection & GDPR"
       subtitle="Subject access requests, breach management, impact assessments and retention schedules"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Data Protection Register" />

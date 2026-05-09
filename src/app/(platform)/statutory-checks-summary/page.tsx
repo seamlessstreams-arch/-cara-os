@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -143,6 +143,7 @@ export default function StatutoryChecksSummaryPage() {
     <PageShell
       title="Statutory Checks Summary"
       subtitle="Compliance overview at a glance — required by Quality Standard 13 and Reg 45"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Statutory Checks Summary" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="statutory-checks-summary" />,

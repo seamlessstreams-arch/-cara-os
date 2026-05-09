@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -192,6 +192,7 @@ export default function PeerRelationshipsPage() {
     <PageShell
       title="Peer Relationships"
       subtitle="Peer dynamic mapping, group living assessments and relationship tracking"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Peer Relationships" />

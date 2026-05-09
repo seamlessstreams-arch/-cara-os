@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import {
@@ -237,6 +237,7 @@ export default function EmergencyMedicationProtocolsPage() {
     <PageShell
       title="Emergency Medication Protocols"
       subtitle="Per-child emergency response procedures — QS7 (Health) & Regulation 23"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Medication Protocols" />

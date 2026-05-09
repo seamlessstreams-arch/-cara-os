@@ -174,6 +174,7 @@ export default function FireDrillsPage() {
     <PageShell
       title="Fire Drills & Emergency Procedures"
       subtitle="Evacuation drills, equipment checks, and emergency readiness"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Fire Drills" subtitle="Oak House — Health & Safety" />

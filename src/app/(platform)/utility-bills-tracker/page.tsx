@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -447,6 +447,7 @@ export default function UtilityBillsTrackerPage() {
     <PageShell
       title="Utility Bills Tracker"
       subtitle="Electricity, gas, water, broadband, council tax and business rates — supporting financial governance under Quality Standard 13"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="utility-bills-tracker" />

@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Coins,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -138,6 +138,7 @@ export default function PlacementBudgetTrackerPage() {
     <PageShell
       title="Placement Budget Tracker"
       subtitle="Each child's annual budget across categories — financial governance, transparency and corporate parenting (illustrative figures)"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="placement-budget-tracker" />

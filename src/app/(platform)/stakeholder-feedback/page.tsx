@@ -6,7 +6,7 @@ import {
   AlertTriangle, Star, ThumbsUp, ThumbsDown,
   ChevronDown, ChevronUp, Users, Heart, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -133,6 +133,7 @@ export default function StakeholderFeedbackPage() {
     <PageShell
       title="Stakeholder Feedback"
       subtitle="Feedback from children, families, professionals, and the community"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Stakeholder Feedback" />

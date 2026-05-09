@@ -6,7 +6,7 @@ import {
   AlertCircle, ThumbsUp, ChevronDown, ChevronUp, Building2,
   Sparkles, MapPin, ShieldCheck,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -131,6 +131,7 @@ export default function CommunityFeedbackPage() {
     <PageShell
       title="Community Feedback"
       subtitle="Voices from our neighbours, local businesses, and the wider community"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Community Feedback" />

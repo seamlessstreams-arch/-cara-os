@@ -245,6 +245,7 @@ export default function ResourceLibraryPage() {
     <PageShell
       title="Resource Library"
       subtitle="All approved learning resources — auto-populated when resources are approved"
+      ariaContext={{ pageTitle: "Oak House — Learning Resources", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

@@ -15,7 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast }        from "sonner";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -183,6 +183,7 @@ export default function EnvironmentalRiskPage() {
     <PageShell
       title="Environmental Risk Assessments"
       subtitle="Hazard identification, control measures and residual risk management across the home"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Environmental Risk Assessments" />

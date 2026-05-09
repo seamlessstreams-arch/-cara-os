@@ -775,6 +775,7 @@ export default function RecruitmentPage() {
     <PageShell
       title="Recruitment"
       subtitle="Safer recruitment command centre — applicants, compliance checks, and SCR"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={candidates} columns={CANDIDATE_EXPORT_COLS} filename="recruitment" />

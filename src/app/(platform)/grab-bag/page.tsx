@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, Clock,
   ChevronDown, ChevronUp, RefreshCw,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -151,6 +151,7 @@ export default function GrabBagPage() {
     <PageShell
       title="Emergency Grab Bags"
       subtitle="Essential documents and supplies for each young person — ready for immediate use"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Grab Bags" />

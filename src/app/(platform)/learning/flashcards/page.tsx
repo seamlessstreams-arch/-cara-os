@@ -203,6 +203,7 @@ export default function FlashcardsPage() {
     <PageShell
       title="Flashcard Sets"
       subtitle="Generate interactive flashcard sets for learning and revision"
+      ariaContext={{ pageTitle: "Oak House — Learning Flashcards", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

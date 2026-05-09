@@ -358,6 +358,7 @@ export default function QuizzesPage() {
     <PageShell
       title="Knowledge Quizzes"
       subtitle="Generate interactive knowledge quizzes with ARIA"
+      ariaContext={{ pageTitle: "Oak House — Staff Knowledge Assessment", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

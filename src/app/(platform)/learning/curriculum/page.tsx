@@ -179,6 +179,7 @@ export default function CurriculumBuilderPage() {
     <PageShell
       title="Curriculum Builder"
       subtitle="Design structured multi-module learning pathways with ARIA"
+      ariaContext={{ pageTitle: "Oak House — Learning Curriculum", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

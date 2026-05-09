@@ -14,7 +14,7 @@ import {
   FileText, ClipboardList, Hammer, ShieldCheck, BookOpen,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -158,6 +158,7 @@ export default function HomeImprovementPlanPage() {
     <PageShell
       title="Home Improvement Plan"
       subtitle="Post-inspection actions, quality objectives, Reg 45 recommendations, and development goals"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Home Improvement Plan" />

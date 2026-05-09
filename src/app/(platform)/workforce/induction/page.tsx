@@ -397,6 +397,7 @@ export default function InductionTrackerPage() {
     <PageShell
       title="Induction Tracker"
       subtitle="From Day 1 to probation completion — structured staff onboarding"
+      ariaContext={{ pageTitle: "Induction Tracker", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

@@ -12,7 +12,7 @@ import {
   Users,
   Sparkles,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -113,6 +113,7 @@ export default function GriefAndLossSupportPage() {
     <PageShell
       title="Grief & Loss Support"
       subtitle="Bereavement, separation, placement loss, pet loss and identity loss — supporting each child individually"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Grief & Loss Support" />

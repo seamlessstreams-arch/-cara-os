@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -66,6 +66,7 @@ export default function AgencyStaffFeedbackPage() {
 
   return (
     <PageShell title="Agency Staff Feedback" subtitle="Performance feedback after agency staff cover shifts — approval, development, and repeat-booking decisions"
+      ariaContext={{ pageTitle: "Agency Staff Feedback", sourceType: "staff" }}
       actions={<div className="flex items-center gap-2"><ExportButton data={data} columns={exportCols} filename="agency-staff-feedback" /><PrintButton title="Agency Staff Feedback" /></div>}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Reviews</p></div>

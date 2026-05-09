@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -129,6 +129,7 @@ export default function ChildSwimmingWaterSafetyPage() {
     <PageShell
       title="Swimming & Water Safety"
       subtitle="Per-child swimming competence and water safety — RLSS National Curriculum stages, school swimming, current lessons, open water awareness, beach safety, life jacket use. Critical life skill especially for care leavers — anti-drowning evidence base."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-swimming-water-safety" />

@@ -458,6 +458,7 @@ export default function QualificationsPage() {
     <PageShell
       title="Qualifications & DBS Tracker"
       subtitle="Regulatory fitness — mandatory qualifications, DBS checks, and compliance matrix"
+      ariaContext={{ pageTitle: "Oak House", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

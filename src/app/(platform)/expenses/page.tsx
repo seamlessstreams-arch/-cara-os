@@ -239,6 +239,7 @@ export default function ExpensesPage() {
     <PageShell
       title="Expenses"
       subtitle="Expense claims, receipts, approvals, and spend reporting"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "expenses", defaultTaskCategory: "finance" }}
       actions={
         <div className="flex items-center gap-2">

@@ -10,7 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
@@ -134,6 +134,7 @@ export default function PolicyReviewTrackerPage() {
     <PageShell
       title="Policy Review Tracker"
       subtitle="Monitor review cycles, version history, and staff sign-off for all home policies"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Policy Review Tracker" subtitle="Oak House — Policy Management" />

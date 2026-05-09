@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -154,6 +154,7 @@ export default function ParentPartnershipPage() {
     <PageShell
       title="Parent &amp; Carer Partnership"
       subtitle="Family engagement, contact quality and partnership working — Children Act 1989"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Parent Partnership Log" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="parent-partnership-log" />,

@@ -8,7 +8,7 @@ import {
   AlertTriangle, CheckCircle2, Smile, Calendar,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -164,6 +164,7 @@ export default function WellbeingPulseSurveyPage() {
     <PageShell
       title="Wellbeing Pulse Survey"
       subtitle="Short, frequent check-ins capturing each child's voice — distinct from full assessments"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Wellbeing Pulse Survey" />

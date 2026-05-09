@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
@@ -154,6 +154,7 @@ export default function DocumentExpiryTrackerPage() {
     <PageShell
       title="Document Expiry Tracker"
       subtitle="Track and manage expiry dates for all critical compliance documents"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Document Expiry Tracker" subtitle="Oak House — Compliance Management" />

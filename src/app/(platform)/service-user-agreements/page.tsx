@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -99,7 +99,9 @@ export default function ServiceUserAgreementsPage() {
   }
 
   return (
-    <PageShell title="Young Person Agreements" subtitle="Reg 7 — Children's Wishes & Feelings · Co-Produced Expectations" actions={<div className="flex items-center gap-2"><PrintButton title="YP Agreements" /><ExportButton data={filtered} columns={exportCols} filename="yp-agreements" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Agreement</Button></div>}>
+    <PageShell title="Young Person Agreements" subtitle="Reg 7 — Children's Wishes & Feelings · Co-Produced Expectations" 
+      ariaContext={{ pageTitle: "Young Person Agreements", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="YP Agreements" /><ExportButton data={filtered} columns={exportCols} filename="yp-agreements" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Agreement</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[

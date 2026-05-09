@@ -17,7 +17,7 @@ import {
   Users,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -148,6 +148,7 @@ export default function SaferRecruitmentTrackerPage() {
     <PageShell
       title="Safer Recruitment Tracker"
       subtitle="Schedule 2 & Reg 32 — end-to-end vetting and onboarding compliance for new staff"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="safer-recruitment-tracker" />

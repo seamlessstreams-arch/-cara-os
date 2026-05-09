@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -195,6 +195,7 @@ export default function YoungCarerStatusPage() {
     <PageShell
       title="Young Carer Status"
       subtitle="Identifying and supporting children with caring responsibilities — past, present, or risk-of"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={<div className="flex items-center gap-2"><ExportButton data={data} columns={exportCols} filename="young-carer-status" /><PrintButton title="Young Carer Status" /></div>}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Records</p></div>

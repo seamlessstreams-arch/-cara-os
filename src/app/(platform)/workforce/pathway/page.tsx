@@ -360,6 +360,7 @@ export default function CareerPathwayPage() {
     <PageShell
       title="Career Pathway Ladder"
       subtitle="Seven-stage progression framework — from Inductee to RI"
+      ariaContext={{ pageTitle: "Oak House Workforce", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

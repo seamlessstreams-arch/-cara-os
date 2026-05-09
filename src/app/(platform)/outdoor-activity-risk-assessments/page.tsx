@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -52,6 +52,7 @@ export default function OutdoorActivityRiskAssessmentsPage() {
 
   return (
     <PageShell title="Outdoor Activity Risk Assessments" subtitle="Activity-specific RAs — trips, outings, water, climbing, festivals, and city visits"
+      ariaContext={{ pageTitle: "Outdoor Activity Risk Assessments", sourceType: "child_record" }}
       actions={<div className="flex items-center gap-2"><ExportButton data={data} columns={exportCols} filename="outdoor-activity-risk-assessments" /><PrintButton title="Outdoor Activity Risk Assessments" /></div>}>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Active RAs</p></div>

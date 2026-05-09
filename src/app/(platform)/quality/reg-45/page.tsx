@@ -292,6 +292,7 @@ export default function Reg45Page() {
     <PageShell
       title="Regulation 45 — Quality of Care Review"
       subtitle="Six-Monthly Quality Review  ·  Responsible Individual Oversight"
+      ariaContext={{ pageTitle: "Evidence not loaded", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           {isDraft && selectedReview.status === "draft" && (

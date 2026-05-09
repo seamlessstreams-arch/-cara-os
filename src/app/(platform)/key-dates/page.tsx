@@ -305,6 +305,7 @@ export default function KeyDatesPage() {
     <PageShell
       title="Key Dates"
       subtitle="Statutory deadlines, review dates, and operational milestones — next 90 days"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       quickCreateContext={{ module: "compliance", defaultTaskCategory: "compliance" }}
       actions={
         <div className="flex items-center gap-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -127,6 +127,7 @@ export default function ChildSchoolUniformShoesTrackerPage() {
     <PageShell
       title="School Uniform & Shoes Tracker"
       subtitle="Per-child school clothing — uniform, PE kit, shoes, trainers, outerwear. Sensory considerations, child-chosen styles, growth tracking, sustainable funding (Pupil Premium Plus, Virtual School grant, leaving care fund, school uniform exchange)."
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-school-uniform-shoes-tracker" />

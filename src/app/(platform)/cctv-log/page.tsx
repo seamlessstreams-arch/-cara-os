@@ -13,7 +13,7 @@ import {
   Shield,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -132,6 +132,7 @@ export default function CCTVLogPage() {
     <PageShell
       title="CCTV Usage Log"
       subtitle="Footage access register — data protection compliance and audit trail"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="cctv-log" />

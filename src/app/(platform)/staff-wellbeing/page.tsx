@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, Smile, Meh, Frown,
   Clock, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -127,6 +127,7 @@ export default function StaffWellbeingPage() {
     <PageShell
       title="Staff Wellbeing"
       subtitle="Monitor and support the emotional health and resilience of the team"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Wellbeing" />

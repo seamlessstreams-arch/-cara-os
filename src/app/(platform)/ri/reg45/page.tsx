@@ -604,6 +604,7 @@ export default function Reg45Page() {
     <PageShell
       title="Regulation 45 Engine"
       subtitle="Evidence collection and Reg 45 report generation"
+      ariaContext={{ pageTitle: "Regulation 45 Engine", sourceType: "reg45" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">

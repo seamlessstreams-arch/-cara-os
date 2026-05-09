@@ -12,7 +12,7 @@ import {
   Calendar,
   AlertTriangle,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -205,6 +205,7 @@ export default function ChildTraumaTherapyLogPage() {
     <PageShell
       title="Child Trauma Therapy Log"
       subtitle="Per-child trauma therapy attendance and observable presentation — therapeutic content stays in the therapy room"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Trauma Therapy Log" />

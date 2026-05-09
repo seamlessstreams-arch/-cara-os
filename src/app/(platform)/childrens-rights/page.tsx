@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +55,7 @@ export default function ChildrensRightsPage() {
     <PageShell
       title="Children's Rights"
       subtitle="UNCRC · Rights-Based Practice · How We Uphold Children's Rights at Oak House"
+      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
       actions={<PrintButton title="Children's Rights Charter" />}
     >
       <div id="print-area">

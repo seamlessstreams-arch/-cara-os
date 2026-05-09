@@ -115,6 +115,7 @@ export default function MyDayPage() {
     <PageShell
       title="My Day"
       subtitle={`${greeting}, ${displayName} — here's what needs your attention today`}
+      ariaContext={{ pageTitle: "My Day", sourceType: "child_record" }}
       actions={
         <PrintButton title="My Day" subtitle={`${displayName} — ${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}`} targetId="my-day-content" />
       }

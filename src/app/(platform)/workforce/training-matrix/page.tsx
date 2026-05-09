@@ -325,6 +325,7 @@ export default function TrainingMatrixPage() {
     <PageShell
       title="Training Matrix"
       subtitle="Team-wide mandatory and CPD training coverage at a glance"
+      ariaContext={{ pageTitle: "Oak House Workforce", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
