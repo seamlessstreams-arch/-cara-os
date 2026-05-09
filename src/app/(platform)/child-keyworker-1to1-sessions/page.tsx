@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useKeyworkSessions, useCreateKeyworkSession, type KeyworkSession } from "@/hooks/use-keywork-sessions";
 import { type KeyworkerSessionFormat, KEYWORKER_SESSION_FORMAT_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
@@ -360,6 +361,11 @@ export default function ChildKeyworker1to1SessionsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

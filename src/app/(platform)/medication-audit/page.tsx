@@ -26,6 +26,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useMedicationAudits } from "@/hooks/use-medication-audits";
 import type { MedicationAuditRecord, MedAuditType, MedAuditResult } from "@/types/extended";
 import { MED_AUDIT_TYPE_LABEL, MED_AUDIT_RESULT_LABEL, MED_AUDIT_MEDICATION_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -268,6 +269,12 @@ export default function MedicationAuditPage() {
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Audit</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

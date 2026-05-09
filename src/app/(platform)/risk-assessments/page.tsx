@@ -23,6 +23,7 @@ import {
   ShieldAlert, AlertTriangle, CheckCircle2, Clock, Calendar,
   Shield, ArrowUp, ArrowDown, Minus, Loader2, ArrowUpRight,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 
 const DOMAIN_META: Record<RiskDomain, { label: string; color: string }> = {
@@ -370,6 +371,11 @@ export default function RiskAssessmentsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

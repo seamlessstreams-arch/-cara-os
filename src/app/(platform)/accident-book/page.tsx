@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useAccidentBook, useCreateAccident } from "@/hooks/use-accident-book";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord } from "@/types/extended";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
@@ -339,6 +340,11 @@ export default function AccidentBookPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -32,6 +32,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { toastSuccess } from "@/lib/toast";
 
 // ── Filter types ─────────────────────────────────────────────────────────────
@@ -977,6 +978,11 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
           onSave={handleAddGoal}
         />
       )}
+      <CareEventsPanel
+        title="Related Care Events"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

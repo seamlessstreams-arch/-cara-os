@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SanctionRewardEntry, SRDirection, SRRewardType, SRSanctionType } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 
 
@@ -488,6 +489,12 @@ export default function SanctionsRewardsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        category="behaviour"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }
