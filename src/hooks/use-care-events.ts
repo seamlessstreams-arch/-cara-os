@@ -77,6 +77,12 @@ export function useCareEvents(params?: CareEventsParams) {
   return useQuery({
     queryKey: ["care-events", params],
     queryFn: () => api.get<CareEventsResponse>(`/care-events?${query}`),
+    // Poll faster if any events are in transient routing states
+    refetchInterval: (query) => {
+      const data = query.state.data?.data ?? [];
+      const hasRouting = data.some((e) => e.status === "routing" || e.status === "submitted");
+      return hasRouting ? 5_000 : 30_000;
+    },
   });
 }
 
@@ -87,6 +93,13 @@ export function useCareEvent(id: string | null) {
     queryKey: ["care-event", id],
     queryFn: () => api.get<CareEventDetailResponse>(`/care-events/${id}`),
     enabled: !!id,
+    // Poll faster when in transient routing states
+    refetchInterval: (query) => {
+      const status = query.state.data?.data?.status;
+      if (status === "routing" || status === "submitted") return 5_000; // 5s while routing
+      if (status === "routed" || status === "manager_review_required") return 30_000; // 30s pending review
+      return 60_000; // 60s for stable states
+    },
   });
 }
 

@@ -368,15 +368,29 @@ function AuditTab({ entries }: { entries: CareEventAuditLog[] }) {
             </div>
             {entry.actor_staff_id && (
               <p className="text-xs text-slate-500 mt-0.5">
-                by {entry.actor_staff_id}
+                by {(entry as never as { actor_staff_name?: string }).actor_staff_name ?? entry.actor_staff_id}
                 {entry.actor_role && <> ({entry.actor_role})</>}
               </p>
             )}
-            {entry.detail && Object.keys(entry.detail).length > 0 && (
-              <p className="text-xs text-slate-400 mt-0.5 font-mono truncate">
-                {JSON.stringify(entry.detail).slice(0, 120)}
-              </p>
-            )}
+            {entry.detail && Object.keys(entry.detail).length > 0 && (() => {
+              const d = entry.detail as Record<string, unknown>;
+              // Show human-readable details instead of raw JSON
+              const parts: string[] = [];
+              if (d.return_reason)        parts.push(`Reason: "${d.return_reason}"`);
+              if (d.amendment_reason)     parts.push(`Reason: "${d.amendment_reason}"`);
+              if (d.manager_notes)        parts.push(`Notes: "${d.manager_notes}"`);
+              if (d.evidence_approved !== undefined) parts.push(`Evidence approved: ${d.evidence_approved}`);
+              if (d.routes_completed !== undefined)  parts.push(`Routes: ${d.routes_completed} completed`);
+              if (d.routes_failed !== undefined && Number(d.routes_failed) > 0) parts.push(`${d.routes_failed} failed`);
+              if (parts.length === 0) {
+                parts.push(JSON.stringify(d).slice(0, 100));
+              }
+              return (
+                <p className="text-xs text-slate-400 mt-0.5 truncate">
+                  {parts.join(" · ")}
+                </p>
+              );
+            })()}
           </div>
         </div>
       ))}
