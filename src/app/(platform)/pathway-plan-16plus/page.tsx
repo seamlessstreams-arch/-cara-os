@@ -15,11 +15,15 @@ import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, Calendar, FileText, GraduationCap,
   Heart, Home, Briefcase, Users, Target, ShieldAlert, Wrench, Phone,
-  Loader2,
+  Loader2, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { usePathwayPlans } from "@/hooks/use-pathway-plans";
+import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
+import { usePathwayPlans, useCreatePathwayPlan } from "@/hooks/use-pathway-plans";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import type { PathwayPlan, PathwayPlanStatus, PathwaySkillLevel } from "@/types/extended";
 import { PATHWAY_PLAN_STATUS_LABEL, PATHWAY_SKILL_LEVEL_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -58,6 +62,22 @@ export default function PathwayPlan16PlusPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("review");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const createPlan = useCreatePathwayPlan();
+  const [ppForm, setPpForm] = useState({ child_id: "", personal_advisor: "", accommodation: "", aspirations: "" });
+  const setPP = (k: string, v: unknown) => setPpForm((p) => ({ ...p, [k]: v }));
+
+  const handleSavePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ppForm.child_id) { toast.error("Please select a young person."); return; }
+    const yp = YOUNG_PEOPLE.find((y) => y.id === ppForm.child_id);
+    const today = new Date().toISOString().slice(0, 10);
+    const reviewDate = new Date(); reviewDate.setMonth(reviewDate.getMonth() + 6);
+    await createPlan.mutateAsync({ child_id: ppForm.child_id, child_initials: yp ? `${yp.first_name[0]}${yp.last_name[0]}` : "??", age: yp?.date_of_birth ? Math.floor((Date.now() - new Date(yp.date_of_birth).getTime()) / 31557600000) : 16, status: "active_16_18" as PathwayPlanStatus, plan_version: "1.0", last_review_date: today, personal_advisor: ppForm.personal_advisor.trim(), social_worker: "", accommodation: ppForm.accommodation.trim(), education_employment_training: "", health_needs: [], financial_support: [], support_network: [], aspirations: ppForm.aspirations.split("\n").filter(Boolean), risks: [], independent_living_skills: {}, next_review_date: reviewDate.toISOString().slice(0, 10), contact_arrangements: "", statutory_16plus_review_schedule: "Every 6 months" });
+    toast.success("Pathway plan created.");
+    setPpForm({ child_id: "", personal_advisor: "", accommodation: "", aspirations: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
   const today = new Date().toISOString().slice(0, 10);
@@ -162,6 +182,7 @@ export default function PathwayPlan16PlusPage() {
       actions={[
         <PrintButton key="p" title="Pathway Plan (16+)" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="pathway-plan-16plus" />,
+        <Button key="new" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />New Plan</Button>,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -484,6 +505,18 @@ export default function PathwayPlan16PlusPage() {
         days={28}
         defaultCollapsed
       />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>New Pathway Plan</DialogTitle></DialogHeader>
+          <form onSubmit={handleSavePlan} className="space-y-3 py-2">
+            <div><Label>Young Person *</Label><Select value={ppForm.child_id} onValueChange={(v) => setPP("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Personal Advisor</Label><Select value={ppForm.personal_advisor} onValueChange={(v) => setPP("personal_advisor", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="">TBC</SelectItem>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Current Accommodation</Label><Input className="mt-1" placeholder="e.g. Oak House" value={ppForm.accommodation} onChange={(e) => setPP("accommodation", e.target.value)} /></div>
+            <div><Label>Aspirations (one per line)</Label><Textarea className="mt-1" rows={3} placeholder="Young person's goals and aspirations…" value={ppForm.aspirations} onChange={(e) => setPP("aspirations", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createPlan.isPending}>{createPlan.isPending ? "Saving…" : "Create Plan"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }
