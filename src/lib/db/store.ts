@@ -994,6 +994,50 @@ store.keyWorkingSessions = [
   },
 ];
 
+// Seed keyworker (1:1) sessions
+store.keyworkerSessions = [
+  {
+    id: "kws_001",
+    child_id: "yp_casey",
+    staff_id: "staff_chervelle",
+    session_date: daysFromNow(-5),
+    duration_minutes: 45,
+    format: "one_to_one_at_home" as const,
+    child_chose_format: true,
+    themes_covered: ["identity", "education"],
+    child_went_in_with: "3",
+    child_walked_out_with: "4",
+    what_child_brought_up: "Casey shared feelings about school friendships and identity",
+    what_staff_brought_up: "Upcoming education review and creative writing project",
+    agreed_actions_staff: ["Arrange creative writing resources", "Follow up on school peer relationships"],
+    agreed_actions_child: ["Continue writing journal", "Speak to form tutor about friendships"],
+    child_satisfaction: 4,
+    follow_up_date: daysFromNow(9),
+    flags_raised: [],
+    created_at: daysFromNow(-5),
+  },
+  {
+    id: "kws_002",
+    child_id: "yp_jordan",
+    staff_id: "staff_anna",
+    session_date: daysFromNow(-3),
+    duration_minutes: 30,
+    format: "one_to_one_walk" as const,
+    child_chose_format: true,
+    themes_covered: ["transition", "wellbeing"],
+    child_went_in_with: "2",
+    child_walked_out_with: "3",
+    what_child_brought_up: "Jordan spoke about transition planning and anxiety about leaving care",
+    what_staff_brought_up: "Pathway plan review and housing options",
+    agreed_actions_staff: ["Book transition planning meeting", "Arrange supported accommodation visit"],
+    agreed_actions_child: ["Think about three things important in a home", "Bring questions to next session"],
+    child_satisfaction: 3,
+    follow_up_date: daysFromNow(11),
+    flags_raised: [],
+    created_at: daysFromNow(-3),
+  },
+];
+
 // Seed missing episodes
 store.missingEpisodes = [
   {

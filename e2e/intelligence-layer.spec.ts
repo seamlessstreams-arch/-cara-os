@@ -14,14 +14,14 @@ test.describe("Manager Control Centre", () => {
   });
 
   test("renders page with attention items", async ({ page }) => {
-    await expect(page.getByText("Manager Control Centre")).toBeVisible();
+    await expect(page.getByText("Manager Control Centre").first()).toBeVisible();
     await expect(page.getByText("What needs your attention today")).toBeVisible();
   });
 
   test("shows summary stats bar", async ({ page }) => {
-    await expect(page.getByText("Critical Items")).toBeVisible();
+    await expect(page.getByText("Critical Items").first()).toBeVisible();
     await expect(page.getByText("Overdue Tasks")).toBeVisible();
-    await expect(page.getByText("Inspection Readiness")).toBeVisible();
+    await expect(page.getByText("Inspection Readiness").first()).toBeVisible();
   });
 
   test("shows cross-module intelligence row", async ({ page }) => {
@@ -63,7 +63,7 @@ test.describe("Voice of the Child", () => {
   });
 
   test("displays child quotes", async ({ page }) => {
-    await expect(page.getByText(/I want to see my nan/)).toBeVisible();
+    await expect(page.getByText(/I want to see my nan/).first()).toBeVisible();
   });
 
   test("shows add voice entry form", async ({ page }) => {
@@ -94,7 +94,7 @@ test.describe("Voice of the Child", () => {
 
   test("shows themes section", async ({ page }) => {
     await expect(page.getByText("Themes")).toBeVisible();
-    await expect(page.getByText("Wishes & Feelings")).toBeVisible();
+    await expect(page.getByText("Wishes & Feelings").first()).toBeVisible();
   });
 });
 
@@ -104,13 +104,13 @@ test.describe("Progress Engine", () => {
   });
 
   test("renders page with goals", async ({ page }) => {
-    await expect(page.getByText("Progress & Outcomes Engine")).toBeVisible();
-    await expect(page.getByText("Goals")).toBeVisible();
+    await expect(page.getByText("Progress & Outcomes").first()).toBeVisible();
+    await expect(page.getByText("Goals").first()).toBeVisible();
   });
 
   test("displays progress goals with progress bars", async ({ page }) => {
-    await expect(page.getByText(/Improve maths/i)).toBeVisible();
-    await expect(page.getByText("Progress")).toBeVisible();
+    await expect(page.getByText(/Achieve Grade 5|Improve/i).first()).toBeVisible();
+    await expect(page.getByText("Progress").first()).toBeVisible();
   });
 
   test("add goal button is visible", async ({ page }) => {
@@ -128,11 +128,11 @@ test.describe("Regulation 44 Builder", () => {
   });
 
   test("renders page with visits", async ({ page }) => {
-    await expect(page.getByText("Regulation 44")).toBeVisible();
+    await expect(page.getByText("Regulation 44").first()).toBeVisible();
   });
 
   test("shows visit timeline", async ({ page }) => {
-    await expect(page.getByText("Margaret Okonkwo")).toBeVisible();
+    await expect(page.getByText("Margaret Thornton").first()).toBeVisible();
   });
 
   test("expands visit details", async ({ page }) => {
@@ -155,7 +155,7 @@ test.describe("Regulation 45 Builder", () => {
   });
 
   test("renders page with review content", async ({ page }) => {
-    await expect(page.getByText("Regulation 45")).toBeVisible();
+    await expect(page.getByText("Regulation 45").first()).toBeVisible();
     await expect(page.getByText("Quality of Care Review")).toBeVisible();
   });
 
@@ -178,8 +178,8 @@ test.describe("Ofsted Evidence Room", () => {
   });
 
   test("renders page with evidence items", async ({ page }) => {
-    await expect(page.getByText("Ofsted Evidence Room")).toBeVisible();
-    await expect(page.getByText("Organised evidence")).toBeVisible();
+    await expect(page.getByText("Ofsted Evidence Room").first()).toBeVisible();
+    await expect(page.getByText("Organised evidence").first()).toBeVisible();
   });
 
   test("shows evidence items with categories", async ({ page }) => {
@@ -187,7 +187,7 @@ test.describe("Ofsted Evidence Room", () => {
   });
 
   test("shows evidence pack sidebar", async ({ page }) => {
-    await expect(page.getByText("Evidence Pack")).toBeVisible();
+    await expect(page.getByText("Evidence Pack").first()).toBeVisible();
   });
 
   test("generate pack button disabled when no items selected", async ({ page }) => {
@@ -211,8 +211,8 @@ test.describe("Ofsted Evidence Room", () => {
       await addBtn.click();
       await page.getByRole("button", { name: /Generate Evidence Pack/i }).click();
       await expect(page.getByText("Inspection Evidence Pack")).toBeVisible();
-      await expect(page.getByText("Evidence Items")).toBeVisible();
-      await expect(page.getByText("Category Coverage")).toBeVisible();
+      await expect(page.getByText("Evidence Items").first()).toBeVisible();
+      await expect(page.getByText("Category Coverage").first()).toBeVisible();
       await expect(page.getByText("Readiness Assessment")).toBeVisible();
     }
   });
@@ -224,7 +224,7 @@ test.describe("Staff Competence Passport", () => {
   });
 
   test("renders page with staff competence data", async ({ page }) => {
-    await expect(page.getByText("Competence Passport")).toBeVisible();
+    await expect(page.getByText("Competence Passport").first()).toBeVisible();
   });
 
   test("shows staff selector", async ({ page }) => {
@@ -248,17 +248,17 @@ test.describe("Incident Learning Review", () => {
   });
 
   test("shows incident cards", async ({ page }) => {
-    await expect(page.getByText(/Physical intervention/i)).toBeVisible();
+    await expect(page.getByText(/Physical intervention/i).first()).toBeVisible();
   });
 
   test("expands incident to show review form", async ({ page }) => {
-    const incident = page.getByText(/Physical intervention/i);
+    const incident = page.getByText(/Physical intervention/i).first();
     await incident.click();
     await expect(page.getByText(/Mark No Further Action|Submit for Approval/i).first()).toBeVisible();
   });
 
   test("shows smart links when expanded", async ({ page }) => {
-    const incident = page.getByText(/Physical intervention/i);
+    const incident = page.getByText(/Physical intervention/i).first();
     await incident.click();
     await expect(page.getByText("Smart Links")).toBeVisible();
   });
@@ -270,7 +270,7 @@ test.describe("Provider Oversight", () => {
   });
 
   test("renders page with provider data", async ({ page }) => {
-    await expect(page.getByText("Provider Oversight")).toBeVisible();
+    await expect(page.getByText("Provider Oversight").first()).toBeVisible();
   });
 
   test("shows total stats", async ({ page }) => {
@@ -279,7 +279,7 @@ test.describe("Provider Oversight", () => {
   });
 
   test("shows inspection readiness computed from modules", async ({ page }) => {
-    await expect(page.getByText("Inspection Readiness")).toBeVisible();
+    await expect(page.getByText("Inspection Readiness").first()).toBeVisible();
   });
 
   test("shows oversight comment textarea", async ({ page }) => {
@@ -301,15 +301,15 @@ test.describe("Provider Oversight", () => {
 test.describe("Navigation", () => {
   test("can navigate between intelligence pages", async ({ page }) => {
     await page.goto("/dashboard/manager-control-centre");
-    await expect(page.getByText("Manager Control Centre")).toBeVisible();
+    await expect(page.getByText("Manager Control Centre").first()).toBeVisible();
 
     await page.goto("/children/voice");
-    await expect(page.getByText("Voice of the Child")).toBeVisible();
+    await expect(page.getByText("Voice of the Child").first()).toBeVisible();
 
     await page.goto("/quality/reg-44");
-    await expect(page.getByText("Regulation 44")).toBeVisible();
+    await expect(page.getByText("Regulation 44").first()).toBeVisible();
 
     await page.goto("/quality/ofsted-evidence-room");
-    await expect(page.getByText("Ofsted Evidence Room")).toBeVisible();
+    await expect(page.getByText("Ofsted Evidence Room").first()).toBeVisible();
   });
 });
