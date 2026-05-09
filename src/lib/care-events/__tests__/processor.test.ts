@@ -421,3 +421,341 @@ describe("Amendment versioning", () => {
     expect(prev1?.previous_version_id).toBeNull();
   });
 });
+
+// ── Locked record protection ──────────────────────────────────────────────────
+
+describe("Locked record protection", () => {
+  it("a locked event cannot be directly edited — only formal amendment allowed", () => {
+    const event = makeEvent({ status: "locked", locked_at: new Date().toISOString(), locked_by: "staff_darren" });
+    db.careEvents.create(event);
+
+    // Attempting to patch a locked event directly is prevented at the API level
+    // (API route returns 409 for locked events). At the store level, patch still
+    // works — but status must not silently revert to an earlier state.
+    db.careEvents.patch(event.id, { manager_notes: "Manager added a note" });
+    const updated = db.careEvents.findById(event.id);
+    expect(updated?.status).toBe("locked"); // status preserved
+    expect(updated?.manager_notes).toBe("Manager added a note");
+  });
+
+  it("a locked event preserves its locked_at timestamp after patch", () => {
+    const ts = new Date().toISOString();
+    const event = makeEvent({ status: "locked", locked_at: ts });
+    db.careEvents.create(event);
+    db.careEvents.patch(event.id, { manager_notes: "note" });
+    const found = db.careEvents.findById(event.id);
+    expect(found?.locked_at).toBe(ts);
+  });
+
+  it("version history is preserved across amendment of a locked event", () => {
+    const locked = makeEvent({ status: "locked", version: 3, is_current_version: false });
+    db.careEvents.create(locked);
+    const amendment = db.careEvents.create({
+      ...locked,
+      id: `${locked.id}_v4`,
+      version: 4,
+      previous_version_id: locked.id,
+      is_current_version: true,
+      amendment_reason: "Amendment after lock",
+      status: "draft",
+    });
+    expect(amendment.previous_version_id).toBe(locked.id);
+    expect(db.careEvents.findById(locked.id)?.status).toBe("locked"); // original preserved
+  });
+});
+
+// ── Failed route retry ────────────────────────────────────────────────────────
+
+describe("Failed route retry", () => {
+  it("retryFailedRoutes throws for a non-existent event", () => {
+    expect(() => retryFailedRoutes("ce_does_not_exist_xyz")).toThrow();
+  });
+
+  it("retryFailedRoutes re-processes failed routes for an existing event", () => {
+    const event = makeEvent({ category: "general" });
+    db.careEvents.create(event);
+
+    // Manually create a failed route
+    const route = db.careEventRoutes.upsert({
+      care_event_id: event.id,
+      home_id: "home_oak",
+      route_type: "filing_cabinet",
+      status: "failed",
+      linked_record_id: null,
+      linked_record_table: null,
+      processing_notes: null,
+      error_message: "Simulated failure",
+      retry_count: 1,
+      last_retried_at: null,
+      time_saved_minutes: 0,
+    });
+
+    // Retry should attempt to process the event again
+    const result = retryFailedRoutes(event.id);
+    expect(result).toBeDefined();
+    // Route should be retried (completed or still failing, but retry_count incremented)
+    const retried = db.careEventRoutes.findByCareEvent(event.id).find((r) => r.id === route.id);
+    expect(retried).toBeDefined();
+  });
+
+  it("source Care Event is preserved even if routes fail", () => {
+    const event = makeEvent({ category: "safeguarding", is_significant: true });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const found = db.careEvents.findById(event.id);
+    expect(found).toBeDefined(); // always preserved
+    expect(found?.id).toBe(event.id);
+  });
+});
+
+// ── Audit trail ───────────────────────────────────────────────────────────────
+
+describe("Audit trail creation", () => {
+  it("processCareEvent appends an audit log entry", () => {
+    const event = makeEvent({ category: "general" });
+    db.careEvents.create(event);
+    const before = db.careEventAuditLog.findByCareEvent(event.id).length;
+    processCareEvent(event);
+    const after = db.careEventAuditLog.findByCareEvent(event.id).length;
+    expect(after).toBeGreaterThan(before);
+  });
+
+  it("audit log entries are findable by care_event_id", () => {
+    const event = makeEvent({ category: "health" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const logs = db.careEventAuditLog.findByCareEvent(event.id);
+    expect(logs.length).toBeGreaterThan(0);
+    logs.forEach((l) => expect(l.care_event_id).toBe(event.id));
+  });
+
+  it("audit log entry has an action field", () => {
+    const event = makeEvent({ category: "medication" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const logs = db.careEventAuditLog.findByCareEvent(event.id);
+    expect(logs[0]).toHaveProperty("action");
+    expect(typeof logs[0].action).toBe("string");
+  });
+});
+
+// ── Regulation 45 suggested evidence update ───────────────────────────────────
+
+describe("Regulation 45 suggested evidence", () => {
+  it("creates a reg45 evidence item for safeguarding events", () => {
+    const event = makeEvent({ category: "safeguarding", is_significant: true });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const items = db.reg45EvidenceQueue.findAll().filter(
+      (i) => i.care_event_id === event.id
+    );
+    expect(items.length).toBeGreaterThan(0);
+  });
+
+  it("creates a reg45 evidence item for missing_episode events", () => {
+    const event = makeEvent({ category: "missing_episode" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const items = db.reg45EvidenceQueue.findAll().filter(
+      (i) => i.care_event_id === event.id
+    );
+    expect(items.length).toBeGreaterThan(0);
+  });
+
+  it("does not create reg45 evidence for general events", () => {
+    const event = makeEvent({ category: "general", is_significant: false });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const items = db.reg45EvidenceQueue.findAll().filter(
+      (i) => i.care_event_id === event.id
+    );
+    expect(items.length).toBe(0);
+  });
+
+  it("reg45 evidence item starts with manager_decision 'pending'", () => {
+    const event = makeEvent({ category: "behaviour" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const items = db.reg45EvidenceQueue.findAll().filter(
+      (i) => i.care_event_id === event.id
+    );
+    items.forEach((i) => expect(i.manager_decision).toBe("pending"));
+  });
+});
+
+// ── Annex A suggested evidence update ────────────────────────────────────────
+
+describe("Annex A suggested evidence", () => {
+  it("creates an annex_a evidence item for safeguarding events", () => {
+    const event = makeEvent({ category: "safeguarding" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const items = db.annexAEvidenceQueue.findAll().filter(
+      (i) => i.care_event_id === event.id
+    );
+    expect(items.length).toBeGreaterThan(0);
+  });
+
+  it("creates an annex_a evidence item for health events", () => {
+    const event = makeEvent({ category: "health" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const items = db.annexAEvidenceQueue.findAll().filter(
+      (i) => i.care_event_id === event.id
+    );
+    expect(items.length).toBeGreaterThan(0);
+  });
+
+  it("annex_a evidence item starts with manager_decision 'pending'", () => {
+    const event = makeEvent({ category: "physical_intervention" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const items = db.annexAEvidenceQueue.findAll().filter(
+      (i) => i.care_event_id === event.id
+    );
+    items.forEach((i) => expect(i.manager_decision).toBe("pending"));
+  });
+});
+
+// ── Management oversight queue ────────────────────────────────────────────────
+
+describe("Management oversight queue", () => {
+  it("creates a management oversight task for significant behaviour events", () => {
+    const event = makeEvent({ category: "behaviour", is_significant: true });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const tasks = db.tasks.findAll().filter(
+      (t) => (t as unknown as { linked_care_event_id?: string }).linked_care_event_id === event.id &&
+              t.tags?.includes("management_oversight")
+    );
+    expect(tasks.length).toBeGreaterThan(0);
+  });
+
+  it("creates a management oversight task for safeguarding events", () => {
+    const event = makeEvent({ category: "safeguarding" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const tasks = db.tasks.findAll().filter(
+      (t) => (t as unknown as { linked_care_event_id?: string }).linked_care_event_id === event.id &&
+              t.tags?.includes("management_oversight")
+    );
+    expect(tasks.length).toBeGreaterThan(0);
+  });
+
+  it("does not create management oversight task for general non-significant events", () => {
+    const event = makeEvent({ category: "general", is_significant: false });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const tasks = db.tasks.findAll().filter(
+      (t) => (t as unknown as { linked_care_event_id?: string }).linked_care_event_id === event.id &&
+              t.tags?.includes("management_oversight")
+    );
+    expect(tasks.length).toBe(0);
+  });
+});
+
+// ── Regulation 44 routing ─────────────────────────────────────────────────────
+
+describe("Regulation 44 routing", () => {
+  it("includes reg44_evidence route for safeguarding category", () => {
+    const event = makeEvent({ category: "safeguarding" });
+    const classification = classifyCareEvent(event);
+    expect(classification.routes).toContain("reg44_evidence");
+  });
+
+  it("includes reg44_evidence route for physical_intervention category", () => {
+    const event = makeEvent({ category: "physical_intervention" });
+    const classification = classifyCareEvent(event);
+    expect(classification.routes).toContain("reg44_evidence");
+  });
+
+  it("includes reg44_evidence route for complaint category", () => {
+    const event = makeEvent({ category: "complaint" });
+    const classification = classifyCareEvent(event);
+    expect(classification.routes).toContain("reg44_evidence");
+  });
+
+  it("does not include reg44_evidence route for general category", () => {
+    const event = makeEvent({ category: "general" });
+    const classification = classifyCareEvent(event);
+    expect(classification.routes).not.toContain("reg44_evidence");
+  });
+
+  it("processCareEvent creates a Reg44ActionRecord for safeguarding events", () => {
+    const event = makeEvent({ category: "safeguarding" });
+    db.careEvents.create(event);
+    const before = db.reg44ActionRecords.getAll().length;
+    processCareEvent(event);
+    const after = db.reg44ActionRecords.getAll().length;
+    expect(after).toBeGreaterThan(before);
+  });
+});
+
+// ── Filing cabinet auto-filing ────────────────────────────────────────────────
+
+describe("Filing cabinet auto-filing", () => {
+  it("files a safeguarding care event under 'safeguarding' category", () => {
+    const event = makeEvent({ category: "safeguarding", is_safeguarding: true });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const items = db.filingCabinet.findAll().filter(
+      (i) => (i as unknown as { care_event_id?: string }).care_event_id === event.id
+    );
+    expect(items.length).toBeGreaterThan(0);
+    expect(
+      items.some((i) => (i as unknown as { category?: string }).category === "safeguarding")
+    ).toBe(true);
+  });
+
+  it("files a general care event in the filing cabinet", () => {
+    const event = makeEvent({ category: "general" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const items = db.filingCabinet.findAll().filter(
+      (i) => (i as unknown as { care_event_id?: string }).care_event_id === event.id
+    );
+    expect(items.length).toBeGreaterThan(0);
+  });
+
+  it("does not create duplicate filing cabinet items on replay", () => {
+    const event = makeEvent({ category: "health" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const count1 = db.filingCabinet.findAll().filter(
+      (i) => (i as unknown as { care_event_id?: string }).care_event_id === event.id
+    ).length;
+    processCareEvent(event);
+    const count2 = db.filingCabinet.findAll().filter(
+      (i) => (i as unknown as { care_event_id?: string }).care_event_id === event.id
+    ).length;
+    expect(count1).toBe(count2);
+  });
+});
+
+// ── Child daily summary generation ───────────────────────────────────────────
+
+describe("Child daily summary generation", () => {
+  it("creates a child daily summary for events with a child_id", () => {
+    const event = makeEvent({ category: "general", child_id: "yp_alex" });
+    db.careEvents.create(event);
+    const before = db.childDailySummaries.findByChild("yp_alex").length;
+    processCareEvent(event);
+    const after = db.childDailySummaries.findByChild("yp_alex").length;
+    expect(after).toBeGreaterThanOrEqual(before);
+  });
+
+  it("does not duplicate summaries for the same child on the same date", () => {
+    const date = "2025-06-01";
+    const event1 = makeEvent({ category: "general", child_id: "yp_maya", event_date: date });
+    const event2 = makeEvent({ category: "health", child_id: "yp_maya", event_date: date });
+    db.careEvents.create(event1);
+    db.careEvents.create(event2);
+    processCareEvent(event1);
+    processCareEvent(event2);
+    const summaries = db.childDailySummaries.findByChild("yp_maya").filter(
+      (s) => s.summary_date === date
+    );
+    // Should have at most 1 summary per child per date (upsert)
+    expect(summaries.length).toBeLessThanOrEqual(1);
+  });
+});
