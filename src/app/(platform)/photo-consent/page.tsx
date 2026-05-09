@@ -21,10 +21,11 @@ import {
   AlertTriangle, CheckCircle2, Camera, X, Clock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { toast } from "sonner";
 import type { PhotoConsentRecord, PhotoConsentCategory, PhotoConsentStatus } from "@/types/extended";
 import { PHOTO_CONSENT_CATEGORY_LABEL, PHOTO_CONSENT_STATUS_LABEL } from "@/types/extended";
-import { usePhotoConsentRecords } from "@/hooks/use-photo-consent-records";
+import { usePhotoConsentRecords, useCreatePhotoConsentRecord } from "@/hooks/use-photo-consent-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
@@ -47,6 +48,20 @@ export default function PhotoConsentPage() {
   const [filterChild, setFilterChild] = useState("all");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createRecord = useCreatePhotoConsentRecord();
+  const [pcForm, setPcForm] = useState({ child_id: "", review_date: new Date().toISOString().slice(0, 10), young_person_views: "", overall_notes: "" });
+  const setPC = (k: string, v: unknown) => setPcForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pcForm.child_id) { toast.error("Please select a young person."); return; }
+    const next = new Date(pcForm.review_date); next.setFullYear(next.getFullYear() + 1);
+    await createRecord.mutateAsync({ child_id: pcForm.child_id, last_review_date: pcForm.review_date, next_review_date: next.toISOString().slice(0, 10), reviewed_by: "staff_darren", overall_notes: pcForm.overall_notes.trim(), permissions: [], social_worker_consent: false, young_person_views: pcForm.young_person_views.trim(), delegated_authority: "", created_at: new Date().toISOString() });
+    toast.success("Photo consent review saved.");
+    setPcForm({ child_id: "", review_date: new Date().toISOString().slice(0, 10), young_person_views: "", overall_notes: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -177,13 +192,13 @@ export default function PhotoConsentPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Review Photo Consent</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div><Label>Young Person</Label><Select><SelectTrigger><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
-            <div><Label>Review Date</Label><Input type="date" /></div>
-            <div className="col-span-2"><Label>Young Person&apos;s Views</Label><Textarea rows={2} placeholder="What does the young person say about photos?" /></div>
-            <div className="col-span-2"><Label>Notes</Label><Textarea rows={3} placeholder="Overall consent notes…" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Review</Button></DialogFooter>
+          <form onSubmit={handleSaveReview} className="grid grid-cols-2 gap-4 py-2">
+            <div><Label>Young Person *</Label><Select value={pcForm.child_id} onValueChange={(v) => setPC("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Review Date</Label><Input type="date" className="mt-1" value={pcForm.review_date} onChange={(e) => setPC("review_date", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Young Person&apos;s Views</Label><Textarea className="mt-1" rows={2} placeholder="What does the young person say about photos?" value={pcForm.young_person_views} onChange={(e) => setPC("young_person_views", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Notes</Label><Textarea className="mt-1" rows={3} placeholder="Overall consent notes…" value={pcForm.overall_notes} onChange={(e) => setPC("overall_notes", e.target.value)} /></div>
+            <DialogFooter className="col-span-2"><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Review"}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

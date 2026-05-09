@@ -21,8 +21,9 @@ import {
   AlertTriangle, CheckCircle2, Clock, GraduationCap, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
-import { useMedTrainingRecords } from "@/hooks/use-med-training-records";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useMedTrainingRecords, useCreateMedTrainingRecord } from "@/hooks/use-med-training-records";
 import type { MedTrainingRecord, MedCompetencyType, MedCompetencyStatus } from "@/types/extended";
 import { MED_COMPETENCY_TYPE_LABEL, MED_COMPETENCY_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -44,6 +45,21 @@ export default function MedicationTrainingPage() {
   const [sortBy, setSortBy] = useState("date-desc");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createRecord = useCreateMedTrainingRecord();
+  const [mtForm, setMtForm] = useState({ staff_id: "", competency_type: "administration" as MedCompetencyType, assessment_date: new Date().toISOString().slice(0, 10), score: "", notes: "" });
+  const setMT = (k: string, v: unknown) => setMtForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveAssessment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mtForm.staff_id) { toast.error("Please select a staff member."); return; }
+    const expiry = new Date(mtForm.assessment_date);
+    expiry.setFullYear(expiry.getFullYear() + 1);
+    await createRecord.mutateAsync({ staff_id: mtForm.staff_id, competency_type: mtForm.competency_type, status: "competent", assessment_date: mtForm.assessment_date, assessed_by: "staff_darren", expiry_date: expiry.toISOString().slice(0, 10), score: mtForm.score ? parseInt(mtForm.score) : null, pass_threshold: 80, practical_assessment: false, written_assessment: true, observations: 0, notes: mtForm.notes.trim(), action_plan: "", next_assessment_date: expiry.toISOString().slice(0, 10), created_at: new Date().toISOString() });
+    toast.success("Competency assessment recorded.");
+    setMtForm({ staff_id: "", competency_type: "administration", assessment_date: new Date().toISOString().slice(0, 10), score: "", notes: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -183,14 +199,14 @@ export default function MedicationTrainingPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Competency Assessment</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div><Label>Staff Member</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{STAFF_IDS.map((s) => (<SelectItem key={s} value={s}>{getStaffName(s)}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Competency Type</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(MED_COMPETENCY_TYPE_LABEL) as MedCompetencyType[]).map((k) => (<SelectItem key={k} value={k}>{MED_COMPETENCY_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Assessment Date</Label><Input type="date" /></div>
-            <div><Label>Score (%)</Label><Input type="number" placeholder="e.g. 88" /></div>
-            <div className="col-span-2"><Label>Notes</Label><Textarea rows={3} placeholder="Assessment details…" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Assessment</Button></DialogFooter>
+          <form onSubmit={handleSaveAssessment} className="grid grid-cols-2 gap-4 py-2">
+            <div><Label>Staff Member *</Label><Select value={mtForm.staff_id} onValueChange={(v) => setMT("staff_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Competency Type</Label><Select value={mtForm.competency_type} onValueChange={(v) => setMT("competency_type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(MED_COMPETENCY_TYPE_LABEL) as MedCompetencyType[]).map((k) => (<SelectItem key={k} value={k}>{MED_COMPETENCY_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Assessment Date</Label><Input type="date" className="mt-1" value={mtForm.assessment_date} onChange={(e) => setMT("assessment_date", e.target.value)} /></div>
+            <div><Label>Score (%)</Label><Input type="number" className="mt-1" placeholder="e.g. 88" value={mtForm.score} onChange={(e) => setMT("score", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Notes</Label><Textarea className="mt-1" rows={3} placeholder="Assessment details…" value={mtForm.notes} onChange={(e) => setMT("notes", e.target.value)} /></div>
+            <DialogFooter className="col-span-2"><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Assessment"}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

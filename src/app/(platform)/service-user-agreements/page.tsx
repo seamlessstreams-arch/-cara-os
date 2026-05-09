@@ -22,8 +22,9 @@ import {
   CheckCircle2, Clock, FileText, AlertTriangle, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useServiceUserAgreementRecords } from "@/hooks/use-service-user-agreement-records";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useServiceUserAgreementRecords, useCreateServiceUserAgreementRecord } from "@/hooks/use-service-user-agreement-records";
 import type { ServiceUserAgreementRecord, ServiceUserAgreementType, ServiceUserAgreementStatus } from "@/types/extended";
 import {
   SERVICE_USER_AGREEMENT_TYPE_LABEL,
@@ -44,6 +45,20 @@ export default function ServiceUserAgreementsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createRecord = useCreateServiceUserAgreementRecord();
+  const [suaForm, setSuaForm] = useState({ child_id: "", agreement_type: "house_rules" as ServiceUserAgreementType, status: "active" as ServiceUserAgreementStatus, review_date: "", young_person_views: "", rules: "" });
+  const setSUA = (k: string, v: unknown) => setSuaForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveAgreement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!suaForm.child_id) { toast.error("Please select a young person."); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    await createRecord.mutateAsync({ child_id: suaForm.child_id, agreement_type: suaForm.agreement_type, status: suaForm.status, created_date: today, review_date: suaForm.review_date || today, last_reviewed_date: today, created_by: "staff_darren", young_person_signed_date: null, young_person_views: suaForm.young_person_views.trim(), rules: suaForm.rules.split("\n").filter(Boolean).map((r) => ({ rule: r.trim(), agreed_by_yp: false, notes: "" })), consequences: "", rewards: "", modifications: "", social_worker_aware: false });
+    toast.success("Agreement saved.");
+    setSuaForm({ child_id: "", agreement_type: "house_rules", status: "active", review_date: "", young_person_views: "", rules: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -176,15 +191,17 @@ export default function ServiceUserAgreementsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Agreement</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div><Label>Young Person</Label><Select><SelectTrigger><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent>{childIds.map((id) => (<SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Agreement Type</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(SERVICE_USER_AGREEMENT_TYPE_LABEL) as ServiceUserAgreementType[]).map((k) => (<SelectItem key={k} value={k}>{SERVICE_USER_AGREEMENT_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Review Date</Label><Input type="date" /></div>
-            <div><Label>Status</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(SERVICE_USER_AGREEMENT_STATUS_LABEL) as ServiceUserAgreementStatus[]).map((k) => (<SelectItem key={k} value={k}>{SERVICE_USER_AGREEMENT_STATUS_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div className="col-span-2"><Label>Young Person&apos;s Views</Label><Textarea rows={2} placeholder="What did the young person say?" /></div>
-            <div className="col-span-2"><Label>Rules (one per line)</Label><Textarea rows={4} placeholder="Enter each rule on a new line…" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Agreement</Button></DialogFooter>
+          <form onSubmit={handleSaveAgreement} className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-4">
+            <div><Label>Young Person *</Label><Select value={suaForm.child_id} onValueChange={(v) => setSUA("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Agreement Type</Label><Select value={suaForm.agreement_type} onValueChange={(v) => setSUA("agreement_type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(SERVICE_USER_AGREEMENT_TYPE_LABEL) as ServiceUserAgreementType[]).map((k) => (<SelectItem key={k} value={k}>{SERVICE_USER_AGREEMENT_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Review Date</Label><Input type="date" className="mt-1" value={suaForm.review_date} onChange={(e) => setSUA("review_date", e.target.value)} /></div>
+            <div><Label>Status</Label><Select value={suaForm.status} onValueChange={(v) => setSUA("status", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(SERVICE_USER_AGREEMENT_STATUS_LABEL) as ServiceUserAgreementStatus[]).map((k) => (<SelectItem key={k} value={k}>{SERVICE_USER_AGREEMENT_STATUS_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div className="col-span-2"><Label>Young Person&apos;s Views</Label><Textarea className="mt-1" rows={2} placeholder="What did the young person say?" value={suaForm.young_person_views} onChange={(e) => setSUA("young_person_views", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Rules (one per line)</Label><Textarea className="mt-1" rows={4} placeholder="Enter each rule on a new line…" value={suaForm.rules} onChange={(e) => setSUA("rules", e.target.value)} /></div>
+            </div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Agreement"}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

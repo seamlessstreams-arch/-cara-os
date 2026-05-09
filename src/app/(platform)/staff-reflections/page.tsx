@@ -14,8 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, CheckCircle2, Clock, BookOpen, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useStaffReflectionRecords } from "@/hooks/use-staff-reflection-records";
+import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useStaffReflectionRecords, useCreateStaffReflectionRecord } from "@/hooks/use-staff-reflection-records";
 import type { StaffReflectionRecord, StaffReflectionType, StaffReflectionMood } from "@/types/extended";
 import { STAFF_REFLECTION_TYPE_LABEL, STAFF_REFLECTION_MOOD_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -37,6 +38,19 @@ export default function StaffReflectionsPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createRecord = useCreateStaffReflectionRecord();
+  const [rfForm, setRfForm] = useState({ staff_id: "", title: "", type: "daily" as StaffReflectionType, mood: "positive" as StaffReflectionMood, what_happened: "", what_i_felt: "", what_i_learned: "", what_i_would_do_differently: "" });
+  const setRF = (k: string, v: unknown) => setRfForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveReflection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rfForm.title.trim()) { toast.error("Title is required."); return; }
+    await createRecord.mutateAsync({ staff_id: rfForm.staff_id || "staff_darren", date: new Date().toISOString().slice(0, 10), type: rfForm.type, mood: rfForm.mood, title: rfForm.title.trim(), what_happened: rfForm.what_happened.trim(), what_i_felt: rfForm.what_i_felt.trim(), what_i_learned: rfForm.what_i_learned.trim(), what_i_would_do_differently: rfForm.what_i_would_do_differently.trim(), linked_to_yp: [], linked_incident: null, shared_with_manager: false, manager_feedback: "", development_goal: "", is_private: false });
+    toast.success("Reflection saved.");
+    setRfForm({ staff_id: "", title: "", type: "daily", mood: "positive", what_happened: "", what_i_felt: "", what_i_learned: "", what_i_would_do_differently: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
   const staffIds = [...new Set(records.map(r => r.staff_id))];
@@ -180,18 +194,19 @@ export default function StaffReflectionsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Reflection</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Title</Label><Input placeholder="Title of reflection" /></div>
+          <form onSubmit={handleSaveReflection} className="space-y-3 py-2">
+            <div><Label>Staff Member</Label><Select value={rfForm.staff_id} onValueChange={(v) => setRF("staff_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select (defaults to you)…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Title *</Label><Input className="mt-1" placeholder="Title of reflection" value={rfForm.title} onChange={(e) => setRF("title", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Type</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(STAFF_REFLECTION_TYPE_LABEL) as [StaffReflectionType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-              <div><Label>Mood</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(STAFF_REFLECTION_MOOD_LABEL) as [StaffReflectionMood, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Type</Label><Select value={rfForm.type} onValueChange={(v) => setRF("type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(STAFF_REFLECTION_TYPE_LABEL) as [StaffReflectionType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Mood</Label><Select value={rfForm.mood} onValueChange={(v) => setRF("mood", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(STAFF_REFLECTION_MOOD_LABEL) as [StaffReflectionMood, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
             </div>
-            <div><Label>What Happened</Label><Textarea rows={3} /></div>
-            <div><Label>What I Felt</Label><Textarea rows={2} /></div>
-            <div><Label>What I Learned</Label><Textarea rows={2} /></div>
-            <div><Label>What I Would Do Differently</Label><Textarea rows={2} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={() => setDialogOpen(false)}>Save</Button></DialogFooter>
+            <div><Label>What Happened</Label><Textarea className="mt-1" rows={3} value={rfForm.what_happened} onChange={(e) => setRF("what_happened", e.target.value)} /></div>
+            <div><Label>What I Felt</Label><Textarea className="mt-1" rows={2} value={rfForm.what_i_felt} onChange={(e) => setRF("what_i_felt", e.target.value)} /></div>
+            <div><Label>What I Learned</Label><Textarea className="mt-1" rows={2} value={rfForm.what_i_learned} onChange={(e) => setRF("what_i_learned", e.target.value)} /></div>
+            <div><Label>What I Would Do Differently</Label><Textarea className="mt-1" rows={2} value={rfForm.what_i_would_do_differently} onChange={(e) => setRF("what_i_would_do_differently", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save"}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

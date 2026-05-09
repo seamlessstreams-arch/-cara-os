@@ -21,8 +21,9 @@ import {
   AlertTriangle, CheckCircle2, Clock, Shield, User, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
-import { useLoneWorkingRecords } from "@/hooks/use-lone-working-records";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useLoneWorkingRecords, useCreateLoneWorkingRecord } from "@/hooks/use-lone-working-records";
 import type { LoneWorkingRecord, LoneWorkingScenario, LoneWorkingRiskLevel, LoneWorkingAssessmentStatus } from "@/types/extended";
 import { LONE_WORKING_SCENARIO_LABEL, LONE_WORKING_RISK_LEVEL_LABEL, LONE_WORKING_ASSESSMENT_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -42,6 +43,19 @@ export default function LoneWorkingPage() {
   const [sortBy, setSortBy] = useState("risk");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createRecord = useCreateLoneWorkingRecord();
+  const [lwForm, setLwForm] = useState({ staff_id: "", scenario: "waking_night" as LoneWorkingScenario, risk_level: "low" as LoneWorkingRiskLevel, review_date: "", hazards: "", control_measures: "" });
+  const setLW = (k: string, v: unknown) => setLwForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveAssessment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lwForm.staff_id) { toast.error("Please select a staff member."); return; }
+    await createRecord.mutateAsync({ staff_id: lwForm.staff_id, scenario: lwForm.scenario, risk_level: lwForm.risk_level, status: "current", assessment_date: new Date().toISOString().slice(0, 10), review_date: lwForm.review_date, assessed_by: "staff_darren", hazards: lwForm.hazards.split("\n").filter(Boolean), control_measures: lwForm.control_measures.split("\n").filter(Boolean), check_in_protocol: "", personal_alarm_issued: false, emergency_procedure: "", notes: "", created_at: new Date().toISOString() });
+    toast.success("Lone working assessment saved.");
+    setLwForm({ staff_id: "", scenario: "waking_night", risk_level: "low", review_date: "", hazards: "", control_measures: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -141,15 +155,15 @@ export default function LoneWorkingPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Lone Working Assessment</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div><Label>Staff Member</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{["staff_darren","staff_ryan","staff_anna","staff_edward","staff_chervelle","staff_lackson","staff_mirela"].map((s) => (<SelectItem key={s} value={s}>{getStaffName(s)}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Scenario</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(LONE_WORKING_SCENARIO_LABEL) as LoneWorkingScenario[]).map((k) => (<SelectItem key={k} value={k}>{LONE_WORKING_SCENARIO_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Risk Level</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(LONE_WORKING_RISK_LEVEL_LABEL) as LoneWorkingRiskLevel[]).map((k) => (<SelectItem key={k} value={k}>{LONE_WORKING_RISK_LEVEL_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Review Date</Label><Input type="date" /></div>
-            <div className="col-span-2"><Label>Hazards</Label><Textarea rows={3} placeholder="Identified hazards…" /></div>
-            <div className="col-span-2"><Label>Control Measures</Label><Textarea rows={3} placeholder="How risks are managed…" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Assessment</Button></DialogFooter>
+          <form onSubmit={handleSaveAssessment} className="grid grid-cols-2 gap-4 py-2">
+            <div><Label>Staff Member *</Label><Select value={lwForm.staff_id} onValueChange={(v) => setLW("staff_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Scenario</Label><Select value={lwForm.scenario} onValueChange={(v) => setLW("scenario", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(LONE_WORKING_SCENARIO_LABEL) as LoneWorkingScenario[]).map((k) => (<SelectItem key={k} value={k}>{LONE_WORKING_SCENARIO_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Risk Level</Label><Select value={lwForm.risk_level} onValueChange={(v) => setLW("risk_level", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(LONE_WORKING_RISK_LEVEL_LABEL) as LoneWorkingRiskLevel[]).map((k) => (<SelectItem key={k} value={k}>{LONE_WORKING_RISK_LEVEL_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Review Date</Label><Input type="date" className="mt-1" value={lwForm.review_date} onChange={(e) => setLW("review_date", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Hazards</Label><Textarea className="mt-1" rows={3} placeholder="Identified hazards (one per line)…" value={lwForm.hazards} onChange={(e) => setLW("hazards", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Control Measures</Label><Textarea className="mt-1" rows={3} placeholder="How risks are managed (one per line)…" value={lwForm.control_measures} onChange={(e) => setLW("control_measures", e.target.value)} /></div>
+            <DialogFooter className="col-span-2"><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Assessment"}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel
