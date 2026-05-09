@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { AriaQuickActions } from "@/components/intelligence/aria-quick-actions";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -829,6 +830,7 @@ export default function HandoverPage() {
     <PageShell
       title="Handover"
       subtitle="Shift-to-shift communication, live notes, and evidence-ready records"
+      ariaContext={{ pageTitle: "Handover", sourceType: "general" }}
       quickCreateContext={{ module: "handover", defaultTaskCategory: "admin" }}
       actions={
         <div className="flex items-center gap-2">

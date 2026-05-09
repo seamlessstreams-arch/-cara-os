@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -131,6 +132,7 @@ export default function HealthcarePlansPage() {
     <PageShell
       title="Healthcare Plans"
       subtitle="Individual healthcare plans · medical conditions, allergies, medications and protocols (Quality Standard 7 · Reg 23)"
+      ariaContext={{ pageTitle: "Healthcare Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={plans} columns={exportCols} filename="healthcare-plans" />

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -111,6 +112,7 @@ export default function HealthMonitoringPage() {
     <PageShell
       title="Health Monitoring"
       subtitle="Dental, optician, immunisation, and routine health checks — Regulation 23"
+      ariaContext={{ pageTitle: "Health Monitoring", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Health Monitoring" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="health-monitoring" />,

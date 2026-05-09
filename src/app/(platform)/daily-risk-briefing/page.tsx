@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +51,7 @@ export default function DailyRiskBriefingPage() {
     <PageShell
       title="Daily Risk Briefing"
       subtitle={`${today} · ${shift === "day" ? "Day Shift" : "Waking Night"} · Handover & Risk Summary`}
+      ariaContext={{ pageTitle: "Daily Risk Briefing", sourceType: "general" }}
       actions={<PrintButton title="Daily Risk Briefing" />}
     >
       <div id="print-area">

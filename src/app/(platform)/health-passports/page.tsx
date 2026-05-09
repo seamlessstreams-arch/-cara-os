@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,7 @@ export default function HealthPassportsPage() {
     <PageShell
       title="Health Passports"
       subtitle="Portable Health Summary · Key Health Information · Emergency Protocols"
+      ariaContext={{ pageTitle: "Health Passports", sourceType: "child_record" }}
       actions={<PrintButton title="Health Passports" />}
     >
       <div id="print-area">

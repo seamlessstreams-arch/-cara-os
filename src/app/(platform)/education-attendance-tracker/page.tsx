@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -172,6 +173,7 @@ export default function EducationAttendanceTrackerPage() {
     <PageShell
       title="Education Attendance Tracker"
       subtitle="Quality Standard 8 (Education) · Virtual School Oversight · Daily Attendance Monitoring"
+      ariaContext={{ pageTitle: "Education Attendance Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Education Attendance Tracker" />

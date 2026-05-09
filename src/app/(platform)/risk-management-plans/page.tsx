@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,6 +106,7 @@ export default function RiskManagementPlansPage() {
     <PageShell
       title="Risk Management Plans"
       subtitle="Individual child risk management strategies — Regulation 12"
+      ariaContext={{ pageTitle: "Risk Management Plans", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Risk Management Plans" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="risk-management-plans" />,

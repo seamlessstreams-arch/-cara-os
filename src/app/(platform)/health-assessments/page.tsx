@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   Heart,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -144,6 +145,7 @@ export default function HealthAssessmentsPage() {
     <PageShell
       title="Health Assessments"
       subtitle="LAC health assessments — IHA, RHA, dental, optician and SDQ tracking"
+      ariaContext={{ pageTitle: "Health Assessments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="health-assessments" />
