@@ -27,11 +27,20 @@ export async function GET(req: NextRequest) {
     return (aOver + (prioOrder[a.priority] ?? 2)) - (bOver + (prioOrder[b.priority] ?? 2));
   });
 
-  // Enrich with care event data where linked
+  // Enrich with care event data where linked, and resolve names
   const enriched = tasks.map((task) => {
     const careEventId = (task as unknown as Record<string, unknown>).linked_care_event_id as string | undefined;
     const careEvent = careEventId ? db.careEvents.findById(careEventId) : null;
-    return { ...task, care_event: careEvent ?? null };
+    const assignee = task.assigned_to ? db.staff.findById(task.assigned_to) : null;
+    const childPerson = (task as unknown as Record<string, unknown>).linked_child_id
+      ? db.youngPeople.findById((task as unknown as Record<string, unknown>).linked_child_id as string)
+      : null;
+    return {
+      ...task,
+      care_event: careEvent ?? null,
+      assigned_to_name: assignee ? `${assignee.first_name} ${assignee.last_name}` : task.assigned_to ?? null,
+      child_name: childPerson ? `${childPerson.first_name} ${childPerson.last_name}` : null,
+    };
   });
 
   const activeCount = tasks.filter((t) => t.status !== "completed" && t.status !== "cancelled").length;

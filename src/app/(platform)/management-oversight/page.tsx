@@ -144,7 +144,7 @@ function OversightTaskCard({
               {task.assigned_to && (
                 <span className="flex items-center gap-1">
                   <User className="h-3 w-3" />
-                  {task.assigned_to}
+                  {(task as never as { assigned_to_name?: string }).assigned_to_name ?? task.assigned_to}
                 </span>
               )}
               {task.created_at && (
