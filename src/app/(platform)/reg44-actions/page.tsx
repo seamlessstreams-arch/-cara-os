@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
@@ -18,7 +19,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle2, Clock, Eye, ListChecks, Loader2,
+  AlertTriangle, CheckCircle2, Clock, Eye, ListChecks, Loader2, ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
@@ -189,6 +190,17 @@ export default function Reg44ActionsPage() {
                       <span>Due: {r.due_date}</span>
                       <span>{r.completed_date ? `Completed: ${r.completed_date}` : "⚠ Not yet completed"}</span>
                     </div>
+                    {r.visit_ref.startsWith("CE-") && (
+                      <div className="pt-2 border-t">
+                        <Link
+                          href={`/care-events/${r.visit_ref.replace("CE-", "")}`}
+                          className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          View source care event
+                        </Link>
+                      </div>
+                    )}
                   </CardContent>
                 )}
               </Card>

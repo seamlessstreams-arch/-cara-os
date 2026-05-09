@@ -35,6 +35,7 @@ const TIME_SAVED_BY_ROUTE: Partial<Record<RouteType, number>> = {
   safeguarding_record:    15,
   management_oversight:   5,
   reg40_triage:           10,
+  reg44_evidence:         8,
   reg45_evidence:         10,
   annex_a_evidence:       8,
   filing_cabinet:         6,
@@ -162,6 +163,47 @@ function processManagementOversight(event: CareEvent, route: CareEventRoute): vo
     status: "completed",
     linked_record_id: task.id,
     linked_record_table: "tasks",
+  });
+}
+
+function processReg44Evidence(event: CareEvent, route: CareEventRoute): void {
+  // Map care event category to Reg 44 action theme
+  const themeMap: Partial<Record<string, string>> = {
+    safeguarding:          "safeguarding",
+    missing_episode:       "safeguarding",
+    physical_intervention: "physical_intervention",
+    restraint:             "physical_intervention",
+    complaint:             "complaints",
+    behaviour:             "behaviour_management",
+  };
+  const theme = (themeMap[event.category] ?? "other") as
+    import("@/types/extended").Reg44ActionTheme;
+
+  const priority = event.requires_reg40_triage ? "high" : "medium";
+
+  const record = db.reg44ActionRecords.create({
+    visit_date: todayStr(),
+    visit_ref: `CE-${event.id}`,
+    visitor_name: "Auto-generated from Care Event",
+    theme,
+    priority: priority as import("@/types/extended").Reg44ActionPriority,
+    status: "open",
+    recommendation: `Review this ${event.category.replace(/_/g, " ")} care event for Regulation 44 evidence purposes.`,
+    action_required: `Determine whether this event should be referenced in the next Regulation 44 visit report. ` +
+      `Event: "${event.title}" recorded on ${event.event_date}.`,
+    assigned_to: event.staff_id,
+    due_date: todayStr(),
+    completed_date: null,
+    evidence_of_completion: "",
+    management_response: "",
+    carried_forward_count: 0,
+    notes: `Source care event ID: ${event.id}\nCategory: ${event.category}\nContent: ${event.content.slice(0, 300)}`,
+  });
+
+  db.careEventRoutes.patch(route.id, {
+    status: "completed",
+    linked_record_id: record.id,
+    linked_record_table: "reg44_action_records",
   });
 }
 
@@ -905,9 +947,9 @@ const ROUTE_PROCESSORS: Partial<Record<RouteType, (event: CareEvent, route: Care
   daily_log:                   processDailyLog,
   management_oversight:        processManagementOversight,
   reg40_triage:                processReg40Triage,
+  reg44_evidence:              processReg44Evidence,
   reg45_evidence:              processReg45Evidence,
   annex_a_evidence:            processAnnexAEvidence,
-  reg44_evidence:              processReg40Triage,   // reg44 evidence routes to the reg40/44 triage queue
   filing_cabinet:              processFilingCabinet,
   saved_time:                  processSavedTime,
   incident:                    processIncident,
