@@ -26,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import Link from "next/link";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -1551,6 +1552,14 @@ export default function MedicationPage() {
           </>
         )}
       </div>
+
+      {/* Care Events pipeline — medication events routed here */}
+      <CareEventsPanel
+        title="Care Events — Medication"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

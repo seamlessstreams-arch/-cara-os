@@ -23,6 +23,7 @@ import { useRestraints, useCreateRestraint } from "@/hooks/use-restraints";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { RestraintType, RestraintReason, RestraintReviewStatus, RestraintRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const REASON_META: Record<RestraintReason, string> = {
   harm_to_self:         "Prevent harm to self",
@@ -281,6 +282,14 @@ export default function RestraintLogPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Care Events pipeline — physical intervention &amp; restraint events routed here */}
+      <CareEventsPanel
+        title="Care Events — Restraint &amp; Physical Intervention"
+        category={["physical_intervention", "restraint"]}
+        days={60}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

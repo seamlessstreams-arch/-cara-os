@@ -29,6 +29,7 @@ import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS, INCIDENT_TYPES, INCIDENT_SEVERITIES } from "@/lib/constants";
 import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
 import type { Incident, IncidentNotification } from "@/types";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -1250,6 +1251,14 @@ export default function IncidentsPage() {
         {activeTab === "all" && <AllIncidentsTab />}
         {activeTab === "oversight" && <OversightQueueTab />}
         {activeTab === "log" && <LogIncidentTab onSuccess={() => setActiveTab("all")} />}
+
+        {/* Care Events pipeline — behaviour, safeguarding events routed here */}
+        <CareEventsPanel
+          title="Care Events — Behaviour &amp; Safeguarding"
+          category={["behaviour", "safeguarding", "missing_episode", "physical_intervention", "restraint"]}
+          days={28}
+          defaultCollapsed
+        />
       </div>
     </PageShell>
   );

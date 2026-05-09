@@ -546,6 +546,18 @@ export default function CareEventDetailPage({
           Back to Care Events
         </Button>
         <div className="flex items-center gap-2">
+          {/* Export evidence pack */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs gap-1"
+            asChild
+          >
+            <a href={`/api/v1/care-events/${event.id}/export?format=html`} download>
+              <FolderOpen className="w-3.5 h-3.5" />
+              Export
+            </a>
+          </Button>
           {event.status === "locked" && (
             <span className="flex items-center gap-1 text-xs text-slate-500">
               <Lock className="w-3.5 h-3.5" /> Locked

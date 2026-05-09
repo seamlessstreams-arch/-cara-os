@@ -29,6 +29,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { HealthRecordEntry, HealthRecordType, HealthRecordStatus } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import {
   Search, ArrowUpDown, X, Plus, Stethoscope,
   AlertTriangle, Clock, User, Calendar,
@@ -476,6 +477,14 @@ export default function HealthRecordsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Care Events pipeline — health &amp; medication events routed here */}
+      <CareEventsPanel
+        title="Care Events — Health &amp; Medication"
+        category={["health", "medication"]}
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

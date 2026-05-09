@@ -28,6 +28,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import type { DailyLogEntry } from "@/types";
 import type { TrainingNeedPriority } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const DAILY_LOG_EXPORT_COLS: ExportColumn<DailyLogEntry>[] = [
   { header: "Date", accessor: (e) => e.date },
@@ -778,6 +779,14 @@ export default function DailyLogPage() {
             ))}
           </div>
         )}
+
+        {/* Care Events pipeline — records routed to the daily log */}
+        <CareEventsPanel
+          title="Care Events — Daily Log"
+          days={14}
+          defaultCollapsed
+          className="mt-2"
+        />
       </div>
     </PageShell>
   );
