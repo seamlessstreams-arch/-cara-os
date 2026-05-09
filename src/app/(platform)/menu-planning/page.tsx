@@ -19,7 +19,9 @@ import {
   UtensilsCrossed, Calendar, Clock, Leaf,
   Heart, ThumbsUp, ThumbsDown, Star, Loader2,
 } from "lucide-react";
-import { useMealPlans } from "@/hooks/use-meal-plans";
+import { useMealPlans, useCreateMealPlan } from "@/hooks/use-meal-plans";
+import { toast } from "sonner";
+import { STAFF } from "@/lib/seed-data";
 import type { MealPlan, MealType, DietaryFlag, MealChildPreference } from "@/types/extended";
 import { MEAL_TYPE_LABEL, DIETARY_FLAG_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -54,6 +56,19 @@ export default function MenuPlanningPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createMeal = useCreateMealPlan();
+  const [mealForm, setMealForm] = useState({ date: new Date().toISOString().slice(0, 10), meal: "dinner" as MealType, main_dish: "", sides: "", dessert: "", budget: "", prepared_by: "", notes: "" });
+  const setMF = (k: keyof typeof mealForm, v: string) => setMealForm((p) => ({ ...p, [k]: v }));
+
+  const handleAddMeal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mealForm.main_dish.trim()) { toast.error("Main dish is required."); return; }
+    await createMeal.mutateAsync({ date: mealForm.date, meal: mealForm.meal, main_dish: mealForm.main_dish.trim(), sides: mealForm.sides ? mealForm.sides.split(",").map((s) => s.trim()).filter(Boolean) : [], dessert: mealForm.dessert.trim(), dietary_flags: [], prepared_by: mealForm.prepared_by || "staff_darren", child_preferences: [], special_notes: mealForm.notes.trim(), budget: parseFloat(mealForm.budget) || 0, leftover_action: "", created_at: new Date().toISOString() });
+    toast.success("Meal plan added.");
+    setMealForm({ date: new Date().toISOString().slice(0, 10), meal: "dinner", main_dish: "", sides: "", dessert: "", budget: "", prepared_by: "", notes: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -273,53 +288,50 @@ export default function MenuPlanningPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add Meal Plan</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleAddMeal} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium">Date</label>
-                <Input type="date" />
+                <Input type="date" value={mealForm.date} onChange={(e) => setMF("date", e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium">Meal</label>
-                <Select><SelectTrigger><SelectValue placeholder="Select meal" /></SelectTrigger>
+                <Select value={mealForm.meal} onValueChange={(v) => setMF("meal", v)}><SelectTrigger><SelectValue placeholder="Select meal" /></SelectTrigger>
                   <SelectContent>{(Object.keys(MEAL_TYPE_LABEL) as MealType[]).map((k) => <SelectItem key={k} value={k}>{MEAL_TYPE_LABEL[k]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Main Dish</label>
-              <Input placeholder="What's the main course?" />
+              <label className="text-sm font-medium">Main Dish *</label>
+              <Input placeholder="What's the main course?" value={mealForm.main_dish} onChange={(e) => setMF("main_dish", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Sides</label>
-              <Input placeholder="Comma-separated sides" />
+              <Input placeholder="Comma-separated sides" value={mealForm.sides} onChange={(e) => setMF("sides", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Dessert</label>
-              <Input placeholder="Dessert (optional)" />
+              <Input placeholder="Dessert (optional)" value={mealForm.dessert} onChange={(e) => setMF("dessert", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Budget (£)</label>
-              <Input type="number" step="0.01" placeholder="0.00" />
+              <Input type="number" step="0.01" placeholder="0.00" value={mealForm.budget} onChange={(e) => setMF("budget", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Prepared By</label>
-              <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <Select value={mealForm.prepared_by} onValueChange={(v) => setMF("prepared_by", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
-                  <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
-                  <SelectItem value="staff_anna">{getStaffName("staff_anna")}</SelectItem>
-                  <SelectItem value="staff_chervelle">{getStaffName("staff_chervelle")}</SelectItem>
+                  {STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-sm font-medium">Notes</label>
-              <Textarea placeholder="Any special notes…" rows={2} />
+              <Textarea placeholder="Any special notes…" rows={2} value={mealForm.notes} onChange={(e) => setMF("notes", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Add Meal</Button>
+              <Button type="submit" disabled={createMeal.isPending}>{createMeal.isPending ? "Saving…" : "Add Meal"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

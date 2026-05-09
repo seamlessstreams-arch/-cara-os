@@ -14,8 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Clock, FileText, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useSeriousIncidentReviewRecords } from "@/hooks/use-serious-incident-review-records";
+import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useSeriousIncidentReviewRecords, useCreateSeriousIncidentReviewRecord } from "@/hooks/use-serious-incident-review-records";
 import type { SeriousIncidentReviewRecord, SeriousIncidentReviewType, SeriousIncidentReviewStatus } from "@/types/extended";
 import {
   SERIOUS_INCIDENT_REVIEW_TYPE_LABEL,
@@ -41,6 +42,20 @@ export default function SeriousIncidentReviewsPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createSIR = useCreateSeriousIncidentReviewRecord();
+  const [sirForm, setSirForm] = useState({ title: "", review_type: "serious_incident" as SeriousIncidentReviewType, incident_date: "", review_commenced_date: new Date().toISOString().slice(0, 10), background: "" });
+  const setSIR = (k: keyof typeof sirForm, v: string) => setSirForm((p) => ({ ...p, [k]: v }));
+
+  const handleInitiateReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sirForm.title.trim()) { toast.error("Title is required."); return; }
+    if (!sirForm.incident_date) { toast.error("Incident date is required."); return; }
+    await createSIR.mutateAsync({ title: sirForm.title.trim(), review_type: sirForm.review_type, incident_date: sirForm.incident_date, review_commenced_date: sirForm.review_commenced_date, review_completed_date: null, linked_incidents: [], young_people_involved: [], staff_involved: [], review_lead: "staff_darren", panel_members: [], background_summary: sirForm.background.trim(), key_findings: [], lessons_learned: [], recommendations: [], actions: [], external_notifications: [], practice_changes: [], training_implications: [], policy_changes: [], status: "initiated", next_review_date: null, confidentiality: "standard" });
+    toast.success("Serious incident review initiated.");
+    setSirForm({ title: "", review_type: "serious_incident", incident_date: "", review_commenced_date: new Date().toISOString().slice(0, 10), background: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
   const today = d(0);
@@ -223,13 +238,13 @@ export default function SeriousIncidentReviewsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Initiate Review</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Title</Label><Input placeholder="Review title" /></div>
-            <div><Label>Review Type</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(SERIOUS_INCIDENT_REVIEW_TYPE_LABEL) as [SeriousIncidentReviewType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid grid-cols-2 gap-3"><div><Label>Incident Date</Label><Input type="date" /></div><div><Label>Review Start</Label><Input type="date" defaultValue={today} /></div></div>
-            <div><Label>Background Summary</Label><Textarea rows={3} placeholder="Background and context…" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={() => setDialogOpen(false)}>Initiate</Button></DialogFooter>
+          <form onSubmit={handleInitiateReview} className="space-y-3">
+            <div><Label>Title *</Label><Input placeholder="Review title" value={sirForm.title} onChange={(e) => setSIR("title", e.target.value)} /></div>
+            <div><Label>Review Type</Label><Select value={sirForm.review_type} onValueChange={(v) => setSIR("review_type", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(SERIOUS_INCIDENT_REVIEW_TYPE_LABEL) as [SeriousIncidentReviewType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div className="grid grid-cols-2 gap-3"><div><Label>Incident Date *</Label><Input type="date" value={sirForm.incident_date} onChange={(e) => setSIR("incident_date", e.target.value)} /></div><div><Label>Review Start</Label><Input type="date" value={sirForm.review_commenced_date} onChange={(e) => setSIR("review_commenced_date", e.target.value)} /></div></div>
+            <div><Label>Background Summary</Label><Textarea rows={3} placeholder="Background and context…" value={sirForm.background} onChange={(e) => setSIR("background", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button type="submit" disabled={createSIR.isPending}>{createSIR.isPending ? "Initiating…" : "Initiate"}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

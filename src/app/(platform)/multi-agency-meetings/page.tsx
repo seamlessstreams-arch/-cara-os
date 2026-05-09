@@ -10,7 +10,8 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { cn } from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useMultiAgencyMeetings } from "@/hooks/use-multi-agency-meetings";
+import { useMultiAgencyMeetings, useCreateMultiAgencyMeeting } from "@/hooks/use-multi-agency-meetings";
 import type {
   MultiAgencyMeeting, MultiAgencyMeetingType, MultiAgencyMeetingStatus,
   MeetingAttendee, MultiAgencyActionItem, MeetingActionStatus,
@@ -56,6 +57,20 @@ export default function MultiAgencyMeetingsPage() {
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [showDialog, setShowDialog] = useState(false);
+
+  const createMeeting = useCreateMultiAgencyMeeting();
+  const [mamForm, setMamForm] = useState({ child_id: "", meeting_type: "professionals" as MultiAgencyMeetingType, date: new Date().toISOString().slice(0, 10), time: "10:00", venue: "", chaired_by: "" });
+  const setMAM = (k: keyof typeof mamForm, v: string) => setMamForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateMeeting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mamForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!mamForm.venue.trim()) { toast.error("Venue is required."); return; }
+    await createMeeting.mutateAsync({ child_id: mamForm.child_id, meeting_type: mamForm.meeting_type, meeting_status: "scheduled", date: mamForm.date, time: mamForm.time, venue: mamForm.venue.trim(), chaired_by: mamForm.chaired_by || "External chair", home_representative: "staff_darren", attendees: [], key_discussion_points: [], decisions_reached: [], child_participation: "", action_items: [], next_meeting_date: null, notes: "", created_at: new Date().toISOString() });
+    toast.success("Meeting scheduled.");
+    setMamForm({ child_id: "", meeting_type: "professionals", date: new Date().toISOString().slice(0, 10), time: "10:00", venue: "", chaired_by: "" });
+    setShowDialog(false);
+  };
 
   const stats = useMemo(() => {
     const allActions = data.flatMap((m) => m.action_items);
@@ -305,18 +320,18 @@ export default function MultiAgencyMeetingsPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>New Multi-Agency Meeting</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowDialog(false); }} className="space-y-3">
-            <Select><SelectTrigger><SelectValue placeholder="Young Person…" /></SelectTrigger><SelectContent>{ypIds.map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent></Select>
-            <Select><SelectTrigger><SelectValue placeholder="Meeting type…" /></SelectTrigger><SelectContent>{(Object.keys(MULTI_AGENCY_MEETING_TYPE_LABEL) as MultiAgencyMeetingType[]).map((k) => <SelectItem key={k} value={k}>{MULTI_AGENCY_MEETING_TYPE_LABEL[k]}</SelectItem>)}</SelectContent></Select>
+          <form onSubmit={handleCreateMeeting} className="space-y-3">
+            <Select value={mamForm.child_id} onValueChange={(v) => setMAM("child_id", v)}><SelectTrigger><SelectValue placeholder="Young Person… *" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent></Select>
+            <Select value={mamForm.meeting_type} onValueChange={(v) => setMAM("meeting_type", v)}><SelectTrigger><SelectValue placeholder="Meeting type…" /></SelectTrigger><SelectContent>{(Object.keys(MULTI_AGENCY_MEETING_TYPE_LABEL) as MultiAgencyMeetingType[]).map((k) => <SelectItem key={k} value={k}>{MULTI_AGENCY_MEETING_TYPE_LABEL[k]}</SelectItem>)}</SelectContent></Select>
             <div className="grid grid-cols-2 gap-3">
-              <Input type="date" />
-              <Input type="time" />
+              <Input type="date" value={mamForm.date} onChange={(e) => setMAM("date", e.target.value)} />
+              <Input type="time" value={mamForm.time} onChange={(e) => setMAM("time", e.target.value)} />
             </div>
-            <Input placeholder="Venue" />
-            <Input placeholder="Chaired by" />
+            <Input placeholder="Venue *" value={mamForm.venue} onChange={(e) => setMAM("venue", e.target.value)} />
+            <Input placeholder="Chaired by" value={mamForm.chaired_by} onChange={(e) => setMAM("chaired_by", e.target.value)} />
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-              <Button type="submit">Create Meeting</Button>
+              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
+              <Button type="submit" disabled={createMeeting.isPending}>{createMeeting.isPending ? "Creating…" : "Create Meeting"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

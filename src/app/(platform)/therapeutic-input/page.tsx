@@ -26,7 +26,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useTherapeuticInputRecords } from "@/hooks/use-therapeutic-input-records";
+import { useTherapeuticInputRecords, useCreateTherapeuticInputRecord } from "@/hooks/use-therapeutic-input-records";
+import { toast } from "sonner";
+import { YOUNG_PEOPLE } from "@/lib/seed-data";
 import type {
   TherapeuticInputRecord,
   TherapeuticInputTherapyType,
@@ -66,6 +68,20 @@ export default function TherapeuticInputPage() {
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [showDialog, setShowDialog] = useState(false);
+
+  const createReferral = useCreateTherapeuticInputRecord();
+  const [tiForm, setTiForm] = useState({ child_id: "", therapy_type: "camhs" as TherapeuticInputTherapyType, provider: "", therapist: "", referral_reason: "", goals: "" });
+  const setTI = (k: keyof typeof tiForm, v: string) => setTiForm((p) => ({ ...p, [k]: v }));
+
+  const handleSubmitReferral = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tiForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!tiForm.referral_reason.trim()) { toast.error("Referral reason is required."); return; }
+    await createReferral.mutateAsync({ child_id: tiForm.child_id, therapy_type: tiForm.therapy_type, provider: tiForm.provider.trim(), therapist: tiForm.therapist.trim(), referral_date: new Date().toISOString().slice(0, 10), start_date: null, frequency: "", status: "pending", referral_reason: tiForm.referral_reason.trim(), goals: tiForm.goals ? tiForm.goals.split("\n").map((s) => s.trim()).filter(Boolean) : [], recent_sessions: [], waiting_weeks: null, home_key_worker: "staff_darren", consent: "obtained", next_appointment: null, review_date: null, progress_notes: "" });
+    toast.success("Therapy referral submitted.");
+    setTiForm({ child_id: "", therapy_type: "camhs", provider: "", therapist: "", referral_reason: "", goals: "" });
+    setShowDialog(false);
+  };
 
   const stats = useMemo(() => ({
     total: records.length,
@@ -299,18 +315,18 @@ export default function TherapeuticInputPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>New Therapy Referral</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Young Person…</option>{ypIds.map((id) => <option key={id} value={id}>{getYPName(id)}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Therapy type…</option>{Object.entries(THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-            <input placeholder="Provider organisation" className="rounded border px-3 py-2 text-sm" />
-            <input placeholder="Therapist name" className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Referral reason" rows={3} className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Goals (one per line)" rows={2} className="rounded border px-3 py-2 text-sm" />
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Submit Referral</button>
-          </DialogFooter>
+          <form onSubmit={handleSubmitReferral} className="grid gap-3 py-2">
+            <select className="rounded border px-3 py-2 text-sm" value={tiForm.child_id} onChange={(e) => setTI("child_id", e.target.value)}><option value="">Young Person… *</option>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <option key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</option>)}</select>
+            <select className="rounded border px-3 py-2 text-sm" value={tiForm.therapy_type} onChange={(e) => setTI("therapy_type", e.target.value)}>{Object.entries(THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+            <input placeholder="Provider organisation" className="rounded border px-3 py-2 text-sm" value={tiForm.provider} onChange={(e) => setTI("provider", e.target.value)} />
+            <input placeholder="Therapist name" className="rounded border px-3 py-2 text-sm" value={tiForm.therapist} onChange={(e) => setTI("therapist", e.target.value)} />
+            <textarea placeholder="Referral reason *" rows={3} className="rounded border px-3 py-2 text-sm" value={tiForm.referral_reason} onChange={(e) => setTI("referral_reason", e.target.value)} />
+            <textarea placeholder="Goals (one per line)" rows={2} className="rounded border px-3 py-2 text-sm" value={tiForm.goals} onChange={(e) => setTI("goals", e.target.value)} />
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createReferral.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">{createReferral.isPending ? "Submitting…" : "Submit Referral"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

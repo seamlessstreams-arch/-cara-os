@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   Flag, AlertTriangle, CheckCircle2, Clock, Calendar,
@@ -79,6 +79,19 @@ export default function SignificantEventsPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const [seForm, setSeForm] = useState({ child_id: "", date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), category: "other" as SigEventCategory, severity: "routine" as SigEventSeverity, title: "", description: "", immediate_action: "", child_response: "" });
+  const setSEF = (k: keyof typeof seForm, v: string) => setSeForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!seForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!seForm.title.trim()) { toast.error("Title is required."); return; }
+    await createEvent.mutateAsync({ child_id: seForm.child_id, date: seForm.date, time: seForm.time, category: seForm.category, severity: seForm.severity, title: seForm.title.trim(), description: seForm.description.trim(), immediate_action: seForm.immediate_action.trim(), staff_present: ["staff_darren"], witnessed_by: [], child_response: seForm.child_response.trim(), outcome: "", notifications: [], follow_up_required: false, follow_up_actions: "", follow_up_date: "", linked_documents: [], recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    toast.success("Significant event recorded.");
+    setSeForm({ child_id: "", date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), category: "other", severity: "routine", title: "", description: "", immediate_action: "", child_response: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -329,56 +342,56 @@ export default function SignificantEventsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Significant Event</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleCreateEvent} className="space-y-3">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
-              <Select><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
-                <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              <label className="text-sm font-medium">Young Person *</label>
+              <Select value={seForm.child_id} onValueChange={(v) => setSEF("child_id", v)}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium">Date</label>
-                <Input type="date" />
+                <Input type="date" value={seForm.date} onChange={(e) => setSEF("date", e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium">Time</label>
-                <Input type="time" />
+                <Input type="time" value={seForm.time} onChange={(e) => setSEF("time", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium">Category</label>
-                <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={seForm.category} onValueChange={(v) => setSEF("category", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(CATEGORY_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Severity</label>
-                <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={seForm.severity} onValueChange={(v) => setSEF("severity", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(SEVERITY_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Title</label>
-              <Input placeholder="Brief title for the event" />
+              <label className="text-sm font-medium">Title *</label>
+              <Input placeholder="Brief title for the event" value={seForm.title} onChange={(e) => setSEF("title", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Description</label>
-              <Textarea placeholder="Full description of what happened…" rows={4} />
+              <Textarea placeholder="Full description of what happened…" rows={4} value={seForm.description} onChange={(e) => setSEF("description", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Immediate Action Taken</label>
-              <Textarea placeholder="What was done in response?" rows={2} />
+              <Textarea placeholder="What was done in response?" rows={2} value={seForm.immediate_action} onChange={(e) => setSEF("immediate_action", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Child&apos;s Response</label>
-              <Textarea placeholder="Record the child's response in their own words…" rows={2} />
+              <Textarea placeholder="Record the child's response in their own words…" rows={2} value={seForm.child_response} onChange={(e) => setSEF("child_response", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Save Event</Button>
+              <Button type="submit" disabled={createEvent.isPending}>{createEvent.isPending ? "Saving…" : "Save Event"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

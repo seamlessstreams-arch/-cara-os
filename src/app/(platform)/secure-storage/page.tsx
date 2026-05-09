@@ -18,14 +18,15 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useSecureStorageRecords } from "@/hooks/use-secure-storage-records";
+import { useSecureStorageRecords, useCreateSecureStorageRecord } from "@/hooks/use-secure-storage-records";
 import type { SecureStorageRecord, SecureStorageCategory, SecureStorageLocation, SecureStorageAccessLevel, SecureStorageItemStatus, SecureStorageAction } from "@/types/extended";
 import {
   SECURE_STORAGE_CATEGORY_LABEL,
@@ -62,6 +63,20 @@ export default function SecureStoragePage() {
   const [filterLoc, setFilterLoc] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [showDialog, setShowDialog] = useState(false);
+
+  const createItem = useCreateSecureStorageRecord();
+  const [ssForm, setSsForm] = useState({ name: "", category: "documentation" as SecureStorageCategory, description: "", location: "filing_cabinet" as SecureStorageLocation, access_level: "all_staff" as SecureStorageAccessLevel, owner: "", notes: "" });
+  const setSSF = (k: keyof typeof ssForm, v: string) => setSsForm((p) => ({ ...p, [k]: v }));
+
+  const handleAddItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ssForm.name.trim()) { toast.error("Item name is required."); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    await createItem.mutateAsync({ name: ssForm.name.trim(), category: ssForm.category, description: ssForm.description, location: ssForm.location, access_level: ssForm.access_level, owner: ssForm.owner || "staff_darren", added_date: today, added_by: "staff_darren", last_checked: today, next_check_due: d(90), status: "stored", notes: ssForm.notes, access_log: [] });
+    toast.success("Item added to secure storage.");
+    setSsForm({ name: "", category: "documentation", description: "", location: "filing_cabinet", access_level: "all_staff", owner: "", notes: "" });
+    setShowDialog(false);
+  };
 
   /* ── stats ───────────────────────────────────────────────────────────── */
   const stats = useMemo(() => {
@@ -320,34 +335,34 @@ export default function SecureStoragePage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Add Secure Item</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <input placeholder="Item name" className="rounded border px-3 py-2 text-sm" />
-            <select className="rounded border px-3 py-2 text-sm">
-              <option value="">Category…</option>
+          <form onSubmit={handleAddItem} className="grid gap-3 py-2">
+            <input required placeholder="Item name *" className="rounded border px-3 py-2 text-sm" value={ssForm.name} onChange={(e) => setSSF("name", e.target.value)} />
+            <select className="rounded border px-3 py-2 text-sm" value={ssForm.category} onChange={(e) => setSSF("category", e.target.value)}>
               {(Object.keys(SECURE_STORAGE_CATEGORY_LABEL) as SecureStorageCategory[]).map((k) => (
                 <option key={k} value={k}>{SECURE_STORAGE_CATEGORY_LABEL[k]}</option>
               ))}
             </select>
-            <textarea placeholder="Description" rows={2} className="rounded border px-3 py-2 text-sm" />
-            <select className="rounded border px-3 py-2 text-sm">
-              <option value="">Storage location…</option>
+            <textarea placeholder="Description" rows={2} className="rounded border px-3 py-2 text-sm" value={ssForm.description} onChange={(e) => setSSF("description", e.target.value)} />
+            <select className="rounded border px-3 py-2 text-sm" value={ssForm.location} onChange={(e) => setSSF("location", e.target.value)}>
               {(Object.keys(SECURE_STORAGE_LOCATION_LABEL) as SecureStorageLocation[]).map((k) => (
                 <option key={k} value={k}>{SECURE_STORAGE_LOCATION_LABEL[k]}</option>
               ))}
             </select>
-            <select className="rounded border px-3 py-2 text-sm">
-              <option value="">Access level…</option>
+            <select className="rounded border px-3 py-2 text-sm" value={ssForm.access_level} onChange={(e) => setSSF("access_level", e.target.value)}>
               {(Object.keys(SECURE_STORAGE_ACCESS_LEVEL_LABEL) as SecureStorageAccessLevel[]).map((k) => (
                 <option key={k} value={k}>{SECURE_STORAGE_ACCESS_LEVEL_LABEL[k]}</option>
               ))}
             </select>
-            <input placeholder="Owner" className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Notes" rows={2} className="rounded border px-3 py-2 text-sm" />
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Add Item</button>
-          </DialogFooter>
+            <select className="rounded border px-3 py-2 text-sm" value={ssForm.owner} onChange={(e) => setSSF("owner", e.target.value)}>
+              <option value="">Owner (staff)…</option>
+              {STAFF.filter((s) => s.employment_status === "active").map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+            </select>
+            <textarea placeholder="Notes" rows={2} className="rounded border px-3 py-2 text-sm" value={ssForm.notes} onChange={(e) => setSSF("notes", e.target.value)} />
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createItem.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90 disabled:opacity-50">{createItem.isPending ? "Adding…" : "Add Item"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

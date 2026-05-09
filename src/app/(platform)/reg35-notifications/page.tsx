@@ -22,7 +22,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useReg35Notifications } from "@/hooks/use-reg35-notifications";
+import { useReg35Notifications, useCreateReg35Notification } from "@/hooks/use-reg35-notifications";
+import { toast } from "sonner";
+import { YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   Reg35Notification,
@@ -57,6 +59,19 @@ export default function Reg35NotificationsPage() {
   const [filterResponse, setFilterResponse] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showNew, setShowNew] = useState(false);
+
+  const createNotif = useCreateReg35Notification();
+  const [r35Form, setR35Form] = useState({ date_of_event: new Date().toISOString().slice(0, 10), notification_type: "serious_injury" as Reg35NotificationType, child_id: "", method: "phone" as Reg35NotificationMethod, ofsted_ref: "", summary: "" });
+  const setR35 = (k: keyof typeof r35Form, v: string) => setR35Form((p) => ({ ...p, [k]: v }));
+
+  const handleLogNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!r35Form.summary.trim()) { toast.error("Summary is required."); return; }
+    await createNotif.mutateAsync({ date_of_event: r35Form.date_of_event, date_notified: new Date().toISOString().slice(0, 10), notification_type: r35Form.notification_type, notified_to_ofsted: true, notified_to_la: false, notified_to_police: false, notified_to_other: [], method: r35Form.method, ofsted_ref: r35Form.ofsted_ref.trim(), child_id: r35Form.child_id || null, summary: r35Form.summary.trim(), actions_taken: [], notified_by_id: "staff_darren", timeliness_compliant: true, ofsted_response: "awaiting_response", follow_up_required: false, follow_up_details: "", linked_records: [], notes: "" });
+    toast.success("Reg 35 notification logged.");
+    setR35Form({ date_of_event: new Date().toISOString().slice(0, 10), notification_type: "serious_injury", child_id: "", method: "phone", ofsted_ref: "", summary: "" });
+    setShowNew(false);
+  };
 
   const filtered = useMemo(() => {
     let rows = [...records];
@@ -275,11 +290,11 @@ export default function Reg35NotificationsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Reg 35 Notification</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Date of Event</Label><Input type="date" /></div>
+          <form onSubmit={handleLogNotification} className="space-y-3">
+            <div><Label>Date of Event</Label><Input type="date" value={r35Form.date_of_event} onChange={(e) => setR35("date_of_event", e.target.value)} /></div>
             <div>
               <Label>Notification Type</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+              <Select value={r35Form.notification_type} onValueChange={(v) => setR35("notification_type", v)}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(REG35_NOTIFICATION_TYPE_LABEL) as [Reg35NotificationType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -289,18 +304,15 @@ export default function Reg35NotificationsPage() {
             </div>
             <div>
               <Label>Related Young Person</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select YP (optional)" /></SelectTrigger>
+              <Select value={r35Form.child_id} onValueChange={(v) => setR35("child_id", v)}><SelectTrigger><SelectValue placeholder="Select YP (optional)" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">N/A</SelectItem>
-                  <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                  <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                  <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
+                  {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label>Method</Label>
-              <Select><SelectTrigger><SelectValue placeholder="How was Ofsted notified?" /></SelectTrigger>
+              <Select value={r35Form.method} onValueChange={(v) => setR35("method", v)}><SelectTrigger><SelectValue placeholder="How was Ofsted notified?" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(REG35_NOTIFICATION_METHOD_LABEL) as [Reg35NotificationMethod, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -308,13 +320,13 @@ export default function Reg35NotificationsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Ofsted Reference</Label><Input placeholder="e.g. OFS-2025-..." /></div>
-            <div><Label>Summary</Label><Textarea placeholder="Describe the event and actions taken..." /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={() => setShowNew(false)}>Log Notification</Button>
-          </DialogFooter>
+            <div><Label>Ofsted Reference</Label><Input placeholder="e.g. OFS-2025-..." value={r35Form.ofsted_ref} onChange={(e) => setR35("ofsted_ref", e.target.value)} /></div>
+            <div><Label>Summary *</Label><Textarea placeholder="Describe the event and actions taken..." value={r35Form.summary} onChange={(e) => setR35("summary", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createNotif.isPending}>{createNotif.isPending ? "Saving…" : "Log Notification"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

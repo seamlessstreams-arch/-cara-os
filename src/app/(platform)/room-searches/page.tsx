@@ -23,7 +23,9 @@ import {
 import { cn }                          from "@/lib/utils";
 import { getStaffName, getYPName }     from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useRoomSearchRecords } from "@/hooks/use-room-search-records";
+import { useRoomSearchRecords, useCreateRoomSearchRecord } from "@/hooks/use-room-search-records";
+import { toast } from "sonner";
+import { YOUNG_PEOPLE } from "@/lib/seed-data";
 import type { RoomSearchRecord, RoomSearchType, RoomSearchStatus, RoomSearchDistressLevel, RoomSearchActionStatus } from "@/types/extended";
 import { ROOM_SEARCH_TYPE_LABEL, ROOM_SEARCH_STATUS_LABEL, ROOM_SEARCH_DISTRESS_LEVEL_LABEL, ROOM_SEARCH_ACTION_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -80,6 +82,20 @@ export default function RoomSearchesPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showDialog, setShowDialog] = useState(false);
+
+  const createSearch = useCreateRoomSearchRecord();
+  const [rsForm, setRsForm] = useState({ child_id: "", search_type: "routine" as RoomSearchType, date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), reason: "", areas: [] as string[], child_response: "", notes: "" });
+  const setRS = (k: string, v: unknown) => setRsForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rsForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!rsForm.reason.trim()) { toast.error("Reason for search is required."); return; }
+    await createSearch.mutateAsync({ child_id: rsForm.child_id, date: rsForm.date, time: rsForm.time, search_type: rsForm.search_type, reason: rsForm.reason.trim(), conducted_by: "staff_darren", witnessed_by: "", child_present: true, child_informed: true, areas_searched: rsForm.areas, items_found: [], nothing_found: true, child_response: rsForm.child_response.trim(), child_distress_level: "none", follow_up_required: false, follow_up_actions: [], social_worker_notified: false, parent_notified: false, manager_approval: "", notes: rsForm.notes.trim(), status: "completed", linked_incident: null });
+    toast.success("Room search recorded.");
+    setRsForm({ child_id: "", search_type: "routine", date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), reason: "", areas: [], child_response: "", notes: "" });
+    setShowDialog(false);
+  };
 
   const stats = useMemo(() => {
     const totalSearches = records.length;
@@ -524,22 +540,20 @@ export default function RoomSearchesPage() {
           <DialogHeader>
             <DialogTitle>Record Room Search</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-2">
+          <form onSubmit={handleSaveSearch} className="grid gap-4 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">Young Person</label>
-                <Select>
+                <label className="text-sm font-medium mb-1 block">Young Person *</label>
+                <Select value={rsForm.child_id} onValueChange={(v) => setRS("child_id", v)}>
                   <SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                    <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                    <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
+                    {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Search Type</label>
-                <Select>
+                <Select value={rsForm.search_type} onValueChange={(v) => setRS("search_type", v)}>
                   <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                   <SelectContent>
                     {(Object.keys(ROOM_SEARCH_TYPE_LABEL) as RoomSearchType[]).map((k) => (
@@ -552,23 +566,23 @@ export default function RoomSearchesPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium mb-1 block">Date</label>
-                <Input type="date" />
+                <Input type="date" value={rsForm.date} onChange={(e) => setRS("date", e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Time</label>
-                <Input type="time" />
+                <Input type="time" value={rsForm.time} onChange={(e) => setRS("time", e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Reason for Search</label>
-              <Textarea placeholder="Describe the reason for this search..." rows={3} />
+              <label className="text-sm font-medium mb-1 block">Reason for Search *</label>
+              <Textarea placeholder="Describe the reason for this search..." rows={3} value={rsForm.reason} onChange={(e) => setRS("reason", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Areas Searched</label>
               <div className="flex flex-wrap gap-2">
                 {AREA_OPTIONS.map((area) => (
                   <label key={area} className="flex items-center gap-1.5 text-xs">
-                    <input type="checkbox" className="rounded border-gray-300" />
+                    <input type="checkbox" className="rounded border-gray-300" checked={rsForm.areas.includes(area)} onChange={(e) => setRS("areas", e.target.checked ? [...rsForm.areas, area] : rsForm.areas.filter((a) => a !== area))} />
                     {area}
                   </label>
                 ))}
@@ -576,17 +590,17 @@ export default function RoomSearchesPage() {
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Child&apos;s Response</label>
-              <Textarea placeholder="How did the child respond?" rows={2} />
+              <Textarea placeholder="How did the child respond?" rows={2} value={rsForm.child_response} onChange={(e) => setRS("child_response", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Notes</label>
-              <Textarea placeholder="Additional notes, linked incidents, items found details..." rows={3} />
+              <Textarea placeholder="Additional notes, linked incidents, items found details..." rows={3} value={rsForm.notes} onChange={(e) => setRS("notes", e.target.value)} />
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-            <Button onClick={() => setShowDialog(false)}>Save Search Record</Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
+              <Button type="submit" disabled={createSearch.isPending}>{createSearch.isPending ? "Saving…" : "Save Search Record"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

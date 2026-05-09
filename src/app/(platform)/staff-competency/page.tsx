@@ -25,14 +25,15 @@ import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge }        from "@/components/ui/badge";
 import { cn }           from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useStaffCompetencyRecords } from "@/hooks/use-staff-competency-records";
+import { useStaffCompetencyRecords, useCreateStaffCompetencyRecord } from "@/hooks/use-staff-competency-records";
 import type { StaffCompetencyRecord, StaffCompetencyLevel } from "@/types/extended";
 import { STAFF_COMPETENCY_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -68,6 +69,21 @@ export default function StaffCompetencyPage() {
   const [filterLevel, setFilterLevel] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [showDialog, setShowDialog] = useState(false);
+
+  const createCompetency = useCreateStaffCompetencyRecord();
+  const [scForm, setScForm] = useState({ staff_id: "", area: "", level: "not_assessed" as StaffCompetencyLevel, assessed_date: new Date().toISOString().slice(0, 10), assessed_by: "", expiry_date: "", notes: "" });
+  const setSC = (k: string, v: unknown) => setScForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveAssessment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const staff = STAFF.find((s) => s.id === scForm.staff_id);
+    if (!staff) { toast.error("Please select a staff member."); return; }
+    if (!scForm.area) { toast.error("Please select a competency area."); return; }
+    await createCompetency.mutateAsync({ staff_id: scForm.staff_id, staff_name: staff.full_name, role: staff.role ?? "", entries: [{ id: crypto.randomUUID(), area: scForm.area, level: scForm.level, assessed_date: scForm.assessed_date || null, assessed_by: scForm.assessed_by || null, expiry_date: scForm.expiry_date || null, notes: scForm.notes.trim() }] });
+    toast.success("Competency assessment saved.");
+    setScForm({ staff_id: "", area: "", level: "not_assessed", assessed_date: new Date().toISOString().slice(0, 10), assessed_by: "", expiry_date: "", notes: "" });
+    setShowDialog(false);
+  };
 
   /* ── stats ────────────────────────────────────────────────────────────── */
 
@@ -460,23 +476,18 @@ export default function StaffCompetencyPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>New Competency Assessment</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <select className="rounded border px-3 py-2 text-sm">
+          <form onSubmit={handleSaveAssessment} className="grid gap-3 py-2">
+            <select className="rounded border px-3 py-2 text-sm" value={scForm.staff_id} onChange={(e) => setSC("staff_id", e.target.value)}>
               <option value="">Select staff member...</option>
-              <option value="staff_ryan">{getStaffName("staff_ryan")}</option>
-              <option value="staff_anna">{getStaffName("staff_anna")}</option>
-              <option value="staff_chervelle">{getStaffName("staff_chervelle")}</option>
-              <option value="staff_edward">{getStaffName("staff_edward")}</option>
-              <option value="staff_mirela">{getStaffName("staff_mirela")}</option>
-              <option value="staff_lackson">{getStaffName("staff_lackson")}</option>
+              {STAFF.filter((s) => s.employment_status === "active").map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
             </select>
-            <select className="rounded border px-3 py-2 text-sm">
+            <select className="rounded border px-3 py-2 text-sm" value={scForm.area} onChange={(e) => setSC("area", e.target.value)}>
               <option value="">Competency area...</option>
               {COMPETENCY_AREAS.map((area) => (
                 <option key={area} value={area}>{area}</option>
               ))}
             </select>
-            <Select>
+            <Select value={scForm.level} onValueChange={(v) => setSC("level", v)}>
               <SelectTrigger><SelectValue placeholder="Competency level..." /></SelectTrigger>
               <SelectContent>
                 {(Object.keys(STAFF_COMPETENCY_LEVEL_LABEL) as StaffCompetencyLevel[]).map((k) => (
@@ -484,19 +495,18 @@ export default function StaffCompetencyPage() {
                 ))}
               </SelectContent>
             </Select>
-            <input type="date" className="rounded border px-3 py-2 text-sm" />
-            <select className="rounded border px-3 py-2 text-sm">
+            <input type="date" className="rounded border px-3 py-2 text-sm" value={scForm.assessed_date} onChange={(e) => setSC("assessed_date", e.target.value)} />
+            <select className="rounded border px-3 py-2 text-sm" value={scForm.assessed_by} onChange={(e) => setSC("assessed_by", e.target.value)}>
               <option value="">Assessed by...</option>
-              <option value="staff_darren">{getStaffName("staff_darren")}</option>
-              <option value="staff_ryan">{getStaffName("staff_ryan")}</option>
+              {STAFF.filter((s) => s.employment_status === "active").map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
             </select>
-            <input type="date" placeholder="Expiry date (if applicable)" className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Assessment notes..." rows={3} className="rounded border px-3 py-2 text-sm" />
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Save Assessment</button>
-          </DialogFooter>
+            <input type="date" placeholder="Expiry date (if applicable)" className="rounded border px-3 py-2 text-sm" value={scForm.expiry_date} onChange={(e) => setSC("expiry_date", e.target.value)} />
+            <textarea placeholder="Assessment notes..." rows={3} className="rounded border px-3 py-2 text-sm" value={scForm.notes} onChange={(e) => setSC("notes", e.target.value)} />
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createCompetency.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">{createCompetency.isPending ? "Saving…" : "Save Assessment"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

@@ -14,9 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Clock, Shield, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useRiskManagementPlanRecords } from "@/hooks/use-risk-management-plan-records";
+import { useRiskManagementPlanRecords, useCreateRiskManagementPlanRecord } from "@/hooks/use-risk-management-plan-records";
 import type { RiskManagementPlanRecord, RiskMgmtPlanCategory, RiskMgmtPlanStatus } from "@/types/extended";
 import { RISK_MGMT_PLAN_CATEGORY_LABEL, RISK_MGMT_PLAN_STATUS_LABEL } from "@/types/extended";
 import type { RiskLevel } from "@/types/extended";
@@ -40,6 +41,20 @@ export default function RiskManagementPlansPage() {
   const [sortBy, setSortBy] = useState("risk");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createPlan = useCreateRiskManagementPlanRecord();
+  const [rmpForm, setRmpForm] = useState({ child_id: "", risk_category: "other" as RiskMgmtPlanCategory, risk_level: "medium" as RiskLevel, description: "", emergency_plan: "" });
+  const setRMP = (k: keyof typeof rmpForm, v: string) => setRmpForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreatePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rmpForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!rmpForm.description.trim()) { toast.error("Risk description is required."); return; }
+    await createPlan.mutateAsync({ child_id: rmpForm.child_id, risk_category: rmpForm.risk_category, current_risk_level: rmpForm.risk_level, previous_risk_level: rmpForm.risk_level, risk_description: rmpForm.description.trim(), triggers: [], warning_signals: [], management_strategies: [], emergency_plan: rmpForm.emergency_plan.trim(), protective_factors: [], escalation_procedure: "", review_date: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10), last_reviewed: new Date().toISOString().slice(0, 10), created_by: "staff_darren", approved_by: "", multi_agency_input: [], child_views: "", status: "active" });
+    toast.success("Risk management plan created.");
+    setRmpForm({ child_id: "", risk_category: "other", risk_level: "medium", description: "", emergency_plan: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
   const today = d(0);
@@ -232,14 +247,14 @@ export default function RiskManagementPlansPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Risk Management Plan</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Young Person</Label><Select><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Risk Category</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(RISK_MGMT_PLAN_CATEGORY_LABEL) as [RiskMgmtPlanCategory, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Risk Level</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(["low", "medium", "high", "very_high"] as RiskLevel[]).map(r => <SelectItem key={r} value={r}>{r.replace("_", " ")}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Risk Description</Label><Textarea rows={3} placeholder="Describe the risk…" /></div>
-            <div><Label>Emergency Plan</Label><Textarea rows={3} placeholder="Emergency procedure…" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button onClick={() => setDialogOpen(false)}>Create Plan</Button></DialogFooter>
+          <form onSubmit={handleCreatePlan} className="space-y-3">
+            <div><Label>Young Person *</Label><Select value={rmpForm.child_id} onValueChange={(v) => setRMP("child_id", v)}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Risk Category</Label><Select value={rmpForm.risk_category} onValueChange={(v) => setRMP("risk_category", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(RISK_MGMT_PLAN_CATEGORY_LABEL) as [RiskMgmtPlanCategory, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Risk Level</Label><Select value={rmpForm.risk_level} onValueChange={(v) => setRMP("risk_level", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(["low", "medium", "high", "very_high"] as RiskLevel[]).map(r => <SelectItem key={r} value={r}>{r.replace("_", " ")}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Risk Description *</Label><Textarea rows={3} placeholder="Describe the risk…" value={rmpForm.description} onChange={(e) => setRMP("description", e.target.value)} /></div>
+            <div><Label>Emergency Plan</Label><Textarea rows={3} placeholder="Emergency procedure…" value={rmpForm.emergency_plan} onChange={(e) => setRMP("emergency_plan", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button type="submit" disabled={createPlan.isPending}>{createPlan.isPending ? "Creating…" : "Create Plan"}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel
