@@ -569,7 +569,7 @@ function CareEventCard({ event, onAction }: {
               </a>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              {formatDate(event.event_date)}{event.event_time ? ` at ${event.event_time}` : ""} · Staff {event.staff_id}
+              {formatDate(event.event_date)}{event.event_time ? ` at ${event.event_time}` : ""} · {(event as never as { staff_name?: string }).staff_name ?? event.staff_id}{event.child_id && <> · {(event as never as { child_name?: string }).child_name ?? event.child_id}</>}
             </p>
             <RoutingFlags event={event} />
           </div>

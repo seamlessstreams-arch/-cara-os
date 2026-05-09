@@ -39,6 +39,17 @@ export async function GET(req: NextRequest) {
   const offset = (page - 1) * limit;
   const paged = sorted.slice(offset, offset + limit);
 
+  // Enrich with resolved names
+  const enriched = paged.map((e) => {
+    const staffMember = e.staff_id ? db.staff.findById(e.staff_id) : null;
+    const youngPerson = e.child_id ? db.youngPeople.findById(e.child_id) : null;
+    return {
+      ...e,
+      staff_name: staffMember ? `${staffMember.first_name} ${staffMember.last_name}` : e.staff_id,
+      child_name: youngPerson ? `${youngPerson.first_name} ${youngPerson.last_name}` : e.child_id ?? null,
+    };
+  });
+
   // Status counts for dashboard
   const statusCounts: Record<string, number> = {};
   for (const e of sorted) {
@@ -46,7 +57,7 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
-    data: paged,
+    data: enriched,
     meta: {
       total,
       page,
