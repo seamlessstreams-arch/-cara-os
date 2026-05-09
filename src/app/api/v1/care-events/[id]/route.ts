@@ -4,7 +4,7 @@ import { careEventsDb } from "@/lib/db";
 import { processCareEvent, retryFailedRoutes } from "@/lib/care-events/processor";
 import { buildRoutingPreview } from "@/lib/care-events/routing-engine";
 import { generateId, todayStr } from "@/lib/utils";
-import { getUserIdFromRequest, requirePermission } from "@/lib/auth-guard";
+import { getUserIdFromRequest, requirePermission, requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type {
   SubmitCareEventPayload,
@@ -119,7 +119,7 @@ export async function PATCH(
 
   // Manager-only actions require APPROVE_FORMS permission
   if (["verify", "return", "lock"].includes(action)) {
-    const auth = requirePermission(req, PERMISSIONS.APPROVE_FORMS);
+    const auth = await requirePermissionAsync(req, PERMISSIONS.APPROVE_FORMS);
     if (auth instanceof NextResponse) return auth;
   }
 

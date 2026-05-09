@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requirePermission } from "@/lib/auth-guard";
+import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { CareEventJob, JobType } from "@/types/care-events";
 
@@ -10,7 +10,7 @@ import type { CareEventJob, JobType } from "@/types/care-events";
  * Requires manager+ permission.
  */
 export async function GET(req: NextRequest) {
-  const authResult = requirePermission(req, PERMISSIONS.VIEW_DAILY_LOG);
+  const authResult = await requirePermissionAsync(req, PERMISSIONS.VIEW_DAILY_LOG);
   if (authResult instanceof NextResponse) return authResult;
 
   const { searchParams } = req.nextUrl;
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
  * Requires registered_manager+ permission.
  */
 export async function POST(req: NextRequest) {
-  const authResult = requirePermission(req, PERMISSIONS.APPROVE_FORMS);
+  const authResult = await requirePermissionAsync(req, PERMISSIONS.APPROVE_FORMS);
   if (authResult instanceof NextResponse) return authResult;
   const { userId } = authResult;
 
