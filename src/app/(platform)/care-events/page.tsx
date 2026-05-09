@@ -435,7 +435,7 @@ function CreateEventDialog({
                     <SelectValue placeholder="Select…" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">— Not specific to a child —</SelectItem>
+                    <SelectItem value="none">— Not specific to a child —</SelectItem>
                     {yp.map((y: { id: string; first_name: string; last_name: string }) => (
                       <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>
                     ))}
