@@ -17,7 +17,8 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName, getStaffName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -25,7 +26,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { useSensoryProfileRecords } from "@/hooks/use-sensory-profile-records";
+import { useSensoryProfileRecords, useCreateSensoryProfileRecord } from "@/hooks/use-sensory-profile-records";
 import type { SensoryProfileRecord, SensoryDomain, SensoryResponsePattern, SensoryProfileStatus } from "@/types/extended";
 import { SENSORY_DOMAIN_LABEL, SENSORY_RESPONSE_PATTERN_LABEL, SENSORY_PROFILE_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -90,6 +91,20 @@ export default function SensoryProfilesPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createProfile = useCreateSensoryProfileRecord();
+  const [spForm, setSpForm] = useState({ child_id: "", diagnosis: "", assessment_date: new Date().toISOString().slice(0, 10), review_date: "", notes: "" });
+  const setSP = (k: keyof typeof spForm, v: string) => setSpForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!spForm.child_id) { toast.error("Please select a young person."); return; }
+    const reviewDate = spForm.review_date || new Date(Date.now() + 180 * 864e5).toISOString().slice(0, 10);
+    await createProfile.mutateAsync({ child_id: spForm.child_id, status: "active", diagnosis: spForm.diagnosis ? [spForm.diagnosis] : [], assessment_date: spForm.assessment_date, assessed_by: "staff_darren", review_date: reviewDate, entries: [], strategies: [], environmental_adaptations: [], communication_preferences: [], child_views: "", parent_carer_views: "", professional_input: "", notes: spForm.notes });
+    toast.success("Sensory profile created.");
+    setSpForm({ child_id: "", diagnosis: "", assessment_date: new Date().toISOString().slice(0, 10), review_date: "", notes: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -424,36 +439,36 @@ export default function SensoryProfilesPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>New Sensory Profile</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
+          <form onSubmit={handleCreateProfile} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
-              <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
-                <SelectContent>{childIds.map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
+              <label className="text-sm font-medium">Young Person *</label>
+              <Select value={spForm.child_id} onValueChange={(v) => setSP("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-sm font-medium">Diagnosis / Conditions</label>
-              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. ASD, ADHD, SPD" />
+              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. ASD, ADHD, SPD" value={spForm.diagnosis} onChange={(e) => setSP("diagnosis", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium">Assessment Date</label>
-                <input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
+                <input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={spForm.assessment_date} onChange={(e) => setSP("assessment_date", e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium">Review Date</label>
-                <input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
+                <input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={spForm.review_date} onChange={(e) => setSP("review_date", e.target.value)} />
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Initial Notes</label>
-              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Key observations and initial sensory presentation…" />
+              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Key observations and initial sensory presentation…" value={spForm.notes} onChange={(e) => setSP("notes", e.target.value)} />
             </div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Create Profile</button>
-          </DialogFooter>
+            <DialogFooter>
+              <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button type="submit" disabled={createProfile.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">{createProfile.isPending ? "Creating…" : "Create Profile"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

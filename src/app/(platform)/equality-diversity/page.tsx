@@ -17,14 +17,15 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useEqualityInitiatives } from "@/hooks/use-equality-initiatives";
+import { useEqualityInitiatives, useCreateEqualityInitiative } from "@/hooks/use-equality-initiatives";
 import { useEqualityTraining } from "@/hooks/use-equality-training";
 import type {
   EqualityInitiative,
@@ -101,6 +102,21 @@ export default function EqualityDiversityPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("status");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createInitiative = useCreateEqualityInitiative();
+  const [eqForm, setEqForm] = useState({ title: "", description: "", lead_by: "staff_darren" });
+  const setEQ = (k: keyof typeof eqForm, v: string) => setEqForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateInitiative = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eqForm.title.trim()) { toast.error("Title is required."); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    const target = new Date(Date.now() + 90 * 864e5).toISOString().slice(0, 10);
+    await createInitiative.mutateAsync({ title: eqForm.title.trim(), description: eqForm.description.trim(), status: "planned", lead_by: eqForm.lead_by, start_date: today, target_date: target, characteristics: [], objectives: [], actions: [], outcomes: [], evidence: [], notes: "", created_at: new Date().toISOString() });
+    toast.success("Initiative created.");
+    setEqForm({ title: "", description: "", lead_by: "staff_darren" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -323,19 +339,19 @@ export default function EqualityDiversityPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>New Equality Initiative</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
-            <div><label className="text-sm font-medium">Initiative Title</label><input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. LGBTQ+ Inclusion Programme" /></div>
-            <div><label className="text-sm font-medium">Description</label><textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What this initiative aims to achieve…" /></div>
+          <form onSubmit={handleCreateInitiative} className="space-y-3 py-2">
+            <div><label className="text-sm font-medium">Initiative Title *</label><input required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. LGBTQ+ Inclusion Programme" value={eqForm.title} onChange={(e) => setEQ("title", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Description</label><textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What this initiative aims to achieve…" value={eqForm.description} onChange={(e) => setEQ("description", e.target.value)} /></div>
             <div><label className="text-sm font-medium">Lead</label>
-              <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>{["staff_darren","staff_ryan","staff_anna","staff_chervelle"].map((id) => <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>)}</SelectContent>
+              <Select value={eqForm.lead_by} onValueChange={(v) => setEQ("lead_by", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Create Initiative</button>
-          </DialogFooter>
+            <DialogFooter>
+              <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button type="submit" disabled={createInitiative.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">{createInitiative.isPending ? "Creating…" : "Create Initiative"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

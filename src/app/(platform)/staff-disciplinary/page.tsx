@@ -18,15 +18,16 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useStaffDisciplinaryRecords } from "@/hooks/use-staff-disciplinary-records";
-import type { StaffDisciplinaryRecord } from "@/types/extended";
+import { useStaffDisciplinaryRecords, useCreateStaffDisciplinaryRecord } from "@/hooks/use-staff-disciplinary-records";
+import type { StaffDisciplinaryRecord, StaffDisciplinaryCategory, StaffDisciplinarySeverity } from "@/types/extended";
 import {
   STAFF_DISCIPLINARY_CATEGORY_LABEL,
   STAFF_DISCIPLINARY_STAGE_LABEL,
@@ -79,6 +80,22 @@ export default function StaffDisciplinaryPage() {
   const [filterStage, setFilterStage] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createCase = useCreateStaffDisciplinaryRecord();
+  const [sdForm, setSdForm] = useState({ staff_member: "", category: "" as StaffDisciplinaryCategory | "", severity: "minor" as StaffDisciplinarySeverity, allegation: "" });
+  const setSD = (k: keyof typeof sdForm, v: string) => setSdForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateCase = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sdForm.staff_member) { toast.error("Please select a staff member."); return; }
+    if (!sdForm.category) { toast.error("Please select a category."); return; }
+    if (!sdForm.allegation.trim()) { toast.error("Please enter the allegation."); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    await createCase.mutateAsync({ staff_member: sdForm.staff_member, date_raised: today, category: sdForm.category as StaffDisciplinaryCategory, severity: sdForm.severity, stage: "investigation", allegation: sdForm.allegation.trim(), investigator: null, investigation_start_date: null, investigation_end_date: null, suspended: false, suspension_date: null, suspension_review_dates: [], hearing_date: null, hearing_panel: [], outcome: "", sanction_expiry_date: null, appeal_lodged: false, appeal_date: null, appeal_outcome: "", timeline: [], support_offered: [], lado_notified: false, dbs_referral: false, ofsted_notified: false, confidentiality_level: "standard", trade_union_rep: null, lessons_learned: "", notes: "" });
+    toast.success("Disciplinary case created.");
+    setSdForm({ staff_member: "", category: "", severity: "minor", allegation: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -289,36 +306,36 @@ export default function StaffDisciplinaryPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>New Disciplinary Case</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
+          <form onSubmit={handleCreateCase} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Staff Member</label>
-              <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>{["staff_darren","staff_ryan","staff_edward","staff_anna","staff_chervelle","staff_diane","staff_lackson","staff_mirela"].map((id) => <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>)}</SelectContent>
+              <label className="text-sm font-medium">Staff Member *</label>
+              <Select value={sdForm.staff_member} onValueChange={(v) => setSD("staff_member", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Category</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label className="text-sm font-medium">Category *</label>
+                <Select value={sdForm.category} onValueChange={(v) => setSD("category", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_DISCIPLINARY_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Severity</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={sdForm.severity} onValueChange={(v) => setSD("severity", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_DISCIPLINARY_SEVERITY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">Allegation</label>
-              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Details of the allegation…" />
+              <label className="text-sm font-medium">Allegation *</label>
+              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Details of the allegation…" value={sdForm.allegation} onChange={(e) => setSD("allegation", e.target.value)} />
             </div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Create Case</button>
-          </DialogFooter>
+            <DialogFooter>
+              <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button type="submit" disabled={createCase.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">{createCase.isPending ? "Creating…" : "Create Case"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel
