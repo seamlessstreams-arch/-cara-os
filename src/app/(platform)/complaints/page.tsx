@@ -31,7 +31,7 @@ import type {
 import {
   MessageCircle, CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp,
   Sparkles, User, Calendar, Flag, Plus, Shield, AlertOctagon, Gavel,
-  Search, Filter, ArrowUpDown,
+  Search, Filter, ArrowUpDown, ArrowUpRight,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
@@ -185,6 +185,16 @@ function ComplaintCard({
               <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-rose-50 text-rose-700 border-rose-200">
                 <Shield className="h-2.5 w-2.5 mr-0.5 inline" />Safeguarding element
               </Badge>
+            )}
+            {(complaint as never as { care_event_id?: string }).care_event_id && (
+              <Link
+                href={`/care-events/${(complaint as never as { care_event_id: string }).care_event_id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-1.5 py-0 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+              >
+                <ArrowUpRight className="h-3 w-3" />
+                From Care Event
+              </Link>
             )}
           </div>
 

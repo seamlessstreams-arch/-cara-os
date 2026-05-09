@@ -21,10 +21,11 @@ import {
   Pill, Plus, AlertTriangle, CheckCircle2, Clock, Package,
   Shield, FileText, Calendar, TriangleAlert, X, ChevronDown,
   ChevronUp, Sparkles, Eye, ClipboardList, TrendingUp, Filter,
-  Info, RefreshCw, Activity, Brain, Search, ArrowUpDown,
+  Info, RefreshCw, Activity, Brain, Search, ArrowUpDown, ArrowUpRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import Link from "next/link";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -609,6 +610,16 @@ function TodayScheduleTab({
                               {(STATUS_CONFIG as unknown as Record<string, typeof STATUS_CONFIG.given>)[status]?.label ?? status}
                             </Badge>
                           )}
+                          {admin && (admin as never as { care_event_id?: string }).care_event_id && (
+                            <Link
+                              href={`/care-events/${(admin as never as { care_event_id: string }).care_event_id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                            >
+                              <ArrowUpRight className="h-3 w-3" />
+                              From Care Event
+                            </Link>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-4 mt-1 text-xs text-slate-500">
@@ -1004,7 +1015,7 @@ function PRNLogTab({
             <table className="w-full min-w-[700px]">
               <thead className="bg-slate-50 border-b border-slate-100">
                 <tr>
-                  {["Date / Time", "Young Person", "Medication", "Reason Given", "Dose", "Administered By", "Outcome"].map((h) => (
+                  {["Date / Time", "Young Person", "Medication", "Reason Given", "Dose", "Administered By", "Outcome", "Source"].map((h) => (
                     <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -1043,6 +1054,19 @@ function PRNLogTab({
                       <span className="text-xs text-slate-600">
                         {admin.prn_effectiveness || <span className="text-slate-400 italic">Not recorded</span>}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {(admin as never as { care_event_id?: string }).care_event_id ? (
+                        <Link
+                          href={`/care-events/${(admin as never as { care_event_id: string }).care_event_id}`}
+                          className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                        >
+                          <ArrowUpRight className="h-3 w-3" />
+                          Care Event
+                        </Link>
+                      ) : (
+                        <span className="text-slate-400 text-[10px] italic">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}

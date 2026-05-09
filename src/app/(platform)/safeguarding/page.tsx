@@ -26,6 +26,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import NextLink from "next/link";
 
 // ── Static seed data (display only) ──────────────────────────────────────────
 
@@ -213,6 +214,16 @@ function ConcernCard({
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
               {INCIDENT_TYPE_LABELS[inc.type] || inc.type}
             </span>
+            {(inc as never as { care_event_id?: string }).care_event_id && (
+              <NextLink
+                href={`/care-events/${(inc as never as { care_event_id: string }).care_event_id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+              >
+                <ArrowUpRight className="h-3 w-3" />
+                From Care Event
+              </NextLink>
+            )}
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-[11px] text-slate-500">
             <span className="font-semibold text-violet-700">{getYPName(inc.child_id)}</span>
