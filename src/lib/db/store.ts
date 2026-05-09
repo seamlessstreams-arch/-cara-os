@@ -939,6 +939,73 @@ const store = {
   childDailySummaries: [...SEED_CHILD_DAILY_SUMMARIES] as ChildDailySummary[],
   filingCabinet: [...SEED_FILING_CABINET] as FilingCabinetItem[],
   savedTimeMetrics: [...SEED_SAVED_TIME_METRICS] as SavedTimeMetric[],
+
+  // ── Branding ─────────────────────────────────────────────────────────────
+  systemBranding: {
+    id: "cornerstone_system" as const,
+    logo_url: null as string | null,
+    icon_url: null as string | null,
+    wordmark_url: null as string | null,
+    primary_colour: "#1e3a5f",
+    secondary_colour: "#2dd4bf",
+    accent_colour: "#3b82f6",
+    background_colour: "#f8fafc",
+    default_footer_text: "Generated securely through Cornerstone",
+    support_email: "support@cornerstone.care",
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+  },
+  organisationBrandings: [
+    {
+      id: "obr_default",
+      organisation_id: "org_oak",
+      company_name: "Seamless Streams Care Ltd",
+      trading_name: "Oak House Residential Care",
+      registered_provider_name: "Seamless Streams Care Ltd",
+      company_registration_number: "12345678",
+      ofsted_provider_reference: "SC123456",
+      logo_url: null as string | null,
+      document_logo_url: null as string | null,
+      email_logo_url: null as string | null,
+      primary_colour: "#1e3a5f",
+      secondary_colour: "#2dd4bf",
+      accent_colour: null as string | null,
+      address: "1 Care Lane, Oak Town, OA1 2BC",
+      phone: "01234 567890",
+      email: "admin@oakhouse.care",
+      website: "www.oakhouse.care",
+      responsible_individual_name: "Eleanor Hartley",
+      default_footer_text:
+        "Generated securely through Cornerstone on behalf of Seamless Streams Care Ltd",
+      confidentiality_notice:
+        "This document is confidential. It contains sensitive information about children in care and must not be shared without authorisation from the Registered Manager or Responsible Individual.",
+      created_at: "2026-01-01T00:00:00Z",
+      updated_at: "2026-01-01T00:00:00Z",
+    },
+  ] as Array<Record<string, unknown>>,
+  homeBrandings: [
+    {
+      id: "hbr_oak",
+      home_id: "home_oak",
+      organisation_id: "org_oak",
+      home_name: "Oak House",
+      home_address: "1 Care Lane, Oak Town, OA1 2BC",
+      ofsted_urn: "SC123456",
+      registered_manager_name: "Darren Cartwright",
+      responsible_individual_name: "Eleanor Hartley",
+      emergency_contact: "01234 567891",
+      safeguarding_contact: "01234 567892",
+      lado_contact: "Oak Town LA LADO: 01234 999001",
+      local_authority_contact: "Oak Town Children's Services: 01234 900100",
+      police_contact: "Oak Town Police: 101",
+      logo_override_url: null as string | null,
+      created_at: "2026-01-01T00:00:00Z",
+      updated_at: "2026-01-01T00:00:00Z",
+    },
+  ] as Array<Record<string, unknown>>,
+  documentBrandingSnapshots: [] as Array<Record<string, unknown>>,
+  brandingAuditLog: [] as Array<Record<string, unknown>>,
+
   // Shift Swap Requests
   shiftSwaps: [
     {
@@ -10468,6 +10535,135 @@ export const db = {
       if (idx === -1) return null;
       store.filingCabinet[idx] = { ...store.filingCabinet[idx], ...data, updated_at: new Date().toISOString() };
       return store.filingCabinet[idx];
+    },
+  },
+
+  // ── Branding ─────────────────────────────────────────────────────────────────
+  branding: {
+    getSystem: () => store.systemBranding,
+    updateSystem: (data: Partial<typeof store.systemBranding>) => {
+      store.systemBranding = { ...store.systemBranding, ...data, updated_at: new Date().toISOString() };
+      return store.systemBranding;
+    },
+    getOrganisation: (orgId: string) =>
+      store.organisationBrandings.find((b) => b.organisation_id === orgId) ?? null,
+    upsertOrganisation: (orgId: string, data: Record<string, unknown>) => {
+      const now = new Date().toISOString();
+      const idx = store.organisationBrandings.findIndex((b) => b.organisation_id === orgId);
+      if (idx !== -1) {
+        store.organisationBrandings[idx] = { ...store.organisationBrandings[idx], ...data, updated_at: now };
+        return store.organisationBrandings[idx];
+      }
+      const record = {
+        id: generateId("obr"),
+        organisation_id: orgId,
+        company_name: (data.company_name as string) ?? "Unknown Organisation",
+        trading_name: null,
+        registered_provider_name: null,
+        company_registration_number: null,
+        ofsted_provider_reference: null,
+        logo_url: null,
+        document_logo_url: null,
+        email_logo_url: null,
+        primary_colour: null,
+        secondary_colour: null,
+        accent_colour: null,
+        address: null,
+        phone: null,
+        email: null,
+        website: null,
+        responsible_individual_name: null,
+        default_footer_text: null,
+        confidentiality_notice:
+          "This document is confidential. It contains sensitive information about children in care and must not be shared without authorisation.",
+        created_at: now,
+        updated_at: now,
+        ...data,
+      };
+      store.organisationBrandings.push(record);
+      return record;
+    },
+    getHome: (homeId: string) =>
+      store.homeBrandings.find((b) => b.home_id === homeId) ?? null,
+    upsertHome: (homeId: string, orgId: string, data: Record<string, unknown>) => {
+      const now = new Date().toISOString();
+      const idx = store.homeBrandings.findIndex((b) => b.home_id === homeId);
+      if (idx !== -1) {
+        store.homeBrandings[idx] = { ...store.homeBrandings[idx], ...data, updated_at: now };
+        return store.homeBrandings[idx];
+      }
+      const record = {
+        id: generateId("hbr"),
+        home_id: homeId,
+        organisation_id: orgId,
+        home_name: (data.home_name as string) ?? "Unknown Home",
+        home_address: null,
+        ofsted_urn: null,
+        registered_manager_name: null,
+        responsible_individual_name: null,
+        emergency_contact: null,
+        safeguarding_contact: null,
+        lado_contact: null,
+        local_authority_contact: null,
+        police_contact: null,
+        logo_override_url: null,
+        created_at: now,
+        updated_at: now,
+        ...data,
+      };
+      store.homeBrandings.push(record);
+      return record;
+    },
+    // Document branding snapshots
+    createSnapshot: (data: {
+      document_id: string;
+      document_type: string;
+      organisation_id?: string;
+      home_id?: string;
+      branding_json: object;
+      generated_by?: string;
+    }) => {
+      const snapshot = {
+        id: generateId("dbs"),
+        organisation_id: data.organisation_id ?? null,
+        home_id: data.home_id ?? null,
+        generated_by: data.generated_by ?? null,
+        created_at: new Date().toISOString(),
+        ...data,
+      };
+      store.documentBrandingSnapshots.push(snapshot);
+      return snapshot;
+    },
+    getSnapshot: (documentId: string) =>
+      store.documentBrandingSnapshots.find((s) => s.document_id === documentId) ?? null,
+    // Branding audit log
+    addAuditEntry: (entry: {
+      changed_by: string;
+      changed_by_name?: string;
+      target_type: "system" | "organisation" | "home";
+      target_id: string;
+      field_name: string;
+      previous_value?: string | null;
+      new_value?: string | null;
+      session_info?: string;
+    }) => {
+      const record = {
+        id: generateId("bal"),
+        changed_by_name: null,
+        previous_value: null,
+        new_value: null,
+        session_info: null,
+        created_at: new Date().toISOString(),
+        ...entry,
+      };
+      store.brandingAuditLog.push(record);
+      return record;
+    },
+    getAuditLog: (targetType?: string, targetId?: string) => {
+      let log = store.brandingAuditLog;
+      if (targetType) log = log.filter((e) => e.target_type === targetType);
+      if (targetId) log = log.filter((e) => e.target_id === targetId);
+      return log.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
     },
   },
 

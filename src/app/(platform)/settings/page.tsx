@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,14 +11,21 @@ import {
   Bell, Shield, Building, Users, Key,
   Globe, Mail, Phone, CheckCircle2, Save, Smartphone,
   Lock, Eye, EyeOff, Database, FileText, Zap, Monitor, User, X,
+  Palette, Upload, AlertCircle, ChevronDown, ChevronUp, Clock,
 } from "lucide-react";
 import { HOME } from "@/lib/seed-data";
 import { useStaff } from "@/hooks/use-staff";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import {
+  useSystemBranding, useOrganisationBranding, useHomeBranding,
+  useUpdateSystemBranding, useUpdateOrganisationBranding, useUpdateHomeBranding,
+  useUploadBrandingLogo, useBrandingAuditLog,
+} from "@/hooks/use-branding";
+import { toast } from "sonner";
 
-type SettingsTab = "profile" | "home" | "notifications" | "security" | "roles" | "integrations";
+type SettingsTab = "profile" | "home" | "notifications" | "security" | "roles" | "integrations" | "branding";
 
 const NOTIFICATION_DEFS = [
   { label: "Task assigned to you",           key: "task_assigned",    enabled: true  },
@@ -45,6 +52,7 @@ const TABS_CFG: { id: SettingsTab; label: string; icon: React.ElementType }[] = 
   { id: "security",      label: "Security",      icon: Shield   },
   { id: "roles",         label: "Roles",         icon: Users    },
   { id: "integrations",  label: "Integrations",  icon: Globe    },
+  { id: "branding",      label: "Branding",      icon: Palette  },
 ];
 
 function SavedBanner({ show }: { show: boolean }) {
@@ -118,6 +126,283 @@ function IntegrationsTab() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Branding Tab ──────────────────────────────────────────────────────────────
+
+function ColourField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="text-xs font-semibold text-slate-700 block mb-1">{label}</label>
+      <div className="flex items-center gap-2">
+        <input type="color" value={value || "#000000"} onChange={(e) => onChange(e.target.value)} className="h-9 w-14 rounded-lg border border-slate-200 p-0.5 cursor-pointer" />
+        <Input value={value} onChange={(e) => onChange(e.target.value)} className="font-mono text-sm uppercase" maxLength={7} />
+      </div>
+    </div>
+  );
+}
+
+function LogoUploadField({ label, currentUrl, onUpload }: { label: string; currentUrl?: string | null; onUpload: (url: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const uploadMutation = useUploadBrandingLogo();
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const result = await uploadMutation.mutateAsync(file);
+      onUpload(result.url);
+      toast.success("Logo uploaded successfully");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    }
+    e.target.value = "";
+  }
+
+  return (
+    <div>
+      <label className="text-xs font-semibold text-slate-700 block mb-1">{label}</label>
+      <div className="flex items-center gap-3">
+        {currentUrl ? (
+          <div className="h-12 w-24 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={currentUrl} alt="Logo" className="max-h-10 max-w-20 object-contain" />
+          </div>
+        ) : (
+          <div className="h-12 w-24 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-xs text-slate-400">No logo</div>
+        )}
+        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => inputRef.current?.click()} disabled={uploadMutation.isPending}>
+          <Upload className="h-3.5 w-3.5 mr-1.5" />
+          {uploadMutation.isPending ? "Uploading…" : "Upload"}
+        </Button>
+        <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" className="hidden" onChange={handleFile} />
+      </div>
+      <p className="text-[10px] text-slate-400 mt-1">PNG, JPG, SVG or WebP · Max 5 MB</p>
+    </div>
+  );
+}
+
+function DocumentPreview({ primaryColour, secondaryColour, companyName, homeName, registeredManagerName, footerText }: {
+  primaryColour: string; secondaryColour: string; companyName: string;
+  homeName: string; registeredManagerName: string; footerText: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: primaryColour }}>
+        <div>
+          <div className="text-white font-bold text-sm">{companyName}</div>
+          <div className="text-white/70 text-[11px]">{homeName}</div>
+        </div>
+        <div className="text-right">
+          <div className="text-white/80 text-[10px]">Registered Manager</div>
+          <div className="text-white text-xs font-medium">{registeredManagerName}</div>
+        </div>
+      </div>
+      <div className="bg-white px-5 py-4">
+        <div className="text-xs font-bold text-slate-900 mb-1">SAMPLE DOCUMENT</div>
+        <div className="h-2 bg-slate-100 rounded w-3/4 mb-1" />
+        <div className="h-2 bg-slate-100 rounded w-full mb-1" />
+        <div className="h-2 bg-slate-100 rounded w-5/6" />
+      </div>
+      <div className="px-5 py-2 flex items-center justify-between" style={{ backgroundColor: secondaryColour + "20", borderTop: `2px solid ${secondaryColour}` }}>
+        <div className="text-[10px] text-slate-500">{footerText}</div>
+        <div className="text-[10px]" style={{ color: primaryColour }}>Cornerstone</div>
+      </div>
+    </div>
+  );
+}
+
+function BrandingTab() {
+  const { currentUser } = useAuthContext();
+  const isSuperAdmin = currentUser?.role === "super_admin";
+
+  const systemQ = useSystemBranding();
+  const orgQ = useOrganisationBranding("org_oak");
+  const homeQ = useHomeBranding("home_oak");
+  const auditQ = useBrandingAuditLog();
+
+  const updateSystem = useUpdateSystemBranding();
+  const updateOrg    = useUpdateOrganisationBranding();
+  const updateHome   = useUpdateHomeBranding();
+
+  const [sysForm, setSysForm] = useState({ primary_colour: "#1e3a5f", secondary_colour: "#2dd4bf", accent_colour: "#3b82f6", default_footer_text: "Generated securely through Cornerstone", support_email: "support@cornerstone.care" });
+  const [orgForm, setOrgForm] = useState({ company_name: "", trading_name: "", registered_provider_name: "", company_registration_number: "", ofsted_provider_reference: "", address: "", phone: "", email: "", website: "", responsible_individual_name: "", primary_colour: "", secondary_colour: "", logo_url: "", document_logo_url: "", confidentiality_notice: "" });
+  const [homeForm2, setHomeForm2] = useState({ home_name: "", home_address: "", ofsted_urn: "", registered_manager_name: "", responsible_individual_name: "", emergency_contact: "", safeguarding_contact: "", lado_contact: "", local_authority_contact: "", police_contact: "", logo_override_url: "" });
+  const [showAudit, setShowAudit] = useState(false);
+
+  useEffect(() => { if (systemQ.data) setSysForm({ primary_colour: systemQ.data.primary_colour, secondary_colour: systemQ.data.secondary_colour, accent_colour: systemQ.data.accent_colour, default_footer_text: systemQ.data.default_footer_text, support_email: systemQ.data.support_email }); }, [systemQ.data]);
+  useEffect(() => { if (orgQ.data) setOrgForm({ company_name: orgQ.data.company_name ?? "", trading_name: orgQ.data.trading_name ?? "", registered_provider_name: orgQ.data.registered_provider_name ?? "", company_registration_number: orgQ.data.company_registration_number ?? "", ofsted_provider_reference: orgQ.data.ofsted_provider_reference ?? "", address: orgQ.data.address ?? "", phone: orgQ.data.phone ?? "", email: orgQ.data.email ?? "", website: orgQ.data.website ?? "", responsible_individual_name: orgQ.data.responsible_individual_name ?? "", primary_colour: orgQ.data.primary_colour ?? "", secondary_colour: orgQ.data.secondary_colour ?? "", logo_url: orgQ.data.logo_url ?? "", document_logo_url: orgQ.data.document_logo_url ?? "", confidentiality_notice: orgQ.data.confidentiality_notice ?? "" }); }, [orgQ.data]);
+  useEffect(() => { if (homeQ.data) setHomeForm2({ home_name: homeQ.data.home_name ?? "", home_address: homeQ.data.home_address ?? "", ofsted_urn: homeQ.data.ofsted_urn ?? "", registered_manager_name: homeQ.data.registered_manager_name ?? "", responsible_individual_name: homeQ.data.responsible_individual_name ?? "", emergency_contact: homeQ.data.emergency_contact ?? "", safeguarding_contact: homeQ.data.safeguarding_contact ?? "", lado_contact: homeQ.data.lado_contact ?? "", local_authority_contact: homeQ.data.local_authority_contact ?? "", police_contact: homeQ.data.police_contact ?? "", logo_override_url: homeQ.data.logo_override_url ?? "" }); }, [homeQ.data]);
+
+  async function saveSystem() { try { await updateSystem.mutateAsync({ ...sysForm, updated_by: currentUser?.id }); toast.success("System branding saved"); } catch { toast.error("Failed to save system branding"); } }
+  async function saveOrg() { try { await updateOrg.mutateAsync({ ...orgForm, organisation_id: "org_oak", updated_by: currentUser?.id }); toast.success("Organisation branding saved"); } catch { toast.error("Failed to save organisation branding"); } }
+  async function saveHome() { try { await updateHome.mutateAsync({ ...homeForm2, home_id: "home_oak", organisation_id: "org_oak", updated_by: currentUser?.id }); toast.success("Home branding saved"); } catch { toast.error("Failed to save home branding"); } }
+
+  const previewPrimary = orgForm.primary_colour || sysForm.primary_colour;
+  const previewSecondary = orgForm.secondary_colour || sysForm.secondary_colour;
+
+  return (
+    <div className="space-y-5">
+      {/* Live preview */}
+      <Card>
+        <CardHeader><CardTitle>Document Preview</CardTitle></CardHeader>
+        <CardContent>
+          <div className="max-w-lg">
+            <DocumentPreview
+              primaryColour={previewPrimary}
+              secondaryColour={previewSecondary}
+              companyName={orgForm.company_name || "Your Organisation"}
+              homeName={homeForm2.home_name || "Home Name"}
+              registeredManagerName={homeForm2.registered_manager_name || "Manager Name"}
+              footerText={orgForm.company_name ? `Generated securely through Cornerstone on behalf of ${orgForm.company_name}` : sysForm.default_footer_text}
+            />
+          </div>
+          <p className="text-xs text-slate-400 mt-3">Preview updates as you edit branding settings below.</p>
+        </CardContent>
+      </Card>
+
+      {/* Organisation branding */}
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Building className="h-4 w-4" />Organisation Branding</CardTitle></CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            {([
+              { label: "Company name (legal)", key: "company_name" },
+              { label: "Trading name", key: "trading_name" },
+              { label: "Registered provider name", key: "registered_provider_name" },
+              { label: "Company registration number", key: "company_registration_number" },
+              { label: "Ofsted provider reference", key: "ofsted_provider_reference" },
+              { label: "Address", key: "address" },
+              { label: "Phone", key: "phone" },
+              { label: "Email", key: "email" },
+              { label: "Website", key: "website" },
+              { label: "Responsible Individual name", key: "responsible_individual_name" },
+            ] as { label: string; key: keyof typeof orgForm }[]).map(({ label, key }) => (
+              <div key={key}>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">{label}</label>
+                <Input value={orgForm[key]} onChange={(e) => setOrgForm((f) => ({ ...f, [key]: e.target.value }))} />
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <ColourField label="Primary colour" value={orgForm.primary_colour} onChange={(v) => setOrgForm((f) => ({ ...f, primary_colour: v }))} />
+            <ColourField label="Secondary colour" value={orgForm.secondary_colour} onChange={(v) => setOrgForm((f) => ({ ...f, secondary_colour: v }))} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <LogoUploadField label="Main logo (app/web)" currentUrl={orgForm.logo_url} onUpload={(url) => setOrgForm((f) => ({ ...f, logo_url: url }))} />
+            <LogoUploadField label="Document logo (PDF header)" currentUrl={orgForm.document_logo_url} onUpload={(url) => setOrgForm((f) => ({ ...f, document_logo_url: url }))} />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-slate-700 block mb-1">Confidentiality notice (document footer)</label>
+            <textarea rows={3} value={orgForm.confidentiality_notice} onChange={(e) => setOrgForm((f) => ({ ...f, confidentiality_notice: e.target.value }))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <Button onClick={saveOrg} disabled={updateOrg.isPending}>
+            <Save className="h-4 w-4 mr-2" />{updateOrg.isPending ? "Saving…" : "Save Organisation Branding"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Home branding */}
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Building className="h-4 w-4 text-blue-600" />Home Details &amp; Contacts</CardTitle></CardHeader>
+        <CardContent className="space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            {([
+              { label: "Home name", key: "home_name" },
+              { label: "Home address", key: "home_address" },
+              { label: "Ofsted URN", key: "ofsted_urn" },
+              { label: "Registered Manager name", key: "registered_manager_name" },
+              { label: "Responsible Individual name", key: "responsible_individual_name" },
+              { label: "Emergency contact", key: "emergency_contact" },
+              { label: "Safeguarding contact", key: "safeguarding_contact" },
+              { label: "LADO contact", key: "lado_contact" },
+              { label: "Local Authority contact", key: "local_authority_contact" },
+              { label: "Police contact", key: "police_contact" },
+            ] as { label: string; key: keyof typeof homeForm2 }[]).map(({ label, key }) => (
+              <div key={key}>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">{label}</label>
+                <Input value={homeForm2[key]} onChange={(e) => setHomeForm2((f) => ({ ...f, [key]: e.target.value }))} />
+              </div>
+            ))}
+          </div>
+
+          <LogoUploadField label="Home logo override (replaces org logo on home-specific documents)" currentUrl={homeForm2.logo_override_url} onUpload={(url) => setHomeForm2((f) => ({ ...f, logo_override_url: url }))} />
+
+          <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex gap-3 text-sm text-amber-800">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>Ofsted URN, safeguarding contact and Responsible Individual name are required for Regulation 45 and Annex A documents. Missing details are flagged on document export.</span>
+          </div>
+
+          <Button onClick={saveHome} disabled={updateHome.isPending}>
+            <Save className="h-4 w-4 mr-2" />{updateHome.isPending ? "Saving…" : "Save Home Branding"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* System branding — super admin only */}
+      {isSuperAdmin && (
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><Palette className="h-4 w-4 text-purple-600" />Cornerstone System Branding <Badge className="text-[9px] bg-purple-100 text-purple-700 rounded-full ml-1">Super Admin</Badge></CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <ColourField label="System primary" value={sysForm.primary_colour} onChange={(v) => setSysForm((f) => ({ ...f, primary_colour: v }))} />
+              <ColourField label="System secondary" value={sysForm.secondary_colour} onChange={(v) => setSysForm((f) => ({ ...f, secondary_colour: v }))} />
+              <ColourField label="System accent" value={sysForm.accent_colour} onChange={(v) => setSysForm((f) => ({ ...f, accent_colour: v }))} />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Default footer text</label>
+              <Input value={sysForm.default_footer_text} onChange={(e) => setSysForm((f) => ({ ...f, default_footer_text: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Support email</label>
+              <Input type="email" value={sysForm.support_email} onChange={(e) => setSysForm((f) => ({ ...f, support_email: e.target.value }))} />
+            </div>
+            <Button onClick={saveSystem} disabled={updateSystem.isPending}>
+              <Save className="h-4 w-4 mr-2" />{updateSystem.isPending ? "Saving…" : "Save System Branding"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Branding audit log */}
+      <Card>
+        <CardHeader>
+          <button className="flex w-full items-center justify-between text-left" onClick={() => setShowAudit((v) => !v)}>
+            <CardTitle className="flex items-center gap-2 text-base"><Clock className="h-4 w-4" />Branding Change Log</CardTitle>
+            {showAudit ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+          </button>
+        </CardHeader>
+        {showAudit && (
+          <CardContent>
+            {auditQ.isLoading ? (
+              <div className="text-sm text-slate-400">Loading…</div>
+            ) : !auditQ.data?.length ? (
+              <div className="text-sm text-slate-400">No changes recorded yet.</div>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {auditQ.data.map((entry) => (
+                  <div key={entry.id} className="rounded-xl bg-slate-50 px-4 py-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-slate-800">{entry.field_name}</span>
+                      <span className="text-slate-400">{new Date(entry.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="flex gap-2 mt-0.5">
+                      <Badge className="text-[9px] rounded-full bg-slate-100 text-slate-600 capitalize">{entry.target_type}</Badge>
+                      <span className="text-slate-500">{entry.previous_value ?? "—"} → {entry.new_value ?? "—"}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
     </div>
   );
 }
@@ -337,6 +622,8 @@ export default function SettingsPage() {
           )}
 
           {tab === "integrations" && <IntegrationsTab />}
+
+          {tab === "branding" && <BrandingTab />}
 
         </div>
       </div>
