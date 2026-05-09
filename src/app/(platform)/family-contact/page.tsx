@@ -30,6 +30,7 @@ import {
   useUpdateContactLog,
   useCreateContactLog,
 } from "@/hooks/use-contact";
+import Link from "next/link";
 import { getYPName } from "@/lib/seed-data";
 import type {
   ContactArrangement, ContactLog, ContactPerson,
@@ -39,7 +40,7 @@ import type {
 import {
   PhoneCall, Users, AlertTriangle, CheckCircle2, Clock, ChevronDown, ChevronUp,
   XCircle, PauseCircle, RefreshCw, MessageSquare, Heart, Eye, Ban,
-  CalendarDays, MapPin, UserCheck, ShieldAlert, Info, Search, ArrowUpDown,
+  CalendarDays, MapPin, UserCheck, ShieldAlert, Info, Search, ArrowUpDown, ArrowUpRight,
 } from "lucide-react";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -238,6 +239,16 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
             <Badge className="bg-slate-100 text-slate-600 text-xs gap-1">
               <XCircle className="w-3 h-3" /> Cancelled
             </Badge>
+          )}
+          {(log as never as { care_event_id?: string }).care_event_id && (
+            <Link
+              href={`/care-events/${(log as never as { care_event_id: string }).care_event_id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+            >
+              <ArrowUpRight className="w-3 h-3" />
+              From Care Event
+            </Link>
           )}
           {open ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
         </div>

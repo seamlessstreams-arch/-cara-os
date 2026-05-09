@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useRiskAssessments, useCreateRiskAssessment } from "@/hooks/use-risk-assessments";
@@ -20,7 +21,7 @@ import type { RiskAssessment, RiskDomain, RiskLevel, RiskTrend, RiskMitigation }
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   ShieldAlert, AlertTriangle, CheckCircle2, Clock, Calendar,
-  Shield, ArrowUp, ArrowDown, Minus, Loader2
+  Shield, ArrowUp, ArrowDown, Minus, Loader2, ArrowUpRight,
 } from "lucide-react";
 
 
@@ -229,6 +230,16 @@ export default function RiskAssessmentsPage() {
                         <Badge className={cn("text-xs", levelM.bg, levelM.color)}>{levelM.label}</Badge>
                         <span className="flex items-center gap-0.5 text-xs">{TREND_ICON[a.trend]} <span className="text-muted-foreground">{a.trend}</span></span>
                         {reviewDue && <Badge variant="destructive" className="text-xs">Review due</Badge>}
+                        {(a as never as { care_event_id?: string }).care_event_id && (
+                          <Link
+                            href={`/care-events/${(a as never as { care_event_id: string }).care_event_id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                          >
+                            <ArrowUpRight className="h-3 w-3" />
+                            From Care Event
+                          </Link>
+                        )}
                       </div>
                       <p className="font-semibold">{getYPName(a.child_id)} — {domainM.label}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">

@@ -27,12 +27,13 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown,
   ChevronDown, ChevronUp, AlertTriangle,
-  CheckCircle2, Clock, Heart, Shield, Loader2,
+  CheckCircle2, Clock, Heart, Shield, Loader2, ArrowUpRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useBehaviourSupportPlans, useCreateBSP } from "@/hooks/use-behaviour-support-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import Link from "next/link";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { BehaviourSupportPlan, BSPPrimaryBehaviour, BSPKnownTrigger, BSPDeEscalationStage, BSPPositiveStrategy, BSPReward, BSPBoundary, BSPSafetyPlanItem, BSPProfessionalInput, BSPRestrictiveIntervention, BSPReviewHistoryEntry } from "@/types/extended";
 
@@ -326,6 +327,16 @@ export default function BehaviourSupportPlansPage() {
                         </Badge>
                         {reviewOverdue && (
                           <Badge variant="destructive" className="text-xs">Review overdue</Badge>
+                        )}
+                        {(plan as never as { care_event_id?: string }).care_event_id && (
+                          <Link
+                            href={`/care-events/${(plan as never as { care_event_id: string }).care_event_id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                          >
+                            <ArrowUpRight className="h-3 w-3" />
+                            From Care Event
+                          </Link>
                         )}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
