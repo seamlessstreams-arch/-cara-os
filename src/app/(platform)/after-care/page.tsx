@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -161,6 +162,7 @@ export default function AfterCarePage() {
     <PageShell
       title="After-Care & Staying Close"
       subtitle="Post-placement support and outcomes tracking — Children Act 1989"
+      ariaContext={{ pageTitle: "After-Care & Staying Close", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="After-Care & Staying Close" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="after-care" />,

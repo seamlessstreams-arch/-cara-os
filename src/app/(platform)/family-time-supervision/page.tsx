@@ -14,7 +14,8 @@ import {
   ShieldCheck,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -145,6 +146,7 @@ export default function FamilyTimeSupervisionPage() {
     <PageShell
       title="Family Time Supervision"
       subtitle="Detailed records of supervised family time (contact) sessions — interactions, child presentation, concerns and recommendations"
+      ariaContext={{ pageTitle: "Family Time Supervision", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Family Time Supervision Records" />

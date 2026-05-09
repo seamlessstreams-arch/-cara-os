@@ -13,7 +13,8 @@ import {
   Users,
   Clock,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -194,6 +195,7 @@ export default function ContactSupervisionPage() {
     <PageShell
       title="Contact Supervision"
       subtitle="Supervised and supported contact session records — family, siblings and significant others"
+      ariaContext={{ pageTitle: "Contact Supervision", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Contact Supervision Records" />

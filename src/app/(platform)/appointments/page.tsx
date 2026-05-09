@@ -220,6 +220,7 @@ export default function AppointmentsPage() {
     <PageShell
       title="Appointments"
       subtitle="Medical, review, and professional appointments"
+      ariaContext={{ pageTitle: "Appointments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Appointments" subtitle="Oak House — Health & Welfare" />

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -163,6 +164,7 @@ export default function SocialWorkerContactPage() {
     <PageShell
       title="Social Worker Contact Log"
       subtitle="Communication record with allocated social workers — Regulation 5"
+      ariaContext={{ pageTitle: "Social Worker Contact Log", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Social Worker Contact Log" />

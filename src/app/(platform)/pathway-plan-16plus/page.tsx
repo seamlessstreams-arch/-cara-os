@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -179,6 +180,7 @@ export default function PathwayPlan16PlusPage() {
     <PageShell
       title="Pathway Plan (16+)"
       subtitle="Statutory pathway planning for care leavers — Children (Leaving Care) Act 2000 / Children Act 1989 (S23B-D) / Care Leavers Regs 2010"
+      ariaContext={{ pageTitle: "Pathway Plan (16+)", sourceType: "care_plan" }}
       actions={[
         <PrintButton key="p" title="Pathway Plan (16+)" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="pathway-plan-16plus" />,

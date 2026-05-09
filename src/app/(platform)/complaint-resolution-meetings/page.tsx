@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -112,6 +113,7 @@ export default function ComplaintResolutionMeetingsPage() {
     <PageShell
       title="Complaint Resolution Meetings"
       subtitle="Records of meetings convened to resolve concerns — restorative, transparent, learning-focused"
+      ariaContext={{ pageTitle: "Complaint Resolution Meetings", sourceType: "complaint" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="complaint-resolution-meetings" />

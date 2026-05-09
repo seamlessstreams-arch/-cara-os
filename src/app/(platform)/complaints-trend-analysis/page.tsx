@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -77,6 +78,7 @@ export default function ComplaintsTrendAnalysisPage() {
     <PageShell
       title="Complaints Trend Analysis"
       subtitle="Quarterly aggregated analysis — patterns, root causes, and improvements"
+      ariaContext={{ pageTitle: "Complaints Trend Analysis", sourceType: "complaint" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="complaints-trend-analysis" />

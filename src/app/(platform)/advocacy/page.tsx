@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -182,6 +183,7 @@ export default function AdvocacyPage() {
     <PageShell
       title="Advocacy Tracker"
       subtitle="Reg 7 — Independent advocacy, children's rights and representation"
+      ariaContext={{ pageTitle: "Advocacy Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="advocacy" />

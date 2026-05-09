@@ -14,7 +14,8 @@ import {
   Search,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,6 +124,7 @@ export default function IndependencePathwayPage() {
     <PageShell
       title="Independence Pathway"
       subtitle="Overall pathway assessment and transition readiness tracking for each young person"
+      ariaContext={{ pageTitle: "Independence Pathway", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="independence-pathway" />
