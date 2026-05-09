@@ -15,6 +15,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useAlertNotifications } from "@/hooks/use-alert-notifications";
 import { useNotifications, useMarkNotificationRead } from "@/hooks/use-notifications";
+import { useAuthContext } from "@/contexts/auth-context";
 import type {
   AlertNotification,
   AlertNotificationType,
@@ -62,8 +63,9 @@ const SEVERITY_CONFIG: Record<AlertSeverity, { label: string; colour: string }> 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function NotificationsPage() {
+  const { currentUser } = useAuthContext();
   const { data: records = [], isLoading } = useAlertNotifications();
-  const { data: careEventNotifs = [] } = useNotifications();
+  const { data: careEventNotifs = [] } = useNotifications({ recipientId: currentUser?.id });
   const markRead = useMarkNotificationRead();
 
   const PRIORITY_COLOUR: Record<Notification["priority"], string> = {

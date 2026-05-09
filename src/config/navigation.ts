@@ -9,7 +9,7 @@ export interface NavChild {
   href:      string;
   icon?:     string;
   module?:   string;
-  badgeKey?: "tasks" | "incidents" | "forms";
+  badgeKey?: "tasks" | "incidents" | "forms" | "notifications" | "care_events_review";
   badge?:    number;
 }
 
@@ -38,7 +38,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Staff Dashboard", href: "/dashboard/staff", icon: "User",            module: "dashboard"  },
       { label: "Handover",        href: "/handover",        icon: "ArrowRightLeft",  module: "handover"   },
       { label: "My Tasks",        href: "/tasks",           icon: "CheckSquare",     module: "tasks",     badgeKey: "tasks" },
-      { label: "Notifications",  href: "/notifications",   icon: "Bell",            module: "dashboard"  },
+      { label: "Notifications",  href: "/notifications",   icon: "Bell",            module: "dashboard",   badgeKey: "notifications" },
       { label: "Shift Notes",    href: "/shift-notes",     icon: "FileText",        module: "dashboard"  },
       { label: "Duty Log",       href: "/duty-log",        icon: "BookOpen",        module: "dashboard"  },
       { label: "Sleep Log",       href: "/sleep-log",       icon: "Moon",            module: "dashboard"  },
@@ -59,7 +59,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Child Profiles",   href: "/young-people",              icon: "Heart",          module: "young-people"  },
       { label: "Care Plans",       href: "/care-plans",                icon: "ClipboardList",  module: "young-people"  },
       { label: "Daily Records",    href: "/daily-log",                 icon: "BookOpen",       module: "daily-log"     },
-      { label: "Care Events",      href: "/care-events",               icon: "Zap",            module: "care-events"   },
+      { label: "Care Events",      href: "/care-events",               icon: "Zap",            module: "care-events",   badgeKey: "care_events_review" },
       { label: "Child Daily Summaries",href: "/child-daily-summaries",    icon: "BookOpen",       module: "care-events"   },
       { label: "Management Oversight", href: "/management-oversight",   icon: "ShieldCheck",    module: "care-events"   },
       { label: "Reg 40 Triage",     href: "/regulation-40",             icon: "AlertTriangle",  module: "ri"            },

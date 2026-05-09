@@ -85,6 +85,30 @@ export function useCareEventsRealtime(homeId?: string) {
           queryClient.invalidateQueries({ queryKey: ["annex-a"] });
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          ...(filter ? { filter } : {}),
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "oversight_tasks",
+          ...(filter ? { filter } : {}),
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["management-oversight"] });
+        }
+      )
       .subscribe();
 
     channelRef.current = channel;
