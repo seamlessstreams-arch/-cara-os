@@ -22,9 +22,7 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const body = await req.json();
   const { id, ...updates } = body;
-  const notifications = db.notifications.findAll() as never as Array<{ id: string; [key: string]: unknown }>;
-  const idx = notifications.findIndex((n) => n.id === id);
-  if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  Object.assign(notifications[idx], updates);
-  return NextResponse.json(notifications[idx]);
+  const updated = db.notifications.patch(id, updates);
+  if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(updated);
 }

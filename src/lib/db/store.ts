@@ -3370,6 +3370,12 @@ export const db = {
       store.notifications.push(notif);
       return notif;
     },
+    patch: (id: string, updates: Partial<Notification>): Notification | null => {
+      const idx = store.notifications.findIndex((n) => n.id === id);
+      if (idx === -1) return null;
+      store.notifications[idx] = { ...store.notifications[idx], ...updates };
+      return store.notifications[idx];
+    },
   },
 
   // ── Training ──────────────────────────────────────────────────────────────
