@@ -40,6 +40,7 @@ import type {
 } from "@/types/extended";
 import { useKeyWorkSessions, useCreateKeyWorkSession } from "@/hooks/use-intelligence";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -1447,6 +1448,13 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
           </div>
         )}
 
+      <CareEventsPanel
+        title={`${displayName}'s Care Events`}
+        childId={id}
+        days={90}
+        defaultCollapsed={false}
+        className="mt-6"
+      />
       </div>
     </PageShell>
   );

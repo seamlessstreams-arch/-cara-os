@@ -6,6 +6,14 @@ import { BottomNav } from "@/components/layout/bottom-nav";
 import { AuthProvider } from "@/contexts/auth-context";
 import { SidebarProvider, useSidebar } from "@/contexts/sidebar-context";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
+import { useCareEventsRealtime } from "@/hooks/use-care-events-realtime";
+import { useAuthContext } from "@/contexts/auth-context";
+
+function RealtimeSubscriptions() {
+  const { currentUser } = useAuthContext();
+  useCareEventsRealtime(currentUser?.home_id);
+  return null;
+}
 
 function PlatformContent({ children }: { children: React.ReactNode }) {
   const { collapsed, isMobile } = useSidebar();
@@ -32,6 +40,7 @@ export default function PlatformLayout({
           <PlatformContent>{children}</PlatformContent>
           <BottomNav />
           <KeyboardShortcuts />
+          <RealtimeSubscriptions />
         </div>
       </SidebarProvider>
     </AuthProvider>

@@ -33,6 +33,7 @@ import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
 import Link from "next/link";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Severity config ───────────────────────────────────────────────────────────
 const SEV_CONFIG: Record<string, { label: string; color: string; bg: string; badge: string; border: string }> = {
@@ -617,6 +618,13 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
           sourceId={incident.id}
         />
 
+        <CareEventsPanel
+          title="Related Care Events"
+          childId={incident.child_id ?? undefined}
+          days={14}
+          defaultCollapsed
+          className="mt-6"
+        />
       </div>
     </PageShell>
   );
