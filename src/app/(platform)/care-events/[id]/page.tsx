@@ -5,13 +5,23 @@
 // Full view of a single care event: details, routing, linked records, audit
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { use } from "react";
+import React, { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
@@ -34,7 +44,14 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
-import { useCareEvent, useRetryCareEventRouting } from "@/hooks/use-care-events";
+import {
+  useCareEvent,
+  useRetryCareEventRouting,
+  useVerifyCareEvent,
+  useReturnCareEvent,
+  useLockCareEvent,
+  useAmendCareEvent,
+} from "@/hooks/use-care-events";
 import { useCareEventAuditLog } from "@/hooks/use-daily-summaries";
 import { toast } from "sonner";
 import type { CareEventRoute, CareEventAuditLog, RouteStatus } from "@/types/care-events";
@@ -481,6 +498,23 @@ export default function CareEventDetailPage({
     (r) => r.status === "failed" || r.status === "retry_required"
   ).length;
 
+  const verifyMutation = useVerifyCareEvent();
+  const returnMutation = useReturnCareEvent();
+  const lockMutation = useLockCareEvent();
+  const amendMutation = useAmendCareEvent();
+  const retryMutation = useRetryCareEventRouting();
+
+  const [returnDialog, setReturnDialog] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
+  const [amendDialog, setAmendDialog] = useState(false);
+  const [amendReason, setAmendReason] = useState("");
+
+  const canVerify = ["routed", "manager_review_required", "routing_failed"].includes(event.status);
+  const canReturn = ["submitted", "routing", "routed", "manager_review_required"].includes(event.status);
+  const canLock = event.status === "verified";
+  const canAmend = ["verified", "locked", "returned", "routed"].includes(event.status);
+  const canRetry = routes.some((r) => r.status === "failed" || r.status === "retry_required");
+
   return (
     <PageShell
       title={event.title}
@@ -754,6 +788,65 @@ export default function CareEventDetailPage({
             </CardContent>
           </Card>
 
+          {/* Manager actions */}
+          {(canVerify || canReturn || canLock || canAmend || canRetry) && (
+            <Card className="border-amber-200 bg-amber-50/30">
+              <CardContent className="p-4 space-y-2">
+                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-3">
+                  Manager actions
+                </p>
+                {canVerify && (
+                  <Button
+                    size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                    disabled={verifyMutation.isPending}
+                    onClick={() => verifyMutation.mutate({ id: event.id, manager_signature: true })}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                    {verifyMutation.isPending ? "Verifying…" : "Verify record"}
+                  </Button>
+                )}
+                {canReturn && (
+                  <Button
+                    size="sm" variant="outline" className="w-full border-red-200 text-red-700 hover:bg-red-50"
+                    onClick={() => setReturnDialog(true)}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                    Return to staff
+                  </Button>
+                )}
+                {canLock && (
+                  <Button
+                    size="sm" variant="outline" className="w-full"
+                    disabled={lockMutation.isPending}
+                    onClick={() => lockMutation.mutate(event.id)}
+                  >
+                    <Lock className="w-3.5 h-3.5 mr-1.5" />
+                    {lockMutation.isPending ? "Locking…" : "Lock record"}
+                  </Button>
+                )}
+                {canAmend && (
+                  <Button
+                    size="sm" variant="ghost" className="w-full text-slate-600"
+                    onClick={() => setAmendDialog(true)}
+                  >
+                    <FileText className="w-3.5 h-3.5 mr-1.5" />
+                    Create amendment
+                  </Button>
+                )}
+                {canRetry && (
+                  <Button
+                    size="sm" variant="ghost" className="w-full text-slate-600"
+                    disabled={retryMutation.isPending}
+                    onClick={() => retryMutation.mutate(event.id)}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                    {retryMutation.isPending ? "Retrying…" : "Retry failed routes"}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Quick links */}
           <Card>
             <CardContent className="p-4 space-y-1.5">
@@ -783,6 +876,87 @@ export default function CareEventDetailPage({
           </Card>
         </div>
       </div>
+
+      {/* Return dialog */}
+      <Dialog open={returnDialog} onOpenChange={setReturnDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Return record to staff</DialogTitle>
+            <DialogDescription>
+              Provide a reason so the staff member knows what to correct.
+              The record will be marked as returned and removed from the evidence queue.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="return-reason">Return reason <span className="text-red-500">*</span></Label>
+            <Textarea
+              id="return-reason"
+              placeholder="Explain what needs to be corrected or added\u2026"
+              rows={4}
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReturnDialog(false)}>Cancel</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={!returnReason.trim() || returnMutation.isPending}
+              onClick={() => {
+                returnMutation.mutate(
+                  { id: event.id, return_reason: returnReason },
+                  { onSuccess: () => { setReturnDialog(false); setReturnReason(""); } }
+                );
+              }}
+            >
+              {returnMutation.isPending ? "Returning\u2026" : "Return record"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Amendment dialog */}
+      <Dialog open={amendDialog} onOpenChange={setAmendDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create amendment</DialogTitle>
+            <DialogDescription>
+              A new version will be created preserving the original.
+              The amendment requires manager review before it is verified.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="amend-reason">Amendment reason <span className="text-red-500">*</span></Label>
+            <Textarea
+              id="amend-reason"
+              placeholder="Why is this record being amended? What has changed?"
+              rows={4}
+              value={amendReason}
+              onChange={(e) => setAmendReason(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAmendDialog(false)}>Cancel</Button>
+            <Button
+              disabled={!amendReason.trim() || amendMutation.isPending}
+              onClick={() => {
+                amendMutation.mutate(
+                  { id: event.id, amendment_reason: amendReason },
+                  {
+                    onSuccess: (res) => {
+                      setAmendDialog(false);
+                      setAmendReason("");
+                      router.push(`/care-events/${res.data.id}`);
+                    },
+                  }
+                );
+              }}
+            >
+              {amendMutation.isPending ? "Creating\u2026" : "Create amendment"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }
