@@ -8,6 +8,7 @@ import { SidebarProvider, useSidebar } from "@/contexts/sidebar-context";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
 import { useCareEventsRealtime } from "@/hooks/use-care-events-realtime";
 import { useAuthContext } from "@/contexts/auth-context";
+import { AriaGlobalButton } from "@/components/aria/aria-global-button";
 
 function RealtimeSubscriptions() {
   const { currentUser } = useAuthContext();
@@ -41,6 +42,7 @@ export default function PlatformLayout({
           <BottomNav />
           <KeyboardShortcuts />
           <RealtimeSubscriptions />
+          <AriaGlobalButton />
         </div>
       </SidebarProvider>
     </AuthProvider>

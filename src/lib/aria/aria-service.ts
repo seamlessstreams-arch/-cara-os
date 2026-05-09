@@ -1319,6 +1319,94 @@ export const ARIA_COMMANDS: Record<AriaCommandId, AriaCommandSpec> = {
     systemPromptFragment:
       "Identify documents, plans, or records that may need updating following the change described in the source. For each: document type, why it may need updating, and suggested action. Stay grounded in the source.",
   },
+
+  // ─── Care plans ────────────────────────────────────────────────────────────
+
+  draft_care_plan_update: {
+    id: "draft_care_plan_update",
+    label: "Draft care plan update",
+    description: "Draft a professional update to a child's care plan based on recent records and observations.",
+    modules: ["care_plan"],
+    requiredPermission: "aria.generate_drafts",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Draft a care plan update based on the source records provided. Include: progress against current goals, changes in the child's presentation or needs, updated objectives, and any areas where the plan no longer reflects the child's reality. Use child-centred, outcome-focused language. This is a draft for professional review — do not present as final.",
+  },
+
+  identify_care_plan_gaps: {
+    id: "identify_care_plan_gaps",
+    label: "Identify care plan gaps",
+    description: "Review a care plan and identify areas that are missing, vague, or not outcome-focused.",
+    modules: ["care_plan"],
+    requiredPermission: "aria.analyse_risk",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Review the care plan provided. Identify: goals that lack measurable outcomes, areas where the child's voice is absent, gaps in health, education, or emotional wellbeing, inconsistencies with the child's current presentation, and missing review dates. Be specific and constructive. Focus on what needs strengthening, not just what is present.",
+  },
+
+  check_care_plan_progress: {
+    id: "check_care_plan_progress",
+    label: "Check care plan progress",
+    description: "Assess whether care plan goals are being actively worked towards based on the record of care.",
+    modules: ["care_plan"],
+    requiredPermission: "aria.analyse_risk",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "medium",
+    systemPromptFragment:
+      "Review the source records and assess progress against the care plan goals. For each goal: is there evidence of active work? What does the evidence show about the child's progress? What is missing? Be evidence-based and child-centred. Flag goals where there is no evidence of progress or where the child's needs appear to have changed.",
+  },
+
+  // ─── Missing episodes ──────────────────────────────────────────────────────
+
+  draft_missing_episode_report: {
+    id: "draft_missing_episode_report",
+    label: "Draft missing episode report",
+    description: "Draft a professional missing episode record including notifications and immediate actions.",
+    modules: ["missing_episode"],
+    requiredPermission: "aria.generate_drafts",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Draft a missing episode record based on the details provided. Include: time and circumstances of going missing, notifications made (police, social worker, responsible individual), search undertaken, return details, and immediate risk assessment. Use factual, precise language. Flag any contextual risk factors. This is a statutory record — all content requires verification and human approval.",
+  },
+
+  missing_episode_risk_analysis: {
+    id: "missing_episode_risk_analysis",
+    label: "Missing episode risk analysis",
+    description: "Analyse the risk factors in a missing episode based on the child's history and current context.",
+    modules: ["missing_episode"],
+    requiredPermission: "aria.analyse_risk",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Analyse the risk factors in this missing episode. Apply the LIVERS framework: consider the child's lived experience, immediate and cumulative risk, environmental factors, relational drivers, and whether safe return is sustainable. Identify whether this episode is consistent with previous patterns, whether contextual safeguarding risks are present, and what actions are required. Be specific. High confidence claims require clear evidence from the source records provided.",
+  },
+
+  missing_episode_return_interview_notes: {
+    id: "missing_episode_return_interview_notes",
+    label: "Draft return to care interview notes",
+    description: "Draft structured notes for a return-to-care interview following a missing episode.",
+    modules: ["missing_episode"],
+    requiredPermission: "aria.generate_drafts",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Draft structured notes for a return-to-care interview following a missing episode. Use a trauma-informed, child-centred approach. Include: where the child went, who they were with, whether they felt safe, any disclosures, how the child is feeling now, any immediate needs, and the child's voice captured in their own words where possible. This is a draft — the interview must be conducted by a trained professional. Do not invent content; use only what is provided.",
+  },
 };
 
 // ─── Public service entry points ────────────────────────────────────────────

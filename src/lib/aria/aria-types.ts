@@ -116,7 +116,15 @@ export type AriaCommandId =
   | "create_calendar_follow_up_tasks"
   | "identify_upcoming_compliance_dates"
   | "equality_diversity_calendar_prompt"
-  | "trigger_related_document_update";
+  | "trigger_related_document_update"
+  // Care plans
+  | "draft_care_plan_update"
+  | "identify_care_plan_gaps"
+  | "check_care_plan_progress"
+  // Missing episodes
+  | "draft_missing_episode_report"
+  | "missing_episode_risk_analysis"
+  | "missing_episode_return_interview_notes";
 
 export interface AriaCommandSpec {
   id: AriaCommandId;

@@ -136,33 +136,39 @@ const REQUIRED_ARIA_TABLES = [
 // ─── Platform module ids we track for coverage ───────────────────────────────
 
 const PLATFORM_MODULES = [
+  // Daily care & recording
   "daily_log",
   "shift_summary",
   "key_work",
   "incident",
   "complaint",
+  // Children's records
+  "child_record",
+  "placement_plan",
+  "care_plan",
+  "risk_assessment",
+  "behaviour_support_plan",
+  "missing_episode",
+  // Health, education, family
+  "health",
+  "education",
+  "family_time",
+  "independence",
+  // Management & oversight
   "management_oversight",
-  "ri_oversight",
+  "ri_dashboard",
   "regulation_44",
   "regulation_45",
   "safeguarding",
-  "missing_episode",
-  "behaviour_support",
-  "risk_assessment",
-  "care_plan",
-  "placement_plan",
-  "hr_supervision",
-  "hr_investigation",
-  "hr_recruitment",
-  "hr_training",
   "audit",
-  "document",
-  "task",
+  // HR & workforce
+  "supervision",
+  "hr_investigation",
+  "safer_recruitment",
+  "hr",
+  // Platform utility
+  "documents",
   "calendar",
-  "health_record",
-  "education_record",
-  "family_contact",
-  "independent_living",
 ] as const;
 
 // ─── Helper: safely check an env var ─────────────────────────────────────────

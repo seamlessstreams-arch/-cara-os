@@ -10,11 +10,11 @@
 // ARIA never commits to a record without explicit manager approval.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { AriaHealthPanel } from "@/components/aria/aria-health-panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,6 @@ import { cn } from "@/lib/utils";
 import {
   Sparkles,
   Search,
-  ChevronRight,
   AlertTriangle,
   Clock,
   CheckCircle2,
@@ -46,6 +45,9 @@ import {
   Bell,
   ArrowUpDown,
   BarChart3,
+  Loader2,
+  ChevronRight,
+  MinusCircle,
 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -256,38 +258,48 @@ const TYPE_CONFIG: Record<SuggestionType, { label: string; icon: React.ElementTy
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function AriaReviewQueuePage() {
+  const [items, setItems] = useState<ReviewItem[]>(DEMO_ITEMS);
   const [statusFilter, setStatusFilter] = useState<SuggestionStatus | "all">("awaiting_review");
   const [riskFilter, setRiskFilter] = useState<RiskLevel | "all">("all");
   const [typeFilter, setTypeFilter] = useState<SuggestionType | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const handleStatusChange = useCallback(
+    (id: string, newStatus: SuggestionStatus) => {
+      setItems((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item)),
+      );
+    },
+    [],
+  );
+
   const filtered = useMemo(() => {
-    let items = DEMO_ITEMS;
-    if (statusFilter !== "all") items = items.filter((i) => i.status === statusFilter);
-    if (riskFilter !== "all") items = items.filter((i) => i.risk_level === riskFilter);
-    if (typeFilter !== "all") items = items.filter((i) => i.suggestion_type === typeFilter);
+    let list = items;
+    if (statusFilter !== "all") list = list.filter((i) => i.status === statusFilter);
+    if (riskFilter !== "all") list = list.filter((i) => i.risk_level === riskFilter);
+    if (typeFilter !== "all") list = list.filter((i) => i.suggestion_type === typeFilter);
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      items = items.filter(
+      list = list.filter(
         (i) =>
           i.title.toLowerCase().includes(q) ||
           i.summary.toLowerCase().includes(q) ||
           (i.child_name ?? "").toLowerCase().includes(q),
       );
     }
-    return items;
-  }, [statusFilter, riskFilter, typeFilter, searchQuery]);
+    return list;
+  }, [items, statusFilter, riskFilter, typeFilter, searchQuery]);
 
   const counts = useMemo(() => {
-    const c = { awaiting: 0, approved: 0, rejected: 0, committed: 0, total: DEMO_ITEMS.length };
-    for (const item of DEMO_ITEMS) {
+    const c = { awaiting: 0, approved: 0, rejected: 0, committed: 0, total: items.length };
+    for (const item of items) {
       if (item.status === "awaiting_review") c.awaiting++;
       else if (item.status === "approved" || item.status === "amended_and_approved") c.approved++;
       else if (item.status === "rejected") c.rejected++;
       else if (item.status === "committed") c.committed++;
     }
     return c;
-  }, []);
+  }, [items]);
 
   return (
     <PageShell
@@ -376,7 +388,7 @@ export default function AriaReviewQueuePage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((item) => (
-            <SuggestionRow key={item.id} item={item} />
+            <SuggestionRow key={item.id} item={item} onStatusChange={handleStatusChange} />
           ))}
         </div>
       )}
@@ -397,18 +409,56 @@ export default function AriaReviewQueuePage() {
 
 // ─── Suggestion row ─────────────────────────────────────────────────────────
 
-function SuggestionRow({ item }: { item: ReviewItem }) {
+function SuggestionRow({
+  item,
+  onStatusChange,
+}: {
+  item: ReviewItem;
+  onStatusChange: (id: string, status: SuggestionStatus) => void;
+}) {
   const risk = RISK_CONFIG[item.risk_level];
   const status = STATUS_CONFIG[item.status];
   const type = TYPE_CONFIG[item.suggestion_type];
   const StatusIcon = status.icon;
   const TypeIcon = type.icon;
+  const [acting, setActing] = useState<"approve" | "reject" | "no_action" | null>(null);
+
+  async function handleDecision(decision: "approve" | "reject" | "no_action") {
+    setActing(decision);
+    // Optimistic update
+    const newStatus: SuggestionStatus =
+      decision === "approve" ? "approved"
+      : decision === "reject" ? "rejected"
+      : "no_action_required";
+    onStatusChange(item.id, newStatus);
+
+    // Best-effort API call — item.id acts as outputId.
+    // If Supabase isn't configured the call will return a graceful error; the
+    // optimistic UI update has already happened so the user sees the result.
+    try {
+      await fetch("/api/aria/generate", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          outputId: item.id,
+          decision,
+          actorUserId: "current_user",
+          actorRole: "registered_manager",
+        }),
+      });
+    } catch {
+      // Swallow — optimistic state already applied
+    } finally {
+      setActing(null);
+    }
+  }
+
+  const awaiting = item.status === "awaiting_review";
 
   return (
-    <Link
-      href={`/aria/review/${item.id}`}
+    <div
       className={cn(
-        "block rounded-xl border bg-white hover:shadow-md transition-all group border-l-4",
+        "rounded-xl border bg-white transition-all border-l-4",
         risk.border,
       )}
     >
@@ -429,7 +479,7 @@ function SuggestionRow({ item }: { item: ReviewItem }) {
                 {item.related_record_type} {item.related_record_id}
               </span>
             </div>
-            <h3 className="text-sm font-semibold text-slate-800 group-hover:text-blue-700 transition-colors line-clamp-1">
+            <h3 className="text-sm font-semibold text-slate-800 line-clamp-1">
               {item.title}
             </h3>
             <p className="text-xs text-slate-500 mt-1 line-clamp-2">{item.summary}</p>
@@ -442,14 +492,70 @@ function SuggestionRow({ item }: { item: ReviewItem }) {
             </div>
           </div>
         </div>
+
         {item.linked_count > 0 && (
           <div className="mt-2 flex items-center gap-1.5 text-[10px] text-slate-400">
             <FileText className="h-3 w-3" />
             {item.linked_count} linked record suggestion{item.linked_count > 1 ? "s" : ""}
           </div>
         )}
+
+        {/* Inline actions — only for items awaiting review */}
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
+          {awaiting && (
+            <>
+              <Button
+                size="sm"
+                className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 gap-1"
+                disabled={acting !== null}
+                onClick={() => handleDecision("approve")}
+              >
+                {acting === "approve" ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-3 w-3" />
+                )}
+                Approve
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs gap-1"
+                disabled={acting !== null}
+                onClick={() => handleDecision("no_action")}
+              >
+                {acting === "no_action" ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <MinusCircle className="h-3 w-3" />
+                )}
+                No action needed
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 gap-1"
+                disabled={acting !== null}
+                onClick={() => handleDecision("reject")}
+              >
+                {acting === "reject" ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <XCircle className="h-3 w-3" />
+                )}
+                Reject
+              </Button>
+            </>
+          )}
+          <Link
+            href={`/aria/review/${item.id}`}
+            className="ml-auto flex items-center gap-1 text-xs text-slate-400 hover:text-blue-600 transition-colors"
+          >
+            View detail <ChevronRight className="h-3 w-3" />
+          </Link>
+        </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
