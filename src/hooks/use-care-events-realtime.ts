@@ -109,6 +109,68 @@ export function useCareEventsRealtime(homeId?: string) {
           queryClient.invalidateQueries({ queryKey: ["management-oversight"] });
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "annex_a_evidence_queue",
+          ...(filter ? { filter } : {}),
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["annex-a"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "child_daily_summaries",
+          ...(filter ? { filter } : {}),
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["child-daily-summaries"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "filing_cabinet_items",
+          ...(filter ? { filter } : {}),
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["filing-cabinet"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "ofsted_inspections",
+          ...(filter ? { filter } : {}),
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["inspection-history"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "care_event_jobs",
+          ...(filter ? { filter } : {}),
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["care-event-jobs"] });
+          // Jobs affect care event status display
+          queryClient.invalidateQueries({ queryKey: ["care-events"] });
+        }
+      )
       .subscribe();
 
     channelRef.current = channel;

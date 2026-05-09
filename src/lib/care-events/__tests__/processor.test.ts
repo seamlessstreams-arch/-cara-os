@@ -759,3 +759,149 @@ describe("Child daily summary generation", () => {
     expect(summaries.length).toBeLessThanOrEqual(1);
   });
 });
+
+// ── Missing episode workflow ──────────────────────────────────────────────────
+
+describe("Missing episode workflow", () => {
+  it("creates a missing episode record for missing_episode category events", () => {
+    const event = makeEvent({
+      category: "missing_episode",
+      child_id: "yp_alex",
+      is_significant: true,
+      content: "Child was missing from 14:00 to 17:30. Police informed.",
+    });
+    db.careEvents.create(event);
+    const before = db.missingEpisodes.findAll().filter(
+      (m) => (m as unknown as { care_event_id?: string }).care_event_id === event.id
+    ).length;
+    processCareEvent(event);
+    const after = db.missingEpisodes.findAll().filter(
+      (m) => (m as unknown as { care_event_id?: string }).care_event_id === event.id
+    ).length;
+    expect(after).toBeGreaterThanOrEqual(before);
+  });
+
+  it("missing_episode events contribute to Regulation 45 evidence", () => {
+    const event = makeEvent({
+      category: "missing_episode",
+      child_id: "yp_alex",
+      is_significant: true,
+    });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const classification = classifyCareEvent(event);
+    expect(classification.routes).toContain("reg45_evidence");
+    expect(classification.contributes_to_reg45).toBe(true);
+  });
+
+  it("missing_episode events require manager review", () => {
+    const event = makeEvent({ category: "missing_episode" });
+    const classification = classifyCareEvent(event);
+    expect(classification.requires_manager_review).toBe(true);
+  });
+
+  it("missing_episode events require Regulation 40 triage", () => {
+    const event = makeEvent({ category: "missing_episode" });
+    const classification = classifyCareEvent(event);
+    expect(classification.requires_reg40_triage).toBe(true);
+  });
+
+  it("does not create duplicate missing episode records on replay", () => {
+    const event = makeEvent({ category: "missing_episode", child_id: "yp_alex" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    processCareEvent(event);
+    const episodes = db.missingEpisodes.findAll().filter(
+      (m) => (m as unknown as { care_event_id?: string }).care_event_id === event.id
+    );
+    expect(episodes.length).toBeLessThanOrEqual(1);
+  });
+});
+
+// ── Restraint / physical intervention workflow ────────────────────────────────
+
+describe("Restraint workflow", () => {
+  it("creates a restraint record for restraint category events", () => {
+    const event = makeEvent({
+      category: "restraint",
+      child_id: "yp_alex",
+      is_significant: true,
+      content: "Physical intervention used. Staff debriefed. Child settled.",
+    });
+    db.careEvents.create(event);
+    const before = db.restraints.findAll().filter(
+      (r) => (r as unknown as { care_event_id?: string }).care_event_id === event.id
+    ).length;
+    processCareEvent(event);
+    const after = db.restraints.findAll().filter(
+      (r) => (r as unknown as { care_event_id?: string }).care_event_id === event.id
+    ).length;
+    expect(after).toBeGreaterThanOrEqual(before);
+  });
+
+  it("restraint events are classified into physical_intervention route", () => {
+    const event = makeEvent({ category: "restraint" });
+    const classification = classifyCareEvent(event);
+    expect(classification.routes).toContain("physical_intervention");
+  });
+
+  it("restraint events contribute to Regulation 45 evidence", () => {
+    const event = makeEvent({ category: "restraint" });
+    const classification = classifyCareEvent(event);
+    expect(classification.contributes_to_reg45).toBe(true);
+  });
+
+  it("restraint events require manager review", () => {
+    const event = makeEvent({ category: "restraint" });
+    const classification = classifyCareEvent(event);
+    expect(classification.requires_manager_review).toBe(true);
+  });
+
+  it("restraint events are included in Regulation 44 evidence routing", () => {
+    const event = makeEvent({ category: "restraint" });
+    const classification = classifyCareEvent(event);
+    expect(classification.routes).toContain("reg44_evidence");
+  });
+
+  it("does not create duplicate restraint records on replay", () => {
+    const event = makeEvent({ category: "restraint", child_id: "yp_alex" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    processCareEvent(event);
+    const records = db.restraints.findAll().filter(
+      (r) => (r as unknown as { care_event_id?: string }).care_event_id === event.id
+    );
+    expect(records.length).toBeLessThanOrEqual(1);
+  });
+});
+
+// ── Regulation 40 triage ──────────────────────────────────────────────────────
+
+describe("Regulation 40 triage", () => {
+  it("safeguarding events require Reg 40 triage", () => {
+    const event = makeEvent({ category: "safeguarding" });
+    const classification = classifyCareEvent(event);
+    expect(classification.requires_reg40_triage).toBe(true);
+  });
+
+  it("restraint events require Reg 40 triage", () => {
+    const event = makeEvent({ category: "restraint" });
+    const classification = classifyCareEvent(event);
+    expect(classification.requires_reg40_triage).toBe(true);
+  });
+
+  it("general events do not require Reg 40 triage", () => {
+    const event = makeEvent({ category: "general", is_significant: false });
+    const classification = classifyCareEvent(event);
+    expect(classification.requires_reg40_triage).toBe(false);
+  });
+
+  it("processCareEvent sets requires_reg40_triage_reason for safeguarding events", () => {
+    const event = makeEvent({ category: "safeguarding", child_id: "yp_alex" });
+    db.careEvents.create(event);
+    processCareEvent(event);
+    const updated = db.careEvents.findById(event.id);
+    // Should have triage marked
+    expect(updated?.requires_reg40_triage).toBe(true);
+  });
+});

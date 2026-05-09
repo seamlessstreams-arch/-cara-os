@@ -270,6 +270,19 @@ export async function PATCH(
         ip_address: null,
       });
 
+      // Mark all filing cabinet items for this event as verified
+      const filingItems = db.filingCabinet.findByCareEvent(id);
+      const verifiedAt = new Date().toISOString();
+      filingItems
+        .filter((item) => !item.is_verified)
+        .forEach((item) =>
+          db.filingCabinet.patch(item.id, {
+            is_verified: true,
+            verified_at: verifiedAt,
+            verified_by: actorId,
+          })
+        );
+
       // Notify the original staff member of verification
       if (event.staff_id && event.staff_id !== actorId) {
         await createNotification(
