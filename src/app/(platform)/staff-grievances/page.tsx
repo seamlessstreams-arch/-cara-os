@@ -18,15 +18,16 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useStaffGrievanceRecords } from "@/hooks/use-staff-grievance-records";
-import type { StaffGrievanceRecord } from "@/types/extended";
+import { useStaffGrievanceRecords, useCreateStaffGrievanceRecord } from "@/hooks/use-staff-grievance-records";
+import type { StaffGrievanceRecord, StaffGrievanceCategory, StaffGrievanceSeverity } from "@/types/extended";
 import {
   STAFF_GRIEVANCE_CATEGORY_LABEL,
   STAFF_GRIEVANCE_STATUS_LABEL,
@@ -78,11 +79,58 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 
 export default function StaffGrievancesPage() {
   const { data: records = [], isLoading } = useStaffGrievanceRecords();
+  const createGrievance = useCreateStaffGrievanceRecord();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [gForm, setGForm] = useState({
+    raised_by: "",
+    subject: "",
+    category: "" as StaffGrievanceCategory | "",
+    severity: "medium" as StaffGrievanceSeverity,
+    description: "",
+  });
+  const setGF = (k: keyof typeof gForm, v: string) => setGForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateGrievance = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!gForm.raised_by || !gForm.subject.trim() || !gForm.category) {
+      toast.error("Raised by, subject and category are required.");
+      return;
+    }
+    await createGrievance.mutateAsync({
+      raised_by: gForm.raised_by,
+      raised_date: new Date().toISOString().slice(0, 10),
+      category: gForm.category as StaffGrievanceCategory,
+      severity: gForm.severity,
+      status: "informal_raised" as const,
+      subject: gForm.subject.trim(),
+      description: gForm.description,
+      against_whom: null,
+      informal_resolution_attempted: false,
+      informal_outcome: "",
+      formal_submission_date: null,
+      investigator: null,
+      hearing_date: null,
+      hearing_panel: [],
+      outcome: "",
+      appeal_lodged: false,
+      appeal_date: null,
+      appeal_outcome: "",
+      timeline: [],
+      support_offered: [],
+      confidentiality_level: "standard" as const,
+      trade_union_rep: null,
+      lessons_learned: "",
+      notes: "",
+    });
+    toast.success("Grievance submitted.");
+    setGForm({ raised_by: "", subject: "", category: "", severity: "medium", description: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -329,40 +377,40 @@ export default function StaffGrievancesPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Log Grievance</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
+          <form onSubmit={handleCreateGrievance} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Raised By</label>
-              <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff member" /></SelectTrigger>
-                <SelectContent>{["staff_darren","staff_ryan","staff_edward","staff_anna","staff_chervelle","staff_diane","staff_lackson","staff_mirela"].map((id) => <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>)}</SelectContent>
+              <label className="text-sm font-medium">Raised By *</label>
+              <Select value={gForm.raised_by} onValueChange={(v) => setGF("raised_by", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff member" /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Subject</label>
-              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Brief description of grievance" />
+              <label className="text-sm font-medium">Subject *</label>
+              <input required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Brief description of grievance" value={gForm.subject} onChange={(e) => setGF("subject", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Category</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <label className="text-sm font-medium">Category *</label>
+                <Select value={gForm.category} onValueChange={(v) => setGF("category", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_GRIEVANCE_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Severity</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={gForm.severity} onValueChange={(v) => setGF("severity", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(STAFF_GRIEVANCE_SEVERITY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Description</label>
-              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Full details of the grievance…" />
+              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Full details of the grievance…" value={gForm.description} onChange={(e) => setGF("description", e.target.value)} />
             </div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Submit Grievance</button>
-          </DialogFooter>
+            <DialogFooter>
+              <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button type="submit" disabled={createGrievance.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">{createGrievance.isPending ? "Submitting…" : "Submit Grievance"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

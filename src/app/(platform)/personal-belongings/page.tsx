@@ -17,15 +17,16 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName, getStaffName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useBelongingsRecords } from "@/hooks/use-belongings-records";
-import type { BelongingsRecord, BelongingCategory, BelongingCondition, BelongingItemStatus } from "@/types/extended";
+import { useBelongingsRecords, useCreateBelongingsRecord } from "@/hooks/use-belongings-records";
+import type { BelongingsRecord, BelongingCategory, BelongingCondition, BelongingItemStatus, BelongingItem } from "@/types/extended";
 import { BELONGING_CATEGORY_LABEL, BELONGING_CONDITION_LABEL, BELONGING_ITEM_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -79,6 +80,7 @@ function daysFromNow(n: number) {
 
 export default function PersonalBelongingsPage() {
   const { data: res, isLoading } = useBelongingsRecords();
+  const createRecord = useCreateBelongingsRecord();
   const records: BelongingsRecord[] = res?.data ?? [];
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -86,6 +88,55 @@ export default function PersonalBelongingsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [pbForm, setPbForm] = useState({
+    child_id: "",
+    description: "",
+    category: "clothing" as BelongingCategory,
+    condition: "good" as BelongingCondition,
+    estimated_value: "",
+    storage_location: "",
+    notes: "",
+  });
+  const setPBF = (k: keyof typeof pbForm, v: string) => setPbForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pbForm.child_id || !pbForm.description.trim()) {
+      toast.error("Young person and item description are required.");
+      return;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const item: BelongingItem = {
+      id: crypto.randomUUID(),
+      description: pbForm.description.trim(),
+      category: pbForm.category,
+      condition: pbForm.condition,
+      status: "in_possession" as BelongingItemStatus,
+      date_logged: today,
+      logged_by: "staff_darren",
+      estimated_value: pbForm.estimated_value ? parseFloat(pbForm.estimated_value) : null,
+      photo_on_file: false,
+      storage_location: pbForm.storage_location,
+      notes: pbForm.notes,
+    };
+    await createRecord.mutateAsync({
+      child_id: pbForm.child_id,
+      admission_date: today,
+      admission_inventory_complete: false,
+      admission_checked_by: "staff_darren",
+      admission_witnessed_by: "",
+      items: [item],
+      last_audit_date: today,
+      last_audit_by: "staff_darren",
+      next_audit_due: new Date(Date.now() + 90 * 86400000).toISOString().slice(0, 10),
+      notes: "",
+      created_at: new Date().toISOString(),
+    });
+    toast.success("Belonging logged.");
+    setPbForm({ child_id: "", description: "", category: "clothing", condition: "good", estimated_value: "", storage_location: "", notes: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -351,27 +402,27 @@ export default function PersonalBelongingsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Log Personal Belonging</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
+          <form onSubmit={handleCreateItem} className="space-y-3 py-2">
             <div>
-              <label className="text-sm font-medium">Young Person</label>
-              <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
-                <SelectContent>{records.map((r) => <SelectItem key={r.child_id} value={r.child_id}>{getYPName(r.child_id)}</SelectItem>)}</SelectContent>
+              <label className="text-sm font-medium">Young Person *</label>
+              <Select value={pbForm.child_id} onValueChange={(v) => setPBF("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select child" /></SelectTrigger>
+                <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Item Description</label>
-              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Blue backpack with school supplies" />
+              <label className="text-sm font-medium">Item Description *</label>
+              <input required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. Blue backpack with school supplies" value={pbForm.description} onChange={(e) => setPBF("description", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium">Category</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={pbForm.category} onValueChange={(v) => setPBF("category", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(BELONGING_CATEGORY_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Condition</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={pbForm.condition} onValueChange={(v) => setPBF("condition", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(BELONGING_CONDITION_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -379,22 +430,22 @@ export default function PersonalBelongingsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium">Estimated Value (£)</label>
-                <input type="number" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="0.00" />
+                <input type="number" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="0.00" value={pbForm.estimated_value} onChange={(e) => setPBF("estimated_value", e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium">Storage Location</label>
-                <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. YP's room" />
+                <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="e.g. YP's room" value={pbForm.storage_location} onChange={(e) => setPBF("storage_location", e.target.value)} />
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Notes</label>
-              <textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Any additional details…" />
+              <textarea rows={2} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Any additional details…" value={pbForm.notes} onChange={(e) => setPBF("notes", e.target.value)} />
             </div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Save Item</button>
-          </DialogFooter>
+            <DialogFooter>
+              <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button type="submit" disabled={createRecord.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">{createRecord.isPending ? "Saving…" : "Save Item"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel

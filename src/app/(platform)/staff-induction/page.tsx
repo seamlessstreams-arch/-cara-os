@@ -18,14 +18,15 @@ import { PageShell }    from "@/components/ui/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useStaffInductionRecords } from "@/hooks/use-staff-induction-records";
+import { useStaffInductionRecords, useCreateStaffInductionRecord } from "@/hooks/use-staff-induction-records";
 import type { StaffInductionRecord, StaffInductionPhase, StaffInductionTaskStatus } from "@/types/extended";
 import {
   STAFF_INDUCTION_PHASE_LABEL,
@@ -48,11 +49,41 @@ const STATUS_META: Record<StaffInductionTaskStatus, { colour: string; icon: type
 
 export default function StaffInductionPage() {
   const { data: records = [], isLoading } = useStaffInductionRecords();
+  const createInduction = useCreateStaffInductionRecord();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [showDialog, setShowDialog] = useState(false);
+
+  const [indForm, setIndForm] = useState({
+    staff_name: "",
+    role: "",
+    start_date: new Date().toISOString().slice(0, 10),
+    induction_lead: "staff_darren",
+  });
+  const setIND = (k: keyof typeof indForm, v: string) => setIndForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateInduction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!indForm.staff_name.trim() || !indForm.role.trim()) {
+      toast.error("Staff name and role are required.");
+      return;
+    }
+    const staffEntry = STAFF.find((s) => s.id === indForm.induction_lead);
+    await createInduction.mutateAsync({
+      staff_id: crypto.randomUUID(),
+      staff_name: indForm.staff_name.trim(),
+      role: indForm.role.trim(),
+      start_date: indForm.start_date,
+      induction_lead: staffEntry?.full_name ?? indForm.induction_lead,
+      overall_status: "in_progress" as const,
+      tasks: [],
+    });
+    toast.success("Induction record created.");
+    setIndForm({ staff_name: "", role: "", start_date: new Date().toISOString().slice(0, 10), induction_lead: "staff_darren" });
+    setShowDialog(false);
+  };
 
   const stats = useMemo(() => {
     const allTasks = records.flatMap((r) => r.tasks);
@@ -260,20 +291,19 @@ export default function StaffInductionPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>New Staff Induction</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <input placeholder="Staff member name" className="rounded border px-3 py-2 text-sm" />
-            <input placeholder="Role" className="rounded border px-3 py-2 text-sm" />
-            <input type="date" className="rounded border px-3 py-2 text-sm" />
-            <select className="rounded border px-3 py-2 text-sm">
+          <form onSubmit={handleCreateInduction} className="grid gap-3 py-2">
+            <input required placeholder="Staff member name *" className="rounded border px-3 py-2 text-sm" value={indForm.staff_name} onChange={(e) => setIND("staff_name", e.target.value)} />
+            <input required placeholder="Role *" className="rounded border px-3 py-2 text-sm" value={indForm.role} onChange={(e) => setIND("role", e.target.value)} />
+            <input type="date" className="rounded border px-3 py-2 text-sm" value={indForm.start_date} onChange={(e) => setIND("start_date", e.target.value)} />
+            <select className="rounded border px-3 py-2 text-sm" value={indForm.induction_lead} onChange={(e) => setIND("induction_lead", e.target.value)}>
               <option value="">Induction lead…</option>
-              <option value="staff_darren">{getStaffName("staff_darren")}</option>
-              <option value="staff_ryan">{getStaffName("staff_ryan")}</option>
+              {STAFF.filter((s) => s.employment_status === "active").map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
             </select>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Create Induction</button>
-          </DialogFooter>
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createInduction.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90 disabled:opacity-50">{createInduction.isPending ? "Creating…" : "Create Induction"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
       <CareEventsPanel
