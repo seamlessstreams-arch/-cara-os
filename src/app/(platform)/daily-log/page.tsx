@@ -794,6 +794,7 @@ export default function DailyLogPage() {
         {/* Care Events pipeline — records routed to the daily log */}
         <CareEventsPanel
           title="Care Events — Daily Log"
+          category="general"
           days={14}
           defaultCollapsed
           className="mt-2"
