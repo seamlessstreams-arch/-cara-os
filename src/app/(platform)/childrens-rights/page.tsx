@@ -16,6 +16,8 @@ import { useChildrensRights } from "@/hooks/use-childrens-rights";
 import type { ChildrensRightEntry, RightsComplianceLevel } from "@/types/extended";
 import { RIGHTS_COMPLIANCE_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -55,8 +57,13 @@ export default function ChildrensRightsPage() {
     <PageShell
       title="Children's Rights"
       subtitle="UNCRC · Rights-Based Practice · How We Uphold Children's Rights at Oak House"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
-      actions={<PrintButton title="Children's Rights Charter" />}
+      ariaContext={{ pageTitle: "Children's Rights", sourceType: "child_record" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <PrintButton title="Children's Rights Charter" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+        </div>
+      }
     >
       <div id="print-area">
         {/* intro banner */}
@@ -197,6 +204,12 @@ export default function ChildrensRightsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Children's Rights — UNCRC articles, rights-based practice, children's participation, how we uphold each right, evidence, compliance status, quarterly review"
+        recordType="ofsted_evidence"
+        className="mt-6"
       />
     </PageShell>
   );

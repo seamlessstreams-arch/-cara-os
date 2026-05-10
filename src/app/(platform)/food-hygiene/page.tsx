@@ -27,6 +27,8 @@ import type { FoodHygieneRecord, FoodHygieneCheckType, FoodHygieneCompliance } f
 import { FOOD_HYGIENE_CHECK_TYPE_LABEL, FOOD_HYGIENE_COMPLIANCE_LABEL } from "@/types/extended";
 import { useFoodHygieneRecords, useCreateFoodHygieneRecord } from "@/hooks/use-food-hygiene-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -100,7 +102,7 @@ export default function FoodHygienePage() {
   return (
     <PageShell title="Food Hygiene & Safety" subtitle="Food Safety Act 1990 · HACCP · Reg 12 — Safe Environment" 
       ariaContext={{ pageTitle: "Food Hygiene & Safety", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Food Hygiene Records" /><ExportButton data={filtered} columns={exportCols} filename="food-hygiene" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Check</Button></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="Food Hygiene Records" /><ExportButton data={filtered} columns={exportCols} filename="food-hygiene" /><AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Check</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
@@ -196,6 +198,12 @@ export default function FoodHygienePage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Food Hygiene & Safety — fridge temperatures, cleaning schedules, food storage, allergens, HACCP compliance, Environmental Health inspections, staff food hygiene training"
+        recordType="ofsted_evidence"
+        className="mt-6"
       />
     </PageShell>
   );

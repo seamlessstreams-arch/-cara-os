@@ -15,6 +15,8 @@ import { useUtilityMonitoringRecords } from "@/hooks/use-utility-monitoring-reco
 import type { UtilityMonitoringRecord, UtilityMonitoringType } from "@/types/extended";
 import { UTILITY_MONITORING_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (icons / colours — not serialisable) ─────────────────── */
 
@@ -69,11 +71,12 @@ export default function UtilityMonitoringPage() {
     <PageShell
       title="Utility Monitoring"
       subtitle="Gas · Electric · Water · Broadband · Cost Management"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Utility Monitoring", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Utility Monitoring" />
           <ExportButton data={records} columns={exportCols} filename="utility-monitoring" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -192,6 +195,12 @@ export default function UtilityMonitoringPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Utility Monitoring — electricity, gas, water, broadband usage and costs, budget variances, supplier contracts, contract renewals, energy efficiency, independence skills"
+        recordType="ofsted_evidence"
+        className="mt-6"
       />
     </PageShell>
   );

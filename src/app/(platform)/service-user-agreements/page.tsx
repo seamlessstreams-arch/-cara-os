@@ -31,6 +31,8 @@ import {
   SERVICE_USER_AGREEMENT_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -101,7 +103,7 @@ export default function ServiceUserAgreementsPage() {
   return (
     <PageShell title="Young Person Agreements" subtitle="Reg 7 — Children's Wishes & Feelings · Co-Produced Expectations" 
       ariaContext={{ pageTitle: "Young Person Agreements", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="YP Agreements" /><ExportButton data={filtered} columns={exportCols} filename="yp-agreements" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Agreement</Button></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="YP Agreements" /><ExportButton data={filtered} columns={exportCols} filename="yp-agreements" /><AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Agreement</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
@@ -210,6 +212,12 @@ export default function ServiceUserAgreementsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Young Person Agreements — house rules, expectations, pocket money, mobile phone use, curfews, privacy, independence, consequences, review dates, young person involvement"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

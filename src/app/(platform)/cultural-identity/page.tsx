@@ -18,6 +18,8 @@ import { CULTURAL_IDENTITY_AREA_STATUS_LABEL } from "@/types/extended";
 import { useCulturalIdentityPlans } from "@/hooks/use-cultural-identity-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function CulturalIdentityPage() {
@@ -57,11 +59,12 @@ export default function CulturalIdentityPage() {
     <PageShell
       title="Cultural & Identity Plans"
       subtitle="Supporting each child's cultural heritage, identity, and sense of self"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Cultural & Identity Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Cultural & Identity Plans" />
           <ExportButton data={plans} columns={exportCols} filename="cultural-identity" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -199,6 +202,12 @@ export default function CulturalIdentityPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Cultural & Identity Plans — ethnicity, religion, language, cultural heritage, identity support, community connections, food preferences, hair care, festivals, placement matching"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

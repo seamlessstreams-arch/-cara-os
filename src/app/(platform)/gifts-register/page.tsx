@@ -31,6 +31,8 @@ import {
 } from "@/types/extended";
 import { useGiftRecords, useCreateGiftRecord } from "@/hooks/use-gift-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local styling maps ───────────────────────────────────────────────────── */
 
@@ -108,7 +110,7 @@ export default function GiftsRegisterPage() {
   return (
     <PageShell title="Gifts & Hospitality Register" subtitle="Anti-Bribery Policy · Safeguarding · Reg 12 · Delegated Authority" 
       ariaContext={{ pageTitle: "Gifts & Hospitality Register", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Gifts Register" /><ExportButton data={filtered} columns={exportCols} filename="gifts-register" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Gift</Button></div>}>
+      actions={<div className="flex items-center gap-2"><PrintButton title="Gifts Register" /><ExportButton data={filtered} columns={exportCols} filename="gifts-register" /><AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Gift</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
@@ -208,6 +210,12 @@ export default function GiftsRegisterPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Gifts & Hospitality Register — gifts to staff, gifts to children, hospitality, transparency, conflicts of interest, professional boundaries, Reg 35 notifications"
+        recordType="ofsted_evidence"
+        className="mt-6"
       />
     </PageShell>
   );
