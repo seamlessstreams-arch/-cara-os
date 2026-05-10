@@ -30,6 +30,8 @@ import { useCuriosityLogEntries } from "@/hooks/use-curiosity-log-entries";
 import type { CuriosityLogEntry, CuriosityFocusArea } from "@/types/extended";
 import { CURIOSITY_FOCUS_AREA_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour/icon maps ───────────────────────────────────────────────── */
 
@@ -134,10 +136,11 @@ export default function ProfessionalCuriosityLogPage() {
     <PageShell
       title="Professional Curiosity Log"
       subtitle="Reflective practice — challenging our assumptions about children, families, professionals and ourselves"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Professional Curiosity Log", sourceType: "general" }}
       actions={[
         <PrintButton key="p" title="Professional Curiosity Log" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="professional-curiosity-log" />,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -357,6 +360,12 @@ export default function ProfessionalCuriosityLogPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Professional Curiosity Log — professional curiosity practice, staff observations, concerns raised, follow-up actions, multi-agency information sharing, safeguarding vigilance, Reg 45"
+        recordType="management_oversight"
+        className="mt-6"
       />
     </PageShell>
   );

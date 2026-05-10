@@ -38,6 +38,8 @@ import {
   PROF_MEETING_MODE_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour maps ─────────────────────────────────────────────────── */
 
@@ -155,11 +157,12 @@ export default function ProfessionalMeetingAttendancePage() {
     <PageShell
       title="Professional Meeting Attendance"
       subtitle="Home representation at multi-agency professional meetings — Quality Standard 4 & 13, Working Together 2023"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "contact_log" }}
+      ariaContext={{ pageTitle: "Professional Meeting Attendance", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="professional-meeting-attendance" />
           <PrintButton title="Professional Meeting Attendance" />
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -407,6 +410,12 @@ export default function ProfessionalMeetingAttendancePage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Professional Meeting Attendance — LAC reviews, strategy meetings, child protection conferences, multi-agency meetings, attendance records, apologies, staff representation, Reg 45 evidence"
+        recordType="task"
+        className="mt-6"
       />
     </PageShell>
   );

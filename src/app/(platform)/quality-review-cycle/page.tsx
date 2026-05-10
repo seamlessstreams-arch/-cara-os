@@ -32,6 +32,8 @@ import {
   REG46_ACTION_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour maps ─────────────────────────────────────────────────── */
 
@@ -131,11 +133,12 @@ export default function QualityReviewCyclePage() {
     <PageShell
       title="Regulation 46 — Quality of Care Review"
       subtitle="Six-monthly independent systematic review of the quality of care provided"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Regulation 46 Quality Review Cycle", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Regulation 46 Quality Review Cycle" />
           <ExportButton data={filtered} columns={exportCols} filename="reg46-quality-review-cycle" />
+          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -372,6 +375,12 @@ export default function QualityReviewCyclePage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Regulation 46 Quality Review Cycle — statutory quality reviews, Reg 46 requirements, review schedule, outcomes, improvement actions, RI oversight, Ofsted evidence, governance documentation"
+        recordType="reg45"
+        className="mt-6"
       />
     </PageShell>
   );

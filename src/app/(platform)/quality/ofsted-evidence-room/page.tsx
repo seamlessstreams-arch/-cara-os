@@ -3,6 +3,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useEvidenceItems, useCreateEvidence } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -704,22 +706,25 @@ export default function OfstedEvidenceRoomPage() {
     <PageShell
       title="Ofsted Evidence Room"
       subtitle="Organised evidence for inspection readiness"
-      ariaContext={{ pageTitle: "No evidence found", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Ofsted Evidence Room", sourceType: "document" }}
       actions={
-        <Button
-          size="sm"
-          className="gap-1.5"
-          disabled={createEvidence.isPending}
-          onClick={() => createEvidence.mutate({
-            homeId: "oak-house",
-            title: "New Evidence Item",
-            category: "general",
-            sourceType: "manual",
-          })}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          {createEvidence.isPending ? "Adding..." : "Add Evidence"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            className="gap-1.5"
+            disabled={createEvidence.isPending}
+            onClick={() => createEvidence.mutate({
+              homeId: "oak-house",
+              title: "New Evidence Item",
+              category: "general",
+              sourceType: "manual",
+            })}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            {createEvidence.isPending ? "Adding..." : "Add Evidence"}
+          </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+        </div>
       }
     >
       {/* ── summary stats ──────────────────────────────────────────────────── */}
@@ -1274,6 +1279,12 @@ export default function OfstedEvidenceRoomPage() {
           </div>
         </div>
       )}
+      <AriaPanel
+        mode="assist"
+        pageContext="Ofsted Evidence Room — inspection evidence packs, evidence categorisation, judgement areas, outstanding practice evidence, Annex A evidence, compliance documents, regulatory submissions"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }
