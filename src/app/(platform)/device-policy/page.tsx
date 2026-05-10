@@ -38,6 +38,8 @@ import {
 } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -115,11 +117,12 @@ export default function DevicePolicyPage() {
     <PageShell
       title="Device & Phone Policy"
       subtitle="Screen time agreements, device usage monitoring, and online safety — Reg 12"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Device & Phone Policy", sourceType: "document" }}
       actions={[
         <PrintButton key="p" title="Device & Phone Policy" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="device-policy" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Add Device</Button>,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       {isLoading ? (
@@ -315,6 +318,12 @@ export default function DevicePolicyPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Device & Phone Policy — mobile phones, tablets, internet access, social media rules, safe use agreements, device allocation, confiscation, online safety, policy evidence, Reg 44"
+        recordType="policy"
+        className="mt-6"
       />
     </PageShell>
   );

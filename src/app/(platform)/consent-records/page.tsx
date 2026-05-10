@@ -33,6 +33,8 @@ import {
   Shield, XCircle, RefreshCw
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Local meta (keeps color / icon info that doesn't belong in shared types) ─
 const CATEGORY_META: Record<ConsentCategory, { label: string; color: string }> = {
@@ -183,12 +185,13 @@ export default function ConsentRecordsPage() {
     <PageShell
       title="Consent Records"
       subtitle="Tracking permissions, approvals, and authorisations for each young person"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Consent Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Consent Records" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="consent-records" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Consent</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -433,6 +436,12 @@ export default function ConsentRecordsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Consent Records — medical consent, photo consent, activity consent, social media consent, sharing information, parental responsibility, IRO, social worker, emergency consent"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

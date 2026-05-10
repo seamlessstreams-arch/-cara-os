@@ -35,6 +35,8 @@ import {
   BookOpen, Shield, Target, Lightbulb, Puzzle, Brain,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -447,7 +449,7 @@ export default function VoiceOfTheChildPage() {
     <PageShell
       title="Voice of the Child"
       subtitle="What our young people are saying — their wishes, feelings, concerns, and views"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Voice of the Child", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">
@@ -457,6 +459,7 @@ export default function VoiceOfTheChildPage() {
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-teal-600 hover:bg-teal-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Capture Voice
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -631,6 +634,12 @@ export default function VoiceOfTheChildPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Voice of the Child — young person's views, wishes, feelings, likes, dislikes, key words, quotes, drawings, participation, LAC review preparation, IRO, Reg 45 evidence"
+        recordType="direct_work"
+        className="mt-6"
       />
     </PageShell>
   );

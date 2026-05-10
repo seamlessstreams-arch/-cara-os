@@ -27,6 +27,8 @@ import { DEBRIEF_INCIDENT_CATEGORY_LABEL, INCIDENT_DEBRIEF_STATUS_LABEL, DEBRIEF
 import { toast } from "sonner";
 import { useCriticalIncidentDebriefRecords, useCreateCriticalIncidentDebriefRecord } from "@/hooks/use-critical-incident-debrief-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -98,12 +100,13 @@ export default function CriticalIncidentDebriefPage() {
     <PageShell
       title="Critical Incident Debriefs"
       subtitle="Post-Incident Learning · Reflective Practice · Continuous Improvement"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "incident" }}
+      ariaContext={{ pageTitle: "Critical Incident Debriefs", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Critical Incident Debriefs" />
           <ExportButton data={records} columns={exportCols} filename="critical-incident-debriefs" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Schedule Debrief</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -361,6 +364,12 @@ export default function CriticalIncidentDebriefPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Critical Incident Debriefs — post-incident debrief, staff support, learning review, action points, reporting, Reg 40, Reg 45 evidence, trauma-informed approach, improvement plan"
+        recordType="incident"
+        className="mt-6"
       />
     </PageShell>
   );
