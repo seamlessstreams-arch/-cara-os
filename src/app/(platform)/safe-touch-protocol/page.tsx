@@ -29,6 +29,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useSafeTouchProtocolRecords } from "@/hooks/use-safe-touch-protocol-records";
 import type { SafeTouchProtocolRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 
@@ -93,11 +95,12 @@ export default function SafeTouchProtocolPage() {
     <PageShell
       title="Safe Touch Protocol"
       subtitle="Individual physical contact frameworks per child — trauma-informed, consent-led, sensory-aware"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Safe Touch Protocol", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="safe-touch-protocol" />
           <PrintButton title="Safe Touch Protocol" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -313,6 +316,12 @@ export default function SafeTouchProtocolPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Safe Touch Protocol — appropriate physical contact guidelines, safe touch records, therapeutic touch, physical contact policy, safeguarding evidence, Reg 45 quality evidence"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

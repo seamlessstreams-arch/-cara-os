@@ -30,6 +30,8 @@ import { useSensoryProfileRecords, useCreateSensoryProfileRecord } from "@/hooks
 import type { SensoryProfileRecord, SensoryDomain, SensoryResponsePattern, SensoryProfileStatus } from "@/types/extended";
 import { SENSORY_DOMAIN_LABEL, SENSORY_RESPONSE_PATTERN_LABEL, SENSORY_PROFILE_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -177,7 +179,7 @@ export default function SensoryProfilesPage() {
     <PageShell
       title="Sensory Profiles"
       subtitle="Individual sensory assessments, triggers, calming strategies and environmental adaptations"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Sensory Profiles", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Sensory Profiles" />
@@ -185,6 +187,7 @@ export default function SensoryProfilesPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> New Profile
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -476,6 +479,12 @@ export default function SensoryProfilesPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Sensory Profiles — individual sensory needs, sensory sensitivities, sensory regulation strategies, autism sensory profiles, care plan needs, environment adaptations, therapeutic evidence"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

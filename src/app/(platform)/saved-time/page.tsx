@@ -22,6 +22,8 @@ import { useSavedTime } from "@/hooks/use-filing-cabinet";
 import { ROUTE_TYPE_LABEL } from "@/types/care-events";
 import { formatDate } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Route bar component ───────────────────────────────────────────────────────
 
@@ -100,7 +102,8 @@ export default function SavedTimePage() {
     <PageShell
       title="Saved-Time Dashboard"
       subtitle="Time saved through automated routing from Care Events — duplication eliminated"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Saved-Time Dashboard", sourceType: "general" }}
+      actions={<AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />}
     >
       {/* Hero stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -294,6 +297,12 @@ export default function SavedTimePage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Saved-Time Dashboard — time saved through automated Care Event routing, duplication eliminated, administrative efficiency, staff time metrics, operational efficiency evidence, management oversight"
+        recordType="management_oversight"
+        className="mt-6"
       />
     </PageShell>
   );

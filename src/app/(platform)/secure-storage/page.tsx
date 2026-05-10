@@ -36,6 +36,8 @@ import {
   SECURE_STORAGE_ACTION_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -162,7 +164,7 @@ export default function SecureStoragePage() {
     <PageShell
       title="Secure Storage Log"
       subtitle="Controlled items register — access tracking, stock checks and audit trail"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Secure Storage Log", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="secure-storage" />
@@ -170,6 +172,7 @@ export default function SecureStoragePage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> Add Item
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -370,6 +373,12 @@ export default function SecureStoragePage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Secure Storage Log — secure document storage, medication storage, cash storage, valuables storage, storage compliance, Reg 12 evidence, safeguarding, Annex A evidence"
+        recordType="uploaded_document"
+        className="mt-6"
       />
     </PageShell>
   );
