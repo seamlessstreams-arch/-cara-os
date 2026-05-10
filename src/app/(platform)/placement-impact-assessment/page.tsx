@@ -31,6 +31,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<PlacementImpactAssessment>[] = [
@@ -136,11 +138,12 @@ export default function PlacementImpactAssessmentPage() {
     <PageShell
       title="Placement Impact Assessments"
       subtitle="Reg 14 — assessing the impact of new admissions on existing children before placement decisions"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Placement Impact Assessments", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={entries} columns={exportCols} filename="placement-impact-assessments" />
           <PrintButton title="Placement Impact Assessments" />
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -445,6 +448,12 @@ export default function PlacementImpactAssessmentPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Placement Impact Assessments — impact of new admissions on existing residents, group dynamics, risk assessment, compatibility, safeguarding considerations, Reg 45 evidence"
+        recordType="placement_plan"
+        className="mt-6"
       />
     </PageShell>
   );
