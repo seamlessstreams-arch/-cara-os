@@ -28,6 +28,8 @@ import {
   AlertOctagon, Info, ChevronRight, Activity, Eye,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -221,7 +223,7 @@ export default function ActivityLogPage() {
     <PageShell
       title="Activity Log"
       subtitle="Home-wide event timeline — real-time awareness and audit trail"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Activity Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => refetch()}>
@@ -230,6 +232,7 @@ export default function ActivityLogPage() {
           </Button>
           <ExportButton data={filtered} columns={FEED_EXPORT_COLS} filename="activity-log" />
           <PrintButton title="Activity Log" subtitle="Oak House — Event Timeline" />
+          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -404,6 +407,12 @@ export default function ActivityLogPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Activity Log — daily activity records, care events log, system audit events, user actions, record changes, audit trail, compliance log, event timeline"
+        recordType="daily_log"
+        className="mt-6"
       />
     </PageShell>
   );

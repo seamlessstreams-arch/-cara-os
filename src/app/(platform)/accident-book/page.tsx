@@ -27,6 +27,8 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useAccidentBook, useCreateAccident } from "@/hooks/use-accident-book";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import type { AccidentPersonType, AccidentSeverity, AccidentCategory, AccidentStatus, AccidentRecord } from "@/types/extended";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
@@ -145,11 +147,12 @@ export default function AccidentBookPage() {
     <PageShell
       title="Accident Book"
       subtitle="Health & Safety at Work Act 1974 · RIDDOR 2013 · Reg 12"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "incident" }}
+      ariaContext={{ pageTitle: "Accident Book", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Accident Book" />
           <ExportButton data={filtered} columns={exportCols} filename="accident-book" />
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Accident</Button>
         </div>
       }
@@ -345,7 +348,11 @@ export default function AccidentBookPage() {
         title="Related Care Events"
         days={90}
         defaultCollapsed
-      />
-    </PageShell>
+      />      <AriaPanel
+        mode="assist"
+        pageContext="Accident Book — RIDDOR reporting, accidents to children and staff, first aid given, near misses, HSWA compliance, environmental hazards, Reg 40 notification triggers"
+        recordType="incident"
+        className="mt-6"
+      />    </PageShell>
   );
 }

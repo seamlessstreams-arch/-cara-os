@@ -21,6 +21,8 @@ import { useAdoptionRecords } from "@/hooks/use-adoption-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AdoptionStatus, AdoptionIntroductionPhase, AdoptionRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -136,10 +138,11 @@ export default function AdoptionSupportRecordsPage() {
     <PageShell
       title="Adoption Support Records"
       subtitle="Tracking children whose care plan is adoption — preparation, introductions, post-placement support"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Adoption Support Records", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Adoption Support Records" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="adoption-support-records" />,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -351,6 +354,12 @@ export default function AdoptionSupportRecordsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Adoption Support Records — post-adoption support, ASF, therapeutic intervention, contact arrangements, adoption breakdown prevention, support plans, court orders, letterbox"
+        recordType="placement_plan"
+        className="mt-6"
       />
     </PageShell>
   );
