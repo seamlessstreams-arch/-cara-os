@@ -29,6 +29,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<WorkExpRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -117,11 +119,12 @@ export default function ChildWorkExperienceTrackerPage() {
     <PageShell
       title="Work Experience & Career Exposure"
       subtitle="Per-child work experience and career exposure — Year 10 placements, post-16 work experience, taster days, career exploration meetings, employer mentors."
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Work Experience & Career Exposure", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-work-experience-tracker" />
           <PrintButton title="Work Experience & Career Exposure" />
+          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -330,6 +333,12 @@ export default function ChildWorkExperienceTrackerPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Work Experience & Career Exposure — placements, career days, job shadowing, employer visits, apprenticeship exploration, pathway 3 leaving care, PEP, skills, career aspiration"
+        recordType="education"
+        className="mt-6"
       />
     </PageShell>
   );

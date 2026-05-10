@@ -30,6 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<VolunteerRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -115,11 +117,12 @@ export default function ChildVolunteeringCharityPage() {
     <PageShell
       title="Volunteering & Charity Activity"
       subtitle="Per-child volunteering and community contribution — sport coaching, faith community, animal welfare, peer advocacy, charity fundraising. Children in care give as much as they receive — this evidences it. Builds CV, identity, and citizenship."
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Volunteering & Charity Activity", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-volunteering-charity" />
           <PrintButton title="Volunteering & Charity Activity" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -300,6 +303,12 @@ export default function ChildVolunteeringCharityPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Volunteering & Charity Activity — community involvement, Duke of Edinburgh, charity fundraising, food banks, befriending schemes, personal development, citizenship, leaving care preparation"
+        recordType="direct_work"
+        className="mt-6"
       />
     </PageShell>
   );

@@ -42,6 +42,8 @@ import {
   useCreateChildrensMeetingRecord,
 } from "@/hooks/use-childrens-meeting-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 
@@ -169,7 +171,7 @@ export default function ChildrensMeetingsPage() {
     <PageShell
       title="Children's Meetings"
       subtitle="Child-led meetings — giving children a voice in how the home is run"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Children's Meetings", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Children's Meetings" />
@@ -177,6 +179,8 @@ export default function ChildrensMeetingsPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> New Meeting
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+        </div>
         </div>
       }
     >
@@ -416,6 +420,12 @@ export default function ChildrensMeetingsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Children's Meetings — group meetings, house meetings, agenda, minutes, participation, wishes, advocacy, Regulation 17, consultation, Reg 44 evidence, children's voice"
+        recordType="direct_work"
+        className="mt-6"
       />
     </PageShell>
   );

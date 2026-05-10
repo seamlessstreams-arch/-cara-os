@@ -27,6 +27,8 @@ import {
 import { useVisionCareRecords } from "@/hooks/use-vision-care-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -168,11 +170,12 @@ export default function ChildVisionCarePage() {
     <PageShell
       title="Child Vision Care"
       subtitle="Quality Standard 8 (Health) · NHS sight test entitlement · UNCRC Art. 24 · GOC standards"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Vision Care", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Vision Care" />
           <ExportButton data={filtered} columns={exportCols} filename="child-vision-care" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -435,6 +438,12 @@ export default function ChildVisionCarePage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Vision Care — glasses, contact lenses, optician appointments, sight tests, eye conditions, AHA vision check, EHCP eye health, prescription updates, support at school"
+        recordType="health"
+        className="mt-6"
       />
     </PageShell>
   );

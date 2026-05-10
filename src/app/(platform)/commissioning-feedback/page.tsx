@@ -21,6 +21,8 @@ import { COMMISSIONING_FEEDBACK_TYPE_LABEL } from "@/types/extended";
 import { useCommissioningFeedbackRecords } from "@/hooks/use-commissioning-feedback-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── colour map ─────────────────────────────────────────────────────── */
 const TYPE_COLORS: Record<CommissioningFeedbackType, string> = {
@@ -136,11 +138,12 @@ export default function CommissioningFeedbackPage() {
     <PageShell
       title="Commissioning Feedback"
       subtitle="Feedback from placing local authorities on placement quality, communication, and outcomes"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "general" }}
+      ariaContext={{ pageTitle: "Commissioning Feedback", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Commissioning Feedback" />
           <ExportButton data={filtered} columns={exportCols} filename="commissioning-feedback" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -446,6 +449,12 @@ export default function CommissioningFeedbackPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Commissioning Feedback — commissioner visits, feedback reports, monitoring, quality assurance, contract compliance, placement authority feedback, Ofsted, improvement plans"
+        recordType="management_oversight"
+        className="mt-6"
       />
     </PageShell>
   );
