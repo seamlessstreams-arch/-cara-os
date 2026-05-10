@@ -33,6 +33,8 @@ import { EMOTIONAL_FRAMEWORK_LABEL } from "@/types/extended";
 import { useEmotionalVocabRecords } from "@/hooks/use-emotional-vocab-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -201,7 +203,7 @@ export default function EmotionalVocabularyCoachingPage() {
     <PageShell
       title="Emotional Vocabulary Coaching"
       subtitle="Per-child language work — what feelings each young person can name, what they confuse, the tools and frameworks in use, and the breakthroughs that change everything"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Emotional Vocabulary Coaching", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emotional Vocabulary Coaching" />
@@ -210,6 +212,7 @@ export default function EmotionalVocabularyCoachingPage() {
             columns={EXPORT_COLS}
             filename="emotional-vocabulary-coaching"
           />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -537,6 +540,12 @@ export default function EmotionalVocabularyCoachingPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Emotional Vocabulary Coaching — feelings identification, emotion coaching, zones of regulation, therapeutic direct work, self-expression, communication, behaviour support"
+        recordType="direct_work"
+        className="mt-6"
       />
     </PageShell>
   );

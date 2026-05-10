@@ -39,6 +39,8 @@ import {
 } from "@/types/extended";
 import { useEnvironmentalRisks, useCreateEnvironmentalRisk } from "@/hooks/use-environmental-risks";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── label / colour maps ──────────────────────────────────────────────── */
 
@@ -183,7 +185,7 @@ export default function EnvironmentalRiskPage() {
     <PageShell
       title="Environmental Risk Assessments"
       subtitle="Hazard identification, control measures and residual risk management across the home"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Environmental Risk Assessments", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Environmental Risk Assessments" />
@@ -191,6 +193,7 @@ export default function EnvironmentalRiskPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> New Assessment
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -357,6 +360,12 @@ export default function EnvironmentalRiskPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Environmental Risk Assessments — garden, kitchen, bathrooms, communal areas, bedrooms, ligature risk, ligature anchor points, water temperature, window restrictors, Ofsted"
+        recordType="risk_assessment"
+        className="mt-6"
       />
     </PageShell>
   );

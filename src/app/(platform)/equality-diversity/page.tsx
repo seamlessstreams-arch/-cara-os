@@ -39,6 +39,8 @@ import {
   PROTECTED_CHARACTERISTIC_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -157,7 +159,7 @@ export default function EqualityDiversityPage() {
     <PageShell
       title="Equality & Diversity"
       subtitle="Promoting equality, celebrating diversity and monitoring protected characteristics"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Equality & Diversity", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Equality & Diversity" />
@@ -165,6 +167,7 @@ export default function EqualityDiversityPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> New Initiative
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -359,6 +362,12 @@ export default function EqualityDiversityPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Equality & Diversity — protected characteristics, Equality Act 2010, anti-discrimination, reasonable adjustments, cultural competence, LGBTQ+ inclusion, equalities policy, Ofsted"
+        recordType="policy"
+        className="mt-6"
       />
     </PageShell>
   );
