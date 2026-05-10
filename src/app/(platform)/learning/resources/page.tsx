@@ -6,6 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -310,12 +312,13 @@ export default function ResourceGeneratorPage() {
     <PageShell
       title="Resource Generator"
       subtitle="Generate learning resources with ARIA for staff and young people"
-      ariaContext={{ pageTitle: "Oak House — Learning Resources", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Learning Resources", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Resource Generator" subtitle="Oak House — Learning Resources" targetId="resources-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Resource Generator upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -461,6 +464,12 @@ export default function ResourceGeneratorPage() {
           )}
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Learning Resources — training resource generation, care practice documents, policy templates, safeguarding resources, regulatory guidance, CPD materials, workforce evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

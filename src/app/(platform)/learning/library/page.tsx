@@ -6,6 +6,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -245,7 +247,7 @@ export default function ResourceLibraryPage() {
     <PageShell
       title="Resource Library"
       subtitle="All approved learning resources — auto-populated when resources are approved"
-      ariaContext={{ pageTitle: "Oak House — Learning Resources", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Learning Resource Library", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -257,6 +259,7 @@ export default function ResourceLibraryPage() {
           />
           <PrintButton title="Resource Library" subtitle="Oak House — Learning Resources" targetId="library-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Resource Library upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -401,6 +404,12 @@ export default function ResourceLibraryPage() {
           </div>
         )}
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Learning Resource Library — training resources, care manuals, policy documents, regulatory guidance, safeguarding resources, therapeutic frameworks, CPD materials"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

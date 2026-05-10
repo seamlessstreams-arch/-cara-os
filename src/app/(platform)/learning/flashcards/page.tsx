@@ -6,6 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -203,12 +205,13 @@ export default function FlashcardsPage() {
     <PageShell
       title="Flashcard Sets"
       subtitle="Generate interactive flashcard sets for learning and revision"
-      ariaContext={{ pageTitle: "Oak House — Learning Flashcards", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Learning Flashcards", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Flashcard Sets" subtitle="Oak House — Learning Flashcards" targetId="flashcards-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Flashcard Sets upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -324,6 +327,12 @@ export default function FlashcardsPage() {
           )}
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Learning Flashcards — knowledge retention, training revision, safeguarding flashcards, regulatory knowledge, children's rights, care practice flashcard sets"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

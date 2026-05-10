@@ -6,6 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -341,7 +343,7 @@ export default function KnowledgeGapsPage() {
     <PageShell
       title="Knowledge Gaps"
       subtitle="Track and address knowledge gaps across the team"
-      ariaContext={{ pageTitle: "Oak House — Knowledge Gap Analysis", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Knowledge Gap Analysis", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -352,6 +354,7 @@ export default function KnowledgeGapsPage() {
             <Plus className="h-3.5 w-3.5" />
             New Gap
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -462,6 +465,12 @@ export default function KnowledgeGapsPage() {
       </div>
 
       {showNew && <NewGapDialog open onClose={() => setShowNew(false)} />}
+      <AriaPanel
+        mode="assist"
+        pageContext="Knowledge Gap Analysis — staff knowledge gaps, mandatory training gaps, competency assessments, training needs analysis, individual development plans, Reg 45 workforce evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }
