@@ -21550,3 +21550,342 @@ export interface InspectionRecord {
   created_at: string;
   updated_at: string;
 }
+
+// ── Wake-Up Routines ───────────────────────────────────────────────────────────
+
+export type WakeUpMethod = "Gentle voice" | "Music/playlist" | "Light + voice" | "Phone alarm" | "White noise transition";
+export type WakeUpStaffSupport = "None" | "Prompt" | "Hands-on";
+export type EnergyPattern = "Slow starter" | "Quick starter" | "Variable";
+
+export interface WakeUpStep {
+  time: string;
+  activity: string;
+  staffSupport: WakeUpStaffSupport;
+}
+
+export interface WakeUpRoutine {
+  id: string;
+  child_id: string;
+  home_id: string;
+  weekdayWakeTime: string;
+  weekendWakeTime: string;
+  preferredWakeMethod: WakeUpMethod;
+  wakeUpSteps: WakeUpStep[];
+  morningTriggers: string[];
+  morningProtective: string[];
+  breakfastPreferences: string[];
+  hygieneSequence: string[];
+  schoolPrep: string[];
+  arrivalTime: string;
+  ifRefusingToGetUp: string[];
+  energyPattern: EnergyPattern;
+  medicationMorning: string;
+  childAgreed: boolean;
+  reviewedDate: string;
+  reviewedWith: string;
+  effectivenessRating: number;
+  created_at: string;
+}
+
+// ── Therapeutic Outcome Measures ───────────────────────────────────────────────
+
+export type OutcomeMeasureName = "SDQ (Goodman)" | "RCADS" | "CORE-YP" | "Outcome Star" | "BERS-2" | "ASEBA YSR" | "Trauma Symptom Checklist (TSCC)";
+export type OutcomeMeasureDomain = "Emotional Wellbeing" | "Behavioural" | "Anxiety/Depression" | "Trauma Symptoms" | "Strengths" | "General";
+export type TomTrendDirection = "Improving" | "Stable" | "Declining" | "Baseline";
+export type ScoreInterpretation = "Within normal range" | "Borderline" | "Clinical concern";
+
+export interface OutcomeSubscale {
+  subscale: string;
+  rawScore: number;
+  maxScore: number;
+  clinicalThreshold: number;
+  interpretation: ScoreInterpretation;
+}
+
+export interface OutcomeMeasure {
+  id: string;
+  child_id: string;
+  home_id: string;
+  measureName: OutcomeMeasureName;
+  measureFullName: string;
+  domain: OutcomeMeasureDomain;
+  administeredDate: string;
+  administeredBy: string;
+  childCompleted: boolean;
+  scores: OutcomeSubscale[];
+  totalScore: number;
+  maxTotalScore: number;
+  prevTotalScore: number | null;
+  trendDirection: TomTrendDirection;
+  childReflection: string;
+  staffInterpretation: string;
+  clinicalDiscussionWith: string;
+  linkedInterventions: string[];
+  nextAdministrationDate: string;
+  created_at: string;
+}
+
+// ── Welfare Check Protocol Per Child ──────────────────────────────────────────
+
+export type WelfareCheckType =
+  | "Visual through doorway"
+  | "Full welfare check"
+  | "Voice check"
+  | "Thermal sensor"
+  | "Baby monitor observation"
+  | "Knock and verbal"
+  | "Sensor-only"
+  | "Standard observation";
+
+export interface WelfareProtocol {
+  id: string;
+  child_id: string;
+  home_id: string;
+  checkFrequencyByDay: string;
+  checkFrequencyByNight: string;
+  checkType: WelfareCheckType;
+  reasonForFrequency: string;
+  signsOfWellbeingToObserve: string[];
+  signsOfConcernToWatchFor: string[];
+  howToCheckSensitivelyAware: string;
+  nightCheckTechnique: string;
+  childCanRequestModifications: boolean;
+  childPreferences: string;
+  staffApproachWhenChildAwake: string;
+  escalationCriteria: string[];
+  reviewedDate: string;
+  reviewedWithChild: boolean;
+  reviewedBy: string;
+  nextReviewDate: string;
+  created_at: string;
+}
+
+// ── Young Carer Status ────────────────────────────────────────────────────────
+
+export type YoungCarerStatus = "Identified young carer" | "Previous young carer (pre-care)" | "Risk of young carer role on family contact" | "Not a young carer";
+
+export interface YoungCarerRecord {
+  id: string;
+  child_id: string;
+  home_id: string;
+  assessmentDate: string;
+  carerStatus: YoungCarerStatus;
+  caringResponsibilities: string[];
+  caringRecipient: string;
+  ageWhenCaringStarted: number;
+  durationOfCaringRole: string;
+  emotionalImpactObserved: string[];
+  practicalImpactObserved: string[];
+  childWishesAroundCaring: string;
+  parentLAAware: boolean;
+  formalYoungCarerAssessment: boolean;
+  assessmentLA: string;
+  assessmentDate2: string;
+  supportInPlace: string[];
+  educationImpactProtections: string[];
+  contactSupportArrangements: string;
+  childAcceptsCarerStatus: boolean;
+  childRefusesIdentification: string;
+  reviewSchedule: string;
+  reviewedDate: string;
+  reviewedBy: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Young Person Job Tracker ──────────────────────────────────────────────────
+
+export type YpJobType = "Saturday job" | "Newspaper round" | "Babysitting (family)" | "Volunteering" | "Apprenticeship" | "Work experience placement" | "Internal home task (paid)" | "Sports coaching assistant";
+export type YpJobStatus = "Active" | "Trial period" | "Ended" | "On hold";
+export type PayRateUnit = "per hour" | "per shift" | "per week" | "per task";
+
+export interface YpJobLegalCheck {
+  check: string;
+  verified: boolean;
+}
+
+export interface YpJob {
+  id: string;
+  child_id: string;
+  home_id: string;
+  jobType: YpJobType;
+  employer: string;
+  jobTitle: string;
+  startDate: string;
+  ongoingStatus: YpJobStatus;
+  endDate: string;
+  hoursPerWeek: number;
+  payRate: number;
+  payRateUnit: PayRateUnit;
+  legalChecks: YpJobLegalCheck[];
+  workPermitObtained: boolean;
+  workPermitNumber: string;
+  schoolImpactAssessment: string;
+  parentLAConsent: boolean;
+  childAge: number;
+  childMotivation: string;
+  riskAssessmentCompleted: boolean;
+  riskAssessmentDate: string;
+  travelArrangements: string;
+  emergencyContacts: string;
+  childExperience: string;
+  skillsBeingDeveloped: string[];
+  earningsToDate: number;
+  earningsManagement: string;
+  reviewedDate: string;
+  reviewedBy: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Transport Risk Assessments ────────────────────────────────────────────────
+
+export type JourneyType =
+  | "Routine recurring"
+  | "School run"
+  | "Activity"
+  | "Appointment"
+  | "Family contact"
+  | "Holiday/trip"
+  | "Emergency";
+
+export interface TransportHazard {
+  hazard: string;
+  likelihood: "Low" | "Medium" | "High";
+  severity: "Low" | "Medium" | "High";
+  control: string;
+  residualRisk: "Low" | "Medium" | "High";
+}
+
+export interface TransportRA {
+  id: string;
+  child_id: string;
+  home_id: string;
+  journeyTitle: string;
+  journeyType: JourneyType;
+  youngPeople: string[];
+  staffDriver: string;
+  passengers: number;
+  vehicle: string;
+  routeDescription: string;
+  expectedDurationMins: number;
+  recurringFrequency?: string;
+  hazards: TransportHazard[];
+  childSpecificConsiderations: Record<string, string>;
+  behaviourRiskRating: "Low" | "Medium" | "High";
+  behaviourMitigations: string[];
+  missingFromCareRisk: "Low" | "Medium" | "High";
+  missingMitigations: string[];
+  specificRisksByRoute: string[];
+  emergencyProcedure: string;
+  breakdownProcedure: string;
+  lastReviewedDate: string;
+  reviewedBy: string;
+  nextReviewDate: string;
+  signedOffByRM: boolean;
+  inUseStatus: boolean;
+  created_at: string;
+}
+
+// ── Utility Bills Tracker ─────────────────────────────────────────────────────
+
+export type UtilityType = "Electricity" | "Gas" | "Water" | "Broadband" | "Phone" | "Council Tax" | "Insurance";
+export type PaymentStatus = "Paid" | "Pending" | "Overdue" | "Disputed";
+export type PaymentMethod = "Direct Debit" | "BACS" | "Card";
+export type TrendDirection2 = "Up" | "Down" | "Stable";
+
+export interface UtilityBill {
+  id: string;
+  home_id: string;
+  utilityType: UtilityType;
+  supplier: string;
+  accountNumber: string;
+  billPeriod: string;
+  billDate: string;
+  dueDate: string;
+  amountDue: number;
+  amountPaid: number;
+  paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod;
+  readingPrevious: number;
+  readingCurrent: number;
+  unitsUsed: number;
+  comparedToLastYear: string;
+  trend: TrendDirection2;
+  efficiencyNotes: string;
+  contractEndDate: string;
+  switchAvailable: boolean;
+  responsibleOwner: string;
+  reviewedBy: string;
+  created_at: string;
+}
+
+// ── Trauma-Informed Timeline ──────────────────────────────────────────────────
+
+export type TimelineEventCategory = "Loss" | "Trauma" | "Placement" | "Positive" | "Health" | "Education" | "Family" | "Legal";
+export type TimelineEventImpact = "High" | "Medium" | "Low";
+
+export interface TimelineEvent {
+  id: string;
+  child_id: string;
+  home_id: string;
+  date: string;
+  ageAtEvent: number;
+  category: TimelineEventCategory;
+  title: string;
+  description: string;
+  impact: TimelineEventImpact;
+  therapeuticRelevance: string;
+  linkedInterventions: string[];
+  source: string;
+  addedBy: string;
+  addedDate: string;
+  created_at: string;
+}
+
+// ── Welcome Tour Checklist ────────────────────────────────────────────────────
+
+export interface WelcomeTourStep {
+  step: string;
+  shown: boolean;
+  childResponse: string;
+  noteForCarePlan: string;
+}
+
+export interface WelcomeTourResident {
+  residentInitials: string;
+  meetingType: "Brief introduction" | "Longer chat" | "Activity together" | "Parallel only — not introduced";
+  observations: string;
+}
+
+export interface WelcomeTour {
+  id: string;
+  child_id: string;
+  home_id: string;
+  childInitials: string;
+  ageAtArrival: number;
+  arrivalDate: string;
+  tourDate: string;
+  tourLeader: string;
+  durationMinutes: number;
+  childArrivedFromWhere: string;
+  toursPaceAdjusted: boolean;
+  paceAdjustmentReason: string;
+  preTourActivities: string[];
+  toursteps: WelcomeTourStep[];
+  meetingChildrenDuringTour: WelcomeTourResident[];
+  emotionalState: { onArrival: string; midTour: string; postTour: string };
+  childChoseFirstActivity: string;
+  bedroomFirstSighting: string;
+  bedroomPersonalisationStarted: boolean;
+  childToldAboutPledges: boolean;
+  childToldAboutAdvocate: boolean;
+  childToldAboutComplaints: boolean;
+  childToldAboutContact: boolean;
+  childGivenPersonalisedWelcomePack: boolean;
+  childGivenContactNumbers: boolean;
+  childCalmAtNightOne: boolean;
+  followUpActions: string[];
+  notes: string;
+  created_at: string;
+}

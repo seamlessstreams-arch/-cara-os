@@ -373,6 +373,17 @@ import type {
   FilingCabinetItem, SavedTimeMetric,
 } from "@/types/care-events";
 import type { InspectionRecord } from "@/types/extended";
+import type {
+  WakeUpRoutine,
+  OutcomeMeasure,
+  WelfareProtocol,
+  YoungCarerRecord,
+  YpJob,
+  TransportRA,
+  UtilityBill,
+  TimelineEvent,
+  WelcomeTour,
+} from "@/types/extended";
 import {
   SEED_CARE_EVENTS, SEED_CARE_EVENT_ROUTES, SEED_CARE_EVENT_AUDIT,
   SEED_REG45_EVIDENCE, SEED_ANNEX_A_EVIDENCE, SEED_CHILD_DAILY_SUMMARIES,
@@ -724,6 +735,15 @@ const store = {
   agencyFeedback: [] as AgencyFeedback[],
   bedroomProfiles: [] as BedroomProfile[],
   bedtimeRoutines: [] as BedtimeRoutine[],
+  wakeUpRoutines: [] as WakeUpRoutine[],
+  outcomeMeasures: [] as OutcomeMeasure[],
+  welfareProtocols: [] as WelfareProtocol[],
+  youngCarerRecords: [] as YoungCarerRecord[],
+  ypJobs: [] as YpJob[],
+  transportRAs: [] as TransportRA[],
+  utilityBills: [] as UtilityBill[],
+  timelineEvents: [] as TimelineEvent[],
+  welcomeTours: [] as WelcomeTour[],
   cardRecords: [] as CardRecord[],
   boardReports: [] as BoardReport[],
   asbestosRecords: [] as AsbestosRecord[],
@@ -11057,6 +11077,158 @@ export const db = {
       const entry: AriaStudioAuditLog = { ...data, id: generateId("aal"), created_at: new Date().toISOString() };
       store.ariaStudioAuditLog.push(entry);
       return entry;
+    },
+  },
+  wakeUpRoutines: {
+    findAll: () => store.wakeUpRoutines,
+    findByChild: (childId: string) => store.wakeUpRoutines.filter((r) => r.child_id === childId),
+    findByHome: (homeId: string) => store.wakeUpRoutines.filter((r) => r.home_id === homeId),
+    findById: (id: string) => store.wakeUpRoutines.find((r) => r.id === id),
+    create: (data: Omit<WakeUpRoutine, "id" | "created_at">): WakeUpRoutine => {
+      const record: WakeUpRoutine = { ...data, id: generateId("wur"), created_at: new Date().toISOString() };
+      store.wakeUpRoutines.push(record);
+      return record;
+    },
+    patch: (id: string, data: Partial<WakeUpRoutine>): WakeUpRoutine | null => {
+      const idx = store.wakeUpRoutines.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.wakeUpRoutines[idx] = { ...store.wakeUpRoutines[idx], ...data };
+      return store.wakeUpRoutines[idx];
+    },
+  },
+  outcomeMeasures: {
+    findAll: () => store.outcomeMeasures,
+    findByChild: (childId: string) => store.outcomeMeasures.filter((r) => r.child_id === childId),
+    findByHome: (homeId: string) => store.outcomeMeasures.filter((r) => r.home_id === homeId),
+    findById: (id: string) => store.outcomeMeasures.find((r) => r.id === id),
+    create: (data: Omit<OutcomeMeasure, "id" | "created_at">): OutcomeMeasure => {
+      const record: OutcomeMeasure = { ...data, id: generateId("om"), created_at: new Date().toISOString() };
+      store.outcomeMeasures.push(record);
+      return record;
+    },
+    patch: (id: string, data: Partial<OutcomeMeasure>): OutcomeMeasure | null => {
+      const idx = store.outcomeMeasures.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.outcomeMeasures[idx] = { ...store.outcomeMeasures[idx], ...data };
+      return store.outcomeMeasures[idx];
+    },
+  },
+  welfareProtocols: {
+    findAll: () => store.welfareProtocols,
+    findByChild: (childId: string) => store.welfareProtocols.filter((r) => r.child_id === childId),
+    findByHome: (homeId: string) => store.welfareProtocols.filter((r) => r.home_id === homeId),
+    findById: (id: string) => store.welfareProtocols.find((r) => r.id === id),
+    create: (data: Omit<WelfareProtocol, "id" | "created_at">): WelfareProtocol => {
+      const record: WelfareProtocol = { ...data, id: generateId("wcp"), created_at: new Date().toISOString() };
+      store.welfareProtocols.push(record);
+      return record;
+    },
+    patch: (id: string, data: Partial<WelfareProtocol>): WelfareProtocol | null => {
+      const idx = store.welfareProtocols.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.welfareProtocols[idx] = { ...store.welfareProtocols[idx], ...data };
+      return store.welfareProtocols[idx];
+    },
+  },
+  youngCarerRecords: {
+    findAll: () => store.youngCarerRecords,
+    findByChild: (childId: string) => store.youngCarerRecords.filter((r) => r.child_id === childId),
+    findByHome: (homeId: string) => store.youngCarerRecords.filter((r) => r.home_id === homeId),
+    findById: (id: string) => store.youngCarerRecords.find((r) => r.id === id),
+    create: (data: Omit<YoungCarerRecord, "id" | "created_at">): YoungCarerRecord => {
+      const record: YoungCarerRecord = { ...data, id: generateId("yc"), created_at: new Date().toISOString() };
+      store.youngCarerRecords.push(record);
+      return record;
+    },
+    patch: (id: string, data: Partial<YoungCarerRecord>): YoungCarerRecord | null => {
+      const idx = store.youngCarerRecords.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.youngCarerRecords[idx] = { ...store.youngCarerRecords[idx], ...data };
+      return store.youngCarerRecords[idx];
+    },
+  },
+  ypJobs: {
+    findAll: () => store.ypJobs,
+    findByChild: (childId: string) => store.ypJobs.filter((r) => r.child_id === childId),
+    findByHome: (homeId: string) => store.ypJobs.filter((r) => r.home_id === homeId),
+    findById: (id: string) => store.ypJobs.find((r) => r.id === id),
+    create: (data: Omit<YpJob, "id" | "created_at">): YpJob => {
+      const record: YpJob = { ...data, id: generateId("ypj"), created_at: new Date().toISOString() };
+      store.ypJobs.push(record);
+      return record;
+    },
+    patch: (id: string, data: Partial<YpJob>): YpJob | null => {
+      const idx = store.ypJobs.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ypJobs[idx] = { ...store.ypJobs[idx], ...data };
+      return store.ypJobs[idx];
+    },
+  },
+  transportRAs: {
+    findAll: () => store.transportRAs,
+    findByChild: (childId: string) => store.transportRAs.filter((r) => r.child_id === childId),
+    findByHome: (homeId: string) => store.transportRAs.filter((r) => r.home_id === homeId),
+    findById: (id: string) => store.transportRAs.find((r) => r.id === id),
+    create: (data: Omit<TransportRA, "id" | "created_at">): TransportRA => {
+      const record: TransportRA = { ...data, id: generateId("tra"), created_at: new Date().toISOString() };
+      store.transportRAs.push(record);
+      return record;
+    },
+    patch: (id: string, data: Partial<TransportRA>): TransportRA | null => {
+      const idx = store.transportRAs.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.transportRAs[idx] = { ...store.transportRAs[idx], ...data };
+      return store.transportRAs[idx];
+    },
+  },
+  utilityBills: {
+    findAll: () => store.utilityBills,
+    findByHome: (homeId: string) => store.utilityBills.filter((r) => r.home_id === homeId),
+    findById: (id: string) => store.utilityBills.find((r) => r.id === id),
+    create: (data: Omit<UtilityBill, "id" | "created_at">): UtilityBill => {
+      const record: UtilityBill = { ...data, id: generateId("ub"), created_at: new Date().toISOString() };
+      store.utilityBills.push(record);
+      return record;
+    },
+    patch: (id: string, data: Partial<UtilityBill>): UtilityBill | null => {
+      const idx = store.utilityBills.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.utilityBills[idx] = { ...store.utilityBills[idx], ...data };
+      return store.utilityBills[idx];
+    },
+  },
+  timelineEvents: {
+    findAll: () => store.timelineEvents,
+    findByChild: (childId: string) => store.timelineEvents.filter((r) => r.child_id === childId),
+    findByHome: (homeId: string) => store.timelineEvents.filter((r) => r.home_id === homeId),
+    findById: (id: string) => store.timelineEvents.find((r) => r.id === id),
+    create: (data: Omit<TimelineEvent, "id" | "created_at">): TimelineEvent => {
+      const record: TimelineEvent = { ...data, id: generateId("tte"), created_at: new Date().toISOString() };
+      store.timelineEvents.push(record);
+      return record;
+    },
+    patch: (id: string, data: Partial<TimelineEvent>): TimelineEvent | null => {
+      const idx = store.timelineEvents.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.timelineEvents[idx] = { ...store.timelineEvents[idx], ...data };
+      return store.timelineEvents[idx];
+    },
+  },
+  welcomeTours: {
+    findAll: () => store.welcomeTours,
+    findByChild: (childId: string) => store.welcomeTours.filter((r) => r.child_id === childId),
+    findByHome: (homeId: string) => store.welcomeTours.filter((r) => r.home_id === homeId),
+    findById: (id: string) => store.welcomeTours.find((r) => r.id === id),
+    create: (data: Omit<WelcomeTour, "id" | "created_at">): WelcomeTour => {
+      const record: WelcomeTour = { ...data, id: generateId("wt"), created_at: new Date().toISOString() };
+      store.welcomeTours.push(record);
+      return record;
+    },
+    patch: (id: string, data: Partial<WelcomeTour>): WelcomeTour | null => {
+      const idx = store.welcomeTours.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.welcomeTours[idx] = { ...store.welcomeTours[idx], ...data };
+      return store.welcomeTours[idx];
     },
   },
 };
