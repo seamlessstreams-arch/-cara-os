@@ -32,6 +32,8 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ImprovementObjective, ObjectiveSource, ObjectivePriority, ObjectiveStatus } from "@/types/extended";
 import { OBJECTIVE_SOURCE_LABEL, OBJECTIVE_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
   reg44: "bg-violet-50 text-violet-700 border-violet-200",
@@ -158,7 +160,7 @@ export default function HomeImprovementPlanPage() {
     <PageShell
       title="Home Improvement Plan"
       subtitle="Post-inspection actions, quality objectives, Reg 45 recommendations, and development goals"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Home Improvement Plan", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Home Improvement Plan" />
@@ -166,6 +168,7 @@ export default function HomeImprovementPlanPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Add Objective
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

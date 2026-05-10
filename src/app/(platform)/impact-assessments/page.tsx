@@ -26,6 +26,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const STATUSES: ImpactAssessmentStatus[] = ["draft", "in_progress", "completed", "approved", "declined"];
@@ -122,7 +124,7 @@ export default function ImpactAssessmentsPage() {
     <PageShell
       title="Impact Assessments"
       subtitle="Assessing the impact of new admissions on existing young people"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Impact Assessments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Impact Assessments" />
@@ -130,6 +132,7 @@ export default function ImpactAssessmentsPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> New Assessment
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -331,6 +334,12 @@ export default function ImpactAssessmentsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Impact Assessments — placement change impact, safeguarding decisions, physical intervention impact, restraint impact, assessment of child's experience, Reg 45 evidence"
+        recordType="risk_assessment"
+        className="mt-6"
       />
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
