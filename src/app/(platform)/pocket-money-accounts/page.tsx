@@ -37,6 +37,8 @@ import { usePocketMoneyAccounts, useCreatePocketMoneyAccount } from "@/hooks/use
 import type { PocketMoneyAccount, PocketMoneyAccountTxType, PocketMoneyAccountCategory } from "@/types/extended";
 import { POCKET_MONEY_ACCOUNT_CATEGORY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -167,7 +169,7 @@ export default function PocketMoneyAccountsPage() {
     <PageShell
       title="Pocket Money Accounts"
       subtitle="Individual running-balance ledgers — credits, debits, and receipt tracking"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Pocket Money Accounts", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Pocket Money Accounts" />
@@ -175,6 +177,7 @@ export default function PocketMoneyAccountsPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> New Transaction
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -377,6 +380,12 @@ export default function PocketMoneyAccountsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Pocket Money Accounts — individual child accounts, weekly allowance, deposits, withdrawals, balances, savings, birthday money, financial capability, care plan finance records"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

@@ -36,6 +36,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -329,7 +331,7 @@ export default function PocketMoneyPage() {
     <PageShell
       title="Pocket Money & Savings"
       subtitle="Financial records for each young person"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Pocket Money", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={PM_EXPORT_COLS} filename="pocket-money" />
@@ -338,6 +340,7 @@ export default function PocketMoneyPage() {
             <Plus className="h-3.5 w-3.5" />
             Record Transaction
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -467,6 +470,12 @@ export default function PocketMoneyPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Pocket Money — pocket money transactions, allowances, financial records, income, spending, savings, accountability, financial capability development, Regulation 44 evidence"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

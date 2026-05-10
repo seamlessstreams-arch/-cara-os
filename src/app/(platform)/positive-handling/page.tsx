@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import type { PositiveHandlingPlan, PHPDeEscalation, PHPPhysicalResponse } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function PositiveHandlingPage() {
@@ -91,12 +93,13 @@ export default function PositiveHandlingPage() {
     <PageShell
       title="Positive Handling Plans"
       subtitle="Individual behaviour support and physical intervention plans for each young person"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Positive Handling Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Positive Handling Plans" />
           <ExportButton data={exportData} columns={exportCols} filename="positive-handling" />
           <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />New Plan</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -296,6 +299,12 @@ export default function PositiveHandlingPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Positive Handling Plans — de-escalation strategies, safe holding techniques, PBS approaches, risk management, approved techniques, training records, debrief requirements, Reg 40 compliance"
+        recordType="care_plan"
+        className="mt-6"
       />
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-md">

@@ -32,6 +32,8 @@ import {
   PREVENT_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── label / colour maps ───────────────────────────────────────────── */
 const REFERRAL_TYPE_COLOURS: Record<PreventReferralType, string> = {
@@ -181,7 +183,7 @@ export default function PreventDutyPage() {
     <PageShell
       title="Prevent Duty"
       subtitle="Counter-Terrorism and Security Act 2015 — radicalisation awareness, referrals and Channel programme"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Prevent Duty", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Prevent Duty" />
@@ -190,6 +192,7 @@ export default function PreventDutyPage() {
             <Plus className="h-4 w-4 mr-1" />
             New Entry
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -547,6 +550,12 @@ export default function PreventDutyPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Prevent Duty — radicalisation risk, channel referrals, vulnerability concerns, counter-terrorism duties, staff training, referral decisions, multi-agency actions, safeguarding evidence"
+        recordType="safeguarding"
+        className="mt-6"
       />
     </PageShell>
   );
