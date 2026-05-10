@@ -31,6 +31,8 @@ import { POLICY_AREA_LABEL, POLICY_AUDIENCE_AGE_LABEL, POLICY_FORMAT_LABEL } fro
 import type { PolicyArea, PolicyFormat } from "@/types/extended";
 import { useChildFriendlyPolicies } from "@/hooks/use-child-friendly-policies";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── config ──────────────────────────────────────────────────────────────────
 const areaIcons: Record<string, typeof BookOpen> = {
@@ -116,11 +118,12 @@ export default function ChildFriendlyPoliciesPage() {
     <PageShell
       title="Child-Friendly Policies"
       subtitle="Plain-language, accessible policies — co-produced with children, designed to be read by them"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Child-Friendly Policies", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-friendly-policies" />
           <PrintButton title="Child-Friendly Policies" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -322,6 +325,12 @@ export default function ChildFriendlyPoliciesPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Child-Friendly Policies — simplified policy guides for children, house rules explained, complaint process for children, rights guides, information about staying safe, participation"
+        recordType="policy"
+        className="mt-6"
       />
     </PageShell>
   );

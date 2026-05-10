@@ -34,6 +34,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── config ──────────────────────────────────────────────────────────────────
 const outcomeColour: Record<string, string> = {
@@ -114,11 +116,12 @@ export default function ChildProtectionConferencesPage() {
     <PageShell
       title="Child Protection Conferences"
       subtitle="Statutory conference attendance, decisions, and follow-up — multi-agency safeguarding records"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Child Protection Conferences", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="cp-conferences" />
           <PrintButton title="Child Protection Conferences" />
+          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -340,6 +343,12 @@ export default function ChildProtectionConferencesPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Child Protection Conferences — initial CP conferences, review conferences, CP plan, CP category, conference chair, attendees, plans agreed, looked-after child safeguarding"
+        recordType="safeguarding"
+        className="mt-6"
       />
     </PageShell>
   );

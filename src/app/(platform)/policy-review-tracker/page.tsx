@@ -27,6 +27,8 @@ import {
   User, Users, PenLine, History, Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -134,11 +136,12 @@ export default function PolicyReviewTrackerPage() {
     <PageShell
       title="Policy Review Tracker"
       subtitle="Monitor review cycles, version history, and staff sign-off for all home policies"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Policy Review Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Policy Review Tracker" subtitle="Oak House — Policy Management" />
           <ExportButton data={filtered} columns={exportCols} filename="policy-review-tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -350,6 +353,12 @@ export default function PolicyReviewTrackerPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Policy Review Tracker — policy due dates, review cycles, last reviewed date, version control, policy owner, regulatory requirement, Ofsted evidence, quality assurance"
+        recordType="policy"
+        className="mt-6"
       />
     </PageShell>
   );

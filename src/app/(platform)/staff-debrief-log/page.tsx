@@ -25,6 +25,8 @@ import {
   STAFF_DEBRIEF_EMOTIONAL_IMPACT_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -119,11 +121,12 @@ export default function StaffDebriefLogPage() {
     <PageShell
       title="Staff Debrief Log"
       subtitle="Post-Incident · Emotional Support · TCI Reflections · Staff Welfare"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "pi_debrief" }}
+      ariaContext={{ pageTitle: "Staff Debrief Log", sourceType: "pi_debrief" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Debrief Log" />
           <ExportButton data={exportData} columns={exportCols} filename="staff-debrief-log" />
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -314,6 +317,12 @@ export default function StaffDebriefLogPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Debrief Log — post-incident emotional support, staff welfare, supervisor check-in, practice reflection, learning from incidents, wellbeing, resilience, vicarious trauma"
+        recordType="incident"
+        className="mt-6"
       />
     </PageShell>
   );
