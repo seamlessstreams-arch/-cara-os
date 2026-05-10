@@ -317,7 +317,8 @@ export default function WorkforceHubPage() {
         and succession. Reg 44/45 — evidence of staff development activity.
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — General"
+        category="general"
         days={28}
         defaultCollapsed
       />

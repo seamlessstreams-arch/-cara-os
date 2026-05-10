@@ -223,7 +223,8 @@ export default function PropertyDamagePage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Behaviour"
+        category="behaviour"
         days={28}
         defaultCollapsed
       />

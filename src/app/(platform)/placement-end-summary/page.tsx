@@ -347,8 +347,9 @@ export default function PlacementEndSummaryPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — End of Placement"
+        category="general"
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

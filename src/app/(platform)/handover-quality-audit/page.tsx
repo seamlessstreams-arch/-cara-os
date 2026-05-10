@@ -676,8 +676,9 @@ export default function HandoverQualityAuditPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Daily Log"
+        category="general"
+        days={14}
         defaultCollapsed
       />
       <AriaPanel

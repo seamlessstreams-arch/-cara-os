@@ -603,7 +603,8 @@ export default function LeavePage() {
         )}
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Family Contact"
+        category={["family_contact", "general"]}
         days={28}
         defaultCollapsed
       />

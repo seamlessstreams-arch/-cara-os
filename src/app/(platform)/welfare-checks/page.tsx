@@ -756,7 +756,8 @@ export default function WelfareChecksPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Welfare & Safety"
+        category={["general", "health", "behaviour"]}
         days={28}
         defaultCollapsed
       />

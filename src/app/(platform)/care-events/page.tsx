@@ -886,8 +886,9 @@ export default function CareEventsPage() {
         onClose={() => setActionDialog(null)}
       />
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Recent Care Events"
+        category="general"
+        days={14}
         defaultCollapsed
       />
     </PageShell>

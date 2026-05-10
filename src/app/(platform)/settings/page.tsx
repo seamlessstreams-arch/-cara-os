@@ -630,7 +630,8 @@ export default function SettingsPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — General"
+        category="general"
         days={28}
         defaultCollapsed
       />

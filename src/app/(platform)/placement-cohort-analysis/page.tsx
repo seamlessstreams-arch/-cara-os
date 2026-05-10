@@ -384,8 +384,9 @@ export default function PlacementCohortAnalysisPage() {
       </>
       )}
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Placement Stability"
+        category="general"
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

@@ -434,8 +434,9 @@ export default function RiskManagementBoardPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Safeguarding & Behaviour"
+        category={["safeguarding", "behaviour", "missing_episode"]}
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

@@ -400,7 +400,8 @@ export default function FireDrillsPage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Health & Safety"
+        category="general"
         days={28}
         defaultCollapsed
       />

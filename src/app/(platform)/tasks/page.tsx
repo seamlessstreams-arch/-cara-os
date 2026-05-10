@@ -541,8 +541,9 @@ export default function TasksPage() {
         )}
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — General"
+        category="general"
+        days={14}
         defaultCollapsed
       />
       <AriaPanel

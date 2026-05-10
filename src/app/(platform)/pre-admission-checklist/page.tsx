@@ -282,7 +282,8 @@ export default function PreAdmissionChecklistPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Admissions & Placements"
+        category="general"
         days={28}
         defaultCollapsed
       />

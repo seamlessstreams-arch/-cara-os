@@ -434,7 +434,8 @@ export default function FriendshipMappingPage() {
         world, and as part of placement and transition planning.
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Wellbeing"
+        category="wellbeing"
         days={28}
         defaultCollapsed
       />

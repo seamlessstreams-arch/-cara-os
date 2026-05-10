@@ -294,8 +294,9 @@ export default function SavedTimePage() {
         </Card>
       )}
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Recent Care Events"
+        category="general"
+        days={14}
         defaultCollapsed
       />
       <AriaPanel

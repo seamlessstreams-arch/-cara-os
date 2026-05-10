@@ -316,7 +316,8 @@ export default function ManagementWalkroundPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — General"
+        category="general"
         days={28}
         defaultCollapsed
       />

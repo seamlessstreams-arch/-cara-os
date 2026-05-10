@@ -299,7 +299,8 @@ export default function PlacementStabilityPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Placement Stability"
+        category={["behaviour", "safeguarding", "general"]}
         days={28}
         defaultCollapsed
       />

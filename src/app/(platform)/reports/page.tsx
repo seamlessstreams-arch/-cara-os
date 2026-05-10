@@ -469,8 +469,9 @@ export default function ReportsPage() {
         )}
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Reporting Period"
+        category="general"
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

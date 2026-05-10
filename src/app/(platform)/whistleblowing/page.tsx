@@ -371,8 +371,9 @@ export default function WhistleblowingPage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "complaint"]}
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

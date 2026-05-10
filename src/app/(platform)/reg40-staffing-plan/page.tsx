@@ -505,8 +505,9 @@ export default function Reg40StaffingPlanPage() {
 
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Regulation 40"
+        category={["behaviour", "safeguarding", "missing_episode"]}
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

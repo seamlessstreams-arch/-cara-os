@@ -507,7 +507,8 @@ export default function PlacementDisruptionPreventionPlanPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Behaviour & Placement"
+        category={["behaviour", "safeguarding", "general"]}
         days={28}
         defaultCollapsed
       />

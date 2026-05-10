@@ -445,7 +445,8 @@ export default function PlacementImpactAssessmentPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Placement Evidence"
+        category="general"
         days={28}
         defaultCollapsed
       />

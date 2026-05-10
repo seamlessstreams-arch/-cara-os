@@ -357,8 +357,9 @@ export default function CaseFileAuditPage() {
         <p>Regulation 36 (records about children) requires accurate, current and retained case file records. Routine case file audits provide evidence that children&apos;s records meet these standards and that gaps generate timely action.</p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Audit & Compliance"
+        category="general"
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

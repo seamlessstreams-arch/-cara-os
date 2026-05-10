@@ -371,7 +371,8 @@ export default function OutcomesDashboardPage() {
         </Card>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Outcomes Evidence"
+        category="general"
         days={28}
         defaultCollapsed
       />

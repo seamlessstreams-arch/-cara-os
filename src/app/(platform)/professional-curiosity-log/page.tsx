@@ -357,8 +357,9 @@ export default function ProfessionalCuriosityLogPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "professional_contact"]}
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

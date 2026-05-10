@@ -275,6 +275,85 @@ MAPPINGS: dict[str, tuple[str, str, int | None]] = {
     # ── family contact (batch 2) ─────────────────────────────────────────────
     "family-time":                          ("Care Events — Family Contact", '"family_contact"', None),
     "discharge":                            ("Care Events — Family Contact & Care Planning", '["family_contact", "general"]', None),
+
+    # ── general/administrative pages — broad or multi-category ────────────
+    "absence-tracking":                     ("Care Events — Health & Behaviour", '["health", "behaviour", "education"]', None),
+    "annual-development-reviews":           ("Care Events — Care Planning & Education", '["general", "education", "health"]', None),
+    "annual-outcomes-report":               ("Care Events — Care Planning", '"general"', None),
+    "audit-trail":                          ("Care Events — Audit", '["general", "behaviour", "safeguarding"]', 90),
+    "care-events":                          ("Recent Care Events", '"general"', 14),
+    "case-file-audit":                      ("Care Events — Audit & Compliance", '"general"', 90),
+    "daily-risk-briefing":                  ("Care Events — Behaviour & Risk", '["behaviour", "safeguarding", "missing_episode"]', None),
+    "child-daily-summaries":                ("Recent Care Events", '"general"', 14),
+    "inspect-readiness-pack":               ("Care Events — Compliance Evidence", '"general"', 90),
+    "inspection-readiness":                 ("Care Events — Compliance Evidence", '"general"', 90),
+    "inspection":                           ("Care Events — Compliance Evidence", '"general"', 90),
+    "notifiable-events":                    ("Care Events — Notifiable Events", '["safeguarding", "behaviour", "missing_episode", "physical_intervention"]', 90),
+    "outcomes":                             ("Care Events — Outcomes Evidence", '"general"', None),
+    "outcomes-dashboard":                   ("Care Events — Outcomes Evidence", '"general"', None),
+    "quality-of-care":                      ("Care Events — Quality Evidence", '"general"', 90),
+    "quality-review-cycle":                 ("Care Events — Quality Evidence", '"general"', 90),
+    "reports":                              ("Care Events — Reporting Period", '"general"', 90),
+    "saved-time":                           ("Recent Care Events", '"general"', 14),
+
+    # ── welfare/safety checks ────────────────────────────────────────────────
+    "welfare-checks":                       ("Care Events — Welfare & Safety", '["general", "health", "behaviour"]', None),
+    "welfare-check-protocol-per-child":     ("Care Events — Welfare & Safety", '["general", "health", "behaviour"]', None),
+    "visitor-log":                          ("Care Events — Visitors & Contacts", '"professional_contact"', None),
+    "unannounced-visits-log":               ("Care Events — Regulatory Visits", '"general"', 90),
+    "water-hygiene":                        ("Care Events — Health & Safety", '"health"', None),
+    "property-damage":                      ("Care Events — Behaviour", '"behaviour"', None),
+    "vehicle-pre-use-check":                ("Care Events — Transport Safety", '"general"', None),
+    "vehicles":                             ("Care Events — Transport Safety", '"general"', None),
+    "transport-log":                        ("Care Events — Transport & Activities", '["activity", "general"]', None),
+    "transport-risk-assessments":           ("Care Events — Transport & Risk", '["activity", "behaviour"]', None),
+
+    # ── admissions/placements ────────────────────────────────────────────────
+    "admissions":                           ("Care Events — Admissions & Placements", '"general"', None),
+    "placement-anniversaries":              ("Care Events — Placement Stability", '"general"', None),
+    "placement-cohort-analysis":            ("Care Events — Placement Stability", '"general"', 90),
+    "placement-disruption-prevention-plan": ("Care Events — Behaviour & Placement", '["behaviour", "safeguarding", "general"]', None),
+    "placement-end-summary":                ("Care Events — End of Placement", '"general"', 90),
+    "placement-impact-assessment":          ("Care Events — Placement Evidence", '"general"', None),
+    "placement-meeting-minutes":            ("Care Events — Professional Contact", '"professional_contact"', None),
+    "placement-stability":                  ("Care Events — Placement Stability", '["behaviour", "safeguarding", "general"]', None),
+    "placement-stability-meetings":         ("Care Events — Placement Stability", '["behaviour", "safeguarding", "general"]', None),
+    "placement-success-factors":            ("Care Events — Placement Evidence", '"general"', None),
+    "pre-admission-checklist":              ("Care Events — Admissions & Placements", '"general"', None),
+    "referral-tracker":                     ("Care Events — Admissions & Referrals", '"professional_contact"', None),
+    "emergency-placements":                 ("Care Events — Admissions & Placements", '"general"', None),
+    "matching-referrals":                   ("Care Events — Professional Contact", '"professional_contact"', None),
+    "admissions":                           ("Care Events — Admissions & Placements", '"general"', None),
+
+    # ── staff-related ────────────────────────────────────────────────────────
+    "staff-debrief-log":                    ("Care Events — Behaviour & Debriefs", '["behaviour", "physical_intervention", "safeguarding"]', None),
+    "staff-meetings":                       ("Care Events — General", '"general"', None),
+    "shift-notes":                          ("Care Events — Daily Log", '"general"', 14),
+    "rota":                                 ("Care Events — General", '"general"', 14),
+    "timesheets":                           ("Care Events — General", '"general"', None),
+
+    # ── patterns/analytics ───────────────────────────────────────────────────
+    "patterns":                             ("Care Events — Patterns & Intelligence", '["behaviour", "safeguarding", "health", "missing_episode"]', 90),
+    "incident-trend-analysis":              ("Care Events — Incidents & Behaviour", '["behaviour", "safeguarding", "physical_intervention"]', 90),
+    "complaints-trend-analysis":            ("Care Events — Complaints", '"complaint"', 90),
+
+    # ── room/home safety ─────────────────────────────────────────────────────
+    "room-searches":                        ("Care Events — Safeguarding & Behaviour", '["safeguarding", "behaviour"]', 90),
+    "room-allocation-rationale":            ("Care Events — Placement", '"general"', None),
+    "bedroom-personalisation":              ("Care Events — Wellbeing", '"wellbeing"', None),
+    "cleaning-rota":                        ("Care Events — Home Safety", '"general"', None),
+    "household-tasks-rota":                 ("Care Events — Activities", '"activity"', None),
+
+    # ── regulation/compliance ────────────────────────────────────────────────
+    "reg22-records":                        ("Care Events — Regulation 22 Evidence", '"general"', 90),
+    "reg35-notifications":                  ("Care Events — Regulatory Notifications", '"general"', 90),
+    "reg40-staffing-plan":                  ("Care Events — Regulation 40", '["behaviour", "safeguarding", "missing_episode"]', 90),
+    "regulation-40":                        ("Care Events — Regulation 40 Triage", '["safeguarding", "behaviour", "missing_episode", "physical_intervention"]', 90),
+    "regulation-45":                        ("Care Events — Regulation 45 Evidence", '["safeguarding", "behaviour", "health", "education", "complaint"]', 90),
+    "reg44-actions":                        ("Care Events — Regulation 44 Evidence", '"general"', 90),
+    "reg44-visitor-reports":                ("Care Events — Regulation 44 Evidence", '"general"', 90),
+    "annex-a":                              ("Care Events — Annex A Evidence", '["safeguarding", "behaviour", "health", "education", "complaint"]', 90),
+    "notifiable-events":                    ("Care Events — Notifiable Events", '["safeguarding", "behaviour", "missing_episode", "physical_intervention"]', 90),
 }
 
 # ── Patterns ─────────────────────────────────────────────────────────────────

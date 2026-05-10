@@ -676,7 +676,8 @@ export default function TransportLogPage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Transport & Activities"
+        category={["activity", "general"]}
         days={28}
         defaultCollapsed
       />

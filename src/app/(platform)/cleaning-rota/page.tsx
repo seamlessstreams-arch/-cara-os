@@ -283,7 +283,8 @@ export default function CleaningRotaPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Home Safety"
+        category="general"
         days={28}
         defaultCollapsed
       />

@@ -314,7 +314,8 @@ export default function StaffDebriefLogPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Behaviour & Debriefs"
+        category={["behaviour", "physical_intervention", "safeguarding"]}
         days={28}
         defaultCollapsed
       />

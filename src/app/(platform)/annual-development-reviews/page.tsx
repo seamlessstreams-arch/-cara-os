@@ -336,7 +336,8 @@ export default function AnnualDevelopmentReviewsPage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Care Planning & Education"
+        category={["general", "education", "health"]}
         days={28}
         defaultCollapsed
       />

@@ -219,7 +219,8 @@ export default function SensoryEquipmentInventoryPage() {
       </div>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Sensory equipment supports Quality Standard 5 (protection — non-restrictive practice), Quality Standard 7 (health and wellbeing). Linked to Sensory Profiles, Bedroom Personalisation, and Sensory Room Usage.</p></div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Health & Wellbeing"
+        category={["health", "wellbeing"]}
         days={28}
         defaultCollapsed
       />

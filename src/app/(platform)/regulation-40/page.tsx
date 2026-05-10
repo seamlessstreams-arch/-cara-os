@@ -440,8 +440,9 @@ export default function Regulation40Page() {
         <TriageDialog task={triagingTask} onClose={() => setTriagingTask(null)} />
       )}
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Regulation 40 Triage"
+        category={["safeguarding", "behaviour", "missing_episode", "physical_intervention"]}
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

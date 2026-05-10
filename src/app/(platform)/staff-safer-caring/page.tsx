@@ -215,8 +215,9 @@ export default function StaffSaferCaringPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "behaviour"]}
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

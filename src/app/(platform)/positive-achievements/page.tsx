@@ -293,7 +293,8 @@ export default function PositiveAchievementsPage() {
         })}
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Wellbeing"
+        category={["wellbeing", "activity", "education"]}
         days={28}
         defaultCollapsed
       />

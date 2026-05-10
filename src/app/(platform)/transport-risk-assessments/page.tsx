@@ -820,7 +820,8 @@ export default function TransportRiskAssessmentsPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Transport & Risk"
+        category={["activity", "behaviour"]}
         days={28}
         defaultCollapsed
       />

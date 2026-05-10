@@ -1184,7 +1184,8 @@ export default function VehiclePreUseCheckPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Transport Safety"
+        category="general"
         days={28}
         defaultCollapsed
       />

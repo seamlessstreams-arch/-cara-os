@@ -876,7 +876,8 @@ export default function InterventionsPage() {
         onSave={handleCreate}
       />
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Behaviour & Health"
+        category={["behaviour", "health", "wellbeing"]}
         days={28}
         defaultCollapsed
       />

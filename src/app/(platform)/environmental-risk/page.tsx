@@ -357,7 +357,8 @@ export default function EnvironmentalRiskPage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Health & Safety"
+        category="health"
         days={28}
         defaultCollapsed
       />

@@ -412,7 +412,8 @@ export default function HomePetsCareLogPage() {
         <strong>Regulatory framework.</strong> Pet welfare in the home is held within the Animal Welfare Act 2006 and the RSPCA five welfare needs (suitable environment, suitable diet, ability to behave normally, housing with or apart from other animals, protection from pain, suffering, injury and disease). Children&apos;s involvement is risk-assessed under the Health &amp; Safety at Work Act 1974 and the home&apos;s own Health &amp; Safety policy, with allergy clearance recorded against each child&apos;s health profile. The therapeutic value of pet care contributes to Quality Standard 6 (enjoyment &amp; achievement) of the Children&apos;s Homes (England) Regulations 2015 and is described in the Statement of Purpose.
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Wellbeing"
+        category="wellbeing"
         days={28}
         defaultCollapsed
       />

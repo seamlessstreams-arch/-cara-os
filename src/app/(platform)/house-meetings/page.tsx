@@ -382,7 +382,8 @@ export default function HouseMeetingsPage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Wellbeing"
+        category="general"
         days={28}
         defaultCollapsed
       />

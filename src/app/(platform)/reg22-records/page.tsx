@@ -283,8 +283,9 @@ export default function Reg22RecordsPage() {
 
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Regulation 22 Evidence"
+        category="general"
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

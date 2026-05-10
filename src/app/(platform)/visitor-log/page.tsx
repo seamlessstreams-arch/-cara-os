@@ -460,7 +460,8 @@ export default function VisitorLogPage() {
         })}
       />
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Visitors & Contacts"
+        category="professional_contact"
         days={28}
         defaultCollapsed
       />

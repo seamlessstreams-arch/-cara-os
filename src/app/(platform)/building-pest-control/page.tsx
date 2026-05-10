@@ -296,7 +296,8 @@ export default function BuildingPestControlPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Health & Safety"
+        category="health"
         days={28}
         defaultCollapsed
       />

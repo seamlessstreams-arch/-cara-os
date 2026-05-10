@@ -1162,8 +1162,9 @@ export default function Regulation45EvidencePage() {
         <ReviewDialog item={reviewingItem} onClose={() => setReviewingItem(null)} />
       )}
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Regulation 45 Evidence"
+        category={["safeguarding", "behaviour", "health", "education", "complaint"]}
+        days={90}
         defaultCollapsed
       />
     </PageShell>

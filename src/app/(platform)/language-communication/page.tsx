@@ -257,7 +257,8 @@ export default function LanguageCommunicationPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Education & Wellbeing"
+        category={["education", "wellbeing"]}
         days={28}
         defaultCollapsed
       />

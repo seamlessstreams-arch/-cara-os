@@ -377,7 +377,8 @@ export default function AdmissionsPage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Admissions & Placements"
+        category="general"
         days={28}
         defaultCollapsed
       />

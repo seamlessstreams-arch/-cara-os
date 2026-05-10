@@ -419,8 +419,9 @@ export default function QualityOfCarePage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Quality Evidence"
+        category="general"
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

@@ -392,7 +392,8 @@ export default function AbsenceTrackingPage() {
         </DialogContent>
       </Dialog>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Health & Behaviour"
+        category={["health", "behaviour", "education"]}
         days={28}
         defaultCollapsed
       />

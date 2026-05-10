@@ -404,7 +404,8 @@ export default function ReferralTrackerPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Admissions & Referrals"
+        category="professional_contact"
         days={28}
         defaultCollapsed
       />

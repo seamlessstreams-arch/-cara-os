@@ -234,7 +234,8 @@ export default function SupervisionTrackerPage() {
         className="mt-6"
       />
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — General"
+        category="general"
         days={28}
         defaultCollapsed
       />

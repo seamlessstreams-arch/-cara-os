@@ -202,7 +202,8 @@ export default function AgencyStaffFeedbackPage() {
       </div>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Agency staff feedback supports Quality Standard 13 (workforce), Reg 32 (fitness of workers — extends to agency cover), and consistent practice standards. Linked to Agency Staff Induction and Staff Recognition Log.</p></div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — General"
+        category="general"
         days={28}
         defaultCollapsed
       />

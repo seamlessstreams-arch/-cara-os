@@ -351,7 +351,8 @@ export default function AdoptionSupportRecordsPage() {
         </div>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Care Planning"
+        category="general"
         days={28}
         defaultCollapsed
       />

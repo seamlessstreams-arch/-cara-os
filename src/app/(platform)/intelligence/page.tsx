@@ -1210,8 +1210,9 @@ export default function IntelligenceHubPage() {
         <AriaPatternScanSection />
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Patterns & Intelligence"
+        category={["behaviour", "safeguarding", "health"]}
+        days={90}
         defaultCollapsed
       />
     </PageShell>

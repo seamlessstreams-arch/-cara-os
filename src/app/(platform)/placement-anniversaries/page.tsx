@@ -302,7 +302,8 @@ export default function PlacementAnniversariesPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Placement Stability"
+        category="general"
         days={28}
         defaultCollapsed
       />

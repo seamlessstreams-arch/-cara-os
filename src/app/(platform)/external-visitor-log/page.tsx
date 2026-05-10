@@ -336,7 +336,8 @@ export default function ExternalVisitorLogPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Visitors"
+        category="professional_contact"
         days={28}
         defaultCollapsed
       />

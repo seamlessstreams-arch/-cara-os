@@ -540,8 +540,9 @@ export default function OfstedEngagementLogPage() {
         </Card>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Compliance Evidence"
+        category="general"
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

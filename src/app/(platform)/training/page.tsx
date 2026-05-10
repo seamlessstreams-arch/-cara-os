@@ -791,7 +791,8 @@ export default function TrainingPage() {
 
       {showAdd && <AddRecordDialog open onClose={() => setShowAdd(false)} />}
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — General"
+        category="general"
         days={28}
         defaultCollapsed
       />

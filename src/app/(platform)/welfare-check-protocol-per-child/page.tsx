@@ -585,7 +585,8 @@ export default function WelfareCheckProtocolPerChildPage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Welfare & Safety"
+        category={["general", "health", "behaviour"]}
         days={28}
         defaultCollapsed
       />

@@ -1438,8 +1438,9 @@ export default function DashboardPage() {
       {/* Quick Actions Speed Dial — floating bottom-right */}
       {!config.showReadOnlyBanner && <QuickActionsDial />}
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Recent Care Events"
+        category="general"
+        days={14}
         defaultCollapsed
       />
     </PageShell>

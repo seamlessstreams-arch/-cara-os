@@ -318,7 +318,8 @@ export default function FilingCabinetPage() {
         </div>
       )}
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — General"
+        category="general"
         days={28}
         defaultCollapsed
       />

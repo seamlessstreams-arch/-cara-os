@@ -347,7 +347,8 @@ export default function RoomAllocationRationalePage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Placement"
+        category="general"
         days={28}
         defaultCollapsed
       />

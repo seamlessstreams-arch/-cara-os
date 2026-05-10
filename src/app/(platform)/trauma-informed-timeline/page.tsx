@@ -442,8 +442,9 @@ export default function TraumaInformedTimelinePage() {
         </p>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
-        days={28}
+        title="Care Events — Health & Wellbeing"
+        category={["health", "wellbeing", "behaviour"]}
+        days={90}
         defaultCollapsed
       />
       <AriaPanel

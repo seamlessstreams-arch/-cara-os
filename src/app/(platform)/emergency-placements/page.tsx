@@ -319,7 +319,8 @@ export default function EmergencyPlacementsPage() {
         </Card>
       </div>
       <CareEventsPanel
-        title="Related Care Events"
+        title="Care Events — Admissions & Placements"
+        category="general"
         days={28}
         defaultCollapsed
       />
