@@ -27,6 +27,8 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { api } from "@/hooks/use-api";
 import type { Supervision, SupervisionAction } from "@/types";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 type Tab = "supervision" | "probation" | "appraisals" | "goals";
 
@@ -699,6 +701,7 @@ export default function SupervisionPage() {
           <Button size="sm" onClick={() => setScheduleOpen(true)}>
             <Plus className="h-3.5 w-3.5" />Schedule Supervision
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -1095,6 +1098,12 @@ export default function SupervisionPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Supervision & Performance — staff supervision records, performance reviews, development plans, appraisal records, management oversight, Reg 40 supervision compliance, Ofsted workforce evidence"
+        recordType="supervision"
+        className="mt-6"
       />
     </PageShell>
     </>

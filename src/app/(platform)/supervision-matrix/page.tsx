@@ -16,6 +16,8 @@ import { useSupervisionMatrixRecords } from "@/hooks/use-supervision-matrix-reco
 import type { SupervisionMatrixRecord, SupervisionMatrixStatus } from "@/types/extended";
 import { SUPERVISION_MATRIX_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -107,11 +109,12 @@ export default function SupervisionMatrixPage() {
     <PageShell
       title="Supervision Matrix"
       subtitle="Staff supervision structure, reporting lines, and compliance status"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Supervision Matrix", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Supervision Matrix" />
           <ExportButton data={records} columns={exportCols} filename="supervision-matrix" />
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -342,6 +345,12 @@ export default function SupervisionMatrixPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Supervision Matrix — staff supervision schedule, frequency compliance, overdue supervision alerts, Reg 40 staff supervision evidence, management oversight quality, Ofsted evidence"
+        recordType="supervision"
+        className="mt-6"
       />
     </PageShell>
   );

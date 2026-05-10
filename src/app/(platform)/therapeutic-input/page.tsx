@@ -37,6 +37,8 @@ import type {
 } from "@/types/extended";
 import { THERAPEUTIC_INPUT_THERAPY_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -163,7 +165,7 @@ export default function TherapeuticInputPage() {
     <PageShell
       title="Therapeutic Input"
       subtitle="Therapy referrals, sessions and progress tracking — CAMHS, play therapy, counselling and specialist input"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Therapeutic Input", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="therapeutic-input" />
@@ -171,6 +173,7 @@ export default function TherapeuticInputPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> New Referral
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -334,6 +337,12 @@ export default function TherapeuticInputPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Therapeutic Input — CAMHS referrals, therapy sessions, therapeutic interventions, counselling records, external agency input, care plan therapeutic evidence, Reg 45 quality evidence"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

@@ -21,6 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── types ─────────────────────────────────────────────────────────────── */
 
@@ -336,11 +338,12 @@ export default function TherapeuticCareModelPage() {
     <PageShell
       title="Therapeutic Care Model"
       subtitle="The Trauma-Informed, Attachment-Aware, Relational (TIAR) model underpinning practice at Oak House"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Therapeutic Care Model", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Therapeutic Care Model" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="therapeutic-care-model" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -591,6 +594,12 @@ export default function TherapeuticCareModelPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Therapeutic Care Model — therapeutic approach framework, trauma-informed practice, attachment-based care, PACE model, therapeutic relationships, evidence base, Reg 45 quality evidence"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

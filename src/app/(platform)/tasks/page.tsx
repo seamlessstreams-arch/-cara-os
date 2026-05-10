@@ -28,6 +28,8 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const TASK_EXPORT_COLS: ExportColumn<Task>[] = [
   { header: "Title", accessor: (t) => t.title },
@@ -173,13 +175,14 @@ export default function TasksPage() {
     <PageShell
       title="Tasks"
       subtitle={`${filtered.length} task${filtered.length !== 1 ? "s" : ""} ${hasFilters ? "(filtered)" : ""}`}
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Tasks", sourceType: "general" }}
       quickCreateContext={TASKS_QUICK_CREATE_CONTEXT}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={TASK_EXPORT_COLS} filename="tasks" />
           <PrintButton title="Tasks" subtitle="Oak House — Task Management" targetId="tasks-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Tasks — supporting document upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -541,6 +544,12 @@ export default function TasksPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Tasks — outstanding tasks, follow-up tasks, management tasks, safeguarding tasks, compliance tasks, task assignment, task tracking, care planning tasks, Reg 45 action evidence"
+        recordType="task"
+        className="mt-6"
       />
     </PageShell>
   );

@@ -35,6 +35,8 @@ import {
   STATUTORY_VISIT_CHILD_PRESENTED_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (colours not serializable) ────────────────────────────── */
 
@@ -188,11 +190,12 @@ export default function StatutoryVisitLogPage() {
     <PageShell
       title="Statutory Visit Log"
       subtitle="Local authority social worker visits to each child — Care Planning Regulations 2010 and Quality Standard 4"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Statutory Visit Log", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Statutory Visit Log" />
           <ExportButton data={processed} columns={exportCols} filename="statutory-visit-log" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -544,6 +547,12 @@ export default function StatutoryVisitLogPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Statutory Visit Log — LA statutory visits, social worker visits, IRO visits, independent visitor visits, visit frequency compliance, care plan review visits, Annex A visit evidence"
+        recordType="management_oversight"
+        className="mt-6"
       />
     </PageShell>
   );
