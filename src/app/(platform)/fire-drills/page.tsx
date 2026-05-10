@@ -36,6 +36,8 @@ import { useFireDrills, useCreateFireDrill } from "@/hooks/use-fire-drills";
 import { FireDrillType, FireDrillResult, FireDrill } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -174,7 +176,7 @@ export default function FireDrillsPage() {
     <PageShell
       title="Fire Drills & Emergency Procedures"
       subtitle="Evacuation drills, equipment checks, and emergency readiness"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Fire Drills & Emergency Procedures", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Fire Drills" subtitle="Oak House — Health & Safety" />
@@ -182,6 +184,7 @@ export default function FireDrillsPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Record Drill
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -400,6 +403,12 @@ export default function FireDrillsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Fire Drills & Emergency Procedures — fire drills, evacuation, emergency procedures, frequency records, BS 5839, Reg 31, Health & Safety, fire risk, Ofsted, Annex A evidence"
+        recordType="policy"
+        className="mt-6"
       />
     </PageShell>
   );

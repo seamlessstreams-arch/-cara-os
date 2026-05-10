@@ -37,6 +37,8 @@ import {
 import { useGenogramEntries } from "@/hooks/use-genogram-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<GenogramEntry>[] = [
   { header: "Young Person", accessor: (r: GenogramEntry) => getYPName(r.child_id) },
@@ -106,11 +108,12 @@ export default function FamilyTreeGenogramPage() {
     <PageShell
       title="Family Tree / Genogram"
       subtitle="Each child's relational map — family, chosen family, places, identity"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Family Tree / Genogram", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="family-tree-genogram" />
           <PrintButton title="Family Tree / Genogram" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -365,6 +368,12 @@ export default function FamilyTreeGenogramPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Family Tree / Genogram — family history, significant relationships, attachment figures, parental relationships, siblings, extended family, trauma history, placement history"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

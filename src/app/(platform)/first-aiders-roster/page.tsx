@@ -23,6 +23,8 @@ import {
 } from "@/types/extended";
 import { useFirstAiderRecords } from "@/hooks/use-first-aider-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -111,11 +113,12 @@ export default function FirstAidersRosterPage() {
     <PageShell
       title="First Aiders Roster"
       subtitle="HSE First Aid Needs Assessment · CHR Quality Standard 8 · Reg 31"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "First Aiders Roster", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="First Aiders Roster" />
           <ExportButton data={filtered} columns={exportCols} filename="first-aiders-roster" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -332,6 +335,12 @@ export default function FirstAidersRosterPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="First Aiders Roster — first aid qualifications, paediatric first aid, certificate expiry, HSE requirements, COSHH, health and safety, staff training, Reg 31, Annex A"
+        recordType="staff_training"
+        className="mt-6"
       />
     </PageShell>
   );

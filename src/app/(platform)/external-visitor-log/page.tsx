@@ -37,6 +37,8 @@ import {
 } from "@/types/extended";
 import { useExternalVisitors } from "@/hooks/use-external-visitors";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const typeColour: Record<VisitorType, string> = {
   professional: "bg-blue-100 text-blue-800",
@@ -114,11 +116,12 @@ export default function ExternalVisitorLogPage() {
     <PageShell
       title="External Visitor Log"
       subtitle="Records of all external visitors — professionals, contractors, volunteers, deliveries — with safeguarding checks"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "External Visitor Log", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="external-visitor-log" />
           <PrintButton title="External Visitor Log" />
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -336,6 +339,12 @@ export default function ExternalVisitorLogPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="External Visitor Log — contractors, professionals, inspectors, agency workers, visitors, DBS check, signing in, purpose of visit, supervision, safeguarding, home security"
+        recordType="contact_log"
+        className="mt-6"
       />
     </PageShell>
   );
