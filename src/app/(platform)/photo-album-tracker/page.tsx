@@ -28,6 +28,8 @@ import { PHOTO_ALBUM_TYPE_LABEL, PHOTO_ALBUM_FORMAT_LABEL } from "@/types/extend
 import { usePhotoAlbumRecords } from "@/hooks/use-photo-album-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const albumTypeColour: Record<PhotoAlbumType, string> = {
   life_story_book: "bg-pink-100 text-pink-800",
@@ -85,11 +87,12 @@ export default function PhotoAlbumTrackerPage() {
     <PageShell
       title="Photo Album Tracker"
       subtitle="Per-child photo memory albums — owned by children, curated with care, protected with consent"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Photo Album Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="photo-album-tracker" />
           <PrintButton title="Photo Album Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -279,6 +282,12 @@ export default function PhotoAlbumTrackerPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Photo Album Tracker — life story work, photo albums, memory boxes, consent for photos, LAC identity records, going home box, therapeutic photos, cultural images"
+        recordType="direct_work"
+        className="mt-6"
       />
     </PageShell>
   );

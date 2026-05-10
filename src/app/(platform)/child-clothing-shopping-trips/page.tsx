@@ -29,6 +29,8 @@ import { CLOTHING_SHOP_TYPE_LABEL, SHOPPING_MOOD_LABEL } from "@/types/extended"
 import { useClothingShoppingTrips } from "@/hooks/use-clothing-shopping-trips";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const moodColour: Record<ShoppingMood, string> = {
   excited: "bg-amber-100 text-amber-800",
@@ -92,11 +94,12 @@ export default function ChildClothingShoppingTripsPage() {
     <PageShell
       title="Clothing Shopping Trips"
       subtitle="Records of clothing and personal-item shopping with children — choice, dignity, identity"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Clothing & Shopping Trips", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="clothing-shopping-trips" />
           <PrintButton title="Clothing Shopping Trips" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -274,6 +277,12 @@ export default function ChildClothingShoppingTripsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Clothing & Shopping Trips — LAC clothing allowance, shopping trips, child preferences, school uniform, seasonal clothing, cultural dress, budget tracking, spending records"
+        recordType="direct_work"
+        className="mt-6"
       />
     </PageShell>
   );
