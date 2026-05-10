@@ -31,6 +31,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependenceSkillsRecord, IndependenceSkillProficiency, IndependenceSkillCategory } from "@/types/extended";
 import { INDEPENDENCE_SKILL_PROFICIENCY_LABEL, INDEPENDENCE_SKILL_CATEGORY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -155,7 +157,7 @@ export default function IndependenceSkillsPage() {
     <PageShell
       title="Independence Skills Tracker"
       subtitle="Pathway to Independence — practical life skills assessment and tracking"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Independence Skills Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="independence-skills" />
@@ -163,6 +165,7 @@ export default function IndependenceSkillsPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> New Skill
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -354,6 +357,12 @@ export default function IndependenceSkillsPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Independence Skills Tracker — life skills, daily living, cooking, finances, self-care, transport, employment skills, aspirations, pathway plan, leaving care, Reg 45 evidence"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

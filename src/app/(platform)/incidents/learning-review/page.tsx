@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useLearningReviews, useUpdateLearningReview } from "@/hooks/use-intelligence-layer";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -207,7 +209,8 @@ export default function IncidentLearningReviewPage() {
     <PageShell
       title="Incident Learning Review"
       subtitle="Review incidents, identify patterns, and capture organisational learning"
-      ariaContext={{ pageTitle: "Review incidents, identify patterns, and capture organisational learning", sourceType: "incident" }}
+      ariaContext={{ pageTitle: "Incident Learning Review", sourceType: "incident" }}
+      actions={<AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />}
     >
       <div className="space-y-6">
         {/* Filters */}
@@ -506,6 +509,12 @@ export default function IncidentLearningReviewPage() {
           })}
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Incident Learning Review — post-incident analysis, organisational learning, pattern recognition, preventative actions, staff debrief, quality improvement, Reg 45 evidence"
+        recordType="incident"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

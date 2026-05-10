@@ -34,6 +34,8 @@ import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { DOCUMENT_CATEGORY_LABELS } from "@/types/documents";
 import Link from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Severity config ───────────────────────────────────────────────────────────
 const SEV_CONFIG: Record<string, { label: string; color: string; bg: string; badge: string; border: string }> = {
@@ -252,7 +254,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
     <PageShell
       title={incident.reference}
       subtitle={`${INCIDENT_TYPE_LABELS[incident.type]} · ${formatDate(incident.date)}`}
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "incident" }}
+      ariaContext={{ pageTitle: "Incident Record", sourceType: "incident" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -265,6 +267,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
           <Button variant="outline" size="sm" onClick={() => router.push("/incidents")}>
             <ArrowLeft className="h-3.5 w-3.5 mr-1" />All Incidents
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -624,6 +627,12 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
           childId={incident.child_id ?? undefined}
           days={14}
           defaultCollapsed
+          className="mt-6"
+        />
+        <AriaPanel
+          mode="assist"
+          pageContext="Incident Record — incident detail, witness statements, body map, Reg 40 notification, police referral, safeguarding, debrief, follow-up actions, Reg 45 evidence"
+          recordType="incident"
           className="mt-6"
         />
       </div>

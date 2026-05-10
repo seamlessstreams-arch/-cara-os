@@ -3,6 +3,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — PHYSICAL INTERVENTION DEBRIEF REGISTER
 // Reg 20, Children's Homes (England) Regulations 2015
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
@@ -588,7 +590,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
     <PageShell
       title="PI Debrief Register"
       subtitle="Physical intervention debrief tracking — Reg 20 compliance"
-      ariaContext={{ pageTitle: "Oak House — Reg 20 Compliance", sourceType: "incident" }}
+      ariaContext={{ pageTitle: "PI Debrief Register", sourceType: "pi_debrief" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -605,6 +607,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
               Incidents
             </button>
           </Link>
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -770,6 +773,12 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
         </DialogContent>
       </Dialog>
       </div>{/* close #pi-debriefs-content */}
+      <AriaPanel
+        mode="assist"
+        pageContext="PI Debrief Register — physical intervention debriefs, Reg 20 compliance, restraint records, body map, staff debrief, child debrief, follow-up actions, Ofsted evidence"
+        recordType="incident"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

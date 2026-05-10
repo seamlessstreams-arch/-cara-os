@@ -22,6 +22,8 @@ import { useReadinessItems } from "@/hooks/use-readiness-items";
 import type { ReadinessItem, SccifJudgementArea, ReadinessCategory, InPackStatus } from "@/types/extended";
 import { SCCIF_JUDGEMENT_AREA_LABEL, READINESS_CATEGORY_LABEL, IN_PACK_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -153,11 +155,12 @@ export default function InspectionReadinessPackPage() {
     <PageShell
       title="Inspection Readiness Pack"
       subtitle="Curated documents and evidence prepared for Ofsted inspection — readiness pack contents and currency"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Inspection Readiness Pack", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Inspection Readiness Pack" />
           <ExportButton data={filtered} columns={exportCols} filename="inspection-readiness-pack" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -492,6 +495,12 @@ export default function InspectionReadinessPackPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Inspection Readiness Pack — Ofsted preparation, ILACS, Annex A, Reg 45, management oversight, evidence bundles, outstanding practice, areas for development, inspection history"
+        recordType="ofsted_evidence"
+        className="mt-6"
       />
     </PageShell>
   );

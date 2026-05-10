@@ -21,6 +21,8 @@ import type { IncidentTrendRecord, TrendActionStatus } from "@/types/extended";
 import { TREND_ACTION_STATUS_LABEL } from "@/types/extended";
 import { useIncidentTrends } from "@/hooks/use-incident-trends";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -147,11 +149,12 @@ export default function IncidentTrendAnalysisPage() {
     <PageShell
       title="Incident Trend Analysis"
       subtitle="Quarterly Pattern Reports · Triggers · Hotspots · Learning"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "incident" }}
+      ariaContext={{ pageTitle: "Incident Trend Analysis", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Incident Trend Analysis" />
           <ExportButton data={allData} columns={exportCols} filename="incident-trend-analysis" />
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -415,6 +418,12 @@ export default function IncidentTrendAnalysisPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Incident Trend Analysis — incident patterns, frequency, types, triggers, serious incidents, Reg 40, Reg 45 themes, management oversight, quality improvement, Ofsted evidence"
+        recordType="incident"
+        className="mt-6"
       />
     </PageShell>
   );
