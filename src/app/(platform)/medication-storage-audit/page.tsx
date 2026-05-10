@@ -24,6 +24,8 @@ import {
   CLEANLINESS_RATING_LABEL, FOLLOW_UP_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -93,11 +95,12 @@ export default function MedicationStorageAuditPage() {
     <PageShell
       title="Medication Storage Audit"
       subtitle="Regular audits of all medication storage locations — security, temperature, expiry, records"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "medication" }}
+      ariaContext={{ pageTitle: "Medication Storage Audit", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="medication-storage-audit" />
           <PrintButton title="Medication Storage Audits" />
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -321,6 +324,12 @@ export default function MedicationStorageAuditPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Medication Storage Audit — safe storage checks, controlled drug cabinet, fridge temperatures, expiry dates, stock counts, disposal records, CQC compliance, Annex A evidence"
+        recordType="medication"
+        className="mt-6"
       />
     </PageShell>
   );

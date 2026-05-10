@@ -21,6 +21,8 @@ import { useMarEntries } from "@/hooks/use-mar-entries";
 import type { MarEntry, MarRoute, MarScheduleType } from "@/types/extended";
 import { MAR_ROUTE_LABEL, MAR_SCHEDULE_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -136,11 +138,12 @@ export default function MarSheetPage() {
     <PageShell
       title="MAR Sheet — Medication Administration Records"
       subtitle="Quality Standard 7 — Daily record of every medication dose given"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Medication Administration Record", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Administration Record" />
           <ExportButton<MarEntry> data={filtered} columns={exportColumns} filename="mar-sheet" />
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -299,6 +302,12 @@ export default function MarSheetPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Medication Administration Record — MAR sheet, medication administration, controlled drugs, PRN, prescribed medications, GP instructions, pharmacist advice, Annex A evidence"
+        recordType="medication"
+        className="mt-6"
       />
     </PageShell>
   );

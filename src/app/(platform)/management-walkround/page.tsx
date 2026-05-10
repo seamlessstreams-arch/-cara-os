@@ -22,6 +22,8 @@ import type {
 } from "@/types/extended";
 import { WALKROUND_TYPE_LABEL, ENVIRONMENTAL_CHECK_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -77,11 +79,12 @@ export default function ManagementWalkroundPage() {
     <PageShell
       title="Management Walkround"
       subtitle="Daily, weekly, and unannounced walkrounds — observation, recognition, and visible leadership"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Management Walkrounds", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="management-walkrounds" />
           <PrintButton title="Management Walkround" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -316,6 +319,12 @@ export default function ManagementWalkroundPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Management Walkrounds — quality assurance walkrounds, home environment checks, care practice observations, safety checks, young person welfare checks, Reg 44 evidence, management oversight"
+        recordType="management_oversight"
+        className="mt-6"
       />
     </PageShell>
   );

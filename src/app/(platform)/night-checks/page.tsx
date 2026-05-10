@@ -27,6 +27,8 @@ import { useNightChecks, useCreateNightCheck } from "@/hooks/use-night-checks";
 import type { NightCheck, NightCheckSleepStatus, NightCheckType, DoorPosition } from "@/types/extended";
 import { NIGHT_CHECK_SLEEP_STATUS_LABEL, NIGHT_CHECK_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -172,12 +174,13 @@ export default function NightChecksPage() {
     <PageShell
       title="Night Checks"
       subtitle="Overnight welfare observations and sleep monitoring"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Night Checks", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={CHECK_EXPORT_COLS} filename={`night-checks-${dateFilter}`} />
           <PrintButton title="Night Checks" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Record Check</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -333,6 +336,12 @@ export default function NightChecksPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Night Checks — welfare checks, sleep observation records, night-time routines, safe sleeping, presence monitoring, waking night staff, Reg 31 evidence, young person welfare"
+        recordType="daily_log"
+        className="mt-6"
       />
     </PageShell>
   );
