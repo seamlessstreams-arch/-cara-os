@@ -30,6 +30,8 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { YPFeedbackEntry, YPFeedbackCategory, YPFeedbackMethod, YPFeedbackSentiment } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── config ────────────────────────────────────────────────────────────── */
 
@@ -143,7 +145,7 @@ export default function YPFeedbackPage() {
     <PageShell
       title="Young People's Feedback"
       subtitle="Capturing children's views, experiences and satisfaction — making their voice count"
-      ariaContext={{ pageTitle: "Related Care Events", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Young People's Feedback", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Young People's Feedback" />
@@ -151,6 +153,7 @@ export default function YPFeedbackPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> Record Feedback
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -326,6 +329,12 @@ export default function YPFeedbackPage() {
         title="Related Care Events"
         days={28}
         defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Young People's Feedback — children's views, complaints, wishes and feelings, feedback forms, advocacy, voice of the child, Reg 45 children's participation evidence, Ofsted inspection evidence"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

@@ -9,6 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -360,7 +362,7 @@ export default function CareerPathwayPage() {
     <PageShell
       title="Career Pathway Ladder"
       subtitle="Seven-stage progression framework — from Inductee to RI"
-      ariaContext={{ pageTitle: "Oak House Workforce", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "Career Pathway", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -378,6 +380,7 @@ export default function CareerPathwayPage() {
               Workforce Hub
             </button>
           </Link>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -565,6 +568,12 @@ export default function CareerPathwayPage() {
           ILACS Quality of Care — workforce capability assessed against this progression framework.
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Career Pathway — staff career progression, qualifications pathway, Reg 29 manager requirements, Reg 32 Level 3 requirements, professional development planning, workforce capability, Ofsted evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -137,7 +139,7 @@ export default function EvidencePortfolioPage() {
     <PageShell
       title="Evidence Portfolio"
       subtitle="CPD evidence, certificates & practice documentation for all staff"
-      ariaContext={{ pageTitle: "Oak House — CPD & Practice Evidence", sourceType: "child_record" }}
+      ariaContext={{ pageTitle: "CPD & Practice Evidence Portfolio", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -153,6 +155,7 @@ export default function EvidencePortfolioPage() {
             label="Upload Evidence"
             uploadContext="Workforce Evidence Portfolio — CPD certificate, observation, or practice evidence upload"
           />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -363,6 +366,12 @@ export default function EvidencePortfolioPage() {
         Reg 44 visits and full Ofsted inspections.
       </div>
       </div>{/* close #evidence-content */}
+      <AriaPanel
+        mode="assist"
+        pageContext="CPD & Practice Evidence Portfolio — continuing professional development, CPD certificates, practice observations, reflective logs, training evidence, Reg 34 compliance, Ofsted workforce evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }
