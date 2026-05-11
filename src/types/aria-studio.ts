@@ -989,6 +989,43 @@ export interface AriaCommittedRecord {
   amended_at: string | null;
   amendment_reason: string | null;
   amendment_requires_manager_review: boolean;
+  amendment_acknowledged_by: string | null;
+  amendment_acknowledged_at: string | null;
+}
+
+// ── Management Oversight Queue (Milestone 14) ─────────────────────────────────
+
+export type ManagerOversightItemKind =
+  | "pending_suggestion"
+  | "amendment_review"
+  | "returned_record";
+
+export type ManagerOversightSeverity = "high" | "medium" | "low";
+
+export interface ManagerOversightItem {
+  id: string;
+  kind: ManagerOversightItemKind;
+  home_id: string;
+  child_id: string | null;
+  title: string;
+  summary: string;
+  severity: ManagerOversightSeverity;
+  is_safeguarding_sensitive: boolean;
+  created_at: string;
+  source_id: string;
+  source_label: string;
+  link_href: string;
+  age_hours: number;
+}
+
+export interface ManagerOversightQueue {
+  home_id: string;
+  generated_at: string;
+  total: number;
+  high: number;
+  medium: number;
+  low: number;
+  items: ManagerOversightItem[];
 }
 
 // ── Home Dynamics ─────────────────────────────────────────────────────────────

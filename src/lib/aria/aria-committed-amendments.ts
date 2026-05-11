@@ -116,6 +116,8 @@ export function amendCommittedRecord(
     amendment_requires_manager_review: isSafeguardingSensitiveRecordType(
       previous.record_type,
     ),
+    amendment_acknowledged_by: null,
+    amendment_acknowledged_at: null,
   });
 
   // Re-point the parent suggestion to the new head.
@@ -144,4 +146,39 @@ export function loadCommittedVersionHistory(
     (c) => c.suggested_record_id === seed.suggested_record_id,
   );
   return [...chain].sort((a, b) => a.version - b.version);
+}
+
+/**
+ * Manager acknowledges a safeguarding-sensitive amendment that was
+ * flagged for review. Returns null if the record does not exist or is
+ * not awaiting review.
+ */
+export type AcknowledgeAmendmentError =
+  | { code: "not_found" }
+  | { code: "not_review_required" }
+  | { code: "already_acknowledged"; record: AriaCommittedRecord };
+
+export function acknowledgeAmendment(
+  recordId: string,
+  actorId: string,
+): AriaCommittedRecord | AcknowledgeAmendmentError {
+  const record = db.ariaCommittedRecords.findById(recordId);
+  if (!record) return { code: "not_found" };
+  if (!record.amendment_requires_manager_review) {
+    return { code: "not_review_required" };
+  }
+  if (record.amendment_acknowledged_at) {
+    return { code: "already_acknowledged", record };
+  }
+  const all = db.ariaCommittedRecords.findAll();
+  const idx = all.indexOf(record);
+  if (idx >= 0) {
+    all[idx] = {
+      ...record,
+      amendment_acknowledged_by: actorId,
+      amendment_acknowledged_at: new Date().toISOString(),
+    };
+    return all[idx];
+  }
+  return record;
 }

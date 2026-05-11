@@ -130,6 +130,8 @@ export function commitSuggestedRecord(
     amended_at: null,
     amendment_reason: null,
     amendment_requires_manager_review: false,
+    amendment_acknowledged_by: null,
+    amendment_acknowledged_at: null,
   });
 
   const suggestion = db.ariaSuggestedRecords.patch(id, {
