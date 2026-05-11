@@ -1043,6 +1043,141 @@ export const staffPassportRecords: IntelligenceStaffPassportRecord[] = [
   },
 ];
 
+// ─── Provider oversight (rich provider/home summaries + oversight log) ─────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type IntelligenceProviderHomeSummary = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type IntelligenceProviderOversightEntry = any;
+
+export const providerHomeSummaries: IntelligenceProviderHomeSummary[] = [
+  {
+    id: "oak-house",
+    name: "Oak House",
+    manager: "Darren Laville",
+    totalChildren: 3,
+    capacity: 4,
+    totalStaff: 12,
+    inspectionReadiness: 88,
+    openRisks: 2,
+    seriousIncidents: 0,
+    reg44Status: "completed",
+    reg45Status: "completed",
+    supervisionCompliance: 92,
+    trainingCompliance: 95,
+    recruitmentCompliance: 100,
+    overdueActions: 3,
+    complaints: 1,
+    missingEpisodes: 1,
+    ariaRiskFlags: ["Staff supervision gap detected for 1 night worker"],
+    lastReviewed: "2026-05-01",
+  },
+  {
+    id: "birch-lodge",
+    name: "Birch Lodge",
+    manager: "Karen Thompson",
+    totalChildren: 4,
+    capacity: 4,
+    totalStaff: 14,
+    inspectionReadiness: 62,
+    openRisks: 5,
+    seriousIncidents: 2,
+    reg44Status: "overdue",
+    reg45Status: "due_soon",
+    supervisionCompliance: 68,
+    trainingCompliance: 71,
+    recruitmentCompliance: 85,
+    overdueActions: 11,
+    complaints: 3,
+    missingEpisodes: 4,
+    ariaRiskFlags: [
+      "Pattern of missing episodes detected - 4 in 30 days",
+      "Supervision compliance below 70% threshold",
+      "3 staff have expired mandatory training",
+      "Reg 44 overdue by 12 days",
+    ],
+    lastReviewed: "2026-04-18",
+  },
+  {
+    id: "willow-place",
+    name: "Willow Place",
+    manager: "David Okonkwo",
+    totalChildren: 3,
+    capacity: 3,
+    totalStaff: 10,
+    inspectionReadiness: 94,
+    openRisks: 1,
+    seriousIncidents: 0,
+    reg44Status: "completed",
+    reg45Status: "completed",
+    supervisionCompliance: 100,
+    trainingCompliance: 98,
+    recruitmentCompliance: 100,
+    overdueActions: 1,
+    complaints: 0,
+    missingEpisodes: 0,
+    ariaRiskFlags: [],
+    lastReviewed: "2026-05-03",
+  },
+];
+
+export const providerOversightLog: IntelligenceProviderOversightEntry[] = [
+  { id: "ol-1", date: "2026-05-03", home: "Willow Place", type: "review", content: "Monthly quality review completed. All areas meeting or exceeding standards. Commend David and team for consistent excellence.", author: "Regional Inspector", status: "closed" },
+  { id: "ol-2", date: "2026-05-01", home: "Oak House", type: "comment", content: "Noted improvement in recording quality following last visit. Progress entries are now timely and outcome-focused. One night staff supervision gap to address.", author: "Regional Inspector", status: "open" },
+  { id: "ol-3", date: "2026-04-28", home: "Birch Lodge", type: "action_request", content: "Reg 44 visit now 12 days overdue. Manager to complete within 48 hours and submit report. Supervision compliance plan required by 5 May.", author: "Regional Inspector", status: "open" },
+  { id: "ol-4", date: "2026-04-25", home: "Birch Lodge", type: "escalation", content: "Pattern of missing episodes identified - 4 in 30 days involving 2 different young people. Requesting immediate review of risk assessments and boundary agreements.", author: "Regional Inspector", status: "open" },
+  { id: "ol-5", date: "2026-04-20", home: "Oak House", type: "review", content: "Unannounced visit completed. Children appeared settled and engaged. Staff interactions observed as warm and appropriate. Minor recommendation around medication storage labelling.", author: "Regional Inspector", status: "closed" },
+];
+
+// ─── Manager attention items (Control Centre queue) ───────────────────────
+
+export interface IntelligenceAttentionItemRow {
+  id: string;
+  home_id: string;
+  title: string;
+  category: string;
+  urgency: string;
+  status: string;
+  child_id: string | null;
+  staff_id: string | null;
+  source_record_type: string | null;
+  source_record_id: string | null;
+  reason: string;
+  suggested_action: string;
+  due_date: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  escalated_to: string | null;
+  escalated_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const _dRel2 = (n: number): string => {
+  const dt = new Date();
+  dt.setDate(dt.getDate() + n);
+  return dt.toISOString().slice(0, 10);
+};
+
+export const attentionItems: IntelligenceAttentionItemRow[] = [
+  { id: "att_001", home_id: "home_oak", title: "Serious incident report requires manager oversight", category: "serious_incident", urgency: "critical", status: "open", child_id: "Child A", staff_id: null, source_record_type: "incident", source_record_id: null, reason: "A serious incident was recorded on " + _dRel2(-1) + " involving Child A. No manager oversight has been added within the required 24-hour window. Ofsted notification may be required under Reg 40.", suggested_action: "Review the incident record, add your oversight analysis, and determine whether Ofsted notification is required. Consider whether a staff debrief and learning review are needed.", due_date: _dRel2(0), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-1), updated_at: _dRel2(-1) },
+  { id: "att_002", home_id: "home_oak", title: "Missing from care episode — return interview overdue", category: "missing_from_care", urgency: "critical", status: "open", child_id: "Child B", staff_id: null, source_record_type: "missing_episode", source_record_id: null, reason: "Child B returned from a missing episode 48 hours ago. The independent return interview has not been completed. This is a statutory requirement and the placing authority must be informed.", suggested_action: "Arrange the independent return interview urgently. Ensure the placing authority and police are informed of the return. Update the missing from care log with return details.", due_date: _dRel2(-1), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-2), updated_at: _dRel2(-2) },
+  { id: "att_003", home_id: "home_oak", title: "Incident log awaiting manager review", category: "incident_oversight", urgency: "high", status: "open", child_id: "Child C", staff_id: null, source_record_type: "incident", source_record_id: null, reason: "Three incident records from the past 5 days have no manager oversight recorded. Regulation 40 requires the registered person to ensure proper oversight of all significant events.", suggested_action: "Review each incident, add oversight notes covering your analysis of triggers, response quality, and follow-up actions needed. Link to relevant risk assessments.", due_date: _dRel2(1), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-3), updated_at: _dRel2(-3) },
+  { id: "att_004", home_id: "home_oak", title: "Medication audit discrepancy identified", category: "medication_check", urgency: "high", status: "open", child_id: "Child A", staff_id: "Staff Member D", source_record_type: "medication", source_record_id: null, reason: "The weekly medication count for Child A shows a discrepancy of 2 tablets of prescribed medication. This must be investigated and resolved immediately as per the home's medication policy.", suggested_action: "Conduct a full medication reconciliation. Check all MAR sheets against stock. Interview staff who administered medication during the relevant period. Record findings and any corrective action.", due_date: _dRel2(0), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-1), updated_at: _dRel2(-1) },
+  { id: "att_005", home_id: "home_oak", title: "Staff supervision overdue by 3 weeks", category: "supervision_overdue", urgency: "high", status: "open", child_id: null, staff_id: "Staff Member B", source_record_type: "supervision", source_record_id: null, reason: "Staff Member B has not had formal supervision for 7 weeks. The home's statement of purpose commits to supervision every 4 weeks. This is a common area of Ofsted scrutiny.", suggested_action: "Schedule supervision within the next 5 working days. Prepare agenda covering recent incidents, training needs, wellbeing, and professional development. Record on the supervision log.", due_date: _dRel2(5), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-7), updated_at: _dRel2(-7) },
+  { id: "att_006", home_id: "home_oak", title: "Risk assessment review overdue — self-harm", category: "risk_assessment_review", urgency: "high", status: "in_progress", child_id: "Child C", staff_id: null, source_record_type: "risk_assessment", source_record_id: null, reason: "Child C's self-harm risk assessment was last reviewed 8 weeks ago. The review frequency is set to 4-weekly due to active risk. A recent incident may indicate escalation.", suggested_action: "Complete the risk assessment review incorporating recent incident data. Consider whether the risk level or management strategies need updating. Consult with CAMHS if appropriate.", due_date: _dRel2(-3), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-5), updated_at: _dRel2(-5) },
+  { id: "att_007", home_id: "home_oak", title: "Placement plan update required", category: "placement_plan_update", urgency: "medium", status: "open", child_id: "Child A", staff_id: null, source_record_type: "placement_plan", source_record_id: null, reason: "Child A's placement plan has not been updated following the last LAC review held 2 weeks ago. The agreed actions from the review need to be incorporated into the plan.", suggested_action: "Update the placement plan to reflect the LAC review outcomes. Ensure all agreed actions are captured with responsible persons and timescales. Share the updated plan with the placing authority.", due_date: _dRel2(3), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-10), updated_at: _dRel2(-10) },
+  { id: "att_008", home_id: "home_oak", title: "Key work session overdue", category: "key_work_overdue", urgency: "medium", status: "open", child_id: "Child B", staff_id: "Staff Member E", source_record_type: "key_work", source_record_id: null, reason: "Child B has not had a recorded key work session for 3 weeks. The care plan specifies weekly key work. This is an important mechanism for capturing the child's voice and monitoring wellbeing.", suggested_action: "Schedule a key work session this week. Focus on the child's current wishes and feelings, any concerns, and progress against care plan targets. Record the session promptly.", due_date: _dRel2(2), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-4), updated_at: _dRel2(-4) },
+  { id: "att_009", home_id: "home_oak", title: "Wishes and feelings not captured this month", category: "wishes_feelings_missing", urgency: "medium", status: "open", child_id: "Child C", staff_id: null, source_record_type: "child_voice", source_record_id: null, reason: "No wishes and feelings entry has been recorded for Child C in the current calendar month. The voice of the child is a central focus for Ofsted inspections under the social care common inspection framework.", suggested_action: "Ensure the key worker captures Child C's wishes and feelings through an appropriate method (direct conversation, activity, creative work). Record in the child's voice where possible.", due_date: null, reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-6), updated_at: _dRel2(-6) },
+  { id: "att_010", home_id: "home_oak", title: "Daily logs awaiting approval", category: "log_approval", urgency: "medium", status: "open", child_id: null, staff_id: null, source_record_type: "daily_log", source_record_id: null, reason: "Five daily log entries from the past 7 days have not been reviewed and approved by management. Regular log review demonstrates active oversight and ensures recording quality.", suggested_action: "Review each pending log entry for accuracy, completeness, and tone. Approve entries that meet the standard. Return any that need amendment with clear guidance for the author.", due_date: _dRel2(1), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-2), updated_at: _dRel2(-2) },
+  { id: "att_011", home_id: "home_oak", title: "Reg 44 visit action overdue", category: "reg44_action_overdue", urgency: "medium", status: "open", child_id: null, staff_id: null, source_record_type: "reg44_action", source_record_id: null, reason: "An action from the last Reg 44 independent visitor's report (dated " + _dRel2(-30) + ") regarding fire evacuation drill frequency remains incomplete. The action was due " + _dRel2(-7) + ".", suggested_action: "Complete the outstanding action or provide a written update to the independent visitor explaining the delay and revised timescale. Record completion evidence in the Reg 44 action tracker.", due_date: _dRel2(-7), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-14), updated_at: _dRel2(-14) },
+  { id: "att_012", home_id: "home_oak", title: "Training gap — physical intervention refresher", category: "training_gap", urgency: "medium", status: "open", child_id: null, staff_id: "Staff Member C", source_record_type: "training", source_record_id: null, reason: "Staff Member C's physical intervention certification expired 2 weeks ago. They must not be involved in any physical intervention until the refresher is completed. This affects shift planning.", suggested_action: "Book the next available physical intervention refresher course. Update the rota to ensure Staff Member C is always paired with a certified colleague until recertification. Notify Staff Member C in writing.", due_date: null, reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-14), updated_at: _dRel2(-14) },
+  { id: "att_013", home_id: "home_oak", title: "Complaint from placing authority — response due", category: "complaint_open", urgency: "high", status: "in_progress", child_id: "Child B", staff_id: null, source_record_type: "complaint", source_record_id: null, reason: "A formal complaint was received from the placing authority for Child B regarding communication about a recent incident. The complaints procedure requires an initial response within 5 working days.", suggested_action: "Draft a response to the complaint. Review the incident communication timeline. Identify any gaps in the notification process and outline corrective steps. Log on the complaints register.", due_date: _dRel2(2), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-3), updated_at: _dRel2(-3) },
+  { id: "att_014", home_id: "home_oak", title: "ARIA has detected a pattern — escalating behaviour", category: "aria_pattern", urgency: "medium", status: "open", child_id: "Child A", staff_id: null, source_record_type: "aria", source_record_id: null, reason: "ARIA has identified a pattern of escalating behaviour incidents involving Child A over the past 14 days. The frequency has increased from 1 per week to 3 per week, with increasing severity. This may correlate with reduced family contact during the same period.", suggested_action: "Review the behaviour trend analysis. Consider whether the behaviour support plan needs updating. Explore the link to family contact patterns. Discuss with the team and consider a multi-agency strategy meeting.", due_date: null, reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-1), updated_at: _dRel2(-1) },
+  { id: "att_015", home_id: "home_oak", title: "Reg 45 report — evidence gap in quality of care", category: "reg45_evidence_gap", urgency: "low", status: "open", child_id: null, staff_id: null, source_record_type: "reg45", source_record_id: null, reason: "The upcoming Reg 45 half-yearly report has a gap in evidencing quality of care outcomes for the current period. Specifically, there are limited recorded examples of how the home has responded to children's individual needs.", suggested_action: "Gather evidence from key work records, daily logs, and activity records that demonstrate individualised care. Ask staff to provide specific examples for each child. Compile into the evidence folder.", due_date: _dRel2(14), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-7), updated_at: _dRel2(-7) },
+];
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 let idCounter = 1000;
 export function nextFallbackId(prefix: string): string {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { attentionItems, nextFallbackId } from "@/lib/intelligence/fallback-store";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -13,12 +14,13 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get("category");
 
   if (!isSupabaseEnabled()) {
-    return NextResponse.json({
-      ok: true,
-      items: [],
-      persisted: false,
-      message: "Supabase not configured. Control centre operates in demo mode.",
-    });
+    let rows = [...attentionItems];
+    if (homeId) rows = rows.filter((r) => r.home_id === homeId);
+    if (status) rows = rows.filter((r) => r.status === status);
+    if (urgency) rows = rows.filter((r) => r.urgency === urgency);
+    if (category) rows = rows.filter((r) => r.category === category);
+    rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return NextResponse.json({ ok: true, items: rows, persisted: true });
   }
 
   const supabase = createServerClient() as unknown as LooseSupabase;
@@ -50,7 +52,31 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isSupabaseEnabled()) {
-      return NextResponse.json({ ok: true, persisted: false });
+      const now = new Date().toISOString();
+      const row = {
+        id: nextFallbackId("att"),
+        home_id: homeId as string,
+        title: title as string,
+        category: category as string,
+        urgency: (urgency as string) ?? "medium",
+        status: "open",
+        child_id: (childId as string) ?? null,
+        staff_id: (staffId as string) ?? null,
+        source_record_type: sourceRecordType as string,
+        source_record_id: (sourceRecordId as string) ?? null,
+        reason: (reason as string) ?? "",
+        suggested_action: (suggestedAction as string) ?? "",
+        due_date: (dueDate as string) ?? null,
+        reviewed_by: null,
+        reviewed_at: null,
+        escalated_to: null,
+        escalated_at: null,
+        created_by: (actorUserId as string) ?? null,
+        created_at: now,
+        updated_at: now,
+      };
+      attentionItems.unshift(row);
+      return NextResponse.json({ ok: true, item: row, persisted: true });
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;
@@ -99,7 +125,19 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (!isSupabaseEnabled()) {
-      return NextResponse.json({ ok: true, persisted: false });
+      const idx = attentionItems.findIndex((r) => r.id === id);
+      if (idx >= 0) {
+        const now = new Date().toISOString();
+        attentionItems[idx] = {
+          ...attentionItems[idx],
+          status,
+          updated_at: now,
+          ...(status === "reviewed" ? { reviewed_by: (reviewedBy as string) ?? (actorUserId as string) ?? null, reviewed_at: now } : {}),
+          ...(status === "escalated" ? { escalated_to: (escalatedTo as string) ?? "ri", escalated_at: now } : {}),
+        };
+        return NextResponse.json({ ok: true, item: attentionItems[idx], persisted: true });
+      }
+      return NextResponse.json({ ok: true, item: null, persisted: true });
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;

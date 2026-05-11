@@ -95,132 +95,14 @@ const ENTRY_TYPE_META: Record<string, { label: string; color: string }> = {
 
 // ── Demo Data ────────────────────────────────────────────────────────────────
 
-const DEMO_HOMES: HomeData[] = [
-  {
-    id: "oak-house",
-    name: "Oak House",
-    manager: "Darren Laville",
-    totalChildren: 3,
-    capacity: 4,
-    totalStaff: 12,
-    inspectionReadiness: 88,
-    openRisks: 2,
-    seriousIncidents: 0,
-    reg44Status: "completed",
-    reg45Status: "completed",
-    supervisionCompliance: 92,
-    trainingCompliance: 95,
-    recruitmentCompliance: 100,
-    overdueActions: 3,
-    complaints: 1,
-    missingEpisodes: 1,
-    ariaRiskFlags: ["Staff supervision gap detected for 1 night worker"],
-    lastReviewed: "2026-05-01",
-  },
-  {
-    id: "birch-lodge",
-    name: "Birch Lodge",
-    manager: "Karen Thompson",
-    totalChildren: 4,
-    capacity: 4,
-    totalStaff: 14,
-    inspectionReadiness: 62,
-    openRisks: 5,
-    seriousIncidents: 2,
-    reg44Status: "overdue",
-    reg45Status: "due_soon",
-    supervisionCompliance: 68,
-    trainingCompliance: 71,
-    recruitmentCompliance: 85,
-    overdueActions: 11,
-    complaints: 3,
-    missingEpisodes: 4,
-    ariaRiskFlags: [
-      "Pattern of missing episodes detected - 4 in 30 days",
-      "Supervision compliance below 70% threshold",
-      "3 staff have expired mandatory training",
-      "Reg 44 overdue by 12 days",
-    ],
-    lastReviewed: "2026-04-18",
-  },
-  {
-    id: "willow-place",
-    name: "Willow Place",
-    manager: "David Okonkwo",
-    totalChildren: 3,
-    capacity: 3,
-    totalStaff: 10,
-    inspectionReadiness: 94,
-    openRisks: 1,
-    seriousIncidents: 0,
-    reg44Status: "completed",
-    reg45Status: "completed",
-    supervisionCompliance: 100,
-    trainingCompliance: 98,
-    recruitmentCompliance: 100,
-    overdueActions: 1,
-    complaints: 0,
-    missingEpisodes: 0,
-    ariaRiskFlags: [],
-    lastReviewed: "2026-05-03",
-  },
-];
-
-const DEMO_OVERSIGHT_LOG: OversightEntry[] = [
-  {
-    id: "ol-1",
-    date: "2026-05-03",
-    home: "Willow Place",
-    type: "review",
-    content: "Monthly quality review completed. All areas meeting or exceeding standards. Commend David and team for consistent excellence.",
-    author: "Regional Inspector",
-    status: "closed",
-  },
-  {
-    id: "ol-2",
-    date: "2026-05-01",
-    home: "Oak House",
-    type: "comment",
-    content: "Noted improvement in recording quality following last visit. Progress entries are now timely and outcome-focused. One night staff supervision gap to address.",
-    author: "Regional Inspector",
-    status: "open",
-  },
-  {
-    id: "ol-3",
-    date: "2026-04-28",
-    home: "Birch Lodge",
-    type: "action_request",
-    content: "Reg 44 visit now 12 days overdue. Manager to complete within 48 hours and submit report. Supervision compliance plan required by 5 May.",
-    author: "Regional Inspector",
-    status: "open",
-  },
-  {
-    id: "ol-4",
-    date: "2026-04-25",
-    home: "Birch Lodge",
-    type: "escalation",
-    content: "Pattern of missing episodes identified - 4 in 30 days involving 2 different young people. Requesting immediate review of risk assessments and boundary agreements.",
-    author: "Regional Inspector",
-    status: "open",
-  },
-  {
-    id: "ol-5",
-    date: "2026-04-20",
-    home: "Oak House",
-    type: "review",
-    content: "Unannounced visit completed. Children appeared settled and engaged. Staff interactions observed as warm and appropriate. Minor recommendation around medication storage labelling.",
-    author: "Regional Inspector",
-    status: "closed",
-  },
-];
 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function ProviderOversightPage() {
   const [selectedHome, setSelectedHome] = useState<string>("all");
   const [oversightComment, setOversightComment] = useState("");
-  const [homes, setHomes] = useState<HomeData[]>(DEMO_HOMES);
-  const [oversightLog, setOversightLog] = useState<OversightEntry[]>(DEMO_OVERSIGHT_LOG);
+  const [homes, setHomes] = useState<HomeData[]>([]);
+  const [oversightLog, setOversightLog] = useState<OversightEntry[]>([]);
 
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useProviderSummaries();
@@ -233,7 +115,15 @@ export default function ProviderOversightPage() {
   const { data: evidenceData } = useEvidenceItems();
 
   useEffect(() => {
-    if (apiData?.persisted && apiData.summaries.length > 0) {
+    const rich = (apiData as unknown as { richSummaries?: unknown[]; oversightLog?: unknown[] } | undefined);
+    if (apiData?.persisted && Array.isArray(rich?.richSummaries) && rich!.richSummaries!.length > 0) {
+      setHomes(rich!.richSummaries as HomeData[]);
+      if (Array.isArray(rich?.oversightLog)) {
+        setOversightLog(rich!.oversightLog as OversightEntry[]);
+      }
+      return;
+    }
+    if (apiData?.persisted && Array.isArray(apiData.summaries) && apiData.summaries.length > 0) {
       setHomes((apiData.summaries as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         name: (row.home_id as string) ?? "",
