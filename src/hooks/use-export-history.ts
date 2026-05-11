@@ -24,6 +24,20 @@ export function useExportHistory(homeId: string) {
   });
 }
 
+interface ArtifactHistoryResponse { data: ExportHistoryEntry[] }
+
+export function useArtifactExportHistory(homeId: string, artifactId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["export-history", "by-artifact", homeId, artifactId ?? ""],
+    enabled: !!artifactId,
+    queryFn: () =>
+      api.get<ArtifactHistoryResponse>(
+        `/api/v1/care-events/exports/by-artifact?home_id=${encodeURIComponent(homeId)}&artifact_id=${encodeURIComponent(artifactId!)}`,
+      ),
+    refetchInterval: 30000,
+  });
+}
+
 interface SnapshotExportResponse {
   data: { export: ExportHistoryEntry; payload: InspectionSnapshot };
 }

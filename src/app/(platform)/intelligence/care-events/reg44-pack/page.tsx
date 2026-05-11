@@ -20,6 +20,7 @@ import {
   useFetchPersistedReg44Pack,
 } from "@/hooks/use-reg44-pack";
 import { useExportReg44Pack } from "@/hooks/use-export-history";
+import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
 import type { Reg44Pack } from "@/lib/care-events/reg44-pack";
 
 const HOME_ID = "home_oak";
@@ -177,6 +178,8 @@ export default function Reg44PackPage() {
               <p>By: {pack.generated_by ?? "unknown"}</p>
             </CardContent>
           </Card>
+
+          <ArtifactExportHistoryPanel homeId={HOME_ID} artifactId={pack.id} />
 
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm">Headline</CardTitle></CardHeader>

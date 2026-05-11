@@ -20,6 +20,7 @@ import {
   useFetchPersistedSnapshot,
 } from "@/hooks/use-inspection-snapshot";
 import { useExportInspectionSnapshot } from "@/hooks/use-export-history";
+import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
 import type { InspectionSnapshot } from "@/lib/care-events/inspection-snapshot";
 
 const HOME_ID = "home_oak";
@@ -158,6 +159,8 @@ export default function InspectionSnapshotPage() {
                 <p>Schema version: {snap.schema_version}</p>
               </CardContent>
             </Card>
+
+            <ArtifactExportHistoryPanel homeId={HOME_ID} artifactId={snap.id} />
 
             <Card>
               <CardHeader className="pb-2">
