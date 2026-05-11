@@ -406,6 +406,7 @@ import type {
   AriaSafeguardingPattern, AriaEarlyWarning,
   AriaCareGraphNode, AriaCareGraphEdge,
   AriaFormulation, AriaDecisionRecommendation, AriaReg45EvidenceItem,
+  AriaAnnexASnapshot,
 } from "@/types/aria-studio";
 
 // ── Mutable collections ───────────────────────────────────────────────────────
@@ -1244,6 +1245,7 @@ const store = {
   ariaFormulations: [] as AriaFormulation[],
   ariaDecisionRecommendations: [] as AriaDecisionRecommendation[],
   ariaReg45EvidenceItems: [] as AriaReg45EvidenceItem[],
+  ariaAnnexASnapshots: [] as AriaAnnexASnapshot[],
 
   // Shift Swap Requests
   shiftSwaps: [
@@ -11328,6 +11330,34 @@ export const db = {
         ...data,
       };
       return store.ariaReg45EvidenceItems[idx];
+    },
+  },
+  ariaAnnexASnapshots: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaAnnexASnapshots.filter((s) => s.home_id === homeId)
+        : store.ariaAnnexASnapshots,
+    findById: (id: string) => store.ariaAnnexASnapshots.find((s) => s.id === id),
+    findLatestDraft: (homeId: string): AriaAnnexASnapshot | undefined =>
+      [...store.ariaAnnexASnapshots]
+        .filter((s) => s.home_id === homeId && s.status === "draft")
+        .sort((a, b) => b.generated_at.localeCompare(a.generated_at))[0],
+    create: (data: Omit<AriaAnnexASnapshot, "id">): AriaAnnexASnapshot => {
+      const rec: AriaAnnexASnapshot = { ...data, id: generateId("axa") };
+      store.ariaAnnexASnapshots.push(rec);
+      return rec;
+    },
+    patch: (
+      id: string,
+      data: Partial<AriaAnnexASnapshot>,
+    ): AriaAnnexASnapshot | null => {
+      const idx = store.ariaAnnexASnapshots.findIndex((s) => s.id === id);
+      if (idx === -1) return null;
+      store.ariaAnnexASnapshots[idx] = {
+        ...store.ariaAnnexASnapshots[idx],
+        ...data,
+      };
+      return store.ariaAnnexASnapshots[idx];
     },
   },
   wakeUpRoutines: {

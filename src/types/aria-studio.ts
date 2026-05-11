@@ -810,6 +810,64 @@ export interface AriaReg45Snapshot {
   };
 }
 
+// ── Annex A Live Snapshot ─────────────────────────────────────────────────────
+
+export type AriaAnnexASectionKey =
+  | "section_1"
+  | "section_2"
+  | "section_3"
+  | "section_4"
+  | "section_5"
+  | "section_6"
+  | "section_7"
+  | "section_8"
+  | "section_9";
+
+export const ARIA_ANNEX_A_SECTIONS: { key: AriaAnnexASectionKey; label: string; weight: number }[] = [
+  { key: "section_1", label: "Section 1 — Details of the home", weight: 5 },
+  { key: "section_2", label: "Section 2 — Children and young people", weight: 20 },
+  { key: "section_3", label: "Section 3 — Staffing", weight: 15 },
+  { key: "section_4", label: "Section 4 — Incidents and notifications", weight: 15 },
+  { key: "section_5", label: "Section 5 — Complaints and representations", weight: 10 },
+  { key: "section_6", label: "Section 6 — Missing episodes", weight: 10 },
+  { key: "section_7", label: "Section 7 — Physical interventions / restraints", weight: 10 },
+  { key: "section_8", label: "Section 8 — Regulation 44 visits", weight: 10 },
+  { key: "section_9", label: "Section 9 — Regulation 45 reports", weight: 5 },
+];
+
+export type AriaAnnexAReadiness = "green" | "amber" | "red";
+
+export interface AriaAnnexASectionReading {
+  key: AriaAnnexASectionKey;
+  label: string;
+  weight: number;
+  record_count: number;
+  gap_count: number;
+  stale_count: number;
+  readiness: AriaAnnexAReadiness;
+  issues: string[];
+  notes: string;
+}
+
+export type AriaAnnexASnapshotStatus = "draft" | "locked";
+
+export interface AriaAnnexASnapshot {
+  id: string;
+  home_id: string;
+  period_start: string;
+  period_end: string;
+  generated_at: string;
+  status: AriaAnnexASnapshotStatus;
+  readiness_score: number;
+  overall_readiness: AriaAnnexAReadiness;
+  sections: AriaAnnexASectionReading[];
+  total_gaps: number;
+  total_stale: number;
+  locked_by: string | null;
+  locked_at: string | null;
+  lock_note: string | null;
+}
+
 // ── Home Dynamics ─────────────────────────────────────────────────────────────
 
 export type AriaIndicatorStatus = "green" | "amber" | "red";

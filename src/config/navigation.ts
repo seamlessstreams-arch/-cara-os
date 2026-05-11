@@ -567,6 +567,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Care Graph",          href: "/intelligence/aria/care-graph",         icon: "Network",     module: "dashboard"    },
       { label: "Decision Support",    href: "/intelligence/aria/decision-support",   icon: "Brain",       module: "dashboard"    },
       { label: "Reg 45 Evidence",     href: "/intelligence/aria/reg45-evidence",     icon: "ClipboardCheck", module: "dashboard" },
+      { label: "Annex A Snapshot",    href: "/intelligence/aria/annex-a-snapshot",   icon: "Award",       module: "dashboard"    },
       { label: "Review Queue",       href: "/aria/review",                          icon: "ClipboardCheck", module: "dashboard" },
       { label: "Pattern Alerts",     href: "/patterns",                             icon: "Radar",       module: "dashboard"    },
       { label: "Situation Review",    href: "/intelligence/aria/situation",          icon: "Eye",         module: "dashboard"    },
