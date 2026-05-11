@@ -13,12 +13,13 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Camera, Download, Loader2, Eye, History } from "lucide-react";
+import { Camera, Download, Loader2, Eye, History, Share2 } from "lucide-react";
 import {
   usePersistedSnapshots,
   useGenerateAndPersistSnapshot,
   useFetchPersistedSnapshot,
 } from "@/hooks/use-inspection-snapshot";
+import { useExportInspectionSnapshot } from "@/hooks/use-export-history";
 import type { InspectionSnapshot } from "@/lib/care-events/inspection-snapshot";
 
 const HOME_ID = "home_oak";
@@ -27,6 +28,7 @@ export default function InspectionSnapshotPage() {
   const list = usePersistedSnapshots(HOME_ID);
   const gen  = useGenerateAndPersistSnapshot(HOME_ID);
   const fetchOne = useFetchPersistedSnapshot();
+  const exportSnap = useExportInspectionSnapshot();
   const [snap, setSnap] = useState<InspectionSnapshot | null>(null);
 
   async function generate() {
@@ -50,6 +52,24 @@ export default function InspectionSnapshotPage() {
     URL.revokeObjectURL(url);
   }
 
+  async function exportNow() {
+    if (!snap) return;
+    const reason = window.prompt(
+      "Reason for export (recorded in immutable export history):",
+      "",
+    );
+    if (reason === null) return;
+    const r = await exportSnap.mutateAsync({ id: snap.id, reason });
+    const payload = r.data.payload;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${payload.id}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   const rows = list.data?.data ?? [];
 
   return (
@@ -66,6 +86,13 @@ export default function InspectionSnapshotPage() {
           {snap && (
             <Button size="sm" variant="outline" onClick={download}>
               <Download className="mr-1 h-4 w-4" />Download JSON
+            </Button>
+          )}
+          {snap && (
+            <Button size="sm" variant="default" onClick={exportNow} disabled={exportSnap.isPending}>
+              {exportSnap.isPending
+                ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Exporting…</>
+                : <><Share2 className="mr-1 h-4 w-4" />Export &amp; record</>}
             </Button>
           )}
         </div>

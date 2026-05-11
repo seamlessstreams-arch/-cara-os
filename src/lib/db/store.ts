@@ -457,6 +457,27 @@ export interface PersistedReg44Pack {
   payload: unknown;
 }
 
+// Immutable export history entry (M36). One row per successful export of a
+// persisted artifact. Used to satisfy CLAUDE.md "restricted export
+// permissions" + audit / traceability.
+export type ExportHistoryKind =
+  | "inspection_snapshot"
+  | "reg44_pack";
+export type ExportHistoryFormat = "json";
+export interface ExportHistoryEntry {
+  id: string;
+  home_id: string;
+  kind: ExportHistoryKind;
+  artifact_id: string;
+  format: ExportHistoryFormat;
+  exported_at: string;
+  exported_by: string;
+  exported_by_role: string;
+  is_safeguarding_sensitive: boolean;
+  byte_size: number;
+  reason: string | null;
+}
+
 // ── Mutable collections ───────────────────────────────────────────────────────
 
 const store = {
@@ -1094,6 +1115,9 @@ const store = {
 
   // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
   reg44Packs: [] as PersistedReg44Pack[],
+
+  // ── Export History (M36) ─────────────────────────────────────────────────────
+  exportHistory: [] as ExportHistoryEntry[],
 
   // ── Branding ─────────────────────────────────────────────────────────────
   systemBranding: {
@@ -11065,6 +11089,23 @@ export const db = {
       if (store.reg44Packs.some((p) => p.id === pack.id)) return pack;
       store.reg44Packs.push(pack);
       return pack;
+    },
+  },
+
+  // ── Export History (M36) ─────────────────────────────────────────────────────
+  exportHistory: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.exportHistory.filter((e) => e.home_id === homeId)
+        : store.exportHistory,
+    findById: (id: string) => store.exportHistory.find((e) => e.id === id) ?? null,
+    findForArtifact: (artifactId: string) =>
+      store.exportHistory.filter((e) => e.artifact_id === artifactId),
+    create: (entry: ExportHistoryEntry): ExportHistoryEntry => {
+      // immutable append-only — reject duplicate ids
+      if (store.exportHistory.some((e) => e.id === entry.id)) return entry;
+      store.exportHistory.push(entry);
+      return entry;
     },
   },
 

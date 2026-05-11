@@ -13,12 +13,13 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Loader2, History } from "lucide-react";
+import { FileText, Download, Loader2, History, Share2 } from "lucide-react";
 import {
   useGenerateAndPersistReg44Pack,
   usePersistedReg44Packs,
   useFetchPersistedReg44Pack,
 } from "@/hooks/use-reg44-pack";
+import { useExportReg44Pack } from "@/hooks/use-export-history";
 import type { Reg44Pack } from "@/lib/care-events/reg44-pack";
 
 const HOME_ID = "home_oak";
@@ -28,6 +29,7 @@ export default function Reg44PackPage() {
   const gen = useGenerateAndPersistReg44Pack(HOME_ID);
   const history = usePersistedReg44Packs(HOME_ID);
   const fetchOne = useFetchPersistedReg44Pack();
+  const exportPack = useExportReg44Pack();
   const [days, setDays] = useState<number>(30);
   const [pack, setPack] = useState<Reg44Pack | null>(null);
 
@@ -48,6 +50,24 @@ export default function Reg44PackPage() {
     const a = document.createElement("a");
     a.href = url;
     a.download = `${pack.id}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function exportNow() {
+    if (!pack) return;
+    const reason = window.prompt(
+      "Reason for export (recorded in immutable export history):",
+      "",
+    );
+    if (reason === null) return;
+    const r = await exportPack.mutateAsync({ id: pack.id, reason });
+    const payload = r.data.payload;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${payload.id}.json`;
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
   }
@@ -77,6 +97,13 @@ export default function Reg44PackPage() {
           {pack && (
             <Button size="sm" variant="outline" onClick={download}>
               <Download className="mr-1 h-4 w-4" />Download JSON
+            </Button>
+          )}
+          {pack && (
+            <Button size="sm" variant="default" onClick={exportNow} disabled={exportPack.isPending}>
+              {exportPack.isPending
+                ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" />Exporting…</>
+                : <><Share2 className="mr-1 h-4 w-4" />Export &amp; record</>}
             </Button>
           )}
         </div>
