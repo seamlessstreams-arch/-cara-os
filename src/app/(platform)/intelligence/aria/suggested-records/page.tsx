@@ -27,6 +27,7 @@ import {
   useCommitSuggestedRecord,
   useProposeSuggestedRecord,
 } from "@/hooks/use-aria-suggested-records";
+import { useBridgeCareEvents } from "@/hooks/use-aria-care-event-bridge";
 import { useAuthContext } from "@/contexts/auth-context";
 import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
 import {
@@ -178,6 +179,7 @@ export default function SuggestedRecordsPage() {
   const decided = useSuggestedRecords(HOME_ID);
   const committed = useCommittedRecords(HOME_ID);
   const propose = useProposeSuggestedRecord();
+  const bridge = useBridgeCareEvents();
 
   const pendingItems = pending.data?.data ?? [];
   const decidedItems = (decided.data?.data ?? []).filter(
@@ -205,10 +207,29 @@ export default function SuggestedRecordsPage() {
       title="ARIA — Suggested Records"
       subtitle="ARIA drafts. Humans decide. Only authorised humans approve and commit to the official record."
       actions={
-        <Button onClick={seedDemo} disabled={propose.isPending} variant="outline">
-          <Sparkles className="mr-2 h-4 w-4" />
-          {propose.isPending ? "Drafting…" : "Demo: draft a daily summary"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={() =>
+              bridge.mutate({
+                home_id: HOME_ID,
+                limit: 25,
+                actor_id: currentUser?.id,
+                actor_role: ariaRole,
+              })
+            }
+            disabled={bridge.isPending}
+            variant="outline"
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            {bridge.isPending
+              ? "Drafting from care events\u2026"
+              : "Draft from latest verified care events"}
+          </Button>
+          <Button onClick={seedDemo} disabled={propose.isPending} variant="outline">
+            <Sparkles className="mr-2 h-4 w-4" />
+            {propose.isPending ? "Drafting\u2026" : "Demo: draft a daily summary"}
+          </Button>
+        </div>
       }
     >
       <Tabs defaultValue="pending" className="space-y-4">

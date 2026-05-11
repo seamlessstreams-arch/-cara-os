@@ -3,6 +3,8 @@ import { db } from "@/lib/db/store";
 import { careEventsDb } from "@/lib/db";
 import { processCareEvent, retryFailedRoutes } from "@/lib/care-events/processor";
 import { buildRoutingPreview } from "@/lib/care-events/routing-engine";
+import { proposeRecordsFromCareEvent } from "@/lib/aria/aria-care-event-bridge";
+import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
 import { generateId, todayStr } from "@/lib/utils";
 import { getUserIdFromRequest, requirePermission, requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -291,6 +293,29 @@ export async function PATCH(
           `Your entry "${event.title}" has been verified by the manager.${reg45Items.length + annexItems.length > 0 ? ` ${reg45Items.length + annexItems.length} evidence item(s) approved.` : ""}`,
           `/care-events/${id}`
         );
+      }
+
+      // ── ARIA bridge: draft suggested records into the M10 commit queue ──
+      try {
+        const verifiedEvent = await careEventsDb.careEvents.findById(id);
+        if (verifiedEvent) {
+          const bridge = proposeRecordsFromCareEvent(verifiedEvent, actorId);
+          if (bridge.proposed.length > 0) {
+            for (const rec of bridge.proposed) {
+              appendAriaAudit({
+                homeId: verifiedEvent.home_id,
+                actorId,
+                actionType: "artifact_generated",
+                artifactId: rec.id,
+                sourceIds: [verifiedEvent.id],
+                summary: `ARIA drafted ${rec.record_type} from verified care event "${verifiedEvent.title}"`,
+                after: { record_type: rec.record_type, status: rec.status },
+              });
+            }
+          }
+        }
+      } catch {
+        // Bridge failure must never block verification
       }
 
       return NextResponse.json({ data: await careEventsDb.careEvents.findById(id) });
