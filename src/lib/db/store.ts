@@ -402,6 +402,7 @@ import {
 import type {
   AriaArtifact, AriaSource, AriaArtifactVersion, AriaArtifactReview,
   AriaArtifactAction, AriaQualityCheck, AriaGap, AriaStudioAuditLog,
+  AriaHomeDynamicsSnapshot,
 } from "@/types/aria-studio";
 
 // ── Mutable collections ───────────────────────────────────────────────────────
@@ -1232,6 +1233,7 @@ const store = {
   ariaQualityChecks: [] as AriaQualityCheck[],
   ariaGaps: [] as AriaGap[],
   ariaStudioAuditLog: [] as AriaStudioAuditLog[],
+  ariaHomeDynamicsSnapshots: [] as AriaHomeDynamicsSnapshot[],
 
   // Shift Swap Requests
   shiftSwaps: [
@@ -11095,6 +11097,24 @@ export const db = {
       const entry: AriaStudioAuditLog = { ...data, id: generateId("aal"), created_at: new Date().toISOString() };
       store.ariaStudioAuditLog.push(entry);
       return entry;
+    },
+  },
+  ariaHomeDynamicsSnapshots: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaHomeDynamicsSnapshots.filter((s) => s.home_id === homeId)
+        : store.ariaHomeDynamicsSnapshots,
+    findById: (id: string) => store.ariaHomeDynamicsSnapshots.find((s) => s.id === id),
+    latestForHome: (homeId: string) => {
+      const list = store.ariaHomeDynamicsSnapshots
+        .filter((s) => s.home_id === homeId)
+        .sort((a, b) => b.generated_at.localeCompare(a.generated_at));
+      return list[0] ?? null;
+    },
+    create: (data: Omit<AriaHomeDynamicsSnapshot, "id">): AriaHomeDynamicsSnapshot => {
+      const snap: AriaHomeDynamicsSnapshot = { ...data, id: generateId("hds") };
+      store.ariaHomeDynamicsSnapshots.push(snap);
+      return snap;
     },
   },
   wakeUpRoutines: {

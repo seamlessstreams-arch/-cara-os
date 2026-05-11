@@ -484,6 +484,52 @@ export interface AriaStudioAuditLog {
   created_at: string;
 }
 
+// ── Home Dynamics ─────────────────────────────────────────────────────────────
+
+export type AriaIndicatorStatus = "green" | "amber" | "red";
+
+export interface AriaHomeDynamicsIndicator {
+  key: string;
+  label: string;
+  value: number | string;
+  status: AriaIndicatorStatus;
+  detail: string;
+}
+
+export interface AriaHomeDynamicsSnapshot {
+  id: string;
+  home_id: string;
+  snapshot_date: string;
+  window_days: number;
+  window_start: string;
+  window_end: string;
+
+  incidents_total: number;
+  incidents_high_severity: number;
+  incidents_open: number;
+  incidents_oversight_outstanding: number;
+
+  restraints_total: number;
+  missing_episodes_total: number;
+  missing_episodes_active: number;
+
+  shifts_scheduled: number;
+  shifts_completed: number;
+  shifts_no_show: number;
+  shifts_cancelled: number;
+  staffing_stability_pct: number;
+
+  tasks_overdue: number;
+
+  overall_status: AriaIndicatorStatus;
+  indicators: AriaHomeDynamicsIndicator[];
+  narrative_summary: string;
+
+  generated_by: string;
+  generated_at: string;
+  is_ai_draft: boolean;
+}
+
 // ── Request / response types ──────────────────────────────────────────────────
 
 export interface AriaGenerationRequest {
