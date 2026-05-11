@@ -573,6 +573,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Oversight Queue",     href: "/intelligence/aria/oversight-queue",    icon: "AlertTriangle", module: "dashboard"  },
       { label: "Reg 40 Triage",       href: "/intelligence/aria/reg40-triage",       icon: "FileWarning", module: "dashboard"    },
       { label: "Routing Health",      href: "/intelligence/routing-health",          icon: "Activity",    module: "dashboard"    },
+      { label: "Care Event Patterns", href: "/intelligence/care-events/patterns",    icon: "Sparkles",    module: "dashboard"    },
       { label: "Audit Trail",         href: "/intelligence/aria/audit-trail",        icon: "ScrollText",  module: "dashboard"    },
       { label: "Review Queue",       href: "/aria/review",                          icon: "ClipboardCheck", module: "dashboard" },
       { label: "Pattern Alerts",     href: "/patterns",                             icon: "Radar",       module: "dashboard"    },
