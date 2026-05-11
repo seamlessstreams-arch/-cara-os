@@ -10674,6 +10674,7 @@ export const db = {
 
   // ── Care Event Routes ────────────────────────────────────────────────────────
   careEventRoutes: {
+    findAll: () => store.careEventRoutes,
     findByCareEvent: (careEventId: string) => store.careEventRoutes.filter((r) => r.care_event_id === careEventId),
     findFailed: () => store.careEventRoutes.filter((r) => r.status === "failed" || r.status === "retry_required"),
     upsert: (data: Omit<CareEventRoute, "id" | "created_at" | "updated_at">): CareEventRoute => {
@@ -10699,6 +10700,7 @@ export const db = {
 
   // ── Care Event Jobs ──────────────────────────────────────────────────────────
   careEventJobs: {
+    findAll: () => store.careEventJobs,
     findPending: () => store.careEventJobs.filter((j) => j.status === "pending"),
     findFailed: () => store.careEventJobs.filter((j) => j.status === "failed" || j.status === "retry_required"),
     upsert: (data: Omit<CareEventJob, "id" | "created_at" | "updated_at">): CareEventJob => {
