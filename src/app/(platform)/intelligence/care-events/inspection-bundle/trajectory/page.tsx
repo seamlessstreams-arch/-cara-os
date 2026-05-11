@@ -7,15 +7,21 @@
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus, LineChart } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, LineChart, BellRing } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { useInspectionTrajectory } from "@/hooks/use-inspection-trajectory";
+import { useTrajectoryAlerts, useAckTrajectoryAlert } from "@/hooks/use-trajectory-alerts";
+import type { TrajectoryAlert } from "@/lib/care-events/inspection-trajectory";
 
 const HOME_ID = "home_oak";
 
 export default function InspectionTrajectoryPage() {
   const q = useInspectionTrajectory(HOME_ID);
   const t = q.data?.data;
+  const alertsQ = useTrajectoryAlerts(HOME_ID);
+  const alerts = alertsQ.data?.data.alerts ?? [];
+  const acks = alertsQ.data?.data.acks_recent ?? [];
 
   return (
     <PageShell
@@ -26,8 +32,10 @@ export default function InspectionTrajectoryPage() {
       {t && (
         <div className="space-y-6">
           <SummaryCard t={t} />
+          <AlertsCard alerts={alerts} />
           <Sparkline points={t.points} />
           <PointsTable points={t.points} />
+          <AckHistoryCard acks={acks} />
         </div>
       )}
     </PageShell>
@@ -177,6 +185,143 @@ function PointsTable({ points }: { points: import("@/lib/care-events/inspection-
                 </tr>
               );
             })}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AlertsCard({ alerts }: { alerts: TrajectoryAlert[] }) {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <BellRing className="h-4 w-4 text-slate-500" />
+          Active alerts
+          <Badge variant="outline" className="ml-2 text-xs">{alerts.length}</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {alerts.length === 0 && (
+          <p className="text-sm text-slate-500">No active trajectory alerts.</p>
+        )}
+        {alerts.length > 0 && (
+          <ul className="space-y-2">
+            {alerts.map((a) => <AlertRow key={a.id} alert={a} />)}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function AlertRow({ alert }: { alert: TrajectoryAlert }) {
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const ack = useAckTrajectoryAlert(HOME_ID);
+  const tone =
+    alert.severity === "critical"
+      ? "border-rose-300 bg-rose-50"
+      : "border-amber-300 bg-amber-50";
+  return (
+    <li className={`rounded border p-3 ${tone}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-800">
+            {alert.kind.replace(/_/g, " ")}{" "}
+            <Badge variant="outline" className="ml-1 text-xs">{alert.severity}</Badge>
+          </p>
+          <p className="mt-0.5 text-sm text-slate-700">{alert.message}</p>
+          {alert.bundle_id && (
+            <Link
+              href={`/intelligence/care-events/inspection-bundle/${encodeURIComponent(alert.bundle_id)}`}
+              className="text-xs text-blue-700 underline"
+            >
+              open bundle
+            </Link>
+          )}
+        </div>
+        {!open && (
+          <button
+            type="button"
+            className="rounded border border-slate-300 bg-white px-2 py-1 text-xs hover:bg-slate-50"
+            onClick={() => setOpen(true)}
+          >
+            Acknowledge
+          </button>
+        )}
+      </div>
+      {open && (
+        <form
+          className="mt-3 space-y-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!note.trim()) return;
+            ack.mutate({ alert_id: alert.id, note: note.trim() }, {
+              onSuccess: () => { setOpen(false); setNote(""); },
+            });
+          }}
+        >
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Action note: what's being done, who's doing it, by when…"
+            rows={2}
+            required
+            className="w-full rounded border border-slate-300 bg-white p-2 text-sm"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              type="submit"
+              disabled={ack.isPending || !note.trim()}
+              className="rounded bg-slate-900 px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
+            >
+              {ack.isPending ? "Saving…" : "Submit acknowledgement"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setOpen(false); setNote(""); }}
+              className="rounded border border-slate-300 bg-white px-3 py-1 text-xs"
+            >
+              Cancel
+            </button>
+            {ack.isError && (
+              <span className="text-xs text-rose-700">Failed — please try again.</span>
+            )}
+          </div>
+        </form>
+      )}
+    </li>
+  );
+}
+
+function AckHistoryCard({ acks }: { acks: import("@/lib/db/store").TrajectoryAlertAck[] }) {
+  if (acks.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">Recent acknowledgements ({acks.length})</CardTitle>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="border-b border-slate-200 text-slate-500">
+            <tr>
+              <th className="py-1 pr-3">Acked at</th>
+              <th className="py-1 pr-3">Kind</th>
+              <th className="py-1 pr-3">By</th>
+              <th className="py-1 pr-3">Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            {acks.map((a) => (
+              <tr key={a.id} className="border-b border-slate-100 align-top">
+                <td className="py-1 pr-3 whitespace-nowrap">{new Date(a.acked_at).toLocaleString()}</td>
+                <td className="py-1 pr-3">{a.alert_kind.replace(/_/g, " ")}</td>
+                <td className="py-1 pr-3">{a.acked_by_user} ({a.acked_by_role})</td>
+                <td className="py-1 pr-3">{a.note}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </CardContent>

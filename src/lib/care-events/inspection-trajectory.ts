@@ -13,6 +13,8 @@ import {
   listPersistedInspectionBundles,
   type PersistedInspectionBundleRow,
 } from "@/lib/care-events/inspection-bundle";
+import { db } from "@/lib/db/store";
+import type { TrajectoryAlertAck } from "@/lib/db/store";
 
 export interface TrajectoryPoint {
   bundle_id: string;
@@ -211,5 +213,39 @@ export function detectTrajectoryAlerts(homeId: string): TrajectoryAlert[] {
     });
   }
 
-  return out;
+  // Filter out alerts that have been acknowledged by any manager. The alert
+  // ids are bundle-scoped, so a fresh bundle re-raises the alert with a new
+  // id and managers will see it again — acknowledgement is per-bundle.
+  const ackedIds = new Set(
+    db.trajectoryAlertAcks.findAll(homeId).map((a) => a.alert_id),
+  );
+  return out.filter((a) => !ackedIds.has(a.id));
+}
+
+// ── Acknowledgement (M48) ─────────────────────────────────────────────────────
+
+export function recordTrajectoryAlertAck(input: {
+  alert: TrajectoryAlert;
+  acked_by_user: string;
+  acked_by_role: string;
+  note: string;
+}): TrajectoryAlertAck {
+  const { alert, acked_by_user, acked_by_role, note } = input;
+  return db.trajectoryAlertAcks.create({
+    id: `${alert.id}::${acked_by_user}`,
+    alert_id: alert.id,
+    home_id: alert.home_id,
+    bundle_id: alert.bundle_id,
+    alert_kind: alert.kind,
+    acked_by_user,
+    acked_by_role,
+    note,
+    acked_at: new Date().toISOString(),
+  });
+}
+
+export function listTrajectoryAlertAcks(homeId: string): TrajectoryAlertAck[] {
+  return [...db.trajectoryAlertAcks.findAll(homeId)].sort((a, b) =>
+    b.acked_at.localeCompare(a.acked_at),
+  );
 }

@@ -476,6 +476,22 @@ export interface PersistedInspectionBundle {
   payload: unknown;
 }
 
+// Trajectory alert acknowledgement (M48). One row per (alert_id, acked_by_user)
+// recording a manager's action note + timestamp so the acknowledged alert
+// stops appearing in the manager notification stream until the next bundle
+// (because the alert id is bundle-scoped and changes with each new bundle).
+export interface TrajectoryAlertAck {
+  id: string;                  // alert_id::user_id
+  alert_id: string;
+  home_id: string;
+  bundle_id: string | null;
+  alert_kind: string;
+  acked_by_user: string;
+  acked_by_role: string;
+  note: string;
+  acked_at: string;
+}
+
 // Immutable export history entry (M36). One row per successful export of a
 // persisted artifact. Used to satisfy CLAUDE.md "restricted export
 // permissions" + audit / traceability.
@@ -1137,6 +1153,7 @@ const store = {
   // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
   reg44Packs: [] as PersistedReg44Pack[],
   inspectionBundles: [] as PersistedInspectionBundle[],
+  trajectoryAlertAcks: [] as TrajectoryAlertAck[],
 
   // ── Export History (M36) ─────────────────────────────────────────────────────
   exportHistory: [] as ExportHistoryEntry[],
@@ -11127,6 +11144,24 @@ export const db = {
       if (store.inspectionBundles.some((x) => x.id === b.id)) return b;
       store.inspectionBundles.push(b);
       return b;
+    },
+  },
+
+  // ── Trajectory Alert Acks (M48) ─────────────────────────────────────────
+  trajectoryAlertAcks: {
+    findAll: (homeId?: string): TrajectoryAlertAck[] =>
+      homeId
+        ? store.trajectoryAlertAcks.filter((a) => a.home_id === homeId)
+        : store.trajectoryAlertAcks,
+    findByAlertId: (alertId: string): TrajectoryAlertAck[] =>
+      store.trajectoryAlertAcks.filter((a) => a.alert_id === alertId),
+    create: (a: TrajectoryAlertAck): TrajectoryAlertAck => {
+      // idempotent: an ack from the same user on the same alert is preserved
+      if (store.trajectoryAlertAcks.some((x) => x.id === a.id)) {
+        return store.trajectoryAlertAcks.find((x) => x.id === a.id)!;
+      }
+      store.trajectoryAlertAcks.push(a);
+      return a;
     },
   },
 
