@@ -22,6 +22,7 @@ import {
   loadCommittedRecords,
   isSafeguardingSensitiveRecordType,
 } from "@/lib/aria/aria-suggested-records";
+import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
 import type {
   AriaSuggestedRecordStatus,
   AriaSuggestedRecordType,
@@ -106,6 +107,14 @@ export async function POST(req: NextRequest) {
     generatedBy: guard.actor.userId,
     targetLabel: typeof body.target_label === "string" ? body.target_label : undefined,
   });
+  appendAriaAudit({
+    homeId,
+    actorId: guard.actor.userId,
+    actionType: "artifact_generated",
+    artifactId: rec.id,
+    summary: `Suggested ${recordType}: ${rec.suggested_title}`,
+    after: { status: rec.status, target_label: rec.target_label },
+  });
   return NextResponse.json({ data: rec }, { status: 201 });
 }
 
@@ -153,6 +162,17 @@ export async function PATCH(req: NextRequest) {
         typeof body.suggested_body === "string" ? body.suggested_body : undefined,
       suggestedFields,
     });
+    appendAriaAudit({
+      homeId: existing.home_id,
+      actorId: guard.actor.userId,
+      actionType: "artifact_edited",
+      artifactId: id,
+      summary: `Edited suggested ${existing.record_type}`,
+      before: { title: existing.suggested_title, body: existing.suggested_body },
+      after: updated
+        ? { title: updated.suggested_title, edits_count: updated.edits_count }
+        : null,
+    });
     return NextResponse.json({ data: updated });
   }
 
@@ -165,6 +185,15 @@ export async function PATCH(req: NextRequest) {
     });
     if (!guard.ok) return guard.response;
     const updated = rejectSuggestedRecord(id, guard.actor.userId, note);
+    appendAriaAudit({
+      homeId: existing.home_id,
+      actorId: guard.actor.userId,
+      actionType: "artifact_rejected",
+      artifactId: id,
+      summary: `Rejected suggested ${existing.record_type}${note ? `: ${note}` : ""}`,
+      before: { status: existing.status },
+      after: updated ? { status: updated.status, decided_by: updated.decided_by } : null,
+    });
     return NextResponse.json({ data: updated });
   }
 
@@ -182,6 +211,20 @@ export async function PATCH(req: NextRequest) {
     if (!result) {
       return NextResponse.json({ error: "Commit failed" }, { status: 409 });
     }
+    appendAriaAudit({
+      homeId: existing.home_id,
+      actorId: guard.actor.userId,
+      actionType: "artifact_committed",
+      artifactId: id,
+      sourceIds: [result.committed.id],
+      summary: `Committed ${existing.record_type} to record${sensitive ? " (safeguarding-sensitive)" : ""}`,
+      before: { status: existing.status },
+      after: {
+        status: result.suggestion.status,
+        committed_record_id: result.committed.id,
+        sensitive,
+      },
+    });
     return NextResponse.json({ data: result });
   }
 
