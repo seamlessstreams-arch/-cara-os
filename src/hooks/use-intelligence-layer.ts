@@ -261,6 +261,40 @@ export function useCreateReg44Visit() {
   });
 }
 
+export function useReg44Actions(params?: { homeId?: string; visitId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.visitId) query.set("visitId", params.visitId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "reg44-actions", params],
+    queryFn: () => ilFetch<{ ok: boolean; actions: unknown[]; persisted: boolean }>(`/reg44-actions?${query}`),
+  });
+}
+
+export function useCreateReg44Action() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/reg44-actions", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "reg44-actions"] });
+    },
+  });
+}
+
+export function useUpdateReg44Action() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/reg44-actions", { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "reg44-actions"] });
+    },
+  });
+}
+
 // ── Reg 45 ───────────────────────────────────────────────────────────────────
 
 export function useReg45Reviews(params?: { homeId?: string; status?: string }) {
@@ -293,6 +327,16 @@ export function useUpdateReg45Review() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["il", "reg45"] });
     },
+  });
+}
+
+export function useReg45Evidence(params?: { homeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+
+  return useQuery({
+    queryKey: ["il", "reg45-evidence", params],
+    queryFn: () => ilFetch<{ ok: boolean; evidence: unknown[]; persisted: boolean }>(`/reg45-evidence?${query}`),
   });
 }
 

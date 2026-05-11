@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReg45Reviews, useUpdateReg45Review } from "@/hooks/use-intelligence-layer";
+import { useReg45Reviews, useUpdateReg45Review, useReg45Evidence } from "@/hooks/use-intelligence-layer";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { AriaPanel } from "@/components/aria/aria-panel";
@@ -115,79 +115,10 @@ const STAKEHOLDER_SECTIONS: ReviewSection[] = [
   { key: "staffViews", label: "Staff Views", icon: Users, description: "Views and feedback from the staff team" },
 ];
 
-/* ── demo data ─────────────────────────────────────────────────────────────── */
+/* ── demo data (now served by /api/intelligence/reg45 fallback store) ──────── */
 
-const DEMO_REVIEWS: Reg45Review[] = [
-  {
-    id: "r1",
-    homeId: "home_oak",
-    periodStart: "2025-11-01",
-    periodEnd: "2026-04-30",
-    status: "draft",
-    qualityOfCareSummary:
-      "The quality of care during this period has been consistently good. The home has maintained a warm, nurturing environment where children feel safe and valued. Key-work sessions have been delivered regularly with detailed, child-centred records. Placement plans have been reviewed within timescales and reflect the individual needs of each young person. The home has successfully managed one new admission and one planned move-on during this period.",
-    childrenExperiencesSummary:
-      "Children report feeling listened to and cared for. The voice-of-the-child system has been embedded successfully with regular contributions from all young people. Children have participated in menu planning, activity choices, and house meetings. One young person raised concerns about contact arrangements which were promptly addressed. All children have expressed that they feel safe in the home.",
-    outcomesSummary:
-      "Educational outcomes have been positive with school attendance above 92% for all young people. Two children achieved academic milestones. Health assessments are up to date. SDQ scores show improvement for two out of three young people. Independence skills development is ongoing with age-appropriate targets being met.",
-    safeguardingSummary: undefined,
-    leadershipSummary: undefined,
-    strengths:
-      "Strong key-working relationships. Consistent staffing team. Excellent partnership working with education providers. Proactive approach to training and development. Children feel genuinely listened to and their views shape practice.",
-    weaknesses: undefined,
-    improvementActions: undefined,
-    childrenViews:
-      "All three young people contributed to this review. Key themes include: feeling safe and cared for, wanting more variety in evening activities, appreciation for the camping trip and outdoor activities, positive relationships with key workers. One young person asked for more weekend outings.",
-    parentsViews:
-      "Two parents contributed via telephone consultation. Both expressed satisfaction with the care provided. One parent praised the communication from the home. Another noted improvements in their child's behaviour since placement.",
-    placingAuthorityViews: undefined,
-    staffViews:
-      "Staff completed anonymous feedback forms. Key themes: feeling well-supported by management, good team dynamics, appreciation for regular supervision, desire for additional training on adolescent mental health, positive about the new voice-of-the-child system.",
-    generatedBy: undefined,
-    approvedBy: undefined,
-    approvedAt: undefined,
-    createdAt: "2026-05-01",
-    updatedAt: "2026-05-03",
-  },
-  {
-    id: "r2",
-    homeId: "home_oak",
-    periodStart: "2025-05-01",
-    periodEnd: "2025-10-31",
-    status: "approved",
-    qualityOfCareSummary:
-      "Care quality throughout this period was strong and consistent. The home maintained its child-centred ethos with individualised approaches to each young person. Risk assessments were reviewed promptly following incidents. The Statement of Purpose was updated to reflect the current cohort and staffing. All regulatory notifications were made within required timescales.",
-    childrenExperiencesSummary:
-      "Children reported positive experiences overall. The home introduced a new feedback mechanism which all children engaged with. House meetings were held monthly with actions followed through. One young person successfully transitioned to a semi-independence placement with planned support.",
-    outcomesSummary:
-      "Education attendance averaged 91%. Health assessments completed within timescales for all children. Two young people commenced therapeutic interventions. SDQ scores stable or improving for all young people. Pathway planning commenced for the eldest young person with good progress on independence skills.",
-    safeguardingSummary:
-      "Three safeguarding concerns were raised during the period — all were managed appropriately with timely notifications and multi-agency collaboration. LADO threshold was not met on any occasion. Missing episodes remained low (two instances, both under 30 minutes). Return home interviews completed within 72 hours.",
-    leadershipSummary:
-      "Management oversight has been robust throughout the period. Supervision compliance was 100% with no cancellations by management. The manager completed further development in therapeutic care approaches. The RI conducted regular visits with actions addressed promptly. Ofsted monitoring visit in August 2025 noted continued good practice.",
-    strengths:
-      "Consistent staff team with low turnover. Robust safeguarding practice. Strong educational outcomes. Effective multi-agency working. Children's voices genuinely influencing practice. Manager oversight visible and embedded.",
-    weaknesses:
-      "Medication competency training for one staff member delayed. Garden maintenance occasionally falling behind schedule. Evening activity planning could be more varied. Night-shift handover process needed strengthening.",
-    improvementActions:
-      "1. All staff to achieve medication competency by end of next period. 2. Implement structured evening activity planner. 3. Revise night-shift handover template and provide training. 4. Establish quarterly garden maintenance contract.",
-    childrenViews:
-      "Children reported feeling safe, cared for, and listened to. They appreciated the variety of activities offered and the support with education. One young person gave positive feedback about their move-on support.",
-    parentsViews:
-      "All contactable parents expressed satisfaction. Feedback highlighted good communication from the home and visible improvements in children's wellbeing and behaviour.",
-    placingAuthorityViews:
-      "Three placing authorities provided feedback. All rated the home positively. Key themes: good communication, prompt notification of issues, children making progress, effective partnership working. One authority praised the home's approach to a complex safeguarding concern.",
-    staffViews:
-      "Staff feedback was positive. Team morale is high. Staff feel supported and valued. Key requests included additional therapeutic training and team-building activities.",
-    generatedBy: "Darren Laville",
-    approvedBy: "Sarah Mitchell (RI)",
-    approvedAt: "2025-11-15",
-    createdAt: "2025-10-20",
-    updatedAt: "2025-11-15",
-  },
-];
 
-/* ── evidence data ─────────────────────────────────────────────────────────── */
+/* ── evidence data (served by /api/intelligence/reg45-evidence) ───────────── */
 
 interface EvidenceItem {
   category: string;
@@ -195,58 +126,57 @@ interface EvidenceItem {
   examples: string[];
 }
 
-const DEMO_EVIDENCE: EvidenceItem[] = [
-  { category: "Daily Logs", count: 547, examples: ["Positive interactions", "Activity records", "Bedtime routines"] },
-  { category: "Key-Work Sessions", count: 36, examples: ["Individual targets", "Child voice recorded", "Progress noted"] },
-  { category: "Incident Records", count: 8, examples: ["De-escalation successful", "Debrief completed", "Notification sent"] },
-  { category: "Reg 44 Reports", count: 6, examples: ["Monthly visits", "Actions completed", "RI oversight evidenced"] },
-  { category: "Supervision Records", count: 24, examples: ["Monthly for all staff", "Safeguarding discussed", "Wellbeing checks"] },
-  { category: "Health Assessments", count: 6, examples: ["Initial health", "Review health", "Dental checks"] },
-  { category: "Education Records", count: 12, examples: ["PEP reviews", "Attendance data", "Achievement records"] },
-  { category: "Voice of the Child", count: 18, examples: ["House meetings", "Wishes & feelings", "Feedback forms"] },
-  { category: "Training Records", count: 14, examples: ["Mandatory courses", "Specialist training", "Refreshers"] },
-  { category: "Complaints & Compliments", count: 5, examples: ["1 complaint resolved", "4 compliments received"] },
-];
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function Reg45Page() {
-  const [reviews, setReviews] = useState<Reg45Review[]>(DEMO_REVIEWS);
+  const [reviews, setReviews] = useState<Reg45Review[]>([]);
   const [selectedReviewId, setSelectedReviewId] = useState<string>("r1");
-  const [evidence, setEvidence] = useState<EvidenceItem[]>(DEMO_EVIDENCE);
+  const [evidence, setEvidence] = useState<EvidenceItem[]>([]);
 
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useReg45Reviews();
+  const { data: evidenceData } = useReg45Evidence({ homeId: "home_oak" });
   const updateReview = useUpdateReg45Review();
 
   useEffect(() => {
-    if (apiData?.persisted && apiData.reviews.length > 0) {
+    if (apiData?.persisted && Array.isArray(apiData.reviews)) {
       setReviews((apiData.reviews as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         homeId: row.home_id as string,
         periodStart: row.period_start as string,
         periodEnd: row.period_end as string,
         status: row.status as Reg45Status,
-        qualityOfCareSummary: (row.content as string) ?? undefined,
-        childrenExperiencesSummary: undefined,
-        outcomesSummary: undefined,
-        safeguardingSummary: undefined,
-        leadershipSummary: undefined,
-        strengths: (row.findings as string) ?? undefined,
-        weaknesses: undefined,
-        improvementActions: (row.recommendations as string) ?? undefined,
-        childrenViews: undefined,
-        parentsViews: undefined,
-        placingAuthorityViews: undefined,
-        staffViews: undefined,
-        generatedBy: (row.created_by as string) ?? undefined,
+        qualityOfCareSummary: (row.quality_of_care_summary as string) ?? undefined,
+        childrenExperiencesSummary: (row.children_experiences_summary as string) ?? undefined,
+        outcomesSummary: (row.outcomes_summary as string) ?? undefined,
+        safeguardingSummary: (row.safeguarding_summary as string) ?? undefined,
+        leadershipSummary: (row.leadership_summary as string) ?? undefined,
+        strengths: (row.strengths as string) ?? undefined,
+        weaknesses: (row.weaknesses as string) ?? undefined,
+        improvementActions: (row.improvement_actions as string) ?? undefined,
+        childrenViews: (row.children_views as string) ?? undefined,
+        parentsViews: (row.parents_views as string) ?? undefined,
+        placingAuthorityViews: (row.placing_authority_views as string) ?? undefined,
+        staffViews: (row.staff_views as string) ?? undefined,
+        generatedBy: (row.generated_by as string) ?? undefined,
         approvedBy: (row.approved_by as string) ?? undefined,
         approvedAt: (row.approved_at as string) ?? undefined,
-        createdAt: row.created_at as string,
-        updatedAt: row.created_at as string,
+        createdAt: (row.created_at as string) ?? "",
+        updatedAt: ((row.updated_at as string) ?? (row.created_at as string)) ?? "",
       })));
     }
   }, [apiData]);
+
+  useEffect(() => {
+    if (evidenceData?.persisted && Array.isArray(evidenceData.evidence)) {
+      setEvidence((evidenceData.evidence as Record<string, unknown>[]).map((row) => ({
+        category: row.category as string,
+        count: (row.count as number) ?? 0,
+        examples: (row.examples as string[]) ?? [],
+      })));
+    }
+  }, [evidenceData]);
   const [showEvidence, setShowEvidence] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["qualityOfCareSummary", "childrenExperiencesSummary"]));
 
@@ -254,6 +184,22 @@ export default function Reg45Page() {
     () => reviews.find((r) => r.id === selectedReviewId) ?? reviews[0],
     [reviews, selectedReviewId],
   );
+
+  if (!selectedReview) {
+    return (
+      <PageShell
+        title="Regulation 45 — Quality of Care Review"
+        subtitle="Six-Monthly Quality Review  ·  Responsible Individual Oversight"
+        ariaContext={{ pageTitle: "Regulation 45 Reports", sourceType: "reg45" }}
+      >
+        <EmptyState
+          icon={FileText}
+          title="Loading reviews…"
+          description="Fetching Reg 45 reviews from the intelligence layer."
+        />
+      </PageShell>
+    );
+  }
 
   const isDraft = selectedReview.status === "draft" || selectedReview.status === "in_progress";
 
