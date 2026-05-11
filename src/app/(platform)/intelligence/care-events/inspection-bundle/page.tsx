@@ -15,7 +15,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, FolderArchive, Download } from "lucide-react";
+import Link from "next/link";
 import { useExportInspectionBundle } from "@/hooks/use-export-history";
+import { useInspectionBundles } from "@/hooks/use-inspection-bundles";
 import { ArtifactExportHistoryPanel } from "@/components/care-events/artifact-export-history-panel";
 
 const HOME_ID = "home_oak";
@@ -23,6 +25,7 @@ const HOME_ID = "home_oak";
 export default function InspectionBundlePage() {
   const exportBundle = useExportInspectionBundle();
   const [lastBundleId, setLastBundleId] = useState<string | null>(null);
+  const list = useInspectionBundles(HOME_ID);
 
   const handleBuild = async () => {
     const reason = window.prompt(
@@ -31,6 +34,7 @@ export default function InspectionBundlePage() {
     if (reason === null) return; // cancelled
     const res = await exportBundle.mutateAsync({ homeId: HOME_ID, reason });
     setLastBundleId(res.data.bundle.bundle_id);
+    list.refetch();
     const blob = new Blob([JSON.stringify(res.data.bundle, null, 2)], {
       type: "application/json",
     });
@@ -114,6 +118,48 @@ export default function InspectionBundlePage() {
         {lastBundleId && (
           <ArtifactExportHistoryPanel homeId={HOME_ID} artifactId={lastBundleId} />
         )}
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Persisted bundles</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {list.isLoading && <p className="text-sm text-slate-500">Loading…</p>}
+            {list.data?.data && list.data.data.length === 0 && (
+              <p className="text-sm text-slate-500">
+                No bundles persisted yet. Build & export above to create the first one.
+              </p>
+            )}
+            {list.data?.data && list.data.data.length > 0 && (
+              <ul className="divide-y divide-slate-100 text-sm">
+                {list.data.data.map((b) => (
+                  <li key={b.id} className="flex items-start gap-3 py-3">
+                    <FolderArchive className="mt-0.5 h-5 w-5 text-slate-500" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link
+                          href={`/intelligence/care-events/inspection-bundle/${encodeURIComponent(b.id)}`}
+                          className="text-sm font-medium text-blue-700 hover:underline"
+                        >
+                          {b.id}
+                        </Link>
+                        <Badge variant="outline" className="text-xs">v{b.schema_version}</Badge>
+                        <span className="text-xs text-slate-500">
+                          {new Date(b.generated_at).toLocaleString()} · {b.generated_by ?? "—"}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {b.reg44_packs_included} Reg 44 · {b.filing_total} filings ·{" "}
+                        {b.reg45_evidence_items} Reg 45 · {b.annex_a_evidence_items} Annex A ·{" "}
+                        readiness {b.readiness_score}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </PageShell>
   );

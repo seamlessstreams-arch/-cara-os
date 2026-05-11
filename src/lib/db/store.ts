@@ -457,6 +457,25 @@ export interface PersistedReg44Pack {
   payload: unknown;
 }
 
+// Persisted Inspection Bundle envelope (M43). Composed artifact built by
+// src/lib/care-events/inspection-bundle.ts. Always safeguarding-sensitive
+// in practice; the immutable export history rows record every download.
+export interface PersistedInspectionBundle {
+  id: string;
+  home_id: string;
+  generated_at: string;
+  generated_by: string | null;
+  schema_version: number;
+  reg44_packs_included: number;
+  filing_total: number;
+  reg45_evidence_items: number;
+  annex_a_evidence_items: number;
+  recent_exports_included: number;
+  readiness_score: number;
+  readiness_severity: string;
+  payload: unknown;
+}
+
 // Immutable export history entry (M36). One row per successful export of a
 // persisted artifact. Used to satisfy CLAUDE.md "restricted export
 // permissions" + audit / traceability.
@@ -1117,6 +1136,7 @@ const store = {
 
   // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
   reg44Packs: [] as PersistedReg44Pack[],
+  inspectionBundles: [] as PersistedInspectionBundle[],
 
   // ── Export History (M36) ─────────────────────────────────────────────────────
   exportHistory: [] as ExportHistoryEntry[],
@@ -11091,6 +11111,22 @@ export const db = {
       if (store.reg44Packs.some((p) => p.id === pack.id)) return pack;
       store.reg44Packs.push(pack);
       return pack;
+    },
+  },
+
+  // ── Persisted Inspection Bundles (M43) ──────────────────────────────────
+  inspectionBundles: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.inspectionBundles.filter((b) => b.home_id === homeId)
+        : store.inspectionBundles,
+    findById: (id: string) =>
+      store.inspectionBundles.find((b) => b.id === id) ?? null,
+    create: (b: PersistedInspectionBundle): PersistedInspectionBundle => {
+      // immutable: reject duplicate ids
+      if (store.inspectionBundles.some((x) => x.id === b.id)) return b;
+      store.inspectionBundles.push(b);
+      return b;
     },
   },
 

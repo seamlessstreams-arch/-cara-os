@@ -17,6 +17,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import type { PersistedInspectionBundle } from "@/lib/db/store";
 import {
   generateInspectionSnapshot,
   type InspectionSnapshot,
@@ -108,4 +109,62 @@ export function buildInspectionBundle(
     annex_a_evidence,
     export_history_recent,
   };
+}
+
+// ── Persistence (M43) ────────────────────────────────────────────────────────
+//
+// Inspection bundles are immutable artifacts: same composition + same
+// deterministic id => persistence is a no-op (idempotent). Read APIs return
+// header rows in newest-first order; the detail loader returns the full
+// payload.
+
+export interface PersistedInspectionBundleRow {
+  id: string;
+  home_id: string;
+  generated_at: string;
+  generated_by: string | null;
+  schema_version: number;
+  reg44_packs_included: number;
+  filing_total: number;
+  reg45_evidence_items: number;
+  annex_a_evidence_items: number;
+  recent_exports_included: number;
+  readiness_score: number;
+  readiness_severity: string;
+}
+
+export function persistInspectionBundle(
+  bundle: InspectionBundle,
+): PersistedInspectionBundle {
+  const row: PersistedInspectionBundle = {
+    id: bundle.bundle_id,
+    home_id: bundle.home_id,
+    generated_at: bundle.generated_at,
+    generated_by: bundle.generated_by,
+    schema_version: bundle.schema_version,
+    reg44_packs_included: bundle.headline.reg44_packs_included,
+    filing_total: bundle.headline.filing_total,
+    reg45_evidence_items: bundle.headline.reg45_evidence_items,
+    annex_a_evidence_items: bundle.headline.annex_a_evidence_items,
+    recent_exports_included: bundle.headline.recent_exports_included,
+    readiness_score: bundle.headline.readiness_score,
+    readiness_severity: bundle.headline.readiness_severity,
+    payload: bundle,
+  };
+  return db.inspectionBundles.create(row);
+}
+
+export function listPersistedInspectionBundles(
+  homeId: string,
+): PersistedInspectionBundleRow[] {
+  return db.inspectionBundles
+    .findAll(homeId)
+    .map(({ payload: _payload, ...row }) => row)
+    .sort((a, b) => b.generated_at.localeCompare(a.generated_at));
+}
+
+export function getPersistedInspectionBundle(
+  id: string,
+): PersistedInspectionBundle | null {
+  return db.inspectionBundles.findById(id);
 }

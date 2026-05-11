@@ -11,7 +11,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import { buildInspectionBundle } from "@/lib/care-events/inspection-bundle";
+import {
+  buildInspectionBundle,
+  persistInspectionBundle,
+} from "@/lib/care-events/inspection-bundle";
 import { recordExport } from "@/lib/care-events/export-history";
 import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
 
@@ -39,6 +42,7 @@ export async function POST(req: NextRequest) {
   if (!guard.ok) return guard.response;
 
   const bundle = buildInspectionBundle(homeId, { generatedBy: guard.actor.userId });
+  persistInspectionBundle(bundle);
   const json = JSON.stringify(bundle);
 
   const entry = recordExport({
