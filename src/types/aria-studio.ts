@@ -545,6 +545,83 @@ export interface AriaEarlyWarning {
   created_at: string;
 }
 
+// ── Care Graph ────────────────────────────────────────────────────────────────
+
+export type AriaCareGraphNodeType =
+  | "child"
+  | "incident"
+  | "missing_episode"
+  | "restraint"
+  | "risk"
+  | "behaviour_plan"
+  | "care_plan"
+  | "professional"
+  | "family_member"
+  | "key_worker"
+  | "placement"
+  | "safeguarding_pattern"
+  | "early_warning"
+  | "trigger"
+  | "protective_factor"
+  | "incident_cluster";
+
+export type AriaCareGraphEdgeType =
+  | "involves"
+  | "caused_by"
+  | "escalated_from"
+  | "mitigates"
+  | "relates_to"
+  | "witnessed"
+  | "triggered_by"
+  | "protects"
+  | "managed_by"
+  | "evidences"
+  | "follows"
+  | "preceded_by"
+  | "linked_to";
+
+export interface AriaCareGraphNode {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  node_type: AriaCareGraphNodeType;
+  label: string;
+  description: string | null;
+  source_table: string | null;
+  source_id: string | null;
+  metadata: Record<string, unknown> | null;
+  severity: AriaPatternSeverity | null;
+  occurred_at: string | null;
+  is_ai_draft: boolean;
+  created_at: string;
+}
+
+export interface AriaCareGraphEdge {
+  id: string;
+  home_id: string;
+  from_node_id: string;
+  to_node_id: string;
+  edge_type: AriaCareGraphEdgeType;
+  weight: number;
+  rationale: string | null;
+  is_ai_draft: boolean;
+  created_at: string;
+}
+
+export interface AriaCareGraphSnapshot {
+  home_id: string;
+  child_id: string | null;
+  generated_at: string;
+  nodes: AriaCareGraphNode[];
+  edges: AriaCareGraphEdge[];
+  summary: {
+    node_counts: Record<string, number>;
+    edge_counts: Record<string, number>;
+    total_nodes: number;
+    total_edges: number;
+  };
+}
+
 // ── Home Dynamics ─────────────────────────────────────────────────────────────
 
 export type AriaIndicatorStatus = "green" | "amber" | "red";

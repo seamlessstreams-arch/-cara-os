@@ -404,6 +404,7 @@ import type {
   AriaArtifactAction, AriaQualityCheck, AriaGap, AriaStudioAuditLog,
   AriaHomeDynamicsSnapshot,
   AriaSafeguardingPattern, AriaEarlyWarning,
+  AriaCareGraphNode, AriaCareGraphEdge,
 } from "@/types/aria-studio";
 
 // ── Mutable collections ───────────────────────────────────────────────────────
@@ -1237,6 +1238,8 @@ const store = {
   ariaHomeDynamicsSnapshots: [] as AriaHomeDynamicsSnapshot[],
   ariaSafeguardingPatterns: [] as AriaSafeguardingPattern[],
   ariaEarlyWarnings: [] as AriaEarlyWarning[],
+  ariaCareGraphNodes: [] as AriaCareGraphNode[],
+  ariaCareGraphEdges: [] as AriaCareGraphEdge[],
 
   // Shift Swap Requests
   shiftSwaps: [
@@ -11166,6 +11169,67 @@ export const db = {
       if (idx === -1) return null;
       store.ariaEarlyWarnings[idx] = { ...store.ariaEarlyWarnings[idx], ...data };
       return store.ariaEarlyWarnings[idx];
+    },
+  },
+  ariaCareGraphNodes: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaCareGraphNodes.filter((n) => n.home_id === homeId)
+        : store.ariaCareGraphNodes,
+    findById: (id: string) => store.ariaCareGraphNodes.find((n) => n.id === id),
+    findByChild: (homeId: string, childId: string) =>
+      store.ariaCareGraphNodes.filter(
+        (n) => n.home_id === homeId && (n.child_id === childId || n.child_id === null),
+      ),
+    create: (data: Omit<AriaCareGraphNode, "id" | "created_at">): AriaCareGraphNode => {
+      const rec: AriaCareGraphNode = {
+        ...data,
+        id: generateId("cgn"),
+        created_at: new Date().toISOString(),
+      };
+      store.ariaCareGraphNodes.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaCareGraphNode>): AriaCareGraphNode | null => {
+      const idx = store.ariaCareGraphNodes.findIndex((n) => n.id === id);
+      if (idx === -1) return null;
+      store.ariaCareGraphNodes[idx] = { ...store.ariaCareGraphNodes[idx], ...data };
+      return store.ariaCareGraphNodes[idx];
+    },
+    deleteByHome: (homeId: string, childId?: string | null) => {
+      store.ariaCareGraphNodes = store.ariaCareGraphNodes.filter((n) => {
+        if (n.home_id !== homeId) return true;
+        if (childId === undefined) return false;
+        return n.child_id !== childId && n.child_id !== null;
+      });
+    },
+  },
+  ariaCareGraphEdges: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaCareGraphEdges.filter((e) => e.home_id === homeId)
+        : store.ariaCareGraphEdges,
+    findById: (id: string) => store.ariaCareGraphEdges.find((e) => e.id === id),
+    findByNode: (nodeId: string) =>
+      store.ariaCareGraphEdges.filter(
+        (e) => e.from_node_id === nodeId || e.to_node_id === nodeId,
+      ),
+    create: (data: Omit<AriaCareGraphEdge, "id" | "created_at">): AriaCareGraphEdge => {
+      const rec: AriaCareGraphEdge = {
+        ...data,
+        id: generateId("cge"),
+        created_at: new Date().toISOString(),
+      };
+      store.ariaCareGraphEdges.push(rec);
+      return rec;
+    },
+    deleteByHome: (homeId: string) => {
+      store.ariaCareGraphEdges = store.ariaCareGraphEdges.filter((e) => e.home_id !== homeId);
+    },
+    deleteByNodeIds: (nodeIds: Set<string>) => {
+      store.ariaCareGraphEdges = store.ariaCareGraphEdges.filter(
+        (e) => !nodeIds.has(e.from_node_id) && !nodeIds.has(e.to_node_id),
+      );
     },
   },
   wakeUpRoutines: {
