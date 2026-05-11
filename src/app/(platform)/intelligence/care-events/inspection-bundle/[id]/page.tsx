@@ -55,9 +55,13 @@ export default function InspectionBundleDetailPage({
                 <Stat label="Annex A evidence" value={row.annex_a_evidence_items} />
                 <Stat label="Recent exports"   value={row.recent_exports_included} />
                 <Stat label="Readiness"        value={`${row.readiness_score} (${row.readiness_severity})`} />
+                <Stat label="Trajectory open"  value={row.trajectory_alerts_open ?? 0} />
+                <Stat label="Trajectory acks"  value={row.trajectory_acks_recent ?? 0} />
               </ul>
             </CardContent>
           </Card>
+
+          <TrajectorySection payload={row.payload as { trajectory_alerts_open?: unknown[]; trajectory_acks_recent?: unknown[] }} />
 
           <ArtifactExportHistoryPanel homeId={row.home_id} artifactId={row.id} />
         </div>
@@ -72,5 +76,74 @@ function Stat({ label, value }: { label: string; value: number | string }) {
       <p className="text-xs text-slate-500">{label}</p>
       <p className="text-lg font-semibold">{value}</p>
     </li>
+  );
+}
+
+interface TrajectoryAlertSnapshot {
+  id: string;
+  kind: string;
+  severity: string;
+  message: string;
+  detected_at: string;
+}
+
+interface TrajectoryAckSnapshot {
+  id: string;
+  alert_kind: string;
+  acked_by_user: string;
+  acked_by_role: string;
+  note: string;
+  acked_at: string;
+}
+
+function TrajectorySection({
+  payload,
+}: { payload: { trajectory_alerts_open?: unknown[]; trajectory_acks_recent?: unknown[] } }) {
+  const alerts = (payload.trajectory_alerts_open ?? []) as TrajectoryAlertSnapshot[];
+  const acks = (payload.trajectory_acks_recent ?? []) as TrajectoryAckSnapshot[];
+  if (alerts.length === 0 && acks.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm">
+          Trajectory at composition time
+          <span className="ml-2 text-xs text-slate-500">
+            {alerts.length} open · {acks.length} acks
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        {alerts.length > 0 && (
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Open alerts</p>
+            <ul className="space-y-1">
+              {alerts.map((a) => (
+                <li key={a.id} className="rounded border border-amber-200 bg-amber-50 p-2 text-xs">
+                  <span className="font-semibold">{a.kind.replace(/_/g, " ")}</span>
+                  <Badge variant="outline" className="ml-2 text-[10px]">{a.severity}</Badge>
+                  <p>{a.message}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {acks.length > 0 && (
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Recent acknowledgements</p>
+            <ul className="space-y-1">
+              {acks.map((a) => (
+                <li key={a.id} className="rounded border border-emerald-200 bg-emerald-50 p-2 text-xs">
+                  <span className="font-semibold">{a.alert_kind.replace(/_/g, " ")}</span>
+                  <span className="ml-2 text-slate-600">
+                    by {a.acked_by_user} ({a.acked_by_role}) · {new Date(a.acked_at).toLocaleString()}
+                  </span>
+                  <p>{a.note}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

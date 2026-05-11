@@ -473,6 +473,8 @@ export interface PersistedInspectionBundle {
   recent_exports_included: number;
   readiness_score: number;
   readiness_severity: string;
+  trajectory_alerts_open: number;
+  trajectory_acks_recent: number;
   payload: unknown;
 }
 

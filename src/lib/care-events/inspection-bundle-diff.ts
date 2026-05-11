@@ -23,6 +23,8 @@ export interface BundleHeadlineDelta {
   recent_exports_included:  { previous: number; current: number; delta: number };
   readiness_score:          { previous: number; current: number; delta: number };
   readiness_severity:       { previous: string; current: string; changed: boolean };
+  trajectory_alerts_open:   { previous: number; current: number; delta: number };
+  trajectory_acks_recent:   { previous: number; current: number; delta: number };
 }
 
 export interface EvidenceChurn<T> {
@@ -52,6 +54,8 @@ const ZERO_PAYLOAD: Pick<
   | "annex_a_evidence_items"
   | "recent_exports_included"
   | "readiness_score"
+  | "trajectory_alerts_open"
+  | "trajectory_acks_recent"
 > = {
   reg44_packs_included: 0,
   filing_total: 0,
@@ -59,6 +63,8 @@ const ZERO_PAYLOAD: Pick<
   annex_a_evidence_items: 0,
   recent_exports_included: 0,
   readiness_score: 0,
+  trajectory_alerts_open: 0,
+  trajectory_acks_recent: 0,
 };
 
 function ids(rows: ReadonlyArray<unknown>): string[] {
@@ -107,6 +113,8 @@ export function diffInspectionBundles(
       current:  ch.readiness_severity,
       changed:  prevHead.readiness_severity !== ch.readiness_severity,
     },
+    trajectory_alerts_open:  diffNum(prevHead.trajectory_alerts_open  ?? 0, ch.trajectory_alerts_open  ?? 0),
+    trajectory_acks_recent:  diffNum(prevHead.trajectory_acks_recent  ?? 0, ch.trajectory_acks_recent  ?? 0),
   };
 
   const reg45 = churn(

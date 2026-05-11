@@ -30,6 +30,12 @@ import {
   loadExportHistory,
   type ExportHistorySummary,
 } from "@/lib/care-events/export-history";
+import {
+  detectTrajectoryAlerts,
+  listTrajectoryAlertAcks,
+  type TrajectoryAlert,
+} from "@/lib/care-events/inspection-trajectory";
+import type { TrajectoryAlertAck } from "@/lib/db/store";
 
 export const INSPECTION_BUNDLE_SCHEMA_VERSION = 1;
 
@@ -42,6 +48,8 @@ export interface InspectionBundleHeadline {
   recent_exports_included: number;
   readiness_score: number;
   readiness_severity: string;
+  trajectory_alerts_open: number;
+  trajectory_acks_recent: number;
 }
 
 export interface InspectionBundle {
@@ -57,6 +65,8 @@ export interface InspectionBundle {
   reg45_evidence: ReadonlyArray<unknown>;
   annex_a_evidence: ReadonlyArray<unknown>;
   export_history_recent: ExportHistorySummary;
+  trajectory_alerts_open: ReadonlyArray<TrajectoryAlert>;
+  trajectory_acks_recent: ReadonlyArray<TrajectoryAlertAck>;
 }
 
 export interface BuildInspectionBundleOptions {
@@ -83,6 +93,8 @@ export function buildInspectionBundle(
     .findAll()
     .filter((a) => a.home_id === homeId);
   const export_history_recent = loadExportHistory(homeId);
+  const trajectory_alerts_open = detectTrajectoryAlerts(homeId);
+  const trajectory_acks_recent = listTrajectoryAlertAcks(homeId).slice(0, 25);
 
   const bundle_id = `inspection_bundle_${homeId}_${generated_at.replace(/[:.]/g, "")}`;
 
@@ -101,6 +113,8 @@ export function buildInspectionBundle(
       recent_exports_included: export_history_recent.total,
       readiness_score: inspection_snapshot.headline.readiness_score,
       readiness_severity: inspection_snapshot.headline.readiness_severity,
+      trajectory_alerts_open: trajectory_alerts_open.length,
+      trajectory_acks_recent: trajectory_acks_recent.length,
     },
     inspection_snapshot,
     reg44_packs,
@@ -108,6 +122,8 @@ export function buildInspectionBundle(
     reg45_evidence,
     annex_a_evidence,
     export_history_recent,
+    trajectory_alerts_open,
+    trajectory_acks_recent,
   };
 }
 
@@ -131,6 +147,8 @@ export interface PersistedInspectionBundleRow {
   recent_exports_included: number;
   readiness_score: number;
   readiness_severity: string;
+  trajectory_alerts_open: number;
+  trajectory_acks_recent: number;
 }
 
 export function persistInspectionBundle(
@@ -149,6 +167,8 @@ export function persistInspectionBundle(
     recent_exports_included: bundle.headline.recent_exports_included,
     readiness_score: bundle.headline.readiness_score,
     readiness_severity: bundle.headline.readiness_severity,
+    trajectory_alerts_open: bundle.headline.trajectory_alerts_open,
+    trajectory_acks_recent: bundle.headline.trajectory_acks_recent,
     payload: bundle,
   };
   return db.inspectionBundles.create(row);

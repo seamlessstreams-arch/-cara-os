@@ -101,6 +101,8 @@ export default function InspectionBundleDiffPage() {
                   <DeltaRow label="Reg 45 evidence items"  v={d.headline.reg45_evidence_items} />
                   <DeltaRow label="Annex A evidence items" v={d.headline.annex_a_evidence_items} />
                   <DeltaRow label="Recent exports"         v={d.headline.recent_exports_included} />
+                  <DeltaRow label="Trajectory alerts open" v={d.headline.trajectory_alerts_open} />
+                  <DeltaRow label="Trajectory acks recent" v={d.headline.trajectory_acks_recent} />
                 </ul>
               </CardContent>
             </Card>
