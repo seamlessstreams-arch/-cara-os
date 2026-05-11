@@ -118,7 +118,9 @@ export function loadInspectionTrajectory(homeId: string): TrajectorySummary {
 export type TrajectoryAlertKind =
   | "regressing"
   | "severity_flip_latest"
-  | "large_step_drop";
+  | "large_step_drop"
+  | "bundle_stale"
+  | "bundle_overdue";
 
 export type TrajectoryAlertSeverity = "warning" | "critical";
 
@@ -128,17 +130,50 @@ export interface TrajectoryAlert {
   kind: TrajectoryAlertKind;
   severity: TrajectoryAlertSeverity;
   message: string;
-  detected_at: string;              // latest point's generated_at
-  bundle_id: string;                // latest point's bundle id
+  detected_at: string;              // latest point's generated_at, or now() for no-bundle/stale alerts
+  bundle_id: string | null;         // latest point's bundle id, or null when no bundle exists
 }
 
 export const LARGE_STEP_DROP_THRESHOLD = 10;
+export const BUNDLE_STALE_DAYS = 14;
+export const BUNDLE_OVERDUE_DAYS = 30;
 
 export function detectTrajectoryAlerts(homeId: string): TrajectoryAlert[] {
   const t = loadInspectionTrajectory(homeId);
-  if (t.points.length === 0) return [];
-  const latest = t.points[t.points.length - 1];
   const out: TrajectoryAlert[] = [];
+  const nowIso = new Date().toISOString();
+  const DAY = 24 * 60 * 60 * 1000;
+
+  // No bundles yet → cadence alerts cannot fire and existing-trajectory
+  // alerts have no point to attach to. Stay silent so brand-new homes aren't
+  // spammed before they have data worth bundling.
+  if (t.points.length === 0) return out;
+
+  const latest = t.points[t.points.length - 1];
+
+  // Cadence: stale (>= 14 days) or overdue (>= 30 days) since latest bundle
+  const ageDays = Math.floor((Date.now() - new Date(latest.generated_at).getTime()) / DAY);
+  if (ageDays >= BUNDLE_OVERDUE_DAYS) {
+    out.push({
+      id: `traj_overdue_${homeId}_${latest.bundle_id}`,
+      home_id: homeId,
+      kind: "bundle_overdue",
+      severity: "critical",
+      message: `Latest inspection bundle is ${ageDays} days old (overdue at ${BUNDLE_OVERDUE_DAYS}+).`,
+      detected_at: nowIso,
+      bundle_id: latest.bundle_id,
+    });
+  } else if (ageDays >= BUNDLE_STALE_DAYS) {
+    out.push({
+      id: `traj_stale_${homeId}_${latest.bundle_id}`,
+      home_id: homeId,
+      kind: "bundle_stale",
+      severity: "warning",
+      message: `Latest inspection bundle is ${ageDays} days old (stale at ${BUNDLE_STALE_DAYS}+).`,
+      detected_at: nowIso,
+      bundle_id: latest.bundle_id,
+    });
+  }
 
   if (t.direction === "regressing") {
     out.push({
