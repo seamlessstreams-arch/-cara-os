@@ -407,6 +407,7 @@ import type {
   AriaCareGraphNode, AriaCareGraphEdge,
   AriaFormulation, AriaDecisionRecommendation, AriaReg45EvidenceItem,
   AriaAnnexASnapshot,
+  AriaReg45Report,
 } from "@/types/aria-studio";
 
 // ── Mutable collections ───────────────────────────────────────────────────────
@@ -1246,6 +1247,7 @@ const store = {
   ariaDecisionRecommendations: [] as AriaDecisionRecommendation[],
   ariaReg45EvidenceItems: [] as AriaReg45EvidenceItem[],
   ariaAnnexASnapshots: [] as AriaAnnexASnapshot[],
+  ariaReg45Reports: [] as AriaReg45Report[],
 
   // Shift Swap Requests
   shiftSwaps: [
@@ -11358,6 +11360,24 @@ export const db = {
         ...data,
       };
       return store.ariaAnnexASnapshots[idx];
+    },
+  },
+  ariaReg45Reports: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaReg45Reports.filter((r) => r.home_id === homeId)
+        : store.ariaReg45Reports,
+    findById: (id: string) => store.ariaReg45Reports.find((r) => r.id === id),
+    create: (data: Omit<AriaReg45Report, "id">): AriaReg45Report => {
+      const rec: AriaReg45Report = { ...data, id: generateId("r45rep") };
+      store.ariaReg45Reports.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaReg45Report>): AriaReg45Report | null => {
+      const idx = store.ariaReg45Reports.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaReg45Reports[idx] = { ...store.ariaReg45Reports[idx], ...data };
+      return store.ariaReg45Reports[idx];
     },
   },
   wakeUpRoutines: {

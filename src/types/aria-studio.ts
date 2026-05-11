@@ -868,6 +868,45 @@ export interface AriaAnnexASnapshot {
   lock_note: string | null;
 }
 
+// ── Regulation 45 Report Builder ──────────────────────────────────────────────
+
+export type AriaReg45ReportStatus = "draft" | "in_review" | "approved" | "locked";
+
+export interface AriaReg45ReportSection {
+  theme: AriaReg45Theme;
+  label: string;
+  narrative: string;
+  evidence_item_ids: string[];
+  themes_covered: string[];
+  concerns: number;
+  positives: number;
+}
+
+export interface AriaReg45Report {
+  id: string;
+  home_id: string;
+  period_start: string;
+  period_end: string;
+  status: AriaReg45ReportStatus;
+  generated_at: string;
+  generated_by: string;
+  title: string;
+  executive_summary: string;
+  sections: AriaReg45ReportSection[];
+  evidence_item_ids: string[];
+  total_evidence: number;
+  total_concerns: number;
+  total_positives: number;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_note: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  locked_by: string | null;
+  locked_at: string | null;
+  lock_note: string | null;
+}
+
 // ── Home Dynamics ─────────────────────────────────────────────────────────────
 
 export type AriaIndicatorStatus = "green" | "amber" | "red";
