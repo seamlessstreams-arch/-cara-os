@@ -575,6 +575,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Routing Health",      href: "/intelligence/routing-health",          icon: "Activity",    module: "dashboard"    },
       { label: "Care Event Patterns", href: "/intelligence/care-events/patterns",    icon: "Sparkles",    module: "dashboard"    },
       { label: "Amendment Review",    href: "/intelligence/care-events/amendment-review", icon: "History", module: "dashboard"    },
+      { label: "Inspection Readiness", href: "/intelligence/care-events/inspection-readiness", icon: "ShieldCheck", module: "dashboard" },
       { label: "Audit Trail",         href: "/intelligence/aria/audit-trail",        icon: "ScrollText",  module: "dashboard"    },
       { label: "Review Queue",       href: "/aria/review",                          icon: "ClipboardCheck", module: "dashboard" },
       { label: "Pattern Alerts",     href: "/patterns",                             icon: "Radar",       module: "dashboard"    },
