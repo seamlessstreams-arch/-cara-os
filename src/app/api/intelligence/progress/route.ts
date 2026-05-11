@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import {
+  progressGoals,
+  progressEntries,
+  outcomeSnapshots,
+  nextFallbackId,
+} from "@/lib/intelligence/fallback-store";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -11,7 +17,22 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type"); // goals | entries | snapshots
 
   if (!isSupabaseEnabled()) {
-    return NextResponse.json({ ok: true, data: [], persisted: false });
+    if (type === "goals") {
+      let rows = [...progressGoals];
+      if (childId) rows = rows.filter((r) => r.child_id === childId);
+      rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
+      return NextResponse.json({ ok: true, data: rows, persisted: true });
+    }
+    if (type === "snapshots") {
+      let rows = [...outcomeSnapshots];
+      if (childId) rows = rows.filter((r) => r.child_id === childId);
+      rows.sort((a, b) => b.snapshot_date.localeCompare(a.snapshot_date));
+      return NextResponse.json({ ok: true, data: rows, persisted: true });
+    }
+    let rows = [...progressEntries];
+    if (childId) rows = rows.filter((r) => r.child_id === childId);
+    rows.sort((a, b) => b.entry_date.localeCompare(a.entry_date));
+    return NextResponse.json({ ok: true, data: rows, persisted: true });
   }
 
   const supabase = createServerClient() as unknown as LooseSupabase;
@@ -46,7 +67,57 @@ export async function POST(request: NextRequest) {
     const { type, actorUserId, actorRole, homeId, ...payload } = body;
 
     if (!isSupabaseEnabled()) {
-      return NextResponse.json({ ok: true, persisted: false });
+      const now = new Date().toISOString();
+      if (type === "goal") {
+        const row = {
+          id: nextFallbackId("g"),
+          home_id: (homeId as string) ?? "home_oak",
+          child_id: payload.childId as string,
+          title: (payload.title as string) ?? "",
+          goal_area: (payload.goalArea as string) ?? "general",
+          description: (payload.description as string) ?? "",
+          target_date: (payload.targetDate as string) ?? "",
+          status: "not_started",
+          progress: 0,
+          created_at: now,
+        };
+        progressGoals.unshift(row);
+        return NextResponse.json({ ok: true, data: row, persisted: true });
+      }
+      if (type === "entry") {
+        const row = {
+          id: nextFallbackId("p"),
+          home_id: (homeId as string) ?? "home_oak",
+          child_id: payload.childId as string,
+          entry_date: (payload.entryDate as string) ?? now.slice(0, 10),
+          area: (payload.area as string) ?? "general",
+          what_happened: (payload.whatHappened as string) ?? (payload.title as string) ?? "",
+          impact_on_child: (payload.impactOnChild as string) ?? "",
+          staff_member: (actorUserId as string) ?? "",
+          created_at: now,
+        };
+        progressEntries.unshift(row);
+        return NextResponse.json({ ok: true, data: row, persisted: true });
+      }
+      if (type === "snapshot") {
+        const row = {
+          id: nextFallbackId("snap"),
+          home_id: (homeId as string) ?? "home_oak",
+          child_id: payload.childId as string,
+          snapshot_date: (payload.snapshotDate as string) ?? now.slice(0, 10),
+          education_score: (payload.educationScore as number) ?? 0, education_previous_score: 0, education_trend: "stable",
+          health_score: (payload.healthScore as number) ?? 0, health_previous_score: 0, health_trend: "stable",
+          emotional_wellbeing_score: (payload.emotionalWellbeingScore as number) ?? 0, emotional_wellbeing_previous_score: 0, emotional_wellbeing_trend: "stable",
+          safety_score: (payload.safetyScore as number) ?? 0, safety_previous_score: 0, safety_trend: "stable",
+          relationships_score: (payload.relationshipsScore as number) ?? 0, relationships_previous_score: 0, relationships_trend: "stable",
+          independence_score: (payload.independenceScore as number) ?? 0, independence_previous_score: 0, independence_trend: "stable",
+          engagement_score: (payload.engagementScore as number) ?? 0, engagement_previous_score: 0, engagement_trend: "stable",
+          created_at: now,
+        };
+        outcomeSnapshots.unshift(row);
+        return NextResponse.json({ ok: true, data: row, persisted: true });
+      }
+      return NextResponse.json({ error: "type must be goal, entry, or snapshot" }, { status: 400 });
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;

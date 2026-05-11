@@ -675,6 +675,374 @@ export const voiceEntries: IntelligenceVoiceEntryRow[] = [
   },
 ];
 
+// ─── Child Progress goals / entries / outcome snapshots ─────────────────────
+
+export interface IntelligenceProgressGoalRow {
+  id: string;
+  home_id: string;
+  child_id: string;
+  title: string;
+  goal_area: string;
+  description: string;
+  target_date: string;
+  status: string; // on_track | at_risk | achieved | not_started
+  progress: number; // 0-100
+  created_at: string;
+}
+
+export interface IntelligenceProgressEntryRow {
+  id: string;
+  home_id: string;
+  child_id: string;
+  entry_date: string;
+  area: string;
+  what_happened: string;
+  impact_on_child: string;
+  staff_member: string;
+  created_at: string;
+}
+
+export interface IntelligenceOutcomeSnapshotRow {
+  id: string;
+  home_id: string;
+  child_id: string;
+  snapshot_date: string;
+  education_score: number;
+  education_previous_score: number;
+  education_trend: string; // up | down | stable
+  health_score: number;
+  health_previous_score: number;
+  health_trend: string;
+  emotional_wellbeing_score: number;
+  emotional_wellbeing_previous_score: number;
+  emotional_wellbeing_trend: string;
+  safety_score: number;
+  safety_previous_score: number;
+  safety_trend: string;
+  relationships_score: number;
+  relationships_previous_score: number;
+  relationships_trend: string;
+  independence_score: number;
+  independence_previous_score: number;
+  independence_trend: string;
+  engagement_score: number;
+  engagement_previous_score: number;
+  engagement_trend: string;
+  created_at: string;
+}
+
+export const progressGoals: IntelligenceProgressGoalRow[] = [
+  {
+    id: "g1",
+    home_id: "home_oak",
+    child_id: "child-a",
+    title: "Achieve Grade 5 in English GCSE",
+    goal_area: "education",
+    status: "on_track",
+    target_date: "2026-08-20",
+    description:
+      "Working with tutor twice weekly. Mock results showing steady improvement from Grade 3 to predicted Grade 5.",
+    progress: 72,
+    created_at: "2026-01-10",
+  },
+  {
+    id: "g2",
+    home_id: "home_oak",
+    child_id: "child-a",
+    title: "Manage anger without physical outbursts for 8 weeks",
+    goal_area: "emotional_wellbeing",
+    status: "at_risk",
+    target_date: "2026-06-15",
+    description:
+      "Using breathing techniques and safe space. Had one incident in week 5 but recovered quickly with support.",
+    progress: 55,
+    created_at: "2026-02-15",
+  },
+  {
+    id: "g3",
+    home_id: "home_oak",
+    child_id: "child-a",
+    title: "Maintain weekly contact with maternal grandmother",
+    goal_area: "relationships",
+    status: "achieved",
+    target_date: "2026-04-01",
+    description:
+      "Video calls every Wednesday established. Two face-to-face visits completed. Grandmother very positive about consistency.",
+    progress: 100,
+    created_at: "2026-01-20",
+  },
+  {
+    id: "g4",
+    home_id: "home_oak",
+    child_id: "child-a",
+    title: "Independently manage morning routine by July",
+    goal_area: "independence",
+    status: "not_started",
+    target_date: "2026-07-30",
+    description:
+      "Wake up, shower, dress, breakfast, pack bag without staff prompts. Currently requires 2-3 prompts each morning.",
+    progress: 15,
+    created_at: "2026-03-01",
+  },
+];
+
+export const progressEntries: IntelligenceProgressEntryRow[] = [
+  { id: "p1", home_id: "home_oak", child_id: "child-a", entry_date: "2026-05-04", area: "education", what_happened: "Completed English mock exam independently. Showed real focus and determination throughout the paper.", impact_on_child: "Predicted grade moved from 4 to 5. Teacher noted significant improvement in essay structure.", staff_member: "Sarah Mitchell", created_at: "2026-05-04" },
+  { id: "p2", home_id: "home_oak", child_id: "child-a", entry_date: "2026-05-02", area: "emotional_wellbeing", what_happened: "Used breathing techniques when frustrated with homework. Chose to go to quiet room rather than escalate.", impact_on_child: "First time choosing de-escalation independently without staff prompt. Major milestone.", staff_member: "James Cooper", created_at: "2026-05-02" },
+  { id: "p3", home_id: "home_oak", child_id: "child-a", entry_date: "2026-04-28", area: "relationships", what_happened: "Video called grandmother. Talked for 35 minutes about school and upcoming birthday plans.", impact_on_child: "Grandmother reported feeling much closer. Child asked if she could visit during half term.", staff_member: "Sarah Mitchell", created_at: "2026-04-28" },
+  { id: "p4", home_id: "home_oak", child_id: "child-a", entry_date: "2026-04-25", area: "independence", what_happened: "Made own breakfast for the first time without being asked. Set alarm and got up 10 minutes early.", impact_on_child: "Small but significant step. Staff praised effort without overdoing it. Child seemed proud.", staff_member: "Tom Richards", created_at: "2026-04-25" },
+  { id: "p5", home_id: "home_oak", child_id: "child-a", entry_date: "2026-04-22", area: "health", what_happened: "Attended dental appointment without anxiety. Previously refused all medical appointments.", impact_on_child: "Dentist gave positive feedback. No treatment needed. Agreed to 6-month check-up.", staff_member: "James Cooper", created_at: "2026-04-22" },
+  { id: "p6", home_id: "home_oak", child_id: "child-a", entry_date: "2026-04-18", area: "community", what_happened: "Joined local football club training session. Engaged well with peers and followed coach instructions.", impact_on_child: "Coach invited back next week. First sustained community activity in 8 months.", staff_member: "Tom Richards", created_at: "2026-04-18" },
+  { id: "p7", home_id: "home_oak", child_id: "child-a", entry_date: "2026-04-15", area: "behaviour_support", what_happened: "Apologised unprompted to another young person after disagreement over TV remote.", impact_on_child: "Relationship repair happened naturally. Other YP accepted apology. No staff mediation needed.", staff_member: "Sarah Mitchell", created_at: "2026-04-15" },
+  { id: "p8", home_id: "home_oak", child_id: "child-a", entry_date: "2026-04-10", area: "wishes_and_feelings", what_happened: "Shared in key work session that they would like to try cooking a meal for the house.", impact_on_child: "Activity scheduled for next week. Links to independence goal and building confidence.", staff_member: "Sarah Mitchell", created_at: "2026-04-10" },
+];
+
+export const outcomeSnapshots: IntelligenceOutcomeSnapshotRow[] = [
+  {
+    id: "snap-a-2026-05",
+    home_id: "home_oak",
+    child_id: "child-a",
+    snapshot_date: "2026-05-01",
+    education_score: 7, education_previous_score: 5, education_trend: "up",
+    health_score: 6, health_previous_score: 6, health_trend: "stable",
+    emotional_wellbeing_score: 5, emotional_wellbeing_previous_score: 4, emotional_wellbeing_trend: "up",
+    safety_score: 8, safety_previous_score: 7, safety_trend: "up",
+    relationships_score: 7, relationships_previous_score: 5, relationships_trend: "up",
+    independence_score: 4, independence_previous_score: 4, independence_trend: "stable",
+    engagement_score: 6, engagement_previous_score: 3, engagement_trend: "up",
+    created_at: "2026-05-01",
+  },
+];
+
+// ─── Inspection evidence items (Ofsted Evidence Room) ──────────────────────
+
+export interface IntelligenceEvidenceItemRow {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  staff_id: string | null;
+  source_record_type: string;
+  source_record_id: string | null;
+  title: string;
+  description: string;
+  category: string; // evidence category
+  judgement_area: string | null;
+  quality_indicator: number | null;
+  evidence_date: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+const _dRel = (n: number): string => {
+  const dt = new Date();
+  dt.setDate(dt.getDate() + n);
+  return dt.toISOString().slice(0, 10);
+};
+
+export const evidenceItems: IntelligenceEvidenceItemRow[] = [
+  { id: "ev_01", home_id: "h1", child_id: "c1", staff_id: null, source_record_type: "key_work", source_record_id: "kw_221", title: "Jordan expresses feeling settled and safe", description: "In key work session, Jordan shared that he feels safe at the home and has positive relationships with staff. He identified two staff members he would approach if worried.", category: "wishes_and_feelings", judgement_area: "overall_experiences_and_progress", quality_indicator: 92, evidence_date: _dRel(-3), created_by: "Sarah Mitchell", created_at: _dRel(-3) },
+  { id: "ev_02", home_id: "h1", child_id: "c2", staff_id: null, source_record_type: "incident", source_record_id: "inc_145", title: "Casey supported through emotional crisis with de-escalation", description: "Staff used TCI de-escalation techniques when Casey became distressed. Physical intervention was avoided. Casey was offered a debrief and engaged well. Manager oversight completed within 24 hours.", category: "behaviour_support", judgement_area: "help_and_protection", quality_indicator: 88, evidence_date: _dRel(-5), created_by: "Darren Laville", created_at: _dRel(-5) },
+  { id: "ev_03", home_id: "h1", child_id: null, staff_id: null, source_record_type: "supervision", source_record_id: "sup_098", title: "Staff supervision cycle completed on time", description: "All staff supervisions completed within the 6-week cycle. Reflective practice was evident in each record, with clear action points and follow-up from previous sessions.", category: "staff_supervision", judgement_area: "effectiveness_of_leaders", quality_indicator: 95, evidence_date: _dRel(-7), created_by: "Darren Laville", created_at: _dRel(-7) },
+  { id: "ev_04", home_id: "h1", child_id: "c3", staff_id: null, source_record_type: "daily_log", source_record_id: "dl_1892", title: "Reece attends first full week of school", description: "Reece completed a full week of school attendance for the first time since placement. Staff provided consistent morning routines and positive reinforcement. School feedback was excellent.", category: "education", judgement_area: "overall_experiences_and_progress", quality_indicator: 90, evidence_date: _dRel(-10), created_by: "James Connor", created_at: _dRel(-10) },
+  { id: "ev_05", home_id: "h1", child_id: "c1", staff_id: null, source_record_type: "risk_assessment", source_record_id: "ra_034", title: "Jordan's risk assessment reviewed following community incident", description: "Risk assessment updated promptly after Jordan was involved in a community incident. New control measures added, and Jordan was involved in reviewing the document. Social worker informed.", category: "risk_assessment", judgement_area: "help_and_protection", quality_indicator: 85, evidence_date: _dRel(-12), created_by: "Darren Laville", created_at: _dRel(-12) },
+  { id: "ev_06", home_id: "h1", child_id: null, staff_id: null, source_record_type: "reg44_report", source_record_id: "r44_012", title: "Regulation 44 visit completed with positive findings", description: "Independent visitor completed quarterly visit. All children spoken to, records reviewed, environment inspected. Two recommendations made, both acknowledged and actioned by Registered Manager.", category: "regulation_44", judgement_area: "effectiveness_of_leaders", quality_indicator: 96, evidence_date: _dRel(-14), created_by: "Margaret Thompson", created_at: _dRel(-14) },
+  { id: "ev_07", home_id: "h1", child_id: "c2", staff_id: null, source_record_type: "child_voice", source_record_id: "cv_067", title: "Casey contributes ideas for house improvements", description: "During house meeting, Casey suggested changes to the communal lounge layout and new activity ideas. Suggestions were recorded and two were implemented within the week.", category: "wishes_and_feelings", judgement_area: "overall_experiences_and_progress", quality_indicator: 80, evidence_date: _dRel(-16), created_by: "Sarah Mitchell", created_at: _dRel(-16) },
+  { id: "ev_08", home_id: "h1", child_id: null, staff_id: null, source_record_type: "training_record", source_record_id: "tr_088", title: "Team completes refresher safeguarding training", description: "All permanent staff completed Level 3 safeguarding refresher within required timeframe. Agency staff completed induction-level safeguarding before shifts. Training matrix updated.", category: "safeguarding", judgement_area: "help_and_protection", quality_indicator: 94, evidence_date: _dRel(-18), created_by: "Darren Laville", created_at: _dRel(-18) },
+  { id: "ev_09", home_id: "h1", child_id: "c3", staff_id: null, source_record_type: "placement_plan", source_record_id: "pp_019", title: "Reece's placement plan reviewed with positive trajectory", description: "Six-monthly placement plan review completed on time. Reece participated in the review and identified independence goals. Social worker and IRO attended. All actions from previous review completed.", category: "placement_planning", judgement_area: "effectiveness_of_leaders", quality_indicator: 91, evidence_date: _dRel(-21), created_by: "Darren Laville", created_at: _dRel(-21) },
+  { id: "ev_10", home_id: "h1", child_id: "c1", staff_id: null, source_record_type: "medication_record", source_record_id: "med_340", title: "Medication administration records — zero errors this month", description: "Monthly medication audit completed. Zero administration errors, all records double-signed, stock reconciliation accurate. GP review appointments attended on time for all children.", category: "medication", judgement_area: "help_and_protection", quality_indicator: 97, evidence_date: _dRel(-4), created_by: "Darren Laville", created_at: _dRel(-4) },
+  { id: "ev_11", home_id: "h1", child_id: "c2", staff_id: null, source_record_type: "key_work", source_record_id: "kw_225", title: "Casey discusses family contact and makes positive plans", description: "Casey and key worker discussed family time arrangements. Casey identified she would like more phone contact with her grandmother. Plan agreed and social worker informed.", category: "family_time", judgement_area: "overall_experiences_and_progress", quality_indicator: 82, evidence_date: _dRel(-8), created_by: "Sarah Mitchell", created_at: _dRel(-8) },
+  { id: "ev_12", home_id: "h1", child_id: null, staff_id: null, source_record_type: "complaint", source_record_id: "cmp_011", title: "Complaint resolved within timescale with positive outcome", description: "Complaint from placing authority regarding communication about a medical appointment was investigated and resolved within 10 working days. Outcome letter sent. Process improvements identified and implemented.", category: "complaints", judgement_area: "effectiveness_of_leaders", quality_indicator: 78, evidence_date: _dRel(-25), created_by: "Darren Laville", created_at: _dRel(-25) },
+];
+
+// ─── Staff competence passport (rich JSON shape) ───────────────────────────
+
+// The Supabase staff_competence_records table is a flat schema. The demo UI
+// renders a richer per-staff payload (passport entries, warnings, restrictions,
+// compliments). When Supabase is disabled we expose the rich shape directly
+// under `richRecords` so the page can render the full demo without lossy
+// flattening.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type IntelligenceStaffPassportRecord = any;
+
+export const staffPassportRecords: IntelligenceStaffPassportRecord[] = [
+  { id: "staff-a", name: "Staff A - Sarah Mitchell", role: "Senior Residential Worker", startDate: "2022-03-15",
+    passport: [
+      { label: "DBS Status", status: "valid", detail: "Enhanced DBS - Update service registered", expiryDate: "2027-03-15" },
+      { label: "References", status: "valid", detail: "2 satisfactory references on file" },
+      { label: "Right to Work", status: "valid", detail: "British Citizen - passport verified" },
+      { label: "Induction", status: "valid", detail: "Completed 18 Mar 2022" },
+      { label: "Probation", status: "valid", detail: "Passed - June 2022" },
+      { label: "Level 3 Diploma", status: "valid", detail: "Level 3 Children & Young People achieved 2023" },
+      { label: "Mandatory Training", status: "valid", detail: "All 12 modules completed. Renewal Mar 2027" },
+      { label: "Safeguarding Training", status: "valid", detail: "Level 3 - Refreshed Jan 2026", expiryDate: "2028-01-15" },
+      { label: "Medication Competency", status: "valid", detail: "Assessed and signed off by manager", expiryDate: "2026-11-20" },
+      { label: "Physical Intervention", status: "valid", detail: "Team Teach Level 2 - refreshed Feb 2026", expiryDate: "2027-02-10" },
+      { label: "Last Supervision", status: "valid", detail: "28 Apr 2026 - next due 26 May 2026" },
+      { label: "Last Appraisal", status: "valid", detail: "Annual appraisal completed Mar 2026" },
+    ],
+    competencyFlags: [
+      { label: "Can Lead Shift", granted: true, grantedDate: "2023-06-01" },
+      { label: "Can Administer Medication", granted: true, grantedDate: "2022-09-15" },
+      { label: "Can Lone Work", granted: true, grantedDate: "2023-01-10" },
+      { label: "Can Supervise Others", granted: true, grantedDate: "2024-03-01" },
+    ],
+    warnings: [], restrictions: [],
+    compliments: [
+      { id: "c1", text: "Brilliant handling of a difficult situation with Child A. Calm, professional, and child-centred throughout.", from: "Darren Laville (RM)", date: "2026-04-20" },
+      { id: "c2", text: "Thank you for covering extra shifts this month without complaint. Really valued.", from: "Darren Laville (RM)", date: "2026-04-05" },
+    ],
+  },
+  { id: "staff-b", name: "Staff B - James Cooper", role: "Residential Worker", startDate: "2023-09-01",
+    passport: [
+      { label: "DBS Status", status: "valid", detail: "Enhanced DBS", expiryDate: "2026-09-01" },
+      { label: "References", status: "valid", detail: "2 satisfactory references on file" },
+      { label: "Right to Work", status: "valid", detail: "British Citizen" },
+      { label: "Induction", status: "valid", detail: "Completed Sep 2023" },
+      { label: "Probation", status: "valid", detail: "Passed - March 2024" },
+      { label: "Level 3 Diploma", status: "in_progress", detail: "Started Jan 2025 - Unit 4 of 8 complete" },
+      { label: "Mandatory Training", status: "expiring", detail: "10 of 12 modules current. 2 due renewal", expiryDate: "2026-06-01" },
+      { label: "Safeguarding Training", status: "valid", detail: "Level 2 - completed Oct 2025", expiryDate: "2027-10-15" },
+      { label: "Medication Competency", status: "valid", detail: "Assessed by senior", expiryDate: "2026-12-01" },
+      { label: "Physical Intervention", status: "valid", detail: "Team Teach Level 1", expiryDate: "2027-01-20" },
+      { label: "Last Supervision", status: "expiring", detail: "15 Apr 2026 - overdue by 3 days" },
+      { label: "Last Appraisal", status: "valid", detail: "Completed Jan 2026" },
+    ],
+    competencyFlags: [
+      { label: "Can Lead Shift", granted: false },
+      { label: "Can Administer Medication", granted: true, grantedDate: "2024-06-01" },
+      { label: "Can Lone Work", granted: false },
+      { label: "Can Supervise Others", granted: false },
+    ],
+    warnings: [
+      { id: "w1", severity: "medium", title: "Supervision overdue", description: "Last supervision was 20 days ago. Monthly supervision required per Reg 33.", date: "2026-05-05" },
+      { id: "w2", severity: "low", title: "2 training modules expiring", description: "Fire Safety and First Aid modules expire on 1 June 2026.", date: "2026-05-01" },
+    ],
+    restrictions: [],
+    compliments: [
+      { id: "c1", text: "Great relationship building with Child C. They really respond well to you.", from: "Sarah Mitchell (Senior)", date: "2026-03-15" },
+    ],
+  },
+  { id: "staff-c", name: "Staff C - Tom Richards", role: "Residential Worker", startDate: "2024-06-01",
+    passport: [
+      { label: "DBS Status", status: "valid", detail: "Enhanced DBS", expiryDate: "2027-06-01" },
+      { label: "References", status: "valid", detail: "2 satisfactory references" },
+      { label: "Right to Work", status: "valid", detail: "Settled Status" },
+      { label: "Induction", status: "valid", detail: "Completed Jun 2024" },
+      { label: "Probation", status: "valid", detail: "Passed - Dec 2024" },
+      { label: "Level 3 Diploma", status: "not_started", detail: "Scheduled to start Sep 2026" },
+      { label: "Mandatory Training", status: "valid", detail: "All modules current" },
+      { label: "Safeguarding Training", status: "valid", detail: "Level 2", expiryDate: "2027-07-01" },
+      { label: "Medication Competency", status: "not_started", detail: "Assessment booked for June 2026" },
+      { label: "Physical Intervention", status: "valid", detail: "Team Teach Level 1", expiryDate: "2027-03-01" },
+      { label: "Last Supervision", status: "valid", detail: "1 May 2026" },
+      { label: "Last Appraisal", status: "valid", detail: "Due Dec 2026 (first annual)" },
+    ],
+    competencyFlags: [
+      { label: "Can Lead Shift", granted: false },
+      { label: "Can Administer Medication", granted: false },
+      { label: "Can Lone Work", granted: false },
+      { label: "Can Supervise Others", granted: false },
+    ],
+    warnings: [
+      { id: "w1", severity: "low", title: "Medication competency not yet assessed", description: "Cannot administer medication until assessment completed.", date: "2026-05-01" },
+    ],
+    restrictions: [
+      { id: "r1", restriction: "Cannot administer medication", reason: "Competency assessment not yet completed", appliedDate: "2024-06-01", appliedBy: "Darren Laville" },
+    ],
+    compliments: [],
+  },
+  { id: "staff-d", name: "Staff D - Priya Patel", role: "Waking Night Worker", startDate: "2023-01-10",
+    passport: [
+      { label: "DBS Status", status: "valid", detail: "Enhanced DBS", expiryDate: "2026-01-10" },
+      { label: "References", status: "valid", detail: "2 satisfactory references" },
+      { label: "Right to Work", status: "valid", detail: "British Citizen" },
+      { label: "Induction", status: "valid", detail: "Completed Jan 2023" },
+      { label: "Probation", status: "valid", detail: "Passed - Jul 2023" },
+      { label: "Level 3 Diploma", status: "valid", detail: "Achieved 2024" },
+      { label: "Mandatory Training", status: "expired", detail: "3 modules expired in April 2026", expiryDate: "2026-04-01" },
+      { label: "Safeguarding Training", status: "valid", detail: "Level 2", expiryDate: "2027-02-01" },
+      { label: "Medication Competency", status: "valid", detail: "Night meds only", expiryDate: "2026-08-01" },
+      { label: "Physical Intervention", status: "expired", detail: "Team Teach expired March 2026", expiryDate: "2026-03-01" },
+      { label: "Last Supervision", status: "expired", detail: "Last session 2 Mar 2026 - 9 weeks overdue" },
+      { label: "Last Appraisal", status: "valid", detail: "Completed Feb 2026" },
+    ],
+    competencyFlags: [
+      { label: "Can Lead Shift", granted: false },
+      { label: "Can Administer Medication", granted: true, grantedDate: "2023-08-01" },
+      { label: "Can Lone Work", granted: true, grantedDate: "2023-09-15" },
+      { label: "Can Supervise Others", granted: false },
+    ],
+    warnings: [
+      { id: "w1", severity: "high", title: "Physical intervention training expired", description: "Team Teach certification expired March 2026. Cannot be involved in any physical interventions.", date: "2026-04-01" },
+      { id: "w2", severity: "high", title: "Supervision severely overdue", description: "9 weeks since last supervision. Reg 33 requires monthly. Immediate action needed.", date: "2026-05-05" },
+      { id: "w3", severity: "medium", title: "3 mandatory training modules expired", description: "Lone Working, Equality & Diversity, and Data Protection all expired.", date: "2026-04-15" },
+    ],
+    restrictions: [
+      { id: "r1", restriction: "Cannot use physical intervention", reason: "Team Teach certification expired", appliedDate: "2026-04-01", appliedBy: "Darren Laville" },
+    ],
+    compliments: [
+      { id: "c1", text: "Priya is always calm and reassuring during night shifts. The children feel safe with her.", from: "Darren Laville (RM)", date: "2026-02-20" },
+    ],
+  },
+  { id: "staff-e", name: "Staff E - Marcus Williams", role: "Senior Residential Worker", startDate: "2021-11-01",
+    passport: [
+      { label: "DBS Status", status: "valid", detail: "Enhanced DBS - Update service", expiryDate: "2027-11-01" },
+      { label: "References", status: "valid", detail: "2 satisfactory references" },
+      { label: "Right to Work", status: "valid", detail: "British Citizen" },
+      { label: "Induction", status: "valid", detail: "Completed Nov 2021" },
+      { label: "Probation", status: "valid", detail: "Passed - May 2022" },
+      { label: "Level 3 Diploma", status: "valid", detail: "Level 5 Leadership achieved 2025" },
+      { label: "Mandatory Training", status: "valid", detail: "All 12 modules current" },
+      { label: "Safeguarding Training", status: "valid", detail: "Level 3", expiryDate: "2027-09-01" },
+      { label: "Medication Competency", status: "valid", detail: "Full competency", expiryDate: "2027-01-15" },
+      { label: "Physical Intervention", status: "valid", detail: "Team Teach Level 2 - Trainer", expiryDate: "2027-06-01" },
+      { label: "Last Supervision", status: "valid", detail: "30 Apr 2026" },
+      { label: "Last Appraisal", status: "valid", detail: "Completed Nov 2025" },
+    ],
+    competencyFlags: [
+      { label: "Can Lead Shift", granted: true, grantedDate: "2022-05-01" },
+      { label: "Can Administer Medication", granted: true, grantedDate: "2022-03-01" },
+      { label: "Can Lone Work", granted: true, grantedDate: "2022-06-15" },
+      { label: "Can Supervise Others", granted: true, grantedDate: "2023-11-01" },
+    ],
+    warnings: [], restrictions: [],
+    compliments: [
+      { id: "c1", text: "Marcus is an outstanding practitioner. His approach with the most challenging children is exemplary.", from: "Ofsted Inspector", date: "2025-11-10" },
+      { id: "c2", text: "Thank you for mentoring the new staff so effectively. They all speak highly of your support.", from: "Darren Laville (RM)", date: "2026-03-01" },
+      { id: "c3", text: "Marcus handled the crisis brilliantly. Professional, proportionate and child-focused throughout.", from: "RI - Regional Manager", date: "2026-01-15" },
+    ],
+  },
+  { id: "staff-f", name: "Staff F - Amy Green", role: "Residential Worker (New Starter)", startDate: "2026-04-14",
+    passport: [
+      { label: "DBS Status", status: "valid", detail: "Enhanced DBS received 10 Apr 2026" },
+      { label: "References", status: "valid", detail: "2 satisfactory references" },
+      { label: "Right to Work", status: "valid", detail: "British Citizen" },
+      { label: "Induction", status: "in_progress", detail: "Week 3 of 6-week induction programme" },
+      { label: "Probation", status: "in_progress", detail: "Started 14 Apr 2026 - 6 month period" },
+      { label: "Level 3 Diploma", status: "not_started", detail: "To start after probation" },
+      { label: "Mandatory Training", status: "in_progress", detail: "5 of 12 modules completed" },
+      { label: "Safeguarding Training", status: "valid", detail: "Level 2 completed in induction week 1" },
+      { label: "Medication Competency", status: "not_started", detail: "Scheduled for induction week 5" },
+      { label: "Physical Intervention", status: "in_progress", detail: "Team Teach booked 20 May 2026" },
+      { label: "Last Supervision", status: "valid", detail: "2 May 2026 (weekly during induction)" },
+      { label: "Last Appraisal", status: "not_started", detail: "First appraisal due Oct 2026" },
+    ],
+    competencyFlags: [
+      { label: "Can Lead Shift", granted: false },
+      { label: "Can Administer Medication", granted: false },
+      { label: "Can Lone Work", granted: false },
+      { label: "Can Supervise Others", granted: false },
+    ],
+    warnings: [],
+    restrictions: [
+      { id: "r1", restriction: "Cannot lone work", reason: "Induction period - must be supernumerary", appliedDate: "2026-04-14", appliedBy: "Darren Laville" },
+      { id: "r2", restriction: "Cannot administer medication", reason: "Not yet assessed", appliedDate: "2026-04-14", appliedBy: "Darren Laville" },
+      { id: "r3", restriction: "Cannot use physical intervention", reason: "Training not yet completed", appliedDate: "2026-04-14", appliedBy: "Darren Laville" },
+    ],
+    compliments: [],
+  },
+];
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 let idCounter = 1000;
 export function nextFallbackId(prefix: string): string {
