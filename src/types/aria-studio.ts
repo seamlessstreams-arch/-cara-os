@@ -731,6 +731,85 @@ export interface AriaDecisionSupportSnapshot {
   };
 }
 
+// ── Regulation 45 Live Evidence Bank ──────────────────────────────────────────
+
+export type AriaReg45Theme =
+  | "quality_of_care"
+  | "safeguarding"
+  | "leadership_management"
+  | "education"
+  | "health"
+  | "contact_with_family"
+  | "complaints_voice"
+  | "workforce"
+  | "accommodation"
+  | "outcomes";
+
+export const ARIA_REG45_THEME_LABELS: Record<AriaReg45Theme, string> = {
+  quality_of_care: "Quality of Care",
+  safeguarding: "Safeguarding",
+  leadership_management: "Leadership & Management",
+  education: "Education",
+  health: "Health & Wellbeing",
+  contact_with_family: "Contact with Family",
+  complaints_voice: "Complaints & Children's Voice",
+  workforce: "Workforce",
+  accommodation: "Accommodation",
+  outcomes: "Outcomes for Children",
+};
+
+export type AriaReg45EvidenceSentiment = "concern" | "positive" | "neutral";
+
+export type AriaReg45EvidenceStatus =
+  | "ai_draft"
+  | "accepted"
+  | "deferred"
+  | "rejected"
+  | "included_in_report";
+
+export interface AriaReg45EvidenceItem {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  theme: AriaReg45Theme;
+  title: string;
+  summary: string;
+  severity: AriaPatternSeverity | "positive";
+  sentiment: AriaReg45EvidenceSentiment;
+  source_type: AriaSourceType;
+  source_table: string;
+  source_id: string;
+  occurred_at: string;
+  period_start: string;
+  period_end: string;
+  status: AriaReg45EvidenceStatus;
+  is_ai_draft: boolean;
+  generated_at: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_note: string | null;
+  included_in_report_id: string | null;
+}
+
+export interface AriaReg45Snapshot {
+  home_id: string;
+  period_start: string;
+  period_end: string;
+  generated_at: string;
+  themes: Record<AriaReg45Theme, AriaReg45EvidenceItem[]>;
+  summary: {
+    total: number;
+    ai_draft: number;
+    accepted: number;
+    deferred: number;
+    rejected: number;
+    included_in_report: number;
+    by_theme: Record<AriaReg45Theme, number>;
+    concerns: number;
+    positives: number;
+  };
+}
+
 // ── Home Dynamics ─────────────────────────────────────────────────────────────
 
 export type AriaIndicatorStatus = "green" | "amber" | "red";

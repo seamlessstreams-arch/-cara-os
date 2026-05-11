@@ -405,7 +405,7 @@ import type {
   AriaHomeDynamicsSnapshot,
   AriaSafeguardingPattern, AriaEarlyWarning,
   AriaCareGraphNode, AriaCareGraphEdge,
-  AriaFormulation, AriaDecisionRecommendation,
+  AriaFormulation, AriaDecisionRecommendation, AriaReg45EvidenceItem,
 } from "@/types/aria-studio";
 
 // ── Mutable collections ───────────────────────────────────────────────────────
@@ -1243,6 +1243,7 @@ const store = {
   ariaCareGraphEdges: [] as AriaCareGraphEdge[],
   ariaFormulations: [] as AriaFormulation[],
   ariaDecisionRecommendations: [] as AriaDecisionRecommendation[],
+  ariaReg45EvidenceItems: [] as AriaReg45EvidenceItem[],
 
   // Shift Swap Requests
   shiftSwaps: [
@@ -11292,6 +11293,41 @@ export const db = {
         ...data,
       };
       return store.ariaDecisionRecommendations[idx];
+    },
+  },
+  ariaReg45EvidenceItems: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaReg45EvidenceItems.filter((e) => e.home_id === homeId)
+        : store.ariaReg45EvidenceItems,
+    findById: (id: string) => store.ariaReg45EvidenceItems.find((e) => e.id === id),
+    findInPeriod: (homeId: string, periodStart: string, periodEnd: string) =>
+      store.ariaReg45EvidenceItems.filter(
+        (e) =>
+          e.home_id === homeId &&
+          e.period_start === periodStart &&
+          e.period_end === periodEnd,
+      ),
+    findBySource: (homeId: string, sourceTable: string, sourceId: string) =>
+      store.ariaReg45EvidenceItems.find(
+        (e) => e.home_id === homeId && e.source_table === sourceTable && e.source_id === sourceId,
+      ),
+    create: (data: Omit<AriaReg45EvidenceItem, "id">): AriaReg45EvidenceItem => {
+      const rec: AriaReg45EvidenceItem = { ...data, id: generateId("r45") };
+      store.ariaReg45EvidenceItems.push(rec);
+      return rec;
+    },
+    patch: (
+      id: string,
+      data: Partial<AriaReg45EvidenceItem>,
+    ): AriaReg45EvidenceItem | null => {
+      const idx = store.ariaReg45EvidenceItems.findIndex((e) => e.id === id);
+      if (idx === -1) return null;
+      store.ariaReg45EvidenceItems[idx] = {
+        ...store.ariaReg45EvidenceItems[idx],
+        ...data,
+      };
+      return store.ariaReg45EvidenceItems[idx];
     },
   },
   wakeUpRoutines: {
