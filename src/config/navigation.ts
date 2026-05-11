@@ -582,6 +582,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Job Queue",            href: "/intelligence/care-events/job-queue", icon: "Activity", module: "dashboard" },
       { label: "Notifications",        href: "/intelligence/care-events/notifications", icon: "Bell", module: "dashboard" },
       { label: "Saved-Time",           href: "/intelligence/care-events/saved-time", icon: "Clock", module: "dashboard" },
+      { label: "Verify Queue",         href: "/intelligence/care-events/manager-verify-queue", icon: "CheckCircle2", module: "dashboard" },
       { label: "Audit Trail",         href: "/intelligence/aria/audit-trail",        icon: "ScrollText",  module: "dashboard"    },
       { label: "Review Queue",       href: "/aria/review",                          icon: "ClipboardCheck", module: "dashboard" },
       { label: "Pattern Alerts",     href: "/patterns",                             icon: "Radar",       module: "dashboard"    },
