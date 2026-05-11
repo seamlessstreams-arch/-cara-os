@@ -484,6 +484,637 @@ export interface AriaStudioAuditLog {
   created_at: string;
 }
 
+// ── Safeguarding patterns + early warnings ───────────────────────────────────
+
+export type AriaSafeguardingPatternType =
+  | "repeat_missing"
+  | "repeat_restraint"
+  | "escalating_severity"
+  | "night_time_cluster"
+  | "contextual_safeguarding"
+  | "cross_child_trend"
+  | "oversight_gap"
+  | "unexplained_injury_cluster";
+
+export type AriaPatternSeverity = "low" | "medium" | "high" | "critical";
+
+export interface AriaSafeguardingEvidenceRef {
+  source_table: string;
+  source_id: string;
+  date: string;
+  excerpt: string;
+}
+
+export interface AriaSafeguardingPattern {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  pattern_type: AriaSafeguardingPatternType;
+  title: string;
+  description: string;
+  severity: AriaPatternSeverity;
+  window_start: string;
+  window_end: string;
+  evidence_refs: AriaSafeguardingEvidenceRef[];
+  reflective_prompt: string;
+  status: "open" | "acknowledged" | "actioned" | "dismissed";
+  acknowledged_by: string | null;
+  acknowledged_at: string | null;
+  resolution_note: string | null;
+  is_ai_draft: boolean;
+  detected_at: string;
+}
+
+export interface AriaEarlyWarning {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  source_pattern_id: string | null;
+  warning_type: AriaSafeguardingPatternType;
+  title: string;
+  rationale: string;
+  severity: AriaPatternSeverity;
+  recommended_action: string;
+  status: "active" | "acknowledged" | "escalated" | "closed";
+  acknowledged_by: string | null;
+  acknowledged_at: string | null;
+  closed_by: string | null;
+  closed_at: string | null;
+  closure_note: string | null;
+  is_ai_draft: boolean;
+  created_at: string;
+}
+
+// ── Care Graph ────────────────────────────────────────────────────────────────
+
+export type AriaCareGraphNodeType =
+  | "child"
+  | "incident"
+  | "missing_episode"
+  | "restraint"
+  | "risk"
+  | "behaviour_plan"
+  | "care_plan"
+  | "professional"
+  | "family_member"
+  | "key_worker"
+  | "placement"
+  | "safeguarding_pattern"
+  | "early_warning"
+  | "trigger"
+  | "protective_factor"
+  | "incident_cluster";
+
+export type AriaCareGraphEdgeType =
+  | "involves"
+  | "caused_by"
+  | "escalated_from"
+  | "mitigates"
+  | "relates_to"
+  | "witnessed"
+  | "triggered_by"
+  | "protects"
+  | "managed_by"
+  | "evidences"
+  | "follows"
+  | "preceded_by"
+  | "linked_to";
+
+export interface AriaCareGraphNode {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  node_type: AriaCareGraphNodeType;
+  label: string;
+  description: string | null;
+  source_table: string | null;
+  source_id: string | null;
+  metadata: Record<string, unknown> | null;
+  severity: AriaPatternSeverity | null;
+  occurred_at: string | null;
+  is_ai_draft: boolean;
+  created_at: string;
+}
+
+export interface AriaCareGraphEdge {
+  id: string;
+  home_id: string;
+  from_node_id: string;
+  to_node_id: string;
+  edge_type: AriaCareGraphEdgeType;
+  weight: number;
+  rationale: string | null;
+  is_ai_draft: boolean;
+  created_at: string;
+}
+
+export interface AriaCareGraphSnapshot {
+  home_id: string;
+  child_id: string | null;
+  generated_at: string;
+  nodes: AriaCareGraphNode[];
+  edges: AriaCareGraphEdge[];
+  summary: {
+    node_counts: Record<string, number>;
+    edge_counts: Record<string, number>;
+    total_nodes: number;
+    total_edges: number;
+  };
+}
+
+// ── Formulations & Decision Support ───────────────────────────────────────────
+
+export type AriaFormulationFactorType =
+  | "predisposing"
+  | "precipitating"
+  | "perpetuating"
+  | "protective";
+
+export interface AriaFormulationFactor {
+  factor_type: AriaFormulationFactorType;
+  label: string;
+  detail: string;
+  evidence_refs: AriaSafeguardingEvidenceRef[];
+  confidence: number; // 0..1
+}
+
+export type AriaFormulationStatus =
+  | "ai_draft"
+  | "in_review"
+  | "approved"
+  | "superseded"
+  | "rejected";
+
+export interface AriaFormulation {
+  id: string;
+  home_id: string;
+  child_id: string;
+  title: string;
+  narrative: string;
+  factors: AriaFormulationFactor[];
+  hypotheses: string[];
+  recommended_focus: string[];
+  source_pattern_ids: string[];
+  source_warning_ids: string[];
+  source_risk_ids: string[];
+  status: AriaFormulationStatus;
+  is_ai_draft: boolean;
+  generated_at: string;
+  approved_by: string | null;
+  approved_at: string | null;
+  reviewer_note: string | null;
+  superseded_by: string | null;
+}
+
+export type AriaDecisionPriority = "p1" | "p2" | "p3" | "p4";
+export type AriaDecisionStatus =
+  | "ai_draft"
+  | "accepted"
+  | "modified"
+  | "deferred"
+  | "rejected"
+  | "completed";
+
+export type AriaDecisionAction =
+  | "convene_strategy_meeting"
+  | "trigger_reg40_notification"
+  | "request_la_review"
+  | "review_risk_assessment"
+  | "review_behaviour_plan"
+  | "schedule_keywork_session"
+  | "increase_supervision"
+  | "request_clinical_input"
+  | "convene_team_around_child"
+  | "review_placement_plan"
+  | "audit_oversight_gap"
+  | "trigger_lessons_learned"
+  | "schedule_management_oversight"
+  | "request_advocate"
+  | "review_contextual_safeguarding";
+
+export interface AriaDecisionRecommendation {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  formulation_id: string | null;
+  source_pattern_ids: string[];
+  source_warning_ids: string[];
+  action: AriaDecisionAction;
+  title: string;
+  rationale: string;
+  expected_impact: string;
+  priority: AriaDecisionPriority;
+  confidence: number;
+  status: AriaDecisionStatus;
+  is_ai_draft: boolean;
+  generated_at: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_note: string | null;
+  due_date: string | null;
+}
+
+export interface AriaDecisionSupportSnapshot {
+  home_id: string;
+  child_id: string | null;
+  generated_at: string;
+  formulations: AriaFormulation[];
+  recommendations: AriaDecisionRecommendation[];
+  summary: {
+    formulations: number;
+    recommendations: number;
+    p1: number;
+    p2: number;
+    p3: number;
+    p4: number;
+    high_confidence: number;
+  };
+}
+
+// ── Regulation 45 Live Evidence Bank ──────────────────────────────────────────
+
+export type AriaReg45Theme =
+  | "quality_of_care"
+  | "safeguarding"
+  | "leadership_management"
+  | "education"
+  | "health"
+  | "contact_with_family"
+  | "complaints_voice"
+  | "workforce"
+  | "accommodation"
+  | "outcomes";
+
+export const ARIA_REG45_THEME_LABELS: Record<AriaReg45Theme, string> = {
+  quality_of_care: "Quality of Care",
+  safeguarding: "Safeguarding",
+  leadership_management: "Leadership & Management",
+  education: "Education",
+  health: "Health & Wellbeing",
+  contact_with_family: "Contact with Family",
+  complaints_voice: "Complaints & Children's Voice",
+  workforce: "Workforce",
+  accommodation: "Accommodation",
+  outcomes: "Outcomes for Children",
+};
+
+export type AriaReg45EvidenceSentiment = "concern" | "positive" | "neutral";
+
+export type AriaReg45EvidenceStatus =
+  | "ai_draft"
+  | "accepted"
+  | "deferred"
+  | "rejected"
+  | "included_in_report";
+
+export interface AriaReg45EvidenceItem {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  theme: AriaReg45Theme;
+  title: string;
+  summary: string;
+  severity: AriaPatternSeverity | "positive";
+  sentiment: AriaReg45EvidenceSentiment;
+  source_type: AriaSourceType;
+  source_table: string;
+  source_id: string;
+  occurred_at: string;
+  period_start: string;
+  period_end: string;
+  status: AriaReg45EvidenceStatus;
+  is_ai_draft: boolean;
+  generated_at: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_note: string | null;
+  included_in_report_id: string | null;
+}
+
+export interface AriaReg45Snapshot {
+  home_id: string;
+  period_start: string;
+  period_end: string;
+  generated_at: string;
+  themes: Record<AriaReg45Theme, AriaReg45EvidenceItem[]>;
+  summary: {
+    total: number;
+    ai_draft: number;
+    accepted: number;
+    deferred: number;
+    rejected: number;
+    included_in_report: number;
+    by_theme: Record<AriaReg45Theme, number>;
+    concerns: number;
+    positives: number;
+  };
+}
+
+// ── Annex A Live Snapshot ─────────────────────────────────────────────────────
+
+export type AriaAnnexASectionKey =
+  | "section_1"
+  | "section_2"
+  | "section_3"
+  | "section_4"
+  | "section_5"
+  | "section_6"
+  | "section_7"
+  | "section_8"
+  | "section_9";
+
+export const ARIA_ANNEX_A_SECTIONS: { key: AriaAnnexASectionKey; label: string; weight: number }[] = [
+  { key: "section_1", label: "Section 1 — Details of the home", weight: 5 },
+  { key: "section_2", label: "Section 2 — Children and young people", weight: 20 },
+  { key: "section_3", label: "Section 3 — Staffing", weight: 15 },
+  { key: "section_4", label: "Section 4 — Incidents and notifications", weight: 15 },
+  { key: "section_5", label: "Section 5 — Complaints and representations", weight: 10 },
+  { key: "section_6", label: "Section 6 — Missing episodes", weight: 10 },
+  { key: "section_7", label: "Section 7 — Physical interventions / restraints", weight: 10 },
+  { key: "section_8", label: "Section 8 — Regulation 44 visits", weight: 10 },
+  { key: "section_9", label: "Section 9 — Regulation 45 reports", weight: 5 },
+];
+
+export type AriaAnnexAReadiness = "green" | "amber" | "red";
+
+export interface AriaAnnexASectionReading {
+  key: AriaAnnexASectionKey;
+  label: string;
+  weight: number;
+  record_count: number;
+  gap_count: number;
+  stale_count: number;
+  readiness: AriaAnnexAReadiness;
+  issues: string[];
+  notes: string;
+}
+
+export type AriaAnnexASnapshotStatus = "draft" | "locked";
+
+export interface AriaAnnexASnapshot {
+  id: string;
+  home_id: string;
+  period_start: string;
+  period_end: string;
+  generated_at: string;
+  status: AriaAnnexASnapshotStatus;
+  readiness_score: number;
+  overall_readiness: AriaAnnexAReadiness;
+  sections: AriaAnnexASectionReading[];
+  total_gaps: number;
+  total_stale: number;
+  locked_by: string | null;
+  locked_at: string | null;
+  lock_note: string | null;
+}
+
+// ── Regulation 45 Report Builder ──────────────────────────────────────────────
+
+export type AriaReg45ReportStatus = "draft" | "in_review" | "approved" | "locked";
+
+export interface AriaReg45ReportSection {
+  theme: AriaReg45Theme;
+  label: string;
+  narrative: string;
+  evidence_item_ids: string[];
+  themes_covered: string[];
+  concerns: number;
+  positives: number;
+}
+
+export interface AriaReg45Report {
+  id: string;
+  home_id: string;
+  period_start: string;
+  period_end: string;
+  status: AriaReg45ReportStatus;
+  generated_at: string;
+  generated_by: string;
+  title: string;
+  executive_summary: string;
+  sections: AriaReg45ReportSection[];
+  evidence_item_ids: string[];
+  total_evidence: number;
+  total_concerns: number;
+  total_positives: number;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_note: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  locked_by: string | null;
+  locked_at: string | null;
+  lock_note: string | null;
+}
+
+// ── Suggested Records (commit queue) ──────────────────────────────────────────
+//
+// ARIA proposes a record. A human edits if needed, and an authorised human
+// commits it to the official record. Until commit, the suggestion has no
+// statutory weight. Once committed, an immutable AriaCommittedRecord row
+// is the record of truth in this in-memory backend (in production this
+// writes to the appropriate domain table).
+
+export type AriaSuggestedRecordType =
+  | "daily_log_summary"
+  | "reflection"
+  | "keywork_summary"
+  | "behaviour_note"
+  | "risk_update"
+  | "care_plan_update"
+  | "incident_summary";
+
+export type AriaSuggestedRecordStatus =
+  | "pending"
+  | "committed"
+  | "rejected"
+  | "superseded";
+
+export const ARIA_SUGGESTED_RECORD_LABELS: Record<AriaSuggestedRecordType, string> = {
+  daily_log_summary: "Daily log summary",
+  reflection: "Reflection",
+  keywork_summary: "Keywork summary",
+  behaviour_note: "Behaviour note",
+  risk_update: "Risk assessment update",
+  care_plan_update: "Care plan update",
+  incident_summary: "Incident summary",
+};
+
+export interface AriaSuggestedSourceRef {
+  type: string;
+  id: string;
+  label: string;
+}
+
+export interface AriaSuggestedRecord {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  record_type: AriaSuggestedRecordType;
+  target_label: string;
+  suggested_title: string;
+  suggested_body: string;
+  suggested_fields: Record<string, string | number | boolean | null>;
+  source_evidence: AriaSuggestedSourceRef[];
+  status: AriaSuggestedRecordStatus;
+  generated_at: string;
+  generated_by: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_note: string | null;
+  committed_record_id: string | null;
+  committed_at: string | null;
+  edits_count: number;
+}
+
+export interface AriaCommittedRecord {
+  id: string;
+  suggested_record_id: string;
+  home_id: string;
+  child_id: string | null;
+  record_type: AriaSuggestedRecordType;
+  target_label: string;
+  title: string;
+  body: string;
+  fields: Record<string, string | number | boolean | null>;
+  committed_by: string;
+  committed_at: string;
+  commit_note: string | null;
+  // Versioning (Milestone 13). Original commits have version 1,
+  // previous_version_id null and is_current_version true.
+  version: number;
+  previous_version_id: string | null;
+  is_current_version: boolean;
+  amended_by: string | null;
+  amended_at: string | null;
+  amendment_reason: string | null;
+  amendment_requires_manager_review: boolean;
+  amendment_acknowledged_by: string | null;
+  amendment_acknowledged_at: string | null;
+}
+
+// ── Management Oversight Queue (Milestone 14) ─────────────────────────────────
+
+export type ManagerOversightItemKind =
+  | "pending_suggestion"
+  | "amendment_review"
+  | "returned_record";
+
+export type ManagerOversightSeverity = "high" | "medium" | "low";
+
+export interface ManagerOversightItem {
+  id: string;
+  kind: ManagerOversightItemKind;
+  home_id: string;
+  child_id: string | null;
+  title: string;
+  summary: string;
+  severity: ManagerOversightSeverity;
+  is_safeguarding_sensitive: boolean;
+  created_at: string;
+  source_id: string;
+  source_label: string;
+  link_href: string;
+  age_hours: number;
+}
+
+export interface ManagerOversightQueue {
+  home_id: string;
+  generated_at: string;
+  total: number;
+  high: number;
+  medium: number;
+  low: number;
+  items: ManagerOversightItem[];
+}
+
+// ── Reg 40 Triage (Milestone 15) ──────────────────────────────────────────────
+//
+// Regulation 40 of the Children's Homes (England) Regulations 2015 sets out
+// notifiable events the registered person must report to Ofsted. The triage
+// queue surfaces care events that may require a Reg 40 notification so that
+// an authorised human can decide whether to notify, dismiss or escalate.
+
+export type Reg40TriageStatus =
+  | "pending"
+  | "notified"
+  | "dismissed"
+  | "escalated";
+
+export type Reg40SuggestedCategory =
+  | "child_protection_concern"
+  | "serious_illness_or_accident"
+  | "death_of_child"
+  | "child_missing"
+  | "police_involvement"
+  | "serious_incident"
+  | "allegation_against_staff"
+  | "other";
+
+export interface AriaReg40Triage {
+  id: string;
+  home_id: string;
+  child_id: string | null;
+  source_event_id: string;
+  source_category: string;
+  source_title: string;
+  source_event_date: string;
+  suggested_category: Reg40SuggestedCategory;
+  reasoning: string;
+  status: Reg40TriageStatus;
+  created_at: string;
+  decided_by: string | null;
+  decided_at: string | null;
+  decision_note: string | null;
+  notification_ref: string | null;
+}
+
+// ── Home Dynamics ─────────────────────────────────────────────────────────────
+
+export type AriaIndicatorStatus = "green" | "amber" | "red";
+
+export interface AriaHomeDynamicsIndicator {
+  key: string;
+  label: string;
+  value: number | string;
+  status: AriaIndicatorStatus;
+  detail: string;
+}
+
+export interface AriaHomeDynamicsSnapshot {
+  id: string;
+  home_id: string;
+  snapshot_date: string;
+  window_days: number;
+  window_start: string;
+  window_end: string;
+
+  incidents_total: number;
+  incidents_high_severity: number;
+  incidents_open: number;
+  incidents_oversight_outstanding: number;
+
+  restraints_total: number;
+  missing_episodes_total: number;
+  missing_episodes_active: number;
+
+  shifts_scheduled: number;
+  shifts_completed: number;
+  shifts_no_show: number;
+  shifts_cancelled: number;
+  staffing_stability_pct: number;
+
+  tasks_overdue: number;
+
+  overall_status: AriaIndicatorStatus;
+  indicators: AriaHomeDynamicsIndicator[];
+  narrative_summary: string;
+
+  generated_by: string;
+  generated_at: string;
+  is_ai_draft: boolean;
+}
+
 // ── Request / response types ──────────────────────────────────────────────────
 
 export interface AriaGenerationRequest {

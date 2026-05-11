@@ -27,7 +27,7 @@ import {
   LayoutDashboard, Heart, Users, Building2, ShieldCheck, BarChart3, Sparkles, Settings,
   // Child icons
   HeartHandshake, ClipboardList, BookOpen, AlertTriangle, ShieldAlert, MessageCircle,
-  MapPin, Shield, Pill, PhoneCall, ScrollText, FileText, FileCheck,
+  MapPin, Shield, Pill, PhoneCall, ScrollText, FileText, FileCheck, FileSignature,
   // Team icons
   Calendar, MessageSquare, GraduationCap, UserCheck, Fingerprint, TrendingUp,
   Network, Milestone, CalendarDays, Clock,
@@ -41,7 +41,7 @@ import {
   Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity,
   Wand2,
   // Other
-  Target, ArrowRightLeft, CheckSquare, User, Moon,
+  Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
 } from "lucide-react";
 
 // ── Icon lookup ───────────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ import {
 const ICON_MAP: Record<string, React.ElementType> = {
   LayoutDashboard, Heart, Users, Building2, ShieldCheck, BarChart3, Sparkles, Settings,
   HeartHandshake, ClipboardList, BookOpen, AlertTriangle, ShieldAlert, MessageCircle,
-  MapPin, Shield, Pill, PhoneCall, ScrollText, FileText, FileCheck,
+  MapPin, Shield, Pill, PhoneCall, ScrollText, FileText, FileCheck, FileSignature,
   Calendar, MessageSquare, GraduationCap, UserCheck, Fingerprint, TrendingUp,
   Network, Milestone, CalendarDays, Clock,
   Car, Wrench, Receipt,
@@ -57,7 +57,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   BarChart2,
   Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity,
   Wand2,
-  Target, ArrowRightLeft, CheckSquare, User, Moon,
+  Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
 };
 
 // ── Primary section icons ─────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { detectAllGaps } from "@/lib/aria/aria-studio-gaps";
+import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
 
 const HOME_ID = "home_oak";
 
@@ -62,6 +63,13 @@ export async function PATCH(req: NextRequest) {
 
   const gapId = body.id as string;
   if (!gapId) return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+  const guard = requireAriaStudioPermission(req, body, {
+    permission: "aria.create_tasks",
+    homeId: HOME_ID,
+    intent: `update gap ${gapId}`,
+  });
+  if (!guard.ok) return guard.response;
 
   const gap = db.ariaGaps.patch(gapId, {
     status: (body.status as never) ?? undefined,

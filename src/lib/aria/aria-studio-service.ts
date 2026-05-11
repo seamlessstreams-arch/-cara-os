@@ -13,6 +13,7 @@ import { generateAriaStudioContent, getAriaStudioProviderConfig } from "./aria-s
 import { buildArtifactPrompt } from "./aria-studio-generators";
 import { gatherSourcesForRequest } from "./aria-studio-sources";
 import { detectGapsForRequest } from "./aria-studio-gaps";
+import { fileCommittedArtifact } from "./aria-filing-cabinet";
 import { ARIA_PROFESSIONAL_IDENTITY_PROMPT } from "./writingStyleRules";
 
 // ── System prompt ─────────────────────────────────────────────────────────────
@@ -382,11 +383,23 @@ export function commitArtifact(
   if (latestQc && !latestQc.overall_passed) return null;
 
   const now = new Date().toISOString();
-  const updated = db.ariaArtifacts.patch(artifactId, {
+  const committed = db.ariaArtifacts.patch(artifactId, {
     status: "committed",
     committed_by: actorId,
     committed_at: now,
   });
+  if (!committed) return null;
+
+  // Push into the filing cabinet so the official record is searchable
+  // and inspection-ready alongside every other care-event-derived document.
+  const filingResult = fileCommittedArtifact(committed);
+
+  // Persist the canonical filing path back onto the artifact and link the
+  // filing cabinet item id as the official record id.
+  const updated = db.ariaArtifacts.patch(artifactId, {
+    filing_cabinet_path: filingResult.path || committed.filing_cabinet_path,
+    official_record_id: filingResult.item?.id ?? committed.official_record_id,
+  }) ?? committed;
 
   db.ariaStudioAuditLog.create({
     home_id: artifact.home_id,
@@ -394,11 +407,17 @@ export function commitArtifact(
     action_type: "artifact_committed",
     artifact_id: artifactId,
     source_ids: artifact.source_ids,
-    prompt_summary: null,
+    prompt_summary: filingResult.filed
+      ? `Filed at ${filingResult.path}`
+      : filingResult.reason ?? null,
     model_provider: null,
     model_name: null,
     before_state: { status: artifact.status },
-    after_state: { status: "committed", filing_path: artifact.filing_cabinet_path },
+    after_state: {
+      status: "committed",
+      filing_path: updated.filing_cabinet_path,
+      filing_item_id: updated.official_record_id,
+    },
     ip_address: null,
   });
 

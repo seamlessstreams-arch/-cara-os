@@ -186,7 +186,7 @@ async function generateWithOpenAI(
   config: AriaStudioProviderConfig
 ): Promise<AriaStudioProviderResult> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { default: OpenAI } = await import("openai" as any);
+  const { default: OpenAI } = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ "openai" as any);
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const completion = await client.chat.completions.create({

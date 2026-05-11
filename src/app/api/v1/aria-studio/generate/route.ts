@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateArtifact } from "@/lib/aria/aria-studio-service";
+import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
 import type { AriaGenerationRequest } from "@/types/aria-studio";
 
 // POST /api/v1/aria-studio/generate
@@ -22,6 +23,14 @@ export async function POST(req: NextRequest) {
   if (!body.requested_by) {
     return NextResponse.json({ error: "requested_by is required" }, { status: 400 });
   }
+
+  const guard = requireAriaStudioPermission(req, body, {
+    permission: "aria.generate_drafts",
+    homeId: (body.home_id as string) ?? "home_oak",
+    childId: (body.child_id as string) ?? null,
+    intent: `generate ${body.artifact_type}`,
+  });
+  if (!guard.ok) return guard.response;
 
   const request: AriaGenerationRequest = {
     artifact_type: body.artifact_type as AriaGenerationRequest["artifact_type"],

@@ -9,8 +9,26 @@ import {
   editArtifact,
 } from "@/lib/aria/aria-studio-service";
 import { runQualityCheck } from "@/lib/aria/aria-studio-quality";
+import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import type { AriaPermission } from "@/lib/aria/aria-permissions";
 
 type Params = { params: Promise<{ id: string }> };
+
+// Maps a PATCH `action` to the permission required to perform it.
+function permissionForAction(action: string): AriaPermission {
+  switch (action) {
+    case "submit":           return "aria.generate_drafts";
+    case "approve":          return "aria.approve_outputs";
+    case "request_changes":  return "aria.approve_outputs";
+    case "reject":           return "aria.reject_outputs";
+    case "commit":           return "aria.commit_to_records";
+    case "quality_check":    return "aria.approve_outputs";
+    case "archive":          return "aria.commit_to_records";
+    case "recover":          return "aria.commit_to_records";
+    case "edit":             return "aria.rewrite";
+    default:                  return "aria.rewrite";
+  }
+}
 
 // GET /api/v1/aria-studio/artifacts/[id]
 export async function GET(_req: NextRequest, { params }: Params) {
@@ -47,6 +65,22 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const action = body.action as string;
   const actorId = (body.actor_id as string) ?? "staff_unknown";
+
+  const resolvedAction =
+    typeof action === "string" && action.length > 0
+      ? action
+      : body.generated_content !== undefined
+        ? "edit"
+        : "patch";
+
+  const guard = requireAriaStudioPermission(req, body, {
+    permission: permissionForAction(resolvedAction),
+    homeId: artifact.home_id,
+    childId: artifact.child_id,
+    isSafeguardingSensitive: artifact.safeguarding_level === "high",
+    intent: `${resolvedAction} ${id}`,
+  });
+  if (!guard.ok) return guard.response;
 
   // ── Workflow actions ────────────────────────────────────────────────────────
   if (action === "submit") {
@@ -164,7 +198,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
 // DELETE /api/v1/aria-studio/artifacts/[id]
 // Soft delete — marks as deleted_recoverable
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const artifact = db.ariaArtifacts.findById(id);
   if (!artifact) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -173,10 +207,18 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Committed artifacts cannot be deleted" }, { status: 422 });
   }
 
+  const guard = requireAriaStudioPermission(req, null, {
+    permission: "aria.commit_to_records",
+    homeId: artifact.home_id,
+    childId: artifact.child_id,
+    intent: `delete ${id}`,
+  });
+  if (!guard.ok) return guard.response;
+
   const updated = db.ariaArtifacts.patch(id, { status: "deleted_recoverable" });
   db.ariaStudioAuditLog.create({
     home_id: artifact.home_id,
-    actor_id: "staff_unknown",
+    actor_id: guard.actor.userId,
     action_type: "artifact_deleted",
     artifact_id: id,
     source_ids: artifact.source_ids,

@@ -402,7 +402,137 @@ import {
 import type {
   AriaArtifact, AriaSource, AriaArtifactVersion, AriaArtifactReview,
   AriaArtifactAction, AriaQualityCheck, AriaGap, AriaStudioAuditLog,
+  AriaHomeDynamicsSnapshot,
+  AriaSafeguardingPattern, AriaEarlyWarning,
+  AriaCareGraphNode, AriaCareGraphEdge,
+  AriaFormulation, AriaDecisionRecommendation, AriaReg45EvidenceItem,
+  AriaAnnexASnapshot,
+  AriaReg45Report,
+  AriaSuggestedRecord,
+  AriaCommittedRecord,
+  AriaReg40Triage,
 } from "@/types/aria-studio";
+
+// ── Persisted inspection snapshot envelope (M31) ─────────────────────────────
+// Self-contained immutable record. Payload is the full InspectionSnapshot
+// captured by src/lib/care-events/inspection-snapshot.ts; we keep it loosely
+// typed here to avoid a circular import with the engine that consumes the db.
+export interface PersistedInspectionSnapshot {
+  id: string;
+  home_id: string;
+  generated_at: string;
+  generated_by: string | null;
+  schema_version: number;
+  readiness_score: number;
+  readiness_severity: string;
+  payload: unknown;
+}
+
+// Per-user notification read/dismiss state (M34). Notification ids are
+// deterministic ("source:source_id") and produced by
+// src/lib/care-events/notifications.ts. We persist only the per-user
+// envelope so the derived stream remains the source of truth.
+export interface UserNotificationState {
+  id: string;                 // `${user_id}::${notification_id}`
+  user_id: string;
+  notification_id: string;
+  home_id: string;
+  read_at: string | null;
+  dismissed_at: string | null;
+  updated_at: string;
+}
+
+// Persisted Reg 44 visit evidence pack header (M35). The full payload
+// is the engine's Reg44Pack; kept loose here to avoid a circular import.
+export interface PersistedReg44Pack {
+  id: string;
+  home_id: string;
+  generated_at: string;
+  generated_by: string | null;
+  schema_version: number;
+  window_start: string;
+  window_end: string;
+  headline_children: number;
+  headline_safeguarding_events: number;
+  payload: unknown;
+}
+
+// Persisted Inspection Bundle envelope (M43). Composed artifact built by
+// src/lib/care-events/inspection-bundle.ts. Always safeguarding-sensitive
+// in practice; the immutable export history rows record every download.
+export interface PersistedInspectionBundle {
+  id: string;
+  home_id: string;
+  generated_at: string;
+  generated_by: string | null;
+  schema_version: number;
+  reg44_packs_included: number;
+  filing_total: number;
+  reg45_evidence_items: number;
+  annex_a_evidence_items: number;
+  recent_exports_included: number;
+  readiness_score: number;
+  readiness_severity: string;
+  trajectory_alerts_open: number;
+  trajectory_acks_recent: number;
+  payload: unknown;
+}
+
+// Trajectory alert acknowledgement (M48). One row per (alert_id, acked_by_user)
+// recording a manager's action note + timestamp so the acknowledged alert
+// stops appearing in the manager notification stream until the next bundle
+// (because the alert id is bundle-scoped and changes with each new bundle).
+export interface TrajectoryAlertAck {
+  id: string;                  // alert_id::user_id
+  alert_id: string;
+  home_id: string;
+  bundle_id: string | null;
+  alert_kind: string;
+  acked_by_user: string;
+  acked_by_role: string;
+  note: string;
+  acked_at: string;
+}
+
+// Trajectory RI escalation acknowledgement (M52). Parallel to the manager ack
+// but scoped to the RI audience: an RI ack does not silence the underlying
+// manager-facing alert, only the RI-escalation item, so management is still
+// expected to acknowledge separately.
+export interface TrajectoryRiEscalationAck {
+  id: string;                  // escalation_id::user_id
+  escalation_id: string;
+  alert_id: string;
+  home_id: string;
+  bundle_id: string | null;
+  alert_kind: string;
+  acked_by_user: string;
+  acked_by_role: string;
+  note: string;
+  acked_at: string;
+}
+
+// Immutable export history entry (M36). One row per successful export of a
+// persisted artifact. Used to satisfy CLAUDE.md "restricted export
+// permissions" + audit / traceability.
+export type ExportHistoryKind =
+  | "inspection_snapshot"
+  | "reg44_pack"
+  | "filing_cabinet_index"
+  | "inspection_bundle";
+export type ExportHistoryFormat = "json";
+export interface ExportHistoryEntry {
+  id: string;
+  home_id: string;
+  kind: ExportHistoryKind;
+  artifact_id: string;
+  format: ExportHistoryFormat;
+  exported_at: string;
+  exported_by: string;
+  exported_by_role: string;
+  is_safeguarding_sensitive: boolean;
+  byte_size: number;
+  reason: string | null;
+}
 
 // ── Mutable collections ───────────────────────────────────────────────────────
 
@@ -1033,6 +1163,21 @@ const store = {
   filingCabinet: [...SEED_FILING_CABINET] as FilingCabinetItem[],
   savedTimeMetrics: [...SEED_SAVED_TIME_METRICS] as SavedTimeMetric[],
 
+  // ── Inspection Snapshots (M31) ───────────────────────────────────────────
+  inspectionSnapshots: [] as PersistedInspectionSnapshot[],
+
+  // ── User Notification State (M34) ────────────────────────────────────────
+  userNotificationStates: [] as UserNotificationState[],
+
+  // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
+  reg44Packs: [] as PersistedReg44Pack[],
+  inspectionBundles: [] as PersistedInspectionBundle[],
+  trajectoryAlertAcks: [] as TrajectoryAlertAck[],
+  trajectoryRiEscalationAcks: [] as TrajectoryRiEscalationAck[],
+
+  // ── Export History (M36) ─────────────────────────────────────────────────────
+  exportHistory: [] as ExportHistoryEntry[],
+
   // ── Branding ─────────────────────────────────────────────────────────────
   systemBranding: {
     id: "cornerstone_system" as const,
@@ -1232,6 +1377,19 @@ const store = {
   ariaQualityChecks: [] as AriaQualityCheck[],
   ariaGaps: [] as AriaGap[],
   ariaStudioAuditLog: [] as AriaStudioAuditLog[],
+  ariaHomeDynamicsSnapshots: [] as AriaHomeDynamicsSnapshot[],
+  ariaSafeguardingPatterns: [] as AriaSafeguardingPattern[],
+  ariaEarlyWarnings: [] as AriaEarlyWarning[],
+  ariaCareGraphNodes: [] as AriaCareGraphNode[],
+  ariaCareGraphEdges: [] as AriaCareGraphEdge[],
+  ariaFormulations: [] as AriaFormulation[],
+  ariaDecisionRecommendations: [] as AriaDecisionRecommendation[],
+  ariaReg45EvidenceItems: [] as AriaReg45EvidenceItem[],
+  ariaAnnexASnapshots: [] as AriaAnnexASnapshot[],
+  ariaReg45Reports: [] as AriaReg45Report[],
+  ariaSuggestedRecords: [] as AriaSuggestedRecord[],
+  ariaCommittedRecords: [] as AriaCommittedRecord[],
+  ariaReg40Triages: [] as AriaReg40Triage[],
 
   // Shift Swap Requests
   shiftSwaps: [
@@ -10652,6 +10810,7 @@ export const db = {
 
   // ── Care Event Routes ────────────────────────────────────────────────────────
   careEventRoutes: {
+    findAll: () => store.careEventRoutes,
     findByCareEvent: (careEventId: string) => store.careEventRoutes.filter((r) => r.care_event_id === careEventId),
     findFailed: () => store.careEventRoutes.filter((r) => r.status === "failed" || r.status === "retry_required"),
     upsert: (data: Omit<CareEventRoute, "id" | "created_at" | "updated_at">): CareEventRoute => {
@@ -10677,6 +10836,7 @@ export const db = {
 
   // ── Care Event Jobs ──────────────────────────────────────────────────────────
   careEventJobs: {
+    findAll: () => store.careEventJobs,
     findPending: () => store.careEventJobs.filter((j) => j.status === "pending"),
     findFailed: () => store.careEventJobs.filter((j) => j.status === "failed" || j.status === "retry_required"),
     upsert: (data: Omit<CareEventJob, "id" | "created_at" | "updated_at">): CareEventJob => {
@@ -10960,6 +11120,152 @@ export const db = {
     },
   },
 
+  // ── Inspection Snapshots (M31) ───────────────────────────────────────────
+  inspectionSnapshots: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.inspectionSnapshots.filter((s) => s.home_id === homeId)
+        : store.inspectionSnapshots,
+    findById: (id: string) =>
+      store.inspectionSnapshots.find((s) => s.id === id) ?? null,
+    create: (snap: PersistedInspectionSnapshot): PersistedInspectionSnapshot => {
+      // immutable: reject duplicate ids
+      if (store.inspectionSnapshots.some((s) => s.id === snap.id)) return snap;
+      store.inspectionSnapshots.push(snap);
+      return snap;
+    },
+  },
+
+  // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
+  reg44Packs: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.reg44Packs.filter((p) => p.home_id === homeId)
+        : store.reg44Packs,
+    findById: (id: string) => store.reg44Packs.find((p) => p.id === id) ?? null,
+    create: (pack: PersistedReg44Pack): PersistedReg44Pack => {
+      // immutable: reject duplicate ids
+      if (store.reg44Packs.some((p) => p.id === pack.id)) return pack;
+      store.reg44Packs.push(pack);
+      return pack;
+    },
+  },
+
+  // ── Persisted Inspection Bundles (M43) ──────────────────────────────────
+  inspectionBundles: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.inspectionBundles.filter((b) => b.home_id === homeId)
+        : store.inspectionBundles,
+    findById: (id: string) =>
+      store.inspectionBundles.find((b) => b.id === id) ?? null,
+    create: (b: PersistedInspectionBundle): PersistedInspectionBundle => {
+      // immutable: reject duplicate ids
+      if (store.inspectionBundles.some((x) => x.id === b.id)) return b;
+      store.inspectionBundles.push(b);
+      return b;
+    },
+  },
+
+  // ── Trajectory Alert Acks (M48) ─────────────────────────────────────────
+  trajectoryAlertAcks: {
+    findAll: (homeId?: string): TrajectoryAlertAck[] =>
+      homeId
+        ? store.trajectoryAlertAcks.filter((a) => a.home_id === homeId)
+        : store.trajectoryAlertAcks,
+    findByAlertId: (alertId: string): TrajectoryAlertAck[] =>
+      store.trajectoryAlertAcks.filter((a) => a.alert_id === alertId),
+    create: (a: TrajectoryAlertAck): TrajectoryAlertAck => {
+      // idempotent: an ack from the same user on the same alert is preserved
+      if (store.trajectoryAlertAcks.some((x) => x.id === a.id)) {
+        return store.trajectoryAlertAcks.find((x) => x.id === a.id)!;
+      }
+      store.trajectoryAlertAcks.push(a);
+      return a;
+    },
+  },
+
+  // ── Trajectory RI Escalation Acks (M52) ─────────────────────────────────
+  trajectoryRiEscalationAcks: {
+    findAll: (homeId?: string): TrajectoryRiEscalationAck[] =>
+      homeId
+        ? store.trajectoryRiEscalationAcks.filter((a) => a.home_id === homeId)
+        : store.trajectoryRiEscalationAcks,
+    findByEscalationId: (escalationId: string): TrajectoryRiEscalationAck[] =>
+      store.trajectoryRiEscalationAcks.filter((a) => a.escalation_id === escalationId),
+    create: (a: TrajectoryRiEscalationAck): TrajectoryRiEscalationAck => {
+      if (store.trajectoryRiEscalationAcks.some((x) => x.id === a.id)) {
+        return store.trajectoryRiEscalationAcks.find((x) => x.id === a.id)!;
+      }
+      store.trajectoryRiEscalationAcks.push(a);
+      return a;
+    },
+  },
+
+  // ── Export History (M36) ─────────────────────────────────────────────────────
+  exportHistory: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.exportHistory.filter((e) => e.home_id === homeId)
+        : store.exportHistory,
+    findById: (id: string) => store.exportHistory.find((e) => e.id === id) ?? null,
+    findForArtifact: (artifactId: string) =>
+      store.exportHistory.filter((e) => e.artifact_id === artifactId),
+    create: (entry: ExportHistoryEntry): ExportHistoryEntry => {
+      // immutable append-only — reject duplicate ids
+      if (store.exportHistory.some((e) => e.id === entry.id)) return entry;
+      store.exportHistory.push(entry);
+      return entry;
+    },
+  },
+
+  // ── User Notification State (M34) ────────────────────────────────────────
+  userNotificationStates: {
+    findForUser: (userId: string, homeId?: string): UserNotificationState[] => {
+      let items = store.userNotificationStates.filter((s) => s.user_id === userId);
+      if (homeId) items = items.filter((s) => s.home_id === homeId);
+      return items;
+    },
+    findOne: (userId: string, notificationId: string): UserNotificationState | null =>
+      store.userNotificationStates.find(
+        (s) => s.user_id === userId && s.notification_id === notificationId,
+      ) ?? null,
+    upsert: (input: {
+      user_id: string;
+      notification_id: string;
+      home_id: string;
+      read_at?: string | null;
+      dismissed_at?: string | null;
+    }): UserNotificationState => {
+      const id = `${input.user_id}::${input.notification_id}`;
+      const now = new Date().toISOString();
+      const idx = store.userNotificationStates.findIndex((s) => s.id === id);
+      if (idx === -1) {
+        const row: UserNotificationState = {
+          id,
+          user_id: input.user_id,
+          notification_id: input.notification_id,
+          home_id: input.home_id,
+          read_at: input.read_at ?? null,
+          dismissed_at: input.dismissed_at ?? null,
+          updated_at: now,
+        };
+        store.userNotificationStates.push(row);
+        return row;
+      }
+      const existing = store.userNotificationStates[idx];
+      const merged: UserNotificationState = {
+        ...existing,
+        read_at: input.read_at !== undefined ? input.read_at : existing.read_at,
+        dismissed_at:
+          input.dismissed_at !== undefined ? input.dismissed_at : existing.dismissed_at,
+        updated_at: now,
+      };
+      store.userNotificationStates[idx] = merged;
+      return merged;
+    },
+  },
+
   // ── ARIA Studio ───────────────────────────────────────────────────────────────
   ariaArtifacts: {
     findAll: (homeId?: string) =>
@@ -11095,6 +11401,333 @@ export const db = {
       const entry: AriaStudioAuditLog = { ...data, id: generateId("aal"), created_at: new Date().toISOString() };
       store.ariaStudioAuditLog.push(entry);
       return entry;
+    },
+  },
+  ariaHomeDynamicsSnapshots: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaHomeDynamicsSnapshots.filter((s) => s.home_id === homeId)
+        : store.ariaHomeDynamicsSnapshots,
+    findById: (id: string) => store.ariaHomeDynamicsSnapshots.find((s) => s.id === id),
+    latestForHome: (homeId: string) => {
+      const list = store.ariaHomeDynamicsSnapshots
+        .filter((s) => s.home_id === homeId)
+        .sort((a, b) => b.generated_at.localeCompare(a.generated_at));
+      return list[0] ?? null;
+    },
+    create: (data: Omit<AriaHomeDynamicsSnapshot, "id">): AriaHomeDynamicsSnapshot => {
+      const snap: AriaHomeDynamicsSnapshot = { ...data, id: generateId("hds") };
+      store.ariaHomeDynamicsSnapshots.push(snap);
+      return snap;
+    },
+  },
+  ariaSafeguardingPatterns: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaSafeguardingPatterns.filter((p) => p.home_id === homeId)
+        : store.ariaSafeguardingPatterns,
+    findById: (id: string) => store.ariaSafeguardingPatterns.find((p) => p.id === id),
+    findOpen: (homeId: string) =>
+      store.ariaSafeguardingPatterns.filter(
+        (p) => p.home_id === homeId && p.status === "open",
+      ),
+    create: (data: Omit<AriaSafeguardingPattern, "id">): AriaSafeguardingPattern => {
+      const rec: AriaSafeguardingPattern = { ...data, id: generateId("sgp") };
+      store.ariaSafeguardingPatterns.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaSafeguardingPattern>): AriaSafeguardingPattern | null => {
+      const idx = store.ariaSafeguardingPatterns.findIndex((p) => p.id === id);
+      if (idx === -1) return null;
+      store.ariaSafeguardingPatterns[idx] = { ...store.ariaSafeguardingPatterns[idx], ...data };
+      return store.ariaSafeguardingPatterns[idx];
+    },
+  },
+  ariaEarlyWarnings: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaEarlyWarnings.filter((w) => w.home_id === homeId)
+        : store.ariaEarlyWarnings,
+    findById: (id: string) => store.ariaEarlyWarnings.find((w) => w.id === id),
+    findActive: (homeId: string) =>
+      store.ariaEarlyWarnings.filter(
+        (w) => w.home_id === homeId && w.status === "active",
+      ),
+    create: (data: Omit<AriaEarlyWarning, "id" | "created_at">): AriaEarlyWarning => {
+      const rec: AriaEarlyWarning = {
+        ...data,
+        id: generateId("ewn"),
+        created_at: new Date().toISOString(),
+      };
+      store.ariaEarlyWarnings.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaEarlyWarning>): AriaEarlyWarning | null => {
+      const idx = store.ariaEarlyWarnings.findIndex((w) => w.id === id);
+      if (idx === -1) return null;
+      store.ariaEarlyWarnings[idx] = { ...store.ariaEarlyWarnings[idx], ...data };
+      return store.ariaEarlyWarnings[idx];
+    },
+  },
+  ariaCareGraphNodes: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaCareGraphNodes.filter((n) => n.home_id === homeId)
+        : store.ariaCareGraphNodes,
+    findById: (id: string) => store.ariaCareGraphNodes.find((n) => n.id === id),
+    findByChild: (homeId: string, childId: string) =>
+      store.ariaCareGraphNodes.filter(
+        (n) => n.home_id === homeId && (n.child_id === childId || n.child_id === null),
+      ),
+    create: (data: Omit<AriaCareGraphNode, "id" | "created_at">): AriaCareGraphNode => {
+      const rec: AriaCareGraphNode = {
+        ...data,
+        id: generateId("cgn"),
+        created_at: new Date().toISOString(),
+      };
+      store.ariaCareGraphNodes.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaCareGraphNode>): AriaCareGraphNode | null => {
+      const idx = store.ariaCareGraphNodes.findIndex((n) => n.id === id);
+      if (idx === -1) return null;
+      store.ariaCareGraphNodes[idx] = { ...store.ariaCareGraphNodes[idx], ...data };
+      return store.ariaCareGraphNodes[idx];
+    },
+    deleteByHome: (homeId: string, childId?: string | null) => {
+      store.ariaCareGraphNodes = store.ariaCareGraphNodes.filter((n) => {
+        if (n.home_id !== homeId) return true;
+        if (childId === undefined) return false;
+        return n.child_id !== childId && n.child_id !== null;
+      });
+    },
+  },
+  ariaCareGraphEdges: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaCareGraphEdges.filter((e) => e.home_id === homeId)
+        : store.ariaCareGraphEdges,
+    findById: (id: string) => store.ariaCareGraphEdges.find((e) => e.id === id),
+    findByNode: (nodeId: string) =>
+      store.ariaCareGraphEdges.filter(
+        (e) => e.from_node_id === nodeId || e.to_node_id === nodeId,
+      ),
+    create: (data: Omit<AriaCareGraphEdge, "id" | "created_at">): AriaCareGraphEdge => {
+      const rec: AriaCareGraphEdge = {
+        ...data,
+        id: generateId("cge"),
+        created_at: new Date().toISOString(),
+      };
+      store.ariaCareGraphEdges.push(rec);
+      return rec;
+    },
+    deleteByHome: (homeId: string) => {
+      store.ariaCareGraphEdges = store.ariaCareGraphEdges.filter((e) => e.home_id !== homeId);
+    },
+    deleteByNodeIds: (nodeIds: Set<string>) => {
+      store.ariaCareGraphEdges = store.ariaCareGraphEdges.filter(
+        (e) => !nodeIds.has(e.from_node_id) && !nodeIds.has(e.to_node_id),
+      );
+    },
+  },
+  ariaFormulations: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaFormulations.filter((f) => f.home_id === homeId)
+        : store.ariaFormulations,
+    findById: (id: string) => store.ariaFormulations.find((f) => f.id === id),
+    findByChild: (homeId: string, childId: string) =>
+      store.ariaFormulations.filter(
+        (f) => f.home_id === homeId && f.child_id === childId,
+      ),
+    findActiveForChild: (homeId: string, childId: string) =>
+      store.ariaFormulations.find(
+        (f) =>
+          f.home_id === homeId &&
+          f.child_id === childId &&
+          (f.status === "ai_draft" || f.status === "in_review" || f.status === "approved"),
+      ),
+    create: (data: Omit<AriaFormulation, "id">): AriaFormulation => {
+      const rec: AriaFormulation = { ...data, id: generateId("frm") };
+      store.ariaFormulations.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaFormulation>): AriaFormulation | null => {
+      const idx = store.ariaFormulations.findIndex((f) => f.id === id);
+      if (idx === -1) return null;
+      store.ariaFormulations[idx] = { ...store.ariaFormulations[idx], ...data };
+      return store.ariaFormulations[idx];
+    },
+  },
+  ariaDecisionRecommendations: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaDecisionRecommendations.filter((r) => r.home_id === homeId)
+        : store.ariaDecisionRecommendations,
+    findById: (id: string) => store.ariaDecisionRecommendations.find((r) => r.id === id),
+    findOpen: (homeId: string) =>
+      store.ariaDecisionRecommendations.filter(
+        (r) =>
+          r.home_id === homeId &&
+          (r.status === "ai_draft" || r.status === "modified" || r.status === "deferred"),
+      ),
+    create: (data: Omit<AriaDecisionRecommendation, "id">): AriaDecisionRecommendation => {
+      const rec: AriaDecisionRecommendation = { ...data, id: generateId("rec") };
+      store.ariaDecisionRecommendations.push(rec);
+      return rec;
+    },
+    patch: (
+      id: string,
+      data: Partial<AriaDecisionRecommendation>,
+    ): AriaDecisionRecommendation | null => {
+      const idx = store.ariaDecisionRecommendations.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaDecisionRecommendations[idx] = {
+        ...store.ariaDecisionRecommendations[idx],
+        ...data,
+      };
+      return store.ariaDecisionRecommendations[idx];
+    },
+  },
+  ariaReg45EvidenceItems: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaReg45EvidenceItems.filter((e) => e.home_id === homeId)
+        : store.ariaReg45EvidenceItems,
+    findById: (id: string) => store.ariaReg45EvidenceItems.find((e) => e.id === id),
+    findInPeriod: (homeId: string, periodStart: string, periodEnd: string) =>
+      store.ariaReg45EvidenceItems.filter(
+        (e) =>
+          e.home_id === homeId &&
+          e.period_start === periodStart &&
+          e.period_end === periodEnd,
+      ),
+    findBySource: (homeId: string, sourceTable: string, sourceId: string) =>
+      store.ariaReg45EvidenceItems.find(
+        (e) => e.home_id === homeId && e.source_table === sourceTable && e.source_id === sourceId,
+      ),
+    create: (data: Omit<AriaReg45EvidenceItem, "id">): AriaReg45EvidenceItem => {
+      const rec: AriaReg45EvidenceItem = { ...data, id: generateId("r45") };
+      store.ariaReg45EvidenceItems.push(rec);
+      return rec;
+    },
+    patch: (
+      id: string,
+      data: Partial<AriaReg45EvidenceItem>,
+    ): AriaReg45EvidenceItem | null => {
+      const idx = store.ariaReg45EvidenceItems.findIndex((e) => e.id === id);
+      if (idx === -1) return null;
+      store.ariaReg45EvidenceItems[idx] = {
+        ...store.ariaReg45EvidenceItems[idx],
+        ...data,
+      };
+      return store.ariaReg45EvidenceItems[idx];
+    },
+  },
+  ariaAnnexASnapshots: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaAnnexASnapshots.filter((s) => s.home_id === homeId)
+        : store.ariaAnnexASnapshots,
+    findById: (id: string) => store.ariaAnnexASnapshots.find((s) => s.id === id),
+    findLatestDraft: (homeId: string): AriaAnnexASnapshot | undefined =>
+      [...store.ariaAnnexASnapshots]
+        .filter((s) => s.home_id === homeId && s.status === "draft")
+        .sort((a, b) => b.generated_at.localeCompare(a.generated_at))[0],
+    create: (data: Omit<AriaAnnexASnapshot, "id">): AriaAnnexASnapshot => {
+      const rec: AriaAnnexASnapshot = { ...data, id: generateId("axa") };
+      store.ariaAnnexASnapshots.push(rec);
+      return rec;
+    },
+    patch: (
+      id: string,
+      data: Partial<AriaAnnexASnapshot>,
+    ): AriaAnnexASnapshot | null => {
+      const idx = store.ariaAnnexASnapshots.findIndex((s) => s.id === id);
+      if (idx === -1) return null;
+      store.ariaAnnexASnapshots[idx] = {
+        ...store.ariaAnnexASnapshots[idx],
+        ...data,
+      };
+      return store.ariaAnnexASnapshots[idx];
+    },
+  },
+  ariaReg45Reports: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaReg45Reports.filter((r) => r.home_id === homeId)
+        : store.ariaReg45Reports,
+    findById: (id: string) => store.ariaReg45Reports.find((r) => r.id === id),
+    create: (data: Omit<AriaReg45Report, "id">): AriaReg45Report => {
+      const rec: AriaReg45Report = { ...data, id: generateId("r45rep") };
+      store.ariaReg45Reports.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaReg45Report>): AriaReg45Report | null => {
+      const idx = store.ariaReg45Reports.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaReg45Reports[idx] = { ...store.ariaReg45Reports[idx], ...data };
+      return store.ariaReg45Reports[idx];
+    },
+  },
+  ariaSuggestedRecords: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaSuggestedRecords.filter((s) => s.home_id === homeId)
+        : store.ariaSuggestedRecords,
+    findById: (id: string) => store.ariaSuggestedRecords.find((s) => s.id === id),
+    findByStatus: (homeId: string, status: AriaSuggestedRecord["status"]) =>
+      store.ariaSuggestedRecords.filter(
+        (s) => s.home_id === homeId && s.status === status,
+      ),
+    create: (data: Omit<AriaSuggestedRecord, "id">): AriaSuggestedRecord => {
+      const rec: AriaSuggestedRecord = { ...data, id: generateId("asug") };
+      store.ariaSuggestedRecords.push(rec);
+      return rec;
+    },
+    patch: (
+      id: string,
+      data: Partial<AriaSuggestedRecord>,
+    ): AriaSuggestedRecord | null => {
+      const idx = store.ariaSuggestedRecords.findIndex((s) => s.id === id);
+      if (idx === -1) return null;
+      store.ariaSuggestedRecords[idx] = {
+        ...store.ariaSuggestedRecords[idx],
+        ...data,
+      };
+      return store.ariaSuggestedRecords[idx];
+    },
+  },
+  ariaCommittedRecords: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaCommittedRecords.filter((c) => c.home_id === homeId)
+        : store.ariaCommittedRecords,
+    findById: (id: string) => store.ariaCommittedRecords.find((c) => c.id === id),
+    create: (data: Omit<AriaCommittedRecord, "id">): AriaCommittedRecord => {
+      const rec: AriaCommittedRecord = { ...data, id: generateId("acom") };
+      store.ariaCommittedRecords.push(rec);
+      return rec;
+    },
+  },
+  ariaReg40Triages: {
+    findAll: (homeId?: string) =>
+      homeId
+        ? store.ariaReg40Triages.filter((t) => t.home_id === homeId)
+        : store.ariaReg40Triages,
+    findById: (id: string) => store.ariaReg40Triages.find((t) => t.id === id),
+    findBySourceEvent: (eventId: string) =>
+      store.ariaReg40Triages.find((t) => t.source_event_id === eventId),
+    create: (data: Omit<AriaReg40Triage, "id">): AriaReg40Triage => {
+      const rec: AriaReg40Triage = { ...data, id: generateId("reg40") };
+      store.ariaReg40Triages.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaReg40Triage>): AriaReg40Triage | null => {
+      const idx = store.ariaReg40Triages.findIndex((t) => t.id === id);
+      if (idx === -1) return null;
+      store.ariaReg40Triages[idx] = { ...store.ariaReg40Triages[idx], ...data };
+      return store.ariaReg40Triages[idx];
     },
   },
   wakeUpRoutines: {

@@ -7,7 +7,7 @@
 // approval.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
@@ -86,6 +86,14 @@ const CREATIVE_MODES: AriaCreativeMode[] = ["conservative", "balanced", "creativ
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AriaStudioPage() {
+  return (
+    <Suspense fallback={null}>
+      <AriaStudioPageInner />
+    </Suspense>
+  );
+}
+
+function AriaStudioPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

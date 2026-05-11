@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
 
 const HOME_ID = "home_oak";
 
@@ -52,6 +53,14 @@ export async function POST(req: NextRequest) {
   if (!body.artifact_type || !body.title || !body.created_by) {
     return NextResponse.json({ error: "artifact_type, title and created_by are required" }, { status: 400 });
   }
+
+  const guard = requireAriaStudioPermission(req, body, {
+    permission: "aria.generate_drafts",
+    homeId: (body.home_id as string) ?? HOME_ID,
+    childId: (body.child_id as string) ?? null,
+    intent: `create draft ${body.artifact_type}`,
+  });
+  if (!guard.ok) return guard.response;
 
   const artifact = db.ariaArtifacts.create({
     artifact_type: body.artifact_type as never,
