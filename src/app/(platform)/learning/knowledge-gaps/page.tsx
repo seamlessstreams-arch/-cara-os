@@ -62,7 +62,7 @@ const STATUS_COLOURS: Record<KnowledgeGapStatus, string> = {
   open: "bg-amber-100 text-amber-700",
   in_progress: "bg-blue-100 text-blue-700",
   addressed: "bg-emerald-100 text-emerald-700",
-  monitoring: "bg-violet-100 text-violet-700",
+  monitoring: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
 };
 
 const IDENTIFIED_FROM_OPTIONS = [

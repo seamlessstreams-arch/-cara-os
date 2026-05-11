@@ -165,7 +165,7 @@ function QuizPlayer({
             <div
               key={i}
               className={cn("h-1.5 w-6 rounded-full", {
-                "bg-violet-500": i === currentIndex,
+                "bg-[var(--cs-aria-gold-bg)]0": i === currentIndex,
                 "bg-emerald-400": i in submitted && selected[i] === questions[i].correct_answer,
                 "bg-red-400": i in submitted && selected[i] !== questions[i].correct_answer,
                 "bg-slate-200": !(i in submitted) && i !== currentIndex,
@@ -206,8 +206,8 @@ function QuizPlayer({
               disabled={isAnswered}
               className={cn(
                 "w-full text-left rounded-xl border px-4 py-3 transition-all",
-                !showResult && !isSelected && "border-[var(--cs-border)] bg-white hover:border-violet-300 hover:bg-violet-50",
-                !showResult && isSelected && "border-violet-400 bg-violet-50",
+                !showResult && !isSelected && "border-[var(--cs-border)] bg-white hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]",
+                !showResult && isSelected && "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]",
                 showResult && isRight && "border-emerald-400 bg-emerald-50",
                 showResult && isSelected && !isRight && "border-red-400 bg-red-50",
                 showResult && !isSelected && !isRight && "border-[var(--cs-border)] bg-white opacity-60",
@@ -216,7 +216,7 @@ function QuizPlayer({
               <div className="flex items-center gap-3">
                 <span className={cn(
                   "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold border",
-                  !showResult && isSelected ? "border-violet-500 bg-violet-500 text-white"
+                  !showResult && isSelected ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]0 text-white"
                   : showResult && isRight ? "border-emerald-500 bg-emerald-500 text-white"
                   : showResult && isSelected && !isRight ? "border-red-500 bg-red-500 text-white"
                   : "border-slate-300 text-[var(--cs-text-secondary)]"

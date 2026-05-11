@@ -69,7 +69,7 @@ const roleColour: Record<CulturalMentorRole, string> = {
   rabbi: "bg-blue-100 text-blue-800 border-blue-200",
   pastor_minister: "bg-red-100 text-red-800 border-red-200",
   cultural_elder: "bg-orange-100 text-orange-800 border-orange-200",
-  community_leader: "bg-violet-100 text-violet-800 border-violet-200",
+  community_leader: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
   heritage_language_teacher: "bg-teal-100 text-teal-800 border-teal-200",
   faith_aware_therapist: "bg-purple-100 text-purple-800 border-purple-200",
   diaspora_mentor: "bg-pink-100 text-pink-800 border-pink-200",

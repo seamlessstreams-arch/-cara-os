@@ -47,7 +47,7 @@ const pestColour: Record<string, string> = {
   silverfish: "bg-cyan-100 text-cyan-900 border-cyan-200",
   bedbugs: "bg-rose-100 text-rose-900 border-rose-200",
   cockroaches: "bg-stone-200 text-stone-900 border-stone-300",
-  moths: "bg-violet-100 text-violet-900 border-violet-200",
+  moths: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
   pigeons: "bg-zinc-100 text-zinc-900 border-zinc-200",
   mixed_general: "bg-slate-100 text-[var(--cs-navy)] border-[var(--cs-border)]",
   none_preventive_only: "bg-emerald-100 text-emerald-800 border-emerald-200",

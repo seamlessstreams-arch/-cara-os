@@ -59,7 +59,7 @@ export function QuickCreateActions({ context, compact = false, className }: Quic
         <Button
           size="sm"
           onClick={() => { setDefaultTab("form"); setOpen(true); }}
-          className={cn("gap-1.5 bg-violet-600 hover:bg-violet-700 text-white shadow-sm", className)}
+          className={cn("gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white shadow-sm", className)}
         >
           <FileText className="h-3.5 w-3.5" />
           {!compact && <span>New Form</span>}
@@ -74,7 +74,7 @@ export function QuickCreateActions({ context, compact = false, className }: Quic
   const PrimaryIcon = primaryIsForm ? FileText : CheckSquare;
   const primaryLabel = primaryIsForm ? "New Form" : "New Task";
   const primaryColor = primaryIsForm
-    ? "bg-violet-600 hover:bg-violet-700 border-violet-700"
+    ? "bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 border-[var(--cs-navy)]"
     : "bg-blue-600 hover:bg-blue-700 border-blue-700";
 
   return (
@@ -95,7 +95,7 @@ export function QuickCreateActions({ context, compact = false, className }: Quic
           <Button
             size="sm"
             onClick={() => setShowMenu((v) => !v)}
-            className={cn("text-white shadow-sm rounded-l-none px-1.5", primaryIsForm ? "bg-violet-600 hover:bg-violet-700" : "bg-blue-600 hover:bg-blue-700")}
+            className={cn("text-white shadow-sm rounded-l-none px-1.5", primaryIsForm ? "bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90" : "bg-blue-600 hover:bg-blue-700")}
             aria-label="Choose creation type"
           >
             <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showMenu && "rotate-180")} />
@@ -111,7 +111,7 @@ export function QuickCreateActions({ context, compact = false, className }: Quic
               />
 
               {/* Menu */}
-              <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border border-[var(--cs-border)] bg-white shadow-lg py-1">
+              <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-lg border border-[var(--cs-border)] bg-white shadow-[var(--cs-shadow-card)] py-1">
                 <button
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
                   onClick={() => { setDefaultTab("task"); setShowMenu(false); setOpen(true); }}
@@ -123,7 +123,7 @@ export function QuickCreateActions({ context, compact = false, className }: Quic
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
                   onClick={() => { setDefaultTab("form"); setShowMenu(false); setOpen(true); }}
                 >
-                  <FileText className="h-3.5 w-3.5 text-violet-500" />
+                  <FileText className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
                   New Form
                 </button>
               </div>

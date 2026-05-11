@@ -40,9 +40,9 @@ const FEATURES = [
     title: "Resource Generator",
     description: "Generate workshops, guidance notes, flashcards, and session plans",
     icon: Sparkles,
-    colour: "text-violet-600",
-    bg: "bg-violet-50",
-    border: "border-violet-100",
+    colour: "text-[var(--cs-aria-gold)]",
+    bg: "bg-[var(--cs-aria-gold-bg)]",
+    border: "border-[var(--cs-aria-gold-soft)]",
   },
   {
     href: "/learning/workshops",
@@ -185,7 +185,7 @@ export default function LearningHubPage() {
         <div className="grid gap-3 sm:grid-cols-5">
           <StatChip label="Active Projects" value={activeProjects} colour="text-teal-700" />
           <StatChip label="Urgent Needs" value={urgentNeeds} colour={urgentNeeds > 0 ? "text-red-700" : "text-emerald-700"} />
-          <StatChip label="Resources" value={totalResources} colour="text-violet-700" />
+          <StatChip label="Resources" value={totalResources} colour="text-[var(--cs-aria-gold)]" />
           <StatChip label="Knowledge Gaps" value={openGaps} colour={openGaps > 0 ? "text-orange-700" : "text-emerald-700"} />
           <StatChip label="Library" value={libraryCount} colour="text-[var(--cs-text-secondary)]" />
         </div>

@@ -34,7 +34,7 @@ const STATUS_COLOURS: Record<string, string> = {
   draft: "bg-slate-100 text-[var(--cs-text-secondary)]",
   in_progress: "bg-blue-100 text-blue-700",
   reviewed: "bg-amber-100 text-amber-700",
-  approved: "bg-violet-100 text-violet-700",
+  approved: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   submitted: "bg-emerald-100 text-emerald-700",
 };
 
@@ -82,7 +82,7 @@ function Reg45Card({ record }: { record: RiReg45Evidence }) {
               { label: "Strengths", content: record.aria_strengths, colour: "bg-emerald-50 border-emerald-100 text-emerald-900" },
               { label: "Weaknesses / Areas for Development", content: record.aria_weaknesses, colour: "bg-amber-50 border-amber-100 text-amber-900" },
               { label: "Improvement Areas", content: record.aria_improvement_areas, colour: "bg-blue-50 border-blue-100 text-blue-900" },
-              { label: "Impact on Children", content: record.aria_child_impact, colour: "bg-violet-50 border-violet-100 text-violet-900" },
+              { label: "Impact on Children", content: record.aria_child_impact, colour: "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)] text-[var(--cs-navy)]" },
               { label: "Action Plan", content: record.aria_action_plan, colour: "bg-slate-50 border-[var(--cs-border)] text-[var(--cs-navy)]" },
               { label: "RI Statement", content: record.aria_ri_statement, colour: "bg-indigo-50 border-indigo-100 text-indigo-900" },
             ].filter((s) => !!s.content).map(({ label, content, colour }) => (
@@ -162,9 +162,9 @@ const REG45_STANDARDS: Reg45Standard[] = [
     label: "Leadership & Management",
     description: "RI oversight, governance, challenge and quality assurance",
     icon: ClipboardCheck,
-    colour: "text-violet-700",
-    bg: "bg-violet-50",
-    border: "border-violet-200",
+    colour: "text-[var(--cs-aria-gold)]",
+    bg: "bg-[var(--cs-aria-gold-bg)]",
+    border: "border-[var(--cs-aria-gold-soft)]",
     sourceCategories: ["Challenges", "Audits"],
   },
 ];
@@ -243,7 +243,7 @@ function LiveEvidencePanel({ onUseContext }: { onUseContext: (text: string) => v
       .forEach((a) =>
         out.push({
           icon: ClipboardCheck,
-          iconColour: "text-violet-600",
+          iconColour: "text-[var(--cs-aria-gold)]",
           category: ["staffing", "general"].includes(a.category) ? "Challenges" : "Audits",
           title: a.title,
           detail: `Score: ${a.score}/${a.max_score} (${Math.round((a.score / Math.max(a.max_score, 1)) * 100)}%) — ${a.findings} finding${a.findings !== 1 ? "s" : ""}`,

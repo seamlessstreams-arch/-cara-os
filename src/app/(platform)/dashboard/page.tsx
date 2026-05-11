@@ -271,7 +271,7 @@ function TaskRow({ task, onComplete }: { task: Task; onComplete?: (id: string) =
             </span>
           )}
           {task.linked_child_id && (
-            <span className="text-[10px] text-violet-600 flex items-center gap-0.5">
+            <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-0.5">
               <Heart className="h-2.5 w-2.5" />
               {getYPName(task.linked_child_id)}
             </span>
@@ -348,7 +348,7 @@ function OversightRow({
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <span className="text-[10px] text-[var(--cs-text-muted)]">{TYPE_LABELS[incident.type] || incident.type}</span>
           {incident.child_id && (
-            <span className="text-[10px] text-violet-600 flex items-center gap-0.5">
+            <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-0.5">
               <Heart className="h-2.5 w-2.5" />
               {getYPName(incident.child_id)}
             </span>
@@ -380,7 +380,7 @@ const SHIFT_TYPE_LABELS: Record<string, string> = {
 const SHIFT_TYPE_COLORS: Record<string, string> = {
   day: "bg-emerald-100 text-emerald-700",
   sleep_in: "bg-indigo-100 text-indigo-700",
-  waking_night: "bg-violet-100 text-violet-700",
+  waking_night: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   early: "bg-sky-100 text-sky-700",
   late: "bg-orange-100 text-orange-700",
 };
@@ -482,7 +482,7 @@ function SubScoreBar({ label, value, icon: Icon }: { label: string; value: numbe
 
 function TimeSavedWidget({ formatted }: { formatted: Record<string, string> }) {
   const stats = [
-    { label: "You today", value: formatted.user_today || "—", icon: Timer, color: "text-violet-600 bg-violet-50" },
+    { label: "You today", value: formatted.user_today || "—", icon: Timer, color: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]" },
     { label: "You this week", value: formatted.user_week || "—", icon: TrendingUp, color: "text-blue-600 bg-blue-50" },
     { label: "Home this week", value: formatted.home_week || "—", icon: Activity, color: "text-emerald-600 bg-emerald-50" },
     { label: "Home this month", value: formatted.home_month || "—", icon: Zap, color: "text-amber-600 bg-amber-50" },
@@ -1076,7 +1076,7 @@ export default function DashboardPage() {
                       </CardTitle>
                       <div className="flex items-center gap-2">
                         {!config.personalTasksOnly && (d?.tasks.awaiting_sign_off ?? 0) > 0 && (
-                          <span className="text-[10px] font-medium text-violet-600 bg-violet-50 border border-violet-200 rounded-full px-2 py-0.5">
+                          <span className="text-[10px] font-medium text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] rounded-full px-2 py-0.5">
                             {d!.tasks.awaiting_sign_off} sign-off
                           </span>
                         )}
@@ -1166,7 +1166,7 @@ export default function DashboardPage() {
                 </div>
                 <Link
                   href="/ri"
-                  className="shrink-0 flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                  className="shrink-0 flex items-center gap-1.5 rounded-xl bg-[var(--cs-navy)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--cs-navy)]/90 transition-colors whitespace-nowrap"
                 >
                   RI Centre <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
@@ -1226,13 +1226,13 @@ export default function DashboardPage() {
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-2 text-[13px]">
-                          <Eye className="h-4 w-4 text-violet-500" />
+                          <Eye className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                           Oversight Queue
                         </CardTitle>
                         <Link href="/incidents" className="text-[11px] text-blue-600 hover:underline">All incidents →</Link>
                       </div>
                       {(d?.incidents.awaiting_oversight ?? 0) > 0 && (
-                        <p className="text-[11px] text-violet-600 font-medium mt-1">
+                        <p className="text-[11px] text-[var(--cs-aria-gold)] font-medium mt-1">
                           {d!.incidents.awaiting_oversight} awaiting your oversight
                         </p>
                       )}

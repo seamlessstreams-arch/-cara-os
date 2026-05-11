@@ -153,11 +153,11 @@ function NarrativeGenerator() {
   }
 
   return (
-    <Card className="border-violet-200 bg-gradient-to-br from-violet-50 via-white to-indigo-50 shadow-md">
+    <Card className="border-[var(--cs-aria-gold-soft)] bg-gradient-to-br from-[var(--cs-aria-gold-bg)] via-white to-indigo-50 shadow-md">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600 shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--cs-navy)] shadow-sm">
               <Brain className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -169,7 +169,7 @@ function NarrativeGenerator() {
               </p>
             </div>
           </div>
-          <Badge className="bg-violet-100 text-violet-700 border-violet-200 text-[10px] font-semibold">
+          <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] text-[10px] font-semibold">
             <Sparkles className="h-3 w-3 mr-1" />
             ARIA
           </Badge>
@@ -188,7 +188,7 @@ function NarrativeGenerator() {
               value={reportType}
               onChange={(e) => setReportType(e.target.value)}
               disabled={isGenerating}
-              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100 disabled:opacity-50"
+              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] shadow-sm focus:border-[var(--cs-aria-gold)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] disabled:opacity-50"
             >
               <option>Reg 44 Independent Visit Report</option>
               <option>Reg 45 Quality of Care Report</option>
@@ -204,7 +204,7 @@ function NarrativeGenerator() {
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
               disabled={isGenerating}
-              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100 disabled:opacity-50"
+              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] shadow-sm focus:border-[var(--cs-aria-gold)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] disabled:opacity-50"
             >
               <option>Last 28 days</option>
               <option>Last 3 months</option>
@@ -218,7 +218,7 @@ function NarrativeGenerator() {
               <Button
                 onClick={handleStop}
                 variant="outline"
-                className="w-full border-violet-200 text-violet-700 hover:bg-violet-50"
+                className="w-full border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)]"
               >
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Stop Generating
@@ -226,7 +226,7 @@ function NarrativeGenerator() {
             ) : (
               <Button
                 onClick={handleGenerate}
-                className="w-full bg-violet-600 hover:bg-violet-700 text-white shadow-sm"
+                className="w-full bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white shadow-sm"
               >
                 <Brain className="h-4 w-4 mr-2" />
                 Generate with ARIA
@@ -246,19 +246,19 @@ function NarrativeGenerator() {
             disabled={isGenerating}
             placeholder="Add any specific themes, events, or context you want ARIA to include in the narrative..."
             rows={3}
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100 disabled:opacity-50 resize-none"
+            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] shadow-sm focus:border-[var(--cs-aria-gold)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] disabled:opacity-50 resize-none"
           />
         </div>
 
         {/* Output area */}
         {(isGenerating || output) && (
-          <div className="rounded-xl border border-violet-100 bg-white overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-violet-100 bg-violet-50/60">
+          <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-white overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/60">
               <div className="flex items-center gap-2">
                 {isGenerating ? (
                   <>
-                    <Loader2 className="h-3.5 w-3.5 text-violet-600 animate-spin" />
-                    <span className="text-xs font-semibold text-violet-700">Generating narrative…</span>
+                    <Loader2 className="h-3.5 w-3.5 text-[var(--cs-aria-gold)] animate-spin" />
+                    <span className="text-xs font-semibold text-[var(--cs-aria-gold)]">Generating narrative…</span>
                   </>
                 ) : (
                   <>
@@ -272,7 +272,7 @@ function NarrativeGenerator() {
                   size="sm"
                   variant="outline"
                   onClick={handleCopy}
-                  className="h-7 text-xs border-violet-200 text-violet-700 hover:bg-violet-50"
+                  className="h-7 text-xs border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)]"
                 >
                   {copied ? (
                     <>
@@ -292,7 +292,7 @@ function NarrativeGenerator() {
               <pre className="whitespace-pre-wrap font-mono text-sm text-[var(--cs-navy)] leading-relaxed min-h-[80px]">
                 {output}
                 {isGenerating && (
-                  <span className="inline-block w-2 h-4 bg-violet-400 animate-pulse ml-0.5 align-middle" />
+                  <span className="inline-block w-2 h-4 bg-[var(--cs-aria-gold)] animate-pulse ml-0.5 align-middle" />
                 )}
               </pre>
             </div>
@@ -666,7 +666,7 @@ function ActionPlanPanel() {
                         {cfg.label}
                       </Badge>
                       {action.effectiveness && (
-                        <Badge className="text-[9px] rounded-full bg-violet-100 text-violet-700 border-0 capitalize">{action.effectiveness.replace(/_/g, " ")}</Badge>
+                        <Badge className="text-[9px] rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0 capitalize">{action.effectiveness.replace(/_/g, " ")}</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-[var(--cs-text-muted)] mt-1">
@@ -707,9 +707,9 @@ function ActionPlanPanel() {
 
                     {/* What changed */}
                     {action.what_changed && (
-                      <div className="rounded-xl bg-violet-50 border border-violet-100 px-3 py-2">
-                        <div className="text-[10px] font-semibold text-violet-600 mb-0.5">What Changed</div>
-                        <div className="text-xs text-violet-800">{action.what_changed}</div>
+                      <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-3 py-2">
+                        <div className="text-[10px] font-semibold text-[var(--cs-aria-gold)] mb-0.5">What Changed</div>
+                        <div className="text-xs text-[var(--cs-navy)]">{action.what_changed}</div>
                       </div>
                     )}
 
@@ -874,7 +874,7 @@ export default function InspectionPage() {
           </div>
           <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-5">
             <div className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Reg 44 Visits</div>
-            <div className="mt-1 text-3xl font-bold text-violet-600">3</div>
+            <div className="mt-1 text-3xl font-bold text-[var(--cs-aria-gold)]">3</div>
             <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">This year</div>
           </div>
         </div>
@@ -882,7 +882,7 @@ export default function InspectionPage() {
         {/* ── Live Intelligence Summary ────────────────────────────────── */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-4 w-4 text-violet-500" />
+            <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             <h2 className="text-sm font-semibold text-[var(--cs-text-secondary)]">Live Intelligence</h2>
             <span className="text-xs text-[var(--cs-text-muted)]">— real-time signals from across the home</span>
           </div>

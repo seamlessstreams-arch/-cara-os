@@ -54,7 +54,7 @@ const SG_SEV_PRIORITY: Record<string, "urgent" | "high" | "medium" | "low"> = {
 function NotificationRow({ n }: { n: { role: string; name: string; method: string; notified_at: string; acknowledged: boolean } }) {
   const icon =
     n.role.toLowerCase().includes("police") ? <Phone className="h-3 w-3 text-blue-500" /> :
-    n.role.toLowerCase().includes("social") ? <UserCheck className="h-3 w-3 text-violet-500" /> :
+    n.role.toLowerCase().includes("social") ? <UserCheck className="h-3 w-3 text-[var(--cs-aria-gold)]" /> :
     n.role.toLowerCase().includes("lado") || n.role.toLowerCase().includes("manager") ? <Gavel className="h-3 w-3 text-amber-500" /> :
     <Bell className="h-3 w-3 text-[var(--cs-text-muted)]" />;
 
@@ -240,7 +240,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
             className="gap-1.5"
             onClick={() => setShowAria((p) => !p)}
           >
-            <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+            <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             ARIA Analysis
           </Button>
           <Button variant="outline" size="sm" onClick={() => router.push("/safeguarding")}>
@@ -322,10 +322,10 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
         {/* ── Young person ──────────────────────────────────────────────────── */}
         <div className="rounded-2xl border bg-white p-4">
           <h3 className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
-            <Heart className="h-3.5 w-3.5 text-violet-500" />Young Person
+            <Heart className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />Young Person
           </h3>
           <div className="flex items-center gap-3">
-            <Avatar name={ypName} size="md" className="bg-violet-100" />
+            <Avatar name={ypName} size="md" className="bg-[var(--cs-aria-gold-bg)]" />
             <div>
               <div className="text-sm font-semibold text-[var(--cs-navy)]">{ypName}</div>
               {yp && (
@@ -457,12 +457,12 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
         )}
 
         {/* ── Training Intelligence Loop ────────────────────────────────────── */}
-        <div className="rounded-2xl border border-violet-100 bg-violet-50/40 p-4 space-y-3">
+        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <Brain className="h-4 w-4 text-violet-600" />
-            <span className="text-sm font-semibold text-violet-900">Training Intelligence Loop</span>
+            <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <span className="text-sm font-semibold text-[var(--cs-navy)]">Training Intelligence Loop</span>
           </div>
-          <p className="text-xs text-violet-700">
+          <p className="text-xs text-[var(--cs-aria-gold)]">
             Create a safeguarding training need from this concern. ARIA will generate targeted
             learning resources and the evidence feeds directly into your Reg 45 and governance loop.
           </p>
@@ -470,7 +470,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 text-violet-700 border-violet-200 hover:bg-violet-100"
+              className="gap-1.5 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
               onClick={handleCreateTrainingNeed}
               disabled={createNeed.isPending}
             >
@@ -481,7 +481,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <span className="text-sm text-emerald-700 font-medium">Training need created</span>
-              <Link href="/learning/training-needs" className="ml-auto text-xs text-violet-600 underline hover:text-violet-800">
+              <Link href="/learning/training-needs" className="ml-auto text-xs text-[var(--cs-aria-gold)] underline hover:text-[var(--cs-navy)]">
                 View in Learning Studio →
               </Link>
             </div>

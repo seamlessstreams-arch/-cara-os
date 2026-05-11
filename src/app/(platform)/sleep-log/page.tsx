@@ -211,7 +211,7 @@ export default function SleepLogPage() {
                     {entry.shift_type === "sleep_in" ? (
                       <CloudMoon className="h-5 w-5 text-indigo-600 shrink-0" />
                     ) : (
-                      <Moon className="h-5 w-5 text-violet-600 shrink-0" />
+                      <Moon className="h-5 w-5 text-[var(--cs-aria-gold)] shrink-0" />
                     )}
                     <div className="min-w-0">
                       <p className="font-medium">{entry.date} — {SHIFT_LABELS[entry.shift_type]}</p>

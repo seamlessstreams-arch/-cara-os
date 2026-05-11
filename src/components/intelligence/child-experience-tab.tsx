@@ -42,7 +42,7 @@ import { DictationButton } from "@/components/common/dictation-button";
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
 function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-xl bg-slate-100", className)} />;
+  return <div className={cn("animate-pulse rounded-xl bg-[var(--cs-surface)]", className)} />;
 }
 
 function PanelSkeleton({ rows = 3 }: { rows?: number }) {
@@ -122,7 +122,7 @@ const SEV_CLASSES: Record<string, string> = {
   critical: "bg-red-100 text-red-800",
   high:     "bg-orange-100 text-orange-800",
   medium:   "bg-amber-100 text-amber-800",
-  low:      "bg-slate-100 text-[var(--cs-text-secondary)]",
+  low:      "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
 };
 
 // ── Intervention status badge ─────────────────────────────────────────────────
@@ -131,15 +131,15 @@ const INT_STATUS_CLASSES: Record<string, string> = {
   active:       "bg-emerald-100 text-emerald-800",
   paused:       "bg-amber-100 text-amber-800",
   completed:    "bg-blue-100 text-blue-800",
-  stopped:      "bg-slate-100 text-[var(--cs-text-secondary)]",
-  under_review: "bg-violet-100 text-violet-800",
+  stopped:      "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
+  under_review: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
 };
 
 const INT_OUTCOME_CLASSES: Record<string, string> = {
   working:           "bg-emerald-100 text-emerald-800",
   not_working:       "bg-red-100 text-red-800",
   partially_working: "bg-amber-100 text-amber-800",
-  too_early:         "bg-slate-100 text-[var(--cs-text-secondary)]",
+  too_early:         "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
   unknown:           "",
 };
 
@@ -314,7 +314,7 @@ function ExperienceScoresPanel({ childId }: { childId: string }) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-500" />
+            <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Experience Scores
           </CardTitle>
 
@@ -346,7 +346,7 @@ function ExperienceScoresPanel({ childId }: { childId: string }) {
                   ? "border-emerald-300 text-emerald-700 bg-emerald-50"
                   : computeState === "error"
                   ? "border-red-300 text-red-700 bg-red-50"
-                  : "bg-violet-600 hover:bg-violet-700 text-white"
+                  : "bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
               )}
               onClick={handleComputeSnapshot}
               disabled={computeState === "computing"}
@@ -371,7 +371,7 @@ function ExperienceScoresPanel({ childId }: { childId: string }) {
       <CardContent className="space-y-4">
         {!snapshot && !isError ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <Cpu className="h-10 w-10 text-slate-200" />
+            <Cpu className="h-10 w-10 text-[var(--cs-text-gentle)]" />
             <p className="text-xs text-[var(--cs-text-muted)] italic">No experience snapshot yet</p>
             <p className="text-[10px] text-[var(--cs-text-muted)]">
               Click <strong>Compute Snapshot</strong> to have ARIA analyse all available data for this child.
@@ -408,8 +408,8 @@ function ExperienceScoresPanel({ childId }: { childId: string }) {
             </div>
 
             {snapshot.narrative && (
-              <div className="rounded-xl border border-violet-100 bg-violet-50 p-3">
-                <div className="text-[10px] font-semibold text-violet-600 uppercase tracking-wider mb-1">
+              <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3">
+                <div className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider mb-1">
                   ARIA Narrative
                 </div>
                 <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{snapshot.narrative}</p>
@@ -487,13 +487,13 @@ function PatternAlertsPanel({ childId }: { childId: string }) {
       <CardContent>
         {alerts.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <CheckCircle2 className="h-8 w-8 text-slate-200" />
+            <CheckCircle2 className="h-8 w-8 text-[var(--cs-text-gentle)]" />
             <p className="text-xs text-[var(--cs-text-muted)] italic">No patterns currently detected for this child</p>
           </div>
         ) : (
           <div className="space-y-3">
             {alerts.map((alert) => (
-              <div key={alert.id} className="rounded-xl border border-[var(--cs-border-subtle)] bg-slate-50 p-3 space-y-1.5">
+              <div key={alert.id} className="rounded-xl border border-[var(--cs-border-subtle)] bg-[var(--cs-surface)] p-3 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize", SEV_CLASSES[alert.severity])}>
                     {alert.severity}
@@ -538,7 +538,7 @@ function InterventionsPanel({ childId, childName }: { childId: string; childName
       <CardContent>
         {interventions.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <Wrench className="h-8 w-8 text-slate-200" />
+            <Wrench className="h-8 w-8 text-[var(--cs-text-gentle)]" />
             <p className="text-xs text-[var(--cs-text-muted)] italic">No interventions recorded</p>
           </div>
         ) : (
@@ -547,7 +547,7 @@ function InterventionsPanel({ childId, childName }: { childId: string; childName
               <div key={intervention.id} className={cn(
                 "rounded-xl border p-3 space-y-1.5",
                 intervention.status === "stopped" || intervention.status === "completed"
-                  ? "border-[var(--cs-border-subtle)] bg-slate-50/50 opacity-70"
+                  ? "border-[var(--cs-border-subtle)] bg-[var(--cs-surface)]/50 opacity-70"
                   : "border-[var(--cs-border-subtle)] bg-white"
               )}>
                 <div className="flex items-start justify-between gap-2">
@@ -631,7 +631,7 @@ function PracticeBankPanel({ childId, childName }: { childId: string; childName:
       <CardContent>
         {entries.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <Star className="h-8 w-8 text-slate-200" />
+            <Star className="h-8 w-8 text-[var(--cs-text-gentle)]" />
             <p className="text-xs text-[var(--cs-text-muted)] italic">No practice bank entries yet</p>
           </div>
         ) : (
@@ -656,8 +656,8 @@ function PracticeBankPanel({ childId, childName }: { childId: string; childName:
                           className={cn(
                             "rounded-xl border p-3 flex items-start gap-2 transition-opacity",
                             entry.is_active
-                              ? "border-[var(--cs-border-subtle)] bg-slate-50"
-                              : "border-[var(--cs-border-subtle)] bg-slate-50/40 opacity-60"
+                              ? "border-[var(--cs-border-subtle)] bg-[var(--cs-surface)]"
+                              : "border-[var(--cs-border-subtle)] bg-[var(--cs-surface)]/40 opacity-60"
                           )}
                         >
                           <div className="flex-1 min-w-0">
@@ -688,7 +688,7 @@ function PracticeBankPanel({ childId, childName }: { childId: string; childName:
                               "disabled:opacity-50 disabled:cursor-wait",
                               entry.is_active
                                 ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                                : "border-[var(--cs-border)] bg-slate-100 text-[var(--cs-text-muted)] hover:bg-slate-200"
+                                : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)]"
                             )}
                           >
                             {isToggling ? (
@@ -728,7 +728,7 @@ function VoiceRecordsPanel({ childId, childName }: { childId: string; childName:
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <MessageSquareQuote className="h-4 w-4 text-violet-500" />
+            <MessageSquareQuote className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Children&apos;s Voice
           </CardTitle>
           <VoiceCaptureModal childId={childId} childName={childName} />
@@ -737,15 +737,15 @@ function VoiceRecordsPanel({ childId, childName }: { childId: string; childName:
       <CardContent>
         {records.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <MessageSquareQuote className="h-8 w-8 text-slate-200" />
+            <MessageSquareQuote className="h-8 w-8 text-[var(--cs-text-gentle)]" />
             <p className="text-xs text-[var(--cs-text-muted)] italic">No voice records captured yet</p>
           </div>
         ) : (
           <div className="space-y-3">
             {records.map((record) => (
-              <div key={record.id} className="rounded-xl border border-violet-100 bg-violet-50/50 p-3 space-y-2">
+              <div key={record.id} className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/50 p-3 space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700 capitalize">
+                  <span className="rounded-full bg-[var(--cs-aria-gold-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--cs-aria-gold)] capitalize">
                     {voiceThemeLabel(record.theme)}
                   </span>
                   {record.voice_heeded !== null && (
@@ -764,7 +764,7 @@ function VoiceRecordsPanel({ childId, childName }: { childId: string; childName:
                   <span className="ml-auto text-[10px] text-[var(--cs-text-muted)]">{formatDate(record.recorded_at)}</span>
                 </div>
                 {record.direct_quote ? (
-                  <blockquote className="text-xs text-[var(--cs-text-secondary)] italic border-l-2 border-violet-300 pl-2 leading-relaxed">
+                  <blockquote className="text-xs text-[var(--cs-text-secondary)] italic border-l-2 border-[var(--cs-aria-gold-soft)] pl-2 leading-relaxed">
                     "{record.direct_quote}"
                   </blockquote>
                 ) : record.paraphrase ? (
@@ -817,12 +817,12 @@ function TrustedAdultMapPanel({ childId, childName }: { childId: string; childNa
               {trustedAdults.map((record) => (
                 <div key={record.id} className={cn(
                   "rounded-xl border p-3 space-y-1",
-                  record.is_positive ? "border-teal-100 bg-teal-50/50" : "border-[var(--cs-border-subtle)] bg-slate-50"
+                  record.is_positive ? "border-teal-100 bg-teal-50/50" : "border-[var(--cs-border-subtle)] bg-[var(--cs-surface)]"
                 )}>
                   <div className="flex items-center gap-1.5">
                     <span className={cn(
                       "h-2 w-2 rounded-full shrink-0",
-                      record.is_positive ? "bg-teal-500" : "bg-slate-400"
+                      record.is_positive ? "bg-teal-500" : "bg-[var(--cs-text-muted)]"
                     )} />
                     <span className="text-xs font-semibold text-[var(--cs-navy)]">{record.title}</span>
                   </div>
@@ -904,7 +904,7 @@ function TrustedAdultMapPanel({ childId, childName }: { childId: string; childNa
 
         {records.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-6 text-center">
-            <Users className="h-8 w-8 text-slate-200" />
+            <Users className="h-8 w-8 text-[var(--cs-text-gentle)]" />
             <p className="text-xs text-[var(--cs-text-muted)] italic">No relational records yet</p>
             <p className="text-[10px] text-[var(--cs-text-muted)]">Use <strong>Add Record</strong> to log trusted adults, what helps, or regulation strategies.</p>
           </div>
@@ -1079,7 +1079,7 @@ function AriaChildPanel({ childId, childName }: AriaChildPanelProps) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Brain className="h-4 w-4 text-violet-500" />
+          <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
           Ask ARIA about {childName}
         </CardTitle>
         <p className="text-[11px] text-[var(--cs-text-muted)] leading-relaxed mt-0.5">
@@ -1098,8 +1098,8 @@ function AriaChildPanel({ childId, childName }: AriaChildPanelProps) {
               disabled={isLoading}
               className={cn(
                 "rounded-lg border px-3 py-1.5 text-[11px] font-medium transition-colors",
-                "border-violet-200 bg-violet-50 text-violet-700",
-                "hover:bg-violet-100 hover:border-violet-300",
+                "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+                "hover:bg-[var(--cs-aria-gold-bg)] hover:border-[var(--cs-aria-gold-soft)]",
                 "disabled:opacity-50 disabled:cursor-not-allowed"
               )}
             >
@@ -1118,9 +1118,9 @@ function AriaChildPanel({ childId, childName }: AriaChildPanelProps) {
               placeholder="Ask ARIA a custom question about this young person…"
               disabled={isLoading}
               className={cn(
-                "w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5",
+                "w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5",
                 "text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
-                "resize-none focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-transparent",
+                "resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-soft)] focus:border-transparent",
                 "disabled:opacity-50"
               )}
             />
@@ -1139,7 +1139,7 @@ function AriaChildPanel({ childId, childName }: AriaChildPanelProps) {
               size="sm"
               onClick={handleCustomSubmit}
               disabled={isLoading || !customQuestion.trim()}
-              className="bg-violet-600 hover:bg-violet-700 text-white text-xs px-4"
+              className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white text-xs px-4"
             >
               Ask ARIA
             </Button>
@@ -1148,9 +1148,9 @@ function AriaChildPanel({ childId, childName }: AriaChildPanelProps) {
 
         {/* Loading state */}
         {isLoading && (
-          <div className="flex items-center gap-3 rounded-xl border border-violet-100 bg-violet-50 p-4">
-            <Brain className="h-5 w-5 text-violet-400 animate-pulse shrink-0" />
-            <span className="text-xs text-violet-700 font-medium">
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
+            <Brain className="h-5 w-5 text-[var(--cs-text-muted)] animate-pulse shrink-0" />
+            <span className="text-xs text-[var(--cs-aria-gold)] font-medium">
               ARIA is thinking…
             </span>
           </div>
@@ -1166,23 +1166,23 @@ function AriaChildPanel({ childId, childName }: AriaChildPanelProps) {
         {/* Response output */}
         {response && !isLoading && (
           <div className="space-y-2">
-            <div className="rounded-xl border border-violet-100 bg-white p-4 space-y-3">
+            <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-white p-4 space-y-3">
               {/* Header row */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700 uppercase tracking-wider">
+                <span className="rounded-full bg-[var(--cs-aria-gold-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider">
                   MODE: {activeMode}
                 </span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
+                    className="flex items-center gap-1 rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
                   >
                     <Copy className="h-3 w-3" />
                     {copied ? "Copied!" : "Copy"}
                   </button>
                   <button
                     onClick={handleClear}
-                    className="flex items-center gap-1 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
+                    className="flex items-center gap-1 rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
                   >
                     <RotateCcw className="h-3 w-3" />
                     Clear

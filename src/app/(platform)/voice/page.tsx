@@ -44,7 +44,7 @@ const THEME_CONFIG: Record<VoiceTheme, { label: string; icon: React.ElementType;
   complaints:    { label: "Complaints",    icon: MessageSquare,color: "text-rose-600",     bg: "bg-rose-50",     border: "border-rose-200"    },
   compliments:   { label: "Compliments",   icon: Sparkles,     color: "text-emerald-600",  bg: "bg-emerald-50",  border: "border-emerald-200" },
   needs:         { label: "Needs",         icon: Target,       color: "text-indigo-600",   bg: "bg-indigo-50",   border: "border-indigo-200"  },
-  relationships: { label: "Relationships", icon: Heart,        color: "text-violet-600",   bg: "bg-violet-50",   border: "border-violet-200"  },
+  relationships: { label: "Relationships", icon: Heart,        color: "text-[var(--cs-aria-gold)]",   bg: "bg-[var(--cs-aria-gold-bg)]",   border: "border-[var(--cs-aria-gold-soft)]"  },
   plans:         { label: "Plans",         icon: BookOpen,     color: "text-blue-600",     bg: "bg-blue-50",     border: "border-blue-200"    },
   activities:    { label: "Activities",    icon: Puzzle,       color: "text-teal-600",     bg: "bg-teal-50",     border: "border-teal-200"    },
   education:     { label: "Education",     icon: BookOpen,     color: "text-sky-600",      bg: "bg-sky-50",      border: "border-sky-200"     },
@@ -467,7 +467,7 @@ export default function VoiceOfTheChildPage() {
             { label: "Direct Quotes", value: directQuoteCount, icon: Quote, colour: "text-indigo-600", bg: "bg-indigo-50 border-indigo-100" },
             { label: "Voice Heeded", value: heededCount, icon: CheckCircle2, colour: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
             { label: "Action Pending", value: pendingCount, icon: Clock, colour: pendingCount > 0 ? "text-amber-600" : "text-emerald-600", bg: pendingCount > 0 ? "bg-amber-50 border-amber-100" : "bg-emerald-50 border-emerald-100" },
-            { label: "Heeded Rate", value: allRecords.length > 0 ? `${Math.round((heededCount / allRecords.length) * 100)}%` : "—", icon: Target, colour: "text-violet-600", bg: "bg-violet-50 border-violet-100" },
+            { label: "Heeded Rate", value: allRecords.length > 0 ? `${Math.round((heededCount / allRecords.length) * 100)}%` : "—", icon: Target, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
           ].map(({ label, value, icon: Icon, colour, bg }) => (
             <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
               <Icon className={cn("h-4 w-4 mx-auto mb-1", colour)} />

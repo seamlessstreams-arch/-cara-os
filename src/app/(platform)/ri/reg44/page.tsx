@@ -59,7 +59,7 @@ const STATUS_COLOUR: Record<Reg44VisitStatus, string> = {
   scheduled:                   "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
   completed:                   "bg-blue-50 text-blue-700 border-blue-200",
   report_received:             "bg-amber-50 text-amber-700 border-amber-200",
-  manager_response_submitted:  "bg-violet-50 text-violet-700 border-violet-200",
+  manager_response_submitted:  "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
   ri_reviewed:                 "bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
@@ -331,8 +331,8 @@ function VisitCard({
 
           {/* Manager response */}
           {visit.manager_response && (
-            <div className="rounded-xl border border-violet-100 bg-violet-50/40 p-3">
-              <p className="text-[10px] font-semibold text-violet-700 uppercase tracking-widest mb-1.5">
+            <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-3">
+              <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-widest mb-1.5">
                 Manager Response · {visit.manager_response_date ? formatDate(visit.manager_response_date) : ""}
               </p>
               <p className="text-xs text-[var(--cs-text-secondary)]">{visit.manager_response}</p>
@@ -744,7 +744,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
-              <MessageSquare className="h-4 w-4 text-violet-600" />
+              <MessageSquare className="h-4 w-4 text-[var(--cs-aria-gold)]" />
               Manager Response — Visit {respondingTo?.visit_number}
             </DialogTitle>
           </DialogHeader>
@@ -808,7 +808,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
               size="sm"
               onClick={handleSaveResponse}
               disabled={saving || !responseText.trim()}
-              className="bg-violet-600 hover:bg-violet-700 text-white"
+              className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
             >
               {saving ? "Saving…" : "Submit Response"}
             </Button>

@@ -49,7 +49,7 @@ const STAGE_COLOURS: Record<PathwayStage, string> = {
   inductee:           "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
   rsw:                "bg-blue-50 text-blue-700 border-blue-200",
   senior_rsw:         "bg-sky-50 text-sky-700 border-sky-200",
-  team_leader:        "bg-violet-50 text-violet-700 border-violet-200",
+  team_leader:        "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
   deputy_manager:     "bg-amber-50 text-amber-700 border-amber-200",
   registered_manager: "bg-emerald-50 text-emerald-700 border-emerald-200",
   ri:                 "bg-rose-50 text-rose-700 border-rose-200",
@@ -396,7 +396,7 @@ export default function StaffCompetencyProfilePage({ params }: { params: Promise
               <GitMerge className="h-8 w-8 mx-auto mb-2 text-[var(--cs-text-gentle)]" />
               <p className="text-sm">No development plans yet</p>
               <Link href="/workforce/aria-planner">
-                <Button size="sm" className="mt-3 gap-1.5 bg-indigo-600 text-white">
+                <Button size="sm" className="mt-3 gap-1.5 bg-[var(--cs-navy)] text-white">
                   <Sparkles className="h-3.5 w-3.5" /> Generate with ARIA
                 </Button>
               </Link>

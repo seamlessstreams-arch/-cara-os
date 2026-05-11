@@ -31,7 +31,7 @@ const CATEGORY_CONFIG: Record<string, { color: string; bgColor: string }> = {
   regulation:       { color: "text-purple-600",  bgColor: "bg-purple-100" },
   guidance:         { color: "text-teal-600",    bgColor: "bg-teal-100" },
   training:         { color: "text-emerald-600", bgColor: "bg-emerald-100" },
-  report:           { color: "text-[var(--cs-text-secondary)]",   bgColor: "bg-slate-100" },
+  report:           { color: "text-[var(--cs-text-secondary)]",   bgColor: "bg-[var(--cs-surface)]" },
 };
 
 // ── Document row ────────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ function DocRow({
   const isExpiring = doc.expiry_date && !isExpired &&
     (new Date(doc.expiry_date).getTime() - Date.now()) < 30 * 86400000;
 
-  const catConfig = CATEGORY_CONFIG[doc.category] ?? { color: "text-[var(--cs-text-secondary)]", bgColor: "bg-slate-100" };
+  const catConfig = CATEGORY_CONFIG[doc.category] ?? { color: "text-[var(--cs-text-secondary)]", bgColor: "bg-[var(--cs-surface)]" };
 
   return (
     <div className="flex items-start gap-3 px-3 py-3 hover:bg-[var(--cs-surface)] transition-colors group">
@@ -212,7 +212,7 @@ export function DocumentSignOff() {
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 max-h-[360px] overflow-y-auto">
+          <div className="divide-y divide-[var(--cs-border-subtle)] max-h-[360px] overflow-y-auto">
             {needsAction.slice(0, 6).map((doc) => (
               <DocRow
                 key={doc.id}

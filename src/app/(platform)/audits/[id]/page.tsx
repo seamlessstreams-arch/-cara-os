@@ -143,7 +143,7 @@ function FindingCard({
           <button
             onClick={handleCreateNeed}
             disabled={createNeed.isPending}
-            className="inline-flex items-center gap-1 rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors disabled:opacity-50"
           >
             <Brain className="h-3 w-3" />Create training need
           </button>
@@ -309,7 +309,7 @@ export default function AuditDetailPage({
                 className="gap-1.5 text-xs"
                 onClick={() => setShowAria((v) => !v)}
               >
-                <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+                <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
                 ARIA Analysis
               </Button>
               {audit.status === "in_progress" && (

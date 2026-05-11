@@ -247,7 +247,7 @@ function ComplianceReportPanel({
     <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4 space-y-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 shrink-0">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--cs-navy)] shrink-0">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <div>
@@ -307,7 +307,7 @@ function ComplianceReportPanel({
 
           <div className="flex gap-2 pt-1">
             <Link href="/learning/training-needs">
-              <Button size="sm" variant="outline" className="text-xs h-7 gap-1 text-violet-700 border-violet-200">
+              <Button size="sm" variant="outline" className="text-xs h-7 gap-1 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]">
                 <Brain className="h-3 w-3" />
                 View Training Needs
               </Button>
@@ -764,7 +764,7 @@ export default function TrainingPage() {
                       {isActionable && (
                         alreadyCreated ? (
                           <Link href="/learning/training-needs">
-                            <Button size="sm" variant="ghost" className="text-[10px] h-6 gap-0.5 text-violet-600 px-2">
+                            <Button size="sm" variant="ghost" className="text-[10px] h-6 gap-0.5 text-[var(--cs-aria-gold)] px-2">
                               <CheckCircle2 className="h-3 w-3" />
                               Need created
                             </Button>
@@ -773,7 +773,7 @@ export default function TrainingPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-[10px] h-6 gap-0.5 text-violet-700 border-violet-200 hover:bg-violet-50 px-2 shrink-0"
+                            className="text-[10px] h-6 gap-0.5 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)] px-2 shrink-0"
                             onClick={() => handleCreateNeed(record)}
                             disabled={createNeed.isPending}
                           >

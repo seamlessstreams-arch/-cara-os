@@ -172,7 +172,7 @@ function EpisodeCard({
               </Badge>
             )}
             {awaitingRHI && (
-              <Badge className="text-[10px] h-4 px-1.5 bg-violet-100 text-violet-700">
+              <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]">
                 RHI Outstanding
               </Badge>
             )}
@@ -212,7 +212,7 @@ function EpisodeCard({
             <Button
               size="sm"
               variant="outline"
-              className="h-7 text-xs gap-1 text-violet-700 border-violet-200"
+              className="h-7 text-xs gap-1 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]"
               onClick={() => onCompleteRHI(episode)}
             >
               <Sparkles className="h-3 w-3" />
@@ -298,8 +298,8 @@ function PatternRow({ p }: { p: PatternAnalysis }) {
 
   return (
     <div className="flex items-center gap-4 p-3 rounded-xl border border-[var(--cs-border-subtle)] bg-white hover:bg-[var(--cs-surface)] transition-colors">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-100">
-        <User className="h-3.5 w-3.5 text-violet-700" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--cs-aria-gold-bg)]">
+        <User className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -308,7 +308,7 @@ function PatternRow({ p }: { p: PatternAnalysis }) {
             <Badge className="text-[10px] h-4 px-1.5 bg-red-100 text-red-700 border border-red-200">CS Risk</Badge>
           )}
           {p.return_interview_outstanding && (
-            <Badge className="text-[10px] h-4 px-1.5 bg-violet-100 text-violet-700">RHI Outstanding</Badge>
+            <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]">RHI Outstanding</Badge>
           )}
         </div>
         <div className="flex flex-wrap gap-3 mt-1 text-[11px] text-[var(--cs-text-muted)]">
@@ -603,7 +603,7 @@ function RhiDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4 text-violet-600" />
+            <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Return Home Interview — {ypName}
           </DialogTitle>
         </DialogHeader>
@@ -657,14 +657,14 @@ function RhiDialog({
               )}
 
               {rhiResult.suggested_interview_questions && rhiResult.suggested_interview_questions.length > 0 && (
-                <div className="rounded-xl border border-violet-100 bg-violet-50 p-4">
-                  <div className="text-[11px] font-semibold text-violet-700 uppercase tracking-wide mb-2">
+                <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
+                  <div className="text-[11px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wide mb-2">
                     Suggested Interview Questions
                   </div>
                   <ol className="space-y-1.5">
                     {rhiResult.suggested_interview_questions.map((q, i) => (
-                      <li key={i} className="flex gap-2 text-sm text-violet-900">
-                        <span className="text-violet-400 shrink-0 font-semibold">{i + 1}.</span>
+                      <li key={i} className="flex gap-2 text-sm text-[var(--cs-navy)]">
+                        <span className="text-[var(--cs-text-muted)] shrink-0 font-semibold">{i + 1}.</span>
                         <span>{q}</span>
                       </li>
                     ))}
@@ -879,15 +879,15 @@ export default function MissingFromCarePage() {
 
         {/* RHI outstanding banner */}
         {awaitingRHI.length > 0 && (
-          <div className="flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-4">
-            <FileText className="h-5 w-5 text-violet-600 shrink-0" />
-            <p className="text-sm font-semibold text-violet-700">
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
+            <FileText className="h-5 w-5 text-[var(--cs-aria-gold)] shrink-0" />
+            <p className="text-sm font-semibold text-[var(--cs-aria-gold)]">
               {awaitingRHI.length} return home interview{awaitingRHI.length !== 1 ? "s" : ""} outstanding
             </p>
             <Button
               size="sm"
               variant="outline"
-              className="ml-auto text-violet-700 border-violet-200 h-8 text-xs shrink-0"
+              className="ml-auto text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] h-8 text-xs shrink-0"
               onClick={() => setStatusFilter("all")}
             >
               Review
@@ -900,7 +900,7 @@ export default function MissingFromCarePage() {
           <StatChip label="Total episodes" value={meta?.total ?? 0} colour="text-[var(--cs-text-secondary)]" bg="bg-slate-50" />
           <StatChip label="Active / missing" value={meta?.active ?? 0} colour={meta?.active ? "text-red-700" : "text-[var(--cs-text-muted)]"} bg={meta?.active ? "bg-red-50" : "bg-slate-50"} />
           <StatChip label="CS risk episodes" value={meta?.contextual_risk ?? 0} colour={meta?.contextual_risk ? "text-orange-700" : "text-[var(--cs-text-muted)]"} bg={meta?.contextual_risk ? "bg-orange-50" : "bg-slate-50"} />
-          <StatChip label="RHI outstanding" value={meta?.unresolved ?? 0} colour={meta?.unresolved ? "text-violet-700" : "text-[var(--cs-text-muted)]"} bg={meta?.unresolved ? "bg-violet-50" : "bg-slate-50"} />
+          <StatChip label="RHI outstanding" value={meta?.unresolved ?? 0} colour={meta?.unresolved ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]"} bg={meta?.unresolved ? "bg-[var(--cs-aria-gold-bg)]" : "bg-slate-50"} />
         </div>
 
         {/* Controls */}
@@ -1001,7 +1001,7 @@ export default function MissingFromCarePage() {
             {/* Awaiting RHI */}
             {awaitingRHI.length > 0 && statusFilter !== "active" && (
               <>
-                <div className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider flex items-center gap-1.5 pt-2">
+                <div className="text-[11px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider flex items-center gap-1.5 pt-2">
                   <FileText className="h-3.5 w-3.5" />
                   Awaiting Return Interview ({awaitingRHI.length})
                 </div>

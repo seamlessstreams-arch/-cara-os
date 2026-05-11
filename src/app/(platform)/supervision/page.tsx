@@ -405,7 +405,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-xs gap-1 text-violet-700 border-violet-200 hover:bg-violet-50"
+                  className="h-7 text-xs gap-1 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
                   onClick={extractTrainingNeeds}
                   disabled={extracting || createNeed.isPending}
                 >
@@ -414,7 +414,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
                 </Button>
               )}
               {needCreated && (
-                <span className="text-[10px] text-violet-600 flex items-center gap-1">
+                <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" />Training need created
                 </span>
               )}

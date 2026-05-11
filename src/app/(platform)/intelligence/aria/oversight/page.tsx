@@ -160,9 +160,9 @@ function LiveAnalysisPanel({ analysis }: { analysis: ManagementOversightOutput }
   const progressColour = analysis.qualityScore >= 80 ? "[&>div]:bg-emerald-500" : analysis.qualityScore >= 60 ? "[&>div]:bg-blue-500" : analysis.qualityScore >= 40 ? "[&>div]:bg-amber-500" : "[&>div]:bg-red-500";
 
   return (
-    <Card className="border-violet-200 bg-violet-50/30">
+    <Card className="border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30">
       <CardHeader className="pb-2">
-        <CardTitle className="text-xs font-semibold text-violet-700 uppercase tracking-wider flex items-center gap-1.5">
+        <CardTitle className="text-xs font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider flex items-center gap-1.5">
           <ScanSearch className="h-3.5 w-3.5" />
           Live Record Analysis
         </CardTitle>
@@ -257,7 +257,7 @@ function LiveAnalysisPanel({ analysis }: { analysis: ManagementOversightOutput }
               {analysis.suggestedActions.map((a, i) => (
                 <li key={i} className="rounded-lg border border-[var(--cs-border)] bg-white p-2">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <Target className="h-3 w-3 text-violet-500" />
+                    <Target className="h-3 w-3 text-[var(--cs-aria-gold)]" />
                     <span className="font-semibold text-[var(--cs-navy)]">{a.title}</span>
                     <Badge className={cn("text-[9px] rounded-full ml-auto",
                       a.priority === "high" ? "bg-red-100 text-red-700" : a.priority === "medium" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-[var(--cs-text-secondary)]"
@@ -286,7 +286,7 @@ function LiveAnalysisPanel({ analysis }: { analysis: ManagementOversightOutput }
           </div>
         )}
 
-        <div className="text-[10px] text-[var(--cs-text-muted)] italic border-t border-violet-200 pt-2">
+        <div className="text-[10px] text-[var(--cs-text-muted)] italic border-t border-[var(--cs-aria-gold-soft)] pt-2">
           ARIA confidence: {Math.round(analysis.ariaConfidence * 100)}% · Analysis updates in real-time as you type
         </div>
       </CardContent>
@@ -630,7 +630,7 @@ export default function OversightGeneratorPage() {
                 <CardContent className="space-y-5">
                   {/* Labels */}
                   <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-violet-100 text-violet-700 px-2 py-0.5 text-[10px] font-medium">AI-generated</span>
+                    <span className="rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] px-2 py-0.5 text-[10px] font-medium">AI-generated</span>
                     {editedText !== draftText && (
                       <span className="rounded-full bg-blue-100 text-blue-700 px-2 py-0.5 text-[10px] font-medium">Human-edited</span>
                     )}

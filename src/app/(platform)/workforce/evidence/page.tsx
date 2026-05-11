@@ -172,8 +172,8 @@ export default function EvidencePortfolioPage() {
           <div className="text-[10px] text-[var(--cs-text-muted)]">Staff with Evidence</div>
         </div>
         <div className="rounded-xl border border-[var(--cs-border)] bg-white p-3 text-center">
-          <Award className="h-4 w-4 text-violet-500 mx-auto mb-1" />
-          <div className="text-lg font-bold text-violet-700 tabular-nums">{stats.categories}</div>
+          <Award className="h-4 w-4 text-[var(--cs-aria-gold)] mx-auto mb-1" />
+          <div className="text-lg font-bold text-[var(--cs-aria-gold)] tabular-nums">{stats.categories}</div>
           <div className="text-[10px] text-[var(--cs-text-muted)]">Categories</div>
         </div>
         <div className="rounded-xl border border-[var(--cs-border)] bg-white p-3 text-center">

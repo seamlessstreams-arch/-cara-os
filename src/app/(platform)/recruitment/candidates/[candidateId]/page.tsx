@@ -322,7 +322,7 @@ export default function CandidateDetailPage() {
             />
             <Button
               variant="outline" size="sm"
-              className="rounded-xl border-violet-200 text-violet-700"
+              className="rounded-xl border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)]"
               onClick={() => setShowAria(s => !s)}
             >
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />

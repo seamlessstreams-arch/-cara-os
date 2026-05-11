@@ -334,7 +334,7 @@ export default function DrugAndAlcoholScreeningPage() {
                           {SCREENING_TOOL_LABEL[r.screening_tool]}
                         </Badge>
                         {r.child_authored && (
-                          <Badge variant="outline" className="bg-violet-100 text-violet-800">
+                          <Badge variant="outline" className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]">
                             Child contributed
                           </Badge>
                         )}
@@ -438,11 +438,11 @@ export default function DrugAndAlcoholScreeningPage() {
 
                     {/* child voice */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-violet-50 rounded-lg p-3">
-                        <p className="font-medium text-violet-800 mb-1 flex items-center gap-1">
+                      <div className="bg-[var(--cs-aria-gold-bg)] rounded-lg p-3">
+                        <p className="font-medium text-[var(--cs-navy)] mb-1 flex items-center gap-1">
                           <Lightbulb className="h-3.5 w-3.5" /> Child&apos;s Insight
                         </p>
-                        <p className="text-violet-700 text-xs">{r.child_insight}</p>
+                        <p className="text-[var(--cs-aria-gold)] text-xs">{r.child_insight}</p>
                       </div>
                       <div className="bg-fuchsia-50 rounded-lg p-3">
                         <p className="font-medium text-fuchsia-800 mb-1 flex items-center gap-1">

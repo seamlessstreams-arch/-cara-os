@@ -194,14 +194,14 @@ export function DictationButton({
           disabled
           aria-label="Voice input not supported"
           className={cn(
-            "inline-flex items-center justify-center rounded-lg border border-[var(--cs-border)] bg-slate-50 text-[var(--cs-text-gentle)] cursor-not-allowed transition-colors",
+            "inline-flex items-center justify-center rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-gentle)] cursor-not-allowed transition-colors",
             SIZE_BTN[size]
           )}
         >
           <MicOff className={SIZE_ICON[size]} />
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-50">
-          <div className="whitespace-nowrap rounded-lg bg-slate-800 px-2.5 py-1.5 text-[11px] text-white shadow-lg">
+          <div className="whitespace-nowrap rounded-lg bg-[var(--cs-navy)] px-2.5 py-1.5 text-[11px] text-white shadow-[var(--cs-shadow-card)]">
             Voice input not supported in this browser
           </div>
         </div>
@@ -248,7 +248,7 @@ export function DictationButton({
           "inline-flex items-center justify-center rounded-lg border transition-colors",
           error
             ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
-            : "border-[var(--cs-border)] bg-slate-50 text-[var(--cs-text-muted)] hover:bg-violet-50 hover:border-violet-300 hover:text-violet-600",
+            : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-muted)] hover:bg-[var(--cs-aria-gold-bg)] hover:border-[var(--cs-aria-gold-soft)] hover:text-[var(--cs-aria-gold)]",
           disabled && "opacity-40 cursor-not-allowed pointer-events-none",
           SIZE_BTN[size]
         )}

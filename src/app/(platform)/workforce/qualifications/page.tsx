@@ -246,12 +246,12 @@ function DBSTrackerCard({
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-[var(--cs-border-subtle)]">
         <div className="flex items-center gap-2">
-          <Fingerprint className="h-4 w-4 text-violet-500" />
+          <Fingerprint className="h-4 w-4 text-[var(--cs-aria-gold)]" />
           <h3 className="text-sm font-bold text-[var(--cs-navy)]">DBS & Right to Work</h3>
         </div>
         <div className="flex items-center gap-3 text-[10px] text-[var(--cs-text-muted)]">
           <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{dbsClear}/{activeStaff.length} DBS clear</span>
-          <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-violet-500" />{updateService} on update service</span>
+          <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-[var(--cs-aria-gold)]" />{updateService} on update service</span>
         </div>
       </div>
       <div className="divide-y divide-slate-50">
@@ -265,7 +265,7 @@ function DBSTrackerCard({
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-[10px] text-[var(--cs-text-muted)] font-mono">{r.dbs_number}</span>
               {r.update_service && (
-                <Badge className="text-[8px] bg-violet-100 text-violet-700 border-0 rounded-full px-1.5">
+                <Badge className="text-[8px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0 rounded-full px-1.5">
                   Update service
                 </Badge>
               )}

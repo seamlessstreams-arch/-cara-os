@@ -128,7 +128,7 @@ export function AriaDictationPanel(props: AriaDictationPanelProps) {
         <CardHeader>
           <CardTitle className="flex items-center justify-between gap-2 text-base">
             <span className="flex items-center gap-2">
-              <Mic className="h-4 w-4 text-violet-600" /> ARIA voice dictation
+              <Mic className="h-4 w-4 text-[var(--cs-aria-gold)]" /> ARIA voice dictation
             </span>
             <Button type="button" variant="ghost" size="icon" onClick={onClose} aria-label="Close">
               <X className="h-4 w-4" />
@@ -136,7 +136,7 @@ export function AriaDictationPanel(props: AriaDictationPanelProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-md border border-violet-200 bg-violet-50 p-3 text-xs text-violet-900">
+          <div className="rounded-md border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3 text-xs text-[var(--cs-navy)]">
             Recordings are kept on your device until you submit them. The audio is sent securely
             to the configured provider for transcription and is then discarded server-side. The
             transcript is editable before you use it.
@@ -181,7 +181,7 @@ export function AriaDictationPanel(props: AriaDictationPanelProps) {
                       ? "bg-red-500 animate-pulse"
                       : recorder.state === "paused"
                         ? "bg-amber-500"
-                        : "bg-slate-300",
+                        : "bg-[var(--cs-text-gentle)]",
                   )}
                 />
                 <span className="text-sm font-medium text-[var(--cs-text-secondary)]">
@@ -193,7 +193,7 @@ export function AriaDictationPanel(props: AriaDictationPanelProps) {
                         ? "Recording captured"
                         : "Ready"}
                 </span>
-                <Badge className="border bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)] text-xs">
+                <Badge className="border bg-[var(--cs-surface)] text-[var(--cs-text-secondary)] border-[var(--cs-border)] text-xs">
                   {formatDuration(recorder.durationMs)}
                 </Badge>
               </div>

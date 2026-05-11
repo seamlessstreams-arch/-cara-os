@@ -54,7 +54,7 @@ const CAT_ICONS: Record<string, React.ElementType> = {
 
 const CAT_COLORS: Record<string, string> = {
   policy: "bg-blue-100 text-blue-700",
-  procedure: "bg-violet-100 text-violet-700",
+  procedure: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   risk_assessment: "bg-red-100 text-red-700",
   care_plan: "bg-emerald-100 text-emerald-700",
   behaviour_support: "bg-amber-100 text-amber-700",
@@ -280,7 +280,7 @@ export default function DocumentsPage() {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {[
             { label: "Total Documents", value: stats.total, icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
-            { label: "Require Sign", value: stats.requireSign, icon: FileCheck, color: "text-violet-600", bg: "bg-violet-50" },
+            { label: "Require Sign", value: stats.requireSign, icon: FileCheck, color: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]" },
             { label: "Fully Signed", value: stats.allSigned, icon: CheckSquare, color: "text-emerald-600", bg: "bg-emerald-50" },
             { label: "Expiring Soon", value: stats.expiring, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
             { label: "Expired", value: stats.expired, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },

@@ -93,7 +93,7 @@ export function FamilyContactCard() {
             <div className="text-sm font-bold text-pink-700 tabular-nums">{activeArrangements}</div>
             <div className="text-[9px] text-pink-500">Active</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", suspended > 0 ? "bg-red-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", suspended > 0 ? "bg-red-50" : "bg-[var(--cs-surface)]")}>
             <PhoneOff className={cn("h-3 w-3 mx-auto mb-0.5", suspended > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", suspended > 0 ? "text-red-700" : "text-[var(--cs-text-muted)]")}>{suspended}</div>
             <div className={cn("text-[9px]", suspended > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")}>Suspended</div>

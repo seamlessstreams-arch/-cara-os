@@ -588,7 +588,7 @@ export default function AppraisalsPage() {
                 className={cn(
                   "flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium transition-all",
                   viewMode === mode
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-[var(--cs-navy)] text-white"
                     : "text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)]",
                 )}
               >
@@ -641,8 +641,8 @@ export default function AppraisalsPage() {
                   className={cn(
                     "px-2.5 py-1 rounded-full text-[10px] font-medium border transition-all",
                     typeFilter === t
-                      ? "bg-violet-600 text-white border-violet-600"
-                      : "bg-white text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:border-violet-300",
+                      ? "bg-[var(--cs-navy)] text-white border-[var(--cs-navy)]"
+                      : "bg-white text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:border-[var(--cs-aria-gold-soft)]",
                   )}
                 >
                   {t === "all" ? "All Types" : TYPE_LABELS[t]}

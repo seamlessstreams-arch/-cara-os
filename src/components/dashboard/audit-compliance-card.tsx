@@ -43,7 +43,7 @@ export function AuditComplianceCard() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <ClipboardCheck className="h-4 w-4 text-violet-500" />
+            <ClipboardCheck className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Audit Compliance
           </CardTitle>
         </CardHeader>
@@ -61,15 +61,15 @@ export function AuditComplianceCard() {
   const hasAlert = meta.overdue > 0 || stats.lowScoreCount > 0;
 
   return (
-    <Card className={cn(hasAlert && "border-violet-200")}>
+    <Card className={cn(hasAlert && "border-[var(--cs-aria-gold-soft)]")}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <ClipboardCheck className="h-4 w-4 text-violet-500" />
+            <ClipboardCheck className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Audit Compliance
           </CardTitle>
           <Link href="/audits">
-            <Badge className="text-[9px] bg-violet-100 text-violet-700 border-0 rounded-full hover:bg-violet-200 cursor-pointer">
+            <Badge className="text-[9px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0 rounded-full hover:bg-[var(--cs-aria-gold-soft)] cursor-pointer">
               View all
             </Badge>
           </Link>
@@ -83,7 +83,7 @@ export function AuditComplianceCard() {
             <div className="text-sm font-bold text-emerald-700 tabular-nums">{meta.completed}</div>
             <div className="text-[9px] text-emerald-500">Completed</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", meta.overdue > 0 ? "bg-red-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", meta.overdue > 0 ? "bg-red-50" : "bg-[var(--cs-surface)]")}>
             <Clock className={cn("h-3 w-3 mx-auto mb-0.5", meta.overdue > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", meta.overdue > 0 ? "text-red-700" : "text-[var(--cs-text-muted)]")}>{meta.overdue}</div>
             <div className={cn("text-[9px]", meta.overdue > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")}>Overdue</div>
@@ -101,7 +101,7 @@ export function AuditComplianceCard() {
             <Star className="h-3 w-3" /> Average score
           </span>
           <div className="flex items-center gap-1.5">
-            <div className="h-1.5 w-16 rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-1.5 w-16 rounded-full bg-[var(--cs-surface)] overflow-hidden">
               <div
                 className={cn(
                   "h-full rounded-full transition-all",

@@ -78,8 +78,8 @@ function YPAvatar({ childId, size = "sm" }: { childId: string; size?: "sm" | "md
   const yp = getYPById(childId);
   const name = yp?.preferred_name || yp?.first_name || "?";
   const cls = size === "sm"
-    ? "h-7 w-7 rounded-full bg-violet-100 text-violet-700 text-xs font-bold flex items-center justify-center shrink-0"
-    : "h-9 w-9 rounded-full bg-violet-100 text-violet-700 text-sm font-bold flex items-center justify-center shrink-0";
+    ? "h-7 w-7 rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] text-xs font-bold flex items-center justify-center shrink-0"
+    : "h-9 w-9 rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] text-sm font-bold flex items-center justify-center shrink-0";
   return <div className={cls}>{name[0]}</div>;
 }
 
@@ -172,7 +172,7 @@ function IncidentCard({
           <div className="mt-2 flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-1.5">
               <YPAvatar childId={inc.child_id} />
-              <span className="text-xs font-semibold text-violet-700">{getYPName(inc.child_id)}</span>
+              <span className="text-xs font-semibold text-[var(--cs-aria-gold)]">{getYPName(inc.child_id)}</span>
             </div>
             <span className="text-[11px] text-[var(--cs-text-muted)] flex items-center gap-1">
               <Calendar className="h-3 w-3" />
@@ -239,7 +239,7 @@ function IncidentCard({
                 <button
                   onClick={handleCreateNeed}
                   disabled={createNeed.isPending}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors disabled:opacity-50"
                 >
                   {createNeed.isPending
                     ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -415,7 +415,7 @@ function AllIncidentsTab() {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
         >
           <option value="all">All statuses</option>
           <option value="open">Open</option>
@@ -426,7 +426,7 @@ function AllIncidentsTab() {
         <select
           value={filterSeverity}
           onChange={(e) => setFilterSeverity(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
         >
           <option value="all">All severities</option>
           {INCIDENT_SEVERITIES.map((s) => (
@@ -437,7 +437,7 @@ function AllIncidentsTab() {
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
         >
           <option value="all">All types</option>
           {INCIDENT_TYPES.map((t) => <option key={t} value={t}>{INCIDENT_TYPE_LABELS[t]}</option>)}
@@ -446,7 +446,7 @@ function AllIncidentsTab() {
         <select
           value={filterChild}
           onChange={(e) => setFilterChild(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
         >
           <option value="all">All young people</option>
           {allYP.map((yp) => (
@@ -459,7 +459,7 @@ function AllIncidentsTab() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as "severity" | "date" | "reference")}
-            className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+            className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
           >
             <option value="severity">Priority</option>
             <option value="date">Date</option>
@@ -576,7 +576,7 @@ function AllIncidentsTab() {
                   onChange={(e) => setOversightNote(e.target.value)}
                   rows={5}
                   placeholder="Record your management oversight — what you have considered, any actions agreed, lessons identified…"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
                 />
               </div>
 
@@ -706,7 +706,7 @@ function OversightQueueTab() {
                   <div className="mt-1.5 flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
                       <YPAvatar childId={inc.child_id} />
-                      <span className="text-xs font-semibold text-violet-700">{getYPName(inc.child_id)}</span>
+                      <span className="text-xs font-semibold text-[var(--cs-aria-gold)]">{getYPName(inc.child_id)}</span>
                     </div>
                     <span className="text-[11px] text-[var(--cs-text-muted)]">{formatDate(inc.date)} at {inc.time}</span>
                     {inc.location && <span className="text-[11px] text-[var(--cs-text-muted)]">{inc.location}</span>}
@@ -780,7 +780,7 @@ function OversightQueueTab() {
               <div>
                 <button
                   onClick={() => setAriaPanelId(ariaPanelId === inc.id ? null : inc.id)}
-                  className="flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition-colors"
+                  className="flex items-center gap-2 rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-3 py-2 text-xs font-semibold text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors"
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   {ariaPanelId === inc.id ? "Close ARIA" : "Ask ARIA to help draft oversight"}
@@ -963,7 +963,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           <select
             value={form.child_id}
             onChange={(e) => setForm((p) => ({ ...p, child_id: e.target.value }))}
-            className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+            className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
           >
             <option value="">Select young person…</option>
             {logAllYP.map((yp) => (
@@ -982,7 +982,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             <select
               value={form.type}
               onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
             >
               <option value="">Select type…</option>
               {INCIDENT_TYPES.map((t) => <option key={t} value={t}>{INCIDENT_TYPE_LABELS[t]}</option>)}
@@ -993,7 +993,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             <select
               value={form.severity}
               onChange={(e) => setForm((p) => ({ ...p, severity: e.target.value }))}
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -1040,7 +1040,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           <div className="text-sm font-bold text-[var(--cs-navy)]">Description & Actions</div>
           <button
             onClick={() => setAriaOpen(!ariaOpen)}
-            className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition-colors"
+            className="flex items-center gap-1.5 rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors"
           >
             <Sparkles className="h-3.5 w-3.5" />
             ARIA Write
@@ -1111,7 +1111,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             <select
               value={notifRole}
               onChange={(e) => setNotifRole(e.target.value)}
-              className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
             >
               <option value="">Select role…</option>
               {NOTIF_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -1131,7 +1131,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             <select
               value={notifMethod}
               onChange={(e) => setNotifMethod(e.target.value)}
-              className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
             >
               <option>Phone</option>
               <option>Email</option>
@@ -1173,14 +1173,14 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             onClick={() => setForm((p) => ({ ...p, body_map_required: !p.body_map_required }))}
             className={cn(
               "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-              form.body_map_required ? "bg-violet-600" : "bg-slate-200"
+              form.body_map_required ? "bg-[var(--cs-navy)]" : "bg-slate-200"
             )}
           >
             <span className={cn("inline-block h-4 w-4 rounded-full bg-white shadow transition-transform", form.body_map_required ? "translate-x-6" : "translate-x-1")} />
           </button>
         </div>
         {form.body_map_required && (
-          <div className="mt-3 rounded-xl bg-violet-50 border border-violet-100 p-3 text-xs text-violet-700">
+          <div className="mt-3 rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3 text-xs text-[var(--cs-aria-gold)]">
             A body map will need to be completed alongside this incident record. You can upload this once the incident is saved.
           </div>
         )}

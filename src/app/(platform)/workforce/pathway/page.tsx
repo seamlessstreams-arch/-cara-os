@@ -56,7 +56,7 @@ const STAGE_CONFIG: Record<PathwayStage, {
     requirements: ["Level 3 Diploma completed", "Avg competency ≥ 3 all domains", "2+ years experience", "Practice observation: Outstanding/Meets"],
   },
   team_leader: {
-    colour: "text-violet-700", bgColour: "bg-violet-50", borderColour: "border-violet-200", dotColour: "bg-violet-500",
+    colour: "text-[var(--cs-aria-gold)]", bgColour: "bg-[var(--cs-aria-gold-bg)]", borderColour: "border-[var(--cs-aria-gold-soft)]", dotColour: "bg-[var(--cs-aria-gold-bg)]0",
     min_score: 60,
     description: "Shift leader responsible for operational oversight, staff support, and quality assurance.",
     requirements: ["Level 3 Diploma (or Level 5 enrolled)", "Leadership competency ≥ 3", "Supervision delivered to ≥ 2 staff", "Appraisal: Good/Outstanding"],
@@ -388,7 +388,7 @@ export default function CareerPathwayPage() {
             { label: "Team Members", value: profiles.length, colour: "text-indigo-700", icon: <Users className="h-4 w-4 text-indigo-500" /> },
             { label: "Team Avg Readiness", value: `${teamAvg}%`, colour: teamAvg >= 70 ? "text-emerald-700" : "text-amber-700", icon: <BarChart3 className="h-4 w-4 text-indigo-500" /> },
             { label: "Actively Progressing", value: progressingCount, colour: "text-blue-700", icon: <TrendingUp className="h-4 w-4 text-blue-500" /> },
-            { label: "Stages Covered", value: `${new Set(profiles.map((p) => p.current_stage)).size}/7`, colour: "text-violet-700", icon: <Milestone className="h-4 w-4 text-violet-500" /> },
+            { label: "Stages Covered", value: `${new Set(profiles.map((p) => p.current_stage)).size}/7`, colour: "text-[var(--cs-aria-gold)]", icon: <Milestone className="h-4 w-4 text-[var(--cs-aria-gold)]" /> },
           ].map(({ label, value, colour, icon }) => (
             <div key={label} className="rounded-xl border border-[var(--cs-border-subtle)] bg-white p-3 text-center">
               <div className="flex justify-center mb-1">{icon}</div>
@@ -428,7 +428,7 @@ export default function CareerPathwayPage() {
                 onClick={() => setViewMode(mode)}
                 className={cn(
                   "flex items-center gap-1 px-3 py-1.5 text-[11px] font-medium transition-all",
-                  viewMode === mode ? "bg-indigo-600 text-white" : "text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)]",
+                  viewMode === mode ? "bg-[var(--cs-navy)] text-white" : "text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)]",
                 )}
               >
                 <Icon className="h-3 w-3" />

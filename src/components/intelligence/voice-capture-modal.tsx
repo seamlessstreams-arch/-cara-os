@@ -190,7 +190,7 @@ export function VoiceCaptureModal({
               </Dialog.Title>
               <Dialog.Description className="mt-0.5 text-xs text-[var(--cs-text-muted)]">
                 Recording voice for{" "}
-                <span className="font-semibold text-violet-700">{childName}</span>
+                <span className="font-semibold text-[var(--cs-aria-gold)]">{childName}</span>
               </Dialog.Description>
             </div>
             <Dialog.Close asChild>
@@ -223,11 +223,11 @@ export function VoiceCaptureModal({
                         className={cn(
                           "rounded-xl border px-3 py-2.5 text-left transition-all",
                           captureMethod === value
-                            ? "border-violet-500 bg-violet-50 ring-2 ring-violet-200"
-                            : "border-[var(--cs-border)] bg-slate-50 hover:border-violet-300 hover:bg-violet-50/50"
+                            ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] ring-2 ring-[var(--cs-aria-gold-soft)]"
+                            : "border-[var(--cs-border)] bg-[var(--cs-surface)] hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]/50"
                         )}
                       >
-                        <div className={cn("text-[11px] font-semibold", captureMethod === value ? "text-violet-700" : "text-[var(--cs-text-secondary)]")}>
+                        <div className={cn("text-[11px] font-semibold", captureMethod === value ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-secondary)]")}>
                           {label}
                         </div>
                         <div className="text-[9px] text-[var(--cs-text-muted)] mt-0.5">{sublabel}</div>
@@ -248,8 +248,8 @@ export function VoiceCaptureModal({
                         className={cn(
                           "rounded-full border px-3 py-1 text-[11px] font-semibold transition-all",
                           theme === value
-                            ? "border-violet-500 bg-violet-50 text-violet-700 ring-1 ring-violet-300"
-                            : "border-[var(--cs-border)] bg-white text-[var(--cs-text-muted)] hover:border-violet-300 hover:text-violet-600"
+                            ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] ring-1 ring-[var(--cs-aria-gold-soft)]"
+                            : "border-[var(--cs-border)] bg-white text-[var(--cs-text-muted)] hover:border-[var(--cs-aria-gold-soft)] hover:text-[var(--cs-aria-gold)]"
                         )}
                       >
                         {label}
@@ -270,7 +270,7 @@ export function VoiceCaptureModal({
                       onChange={(e) => setDirectQuote(e.target.value)}
                       rows={4}
                       placeholder='Record their exact words in quotes where possible — e.g. "I want to go home"'
-                      className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 transition-colors"
+                      className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] transition-colors"
                     />
                     <div className="absolute right-2 top-2">
                       <DictationButton
@@ -293,7 +293,7 @@ export function VoiceCaptureModal({
                       onChange={(e) => setParaphrase(e.target.value)}
                       rows={3}
                       placeholder="If you're summarising or interpreting what they communicated — write it here"
-                      className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 transition-colors"
+                      className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] transition-colors"
                     />
                     <div className="absolute right-2 top-2">
                       <DictationButton
@@ -316,7 +316,7 @@ export function VoiceCaptureModal({
                       onChange={(e) => setActionTaken(e.target.value)}
                       rows={2}
                       placeholder="What did you do or say in response? What action was agreed?"
-                      className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 transition-colors"
+                      className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] transition-colors"
                     />
                     <div className="absolute right-2 top-2">
                       <DictationButton
@@ -353,7 +353,7 @@ export function VoiceCaptureModal({
                               : val === false
                               ? "border-red-300 bg-red-50 text-red-700 ring-1 ring-red-200"
                               : "border-amber-300 bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                            : "border-[var(--cs-border)] bg-slate-50 text-[var(--cs-text-muted)] hover:border-slate-300"
+                            : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-muted)] hover:border-[var(--cs-border)]"
                         )}
                       >
                         {label}
@@ -381,7 +381,7 @@ export function VoiceCaptureModal({
                   type="submit"
                   size="sm"
                   disabled={isPending}
-                  className="gap-1.5 bg-violet-600 hover:bg-violet-700 text-white"
+                  className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
                 >
                   {isPending ? (
                     <><Loader2 className="h-3.5 w-3.5 animate-spin" />Saving…</>

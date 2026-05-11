@@ -49,7 +49,7 @@ type CurriculumResult = {
 const CONTENT_TYPE_COLOURS: Record<string, string> = {
   workshop: "bg-blue-100 text-blue-700",
   self_study: "bg-slate-100 text-[var(--cs-text-secondary)]",
-  discussion: "bg-violet-100 text-violet-700",
+  discussion: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   activity: "bg-amber-100 text-amber-700",
   assessment: "bg-emerald-100 text-emerald-700",
 };

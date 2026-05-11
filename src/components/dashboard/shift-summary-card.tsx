@@ -39,7 +39,7 @@ const SEVERITY_DOT: Record<string, string> = {
   high:     "bg-orange-500",
   medium:   "bg-amber-400",
   low:      "bg-blue-300",
-  info:     "bg-slate-300",
+  info:     "bg-[var(--cs-text-gentle)]",
 };
 
 // ── Event row ───────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ function EventRow({ event }: { event: ShiftSummaryEvent }) {
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-[10px] text-[var(--cs-text-muted)] tabular-nums">{event.time}</span>
           {event.child_name && (
-            <span className="text-[10px] text-violet-600 flex items-center gap-0.5">
+            <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-0.5">
               <Heart className="h-2.5 w-2.5" /> {event.child_name}
             </span>
           )}
@@ -185,7 +185,7 @@ export function ShiftSummaryCard({
             {summary.young_people.map((yp) => (
               <div
                 key={yp.id}
-                className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-1.5"
+                className="flex items-center gap-2 rounded-xl bg-[var(--cs-surface)] px-3 py-1.5"
               >
                 <span className="text-[11px] font-medium text-[var(--cs-text-secondary)]">{yp.name}</span>
                 {yp.mood_score !== undefined && (
@@ -205,7 +205,7 @@ export function ShiftSummaryCard({
         )}
 
         {/* Auto-generated notes */}
-        <div className="rounded-xl bg-slate-50 border border-[var(--cs-border)] p-3 mb-3">
+        <div className="rounded-xl bg-[var(--cs-surface)] border border-[var(--cs-border)] p-3 mb-3">
           <p className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-2">
             Auto-generated notes
           </p>
@@ -224,7 +224,7 @@ export function ShiftSummaryCard({
         </button>
 
         {showEvents && summary.events.length > 0 && (
-          <div className="divide-y divide-slate-100 border-t border-[var(--cs-border-subtle)] mt-1 max-h-[400px] overflow-y-auto">
+          <div className="divide-y divide-[var(--cs-border-subtle)] border-t border-[var(--cs-border-subtle)] mt-1 max-h-[400px] overflow-y-auto">
             {summary.events.map((event, i) => (
               <EventRow key={`${event.type}_${event.time}_${i}`} event={event} />
             ))}
@@ -257,7 +257,7 @@ function StatPill({
   return (
     <div className={cn(
       "rounded-xl p-2 text-center",
-      alert ? "bg-red-50" : "bg-slate-50",
+      alert ? "bg-red-50" : "bg-[var(--cs-surface)]",
     )}>
       <Icon className={cn("h-3 w-3 mx-auto mb-0.5", alert ? "text-red-500" : "text-[var(--cs-text-muted)]")} />
       <div className={cn("text-sm font-bold tabular-nums", alert ? "text-red-600" : "text-[var(--cs-text-secondary)]")}>

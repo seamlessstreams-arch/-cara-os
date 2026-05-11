@@ -263,7 +263,7 @@ export default function AuditsPage() {
               <button
                 onClick={() => handleCreateNeedFromAudit(audit)}
                 disabled={createNeed.isPending}
-                className="inline-flex items-center gap-1 rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 transition-colors shrink-0 disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors shrink-0 disabled:opacity-50"
               >
                 <Brain className="h-3 w-3" />
                 Training Need

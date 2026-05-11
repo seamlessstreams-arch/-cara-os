@@ -82,7 +82,7 @@ export function OutcomesSummary() {
                 key={i}
                 className={cn(
                   "h-3 w-3",
-                  i < Math.round(meta.avg_rating) ? "text-amber-400 fill-amber-400" : "text-slate-200",
+                  i < Math.round(meta.avg_rating) ? "text-amber-400 fill-amber-400" : "text-[var(--cs-text-gentle)]",
                 )}
               />
             ))}
@@ -113,7 +113,7 @@ export function OutcomesSummary() {
                       {child.avg_rating}
                     </span>
                   </div>
-                  <div className="flex h-1.5 rounded-full overflow-hidden bg-slate-100">
+                  <div className="flex h-1.5 rounded-full overflow-hidden bg-[var(--cs-surface)]">
                     {improvPct > 0 && <div className="bg-emerald-400" style={{ width: `${improvPct}%` }} />}
                     {stablePct > 0 && <div className="bg-amber-300" style={{ width: `${stablePct}%` }} />}
                     {declPct > 0 && <div className="bg-red-400" style={{ width: `${declPct}%` }} />}

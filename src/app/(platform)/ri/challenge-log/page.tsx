@@ -199,7 +199,7 @@ function ChallengeCard({ log, onRespond }: { log: RiChallengeLog; onRespond: (lo
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-xs h-7 gap-1 text-violet-700 border-violet-200 hover:bg-violet-50"
+                  className="text-xs h-7 gap-1 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
                   onClick={createTrainingNeed}
                   disabled={createNeed.isPending}
                 >
@@ -208,7 +208,7 @@ function ChallengeCard({ log, onRespond }: { log: RiChallengeLog; onRespond: (lo
                 </Button>
               ) : (
                 <Link href="/learning/training-needs">
-                  <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-violet-600">
+                  <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-[var(--cs-aria-gold)]">
                     <CheckCircle2 className="h-3 w-3" />
                     Training need created →
                   </Button>
@@ -325,7 +325,7 @@ function NewChallengeDialog({ open, onClose }: { open: boolean; onClose: () => v
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Challenge to Manager</label>
-              <Button size="sm" variant="ghost" className="h-6 text-xs text-violet-600 gap-1 px-2" onClick={draftWithAria} disabled={ariaDrafting || !evidence.trim()}>
+              <Button size="sm" variant="ghost" className="h-6 text-xs text-[var(--cs-aria-gold)] gap-1 px-2" onClick={draftWithAria} disabled={ariaDrafting || !evidence.trim()}>
                 <Sparkles className="h-3 w-3" />
                 {ariaDrafting ? "Drafting…" : "ARIA Draft"}
               </Button>

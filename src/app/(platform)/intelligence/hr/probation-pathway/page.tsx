@@ -640,7 +640,7 @@ export default function ProbationPathwayPage() {
       title="Probation Pathway"
       subtitle="Structured probation management — guided by ARIA"
       actions={
-        <Badge className="bg-violet-100 text-violet-800 border-violet-200">
+        <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">
           <Sparkles className="h-3 w-3 mr-1" />ARIA Guided
         </Badge>
       }
@@ -653,7 +653,7 @@ export default function ProbationPathwayPage() {
           </div>
           <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
             <div
-              className="h-full rounded-full bg-violet-500 transition-all duration-500"
+              className="h-full rounded-full bg-[var(--cs-aria-gold-bg)]0 transition-all duration-500"
               style={{ width: `${(completedStages / STAGES.length) * 100}%` }}
             />
           </div>

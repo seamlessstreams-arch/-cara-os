@@ -256,7 +256,7 @@ export default function ReportsPage() {
             {/* Reg 44 / RI Report summary */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-violet-500" />Reg 44 / RI Report — Evidence Summary</CardTitle>
+                <CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-[var(--cs-aria-gold)]" />Reg 44 / RI Report — Evidence Summary</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -451,7 +451,7 @@ export default function ReportsPage() {
               {[
                 { label: "Monthly Staff Cost", value: "£24,800", sub: "incl. overtime", color: "text-blue-600" },
                 { label: "Overtime This Month", value: "£380", sub: "6.2 hours OT", color: "text-orange-600" },
-                { label: "Expenses Submitted", value: "£561", sub: "7 claims", color: "text-violet-600" },
+                { label: "Expenses Submitted", value: "£561", sub: "7 claims", color: "text-[var(--cs-aria-gold)]" },
                 { label: "Petty Cash Balance", value: "£43.50", sub: "Last counted: today", color: "text-emerald-600" },
               ].map(({ label, value, sub, color }) => (
                 <div key={label} className="rounded-2xl border border-[var(--cs-border)] bg-white p-5">

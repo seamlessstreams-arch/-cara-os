@@ -29,7 +29,7 @@ const RISK_FLAG_COLORS: Record<string, string> = {
 };
 
 function getRiskFlagColor(flag: string): string {
-  return RISK_FLAG_COLORS[flag.toLowerCase()] ?? "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]";
+  return RISK_FLAG_COLORS[flag.toLowerCase()] ?? "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)] border-[var(--cs-border)]";
 }
 
 // ── Single young person card ────────────────────────────────────────────────
@@ -161,7 +161,7 @@ export function YoungPeopleStrip() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <Heart className="h-4 w-4 text-violet-500" />
+            <Heart className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Young People
           </CardTitle>
         </CardHeader>
@@ -183,9 +183,9 @@ export function YoungPeopleStrip() {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <Heart className="h-4 w-4 text-violet-500" />
+            <Heart className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Young People — At a Glance
-            <Badge className="bg-violet-100 text-violet-700 border-0 text-[10px] rounded-full">
+            <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0 text-[10px] rounded-full">
               {children.length}
             </Badge>
           </CardTitle>

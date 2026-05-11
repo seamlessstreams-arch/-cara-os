@@ -281,7 +281,7 @@ function ResultsPanel({
           </span>
         )}
         {result.confidence_level && (
-          <span className="rounded-full bg-violet-100 border border-violet-200 px-3 py-1 text-xs font-medium text-violet-700">
+          <span className="rounded-full bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-3 py-1 text-xs font-medium text-[var(--cs-aria-gold)]">
             {CONFIDENCE_LABELS[result.confidence_level]}
           </span>
         )}
@@ -334,9 +334,9 @@ function ResultsPanel({
 
       {/* ── Emotional need underneath ─────────────────────────────────────────── */}
       {result.emotional_need_underneath && (
-        <SectionCard label="Emotional Need Underneath" icon={Heart} className="border-violet-100 bg-violet-50/30">
-          <p className="text-sm text-violet-900 leading-relaxed">{result.emotional_need_underneath}</p>
-          <p className="text-[10px] text-violet-600 italic">
+        <SectionCard label="Emotional Need Underneath" icon={Heart} className="border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30">
+          <p className="text-sm text-[var(--cs-navy)] leading-relaxed">{result.emotional_need_underneath}</p>
+          <p className="text-[10px] text-[var(--cs-aria-gold)] italic">
             The unmet emotional need that may be driving this situation.
           </p>
         </SectionCard>
@@ -398,7 +398,7 @@ function ResultsPanel({
           </p>
           <div className="flex flex-wrap gap-1.5">
             {emotionalNeeds.map((n, i) => (
-              <span key={i} className="rounded-full bg-violet-100 border border-violet-200 px-2.5 py-1 text-xs font-medium text-violet-700">
+              <span key={i} className="rounded-full bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)]">
                 {n}
               </span>
             ))}
@@ -647,7 +647,7 @@ export default function SituationReviewPage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Brain className="h-4 w-4 text-violet-500" />
+                  <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                   Situation Information
                 </CardTitle>
               </CardHeader>
@@ -658,7 +658,7 @@ export default function SituationReviewPage() {
                   <select
                     value={childId}
                     onChange={(e) => setChildId(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-violet-300"
+                    className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-soft)]"
                   >
                     <option value="">Select young person</option>
                     {youngPeople.map((yp) => (
@@ -673,7 +673,7 @@ export default function SituationReviewPage() {
                   <select
                     value={sourceType}
                     onChange={(e) => setSourceType(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-violet-300"
+                    className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-soft)]"
                   >
                     {SOURCE_TYPES.map((s) => (
                       <option key={s.value} value={s.value}>{s.label}</option>
@@ -687,7 +687,7 @@ export default function SituationReviewPage() {
                     <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Situation Information</label>
                     <div className="flex items-center gap-2">
                       {prefilling && (
-                        <span className="flex items-center gap-1 text-[10px] text-violet-600">
+                        <span className="flex items-center gap-1 text-[10px] text-[var(--cs-aria-gold)]">
                           <Loader2 className="h-3 w-3 animate-spin" />Loading record…
                         </span>
                       )}
@@ -700,14 +700,14 @@ export default function SituationReviewPage() {
                     rows={10}
                     placeholder="Enter or paste the situation information here. Include as much detail as possible — what happened, when, who was involved, context, staff observations, and any immediate actions taken."
                     className={cn(
-                      "w-full rounded-lg border px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none leading-relaxed",
-                      prefilling ? "border-violet-200 bg-violet-50/30" : "border-[var(--cs-border)] bg-white"
+                      "w-full rounded-lg border px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-soft)] resize-none leading-relaxed",
+                      prefilling ? "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30" : "border-[var(--cs-border)] bg-white"
                     )}
                   />
                   <p className="text-[10px] text-[var(--cs-text-muted)]">
                     {content.length} characters
                     {content.length > 0 && !prefilling && (
-                      <span className="text-violet-500 ml-2">· Record content loaded — add any additional context below</span>
+                      <span className="text-[var(--cs-aria-gold)] ml-2">· Record content loaded — add any additional context below</span>
                     )}
                   </p>
                 </div>
@@ -723,7 +723,7 @@ export default function SituationReviewPage() {
                 <Button
                   onClick={handleRun}
                   disabled={loading || !content.trim()}
-                  className="w-full bg-violet-600 hover:bg-violet-700 text-white gap-2 h-10"
+                  className="w-full bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white gap-2 h-10"
                 >
                   {loading ? (
                     <><Loader2 className="h-4 w-4 animate-spin" />Running Situation Review…</>
@@ -739,7 +739,7 @@ export default function SituationReviewPage() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-violet-500" />
+                    <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                     ARIA Analysis Results
                   </CardTitle>
                 </CardHeader>
@@ -758,9 +758,9 @@ export default function SituationReviewPage() {
 
           {/* Right: guidance + previous */}
           <div className="space-y-4">
-            <Card className="border-violet-100 bg-violet-50/30">
+            <Card className="border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold text-violet-700 uppercase tracking-wider flex items-center gap-2">
+                <CardTitle className="text-xs font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider flex items-center gap-2">
                   <Info className="h-3.5 w-3.5" />ARIA Guidance
                 </CardTitle>
               </CardHeader>
@@ -788,12 +788,12 @@ export default function SituationReviewPage() {
                     "Resources needed",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-1.5">
-                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-violet-400 shrink-0" />
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)] shrink-0" />
                       {item}
                     </li>
                   ))}
                 </ul>
-                <p className="text-[10px] text-[var(--cs-text-muted)] italic border-t border-violet-200 pt-2">
+                <p className="text-[10px] text-[var(--cs-text-muted)] italic border-t border-[var(--cs-aria-gold-soft)] pt-2">
                   Provide as much detail as possible for the most accurate analysis.
                 </p>
               </CardContent>

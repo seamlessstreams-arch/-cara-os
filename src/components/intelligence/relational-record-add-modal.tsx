@@ -177,7 +177,7 @@ export function RelationalRecordAddModal({
                             ? positive
                               ? "border-teal-400 bg-teal-50 ring-2 ring-teal-200"
                               : "border-amber-400 bg-amber-50 ring-2 ring-amber-200"
-                            : "border-[var(--cs-border)] bg-slate-50 hover:border-teal-200 hover:bg-teal-50/40"
+                            : "border-[var(--cs-border)] bg-[var(--cs-surface)] hover:border-teal-200 hover:bg-teal-50/40"
                         )}
                       >
                         <div className={cn(
@@ -209,7 +209,7 @@ export function RelationalRecordAddModal({
                       recordType === "sensory_need" ? "e.g. Prefers low lighting, dislikes loud noise" :
                       "Short descriptive title"
                     }
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-teal-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-100 transition-colors"
+                    className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-teal-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-100 transition-colors"
                   />
                 </div>
 
@@ -224,7 +224,7 @@ export function RelationalRecordAddModal({
                       onChange={(e) => setDescription(e.target.value)}
                       rows={4}
                       placeholder="Describe what happened, what was observed, or what was learned about this young person..."
-                      className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-teal-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-100 transition-colors"
+                      className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-teal-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-100 transition-colors"
                     />
                     <div className="absolute right-2 top-2">
                       <DictationButton
@@ -257,7 +257,7 @@ export function RelationalRecordAddModal({
                           "flex-1 rounded-xl border px-2 py-2 text-center transition-all",
                           confidence === val
                             ? "border-teal-400 bg-teal-50 text-teal-700 ring-1 ring-teal-300"
-                            : "border-[var(--cs-border)] bg-slate-50 text-[var(--cs-text-muted)] hover:border-teal-200"
+                            : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-muted)] hover:border-teal-200"
                         )}
                       >
                         <div className="text-[11px] font-semibold">{label}</div>

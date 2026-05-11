@@ -52,7 +52,7 @@ const LEAVE_TYPE_ICONS: Record<string, React.ElementType> = {
 const LEAVE_TYPE_COLORS: Record<string, string> = {
   annual_leave: "bg-blue-100 text-blue-700",
   sick: "bg-red-100 text-red-700",
-  compassionate: "bg-violet-100 text-violet-700",
+  compassionate: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   parental: "bg-pink-100 text-pink-700",
   unpaid: "bg-slate-100 text-[var(--cs-text-secondary)]",
   toil: "bg-teal-100 text-teal-700",

@@ -51,7 +51,7 @@ const TYPE_CLR: Record<StatutoryVisitType, string> = {
   routine_6_weekly: "bg-blue-100 text-blue-800",
   quarterly: "bg-cyan-100 text-cyan-800",
   six_monthly: "bg-teal-100 text-teal-800",
-  pre_lac_review: "bg-violet-100 text-violet-800",
+  pre_lac_review: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   unannounced: "bg-rose-100 text-rose-800",
 };
 

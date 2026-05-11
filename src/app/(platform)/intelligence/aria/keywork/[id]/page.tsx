@@ -35,7 +35,7 @@ const STATUS_COLOURS: Record<KeyWorkSessionStatus, string> = {
   planned: "bg-slate-100 text-[var(--cs-text-secondary)]",
   in_progress: "bg-blue-100 text-blue-800",
   completed: "bg-green-100 text-green-700",
-  reviewed: "bg-violet-100 text-violet-800",
+  reviewed: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   approved: "bg-emerald-100 text-emerald-800",
 };
 
@@ -50,8 +50,8 @@ function PlanSection({ title, content, accent = false }: {
 }) {
   if (!content || (Array.isArray(content) && content.length === 0)) return null;
   return (
-    <div className={cn("rounded-xl border p-4 space-y-2", accent ? "border-violet-200 bg-violet-50" : "border-[var(--cs-border-subtle)] bg-white")}>
-      <p className={cn("text-[10px] font-semibold uppercase tracking-wider", accent ? "text-violet-600" : "text-[var(--cs-text-muted)]")}>{title}</p>
+    <div className={cn("rounded-xl border p-4 space-y-2", accent ? "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]" : "border-[var(--cs-border-subtle)] bg-white")}>
+      <p className={cn("text-[10px] font-semibold uppercase tracking-wider", accent ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")}>{title}</p>
       {Array.isArray(content) ? (
         <ul className="space-y-1">
           {content.map((item, i) => (
@@ -207,7 +207,7 @@ function ActionPanel({ session, onUpdate }: {
         <Button
           onClick={() => act({ status: "reviewed", reviewed_by: currentUser?.id ?? "staff_darren", reviewed_at: new Date().toISOString() })}
           disabled={saving}
-          className="bg-violet-600 hover:bg-violet-700 text-white gap-2"
+          className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white gap-2"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Request Review
@@ -425,9 +425,9 @@ export default function KeyWorkSessionDetailPage() {
 
         {/* Child voice / reflection (completed) */}
         {session.child_voice && (
-          <Card className="border-violet-100 bg-violet-50/30">
+          <Card className="border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-semibold text-violet-700 uppercase tracking-wider">Child&apos;s Voice</CardTitle>
+              <CardTitle className="text-xs font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider">Child&apos;s Voice</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-[var(--cs-navy)] leading-relaxed italic">&ldquo;{session.child_voice}&rdquo;</p>

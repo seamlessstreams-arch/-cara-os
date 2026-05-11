@@ -216,7 +216,7 @@ export default function StaffCommunicationPreferencesPage() {
                       {STAFF_COMMS_FEEDBACK_STYLE_LABEL[rec.feedback_style]}
                     </Badge>
                     {rec.neurodivergent_needs && (
-                      <Badge className="text-xs bg-violet-100 text-violet-800 hover:bg-violet-100">
+                      <Badge className="text-xs bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] hover:bg-[var(--cs-aria-gold-bg)]">
                         <Brain className="h-3 w-3 mr-1" />
                         ND adjustments
                       </Badge>
@@ -262,9 +262,9 @@ export default function StaffCommunicationPreferencesPage() {
                     </div>
 
                     {rec.neurodivergent_needs && (
-                      <div className="rounded-lg bg-violet-50 p-3">
-                        <p className="text-xs font-medium text-violet-800 mb-1">Neurodivergent Needs & Adjustments</p>
-                        <p className="text-sm text-violet-900">{rec.neurodivergent_needs}</p>
+                      <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] p-3">
+                        <p className="text-xs font-medium text-[var(--cs-navy)] mb-1">Neurodivergent Needs & Adjustments</p>
+                        <p className="text-sm text-[var(--cs-navy)]">{rec.neurodivergent_needs}</p>
                       </div>
                     )}
 

@@ -706,7 +706,7 @@ function TodayScheduleTab({
                           <div className="mt-2">
                             <button
                               onClick={() => setAriaFor(showAria ? null : formKey)}
-                              className="flex items-center gap-1.5 text-[10px] text-violet-600 hover:text-violet-700 font-medium"
+                              className="flex items-center gap-1.5 text-[10px] text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)] font-medium"
                             >
                               <Sparkles className="h-3 w-3" />
                               {showAria ? "Close ARIA" : "Draft note with ARIA"}
@@ -1284,7 +1284,7 @@ function StockOversightTab({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 px-2 text-[10px] gap-1 text-violet-600 hover:text-violet-700 hover:bg-violet-50"
+                          className="h-6 px-2 text-[10px] gap-1 text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)]"
                           disabled={createNeed.isPending}
                           onClick={() => {
                             createNeed.mutate(
@@ -1318,12 +1318,12 @@ function StockOversightTab({
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-violet-600" />
+            <Eye className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             <h3 className="text-sm font-bold text-[var(--cs-navy)]">Management Oversight</h3>
           </div>
           <button
             onClick={() => setShowAria(!showAria)}
-            className="flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-700 font-medium"
+            className="flex items-center gap-1.5 text-xs text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)] font-medium"
           >
             <Sparkles className="h-3.5 w-3.5" />
             {showAria ? "Close ARIA" : "Draft oversight with ARIA"}

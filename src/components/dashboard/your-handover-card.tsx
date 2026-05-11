@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 const DEPTH_BADGE = {
   brief: { label: "Up to date", color: "bg-emerald-100 text-emerald-700" },
   standard: { label: "Catch up", color: "bg-blue-100 text-blue-700" },
-  comprehensive: { label: "Extended catch up", color: "bg-violet-100 text-violet-700" },
+  comprehensive: { label: "Extended catch up", color: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]" },
 };
 
 export function YourHandoverCard() {
@@ -47,7 +47,7 @@ export function YourHandoverCard() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ArrowRightLeft className="h-4 w-4 text-violet-500" />
+            <ArrowRightLeft className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Your Handover
           </div>
           <Badge className={cn("text-[9px] rounded-full", badge.color)}>{badge.label}</Badge>
@@ -80,10 +80,10 @@ export function YourHandoverCard() {
 
         {/* Summary preview */}
         {ctx.context_depth !== "brief" && (
-          <div className="rounded-xl bg-violet-50 border border-violet-100 px-3 py-2.5 mb-3">
+          <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-3 py-2.5 mb-3">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <Sparkles className="h-3 w-3 text-violet-600" />
-              <span className="text-[10px] font-semibold text-violet-700">ARIA catch-up</span>
+              <Sparkles className="h-3 w-3 text-[var(--cs-aria-gold)]" />
+              <span className="text-[10px] font-semibold text-[var(--cs-aria-gold)]">ARIA catch-up</span>
             </div>
             <pre className={cn(
               "text-[10px] text-[var(--cs-text-secondary)] whitespace-pre-wrap font-sans leading-relaxed",
@@ -94,7 +94,7 @@ export function YourHandoverCard() {
             {ctx.aria_summary.split("\n").length > 4 && (
               <button
                 onClick={() => setExpanded((v) => !v)}
-                className="text-[10px] text-violet-600 hover:text-violet-700 mt-1"
+                className="text-[10px] text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)] mt-1"
               >
                 {expanded ? "Show less" : "Show more"}
               </button>

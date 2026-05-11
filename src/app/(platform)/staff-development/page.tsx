@@ -451,7 +451,7 @@ export default function StaffDevelopmentPage() {
           className="gap-1.5 h-9 rounded-xl ml-auto"
           onClick={() => setShowAria((v) => !v)}
         >
-          <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+          <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
           ARIA Team Analysis
         </Button>
       </div>
@@ -485,7 +485,7 @@ export default function StaffDevelopmentPage() {
       {/* Learning Studio quick links */}
       <div className="mt-8 rounded-2xl border border-[var(--cs-border-subtle)] bg-slate-50 p-5">
         <h3 className="text-sm font-semibold text-[var(--cs-text-secondary)] mb-3 flex items-center gap-2">
-          <Brain className="h-4 w-4 text-violet-500" />
+          <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
           Learning Studio — quick links
         </h3>
         <div className="flex flex-wrap gap-2">

@@ -29,7 +29,7 @@ export function MedicationStatusCard() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <Pill className="h-4 w-4 text-violet-500" />
+            <Pill className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Medication Today
           </CardTitle>
         </CardHeader>
@@ -63,7 +63,7 @@ export function MedicationStatusCard() {
           <CardTitle className="flex items-center gap-2 text-[13px]">
             <Pill className={cn(
               "h-4 w-4",
-              hasConcern ? "text-red-500" : "text-violet-500",
+              hasConcern ? "text-red-500" : "text-[var(--cs-aria-gold)]",
             )} />
             Medication Today
           </CardTitle>
@@ -100,7 +100,7 @@ export function MedicationStatusCard() {
           <Progress
             value={pct}
             className="h-2"
-            color={pct === 100 ? "bg-emerald-500" : hasConcern ? "bg-red-500" : "bg-violet-500"}
+            color={pct === 100 ? "bg-emerald-500" : hasConcern ? "bg-red-500" : "bg-[var(--cs-aria-gold-bg)]0"}
           />
         </div>
 
@@ -112,21 +112,21 @@ export function MedicationStatusCard() {
           </div>
           <div className={cn(
             "rounded-lg border p-2 text-center",
-            missed > 0 ? "bg-red-50 border-red-100" : "bg-slate-50 border-[var(--cs-border-subtle)]",
+            missed > 0 ? "bg-red-50 border-red-100" : "bg-[var(--cs-surface)] border-[var(--cs-border-subtle)]",
           )}>
             <div className={cn("text-lg font-bold tabular-nums", missed > 0 ? "text-red-600" : "text-[var(--cs-text-gentle)]")}>{missed}</div>
             <div className={cn("text-[9px] font-medium", missed > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")}>Missed</div>
           </div>
           <div className={cn(
             "rounded-lg border p-2 text-center",
-            exceptions > 0 ? "bg-orange-50 border-orange-100" : "bg-slate-50 border-[var(--cs-border-subtle)]",
+            exceptions > 0 ? "bg-orange-50 border-orange-100" : "bg-[var(--cs-surface)] border-[var(--cs-border-subtle)]",
           )}>
             <div className={cn("text-lg font-bold tabular-nums", exceptions > 0 ? "text-orange-600" : "text-[var(--cs-text-gentle)]")}>{exceptions}</div>
             <div className={cn("text-[9px] font-medium", exceptions > 0 ? "text-orange-500" : "text-[var(--cs-text-muted)]")}>Exceptions</div>
           </div>
           <div className={cn(
             "rounded-lg border p-2 text-center",
-            stockAlerts > 0 ? "bg-amber-50 border-amber-100" : "bg-slate-50 border-[var(--cs-border-subtle)]",
+            stockAlerts > 0 ? "bg-amber-50 border-amber-100" : "bg-[var(--cs-surface)] border-[var(--cs-border-subtle)]",
           )}>
             <div className={cn("text-lg font-bold tabular-nums", stockAlerts > 0 ? "text-amber-600" : "text-[var(--cs-text-gentle)]")}>{stockAlerts}</div>
             <div className={cn("text-[9px] font-medium", stockAlerts > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")}>Stock</div>

@@ -46,7 +46,7 @@ const STATUS_COLOURS: Record<KeyWorkSessionStatus, string> = {
   planned: "bg-slate-100 text-[var(--cs-text-secondary)]",
   in_progress: "bg-blue-100 text-blue-800",
   completed: "bg-green-100 text-green-700",
-  reviewed: "bg-violet-100 text-violet-800",
+  reviewed: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   approved: "bg-emerald-100 text-emerald-800",
 };
 

@@ -27,7 +27,7 @@ const PRIORITY_CONFIG: Record<string, { label: string; colour: string; dot: stri
   urgent:  { label: "Urgent",  colour: "text-red-700",    dot: "bg-red-500"     },
   high:    { label: "High",    colour: "text-orange-700",  dot: "bg-orange-400"  },
   medium:  { label: "Medium",  colour: "text-amber-700",   dot: "bg-amber-400"   },
-  low:     { label: "Low",     colour: "text-[var(--cs-text-secondary)]",   dot: "bg-slate-400"   },
+  low:     { label: "Low",     colour: "text-[var(--cs-text-secondary)]",   dot: "bg-[var(--cs-text-muted)]"   },
 };
 
 // ── Component ───────────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ export function TasksSummaryCard() {
             <div className={cn("text-sm font-bold tabular-nums", overdue > 0 ? "text-red-700" : "text-emerald-700")}>{overdue}</div>
             <div className={cn("text-[9px]", overdue > 0 ? "text-red-500" : "text-emerald-500")}>Overdue</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", dueToday > 0 ? "bg-amber-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", dueToday > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
             <Clock className={cn("h-3 w-3 mx-auto mb-0.5", dueToday > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", dueToday > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>{dueToday}</div>
             <div className={cn("text-[9px]", dueToday > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")}>Due Today</div>
@@ -121,7 +121,7 @@ export function TasksSummaryCard() {
               </span>
             )}
             {awaitingSignOff > 0 && (
-              <span className="flex items-center gap-1 text-violet-600">
+              <span className="flex items-center gap-1 text-[var(--cs-aria-gold)]">
                 <CheckCheck className="h-3 w-3" /> {awaitingSignOff} sign-off
               </span>
             )}
@@ -166,7 +166,7 @@ export function TasksSummaryCard() {
             </div>
             {priorityQueue.slice(0, 5).map((task) => {
               const priConfig = PRIORITY_CONFIG[task.priority] ?? {
-                label: task.priority, colour: "text-[var(--cs-text-secondary)]", dot: "bg-slate-400",
+                label: task.priority, colour: "text-[var(--cs-text-secondary)]", dot: "bg-[var(--cs-text-muted)]",
               };
               const isTaskOverdue = task.due_date && new Date(task.due_date) < new Date();
               return (
@@ -191,7 +191,7 @@ export function TasksSummaryCard() {
                       "text-[8px] px-1.5 py-0 rounded-full border-0",
                       isTaskOverdue ? "bg-red-100 text-red-700"
                       : task.status === "in_progress" ? "bg-blue-100 text-blue-700"
-                      : task.status === "not_started" ? "bg-slate-100 text-[var(--cs-text-secondary)]"
+                      : task.status === "not_started" ? "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]"
                       : task.status === "blocked" ? "bg-orange-100 text-orange-700"
                       : "bg-emerald-100 text-emerald-700",
                     )}>

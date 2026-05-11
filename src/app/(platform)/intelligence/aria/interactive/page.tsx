@@ -119,7 +119,7 @@ const STATUS_COLOURS: Record<InteractiveSessionStatus, string> = {
   active: "bg-blue-100 text-blue-800",
   paused: "bg-amber-100 text-amber-700",
   completed: "bg-green-100 text-green-700",
-  reviewed: "bg-violet-100 text-violet-800",
+  reviewed: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
 };
 
 // ── Safety notice (always visible) ───────────────────────────────────────────
@@ -435,8 +435,8 @@ function SessionSummary({
               </div>
             )}
             {ariaSummary.child_voice && (
-              <div className="rounded-xl border border-violet-200 bg-violet-50 p-3">
-                <p className="text-[10px] font-semibold text-violet-600 uppercase mb-1">Child&apos;s Voice</p>
+              <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3">
+                <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase mb-1">Child&apos;s Voice</p>
                 <p className="text-sm text-[var(--cs-navy)] italic">&ldquo;{ariaSummary.child_voice}&rdquo;</p>
               </div>
             )}

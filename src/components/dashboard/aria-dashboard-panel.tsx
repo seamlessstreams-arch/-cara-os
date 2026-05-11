@@ -113,7 +113,7 @@ const RISK_CONFIG: Record<string, { label: string; colour: string; bg: string; d
   urgent:  { label: "Urgent",  colour: "text-red-700",    bg: "bg-red-100",    dot: "bg-red-500"    },
   high:    { label: "High",    colour: "text-orange-700", bg: "bg-orange-100", dot: "bg-orange-500" },
   medium:  { label: "Medium",  colour: "text-amber-700",  bg: "bg-amber-100",  dot: "bg-amber-500"  },
-  low:     { label: "Low",     colour: "text-[var(--cs-text-secondary)]",  bg: "bg-slate-100",  dot: "bg-slate-400"  },
+  low:     { label: "Low",     colour: "text-[var(--cs-text-secondary)]",  bg: "bg-[var(--cs-surface)]",  dot: "bg-[var(--cs-text-muted)]"  },
 };
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; colour: string }> = {
@@ -216,7 +216,7 @@ export function AriaDashboardPanel() {
             label="Rejected"
             value={counts.rejected}
             colour="text-[var(--cs-text-secondary)]"
-            bg="bg-slate-50"
+            bg="bg-[var(--cs-surface)]"
           />
         </div>
 

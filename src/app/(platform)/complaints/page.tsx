@@ -50,7 +50,7 @@ const STATUS_COLOUR: Record<ComplaintStatus, string> = {
   received:            "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
   acknowledged:        "bg-blue-50 text-blue-700 border-blue-200",
   under_investigation: "bg-amber-50 text-amber-700 border-amber-200",
-  response_sent:       "bg-violet-50 text-violet-700 border-violet-200",
+  response_sent:       "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
   escalated:           "bg-rose-50 text-rose-700 border-rose-200",
   closed:              "bg-emerald-50 text-emerald-700 border-emerald-200",
 };

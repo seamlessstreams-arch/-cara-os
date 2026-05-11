@@ -129,7 +129,7 @@ const CHRONO_CATEGORY_CONFIG: Record<ChronologyCategory, { color: string; dot: s
   education: { color: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-500", label: "Education" },
   contact: { color: "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]", dot: "bg-slate-500", label: "Contact" },
   legal: { color: "bg-indigo-50 text-indigo-700 border-indigo-200", dot: "bg-indigo-500", label: "Legal" },
-  review: { color: "bg-violet-50 text-violet-700 border-violet-200", dot: "bg-violet-500", label: "Review" },
+  review: { color: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]", dot: "bg-[var(--cs-aria-gold-bg)]0", label: "Review" },
   behaviour: { color: "bg-orange-50 text-orange-700 border-orange-200", dot: "bg-orange-500", label: "Behaviour" },
   other: { color: "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]", dot: "bg-slate-400", label: "Other" },
 };
@@ -154,7 +154,7 @@ function YPAvatar({ childId }: { childId: string }) {
   const yp = getYPById(childId);
   const name = yp?.preferred_name || yp?.first_name || "?";
   return (
-    <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 text-sm font-bold flex items-center justify-center shrink-0">
+    <div className="h-8 w-8 rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] text-sm font-bold flex items-center justify-center shrink-0">
       {name[0]}
     </div>
   );
@@ -216,7 +216,7 @@ function ConcernCard({
             </span>
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-[11px] text-[var(--cs-text-muted)]">
-            <span className="font-semibold text-violet-700">{getYPName(inc.child_id)}</span>
+            <span className="font-semibold text-[var(--cs-aria-gold)]">{getYPName(inc.child_id)}</span>
             <span>·</span>
             <span>{formatDate(inc.date)} at {inc.time}</span>
             {inc.location && <><span>·</span><span>{inc.location}</span></>}
@@ -290,7 +290,7 @@ function ConcernCard({
           <button
             onClick={handleCreateNeed}
             disabled={createNeed.isPending}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors disabled:opacity-50"
           >
             {createNeed.isPending
               ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -448,7 +448,7 @@ function SafeguardingConcernsTab() {
           { label: "Open Concerns", value: concerns.length, color: "text-red-600" },
           { label: "Critical", value: concerns.filter((c) => c.severity === "critical").length, color: "text-red-700" },
           { label: "Needs Oversight", value: concerns.filter((c) => c.requires_oversight && !c.oversight_by).length, color: "text-amber-600" },
-          { label: "YP with Risk Flags", value: allYP.filter((y) => y.risk_flags.length > 0).length, color: "text-violet-600" },
+          { label: "YP with Risk Flags", value: allYP.filter((y) => y.risk_flags.length > 0).length, color: "text-[var(--cs-aria-gold)]" },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl border bg-white p-4 text-center">
             <div className={cn("text-2xl font-bold", s.color)}>{s.value}</div>
@@ -459,16 +459,16 @@ function SafeguardingConcernsTab() {
 
       {/* Safeguarding Scan Button */}
       {concerns.length > 0 && (
-        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
+        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-semibold text-violet-900">ARIA Safeguarding Scan</div>
-              <div className="text-xs text-violet-700 mt-0.5">Analyse all concerns for themes, patterns, and escalation risks</div>
+              <div className="text-sm font-semibold text-[var(--cs-navy)]">ARIA Safeguarding Scan</div>
+              <div className="text-xs text-[var(--cs-aria-gold)] mt-0.5">Analyse all concerns for themes, patterns, and escalation risks</div>
             </div>
             <Button
               onClick={() => { setScanResults(null); setScanOpen(true); handleScan(); }}
               disabled={isScanning}
-              className="bg-violet-600 hover:bg-violet-700 shrink-0"
+              className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 shrink-0"
               size="sm"
             >
               {isScanning ? (
@@ -504,7 +504,7 @@ function SafeguardingConcernsTab() {
         <select
           value={filterChild}
           onChange={(e) => setFilterChild(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
         >
           <option value="all">All young people</option>
           {allYP.map((yp) => (
@@ -566,7 +566,7 @@ function SafeguardingConcernsTab() {
                   onChange={(e) => setOversightNote(e.target.value)}
                   rows={5}
                   placeholder="Record your safeguarding oversight — considerations, decisions, follow-up actions, strategy discussion outcomes…"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
                 />
               </div>
               <div className="flex gap-3">
@@ -586,7 +586,7 @@ function SafeguardingConcernsTab() {
           <div className="w-full max-w-2xl bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Eye className="h-5 w-5 text-violet-600" />
+                <Eye className="h-5 w-5 text-[var(--cs-aria-gold)]" />
                 <span className="text-lg font-bold text-[var(--cs-navy)]">Safeguarding Scan Results</span>
               </div>
               <button onClick={() => setScanOpen(false)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"><X className="h-5 w-5" /></button>
@@ -595,7 +595,7 @@ function SafeguardingConcernsTab() {
             <div className="max-h-[70vh] overflow-y-auto p-6 space-y-6">
               {isScanning ? (
                 <div className="flex items-center justify-center py-20">
-                  <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+                  <Loader2 className="h-6 w-6 animate-spin text-[var(--cs-text-muted)]" />
                 </div>
               ) : scanResults ? (
                 <>
@@ -761,7 +761,7 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
           </div>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="text-xs font-medium text-violet-600 hover:text-violet-800 shrink-0"
+            className="text-xs font-medium text-[var(--cs-aria-gold)] hover:text-[var(--cs-navy)] shrink-0"
           >
             {expanded ? "Less" : "Details"}
           </button>
@@ -807,7 +807,7 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
             RTH {ep.return_interview_completed ? `— ${getStaffName(ep.return_interview_by ?? "")}` : "Required"}
           </span>
           {ep.linked_incident_id && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-medium text-violet-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--cs-aria-gold-bg)] px-2.5 py-1 text-[10px] font-medium text-[var(--cs-aria-gold)]">
               <Link2 className="h-3 w-3" />
               Linked incident
             </span>
@@ -939,7 +939,7 @@ function MFCTab() {
         <select
           value={filterChild}
           onChange={(e) => setFilterChild(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
         >
           <option value="all">All young people</option>
           {mfcAllYP.map((yp) => (
@@ -983,7 +983,7 @@ function MFCTab() {
                 <select
                   value={logForm.yp_id}
                   onChange={(e) => setLogForm((f) => ({ ...f, yp_id: e.target.value }))}
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
                 >
                   {mfcAllYP.map((yp) => (
                     <option key={yp.id} value={yp.id}>{yp.preferred_name || yp.first_name}</option>
@@ -1015,7 +1015,7 @@ function MFCTab() {
                 <select
                   value={logForm.risk}
                   onChange={(e) => setLogForm((f) => ({ ...f, risk: e.target.value }))}
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -1109,7 +1109,7 @@ function ChronologyTab() {
           <select
             value={selectedChild}
             onChange={(e) => setSelectedChild(e.target.value)}
-            className="h-9 rounded-xl border border-[var(--cs-border)] bg-white px-3 text-sm font-medium text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+            className="h-9 rounded-xl border border-[var(--cs-border)] bg-white px-3 text-sm font-medium text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
           >
             {chronAllYP.map((yp) => (
               <option key={yp.id} value={yp.id}>{yp.preferred_name || yp.first_name} {yp.last_name}</option>
@@ -1118,7 +1118,7 @@ function ChronologyTab() {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="h-9 rounded-xl border border-[var(--cs-border)] bg-white px-3 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+            className="h-9 rounded-xl border border-[var(--cs-border)] bg-white px-3 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
           >
             <option value="all">All categories</option>
             {categories.map((c) => (
@@ -1135,7 +1135,7 @@ function ChronologyTab() {
       {/* YP info strip */}
       {yp && (
         <div className="rounded-2xl border bg-white p-4 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-full bg-violet-100 text-violet-700 text-base font-bold flex items-center justify-center shrink-0">
+          <div className="h-10 w-10 rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] text-base font-bold flex items-center justify-center shrink-0">
             {(yp.preferred_name || yp.first_name)[0]}
           </div>
           <div className="flex-1">
@@ -1203,7 +1203,7 @@ function ChronologyTab() {
                   <div className="mt-2.5 flex items-center gap-3">
                     <span className="text-[10px] text-[var(--cs-text-muted)]">Recorded by {getStaffName(entry.recorded_by)}</span>
                     {entry.linked_incident_id && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--cs-aria-gold-bg)] px-2 py-0.5 text-[10px] font-medium text-[var(--cs-aria-gold)]">
                         <Link2 className="h-2.5 w-2.5" />
                         Linked incident
                       </span>
@@ -1238,7 +1238,7 @@ function ChronologyTab() {
                   <select
                     value={entryForm.category}
                     onChange={(e) => setEntryForm((f) => ({ ...f, category: e.target.value }))}
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
                   >
                     {Object.entries(CHRONO_CATEGORY_CONFIG).map(([k, v]) => (
                       <option key={k} value={k}>{v.label}</option>
@@ -1250,7 +1250,7 @@ function ChronologyTab() {
                   <select
                     value={entryForm.significance}
                     onChange={(e) => setEntryForm((f) => ({ ...f, significance: e.target.value }))}
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
                   >
                     <option value="routine">Routine</option>
                     <option value="significant">Significant</option>
@@ -1274,7 +1274,7 @@ function ChronologyTab() {
                   onChange={(e) => setEntryForm((f) => ({ ...f, description: e.target.value }))}
                   rows={4}
                   placeholder="What happened? Include relevant context, people present, and any outcomes…"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
                 />
               </div>
               {entryError && <p className="text-xs text-red-600 font-medium">{entryError}</p>}
@@ -1367,7 +1367,7 @@ function ManagerActionsTab() {
                     </div>
                     <button
                       onClick={() => setAriaPanelId(ariaPanelId === inc.id ? null : inc.id)}
-                      className="flex items-center gap-1 rounded-xl border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[10px] font-semibold text-violet-700 hover:bg-violet-100 shrink-0"
+                      className="flex items-center gap-1 rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-2.5 py-1.5 text-[10px] font-semibold text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] shrink-0"
                     >
                       <Sparkles className="h-3 w-3" /> Aria
                     </button>
@@ -1505,7 +1505,7 @@ function ManagerActionsTab() {
       {/* Aria panel */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="h-4 w-4 text-violet-600" />
+          <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
           <span className="text-sm font-bold text-[var(--cs-navy)]">ARIA — Manager Support</span>
         </div>
         <AriaPanel

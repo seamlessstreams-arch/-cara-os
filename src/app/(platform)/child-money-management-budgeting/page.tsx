@@ -238,7 +238,7 @@ export default function ChildMoneyManagementBudgetingPage() {
                         <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Tools used</div>
                         <div className="flex flex-wrap gap-1.5">
                           {r.tools_used.map((t, i) => (
-                            <span key={i} className="text-xs px-2 py-0.5 rounded-full border bg-violet-100 text-violet-800 border-violet-200">{t}</span>
+                            <span key={i} className="text-xs px-2 py-0.5 rounded-full border bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">{t}</span>
                           ))}
                         </div>
                       </div>
@@ -274,7 +274,7 @@ export default function ChildMoneyManagementBudgetingPage() {
         })}
       </div>
 
-      <div className="mt-6 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
+      <div className="mt-6 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
         <div className="font-semibold mb-1">Regulatory framework</div>
         <p>
           Practice is grounded in the Pathway Plan duty (Care Leavers (England) Regulations 2010), Quality Standard 6

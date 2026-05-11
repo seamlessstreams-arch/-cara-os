@@ -50,7 +50,7 @@ const STATUS_COLOURS: Record<string, string> = {
   draft: "bg-slate-100 text-[var(--cs-text-secondary)]",
   reviewed: "bg-blue-100 text-blue-700",
   approved: "bg-emerald-100 text-emerald-700",
-  published: "bg-violet-100 text-violet-700",
+  published: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   archived: "bg-slate-100 text-[var(--cs-text-muted)]",
 };
 
@@ -140,8 +140,8 @@ function ResourceCard({ resource }: { resource: GeneratedResource }) {
     <Card className="border border-[var(--cs-border-subtle)]">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-50">
-            <FileText className="h-4 w-4 text-violet-600" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--cs-aria-gold-bg)]">
+            <FileText className="h-4 w-4 text-[var(--cs-aria-gold)]" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
@@ -324,8 +324,8 @@ export default function ResourceGeneratorPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100">
-                <Sparkles className="h-4 w-4 text-violet-600" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--cs-aria-gold-bg)]">
+                <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
               </div>
               Generate with ARIA
             </CardTitle>
@@ -409,7 +409,7 @@ export default function ResourceGeneratorPage() {
 
         {/* Result */}
         {result && (
-          <Card className="border-violet-200">
+          <Card className="border-[var(--cs-aria-gold-soft)]">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Generated Resource</CardTitle>

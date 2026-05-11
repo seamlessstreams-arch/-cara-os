@@ -92,8 +92,8 @@ function DictationTextarea({
         rows={rows}
         placeholder={placeholder}
         className={cn(
-          "w-full resize-none rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
-          "focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100",
+          "w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
+          "focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)]",
           "transition-colors"
         )}
       />
@@ -286,8 +286,8 @@ export function InterventionAddModal({
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Describe this intervention briefly"
                     className={cn(
-                      "w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
-                      "focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100",
+                      "w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
+                      "focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)]",
                       "transition-colors"
                     )}
                   />
@@ -306,7 +306,7 @@ export function InterventionAddModal({
                           "rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-colors",
                           category === value
                             ? "border-blue-500 bg-blue-50 text-blue-700"
-                            : "border-[var(--cs-border)] bg-slate-50 text-[var(--cs-text-secondary)] hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                            : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-secondary)] hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
                         )}
                       >
                         {label}
@@ -359,8 +359,8 @@ export function InterventionAddModal({
                     value={reviewDate}
                     onChange={(e) => setReviewDate(e.target.value)}
                     className={cn(
-                      "w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-xs text-[var(--cs-navy)]",
-                      "focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100",
+                      "w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)]",
+                      "focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)]",
                       "transition-colors"
                     )}
                   />

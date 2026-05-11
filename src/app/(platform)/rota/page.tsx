@@ -28,7 +28,7 @@ import { toast } from "sonner";
 const SHIFT_COLORS: Record<string, string> = {
   day: "bg-emerald-100 text-emerald-800 border-emerald-200",
   sleep_in: "bg-indigo-100 text-indigo-800 border-indigo-200",
-  waking_night: "bg-violet-100 text-violet-800 border-violet-200",
+  waking_night: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
   short: "bg-sky-100 text-sky-800 border-sky-200",
   handover: "bg-amber-100 text-amber-800 border-amber-200",
   on_call: "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
@@ -520,7 +520,7 @@ export default function RotaPage() {
                                     )}
                                   </div>
                                   <button
-                                    className="absolute -top-1.5 -right-1.5 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 transition-colors"
+                                    className="absolute -top-1.5 -right-1.5 hidden group-hover:flex h-5 w-5 items-center justify-center rounded-full bg-[var(--cs-navy)] text-white shadow-sm hover:bg-[var(--cs-navy)]/90 transition-colors"
                                     title="Request swap"
                                     onClick={(e) => { e.stopPropagation(); openSwapModal(shift.id, staff.id, staff.full_name, date); }}
                                   >
@@ -533,7 +533,7 @@ export default function RotaPage() {
                                 </div>
                               ) : (
                                 <div
-                                  className="rounded-lg border border-dashed border-[var(--cs-border)] px-2 py-1.5 text-[10px] text-[var(--cs-text-gentle)] cursor-pointer hover:bg-violet-50 hover:border-violet-300 hover:text-violet-500 transition-colors"
+                                  className="rounded-lg border border-dashed border-[var(--cs-border)] px-2 py-1.5 text-[10px] text-[var(--cs-text-gentle)] cursor-pointer hover:bg-[var(--cs-aria-gold-bg)] hover:border-[var(--cs-aria-gold-soft)] hover:text-[var(--cs-aria-gold)] transition-colors"
                                   onClick={() => openAddShift(staff.id, staff.full_name, date)}
                                   title={`Add shift for ${staff.full_name}`}
                                 >
@@ -654,7 +654,7 @@ export default function RotaPage() {
               <select
                 value={shiftType}
                 onChange={(e) => setShiftType(e.target.value)}
-                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
               >
                 {SHIFT_TYPES.map((type) => (
                   <option key={type} value={type}>{SHIFT_TYPE_LABELS[type]}</option>
@@ -669,7 +669,7 @@ export default function RotaPage() {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
                 />
               </div>
               <div>
@@ -678,7 +678,7 @@ export default function RotaPage() {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
                 />
               </div>
             </div>
@@ -690,7 +690,7 @@ export default function RotaPage() {
                 value={shiftNotes}
                 onChange={(e) => setShiftNotes(e.target.value)}
                 placeholder="e.g. Cover for Anna"
-                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
               />
             </div>
 
@@ -706,7 +706,7 @@ export default function RotaPage() {
               Cancel
             </Button>
             <Button
-              className="flex-1 bg-violet-600 hover:bg-violet-700"
+              className="flex-1 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90"
               onClick={handleSaveShift}
               disabled={createShift.isPending}
             >

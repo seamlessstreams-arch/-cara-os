@@ -311,19 +311,19 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
 
         {/* ── ARIA Intelligence Strip ──────────────────────────────────────── */}
         {canOversight && (
-          <div className="rounded-2xl border border-violet-200 bg-violet-50/50 px-4 py-3 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm text-violet-800">
-              <Sparkles className="h-4 w-4 shrink-0 text-violet-500" />
+          <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/50 px-4 py-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm text-[var(--cs-navy)]">
+              <Sparkles className="h-4 w-4 shrink-0 text-[var(--cs-aria-gold)]" />
               <span><strong>ARIA Intelligence</strong> — generate suggestions and oversight drafts for this incident</span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Link href={`/aria/review?related_record_id=${incident.id}`}>
-                <Button size="sm" variant="outline" className="text-violet-700 border-violet-300 hover:bg-violet-100 gap-1.5">
+                <Button size="sm" variant="outline" className="text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)] gap-1.5">
                   <ClipboardCheck className="h-3.5 w-3.5" />Review with ARIA
                 </Button>
               </Link>
               <Link href={`/intelligence/aria/management-oversight?incidentId=${incident.id}&severity=${incident.severity}&type=${incident.type}`}>
-                <Button size="sm" className="bg-violet-600 hover:bg-violet-700 gap-1.5">
+                <Button size="sm" className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 gap-1.5">
                   <Brain className="h-3.5 w-3.5" />Draft with ARIA
                 </Button>
               </Link>
@@ -349,10 +349,10 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
         {/* ── Young person ──────────────────────────────────────────────────── */}
         <div className="rounded-2xl border bg-white p-4">
           <h3 className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
-            <Heart className="h-3.5 w-3.5 text-violet-500" />Young Person
+            <Heart className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />Young Person
           </h3>
           <div className="flex items-center gap-3">
-            <Avatar name={ypName} size="md" className="bg-violet-100" />
+            <Avatar name={ypName} size="md" className="bg-[var(--cs-aria-gold-bg)]" />
             <div>
               <div className="text-sm font-semibold text-[var(--cs-navy)]">{ypName}</div>
               {yp && (
@@ -527,12 +527,12 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
         )}
 
         {/* ── Training Need ─────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-violet-100 bg-violet-50/40 p-4 space-y-3">
+        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <Brain className="h-4 w-4 text-violet-600" />
-            <span className="text-sm font-semibold text-violet-900">Training Intelligence Loop</span>
+            <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <span className="text-sm font-semibold text-[var(--cs-navy)]">Training Intelligence Loop</span>
           </div>
-          <p className="text-xs text-violet-700">
+          <p className="text-xs text-[var(--cs-aria-gold)]">
             Create a training need linked to this incident. ARIA will generate learning resources
             to address the underlying risk and close the loop from incident to evidence.
           </p>
@@ -540,7 +540,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 text-violet-700 border-violet-200 hover:bg-violet-100"
+              className="gap-1.5 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
               onClick={handleCreateTrainingNeed}
               disabled={createNeed.isPending}
             >
@@ -551,7 +551,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <span className="text-sm text-emerald-700 font-medium">Training need created</span>
-              <Link href="/learning/training-needs" className="ml-auto text-xs text-violet-600 underline hover:text-violet-800">
+              <Link href="/learning/training-needs" className="ml-auto text-xs text-[var(--cs-aria-gold)] underline hover:text-[var(--cs-navy)]">
                 View in Learning Studio →
               </Link>
             </div>

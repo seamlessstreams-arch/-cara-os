@@ -859,7 +859,7 @@ gathered during the investigation.
             size="sm"
             onClick={handleGenerateReport}
             disabled={generating}
-            className="gap-1.5 bg-violet-600 hover:bg-violet-700"
+            className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90"
           >
             {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
             {generating ? "Generating..." : reportDraft ? "Regenerate with ARIA" : "Generate Report with ARIA"}
@@ -880,7 +880,7 @@ gathered during the investigation.
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Badge className="bg-violet-100 text-violet-800 text-[10px]">ARIA suggested draft</Badge>
+                <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] text-[10px]">ARIA suggested draft</Badge>
                 <span className="text-xs text-[var(--cs-text-muted)]">Requires investigating officer review before finalising</span>
               </div>
             </CardHeader>
@@ -905,7 +905,7 @@ gathered during the investigation.
       title="Investigation Builder"
       subtitle="Structured HR investigation tool — guided by ARIA"
       actions={
-        <Badge className="bg-violet-100 text-violet-800 border-violet-200">
+        <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">
           <Sparkles className="h-3 w-3 mr-1" />ARIA Guided
         </Badge>
       }
@@ -920,7 +920,7 @@ gathered during the investigation.
           </div>
           <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
             <div
-              className="h-full rounded-full bg-violet-500 transition-all duration-500"
+              className="h-full rounded-full bg-[var(--cs-aria-gold-bg)]0 transition-all duration-500"
               style={{ width: `${(completedStages / STAGES.length) * 100}%` }}
             />
           </div>

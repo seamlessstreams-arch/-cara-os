@@ -42,7 +42,7 @@ const TYPE_CONFIG: Record<RelationalRecordType, { label: string; icon: React.Ele
   rupture_repair:       { label: "Rupture & Repair",     icon: Zap,           color: "text-amber-600",    bg: "bg-amber-50",    border: "border-amber-200"   },
   de_escalation:        { label: "De-escalation",        icon: Shield,        color: "text-blue-600",     bg: "bg-blue-50",     border: "border-blue-200"    },
   regulation_strategy:  { label: "Regulation Strategy",  icon: Brain,         color: "text-teal-600",     bg: "bg-teal-50",     border: "border-teal-200"    },
-  preferred_adult:      { label: "Preferred Adult",      icon: Star,          color: "text-violet-600",   bg: "bg-violet-50",   border: "border-violet-200"  },
+  preferred_adult:      { label: "Preferred Adult",      icon: Star,          color: "text-[var(--cs-aria-gold)]",   bg: "bg-[var(--cs-aria-gold-bg)]",   border: "border-[var(--cs-aria-gold-soft)]"  },
   what_helps:           { label: "What Helps",           icon: ThumbsUp,      color: "text-emerald-600",  bg: "bg-emerald-50",  border: "border-emerald-200" },
   what_to_avoid:        { label: "What to Avoid",        icon: Ban,           color: "text-red-600",      bg: "bg-red-50",      border: "border-red-200"     },
   attachment_indicator: { label: "Attachment Indicator",  icon: Hand,          color: "text-pink-600",     bg: "bg-pink-50",     border: "border-pink-200"    },
@@ -385,7 +385,7 @@ export default function RelationalPracticePage() {
             { label: "Positive", value: positiveCount, icon: ThumbsUp, colour: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
             { label: "Caution", value: cautionCount, icon: AlertTriangle, colour: cautionCount > 0 ? "text-red-600" : "text-[var(--cs-text-muted)]", bg: cautionCount > 0 ? "bg-red-50 border-red-100" : "bg-slate-50 border-[var(--cs-border-subtle)]" },
             { label: "Well-Evidenced", value: highConfidenceCount, icon: CheckCircle2, colour: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
-            { label: "Record Types", value: Object.keys(typeCounts).length, icon: Sparkles, colour: "text-violet-600", bg: "bg-violet-50 border-violet-100" },
+            { label: "Record Types", value: Object.keys(typeCounts).length, icon: Sparkles, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
           ].map(({ label, value, icon: Icon, colour, bg }) => (
             <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
               <Icon className={cn("h-4 w-4 mx-auto mb-1", colour)} />

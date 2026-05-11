@@ -39,7 +39,7 @@ const TYPE_CONFIG: Record<
   observation: { icon: MessageCircle, label: "Observation", color: "text-cyan-600 bg-cyan-50" },
   incident:    { icon: FileText,      label: "Incident",    color: "text-red-600 bg-red-50" },
   meeting:     { icon: Calendar,      label: "Meeting",     color: "text-indigo-600 bg-indigo-50" },
-  link:        { icon: Link2,         label: "Link",        color: "text-slate-600 bg-slate-50" },
+  link:        { icon: Link2,         label: "Link",        color: "text-[var(--cs-text-secondary)] bg-[var(--cs-surface)]" },
 };
 
 export function EvidenceLink({

@@ -36,7 +36,7 @@ const STAGE_COLOURS: Record<PathwayStage, string> = {
   inductee:           "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
   rsw:                "bg-blue-50 text-blue-700 border-blue-200",
   senior_rsw:         "bg-sky-50 text-sky-700 border-sky-200",
-  team_leader:        "bg-violet-50 text-violet-700 border-violet-200",
+  team_leader:        "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
   deputy_manager:     "bg-amber-50 text-amber-700 border-amber-200",
   registered_manager: "bg-emerald-50 text-emerald-700 border-emerald-200",
   ri:                 "bg-rose-50 text-rose-700 border-rose-200",
@@ -49,7 +49,7 @@ const READINESS_BG = (score: number) =>
   score >= 80 ? "bg-emerald-500" : score >= 60 ? "bg-amber-500" : "bg-red-500";
 
 const MODULE_TILES = [
-  { href: "/workforce/pathway",         icon: Milestone,      label: "Career Pathway",        desc: "5-stage progression ladder",         colour: "text-violet-600 bg-violet-50 border-violet-100" },
+  { href: "/workforce/pathway",         icon: Milestone,      label: "Career Pathway",        desc: "5-stage progression ladder",         colour: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
   { href: "/workforce/competency",      icon: BarChart2,      label: "Competency Framework",  desc: "10-domain scoring matrix",           colour: "text-blue-600 bg-blue-50 border-blue-100" },
   { href: "/workforce/aria-planner",    icon: Sparkles,       label: "ARIA Dev Planner",      desc: "ARIA-generated development plans",   colour: "text-indigo-600 bg-indigo-50 border-indigo-100" },
   { href: "/workforce/succession",      icon: GitBranch,      label: "Succession Board",      desc: "Role coverage & readiness",          colour: "text-emerald-600 bg-emerald-50 border-emerald-100" },

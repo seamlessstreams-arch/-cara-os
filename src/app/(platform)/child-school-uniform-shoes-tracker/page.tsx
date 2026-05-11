@@ -65,7 +65,7 @@ const categoryColour: Record<UniformCategory, string> = {
   school_uniform: "bg-blue-100 text-blue-800 border-blue-200",
   pe_kit: "bg-emerald-100 text-emerald-800 border-emerald-200",
   school_shoes: "bg-amber-100 text-amber-800 border-amber-200",
-  trainers: "bg-violet-100 text-violet-800 border-violet-200",
+  trainers: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
   coat_outerwear: "bg-sky-100 text-sky-800 border-sky-200",
   casual_clothing_audit: "bg-rose-100 text-rose-800 border-rose-200",
   bag_equipment: "bg-slate-100 text-[var(--cs-navy)] border-[var(--cs-border)]",
@@ -214,7 +214,7 @@ export default function ChildSchoolUniformShoesTrackerPage() {
                     <span className="font-semibold text-[var(--cs-navy)]">{getYPName(r.child_id)}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", categoryColour[r.category])}>{UNIFORM_CATEGORY_LABEL[r.category]}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full border bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]">£{r.total_cost_this_record.toFixed(2)} this record</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full border bg-violet-100 text-violet-800 border-violet-200">{UNIFORM_FUNDING_SOURCE_LABEL[r.funding_source]}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full border bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">{UNIFORM_FUNDING_SOURCE_LABEL[r.funding_source]}</span>
                     {r.child_chose_style && r.child_chose_shop ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-pink-100 text-pink-800 border-pink-200">Child-led</span>
                     ) : null}
@@ -244,9 +244,9 @@ export default function ChildSchoolUniformShoesTrackerPage() {
                       </div>
                     </div>
                     {r.sensory_considerations.length ? (
-                      <div className="rounded-md border border-violet-200 bg-violet-50 p-3">
-                        <div className="text-xs font-semibold text-violet-700 uppercase mb-2">Sensory considerations</div>
-                        <ul className="text-sm text-violet-900 space-y-1">
+                      <div className="rounded-md border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3">
+                        <div className="text-xs font-semibold text-[var(--cs-aria-gold)] uppercase mb-2">Sensory considerations</div>
+                        <ul className="text-sm text-[var(--cs-navy)] space-y-1">
                           {r.sensory_considerations.map((s, i) => (
                             <li key={i} className="flex gap-2"><span>·</span><span>{s}</span></li>
                           ))}

@@ -92,12 +92,12 @@ export function MissingFromCareCard() {
             <div className={cn("text-sm font-bold tabular-nums", active > 0 ? "text-red-700" : "text-emerald-700")}>{active}</div>
             <div className={cn("text-[9px]", active > 0 ? "text-red-500" : "text-emerald-500")}>Active</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", unresolved > 0 ? "bg-violet-50" : "bg-slate-50")}>
-            <FileText className={cn("h-3 w-3 mx-auto mb-0.5", unresolved > 0 ? "text-violet-500" : "text-[var(--cs-text-muted)]")} />
-            <div className={cn("text-sm font-bold tabular-nums", unresolved > 0 ? "text-violet-700" : "text-[var(--cs-text-muted)]")}>{unresolved}</div>
-            <div className={cn("text-[9px]", unresolved > 0 ? "text-violet-500" : "text-[var(--cs-text-muted)]")}>RHI Due</div>
+          <div className={cn("rounded-xl p-2 text-center", unresolved > 0 ? "bg-[var(--cs-aria-gold-bg)]" : "bg-[var(--cs-surface)]")}>
+            <FileText className={cn("h-3 w-3 mx-auto mb-0.5", unresolved > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")} />
+            <div className={cn("text-sm font-bold tabular-nums", unresolved > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")}>{unresolved}</div>
+            <div className={cn("text-[9px]", unresolved > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")}>RHI Due</div>
           </div>
-          <div className="rounded-xl bg-slate-50 p-2 text-center">
+          <div className="rounded-xl bg-[var(--cs-surface)] p-2 text-center">
             <MapPin className="h-3 w-3 text-[var(--cs-text-muted)] mx-auto mb-0.5" />
             <div className="text-sm font-bold text-[var(--cs-text-secondary)] tabular-nums">{totalThisMonth}</div>
             <div className="text-[9px] text-[var(--cs-text-muted)]">This Month</div>
@@ -156,13 +156,13 @@ export function MissingFromCareCard() {
 
         {/* RHI outstanding */}
         {unresolved > 0 && !hasAlert && (
-          <div className="rounded-lg bg-violet-50 border border-violet-100 p-2 flex items-start gap-2">
-            <FileText className="h-3 w-3 text-violet-500 shrink-0 mt-0.5" />
+          <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-2 flex items-start gap-2">
+            <FileText className="h-3 w-3 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
             <div>
-              <p className="text-[10px] font-semibold text-violet-700">
+              <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)]">
                 {unresolved} return home interview{unresolved !== 1 ? "s" : ""} outstanding
               </p>
-              <p className="text-[10px] text-violet-600">
+              <p className="text-[10px] text-[var(--cs-aria-gold)]">
                 RHIs must be completed within 72 hours of return
               </p>
             </div>

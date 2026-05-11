@@ -260,11 +260,11 @@ export default function SuspensionDecisionPage() {
 
   return (
     <PageShell title="HR — Suspension Decision Tool">
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
-        <Sparkles className="h-5 w-5 mt-0.5 text-violet-600" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
         <div>
           <div className="font-semibold">ARIA suggested draft, never final</div>
-          <p className="text-violet-800">
+          <p className="text-[var(--cs-navy)]">
             Use this tool to think through whether suspension is the proportionate response. Suspension is a neutral
             act pending investigation. The output is a structured risk assessment, a welfare plan, and an ARIA
             suggested draft of written reasons. The Registered Manager remains the decision-maker. The suspension
@@ -277,7 +277,7 @@ export default function SuspensionDecisionPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldCheck className="h-4 w-4 text-violet-600" /> Identity and concern
+            <ShieldCheck className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Identity and concern
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -623,7 +623,7 @@ export default function SuspensionDecisionPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <Sparkles className="h-4 w-4 text-violet-500" /> ARIA suggested draft of written reasons
+                    <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> ARIA suggested draft of written reasons
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

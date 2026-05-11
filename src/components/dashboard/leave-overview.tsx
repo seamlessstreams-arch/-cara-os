@@ -29,9 +29,9 @@ const LEAVE_TYPE_CONFIG: Record<string, {
 }> = {
   annual:     { icon: Palmtree,     color: "text-emerald-600", bgColor: "bg-emerald-100", label: "Annual" },
   sick:       { icon: Stethoscope,  color: "text-red-600",     bgColor: "bg-red-100",     label: "Sick" },
-  compassionate: { icon: Clock,     color: "text-violet-600",  bgColor: "bg-violet-100",  label: "Compassionate" },
+  compassionate: { icon: Clock,     color: "text-[var(--cs-aria-gold)]",  bgColor: "bg-[var(--cs-aria-gold-bg)]",  label: "Compassionate" },
   training:   { icon: BookOpen,     color: "text-blue-600",    bgColor: "bg-blue-100",    label: "Training" },
-  unpaid:     { icon: CalendarOff,  color: "text-[var(--cs-text-secondary)]",   bgColor: "bg-slate-100",   label: "Unpaid" },
+  unpaid:     { icon: CalendarOff,  color: "text-[var(--cs-text-secondary)]",   bgColor: "bg-[var(--cs-surface)]",   label: "Unpaid" },
   toil:       { icon: Clock,        color: "text-amber-600",   bgColor: "bg-amber-100",   label: "TOIL" },
   maternity:  { icon: Clock,        color: "text-pink-600",    bgColor: "bg-pink-100",    label: "Maternity" },
   paternity:  { icon: Clock,        color: "text-sky-600",     bgColor: "bg-sky-100",     label: "Paternity" },
@@ -108,7 +108,7 @@ export function LeaveOverview() {
                 const name = getStaffName(r.staff_id);
                 const config = LEAVE_TYPE_CONFIG[r.leave_type] ?? LEAVE_TYPE_CONFIG.annual;
                 return (
-                  <div key={r.id} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
+                  <div key={r.id} className="flex items-center gap-2 rounded-xl bg-[var(--cs-surface)] px-3 py-2">
                     <Avatar name={name} size="xs" />
                     <span className="text-[11px] font-medium text-[var(--cs-text-secondary)] flex-1 truncate">
                       {name}

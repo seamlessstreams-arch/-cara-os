@@ -39,7 +39,7 @@ import {
 
 const CATEGORY_CONFIG: Record<ActivityCategory, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
   sport:        { label: "Sport & Fitness",   icon: Dumbbell,          color: "text-emerald-600",  bg: "bg-emerald-50",  border: "border-emerald-200" },
-  creative:     { label: "Creative & Art",    icon: Palette,           color: "text-violet-600",   bg: "bg-violet-50",   border: "border-violet-200"  },
+  creative:     { label: "Creative & Art",    icon: Palette,           color: "text-[var(--cs-aria-gold)]",   bg: "bg-[var(--cs-aria-gold-bg)]",   border: "border-[var(--cs-aria-gold-soft)]"  },
   outdoor:      { label: "Outdoor Adventure", icon: Mountain,          color: "text-teal-600",     bg: "bg-teal-50",     border: "border-teal-200"    },
   educational:  { label: "Education",         icon: BookOpen,          color: "text-blue-600",     bg: "bg-blue-50",     border: "border-blue-200"    },
   social:       { label: "Social",            icon: Users,             color: "text-amber-600",    bg: "bg-amber-50",    border: "border-amber-200"   },
@@ -55,7 +55,7 @@ const ENGAGEMENT_CONFIG: Record<ActivityEngagement, { label: string; cls: string
   willing:         { label: "Willing",          cls: "bg-blue-50 text-blue-700 border-blue-200"          },
   reluctant:       { label: "Reluctant",        cls: "bg-amber-50 text-amber-700 border-amber-200"      },
   refused:         { label: "Declined",         cls: "bg-slate-50 text-[var(--cs-text-muted)] border-[var(--cs-border)]"       },
-  suggested_by_yp: { label: "YP Suggested",     cls: "bg-violet-50 text-violet-700 border-violet-200"   },
+  suggested_by_yp: { label: "YP Suggested",     cls: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]"   },
 };
 
 const ACTIVITY_EXPORT_COLS: ExportColumn<Activity>[] = [
@@ -91,7 +91,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-sm font-bold text-[var(--cs-navy)]">{activity.title}</span>
             {activity.is_new_experience && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-violet-50 text-violet-700 border-violet-200">
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]">
                 <Star className="h-2.5 w-2.5 mr-0.5 inline" />New Experience
               </Badge>
             )}
@@ -228,7 +228,7 @@ function NewActivityDialog({
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Palette className="h-4 w-4 text-violet-600" />
+            <Palette className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Log Activity
           </DialogTitle>
         </DialogHeader>
@@ -326,7 +326,7 @@ function NewActivityDialog({
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" onClick={handleSave} disabled={!form.title.trim() || !form.description.trim()} className="bg-violet-600 hover:bg-violet-700 text-white">
+          <Button size="sm" onClick={handleSave} disabled={!form.title.trim() || !form.description.trim()} className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white">
             Log Activity
           </Button>
         </DialogFooter>
@@ -437,7 +437,7 @@ export default function ActivitiesPage() {
           <ExportButton data={filtered} columns={ACTIVITY_EXPORT_COLS} filename="activities" />
           <PrintButton title="Activities & Enrichment" subtitle="Oak House — Activity Log" targetId="activities-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Activities — activity photos or evidence upload" />
-          <Button size="sm" onClick={() => setShowNew(true)} className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5 h-8 text-xs">
+          <Button size="sm" onClick={() => setShowNew(true)} className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Log Activity
           </Button>
         </div>
@@ -448,7 +448,7 @@ export default function ActivitiesPage() {
         {/* ── Summary stats ────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
-            { label: "This Week", value: totalThisWeek, icon: Calendar, colour: "text-violet-600", bg: "bg-violet-50 border-violet-100" },
+            { label: "This Week", value: totalThisWeek, icon: Calendar, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
             { label: "Hours This Week", value: `${totalHoursThisWeek}h`, icon: Clock, colour: "text-teal-600", bg: "bg-teal-50 border-teal-100" },
             { label: "Total Logged", value: activities.length, icon: Palette, colour: "text-[var(--cs-text-secondary)]", bg: "bg-slate-50 border-[var(--cs-border-subtle)]" },
             { label: "New Experiences", value: newExperienceCount, icon: Star, colour: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
@@ -501,7 +501,7 @@ export default function ActivitiesPage() {
               <select
                 value={childFilter}
                 onChange={(e) => setChildFilter(e.target.value)}
-                className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-violet-300 focus:ring-1 focus:ring-violet-200 outline-none"
+                className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-aria-gold-soft)] focus:ring-1 focus:ring-[var(--cs-aria-gold-soft)] outline-none"
               >
                 <option value="all">All young people</option>
                 {childIds.map((id) => (
@@ -514,7 +514,7 @@ export default function ActivitiesPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-violet-300 focus:ring-1 focus:ring-violet-200 outline-none"
+                className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-aria-gold-soft)] focus:ring-1 focus:ring-[var(--cs-aria-gold-soft)] outline-none"
               >
                 <option value="date">Date (newest)</option>
                 <option value="child">Young person</option>

@@ -58,7 +58,7 @@ const categoryColour: Record<string, string> = {
   sport_coaching_refereeing: "bg-blue-100 text-blue-800 border-blue-200",
   animal_welfare: "bg-teal-100 text-teal-800 border-teal-200",
   environmental: "bg-green-100 text-green-800 border-green-200",
-  befriending_mentoring: "bg-violet-100 text-violet-800 border-violet-200",
+  befriending_mentoring: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
   youth_advocacy: "bg-purple-100 text-purple-800 border-purple-200",
   school_peer_support: "bg-sky-100 text-sky-800 border-sky-200",
   other: "bg-slate-100 text-[var(--cs-navy)] border-[var(--cs-border)]",

@@ -191,7 +191,7 @@ function TripCard({ trip }: { trip: TripPlan }) {
                     <Badge variant="outline" className="text-[9px] px-1 py-0 bg-blue-50 text-blue-600 border-blue-200">Med</Badge>
                   )}
                   {yp.behaviour_plan_shared && (
-                    <Badge variant="outline" className="text-[9px] px-1 py-0 bg-violet-50 text-violet-600 border-violet-200">BP</Badge>
+                    <Badge variant="outline" className="text-[9px] px-1 py-0 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]">BP</Badge>
                   )}
                 </div>
               ))}

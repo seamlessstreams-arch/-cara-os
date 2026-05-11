@@ -65,7 +65,7 @@ const ENTRY_TYPE_COLORS: Record<string, string> = {
   behaviour: "bg-orange-100 text-orange-700",
   health: "bg-red-100 text-red-700",
   education: "bg-blue-100 text-blue-700",
-  contact: "bg-violet-100 text-violet-700",
+  contact: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   activity: "bg-emerald-100 text-emerald-700",
   mood: "bg-amber-100 text-amber-700",
   sleep: "bg-indigo-100 text-indigo-700",
@@ -279,7 +279,7 @@ function LogEntryCard({ entry }: { entry: DailyLogEntry }) {
               <Badge className={cn("text-[9px] rounded-full capitalize", ENTRY_TYPE_COLORS[entry.entry_type])}>
                 {entry.entry_type}
               </Badge>
-              <span className="text-xs text-violet-600 flex items-center gap-1">
+              <span className="text-xs text-[var(--cs-aria-gold)] flex items-center gap-1">
                 <Heart className="h-2.5 w-2.5" />{ypName}
               </span>
               <span className="text-xs text-[var(--cs-text-muted)]">{entry.time} · {staffFirst}</span>
@@ -300,8 +300,8 @@ function LogEntryCard({ entry }: { entry: DailyLogEntry }) {
                 className={cn(
                   "ml-auto flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border transition-colors",
                   showAria
-                    ? "bg-violet-100 text-violet-700 border-violet-200"
-                    : "bg-white text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:bg-violet-50 hover:text-violet-600 hover:border-violet-200"
+                    ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]"
+                    : "bg-white text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:bg-[var(--cs-aria-gold-bg)] hover:text-[var(--cs-aria-gold)] hover:border-[var(--cs-aria-gold-soft)]"
                 )}
               >
                 <Sparkles className="h-2.5 w-2.5" />Ask ARIA
@@ -388,10 +388,10 @@ function AriaPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
   }
 
   return (
-    <div className="rounded-2xl border border-violet-100 bg-violet-50/60">
+    <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/60">
       <div className="flex items-center gap-3 px-4 py-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100">
-          <Brain className="h-4 w-4 text-violet-600" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--cs-aria-gold-bg)]">
+          <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-[var(--cs-navy)]">ARIA Pattern Analysis</p>
@@ -400,7 +400,7 @@ function AriaPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
         <Button
           size="sm"
           variant="outline"
-          className="gap-1.5 border-violet-200 bg-white text-violet-700 hover:bg-violet-50"
+          className="gap-1.5 border-[var(--cs-aria-gold-soft)] bg-white text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)]"
           onClick={handleScan}
           disabled={scanning || entries.length === 0}
         >
@@ -415,9 +415,9 @@ function AriaPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
       </div>
 
       {open && (
-        <div className="border-t border-violet-100 px-4 pb-4 pt-3 space-y-2">
+        <div className="border-t border-[var(--cs-aria-gold-soft)] px-4 pb-4 pt-3 space-y-2">
           {scanning && (
-            <div className="flex items-center gap-2 text-sm text-violet-600 py-2">
+            <div className="flex items-center gap-2 text-sm text-[var(--cs-aria-gold)] py-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               Analysing {entries.length} entries for training patterns…
             </div>
@@ -583,7 +583,7 @@ export default function DailyLogPage() {
               { label: "Significant", value: stats.significant, colour: stats.significant > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]", bg: stats.significant > 0 ? "bg-amber-50" : "bg-slate-50", icon: Star },
               { label: "Avg Mood", value: stats.avgMood !== null ? `${stats.avgMood}/10` : "—", colour: stats.avgMood !== null && stats.avgMood >= 6 ? "text-emerald-700" : stats.avgMood !== null ? "text-amber-700" : "text-[var(--cs-text-muted)]", bg: stats.avgMood !== null && stats.avgMood >= 6 ? "bg-emerald-50" : "bg-amber-50", icon: Smile },
               { label: "Low Mood", value: stats.lowMoodCount, colour: stats.lowMoodCount > 0 ? "text-red-700" : "text-emerald-700", bg: stats.lowMoodCount > 0 ? "bg-red-50" : "bg-emerald-50", icon: AlertTriangle },
-              { label: "Young People", value: stats.uniqueYP, colour: "text-violet-700", bg: "bg-violet-50", icon: Heart },
+              { label: "Young People", value: stats.uniqueYP, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]", icon: Heart },
               { label: "Staff Recording", value: stats.uniqueStaff, colour: "text-blue-700", bg: "bg-blue-50", icon: Users },
             ].map(({ label, value, colour, bg, icon: Icon }) => (
               <div key={label} className={cn("rounded-xl border border-[var(--cs-border-subtle)] p-3", bg)}>

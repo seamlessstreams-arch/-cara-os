@@ -59,7 +59,7 @@ const typeColour: Record<string, string> = {
   year_10_placement: "bg-sky-100 text-sky-800 border-sky-200",
   post_16_placement: "bg-blue-100 text-blue-800 border-blue-200",
   taster_day: "bg-amber-100 text-amber-800 border-amber-200",
-  career_exploration_meeting: "bg-violet-100 text-violet-800 border-violet-200",
+  career_exploration_meeting: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
   employer_mentor_session: "bg-emerald-100 text-emerald-800 border-emerald-200",
   apprenticeship_taster: "bg-teal-100 text-teal-800 border-teal-200",
   volunteering_placement: "bg-pink-100 text-pink-800 border-pink-200",
@@ -276,9 +276,9 @@ export default function ChildWorkExperienceTrackerPage() {
                       </div>
                     ) : null}
 
-                    <div className="rounded-md border border-violet-200 bg-violet-50 p-3 lg:col-span-2">
-                      <div className="text-xs font-semibold text-violet-700 uppercase mb-2">Child reflection</div>
-                      <p className="text-sm text-violet-900 italic">&ldquo;{r.child_reflection}&rdquo;</p>
+                    <div className="rounded-md border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3 lg:col-span-2">
+                      <div className="text-xs font-semibold text-[var(--cs-aria-gold)] uppercase mb-2">Child reflection</div>
+                      <p className="text-sm text-[var(--cs-navy)] italic">&ldquo;{r.child_reflection}&rdquo;</p>
                     </div>
 
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3">

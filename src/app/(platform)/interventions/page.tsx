@@ -53,7 +53,7 @@ const STATUS_COLOUR: Record<InterventionStatus, string> = {
   paused:       "bg-amber-50 text-amber-700 border-amber-200",
   completed:    "bg-blue-50 text-blue-700 border-blue-200",
   stopped:      "bg-red-50 text-red-700 border-red-200",
-  under_review: "bg-violet-50 text-violet-700 border-violet-200",
+  under_review: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
 };
 
 const STATUS_ICONS: Record<InterventionStatus, React.ElementType> = {
@@ -312,7 +312,7 @@ function InterventionCard({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-7 text-xs text-violet-700 border-violet-200 hover:bg-violet-50"
+                    className="h-7 text-xs text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
                     onClick={() => onStatusChange(intervention.id, "under_review")}
                     disabled={isBusy}
                   >

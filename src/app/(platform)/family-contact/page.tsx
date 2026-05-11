@@ -494,8 +494,8 @@ function ArrangementCard({
         onClick={() => setOpen((v) => !v)}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-full bg-violet-50 flex items-center justify-center flex-shrink-0">
-            <Users className="w-4 h-4 text-violet-600" />
+          <div className="w-9 h-9 rounded-full bg-[var(--cs-aria-gold-bg)] flex items-center justify-center flex-shrink-0">
+            <Users className="w-4 h-4 text-[var(--cs-aria-gold)]" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">

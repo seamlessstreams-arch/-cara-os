@@ -36,10 +36,10 @@ const STATUS_CONFIG: Record<StatusType, { label: string; classes: string; dot: s
   medium:       { label: "Medium Risk",                   classes: "bg-amber-50    text-amber-700   border-amber-200",    dot: "bg-amber-500"    },
   high:         { label: "High Risk",                     classes: "bg-red-50      text-red-700     border-red-200",      dot: "bg-red-500"      },
   critical:     { label: "Critical",                      classes: "bg-rose-100    text-rose-800    border-rose-300",     dot: "bg-rose-600"     },
-  draft:        { label: "Draft",                         classes: "bg-slate-50    text-slate-600   border-slate-200",    dot: "bg-slate-400"    },
+  draft:        { label: "Draft",                         classes: "bg-[var(--cs-surface)]    text-[var(--cs-text-secondary)]   border-[var(--cs-border)]",    dot: "bg-[var(--cs-text-muted)]"    },
   active:       { label: "Active",                        classes: "bg-emerald-50  text-emerald-700 border-emerald-200",  dot: "bg-emerald-500"  },
   pending:      { label: "Pending",                       classes: "bg-amber-50    text-amber-700   border-amber-200",    dot: "bg-amber-400"    },
-  closed:       { label: "Closed",                        classes: "bg-slate-50    text-slate-500   border-slate-200",    dot: "bg-slate-400"    },
+  closed:       { label: "Closed",                        classes: "bg-[var(--cs-surface)]    text-[var(--cs-text-muted)]   border-[var(--cs-border)]",    dot: "bg-[var(--cs-text-muted)]"    },
   suspended:    { label: "Suspended",                     classes: "bg-orange-50   text-orange-700  border-orange-200",   dot: "bg-orange-500"   },
 };
 

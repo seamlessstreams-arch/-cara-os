@@ -36,7 +36,7 @@ export function SmartUploadButton({
           onClick={() => setOpen(true)}
           title="Upload document — ARIA will classify and extract intelligence"
           className={cn(
-            "inline-flex items-center justify-center rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors h-8 w-8 shrink-0",
+            "inline-flex items-center justify-center rounded-xl bg-[var(--cs-navy)] text-white hover:bg-[var(--cs-navy)]/90 transition-colors h-8 w-8 shrink-0",
             className,
           )}
         >
@@ -61,7 +61,7 @@ export function SmartUploadButton({
         <button
           onClick={() => setOpen(true)}
           className={cn(
-            "inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition-colors",
+            "inline-flex items-center gap-2 rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-3 py-2 text-xs font-semibold text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors",
             className,
           )}
         >
@@ -86,7 +86,7 @@ export function SmartUploadButton({
       <button
         onClick={() => setOpen(true)}
         className={cn(
-          "inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 transition-colors shadow-sm",
+          "inline-flex items-center gap-2 rounded-xl bg-[var(--cs-navy)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--cs-navy)]/90 transition-colors shadow-sm",
           className,
         )}
       >

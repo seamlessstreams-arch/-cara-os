@@ -81,7 +81,7 @@ export function ExpensesSummaryCard() {
             <div className="text-sm font-bold text-green-700 tabular-nums">{formatCurrency(meta.total_amount)}</div>
             <div className="text-[9px] text-green-500">Total</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", meta.pending_count > 0 ? "bg-amber-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", meta.pending_count > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
             <Clock className={cn("h-3 w-3 mx-auto mb-0.5", meta.pending_count > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", meta.pending_count > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>
               {meta.pending_count}

@@ -69,14 +69,14 @@ export function FormComplianceCard() {
             <div className="text-sm font-bold text-emerald-700 tabular-nums">{meta.approved}</div>
             <div className="text-[9px] text-emerald-500">Approved</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", meta.pending_review > 0 ? "bg-amber-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", meta.pending_review > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
             <Clock className={cn("h-3 w-3 mx-auto mb-0.5", meta.pending_review > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", meta.pending_review > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>
               {meta.pending_review}
             </div>
             <div className={cn("text-[9px]", meta.pending_review > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")}>Pending</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", meta.draft > 0 ? "bg-blue-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", meta.draft > 0 ? "bg-blue-50" : "bg-[var(--cs-surface)]")}>
             <FilePen className={cn("h-3 w-3 mx-auto mb-0.5", meta.draft > 0 ? "text-blue-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", meta.draft > 0 ? "text-blue-700" : "text-[var(--cs-text-muted)]")}>
               {meta.draft}
@@ -96,7 +96,7 @@ export function FormComplianceCard() {
           <div className="flex items-center justify-between text-[10px] px-1">
             <span className="text-[var(--cs-text-muted)]">Completion rate</span>
             <div className="flex items-center gap-1.5">
-              <div className="h-1.5 w-16 rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-1.5 w-16 rounded-full bg-[var(--cs-surface)] overflow-hidden">
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",

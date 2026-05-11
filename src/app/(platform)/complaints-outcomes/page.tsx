@@ -324,7 +324,7 @@ export default function ComplaintsOutcomesPage() {
                       </Badge>
                     )}
                     {entry.ofsted_notified && (
-                      <Badge variant="outline" className="text-[10px] bg-violet-50 text-violet-700 border-violet-200">
+                      <Badge variant="outline" className="text-[10px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]">
                         Ofsted Notified
                       </Badge>
                     )}

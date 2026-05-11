@@ -151,7 +151,7 @@ export function NightSummary() {
                 return (
                   <div key={childId} className={cn(
                     "flex items-center gap-2 rounded-xl px-3 py-2",
-                    cs.hadConcern ? "bg-red-50" : "bg-slate-50",
+                    cs.hadConcern ? "bg-red-50" : "bg-[var(--cs-surface)]",
                   )}>
                     <StatusIcon className={cn("h-3.5 w-3.5 shrink-0", statusColor)} />
                     <span className="text-[11px] font-medium text-[var(--cs-text-secondary)] flex-1 truncate">

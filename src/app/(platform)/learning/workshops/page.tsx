@@ -93,8 +93,8 @@ function AccordionSection({ section, index }: { section: ContentSection; index: 
           {section.activity && (
             <div>
               <p className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1">Activity</p>
-              <div className="rounded-lg bg-violet-50 border border-violet-100 p-3">
-                <p className="text-sm text-violet-800 leading-relaxed">{section.activity}</p>
+              <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
+                <p className="text-sm text-[var(--cs-navy)] leading-relaxed">{section.activity}</p>
               </div>
             </div>
           )}
@@ -114,7 +114,7 @@ function WorkshopResult({
   saved: boolean;
 }) {
   return (
-    <Card className="border-violet-200">
+    <Card className="border-[var(--cs-aria-gold-soft)]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
@@ -136,7 +136,7 @@ function WorkshopResult({
             <ul className="space-y-1.5">
               {result.learning_objectives.map((obj, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-[var(--cs-text-secondary)]">
-                  <span className="text-violet-500 font-bold shrink-0">{i + 1}.</span>
+                  <span className="text-[var(--cs-aria-gold)] font-bold shrink-0">{i + 1}.</span>
                   <span>{obj}</span>
                 </li>
               ))}
@@ -208,7 +208,7 @@ function WorkshopResult({
             <ul className="space-y-1.5">
               {result.evaluation_questions.map((q, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-[var(--cs-text-secondary)]">
-                  <span className="text-violet-500 font-semibold shrink-0">{i + 1}.</span>
+                  <span className="text-[var(--cs-aria-gold)] font-semibold shrink-0">{i + 1}.</span>
                   <span>{q}</span>
                 </li>
               ))}
@@ -224,8 +224,8 @@ function WorkshopResult({
 function WorkshopListItem({ resource }: { resource: { id: string; title: string; pathway?: LearningPathway; created_at: string; status: string } }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-[var(--cs-border-subtle)] bg-white p-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-50">
-        <Presentation className="h-4 w-4 text-violet-600" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--cs-aria-gold-bg)]">
+        <Presentation className="h-4 w-4 text-[var(--cs-aria-gold)]" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-[var(--cs-navy)] truncate">{resource.title}</p>
@@ -330,8 +330,8 @@ export default function WorkshopPlannerPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100">
-                <Presentation className="h-4 w-4 text-violet-600" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--cs-aria-gold-bg)]">
+                <Presentation className="h-4 w-4 text-[var(--cs-aria-gold)]" />
               </div>
               Plan a Workshop
             </CardTitle>

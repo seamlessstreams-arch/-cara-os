@@ -147,7 +147,7 @@ export function ConcernEscalation() {
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
                         {concern.child && (
-                          <span className="text-[10px] text-violet-600">{concern.child}</span>
+                          <span className="text-[10px] text-[var(--cs-aria-gold)]">{concern.child}</span>
                         )}
                         <span className="text-[10px] text-[var(--cs-text-muted)]">{formatRelative(concern.date)}</span>
                       </div>

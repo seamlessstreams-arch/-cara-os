@@ -68,7 +68,7 @@ function FlipCard({ card }: { card: Flashcard }) {
         className={cn(
           "relative rounded-xl border p-4 min-h-[140px] flex flex-col justify-between transition-all",
           flipped
-            ? "border-violet-200 bg-violet-50"
+            ? "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]"
             : "border-[var(--cs-border)] bg-white hover:border-slate-300 hover:shadow-sm"
         )}
       >
@@ -87,7 +87,7 @@ function FlipCard({ card }: { card: Flashcard }) {
           </div>
         </div>
         <div className="mt-3 flex-1 flex items-center">
-          <p className={cn("text-sm leading-relaxed", flipped ? "text-violet-900 font-medium" : "text-[var(--cs-navy)]")}>
+          <p className={cn("text-sm leading-relaxed", flipped ? "text-[var(--cs-navy)] font-medium" : "text-[var(--cs-navy)]")}>
             {flipped ? card.answer : card.question}
           </p>
         </div>

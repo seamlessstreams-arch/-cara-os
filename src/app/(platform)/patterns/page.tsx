@@ -196,14 +196,14 @@ function PatternCard({
           </div>
 
           {/* Reflective Prompt */}
-          <div className={cn("rounded-lg p-3 border", isPositive ? "bg-emerald-50 border-emerald-200" : "bg-violet-50 border-violet-200")}>
+          <div className={cn("rounded-lg p-3 border", isPositive ? "bg-emerald-50 border-emerald-200" : "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]")}>
             <div className="flex items-center gap-2 mb-1.5">
-              <Brain className={cn("h-4 w-4", isPositive ? "text-emerald-600" : "text-violet-600")} />
-              <h4 className={cn("text-[11px] font-semibold uppercase tracking-wide", isPositive ? "text-emerald-700" : "text-violet-700")}>
+              <Brain className={cn("h-4 w-4", isPositive ? "text-emerald-600" : "text-[var(--cs-aria-gold)]")} />
+              <h4 className={cn("text-[11px] font-semibold uppercase tracking-wide", isPositive ? "text-emerald-700" : "text-[var(--cs-aria-gold)]")}>
                 Reflective Prompt
               </h4>
             </div>
-            <p className={cn("text-xs italic leading-relaxed", isPositive ? "text-emerald-800" : "text-violet-800")}>
+            <p className={cn("text-xs italic leading-relaxed", isPositive ? "text-emerald-800" : "text-[var(--cs-navy)]")}>
               &ldquo;{pattern.reflective_prompt}&rdquo;
             </p>
           </div>
@@ -621,7 +621,7 @@ export default function PatternAlertsPage() {
       {/* ── Regulatory Note ───────────────────────────────────────────────── */}
       <div className="mt-8 rounded-lg bg-slate-50 border border-[var(--cs-border)] p-4">
         <div className="flex items-start gap-3">
-          <Sparkles className="h-5 w-5 text-violet-500 mt-0.5 flex-shrink-0" />
+          <Sparkles className="h-5 w-5 text-[var(--cs-aria-gold)] mt-0.5 flex-shrink-0" />
           <div>
             <h4 className="text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">About Pattern Alerts</h4>
             <p className="text-[11px] text-[var(--cs-text-muted)] leading-relaxed">

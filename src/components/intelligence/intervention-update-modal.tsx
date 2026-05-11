@@ -30,9 +30,9 @@ const STATUS_OPTIONS: {
 }[] = [
   { value: "active",       label: "Active",       color: "border-emerald-400 text-emerald-700 bg-emerald-50"  },
   { value: "paused",       label: "Paused",       color: "border-amber-400 text-amber-700 bg-amber-50"        },
-  { value: "under_review", label: "Under Review", color: "border-violet-400 text-violet-700 bg-violet-50"     },
+  { value: "under_review", label: "Under Review", color: "border-[var(--cs-aria-gold)] text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]"     },
   { value: "completed",    label: "Completed",    color: "border-blue-400 text-blue-700 bg-blue-50"           },
-  { value: "stopped",      label: "Stopped",      color: "border-slate-400 text-[var(--cs-text-secondary)] bg-slate-50"        },
+  { value: "stopped",      label: "Stopped",      color: "border-[var(--cs-border)] text-[var(--cs-text-secondary)] bg-[var(--cs-surface)]"        },
 ];
 
 // ── Outcome options ───────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ const OUTCOME_OPTIONS: {
   { value: "working",           label: "Working",           color: "border-emerald-400 text-emerald-700 bg-emerald-50" },
   { value: "partially_working", label: "Partially Working", color: "border-amber-400 text-amber-700 bg-amber-50"       },
   { value: "not_working",       label: "Not Working",       color: "border-red-400 text-red-700 bg-red-50"             },
-  { value: "too_early",         label: "Too Early to Tell", color: "border-slate-300 text-[var(--cs-text-muted)] bg-slate-50"       },
+  { value: "too_early",         label: "Too Early to Tell", color: "border-[var(--cs-border)] text-[var(--cs-text-muted)] bg-[var(--cs-surface)]"       },
   { value: "unknown",           label: "Unknown",           color: "border-[var(--cs-border)] text-[var(--cs-text-muted)] bg-white"          },
 ];
 
@@ -153,7 +153,7 @@ export function InterventionUpdateModal({
                         "px-3 py-1.5 rounded-full border text-xs font-semibold transition-all",
                         status === opt.value
                           ? opt.color + " ring-2 ring-offset-1 ring-current"
-                          : "border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:border-slate-300"
+                          : "border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:border-[var(--cs-border)]"
                       )}
                     >
                       {opt.label}
@@ -177,7 +177,7 @@ export function InterventionUpdateModal({
                         "px-3 py-1.5 rounded-full border text-xs font-semibold transition-all",
                         outcome === opt.value
                           ? opt.color + " ring-2 ring-offset-1 ring-current"
-                          : "border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:border-slate-300"
+                          : "border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:border-[var(--cs-border)]"
                       )}
                     >
                       {opt.label}
@@ -198,7 +198,7 @@ export function InterventionUpdateModal({
                     onChange={(e) => setOutcomeNotes(e.target.value)}
                     rows={3}
                     placeholder="What evidence do you have? What has changed for this young person?"
-                    className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 transition-colors"
+                    className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] transition-colors"
                   />
                   <div className="absolute right-2 top-2">
                     <DictationButton
@@ -222,7 +222,7 @@ export function InterventionUpdateModal({
                   type="date"
                   value={reviewDate}
                   onChange={(e) => setReviewDate(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-xs text-[var(--cs-navy)] focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100 transition-colors"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)] focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] transition-colors"
                 />
               </div>
 
@@ -235,7 +235,7 @@ export function InterventionUpdateModal({
                 </Dialog.Close>
                 <Button
                   size="sm"
-                  className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+                  className="flex-1 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
                   onClick={handleSubmit}
                   disabled={update.isPending}
                 >

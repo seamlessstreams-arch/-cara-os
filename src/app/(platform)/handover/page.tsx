@@ -95,8 +95,8 @@ function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
             className={cn(
               "flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border transition-colors",
               showAria
-                ? "bg-violet-100 text-violet-700 border-violet-200"
-                : "bg-white text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:bg-violet-50 hover:text-violet-600 hover:border-violet-200"
+                ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]"
+                : "bg-white text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:bg-[var(--cs-aria-gold-bg)] hover:text-[var(--cs-aria-gold)] hover:border-[var(--cs-aria-gold-soft)]"
             )}
           >
             <Sparkles className="h-2.5 w-2.5" />Ask ARIA
@@ -181,7 +181,7 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
                     <span className={cn(
                       "text-[9px] rounded-full px-1.5 py-0.5 font-medium",
                       ctx.days_since_last_shift >= 4
-                        ? "bg-violet-100 text-violet-700"
+                        ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]"
                         : "bg-blue-100 text-blue-600"
                     )}>
                       {ctx.days_since_last_shift}d away
@@ -530,7 +530,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
               variant="outline"
               onClick={handleAriaGenerate}
               disabled={ariaGenerating || !shiftSummaryData}
-              className="border-violet-200 text-violet-700 hover:bg-violet-50"
+              className="border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)]"
             >
               {ariaGenerating ? (
                 <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />Generating...</>
@@ -1148,7 +1148,7 @@ export default function HandoverPage() {
           <Card className="rounded-2xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Pill className="h-4 w-4 text-violet-500" />
+                <Pill className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                 Medication Today
               </CardTitle>
             </CardHeader>
@@ -1159,7 +1159,7 @@ export default function HandoverPage() {
                 <div className="space-y-2">
                   {youngPeople.map((yp) => (
                     <div key={yp.id} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-violet-400 shrink-0" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)] shrink-0" />
                       <span className="text-xs text-[var(--cs-text-secondary)] flex-1">{yp.preferred_name || yp.first_name}</span>
                       {yp.risk_flags.includes("medication refusal") && (
                         <Badge className="text-[9px] rounded-full bg-red-100 text-red-600">Risk</Badge>

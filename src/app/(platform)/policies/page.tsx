@@ -36,7 +36,7 @@ const CATEGORY_CONFIG: Record<HomePolicyCategory, { label: string; icon: React.E
   health_safety:    { label: "Health & Safety",     icon: CheckCircle2,color: "text-emerald-600",  bg: "bg-emerald-50",  border: "border-emerald-200" },
   workforce:        { label: "Workforce",           icon: Users,       color: "text-teal-600",     bg: "bg-teal-50",     border: "border-teal-200"    },
   behaviour:        { label: "Behaviour Support",   icon: Star,        color: "text-amber-600",    bg: "bg-amber-50",    border: "border-amber-200"   },
-  complaints:       { label: "Complaints",          icon: FileText,    color: "text-violet-600",   bg: "bg-violet-50",   border: "border-violet-200"  },
+  complaints:       { label: "Complaints",          icon: FileText,    color: "text-[var(--cs-aria-gold)]",   bg: "bg-[var(--cs-aria-gold-bg)]",   border: "border-[var(--cs-aria-gold-soft)]"  },
   data_protection:  { label: "Data Protection",     icon: Lock,        color: "text-[var(--cs-text-secondary)]",    bg: "bg-slate-50",    border: "border-[var(--cs-border)]"   },
   admissions:       { label: "Admissions",          icon: UserCheck,   color: "text-blue-600",     bg: "bg-blue-50",     border: "border-blue-200"    },
   missing_persons:  { label: "Missing Persons",     icon: AlertTriangle,color: "text-orange-600",  bg: "bg-orange-50",   border: "border-orange-200"  },

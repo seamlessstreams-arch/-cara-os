@@ -116,8 +116,8 @@ const CHECK_FREQUENCY: {
   {
     label: "Weekly",
     icon: Calendar,
-    color: "text-violet-600",
-    bg: "bg-violet-50",
+    color: "text-[var(--cs-aria-gold)]",
+    bg: "bg-[var(--cs-aria-gold-bg)]",
     checks: [
       { key: "fire_alarm_test", label: "Fire Alarm (Weekly Test)" },
       { key: "perimeter_check", label: "Perimeter Check" },

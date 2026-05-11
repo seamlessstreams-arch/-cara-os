@@ -23,7 +23,7 @@ const SEV_DOT: Record<RiAlertSeverity, string> = {
   critical: "bg-red-500",
   high:     "bg-orange-500",
   medium:   "bg-amber-400",
-  low:      "bg-slate-300",
+  low:      "bg-[var(--cs-text-gentle)]",
 };
 const SEV_TEXT: Record<RiAlertSeverity, string> = {
   critical: "text-red-700",
@@ -110,13 +110,13 @@ export function RiAlertsSummary() {
 
         {/* Severity distribution bar */}
         {active.length > 0 && (
-          <div className="flex h-1.5 rounded-full overflow-hidden bg-slate-100">
+          <div className="flex h-1.5 rounded-full overflow-hidden bg-[var(--cs-surface)]">
             {(["critical", "high", "medium", "low"] as RiAlertSeverity[]).map((sev) => {
               const count = active.filter((a: RiAlert) => a.severity === sev).length;
               if (count === 0) return null;
               const pct = (count / active.length) * 100;
               const barCol: Record<string, string> = {
-                critical: "bg-red-500", high: "bg-orange-400", medium: "bg-amber-300", low: "bg-slate-200",
+                critical: "bg-red-500", high: "bg-orange-400", medium: "bg-amber-300", low: "bg-[var(--cs-surface)]",
               };
               return <div key={sev} className={barCol[sev]} style={{ width: `${pct}%` }} />;
             })}

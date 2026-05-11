@@ -185,7 +185,7 @@ export default function RiHubPage() {
         <div className="rounded-2xl bg-slate-900 p-6 text-white space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
                 <Gavel className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -217,7 +217,7 @@ export default function RiHubPage() {
           </div>
           <div className="flex flex-wrap gap-2 pt-1 border-t border-white/10">
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-[var(--cs-text-gentle)]">Oak House</span>
-            <span className="rounded-full bg-indigo-600/40 px-3 py-1 text-xs text-indigo-200">Reg 17 / Reg 44 / Reg 45</span>
+            <span className="rounded-full bg-[var(--cs-navy)]/40 px-3 py-1 text-xs text-indigo-200">Reg 17 / Reg 44 / Reg 45</span>
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-[var(--cs-text-gentle)]">ILACS Framework</span>
           </div>
         </div>
@@ -270,8 +270,8 @@ export default function RiHubPage() {
               title="Ofsted Readiness"
               description="Mock inspection review, ILACS checklist, question preparation"
               icon={Award}
-              colour="text-violet-600"
-              bg="bg-violet-50"
+              colour="text-[var(--cs-aria-gold)]"
+              bg="bg-[var(--cs-aria-gold-bg)]"
             />
             <FeatureCard
               href="/ri/challenge-log"
@@ -305,7 +305,7 @@ export default function RiHubPage() {
 
         {/* ARIA RI intelligence prompt */}
         <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-5 flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div className="flex-1 space-y-2">

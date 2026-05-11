@@ -59,7 +59,7 @@ const CAT_CONFIG: Record<EventCategory, {
   border:string;
 }> = {
   lac_review:   { label: "LAC Review",       icon: ClipboardList, color: "text-indigo-600",  bg: "bg-indigo-50",  border: "border-indigo-200" },
-  reg44:        { label: "Reg 44 Visit",      icon: Eye,           color: "text-violet-600",  bg: "bg-violet-50",  border: "border-violet-200" },
+  reg44:        { label: "Reg 44 Visit",      icon: Eye,           color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]" },
   supervision:  { label: "Supervision",       icon: Users,         color: "text-teal-600",    bg: "bg-teal-50",    border: "border-teal-200"   },
   appraisal:    { label: "Appraisal",         icon: CheckCircle2,  color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200"},
   training:     { label: "Training Renewal",  icon: GraduationCap, color: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-200"  },

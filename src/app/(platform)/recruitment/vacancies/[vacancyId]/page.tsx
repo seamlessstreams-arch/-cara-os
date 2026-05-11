@@ -56,7 +56,7 @@ function stageColour(stage: string) {
     case "withdrawn":       return "bg-slate-100 text-[var(--cs-text-muted)] border-[var(--cs-border)]";
     case "final_clearance":
     case "pre_start_checks":return "bg-blue-100 text-blue-800 border-blue-200";
-    case "conditional_offer":return "bg-violet-100 text-violet-800 border-violet-200";
+    case "conditional_offer":return "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]";
     default:                return "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]";
   }
 }
@@ -218,7 +218,7 @@ export default function VacancyDetailPage({
                 <Badge className="text-[11px] rounded-full border bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]">
                   {contractLabels[vacancy.contract_type] ?? vacancy.contract_type}
                 </Badge>
-                <Badge className="text-[11px] rounded-full border bg-violet-100 text-violet-700 border-violet-200">
+                <Badge className="text-[11px] rounded-full border bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]">
                   {vacancy.role_code}
                 </Badge>
               </div>

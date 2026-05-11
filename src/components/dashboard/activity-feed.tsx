@@ -41,17 +41,17 @@ const TYPE_COLOR: Record<FeedItem["type"], string> = {
   medication:   "bg-teal-100 text-teal-600",
   handover:     "bg-amber-100 text-amber-600",
   safeguarding: "bg-red-100 text-red-600",
-  training:     "bg-violet-100 text-violet-600",
-  document:     "bg-slate-100 text-[var(--cs-text-secondary)]",
+  training:     "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  document:     "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
   shift:        "bg-indigo-100 text-indigo-600",
-  form:         "bg-slate-100 text-[var(--cs-text-secondary)]",
+  form:         "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
 };
 
 const SEVERITY_DOT: Record<string, string> = {
   critical: "bg-red-500",
   high:     "bg-orange-500",
   medium:   "bg-amber-400",
-  low:      "bg-slate-300",
+  low:      "bg-[var(--cs-text-gentle)]",
   info:     "bg-blue-300",
 };
 
@@ -111,7 +111,7 @@ function FeedItemRow({ item }: { item: FeedItem }) {
             </span>
           )}
           {item.child_id && (
-            <span className="text-[10px] text-violet-600 flex items-center gap-0.5 font-medium">
+            <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-0.5 font-medium">
               <Heart className="h-2.5 w-2.5" />
               {getYPName(item.child_id)}
             </span>
@@ -155,11 +155,11 @@ export function ActivityFeed({ limit = 12 }: { limit?: number }) {
           </div>
         ) : items.length === 0 ? (
           <div className="py-10 text-center">
-            <Activity className="h-8 w-8 text-slate-200 mx-auto mb-2" />
+            <Activity className="h-8 w-8 text-[var(--cs-text-gentle)] mx-auto mb-2" />
             <p className="text-sm font-medium text-[var(--cs-text-muted)]">No recent activity</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 max-h-[480px] overflow-y-auto">
+          <div className="divide-y divide-[var(--cs-border-subtle)] max-h-[480px] overflow-y-auto">
             {items.map((item) => (
               <FeedItemRow key={item.id} item={item} />
             ))}

@@ -56,7 +56,7 @@ const RISK_BORDER: Record<PreventRiskLevel, string> = {
 const STATUS_COLOURS: Record<PreventStatus, string> = {
   open: "bg-blue-100 text-blue-800",
   referred: "bg-orange-100 text-orange-800",
-  channel_active: "bg-violet-100 text-violet-800",
+  channel_active: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   channel_closed: "bg-green-100 text-green-800",
   nfa: "bg-slate-100 text-[var(--cs-text-secondary)]",
   monitoring: "bg-amber-100 text-amber-800",
@@ -376,11 +376,11 @@ export default function PreventDutyPage() {
 
                     {/* channel outcome */}
                     {rec.channel_outcome && (
-                      <div className="rounded-xl bg-violet-50 border border-violet-200 p-3">
-                        <p className="text-[10px] font-semibold text-violet-600 uppercase tracking-wider mb-1">
+                      <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
+                        <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider mb-1">
                           Channel Outcome
                         </p>
-                        <p className="text-xs text-violet-800">{rec.channel_outcome}</p>
+                        <p className="text-xs text-[var(--cs-navy)]">{rec.channel_outcome}</p>
                       </div>
                     )}
 

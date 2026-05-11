@@ -32,7 +32,7 @@ const ROUTE_CONFIG: Record<MarRoute, { color: string; bg: string; border: string
 
 const TYPE_CONFIG: Record<MarScheduleType, { color: string; bg: string; border: string }> = {
   scheduled: { color: "text-[var(--cs-text-secondary)]", bg: "bg-slate-100", border: "border-[var(--cs-border)]" },
-  prn:       { color: "text-violet-700", bg: "bg-violet-50", border: "border-violet-200" },
+  prn:       { color: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]", border: "border-[var(--cs-aria-gold-soft)]" },
 };
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */

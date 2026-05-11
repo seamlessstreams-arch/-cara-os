@@ -358,13 +358,13 @@ export default function ChildPreventRadicalisationScreeningPage() {
 
                   {/* external consultation */}
                   {r.external_consultation.length > 0 && (
-                    <div className="rounded-md bg-violet-50 border border-violet-200 p-3">
-                      <h4 className="text-xs font-semibold text-violet-700 mb-1">External consultation</h4>
-                      <ul className="text-sm text-violet-900 space-y-1.5">
+                    <div className="rounded-md bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
+                      <h4 className="text-xs font-semibold text-[var(--cs-aria-gold)] mb-1">External consultation</h4>
+                      <ul className="text-sm text-[var(--cs-navy)] space-y-1.5">
                         {r.external_consultation.map((c, i) => (
-                          <li key={i} className="border-l-2 border-violet-300 pl-2">
+                          <li key={i} className="border-l-2 border-[var(--cs-aria-gold-soft)] pl-2">
                             <p className="font-medium">{c.agency}{c.clinician ? ` — ${c.clinician}` : ""} · {formatDate(c.date)}</p>
-                            <p className="text-violet-800/90">{c.outcome}</p>
+                            <p className="text-[var(--cs-navy)]/90">{c.outcome}</p>
                           </li>
                         ))}
                       </ul>

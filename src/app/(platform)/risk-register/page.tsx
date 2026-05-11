@@ -43,7 +43,7 @@ const CATEGORY_CONFIG: Record<RiskRegisterCategory, { label: string; icon: React
   placement_stability: { label: "Placement Stability", icon: Target,        color: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200"    },
   staffing:            { label: "Staffing",             icon: User,          color: "text-indigo-700",  bg: "bg-indigo-50",  border: "border-indigo-200"  },
   environmental:       { label: "Environmental",       icon: ShieldCheck,   color: "text-teal-700",    bg: "bg-teal-50",    border: "border-teal-200"    },
-  regulatory:          { label: "Regulatory",           icon: CheckCircle2,  color: "text-violet-700",  bg: "bg-violet-50",  border: "border-violet-200"  },
+  regulatory:          { label: "Regulatory",           icon: CheckCircle2,  color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]"  },
   emotional_wellbeing: { label: "Emotional Wellbeing", icon: TrendingDown,  color: "text-pink-700",    bg: "bg-pink-50",    border: "border-pink-200"    },
   exploitation:        { label: "Exploitation",         icon: AlertOctagon,  color: "text-rose-700",    bg: "bg-rose-50",    border: "border-rose-200"    },
   missing:             { label: "Missing",              icon: AlertTriangle, color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"   },

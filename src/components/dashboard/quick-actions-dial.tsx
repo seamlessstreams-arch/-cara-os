@@ -103,9 +103,9 @@ export function QuickActionsDial() {
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-all duration-200",
+          "flex h-14 w-14 items-center justify-center rounded-2xl shadow-[var(--cs-shadow-card)] transition-all duration-200",
           open
-            ? "bg-slate-800 text-white rotate-45 shadow-xl"
+            ? "bg-[var(--cs-navy)] text-white rotate-45 shadow-xl"
             : "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-xl hover:scale-105",
         )}
         aria-label={open ? "Close quick actions" : "Open quick actions"}
@@ -123,7 +123,7 @@ export function QuickActionsDial() {
               onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-4 py-2.5 shadow-md transition-all",
-                "bg-white border border-[var(--cs-border)] hover:shadow-lg hover:-translate-y-0.5",
+                "bg-white border border-[var(--cs-border)] hover:shadow-[var(--cs-shadow-card)] hover:-translate-y-0.5",
               )}
               style={{
                 animationDelay: `${i * 30}ms`,

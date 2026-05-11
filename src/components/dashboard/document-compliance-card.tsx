@@ -121,7 +121,7 @@ export function DocumentComplianceCard() {
             <div className={cn("text-sm font-bold tabular-nums", expired > 0 ? "text-red-700" : "text-emerald-700")}>{expired}</div>
             <div className={cn("text-[9px]", expired > 0 ? "text-red-500" : "text-emerald-500")}>Expired</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", expiringSoon > 0 ? "bg-amber-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", expiringSoon > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
             <Clock className={cn("h-3 w-3 mx-auto mb-0.5", expiringSoon > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", expiringSoon > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>{expiringSoon}</div>
             <div className={cn("text-[9px]", expiringSoon > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")}>Expiring</div>
@@ -142,7 +142,7 @@ export function DocumentComplianceCard() {
                 {signCompletionPct}%
               </span>
             </div>
-            <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-2 w-full rounded-full bg-[var(--cs-surface)] overflow-hidden">
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
@@ -179,7 +179,7 @@ export function DocumentComplianceCard() {
             {outstandingDocs.map((doc) => (
               <Link key={doc.id} href="/documents">
                 <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--cs-surface)] transition-colors">
-                  <Shield className="h-3 w-3 text-violet-500 shrink-0" />
+                  <Shield className="h-3 w-3 text-[var(--cs-aria-gold)] shrink-0" />
                   <span className="text-[11px] font-medium text-[var(--cs-text-secondary)] flex-1 truncate">
                     {doc.title}
                   </span>

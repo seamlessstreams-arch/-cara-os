@@ -185,7 +185,7 @@ const stageColour: Record<TransPlan["socialTransitionStage"], string> = {
   "Questioning / exploring": "bg-amber-100 text-amber-800 border-amber-200",
   "Privately identified": "bg-blue-100 text-blue-800 border-blue-200",
   "Out to staff only": "bg-sky-100 text-sky-800 border-sky-200",
-  "Selectively out": "bg-violet-100 text-violet-800 border-violet-200",
+  "Selectively out": "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
   "Fully socially transitioned": "bg-emerald-100 text-emerald-800 border-emerald-200",
   "Detransitioned / re-exploring": "bg-rose-100 text-rose-800 border-rose-200",
 };
@@ -344,9 +344,9 @@ export default function TransAffirmingCarePlanPage() {
               {isOpen ? (
                 <div className="px-4 pb-4 border-t border-[var(--cs-border-subtle)] bg-slate-50/50">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
-                    <div className="rounded-md border border-violet-200 bg-violet-50 p-3 lg:col-span-2">
-                      <div className="text-xs font-semibold text-violet-700 uppercase mb-2">Child Voice</div>
-                      <p className="text-sm text-violet-900 italic">&ldquo;{r.childVoice}&rdquo;</p>
+                    <div className="rounded-md border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3 lg:col-span-2">
+                      <div className="text-xs font-semibold text-[var(--cs-aria-gold)] uppercase mb-2">Child Voice</div>
+                      <p className="text-sm text-[var(--cs-navy)] italic">&ldquo;{r.childVoice}&rdquo;</p>
                     </div>
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Staff Observation</div>
@@ -438,7 +438,7 @@ export default function TransAffirmingCarePlanPage() {
         })}
       </div>
 
-      <div className="mt-6 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
+      <div className="mt-6 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
         <div className="font-semibold mb-1">Regulatory framework</div>
         <p>
           Care is child-led, child-paced, and watchful-waiting. Practice is grounded in the Equality Act 2010 (gender

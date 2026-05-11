@@ -392,9 +392,9 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
   return (
     <Card
       className={cn(
-        "hover:shadow-lg transition-all cursor-pointer group",
+        "hover:shadow-[var(--cs-shadow-card)] transition-all cursor-pointer group",
         hasRisk && "ring-1 ring-amber-200",
-        isExpanded && "lg:col-span-3 ring-2 ring-blue-200 shadow-lg",
+        isExpanded && "lg:col-span-3 ring-2 ring-blue-200 shadow-[var(--cs-shadow-card)]",
       )}
       onClick={onToggleExpand}
     >
@@ -466,7 +466,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
           <div className="rounded-xl bg-slate-50 p-2.5 text-center">
             <div className={cn(
               "text-lg font-bold",
-              yp.missing_episodes_total > 0 ? "text-violet-600" : "text-[var(--cs-navy)]"
+              yp.missing_episodes_total > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-navy)]"
             )}>
               {yp.missing_episodes_total}
             </div>
@@ -826,9 +826,9 @@ export default function YoungPeoplePage() {
               <div className={cn("text-lg font-bold tabular-nums", stats.totalIncidents > 0 ? "text-orange-700" : "text-[var(--cs-text-muted)]")}>{stats.totalIncidents}</div>
               <div className="text-[10px] text-[var(--cs-text-muted)]">Open Incidents</div>
             </div>
-            <div className={cn("rounded-xl border p-3 text-center", stats.withMissing > 0 ? "border-violet-200 bg-violet-50" : "border-[var(--cs-border)] bg-white")}>
-              <MapPin className={cn("h-4 w-4 mx-auto mb-1", stats.withMissing > 0 ? "text-violet-500" : "text-[var(--cs-text-gentle)]")} />
-              <div className={cn("text-lg font-bold tabular-nums", stats.withMissing > 0 ? "text-violet-700" : "text-[var(--cs-text-muted)]")}>{stats.withMissing}</div>
+            <div className={cn("rounded-xl border p-3 text-center", stats.withMissing > 0 ? "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]" : "border-[var(--cs-border)] bg-white")}>
+              <MapPin className={cn("h-4 w-4 mx-auto mb-1", stats.withMissing > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-gentle)]")} />
+              <div className={cn("text-lg font-bold tabular-nums", stats.withMissing > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")}>{stats.withMissing}</div>
               <div className="text-[10px] text-[var(--cs-text-muted)]">Missing Hx</div>
             </div>
             <div className="rounded-xl border border-[var(--cs-border)] bg-white p-3 text-center">

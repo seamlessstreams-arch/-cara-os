@@ -55,7 +55,7 @@ const DATE_FILTERS = [
 
 function ActionIcon({ actionType }: { actionType: AuditActionType }) {
   const iconClass = "h-4 w-4";
-  if (actionType.startsWith("aria_assessment")) return <Brain className={cn(iconClass, "text-violet-500")} />;
+  if (actionType.startsWith("aria_assessment")) return <Brain className={cn(iconClass, "text-[var(--cs-aria-gold)]")} />;
   if (actionType.startsWith("aria_oversight")) return <ClipboardList className={cn(iconClass, "text-emerald-500")} />;
   if (actionType.startsWith("keywork")) return <BookOpen className={cn(iconClass, "text-amber-500")} />;
   if (actionType.startsWith("child_resource")) return <FileText className={cn(iconClass, "text-pink-500")} />;
@@ -110,7 +110,7 @@ function AuditTimelineItem({ entry }: { entry: AriaAuditEntry }) {
                 {childName && (
                   <>
                     <span className="text-[var(--cs-text-gentle)]">·</span>
-                    <span className="text-violet-600 font-medium">{childName}</span>
+                    <span className="text-[var(--cs-aria-gold)] font-medium">{childName}</span>
                   </>
                 )}
                 {entry.source_table && (
@@ -157,7 +157,7 @@ function AuditTimelineItem({ entry }: { entry: AriaAuditEntry }) {
                   {entry.ai_response && (
                     <div>
                       <p className="text-[9px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-0.5">AI Response</p>
-                      <p className="text-[11px] text-[var(--cs-text-secondary)] leading-relaxed line-clamp-3 bg-violet-50 rounded-lg px-2 py-1.5">
+                      <p className="text-[11px] text-[var(--cs-text-secondary)] leading-relaxed line-clamp-3 bg-[var(--cs-aria-gold-bg)] rounded-lg px-2 py-1.5">
                         {entry.ai_response.slice(0, 200)}{entry.ai_response.length > 200 ? "…" : ""}
                       </p>
                     </div>

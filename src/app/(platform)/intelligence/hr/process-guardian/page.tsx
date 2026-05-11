@@ -261,11 +261,11 @@ export default function HrProcessGuardianPage() {
   return (
     <PageShell title="ARIA — HR Process Guardian">
       {/* ARIA draft banner */}
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
-        <Sparkles className="h-5 w-5 mt-0.5 text-violet-600" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
         <div>
           <div className="font-semibold">ARIA suggested draft, never final</div>
-          <p className="text-violet-800">
+          <p className="text-[var(--cs-navy)]">
             Run a draft HR letter, suspension decision, or disciplinary outcome
             through the Process Guardian before sending. The Guardian checks
             fairness, ACAS alignment, safeguarding handling, proportionality,
@@ -281,7 +281,7 @@ export default function HrProcessGuardianPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldCheck className="h-4 w-4 text-violet-600" />
+            <ShieldCheck className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Draft to review
           </CardTitle>
         </CardHeader>
@@ -504,7 +504,7 @@ export default function HrProcessGuardianPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between gap-2 text-base">
                     <span className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-violet-500" /> Suggested safer wording
+                      <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Suggested safer wording
                     </span>
                     <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)} className="gap-1.5">
                       <Pencil className="h-3.5 w-3.5" /> {editing ? "Stop editing" : "Edit"}

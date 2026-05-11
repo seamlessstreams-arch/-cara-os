@@ -172,16 +172,16 @@ export default function PlacementSuccessFactorsPage() {
       }
     >
       {/* ─── learning banner ─── */}
-      <div className="mb-6 rounded-lg border border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 p-4">
+      <div className="mb-6 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-indigo-50 p-4">
         <div className="flex items-start gap-3">
-          <div className="rounded-full bg-violet-100 p-2 shrink-0">
-            <Sparkles className="h-5 w-5 text-violet-700" />
+          <div className="rounded-full bg-[var(--cs-aria-gold-bg)] p-2 shrink-0">
+            <Sparkles className="h-5 w-5 text-[var(--cs-aria-gold)]" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-violet-900">
+            <p className="text-sm font-semibold text-[var(--cs-navy)]">
               Systematic learning across all placements
             </p>
-            <p className="mt-1 text-xs text-violet-800">
+            <p className="mt-1 text-xs text-[var(--cs-navy)]">
               This analysis brings together what we have learned from every placement Oak House has
               held — those that thrived, those that disrupted, and those still in progress. Each
               factor is triangulated against supporting cases, counter-cases, child voice, staff

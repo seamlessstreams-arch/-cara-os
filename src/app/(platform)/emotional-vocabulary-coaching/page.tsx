@@ -37,7 +37,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 
 const FRAMEWORK_COLOURS: Record<EmotionalFramework, string> = {
   zones_of_regulation: "bg-sky-100 text-sky-800",
-  feelings_wheel_plutchik: "bg-violet-100 text-violet-800",
+  feelings_wheel_plutchik: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   ruler: "bg-teal-100 text-teal-800",
   how_are_you_feeling_today: "bg-amber-100 text-amber-800",
   bespoke: "bg-pink-100 text-pink-800",
@@ -218,7 +218,7 @@ export default function EmotionalVocabularyCoachingPage() {
             label: "Children in Coaching",
             value: stats.inCoaching,
             icon: MessageCircle,
-            colour: "text-violet-600",
+            colour: "text-[var(--cs-aria-gold)]",
           },
           {
             label: "Feelings Recognised (total)",
@@ -308,7 +308,7 @@ export default function EmotionalVocabularyCoachingPage() {
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Heart className="h-4 w-4 text-violet-400" />
+                    <Heart className="h-4 w-4 text-[var(--cs-text-muted)]" />
                     <h3 className="font-semibold">
                       {getYPName(r.child_id)}
                     </h3>
@@ -375,11 +375,11 @@ export default function EmotionalVocabularyCoachingPage() {
                   </div>
 
                   {/* starting position */}
-                  <div className="rounded-md bg-violet-50 border border-violet-200 p-3">
-                    <h4 className="text-xs font-semibold text-violet-700 mb-1">
+                  <div className="rounded-md bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
+                    <h4 className="text-xs font-semibold text-[var(--cs-aria-gold)] mb-1">
                       Starting Position
                     </h4>
-                    <p className="text-sm text-violet-900">
+                    <p className="text-sm text-[var(--cs-navy)]">
                       {r.starting_position}
                     </p>
                   </div>
@@ -517,7 +517,7 @@ export default function EmotionalVocabularyCoachingPage() {
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────── */}
-      <div className="rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900 mb-6">
+      <div className="rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)] mb-6">
         <strong>Emotional Literacy &amp; Regulatory Frameworks:</strong> Many
         children in care arrive with limited emotional vocabulary as a
         consequence of early adversity — words for feelings simply weren&apos;t

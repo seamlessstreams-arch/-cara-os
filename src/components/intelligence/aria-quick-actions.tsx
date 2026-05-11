@@ -45,7 +45,7 @@ const ACTIONS: ActionConfig[] = [
     label: "Ask ARIA to Review",
     description: "Run a structured situation analysis on this record",
     icon: Sparkles,
-    colour: "text-violet-700 bg-violet-50 border-violet-200 hover:bg-violet-100",
+    colour: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]",
     href: (c, t, s) => `/intelligence/aria/situation?child_id=${c}&source_type=${t}&source_id=${s}`,
   },
   {
@@ -126,24 +126,24 @@ export function AriaQuickActions({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className={cn("rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-white", className)}>
+    <div className={cn("rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-br from-[var(--cs-aria-gold-bg)] to-white", className)}>
       {/* Header */}
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center gap-3 px-4 py-3 text-left"
       >
-        <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-violet-600 shrink-0">
+        <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-[var(--cs-navy)] shrink-0">
           <Sparkles className="h-3.5 w-3.5 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-violet-900">ARIA Quick Actions</p>
-          <p className="text-[10px] text-violet-600 leading-tight">
+          <p className="text-sm font-semibold text-[var(--cs-navy)]">ARIA Quick Actions</p>
+          <p className="text-[10px] text-[var(--cs-aria-gold)] leading-tight">
             AI-powered actions for this record — all outputs require human review
           </p>
         </div>
         {open
-          ? <ChevronUp className="h-4 w-4 text-violet-400 shrink-0" />
-          : <ChevronDown className="h-4 w-4 text-violet-400 shrink-0" />
+          ? <ChevronUp className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0" />
+          : <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0" />
         }
       </button>
 
@@ -172,7 +172,7 @@ export function AriaQuickActions({
               );
             })}
           </div>
-          <p className="text-[10px] text-violet-500 italic pt-1 border-t border-violet-100">
+          <p className="text-[10px] text-[var(--cs-aria-gold)] italic pt-1 border-t border-[var(--cs-aria-gold-soft)]">
             All ARIA-generated content is a draft and requires professional review before use.
           </p>
         </div>

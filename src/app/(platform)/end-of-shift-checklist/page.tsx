@@ -59,7 +59,7 @@ const shiftColour = (s: EndOfShiftType): string => {
     case "late":
       return "bg-indigo-100 text-indigo-800 border-indigo-200";
     case "sleep_in":
-      return "bg-violet-100 text-violet-800 border-violet-200";
+      return "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]";
     case "wake_night":
       return "bg-slate-200 text-[var(--cs-navy)] border-slate-300";
   }

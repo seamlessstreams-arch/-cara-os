@@ -26,7 +26,7 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 
 const STAGE_CLR: Record<MenstrualStage, string> = {
   pre_puberty_awareness: "bg-sky-100 text-sky-800",
-  early_signs_noted: "bg-violet-100 text-violet-800",
+  early_signs_noted: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   started_menstruating: "bg-rose-100 text-rose-800",
   established: "bg-pink-100 text-pink-800",
   na_not_menstruating: "bg-slate-100 text-[var(--cs-text-secondary)]",
@@ -34,7 +34,7 @@ const STAGE_CLR: Record<MenstrualStage, string> = {
 
 const STAGE_BORDER: Record<MenstrualStage, string> = {
   pre_puberty_awareness: "border-l-sky-300",
-  early_signs_noted: "border-l-violet-400",
+  early_signs_noted: "border-l-[var(--cs-aria-gold)]",
   started_menstruating: "border-l-rose-400",
   established: "border-l-pink-400",
   na_not_menstruating: "border-l-slate-300",
@@ -158,7 +158,7 @@ export default function MenstrualHealthTrackerPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {[
             { label: "Active Plans", value: activePlans, icon: Heart, clr: "text-rose-600" },
-            { label: "Education Delivered", value: educationDelivered, icon: GraduationCap, clr: "text-violet-600" },
+            { label: "Education Delivered", value: educationDelivered, icon: GraduationCap, clr: "text-[var(--cs-aria-gold)]" },
             { label: "Plans Reviewed (90d)", value: reviewedIn90d, icon: CheckCircle2, clr: "text-emerald-600" },
           ].map((s) => (
             <Card key={s.label}>
@@ -322,7 +322,7 @@ export default function MenstrualHealthTrackerPage() {
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {r.education_delivered.map((e: string, i: number) => (
-                            <Badge key={i} variant="outline" className="bg-violet-50 text-violet-800 border-violet-200">
+                            <Badge key={i} variant="outline" className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">
                               {e}
                             </Badge>
                           ))}

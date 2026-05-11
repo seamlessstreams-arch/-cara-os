@@ -39,8 +39,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   incidents:    "bg-orange-50 border-orange-200",
   tasks:        "bg-blue-50 border-blue-200",
   compliance:   "bg-amber-50 border-amber-200",
-  staffing:     "bg-violet-50 border-violet-200",
-  environment:  "bg-slate-50 border-slate-200",
+  staffing:     "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]",
+  environment:  "bg-[var(--cs-surface)] border-[var(--cs-border)]",
   intelligence: "bg-indigo-50 border-indigo-200",
 };
 
@@ -341,7 +341,7 @@ export function NotificationCentre() {
               <div className="px-4 py-10 text-center">
                 <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
                 <p className="text-sm font-medium text-emerald-700">All clear</p>
-                <p className="text-xs text-slate-400 mt-1">No outstanding notifications</p>
+                <p className="text-xs text-[var(--cs-text-muted)] mt-1">No outstanding notifications</p>
               </div>
             ) : (
               <div className="py-1">
@@ -353,7 +353,7 @@ export function NotificationCentre() {
                       href={item.href}
                       onClick={() => setOpen(false)}
                       className={cn(
-                        "flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors group relative",
+                        "flex items-start gap-3 px-4 py-3 hover:bg-[var(--cs-surface)] transition-colors group relative",
                         item.type === "critical" && "bg-red-50/50",
                       )}
                     >
@@ -378,11 +378,11 @@ export function NotificationCentre() {
                       <div className="flex-1 min-w-0">
                         <p className={cn(
                           "text-[13px] font-semibold leading-tight",
-                          item.type === "critical" ? "text-red-800" : "text-slate-800",
+                          item.type === "critical" ? "text-red-800" : "text-[var(--cs-navy)]",
                         )}>
                           {item.title}
                         </p>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed line-clamp-2">
+                        <p className="text-[11px] text-[var(--cs-text-muted)] mt-0.5 leading-relaxed line-clamp-2">
                           {item.description}
                         </p>
                       </div>
@@ -392,13 +392,13 @@ export function NotificationCentre() {
                         {item.type !== "success" && (
                           <button
                             onClick={(e) => handleDismiss(item.id, e)}
-                            className="h-5 w-5 rounded-md flex items-center justify-center text-slate-300 hover:text-slate-500 hover:bg-slate-100 opacity-0 group-hover:opacity-100 transition-all"
+                            className="h-5 w-5 rounded-md flex items-center justify-center text-[var(--cs-text-gentle)] hover:text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)] opacity-0 group-hover:opacity-100 transition-all"
                             title="Dismiss"
                           >
                             <X className="h-3 w-3" />
                           </button>
                         )}
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                        <ChevronRight className="h-3.5 w-3.5 text-[var(--cs-text-gentle)] group-hover:text-[var(--cs-text-muted)] transition-colors" />
                       </div>
                     </Link>
                   );

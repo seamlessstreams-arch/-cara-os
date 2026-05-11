@@ -98,7 +98,7 @@ export function WelfareChecksCard() {
       <CardContent className="pt-0 space-y-2.5">
         {/* KPI strip */}
         <div className="grid grid-cols-3 gap-2">
-          <div className={cn("rounded-xl p-2 text-center", todayRounds > 0 ? "bg-cyan-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", todayRounds > 0 ? "bg-cyan-50" : "bg-[var(--cs-surface)]")}>
             <Eye className={cn("h-3 w-3 mx-auto mb-0.5", todayRounds > 0 ? "text-cyan-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", todayRounds > 0 ? "text-cyan-700" : "text-[var(--cs-text-muted)]")}>{todayRounds}</div>
             <div className={cn("text-[9px]", todayRounds > 0 ? "text-cyan-500" : "text-[var(--cs-text-muted)]")}>Today</div>
@@ -108,10 +108,10 @@ export function WelfareChecksCard() {
             <div className={cn("text-sm font-bold tabular-nums", concernsFlagged > 0 ? "text-amber-700" : "text-emerald-700")}>{concernsFlagged}</div>
             <div className={cn("text-[9px]", concernsFlagged > 0 ? "text-amber-500" : "text-emerald-500")}>Concerns</div>
           </div>
-          <div className="rounded-xl bg-violet-50 p-2 text-center">
-            <Flame className="h-3 w-3 text-violet-500 mx-auto mb-0.5" />
-            <div className="text-sm font-bold text-violet-700 tabular-nums">{streak}</div>
-            <div className="text-[9px] text-violet-500">Day Streak</div>
+          <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] p-2 text-center">
+            <Flame className="h-3 w-3 text-[var(--cs-aria-gold)] mx-auto mb-0.5" />
+            <div className="text-sm font-bold text-[var(--cs-aria-gold)] tabular-nums">{streak}</div>
+            <div className="text-[9px] text-[var(--cs-aria-gold)]">Day Streak</div>
           </div>
         </div>
 
@@ -126,7 +126,7 @@ export function WelfareChecksCard() {
               {todayRounds}/3 target
             </span>
           </div>
-          <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-[var(--cs-surface)] overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all",

@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 const DEPTH_CONFIG = {
   brief: { label: "Brief", color: "bg-emerald-100 text-emerald-700", description: "Was on shift recently" },
   standard: { label: "Standard", color: "bg-blue-100 text-blue-700", description: "2-3 days away" },
-  comprehensive: { label: "Comprehensive", color: "bg-violet-100 text-violet-700", description: "4+ days away" },
+  comprehensive: { label: "Comprehensive", color: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]", description: "4+ days away" },
 };
 
 function StaffContextCard({ ctx }: { ctx: StaffHandoverContext }) {
@@ -25,9 +25,9 @@ function StaffContextCard({ ctx }: { ctx: StaffHandoverContext }) {
   const firstName = ctx.staff_name.split(" ")[0];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+    <div className="rounded-xl border border-[var(--cs-border)] bg-white overflow-hidden">
       <button
-        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--cs-surface)] transition-colors"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
         aria-label={`${ctx.staff_name} handover context`}
@@ -74,7 +74,7 @@ function StaffContextCard({ ctx }: { ctx: StaffHandoverContext }) {
       </button>
 
       {expanded && (
-        <div className="border-t border-slate-100 px-4 py-3 space-y-3">
+        <div className="border-t border-[var(--cs-border-subtle)] px-4 py-3 space-y-3">
           {/* Missed events summary */}
           <div className="grid grid-cols-4 gap-2">
             <div className="text-center rounded-lg bg-orange-50 px-2 py-1.5">
@@ -96,10 +96,10 @@ function StaffContextCard({ ctx }: { ctx: StaffHandoverContext }) {
           </div>
 
           {/* ARIA generated summary */}
-          <div className="rounded-xl bg-violet-50 border border-violet-100 p-3">
+          <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <Sparkles className="h-3.5 w-3.5 text-violet-600" />
-              <span className="text-[11px] font-semibold text-violet-700">
+              <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+              <span className="text-[11px] font-semibold text-[var(--cs-aria-gold)]">
                 ARIA — Personalised handover for {firstName}
               </span>
             </div>
@@ -125,12 +125,12 @@ export function AriaHandoverBuilder({ incomingStaffIds }: AriaHandoverBuilderPro
   if (incomingStaffIds.length === 0) return null;
 
   return (
-    <Card className="rounded-2xl border-violet-200 bg-gradient-to-br from-violet-50/50 to-white">
+    <Card className="rounded-2xl border-[var(--cs-aria-gold-soft)] bg-gradient-to-br from-[var(--cs-aria-gold-bg)]/50 to-white">
       <CardContent className="pt-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-violet-100 flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-violet-600" />
+            <div className="h-8 w-8 rounded-xl bg-[var(--cs-aria-gold-bg)] flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             </div>
             <div>
               <div className="text-sm font-semibold text-[var(--cs-navy)]">ARIA Handover Builder</div>
@@ -143,7 +143,7 @@ export function AriaHandoverBuilder({ incomingStaffIds }: AriaHandoverBuilderPro
             size="sm"
             variant={showBuilder ? "outline" : "default"}
             onClick={() => setShowBuilder((v) => !v)}
-            className={cn(!showBuilder && "bg-violet-600 hover:bg-violet-700")}
+            className={cn(!showBuilder && "bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90")}
           >
             <Sparkles className="h-3.5 w-3.5 mr-1" />
             {showBuilder ? "Hide" : "Build Handover"}
@@ -160,7 +160,7 @@ export function AriaHandoverBuilder({ incomingStaffIds }: AriaHandoverBuilderPro
             </div>
 
             {isLoading ? (
-              <div className="flex items-center justify-center py-8 text-violet-500">
+              <div className="flex items-center justify-center py-8 text-[var(--cs-aria-gold)]">
                 <Loader2 className="h-5 w-5 animate-spin mr-2" />
                 <span className="text-sm">ARIA is building personalised handovers...</span>
               </div>
@@ -177,7 +177,7 @@ export function AriaHandoverBuilder({ incomingStaffIds }: AriaHandoverBuilderPro
             )}
 
             {!isLoading && contexts.length > 0 && (
-              <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5 text-[11px] text-[var(--cs-text-muted)]">
+              <div className="rounded-xl bg-[var(--cs-surface)] border border-[var(--cs-border-subtle)] px-3 py-2.5 text-[11px] text-[var(--cs-text-muted)]">
                 <strong className="text-[var(--cs-text-secondary)]">How this works:</strong> ARIA checks the rota to see when each incoming
                 staff member was last on shift. Staff who have been away longer receive more comprehensive context — including
                 incidents, young person updates, and completed tasks they missed.

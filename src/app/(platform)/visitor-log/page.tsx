@@ -42,7 +42,7 @@ const CATEGORY_CONFIG: Record<VisitorCategory, { label: string; icon: React.Elem
   professional: { label: "Professional", icon: Briefcase, color: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200"    },
   family:       { label: "Family",       icon: Heart,     color: "text-pink-700",    bg: "bg-pink-50",    border: "border-pink-200"    },
   tradesperson: { label: "Tradesperson", icon: Wrench,    color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"   },
-  inspector:    { label: "Inspector",    icon: Eye,       color: "text-violet-700",  bg: "bg-violet-50",  border: "border-violet-200"  },
+  inspector:    { label: "Inspector",    icon: Eye,       color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]"  },
   volunteer:    { label: "Volunteer",    icon: UserCheck,  color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
   other:        { label: "Other",        icon: Users,     color: "text-[var(--cs-text-secondary)]",   bg: "bg-slate-50",   border: "border-[var(--cs-border)]"   },
 };

@@ -292,7 +292,7 @@ function HomeClimateSection() {
             "gap-1.5 text-xs h-8",
             computeState === "success" ? "bg-emerald-600 hover:bg-emerald-700 text-white" :
             computeState === "error"   ? "bg-red-600 hover:bg-red-700 text-white" :
-            "bg-violet-600 hover:bg-violet-700 text-white"
+            "bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
           )}
         >
           {computeState === "computing" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
@@ -327,8 +327,8 @@ function HomeClimateSection() {
           </div>
 
           {climate.narrative && (
-            <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
-              <div className="text-[10px] font-semibold text-violet-600 uppercase tracking-wider mb-1">ARIA Analysis</div>
+            <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
+              <div className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider mb-1">ARIA Analysis</div>
               <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{climate.narrative}</p>
             </div>
           )}
@@ -554,7 +554,7 @@ function RecentInterventionsSection() {
   const INT_STATUS: Record<string, string> = {
     active: "bg-emerald-100 text-emerald-800",
     paused: "bg-amber-100 text-amber-800",
-    under_review: "bg-violet-100 text-violet-800",
+    under_review: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   };
 
   async function handleReview(e: React.MouseEvent, intervention: Intervention) {
@@ -637,7 +637,7 @@ function RecentInterventionsSection() {
                       onClick={(e) => handleReview(e, intervention)}
                       disabled={reviewingId === intervention.id}
                       title="Review with ARIA"
-                      className="flex items-center gap-1 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 px-2 py-1 text-[10px] font-semibold transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-lg bg-[var(--cs-aria-gold-bg)] hover:bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] px-2 py-1 text-[10px] font-semibold transition-colors disabled:opacity-50"
                     >
                       {reviewingId === intervention.id ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -666,7 +666,7 @@ function RecentInterventionsSection() {
           >
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ClipboardList className="h-5 w-5 text-violet-600" />
+                <ClipboardList className="h-5 w-5 text-[var(--cs-aria-gold)]" />
                 <div>
                   <div className="text-sm font-bold text-[var(--cs-navy)]">ARIA — Intervention Review</div>
                   <div className="text-xs text-[var(--cs-text-muted)] truncate max-w-sm">{reviewTitle}</div>
@@ -717,7 +717,7 @@ function VoiceCoverageSection() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <MessageSquareQuote className="h-4 w-4 text-violet-500" />
+          <MessageSquareQuote className="h-4 w-4 text-[var(--cs-aria-gold)]" />
           Children's Voice
         </CardTitle>
       </CardHeader>
@@ -730,9 +730,9 @@ function VoiceCoverageSection() {
         ) : (
           <div className="space-y-3">
             {recentVoice.map((record) => (
-              <div key={record.id} className="rounded-xl border border-violet-100 bg-violet-50/40 p-3 space-y-1.5">
+              <div key={record.id} className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-3 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700 capitalize">
+                  <span className="rounded-full bg-[var(--cs-aria-gold-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--cs-aria-gold)] capitalize">
                     {record.theme.replace("_", " ")}
                   </span>
                   {record.voice_heeded !== null && (
@@ -781,7 +781,7 @@ const OWNER_NAMES: Record<string, string> = {
 
 const STATUS_CLASSES: Record<string, string> = {
   open:        "bg-blue-100 text-blue-800",
-  in_progress: "bg-violet-100 text-violet-800",
+  in_progress: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   completed:   "bg-emerald-100 text-emerald-800",
   overdue:     "bg-red-100 text-red-800",
   stalled:     "bg-amber-100 text-amber-800",
@@ -841,7 +841,7 @@ function ActionOutcomesSection() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Target className="h-4 w-4 text-violet-500" />
+            <Target className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Action Outcomes
             {overdueActions.length > 0 && (
               <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">
@@ -1054,18 +1054,18 @@ function AriaPatternScanSection() {
   }
 
   return (
-    <Card className="border-violet-100">
+    <Card className="border-[var(--cs-aria-gold-soft)]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <ScanSearch className="h-4 w-4 text-violet-500" />
+            <ScanSearch className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             ARIA Pattern Scanner
           </CardTitle>
           <Button
             size="sm"
             className={cn(
               "gap-1.5 text-xs",
-              scanning ? "bg-violet-400" : "bg-violet-600 hover:bg-violet-700 text-white"
+              scanning ? "bg-[var(--cs-aria-gold)]" : "bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
             )}
             onClick={handleScan}
             disabled={scanning}
@@ -1080,7 +1080,7 @@ function AriaPatternScanSection() {
       </CardHeader>
       <CardContent className="space-y-4">
         {!patterns && !scanning && !scanError && (
-          <div className="rounded-xl border border-violet-100 bg-violet-50 p-4 text-xs text-violet-700 leading-relaxed">
+          <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-xs text-[var(--cs-aria-gold)] leading-relaxed">
             ARIA will analyse all available intelligence data across the home — voice records,
             interventions, action outcomes, and existing alerts — and identify significant
             patterns, emerging themes, or concerns requiring manager attention.
@@ -1096,7 +1096,7 @@ function AriaPatternScanSection() {
 
         {scanning && (
           <div className="flex items-center gap-3 py-6 text-xs text-[var(--cs-text-muted)]">
-            <Loader2 className="h-5 w-5 animate-spin text-violet-500" />
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-aria-gold)]" />
             ARIA is scanning intelligence data across all children…
           </div>
         )}

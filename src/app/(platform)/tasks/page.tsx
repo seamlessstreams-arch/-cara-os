@@ -227,26 +227,26 @@ export default function TasksPage() {
 
         {/* ── ARIA follow-up task prompt ────────────────────────────────────── */}
         {ariaLinkContext && (
-          <div className="flex items-start gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-4">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600">
+          <div className="flex items-start gap-3 rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--cs-navy)]">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-violet-900">
+              <p className="text-sm font-semibold text-[var(--cs-navy)]">
                 Create a follow-up task for {getYPName(ariaLinkContext.childId)}
               </p>
-              <p className="text-xs text-violet-700 mt-0.5 flex items-center gap-1">
+              <p className="text-xs text-[var(--cs-aria-gold)] mt-0.5 flex items-center gap-1">
                 <Link2 className="h-3 w-3 shrink-0" />
                 Linked from {ariaLinkContext.sourceType.replace(/_/g, " ")} record{ariaLinkContext.linkedId ? ` · ${ariaLinkContext.linkedId}` : ""}
               </p>
-              <p className="text-xs text-violet-600 mt-1">
+              <p className="text-xs text-[var(--cs-text-secondary)] mt-1">
                 Use the <strong>+ New Task</strong> button at the top right to create a task.
                 The young person filter has been pre-set for you.
               </p>
             </div>
             <button
               onClick={() => setAriaLinkContext(null)}
-              className="text-violet-400 hover:text-violet-600 shrink-0"
+              className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] shrink-0"
             >
               <X className="h-4 w-4" />
             </button>

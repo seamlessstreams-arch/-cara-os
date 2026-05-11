@@ -86,7 +86,7 @@ function DictationTextarea({
         rows={rows}
         placeholder={placeholder}
         className={cn(
-          "w-full resize-none rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
+          "w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
           "focus:border-amber-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100",
           "transition-colors"
         )}
@@ -263,7 +263,7 @@ export function PracticeBankAddModal({
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="E.g. 'Give Marcus 5 minutes before asking questions after school'"
                     className={cn(
-                      "w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
+                      "w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
                       "focus:border-amber-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100",
                       "transition-colors"
                     )}
@@ -283,7 +283,7 @@ export function PracticeBankAddModal({
                           "rounded-lg border px-3 py-1.5 text-[11px] font-semibold transition-colors",
                           category === value
                             ? "border-amber-500 bg-amber-50 text-amber-700"
-                            : "border-[var(--cs-border)] bg-slate-50 text-[var(--cs-text-secondary)] hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
+                            : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-secondary)] hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
                         )}
                       >
                         {label}
@@ -329,7 +329,7 @@ export function PracticeBankAddModal({
                     rows={2}
                     placeholder="Which observations or records support this?"
                     className={cn(
-                      "w-full resize-none rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
+                      "w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
                       "focus:border-amber-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100",
                       "transition-colors"
                     )}

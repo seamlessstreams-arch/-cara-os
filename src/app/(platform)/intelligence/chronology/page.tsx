@@ -241,7 +241,7 @@ export default function ChronologyIntelligencePage() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Brain className="h-4 w-4 text-violet-500" />
+                <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                 Generate Chronology Summary
               </CardTitle>
             </CardHeader>
@@ -258,7 +258,7 @@ export default function ChronologyIntelligencePage() {
                   <select
                     value={selectedChildId}
                     onChange={(e) => setSelectedChildId(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
                   >
                     <option value="">Select a young person…</option>
                     {youngPeople.map((yp) => {
@@ -286,8 +286,8 @@ export default function ChronologyIntelligencePage() {
                       className={cn(
                         "rounded-full px-3 py-1.5 text-xs font-medium transition-colors border",
                         selectedPeriod === opt.value
-                          ? "bg-violet-600 text-white border-violet-600"
-                          : "bg-white text-[var(--cs-text-secondary)] border-[var(--cs-border)] hover:border-violet-300 hover:text-violet-700"
+                          ? "bg-[var(--cs-navy)] text-white border-[var(--cs-navy)]"
+                          : "bg-white text-[var(--cs-text-secondary)] border-[var(--cs-border)] hover:border-[var(--cs-aria-gold-soft)] hover:text-[var(--cs-aria-gold)]"
                       )}
                     >
                       {opt.label}
@@ -315,7 +315,7 @@ export default function ChronologyIntelligencePage() {
                   onChange={(e) => setPastedNotes(e.target.value)}
                   placeholder="Paste any relevant records, log entries, or notes here…"
                   rows={4}
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-[var(--cs-text-muted)]"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
                 />
               </div>
 
@@ -332,13 +332,13 @@ export default function ChronologyIntelligencePage() {
                       className={cn(
                         "rounded-xl border p-3 text-left transition-all",
                         selectedStyle === opt.value
-                          ? "border-violet-400 bg-violet-50 ring-1 ring-violet-300"
-                          : "border-[var(--cs-border)] bg-white hover:border-violet-200 hover:bg-violet-50/40"
+                          ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] ring-1 ring-[var(--cs-aria-gold-soft)]"
+                          : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]/40"
                       )}
                     >
                       <div className={cn(
                         "text-xs font-semibold mb-0.5",
-                        selectedStyle === opt.value ? "text-violet-700" : "text-[var(--cs-text-secondary)]"
+                        selectedStyle === opt.value ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-secondary)]"
                       )}>
                         {opt.label}
                       </div>
@@ -362,7 +362,7 @@ export default function ChronologyIntelligencePage() {
               <Button
                 onClick={handleGenerate}
                 disabled={isGenerating || !selectedChildId}
-                className="w-full bg-violet-600 hover:bg-violet-700 text-white disabled:opacity-50"
+                className="w-full bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white disabled:opacity-50"
               >
                 {isGenerating ? (
                   <>
@@ -385,7 +385,7 @@ export default function ChronologyIntelligencePage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                    <FileText className="h-4 w-4 text-violet-400" />
+                    <FileText className="h-4 w-4 text-[var(--cs-text-muted)]" />
                     Chronology Output
                     {isGenerating && (
                       <Loader2 className="h-3.5 w-3.5 text-[var(--cs-text-muted)] animate-spin ml-1" />
@@ -497,7 +497,7 @@ export default function ChronologyIntelligencePage() {
                   "Theme your chronology by domain (health, education, placement, etc.)",
                 ].map((tip) => (
                   <li key={tip} className="flex items-start gap-2 text-xs text-[var(--cs-text-secondary)]">
-                    <ChevronRight className="h-3.5 w-3.5 text-violet-400 shrink-0 mt-0.5" />
+                    <ChevronRight className="h-3.5 w-3.5 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
                     {tip}
                   </li>
                 ))}
@@ -552,7 +552,7 @@ export default function ChronologyIntelligencePage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Sparkles className="h-4 w-4 text-violet-400" />
+                <Sparkles className="h-4 w-4 text-[var(--cs-text-muted)]" />
                 What ARIA can do
               </CardTitle>
             </CardHeader>
@@ -566,7 +566,7 @@ export default function ChronologyIntelligencePage() {
                   "Surface links to other records",
                 ].map((cap) => (
                   <li key={cap} className="flex items-start gap-2 text-xs text-[var(--cs-text-secondary)]">
-                    <Sparkles className="h-3 w-3 text-violet-400 shrink-0 mt-0.5" />
+                    <Sparkles className="h-3 w-3 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
                     {cap}
                   </li>
                 ))}

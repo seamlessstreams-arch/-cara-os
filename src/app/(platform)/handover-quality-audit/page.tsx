@@ -579,18 +579,18 @@ export default function HandoverQualityAuditPage() {
                         </p>
                       )}
                     </div>
-                    <div className="rounded-md border border-violet-200 bg-violet-50 p-3">
-                      <h4 className="text-sm font-semibold text-violet-900 flex items-center gap-2">
+                    <div className="rounded-md border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3">
+                      <h4 className="text-sm font-semibold text-[var(--cs-navy)] flex items-center gap-2">
                         <BookOpen className="h-4 w-4" /> Policy arising
                       </h4>
                       {a.policy_arising.length > 0 ? (
-                        <ul className="mt-2 list-disc pl-5 space-y-1 text-sm text-violet-900">
+                        <ul className="mt-2 list-disc pl-5 space-y-1 text-sm text-[var(--cs-navy)]">
                           {a.policy_arising.map((p, i) => (
                             <li key={i}>{p}</li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="mt-2 text-sm text-violet-800 italic">
+                        <p className="mt-2 text-sm text-[var(--cs-navy)] italic">
                           None.
                         </p>
                       )}

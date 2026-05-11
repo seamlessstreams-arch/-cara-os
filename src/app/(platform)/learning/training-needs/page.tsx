@@ -67,7 +67,7 @@ const STATUS_LABELS: Record<TrainingNeedStatus, string> = {
 const STATUS_COLOURS: Record<TrainingNeedStatus, string> = {
   identified: "bg-slate-100 text-[var(--cs-text-secondary)]",
   learning_studio_sent: "bg-blue-100 text-blue-700",
-  resource_generated: "bg-violet-100 text-violet-700",
+  resource_generated: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   assigned: "bg-amber-100 text-amber-700",
   in_progress: "bg-teal-100 text-teal-700",
   completed: "bg-emerald-100 text-emerald-700",
@@ -125,9 +125,9 @@ function NeedCard({ need, onSendToStudio }: { need: TrainingNeed; onSendToStudio
           <div className="mt-3 pt-3 border-t border-[var(--cs-border-subtle)] space-y-3">
             <p className="text-sm text-[var(--cs-text-secondary)] leading-relaxed">{need.description}</p>
             {need.aria_evidence && (
-              <div className="rounded-lg bg-violet-50 border border-violet-100 p-3">
-                <p className="text-[10px] font-semibold text-violet-600 mb-1 uppercase tracking-wide">ARIA Evidence</p>
-                <p className="text-xs text-violet-800 leading-relaxed">{need.aria_evidence}</p>
+              <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
+                <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)] mb-1 uppercase tracking-wide">ARIA Evidence</p>
+                <p className="text-xs text-[var(--cs-navy)] leading-relaxed">{need.aria_evidence}</p>
               </div>
             )}
             {need.affected_roles?.length ? (
@@ -521,7 +521,7 @@ function NewNeedDialog({ open, onClose }: { open: boolean; onClose: () => void }
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Description / Evidence</label>
-              <Button size="sm" variant="ghost" className="h-6 text-xs text-violet-600 gap-1 px-2" onClick={analyseWithAria} disabled={ariaAnalysing || !description.trim()}>
+              <Button size="sm" variant="ghost" className="h-6 text-xs text-[var(--cs-aria-gold)] gap-1 px-2" onClick={analyseWithAria} disabled={ariaAnalysing || !description.trim()}>
                 <Sparkles className="h-3 w-3" />
                 {ariaAnalysing ? "Analysing…" : "ARIA Analyse"}
               </Button>
@@ -639,22 +639,22 @@ function AriaAutoDetect({
   const allHandled = detected.length > 0 && visible.every((_, i) => added.has(detected.indexOf(_)));
 
   return (
-    <div className="rounded-2xl border border-violet-200 bg-violet-50/60 p-4 space-y-3">
+    <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/60 p-4 space-y-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-600 shrink-0">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--cs-navy)] shrink-0">
             <Wand2 className="h-4 w-4 text-white" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-violet-900">ARIA Auto-Detect</p>
-            <p className="text-xs text-violet-600">Scan operational data for training needs</p>
+            <p className="text-sm font-semibold text-[var(--cs-navy)]">ARIA Auto-Detect</p>
+            <p className="text-xs text-[var(--cs-aria-gold)]">Scan operational data for training needs</p>
           </div>
         </div>
         <Button
           size="sm"
           onClick={scan}
           disabled={scanning}
-          className="gap-1.5 bg-violet-600 hover:bg-violet-700 text-white shrink-0"
+          className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white shrink-0"
         >
           <Sparkles className={cn("h-3.5 w-3.5", scanning && "animate-pulse")} />
           {scanning ? "Scanning…" : detected.length > 0 ? "Rescan" : "Scan Now"}
@@ -662,15 +662,15 @@ function AriaAutoDetect({
       </div>
 
       {!scanning && detected.length === 0 && (
-        <p className="text-xs text-violet-600/70 pl-1">
+        <p className="text-xs text-[var(--cs-aria-gold)]/70 pl-1">
           ARIA will analyse recent incidents, supervision, medication events and RI alerts to surface training needs you may have missed.
         </p>
       )}
 
       {scanning && (
         <div className="flex items-center gap-2 py-2">
-          <Sparkles className="h-3.5 w-3.5 text-violet-500 animate-pulse shrink-0" />
-          <p className="text-xs text-violet-700">Analysing operational data…</p>
+          <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)] animate-pulse shrink-0" />
+          <p className="text-xs text-[var(--cs-aria-gold)]">Analysing operational data…</p>
         </div>
       )}
 
@@ -710,7 +710,7 @@ function AriaAutoDetect({
                     </div>
                     <p className="text-xs text-[var(--cs-text-secondary)] mt-1 leading-relaxed">{need.description}</p>
                     {need.aria_evidence && (
-                      <p className="text-[10px] text-violet-600 mt-1.5 italic leading-relaxed">
+                      <p className="text-[10px] text-[var(--cs-aria-gold)] mt-1.5 italic leading-relaxed">
                         ARIA: {need.aria_evidence}
                       </p>
                     )}
@@ -722,7 +722,7 @@ function AriaAutoDetect({
                       <>
                         <Button
                           size="sm"
-                          className="h-7 text-xs gap-1 bg-violet-600 hover:bg-violet-700 text-white"
+                          className="h-7 text-xs gap-1 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
                           onClick={() => addNeed(need, i)}
                           disabled={isAdding}
                         >

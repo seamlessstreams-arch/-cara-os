@@ -32,8 +32,8 @@ import { useExtracurricularClubRecords } from "@/hooks/use-extracurricular-club-
 
 const categoryColour: Record<ExtracurricularCategory, string> = {
   sport: "bg-sky-100 text-sky-800",
-  music: "bg-violet-100 text-violet-800",
-  drama_theatre: "bg-violet-100 text-violet-800",
+  music: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  drama_theatre: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   faith_community: "bg-amber-100 text-amber-800",
   academic_debate: "bg-blue-100 text-blue-800",
   coding_tech: "bg-cyan-100 text-cyan-800",
@@ -183,7 +183,7 @@ export default function ChildExtracurricularClubsPage() {
           <p className="text-xs text-muted-foreground">Active Clubs</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-violet-700">{weeklyHours}h</p>
+          <p className="text-2xl font-bold text-[var(--cs-aria-gold)]">{weeklyHours}h</p>
           <p className="text-xs text-muted-foreground">Weekly Hours (active)</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -191,7 +191,7 @@ export default function ChildExtracurricularClubsPage() {
           <p className="text-xs text-muted-foreground">Weekly Cost (active)</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-violet-700">{reviewsDue}</p>
+          <p className="text-2xl font-bold text-[var(--cs-aria-gold)]">{reviewsDue}</p>
           <p className="text-xs text-muted-foreground">Reviews Due (60d)</p>
         </div>
       </div>
@@ -283,7 +283,7 @@ export default function ChildExtracurricularClubsPage() {
                   >
                     {c.ongoing ? "Ongoing" : "Ended"}
                   </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-violet-100 text-violet-800">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]">
                     {c.attendance_rate}% att.
                   </span>
                   <span
@@ -316,7 +316,7 @@ export default function ChildExtracurricularClubsPage() {
                       </p>
                     </div>
                     <div className="bg-white rounded-lg p-3 border">
-                      <p className="text-xs font-semibold text-violet-800 uppercase tracking-wide mb-1">
+                      <p className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1">
                         Cost & Funding
                       </p>
                       <p className="text-sm font-medium">
@@ -348,15 +348,15 @@ export default function ChildExtracurricularClubsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-violet-50 rounded-lg p-3 border border-violet-200">
-                    <p className="text-xs font-semibold text-violet-800 uppercase tracking-wide mb-1 flex items-center gap-1">
+                  <div className="bg-[var(--cs-aria-gold-bg)] rounded-lg p-3 border border-[var(--cs-aria-gold-soft)]">
+                    <p className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1 flex items-center gap-1">
                       <Award className="h-3 w-3" />
                       Skills Built
                     </p>
                     <ul className="space-y-1">
                       {c.skills_built.map((s, i) => (
                         <li key={i} className="text-sm flex items-start gap-1">
-                          <Star className="h-3 w-3 text-violet-500 mt-1 shrink-0" />
+                          <Star className="h-3 w-3 text-[var(--cs-aria-gold)] mt-1 shrink-0" />
                           <span>{s}</span>
                         </li>
                       ))}

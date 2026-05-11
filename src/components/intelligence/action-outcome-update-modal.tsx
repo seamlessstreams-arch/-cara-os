@@ -27,7 +27,7 @@ interface ActionOutcomeUpdateModalProps {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STATUS_OPTIONS: { value: Status; label: string; color: string }[] = [
-  { value: "open",        label: "Open",        color: "border-slate-300 text-[var(--cs-text-secondary)]"  },
+  { value: "open",        label: "Open",        color: "border-[var(--cs-border)] text-[var(--cs-text-secondary)]"  },
   { value: "in_progress", label: "In Progress",  color: "border-blue-300 text-blue-700"   },
   { value: "completed",   label: "Completed",    color: "border-emerald-300 text-emerald-700" },
   { value: "stalled",     label: "Stalled",      color: "border-amber-300 text-amber-700" },
@@ -129,7 +129,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                         "px-3 py-1.5 rounded-full border text-xs font-semibold transition-all",
                         status === opt.value
                           ? opt.color + " ring-2 ring-offset-1 ring-current"
-                          : "border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:border-slate-300"
+                          : "border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:border-[var(--cs-border)]"
                       )}
                     >
                       {opt.label}
@@ -148,7 +148,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                   onChange={(e) => setWhatWasDone(e.target.value)}
                   rows={3}
                   placeholder="Describe specifically what was done..."
-                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none"
+                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] resize-none"
                 />
               </div>
 
@@ -162,7 +162,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                   onChange={(e) => setWhatChanged(e.target.value)}
                   rows={3}
                   placeholder="What difference did this make for the young person or the home?"
-                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none"
+                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] resize-none"
                 />
               </div>
 
@@ -180,7 +180,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                         "px-3 py-1.5 rounded-full border text-xs font-semibold transition-all",
                         effectiveness === opt.value
                           ? opt.color + " ring-2 ring-offset-1 ring-current"
-                          : "border-[var(--cs-border)] bg-white text-[var(--cs-text-muted)] hover:border-slate-300"
+                          : "border-[var(--cs-border)] bg-white text-[var(--cs-text-muted)] hover:border-[var(--cs-border)]"
                       )}
                     >
                       {opt.label}
@@ -199,7 +199,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                   onChange={(e) => setEffNotes(e.target.value)}
                   rows={2}
                   placeholder="Any additional notes on how well this worked..."
-                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none"
+                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] resize-none"
                 />
               </div>
 
@@ -220,8 +220,8 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                       className={cn(
                         "flex-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all",
                         shouldContinue === opt.value
-                          ? "border-violet-400 bg-violet-50 text-violet-700 ring-2 ring-violet-300 ring-offset-1"
-                          : "border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:border-slate-300"
+                          ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] ring-2 ring-[var(--cs-aria-gold-soft)] ring-offset-1"
+                          : "border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:border-[var(--cs-border)]"
                       )}
                     >
                       {opt.label}
@@ -237,7 +237,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                 </Dialog.Close>
                 <Button
                   size="sm"
-                  className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+                  className="flex-1 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
                   onClick={handleSubmit}
                   disabled={update.isPending}
                 >

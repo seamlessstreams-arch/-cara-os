@@ -151,7 +151,7 @@ export function SupervisionTracker() {
             <p className="text-sm font-medium text-emerald-700">All supervisions on track</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 max-h-[320px] overflow-y-auto">
+          <div className="divide-y divide-[var(--cs-border-subtle)] max-h-[320px] overflow-y-auto">
             {sorted.slice(0, 8).map((s) => (
               <SupervisionRow key={s.id} staff={s} />
             ))}

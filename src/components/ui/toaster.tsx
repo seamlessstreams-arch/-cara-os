@@ -12,7 +12,7 @@ export function Toaster() {
     <SonnerToaster
       position="bottom-right"
       toastOptions={{
-        className: "!rounded-xl !border-slate-200 !shadow-lg !text-sm",
+        className: "!rounded-xl !border-[var(--cs-border)] !shadow-[var(--cs-shadow-card)] !text-sm",
         style: {
           fontFamily: "inherit",
         },

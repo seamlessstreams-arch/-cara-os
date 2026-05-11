@@ -37,9 +37,9 @@ const FEATURES = [
     title: "Situation Review",
     description: "AI-powered structured analysis of any situation",
     icon: Brain,
-    color: "text-violet-600",
-    bg: "bg-violet-50",
-    border: "border-violet-100",
+    color: "text-[var(--cs-aria-gold)]",
+    bg: "bg-[var(--cs-aria-gold-bg)]",
+    border: "border-[var(--cs-aria-gold-soft)]",
   },
   {
     href: "/intelligence/aria/oversight-radar",
@@ -214,7 +214,7 @@ export default function AriaHubPage() {
         {/* Header banner */}
         <div className="rounded-2xl bg-slate-900 p-6 text-white space-y-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -232,7 +232,7 @@ export default function AriaHubPage() {
                 {yp.name}
               </span>
             ))}
-            <span className="rounded-full bg-violet-600/40 px-3 py-1 text-xs font-medium text-violet-200">
+            <span className="rounded-full bg-[var(--cs-navy)]/40 px-3 py-1 text-xs font-medium text-[var(--cs-aria-gold-soft)]">
               Oak House
             </span>
           </div>

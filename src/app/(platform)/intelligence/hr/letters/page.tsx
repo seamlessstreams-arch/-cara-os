@@ -253,11 +253,11 @@ export default function HrLettersPage() {
 
   return (
     <PageShell title="HR — Letter Generator">
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
-        <Sparkles className="h-5 w-5 mt-0.5 text-violet-600" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
         <div>
           <div className="font-semibold">ARIA suggested draft, never final</div>
-          <p className="text-violet-800">
+          <p className="text-[var(--cs-navy)]">
             Pick a letter type, fill in the context, and ARIA will produce a starting-point draft and run it through
             the HR Process Guardian. The Guardian checks fairness, ACAS alignment, safeguarding handling,
             proportionality, discrimination risk, evidence quality, representation rights, appeal rights, and the
@@ -270,7 +270,7 @@ export default function HrLettersPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Mail className="h-4 w-4 text-violet-600" /> Letter setup
+            <Mail className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Letter setup
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -411,7 +411,7 @@ export default function HrLettersPage() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between gap-2 text-base">
                   <span className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-violet-500" /> Draft letter
+                    <Mail className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Draft letter
                   </span>
                   <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)} className="gap-1.5">
                     <Pencil className="h-3.5 w-3.5" /> {editing ? "Stop editing" : "Edit"}

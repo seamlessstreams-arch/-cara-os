@@ -55,7 +55,7 @@ const STYLES: { id: AriaStyle; label: string }[] = [
 
 const MODE_COLORS: Partial<Record<AriaMode, string>> & Record<string, string> = {
   write:             "text-blue-600 bg-blue-50",
-  review:            "text-violet-600 bg-violet-50",
+  review:            "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]",
   oversee:           "text-emerald-600 bg-emerald-50",
   assist:            "text-amber-600 bg-amber-50",
   document_classify: "text-indigo-600 bg-indigo-50",
@@ -118,14 +118,14 @@ export function AriaPanel({
   };
 
   return (
-    <div className={cn("rounded-2xl border border-violet-200 bg-white overflow-hidden", className)}>
+    <div className={cn("rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-white overflow-hidden", className)}>
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-50 to-blue-50 border-b border-violet-100 cursor-pointer"
+        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-blue-50 border-b border-[var(--cs-aria-gold-soft)] cursor-pointer"
         onClick={() => setCollapsed(!collapsed)}
       >
         <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-violet-600 flex items-center justify-center">
+          <div className="h-7 w-7 rounded-lg bg-[var(--cs-navy)] flex items-center justify-center">
             <Sparkles className="h-3.5 w-3.5 text-white" />
           </div>
           <div>
@@ -134,7 +134,7 @@ export function AriaPanel({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className="text-[9px] rounded-full bg-violet-100 text-violet-700 border-0">BETA</Badge>
+          <Badge className="text-[9px] rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0">BETA</Badge>
           <ChevronDown className={cn("h-4 w-4 text-[var(--cs-text-muted)] transition-transform", collapsed && "rotate-180")} />
         </div>
       </div>
@@ -150,8 +150,8 @@ export function AriaPanel({
                 className={cn(
                   "flex flex-col items-center gap-1 rounded-xl p-2 text-[10px] font-semibold transition-all border",
                   mode === id
-                    ? `${MODE_COLORS[id] ?? "text-[var(--cs-text-secondary)] bg-slate-100"} border-current`
-                    : "text-[var(--cs-text-muted)] bg-slate-50 border-transparent hover:bg-[var(--cs-surface)]"
+                    ? `${MODE_COLORS[id] ?? "text-[var(--cs-text-secondary)] bg-[var(--cs-surface)]"} border-current`
+                    : "text-[var(--cs-text-muted)] bg-[var(--cs-surface)] border-transparent hover:bg-[var(--cs-surface)]"
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -166,7 +166,7 @@ export function AriaPanel({
             <select
               value={style}
               onChange={(e) => setStyle(e.target.value as AriaStyle)}
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
             >
               {STYLES.map(({ id, label }) => (
                 <option key={id} value={id}>{label}</option>
@@ -181,7 +181,7 @@ export function AriaPanel({
                 Paste document text
               </label>
               <textarea
-                className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-[var(--cs-text-muted)]"
+                className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
                 rows={4}
                 placeholder="Paste text from the document you want to classify..."
                 value={documentText}
@@ -213,7 +213,7 @@ export function AriaPanel({
                   "e.g. What should I do next after logging this safeguarding concern?"
                 }
                 rows={3}
-                className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 pr-10 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-[var(--cs-text-muted)]"
+                className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 pr-10 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
               />
               <div className="absolute bottom-2 right-2">
                 <DictationButton
@@ -231,16 +231,16 @@ export function AriaPanel({
 
           {/* Context indicator */}
           {(sourceContent || linkedRecords) && (
-            <div className="rounded-xl bg-slate-50 border border-[var(--cs-border)] px-3 py-2">
+            <div className="rounded-xl bg-[var(--cs-surface)] border border-[var(--cs-border)] px-3 py-2">
               <div className="text-[10px] text-[var(--cs-text-muted)] font-medium">ARIA can see</div>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {sourceContent && (
                   <Badge className="text-[9px] rounded-full bg-blue-100 text-blue-700 border-0">Source record</Badge>
                 )}
                 {linkedRecords && (
-                  <Badge className="text-[9px] rounded-full bg-violet-100 text-violet-700 border-0">Linked records</Badge>
+                  <Badge className="text-[9px] rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0">Linked records</Badge>
                 )}
-                <Badge className="text-[9px] rounded-full bg-slate-100 text-[var(--cs-text-secondary)] border-0">{pageContext}</Badge>
+                <Badge className="text-[9px] rounded-full bg-[var(--cs-surface)] text-[var(--cs-text-secondary)] border-0">{pageContext}</Badge>
               </div>
             </div>
           )}
@@ -249,7 +249,7 @@ export function AriaPanel({
           <Button
             onClick={handleAsk}
             disabled={isPending || (!prompt && !sourceContent && (!isDocumentMode || !documentText))}
-            className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+            className="w-full bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
             size="sm"
           >
             {isPending ? (
@@ -274,7 +274,7 @@ export function AriaPanel({
                   {onInsert && (
                     <button
                       onClick={() => onInsert(response)}
-                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium bg-[var(--cs-navy)] text-white hover:bg-[var(--cs-navy)]/90 transition-colors"
                     >
                       <ExternalLink className="h-3 w-3" />Insert
                     </button>
@@ -284,7 +284,7 @@ export function AriaPanel({
                   </button>
                 </div>
               </div>
-              <div className="rounded-xl bg-violet-50 border border-violet-100 p-3 text-xs text-[var(--cs-text-secondary)] whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
+              <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3 text-xs text-[var(--cs-text-secondary)] whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
                 {response}
               </div>
               <div className="flex items-start gap-1.5 text-[10px] text-[var(--cs-text-muted)]">
@@ -305,7 +305,7 @@ export function AriaFloatingTrigger({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-white shadow-xl hover:bg-violet-700 transition-all hover:scale-105"
+      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-[var(--cs-navy)] px-4 py-3 text-white shadow-xl hover:bg-[var(--cs-navy)]/90 transition-all hover:scale-105"
     >
       <Sparkles className="h-4 w-4" />
       <span className="text-sm font-semibold">Aria</span>

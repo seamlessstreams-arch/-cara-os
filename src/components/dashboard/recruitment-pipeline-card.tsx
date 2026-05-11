@@ -21,11 +21,11 @@ import {
 // ── Stage config ─────────────────────────────────────────────────────────────
 
 const FUNNEL_STAGES: { key: string; label: string; color: string }[] = [
-  { key: "enquiry",               label: "Enquiry",        color: "bg-slate-300" },
+  { key: "enquiry",               label: "Enquiry",        color: "bg-[var(--cs-text-gentle)]" },
   { key: "application_received",  label: "Application",    color: "bg-blue-300" },
   { key: "sift",                  label: "Sift",           color: "bg-blue-400" },
-  { key: "interview_scheduled",   label: "Interview",      color: "bg-violet-400" },
-  { key: "interview_completed",   label: "Interviewed",    color: "bg-violet-500" },
+  { key: "interview_scheduled",   label: "Interview",      color: "bg-[var(--cs-aria-gold)]" },
+  { key: "interview_completed",   label: "Interviewed",    color: "bg-[var(--cs-aria-gold-bg)]0" },
   { key: "references_requested",  label: "References",     color: "bg-amber-400" },
   { key: "conditional_offer",     label: "Offer",          color: "bg-emerald-400" },
   { key: "pre_start_checks",     label: "Pre-Start",      color: "bg-emerald-500" },
@@ -101,17 +101,17 @@ export function RecruitmentPipelineCard() {
             <div className="text-sm font-bold text-blue-700 tabular-nums">{activeVacancies.length}</div>
             <div className="text-[9px] text-blue-500">Vacancies</div>
           </div>
-          <div className="rounded-xl bg-violet-50 p-2 text-center">
-            <Users className="h-3 w-3 text-violet-500 mx-auto mb-0.5" />
-            <div className="text-sm font-bold text-violet-700 tabular-nums">{activeCandidates.length}</div>
-            <div className="text-[9px] text-violet-500">In Pipeline</div>
+          <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] p-2 text-center">
+            <Users className="h-3 w-3 text-[var(--cs-aria-gold)] mx-auto mb-0.5" />
+            <div className="text-sm font-bold text-[var(--cs-aria-gold)] tabular-nums">{activeCandidates.length}</div>
+            <div className="text-[9px] text-[var(--cs-aria-gold)]">In Pipeline</div>
           </div>
           <div className={cn("rounded-xl p-2 text-center", hasBlockers ? "bg-red-50" : "bg-emerald-50")}>
             <Shield className={cn("h-3 w-3 mx-auto mb-0.5", hasBlockers ? "text-red-500" : "text-emerald-500")} />
             <div className={cn("text-sm font-bold tabular-nums", hasBlockers ? "text-red-700" : "text-emerald-700")}>{stats?.blocked ?? 0}</div>
             <div className={cn("text-[9px]", hasBlockers ? "text-red-500" : "text-emerald-500")}>Blocked</div>
           </div>
-          <div className="rounded-xl bg-slate-50 p-2 text-center">
+          <div className="rounded-xl bg-[var(--cs-surface)] p-2 text-center">
             <Clock className="h-3 w-3 text-[var(--cs-text-muted)] mx-auto mb-0.5" />
             <div className="text-sm font-bold text-[var(--cs-text-secondary)] tabular-nums">{stats?.avg_days_to_appoint ?? 0}d</div>
             <div className="text-[9px] text-[var(--cs-text-muted)]">Avg Appoint</div>
@@ -124,7 +124,7 @@ export function RecruitmentPipelineCard() {
             {funnelCounts.map((stage) => (
               <div key={stage.key} className="flex items-center gap-2">
                 <span className="text-[10px] text-[var(--cs-text-muted)] w-20 text-right truncate">{stage.label}</span>
-                <div className="flex-1 h-3 bg-slate-50 rounded-full overflow-hidden">
+                <div className="flex-1 h-3 bg-[var(--cs-surface)] rounded-full overflow-hidden">
                   <div
                     className={cn("h-full rounded-full transition-all", stage.color)}
                     style={{ width: `${Math.max(10, (stage.count / maxCount) * 100)}%` }}
@@ -138,7 +138,7 @@ export function RecruitmentPipelineCard() {
 
         {funnelCounts.length === 0 && (
           <div className="py-3 text-center">
-            <CheckCircle2 className="h-6 w-6 text-slate-200 mx-auto mb-1" />
+            <CheckCircle2 className="h-6 w-6 text-[var(--cs-text-gentle)] mx-auto mb-1" />
             <p className="text-[11px] text-[var(--cs-text-muted)]">No active candidates in pipeline</p>
           </div>
         )}

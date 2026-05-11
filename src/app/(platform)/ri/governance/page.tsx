@@ -236,7 +236,7 @@ const SEED_REPORTS: LocalReport[] = [
 
 const TYPE_CONFIG: Record<RiReportType, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
   strategic_summary: { label: "Strategic Summary",  icon: BarChart3,  color: "text-indigo-700",  bg: "bg-indigo-50",  border: "border-indigo-200" },
-  reg45_draft:       { label: "Reg 45 Draft",       icon: Gavel,      color: "text-violet-700",  bg: "bg-violet-50",  border: "border-violet-200" },
+  reg45_draft:       { label: "Reg 45 Draft",       icon: Gavel,      color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]" },
   ofsted_readiness:  { label: "Ofsted Readiness",   icon: Award,      color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"  },
   risk_analysis:     { label: "Risk Analysis",      icon: Shield,     color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200"    },
   monthly_overview:  { label: "Monthly Overview",   icon: Calendar,   color: "text-sky-700",     bg: "bg-sky-50",     border: "border-sky-200"    },
@@ -302,7 +302,7 @@ function ReportCard({
               <span className="text-xs text-[var(--cs-text-muted)]">— {report.report_period}</span>
             )}
             {report.generated_by_aria && (
-              <Badge className="bg-violet-50 text-violet-700 border-violet-200 text-[10px] px-1.5 py-0">
+              <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] text-[10px] px-1.5 py-0">
                 <Sparkles className="h-2.5 w-2.5 mr-0.5" />
                 ARIA
               </Badge>
@@ -733,7 +733,7 @@ export default function GovernanceReportsPage() {
           { label: "Drafts",          value: stats.draft,     color: "text-[var(--cs-text-secondary)]",   bg: "bg-slate-50",   border: "border-[var(--cs-border)]"   },
           { label: "Awaiting Review", value: stats.reviewed,  color: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-200"   },
           { label: "Approved",        value: stats.approved,  color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
-          { label: "ARIA Generated",  value: stats.ariaGen,   color: "text-violet-600",  bg: "bg-violet-50",  border: "border-violet-200"  },
+          { label: "ARIA Generated",  value: stats.ariaGen,   color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]"  },
         ].map((s) => (
           <div key={s.label} className={cn("rounded-lg border p-3 text-center", s.bg, s.border)}>
             <div className={cn("text-xl font-bold", s.color)}>{s.value}</div>

@@ -68,7 +68,7 @@ export function SupervisionComplianceCard() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <MessageSquare className="h-4 w-4 text-violet-500" />
+            <MessageSquare className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Supervision
           </CardTitle>
         </CardHeader>
@@ -86,11 +86,11 @@ export function SupervisionComplianceCard() {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <MessageSquare className="h-4 w-4 text-violet-500" />
+            <MessageSquare className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Supervision
           </CardTitle>
           <Link href="/supervision">
-            <Badge className="text-[9px] bg-violet-100 text-violet-700 border-0 rounded-full hover:bg-violet-200 cursor-pointer">
+            <Badge className="text-[9px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0 rounded-full hover:bg-[var(--cs-aria-gold-soft)] cursor-pointer">
               View all
             </Badge>
           </Link>
@@ -104,7 +104,7 @@ export function SupervisionComplianceCard() {
             <div className={cn("text-sm font-bold tabular-nums", overdue > 0 ? "text-red-700" : "text-emerald-700")}>{overdue}</div>
             <div className={cn("text-[9px]", overdue > 0 ? "text-red-500" : "text-emerald-500")}>Overdue</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", dueSoon > 0 ? "bg-amber-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", dueSoon > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
             <Clock className={cn("h-3 w-3 mx-auto mb-0.5", dueSoon > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", dueSoon > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>{dueSoon}</div>
             <div className={cn("text-[9px]", dueSoon > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")}>Due Soon</div>
@@ -127,7 +127,7 @@ export function SupervisionComplianceCard() {
               {compliancePct}%
             </span>
           </div>
-          <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-[var(--cs-surface)] overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all",

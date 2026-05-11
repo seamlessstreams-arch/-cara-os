@@ -37,7 +37,7 @@ const surveyTypeColour: Record<string, string> = {
   management_survey: "bg-indigo-100 text-indigo-800 border-indigo-200",
   refurbishment_demolition_survey: "bg-rose-100 text-rose-800 border-rose-200",
   re_inspection: "bg-sky-100 text-sky-800 border-sky-200",
-  air_monitoring: "bg-violet-100 text-violet-800 border-violet-200",
+  air_monitoring: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
   removal_record: "bg-emerald-100 text-emerald-800 border-emerald-200",
 };
 

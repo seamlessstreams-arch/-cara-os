@@ -337,11 +337,11 @@ export default function VoiceOfChildPage() {
   return (
     <PageShell title="ARIA — Voice of the Child">
       {/* ARIA draft banner */}
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
-        <Sparkles className="h-5 w-5 mt-0.5 text-violet-600" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
         <div>
           <div className="font-semibold">ARIA suggested draft — never final</div>
-          <p className="text-violet-800">
+          <p className="text-[var(--cs-navy)]">
             Aggregates the child&apos;s voice across multiple records. The output
             stays in draft until a Registered Manager (or delegate) approves,
             edits, rejects, or requests a rewrite. Once approved, share it back
@@ -630,7 +630,7 @@ export default function VoiceOfChildPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between gap-2 text-base">
                     <span className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-violet-500" /> ARIA narrative draft
+                      <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> ARIA narrative draft
                     </span>
                     <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)} className="gap-1.5">
                       <Pencil className="h-3.5 w-3.5" /> {editing ? "Stop editing" : "Edit"}
@@ -830,7 +830,7 @@ export default function VoiceOfChildPage() {
                 <Button
                   variant="outline"
                   onClick={markSharedWithChild}
-                  className="gap-1.5 ml-auto border-violet-200 text-violet-700 hover:bg-violet-50"
+                  className="gap-1.5 ml-auto border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)]"
                 >
                   <Share2 className="h-4 w-4" />
                   Mark shared with child

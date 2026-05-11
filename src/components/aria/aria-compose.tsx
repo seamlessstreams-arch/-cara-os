@@ -279,7 +279,7 @@ export function AriaCompose(props: AriaComposeProps) {
 
       {canUseAria && visibleCommands.length > 0 ? (
         <div className="flex items-center gap-2 flex-wrap">
-          <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+          <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
           <span className="text-xs text-[var(--cs-text-muted)]">Ask ARIA:</span>
           <Select value={commandId} onValueChange={(v) => setCommandId(v as AriaCommandId)}>
             <SelectTrigger className="h-8 w-56 text-sm">
@@ -314,13 +314,13 @@ export function AriaCompose(props: AriaComposeProps) {
       ) : null}
 
       {result ? (
-        <Card className="border-violet-200">
+        <Card className="border-[var(--cs-aria-gold-soft)]">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center justify-between gap-2 text-sm">
               <span className="flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+                <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                 <span>ARIA suggested draft</span>
-                <Badge className="border bg-violet-50 text-violet-800 border-violet-200 text-xs">
+                <Badge className="border bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)] text-xs">
                   {result.llmUsed ? "Generated" : "Not configured"}
                 </Badge>
                 {result.approvalRequired ? (

@@ -73,7 +73,7 @@ export function OutcomesProgressCard() {
             <div className="text-sm font-bold text-emerald-700 tabular-nums">{meta.improving}</div>
             <div className="text-[9px] text-emerald-500">Improving</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", meta.declining > 0 ? "bg-red-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", meta.declining > 0 ? "bg-red-50" : "bg-[var(--cs-surface)]")}>
             <TrendingDown className={cn("h-3 w-3 mx-auto mb-0.5", meta.declining > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", meta.declining > 0 ? "text-red-700" : "text-[var(--cs-text-muted)]")}>{meta.declining}</div>
             <div className={cn("text-[9px]", meta.declining > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")}>Declining</div>
@@ -92,7 +92,7 @@ export function OutcomesProgressCard() {
                     "h-2.5 w-2.5",
                     i < Math.round(meta.avg_rating)
                       ? "text-amber-400 fill-amber-400"
-                      : "text-slate-200"
+                      : "text-[var(--cs-text-gentle)]"
                   )}
                 />
               ))}

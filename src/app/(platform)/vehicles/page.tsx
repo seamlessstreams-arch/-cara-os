@@ -823,8 +823,8 @@ function TransportComplianceTab({ data }: { data: VehiclesData }) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
-            <div className="rounded-lg p-1.5 bg-violet-50">
-              <Calendar className="h-3.5 w-3.5 text-violet-600" />
+            <div className="rounded-lg p-1.5 bg-[var(--cs-aria-gold-bg)]">
+              <Calendar className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
             </div>
             Renewal Reminders
           </CardTitle>

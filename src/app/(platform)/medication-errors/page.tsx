@@ -455,7 +455,7 @@ export default function MedicationErrorsPage() {
                       </Badge>
                     )}
                     {error.duty_of_candour && (
-                      <Badge className="text-[9px] px-1.5 py-0 bg-violet-100 text-violet-700 border border-violet-200">
+                      <Badge className="text-[9px] px-1.5 py-0 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border border-[var(--cs-aria-gold-soft)]">
                         Duty of Candour
                       </Badge>
                     )}
@@ -579,18 +579,18 @@ export default function MedicationErrorsPage() {
 
                   {/* Duty of candour */}
                   {error.duty_of_candour && (
-                    <div className="rounded-lg bg-violet-50 border border-violet-200 p-3">
-                      <h4 className="text-[11px] font-semibold text-violet-700 uppercase tracking-wide mb-1">Duty of Candour</h4>
+                    <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
+                      <h4 className="text-[11px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wide mb-1">Duty of Candour</h4>
                       <div className="flex items-center gap-2 text-xs">
                         {error.duty_of_candour_completed ? (
                           <>
                             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                            <span className="text-violet-800">Completed on {formatDate(error.duty_of_candour_completed)}</span>
+                            <span className="text-[var(--cs-navy)]">Completed on {formatDate(error.duty_of_candour_completed)}</span>
                           </>
                         ) : (
                           <>
                             <Clock className="h-3.5 w-3.5 text-amber-600" />
-                            <span className="text-violet-800">Duty of candour notification pending</span>
+                            <span className="text-[var(--cs-navy)]">Duty of candour notification pending</span>
                           </>
                         )}
                       </div>

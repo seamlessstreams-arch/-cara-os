@@ -256,11 +256,11 @@ export default function SaferRecruitmentPage() {
 
   return (
     <PageShell title="HR — Safer Recruitment Gate">
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
-        <ShieldCheck className="h-5 w-5 mt-0.5 text-violet-600" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <ShieldCheck className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
         <div>
           <div className="font-semibold">ARIA suggested draft, never final</div>
-          <p className="text-violet-800">
+          <p className="text-[var(--cs-navy)]">
             The Safer Recruitment Gate decides whether a worker can be marked
             <em> approved for unsupervised work</em>. Every mandatory check
             must be complete, or a senior risk acceptance must be on file with
@@ -273,7 +273,7 @@ export default function SaferRecruitmentPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ClipboardList className="h-4 w-4 text-violet-600" /> Look up a record
+            <ClipboardList className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Look up a record
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -401,7 +401,7 @@ export default function SaferRecruitmentPage() {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Stamp className="h-4 w-4 text-violet-600" /> Sign-off
+                <Stamp className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Sign-off
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

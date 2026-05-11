@@ -92,7 +92,7 @@ const STARTER_TEMPLATES = [
     title: "Understanding Big Feelings",
     description: "Helping young people understand and name their emotions",
     icon: "💙",
-    colour: "border-violet-200 bg-violet-50",
+    colour: "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]",
   },
   {
     type: "trusted_adult_map" as ChildResourceType,
@@ -488,7 +488,7 @@ function CreateForm({
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-pink-500" />
               <span className="text-sm font-semibold text-[var(--cs-navy)]">{generatedTitle}</span>
-              <span className="rounded-full bg-violet-100 text-violet-700 px-2 py-0.5 text-[10px]">AI-generated</span>
+              <span className="rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] px-2 py-0.5 text-[10px]">AI-generated</span>
             </div>
             <ContentPreview content={generatedContent} />
             <div className="flex items-center gap-3 pt-2">

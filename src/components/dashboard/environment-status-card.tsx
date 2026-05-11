@@ -104,7 +104,7 @@ export function EnvironmentStatusCard() {
               </div>
               <div className={cn("text-[9px]", checksOverdue > 0 ? "text-red-500" : "text-emerald-500")}>Overdue</div>
             </div>
-            <div className={cn("rounded-lg p-2 text-center", checksDue > 0 ? "bg-amber-50" : "bg-slate-50")}>
+            <div className={cn("rounded-lg p-2 text-center", checksDue > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
               <div className={cn("text-sm font-bold tabular-nums", checksDue > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>
                 {checksDue}
               </div>
@@ -125,19 +125,19 @@ export function EnvironmentStatusCard() {
             </Link>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <div className={cn("rounded-lg p-2 text-center", maintUrgent > 0 ? "bg-red-50" : "bg-slate-50")}>
+            <div className={cn("rounded-lg p-2 text-center", maintUrgent > 0 ? "bg-red-50" : "bg-[var(--cs-surface)]")}>
               <div className={cn("text-sm font-bold tabular-nums", maintUrgent > 0 ? "text-red-700" : "text-[var(--cs-text-muted)]")}>
                 {maintUrgent}
               </div>
               <div className={cn("text-[9px]", maintUrgent > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")}>Urgent</div>
             </div>
-            <div className={cn("rounded-lg p-2 text-center", maintOpen > 0 ? "bg-amber-50" : "bg-slate-50")}>
+            <div className={cn("rounded-lg p-2 text-center", maintOpen > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
               <div className={cn("text-sm font-bold tabular-nums", maintOpen > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>
                 {maintOpen}
               </div>
               <div className={cn("text-[9px]", maintOpen > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")}>Open</div>
             </div>
-            <div className="rounded-lg bg-slate-50 p-2 text-center">
+            <div className="rounded-lg bg-[var(--cs-surface)] p-2 text-center">
               <div className="text-sm font-bold text-[var(--cs-text-secondary)] tabular-nums">{maintScheduled}</div>
               <div className="text-[9px] text-[var(--cs-text-muted)]">Scheduled</div>
             </div>

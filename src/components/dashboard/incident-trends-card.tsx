@@ -122,17 +122,17 @@ export function IncidentTrendsCard() {
             <div className={cn("text-sm font-bold tabular-nums", open > 0 ? "text-orange-700" : "text-emerald-700")}>{open}</div>
             <div className={cn("text-[9px]", open > 0 ? "text-orange-500" : "text-emerald-500")}>Open</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", critical > 0 ? "bg-red-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", critical > 0 ? "bg-red-50" : "bg-[var(--cs-surface)]")}>
             <TriangleAlert className={cn("h-3 w-3 mx-auto mb-0.5", critical > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", critical > 0 ? "text-red-700" : "text-[var(--cs-text-muted)]")}>{critical}</div>
             <div className={cn("text-[9px]", critical > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")}>Critical</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", awaitingOversight > 0 ? "bg-violet-50" : "bg-slate-50")}>
-            <Eye className={cn("h-3 w-3 mx-auto mb-0.5", awaitingOversight > 0 ? "text-violet-500" : "text-[var(--cs-text-muted)]")} />
-            <div className={cn("text-sm font-bold tabular-nums", awaitingOversight > 0 ? "text-violet-700" : "text-[var(--cs-text-muted)]")}>{awaitingOversight}</div>
-            <div className={cn("text-[9px]", awaitingOversight > 0 ? "text-violet-500" : "text-[var(--cs-text-muted)]")}>Oversight</div>
+          <div className={cn("rounded-xl p-2 text-center", awaitingOversight > 0 ? "bg-[var(--cs-aria-gold-bg)]" : "bg-[var(--cs-surface)]")}>
+            <Eye className={cn("h-3 w-3 mx-auto mb-0.5", awaitingOversight > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")} />
+            <div className={cn("text-sm font-bold tabular-nums", awaitingOversight > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")}>{awaitingOversight}</div>
+            <div className={cn("text-[9px]", awaitingOversight > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")}>Oversight</div>
           </div>
-          <div className="rounded-xl bg-slate-50 p-2 text-center">
+          <div className="rounded-xl bg-[var(--cs-surface)] p-2 text-center">
             <TrendingUp className="h-3 w-3 text-[var(--cs-text-muted)] mx-auto mb-0.5" />
             <div className="text-sm font-bold text-[var(--cs-text-secondary)] tabular-nums">{thisWeek}</div>
             <div className="text-[9px] text-[var(--cs-text-muted)]">This Week</div>
@@ -146,7 +146,7 @@ export function IncidentTrendsCard() {
               <span className="text-[10px] font-medium text-[var(--cs-text-muted)]">Open by Severity</span>
               <span className="text-[10px] text-[var(--cs-text-muted)]">{totalBreakdown} total</span>
             </div>
-            <div className="flex h-2 rounded-full overflow-hidden bg-slate-100">
+            <div className="flex h-2 rounded-full overflow-hidden bg-[var(--cs-surface)]">
               {(["critical", "high", "medium", "low"] as const).map((sev) => {
                 const count = severityBreakdown[sev] ?? 0;
                 if (count === 0) return null;
@@ -177,13 +177,13 @@ export function IncidentTrendsCard() {
 
         {/* Awaiting oversight warning */}
         {awaitingOversight > 0 && (
-          <div className="rounded-lg bg-violet-50 border border-violet-100 p-2 flex items-start gap-2">
-            <Eye className="h-3 w-3 text-violet-500 shrink-0 mt-0.5" />
+          <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-2 flex items-start gap-2">
+            <Eye className="h-3 w-3 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
             <div>
-              <p className="text-[10px] font-semibold text-violet-700">
+              <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)]">
                 {awaitingOversight} incident{awaitingOversight !== 1 ? "s" : ""} awaiting RM oversight
               </p>
-              <p className="text-[10px] text-violet-600">
+              <p className="text-[10px] text-[var(--cs-aria-gold)]">
                 Reg 40 requires managers to review and sign off all incidents
               </p>
             </div>
@@ -220,7 +220,7 @@ export function IncidentTrendsCard() {
           <div className="space-y-1">
             {recentIncidents.slice(0, 4).map((incident) => {
               const sevConfig = SEVERITY_CONFIG[incident.severity] ?? {
-                label: incident.severity, colour: "bg-slate-400",
+                label: incident.severity, colour: "bg-[var(--cs-text-muted)]",
               };
               return (
                 <Link key={incident.id} href={`/incidents/${incident.id}`}>
@@ -236,7 +236,7 @@ export function IncidentTrendsCard() {
                       "text-[8px] px-1.5 py-0 rounded-full border-0",
                       incident.status === "open" ? "bg-orange-100 text-orange-700"
                       : incident.status === "under_review" ? "bg-blue-100 text-blue-700"
-                      : "bg-slate-100 text-[var(--cs-text-muted)]",
+                      : "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]",
                     )}>
                       {incident.status.replace(/_/g, " ")}
                     </Badge>

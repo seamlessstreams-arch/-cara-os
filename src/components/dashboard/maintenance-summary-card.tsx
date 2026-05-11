@@ -67,17 +67,17 @@ export function MaintenanceSummaryCard() {
       <CardContent className="pt-0 space-y-2.5">
         {/* KPI strip */}
         <div className="grid grid-cols-3 gap-2">
-          <div className={cn("rounded-xl p-2 text-center", meta.urgent > 0 ? "bg-red-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", meta.urgent > 0 ? "bg-red-50" : "bg-[var(--cs-surface)]")}>
             <AlertTriangle className={cn("h-3 w-3 mx-auto mb-0.5", meta.urgent > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", meta.urgent > 0 ? "text-red-700" : "text-[var(--cs-text-muted)]")}>{meta.urgent}</div>
             <div className={cn("text-[9px]", meta.urgent > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")}>Urgent</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", meta.open > 0 ? "bg-amber-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", meta.open > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
             <CircleDot className={cn("h-3 w-3 mx-auto mb-0.5", meta.open > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", meta.open > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>{meta.open}</div>
             <div className={cn("text-[9px]", meta.open > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")}>Open</div>
           </div>
-          <div className="rounded-xl bg-slate-50 p-2 text-center">
+          <div className="rounded-xl bg-[var(--cs-surface)] p-2 text-center">
             <CalendarClock className="h-3 w-3 text-blue-500 mx-auto mb-0.5" />
             <div className="text-sm font-bold text-blue-700 tabular-nums">{meta.scheduled}</div>
             <div className="text-[9px] text-blue-500">Scheduled</div>

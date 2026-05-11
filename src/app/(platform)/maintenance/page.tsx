@@ -50,7 +50,7 @@ const CAT_COLORS: Record<string, { bg: string; text: string; border: string }> =
   hvac:        { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" },
   fire_safety: { bg: "bg-red-50",    text: "text-red-600",    border: "border-red-200" },
   plumbing:    { bg: "bg-cyan-50",   text: "text-cyan-600",   border: "border-cyan-200" },
-  security:    { bg: "bg-violet-50", text: "text-violet-600", border: "border-violet-200" },
+  security:    { bg: "bg-[var(--cs-aria-gold-bg)]", text: "text-[var(--cs-aria-gold)]", border: "border-[var(--cs-aria-gold-soft)]" },
   electrical:  { bg: "bg-amber-50",  text: "text-amber-600",  border: "border-amber-200" },
   cleaning:    { bg: "bg-teal-50",   text: "text-teal-600",   border: "border-teal-200" },
   general:     { bg: "bg-slate-50",  text: "text-[var(--cs-text-secondary)]",  border: "border-[var(--cs-border)]" },

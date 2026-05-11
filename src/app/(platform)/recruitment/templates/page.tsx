@@ -484,7 +484,7 @@ Yours sincerely,
 
 const CATEGORY_META: Record<TemplateCategory, { label: string; color: string; icon: React.ElementType }> = {
   invitation: { label: "Invitation", color: "bg-blue-100 text-blue-700", icon: Mail },
-  reference: { label: "Reference", color: "bg-violet-100 text-violet-700", icon: Users },
+  reference: { label: "Reference", color: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]", icon: Users },
   offer: { label: "Offer", color: "bg-emerald-100 text-emerald-700", icon: CheckCircle2 },
   rejection: { label: "Rejection", color: "bg-slate-100 text-[var(--cs-text-secondary)]", icon: X },
   compliance: { label: "Compliance", color: "bg-amber-100 text-amber-700", icon: Shield },
@@ -614,7 +614,7 @@ function TemplateModal({ template, onClose }: { template: Template; onClose: () 
         {/* Footer */}
         <div className="flex items-center justify-between gap-3 p-4 border-t border-[var(--cs-border-subtle)]">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+            <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             <span className="text-xs text-[var(--cs-text-muted)]">ARIA can draft a personalised version for a specific candidate</span>
           </div>
           <div className="flex gap-2">
@@ -819,11 +819,11 @@ export default function TemplatesPage() {
         )}
 
         {/* ARIA guidance */}
-        <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4 flex items-start gap-3">
-          <Sparkles className="h-4 w-4 text-violet-500 mt-0.5 shrink-0" />
+        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 flex items-start gap-3">
+          <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)] mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-violet-800">ARIA can personalise any template</p>
-            <p className="text-xs text-violet-600 mt-0.5">
+            <p className="text-sm font-semibold text-[var(--cs-navy)]">ARIA can personalise any template</p>
+            <p className="text-xs text-[var(--cs-aria-gold)] mt-0.5">
               Select a template, then ask Aria to draft a personalised version for a specific candidate — ARIA will populate merge fields from the candidate&apos;s record and adjust the tone for the context.
             </p>
           </div>

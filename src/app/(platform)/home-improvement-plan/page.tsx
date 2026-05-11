@@ -27,7 +27,7 @@ import type { ImprovementObjective, ObjectiveSource, ObjectivePriority, Objectiv
 import { OBJECTIVE_SOURCE_LABEL, OBJECTIVE_STATUS_LABEL } from "@/types/extended";
 
 const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
-  reg44: "bg-violet-50 text-violet-700 border-violet-200",
+  reg44: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
   ofsted: "bg-blue-50 text-blue-700 border-blue-200",
   reg45: "bg-indigo-50 text-indigo-700 border-indigo-200",
   self: "bg-teal-50 text-teal-700 border-teal-200",

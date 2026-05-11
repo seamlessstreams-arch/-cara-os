@@ -10,7 +10,7 @@ function Progress({
 }: React.ComponentProps<typeof ProgressPrimitive.Root> & { color?: string }) {
   return (
     <ProgressPrimitive.Root
-      className={cn("relative h-2 w-full overflow-hidden rounded-full bg-slate-100", className)}
+      className={cn("relative h-2 w-full overflow-hidden rounded-full bg-[var(--cs-surface)]", className)}
       {...props}
     >
       <ProgressPrimitive.Indicator

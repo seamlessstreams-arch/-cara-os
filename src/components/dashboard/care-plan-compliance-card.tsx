@@ -122,12 +122,12 @@ export function CarePlanComplianceCard() {
       <CardContent className="pt-0 space-y-2.5">
         {/* RAG distribution */}
         <div className="grid grid-cols-3 gap-2">
-          <div className={cn("rounded-xl p-2 text-center", redCount > 0 ? "bg-red-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", redCount > 0 ? "bg-red-50" : "bg-[var(--cs-surface)]")}>
             <AlertTriangle className={cn("h-3 w-3 mx-auto mb-0.5", redCount > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", redCount > 0 ? "text-red-700" : "text-[var(--cs-text-muted)]")}>{redCount}</div>
             <div className={cn("text-[9px]", redCount > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")}>At Risk</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", amberCount > 0 ? "bg-amber-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", amberCount > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
             <Clock className={cn("h-3 w-3 mx-auto mb-0.5", amberCount > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", amberCount > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>{amberCount}</div>
             <div className={cn("text-[9px]", amberCount > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")}>Review</div>

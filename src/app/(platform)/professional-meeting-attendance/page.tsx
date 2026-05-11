@@ -47,7 +47,7 @@ const TYPE_COLOUR: Record<ProfMeetingType, string> = {
   mappa: "bg-purple-100 text-purple-700",
   taf: "bg-teal-100 text-teal-700",
   pep: "bg-indigo-100 text-indigo-700",
-  ehcp_review: "bg-violet-100 text-violet-700",
+  ehcp_review: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   health: "bg-emerald-100 text-emerald-700",
   multi_agency: "bg-amber-100 text-amber-700",
   external_consultation: "bg-slate-100 text-[var(--cs-text-secondary)]",

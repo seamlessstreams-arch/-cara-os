@@ -183,7 +183,7 @@ export function TrainingComplianceCard() {
       </CardHeader>
       <CardContent className="pt-0">
         {/* Team compliance summary */}
-        <div className="rounded-xl bg-slate-50 border border-[var(--cs-border-subtle)] p-3 mb-3">
+        <div className="rounded-xl bg-[var(--cs-surface)] border border-[var(--cs-border-subtle)] p-3 mb-3">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-[11px] font-medium text-[var(--cs-text-muted)]">Team Compliance Rate</span>
             <span className={cn(
@@ -227,7 +227,7 @@ export function TrainingComplianceCard() {
             <p className="text-sm font-medium text-emerald-700">All training up to date</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 max-h-[280px] overflow-y-auto">
+          <div className="divide-y divide-[var(--cs-border-subtle)] max-h-[280px] overflow-y-auto">
             {sorted.slice(0, 8).map((s) => (
               <TrainingRow key={s.id} staff={s} />
             ))}

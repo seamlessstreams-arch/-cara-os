@@ -86,7 +86,7 @@ const URGENCY_STYLES: Record<Urgency, { badge: string; border: string; label: st
 /* ── category config ───────────────────────────────────────────────────────── */
 
 const CATEGORY_META: Record<AttentionCategory, { label: string; badge: string; icon: React.ElementType }> = {
-  log_approval:          { label: "Log Approval",          badge: "bg-violet-100 text-violet-800", icon: ClipboardCheck },
+  log_approval:          { label: "Log Approval",          badge: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]", icon: ClipboardCheck },
   incident_oversight:    { label: "Incident Oversight",    badge: "bg-orange-100 text-orange-800", icon: AlertCircle },
   serious_incident:      { label: "Serious Incident",      badge: "bg-red-100 text-red-800",       icon: Siren },
   missing_from_care:     { label: "Missing from Care",     badge: "bg-red-100 text-red-800",       icon: AlertTriangle },

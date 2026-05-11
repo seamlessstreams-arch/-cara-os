@@ -286,7 +286,7 @@ export default function ChildTraumaTherapyLogPage() {
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Brain className="h-4 w-4 text-violet-500" />
+                    <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                     <h3 className="font-semibold">{getYPName(r.child_id)}</h3>
                     <span className="text-sm text-gray-600">— {r.therapist_name}</span>
                     <span className="text-xs text-gray-400">({r.therapist_service})</span>

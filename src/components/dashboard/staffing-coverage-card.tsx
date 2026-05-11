@@ -26,8 +26,8 @@ import type { Shift } from "@/types";
 const SHIFT_TYPE_CONFIG: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   day:        { label: "Day",        color: "bg-blue-100 text-blue-700",    icon: Users },
   long_day:   { label: "Long Day",   color: "bg-indigo-100 text-indigo-700",icon: Users },
-  night:      { label: "Night",      color: "bg-violet-100 text-violet-700",icon: Moon },
-  sleep_in:   { label: "Sleep-In",   color: "bg-slate-100 text-[var(--cs-text-secondary)]",  icon: Moon },
+  night:      { label: "Night",      color: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",icon: Moon },
+  sleep_in:   { label: "Sleep-In",   color: "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",  icon: Moon },
   on_call:    { label: "On-Call",    color: "bg-amber-100 text-amber-700",  icon: Clock },
   half_day:   { label: "Half Day",   color: "bg-teal-100 text-teal-700",    icon: Clock },
 };
@@ -123,7 +123,7 @@ export function StaffingCoverageCard() {
             <div className="text-sm font-bold text-amber-700 tabular-nums">{onLeave}</div>
             <div className="text-[9px] text-amber-500">On Leave</div>
           </div>
-          <div className="rounded-xl bg-slate-50 p-2 text-center">
+          <div className="rounded-xl bg-[var(--cs-surface)] p-2 text-center">
             <Users className="h-3 w-3 text-[var(--cs-text-muted)] mx-auto mb-0.5" />
             <div className="text-sm font-bold text-[var(--cs-text-secondary)] tabular-nums">{ratio}</div>
             <div className="text-[9px] text-[var(--cs-text-muted)]">Staff:Child</div>
@@ -160,7 +160,7 @@ export function StaffingCoverageCard() {
           <div className="space-y-1">
             {todayShifts.slice(0, 6).map((shift) => {
               const config = SHIFT_TYPE_CONFIG[shift.shift_type] ?? {
-                label: shift.shift_type, color: "bg-slate-100 text-[var(--cs-text-secondary)]", icon: Users,
+                label: shift.shift_type, color: "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]", icon: Users,
               };
               return (
                 <div key={shift.id} className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-[var(--cs-surface)] transition-colors">

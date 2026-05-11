@@ -86,7 +86,7 @@ const METRIC_GROUPS: MetricGroup[] = [
     ],
   },
   {
-    label: "Care Quality", icon: Heart, colour: "text-violet-600",
+    label: "Care Quality", icon: Heart, colour: "text-[var(--cs-aria-gold)]",
     metrics: [
       { key: "medication_governance_score", label: "Medication Governance", live: true },
       { key: "care_planning_score",         label: "Care Planning",         live: true },

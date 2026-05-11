@@ -46,7 +46,7 @@ const EVENT_TYPES = [
 const SECTION_STYLES: Record<string, { border: string; bg: string; label: string; icon: React.ElementType }> = {
   "What happened":                      { border: "border-[var(--cs-border)]",   bg: "bg-slate-50",    label: "What happened",                      icon: MessageSquare },
   "What the child was communicating":   { border: "border-blue-200",    bg: "bg-blue-50/40",  label: "What the child was communicating",   icon: Heart },
-  "How I responded":                    { border: "border-violet-200",  bg: "bg-violet-50/40",label: "How I responded",                    icon: User },
+  "How I responded":                    { border: "border-[var(--cs-aria-gold-soft)]",  bg: "bg-[var(--cs-aria-gold-bg)]/40",label: "How I responded",                    icon: User },
   "Was I regulated":                    { border: "border-amber-200",   bg: "bg-amber-50/40", label: "Was I regulated?",                   icon: Brain },
   "What went well":                     { border: "border-emerald-200", bg: "bg-emerald-50/40",label: "What went well",                    icon: Star },
   "What could I do differently":        { border: "border-orange-200",  bg: "bg-orange-50/40",label: "What could I do differently?",       icon: Lightbulb },

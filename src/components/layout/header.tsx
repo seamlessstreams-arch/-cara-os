@@ -76,7 +76,7 @@ export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
               <div className="flex items-center gap-1 mb-0.5">
                 {breadcrumb.map((crumb, i) => (
                   <React.Fragment key={crumb.href}>
-                    {i > 0 && <ChevronRight className="h-3 w-3 text-slate-300 shrink-0" />}
+                    {i > 0 && <ChevronRight className="h-3 w-3 text-[var(--cs-text-gentle)] shrink-0" />}
                     <Link
                       href={crumb.href}
                       className={cn(
@@ -107,13 +107,13 @@ export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
             >
               <Search className="h-3.5 w-3.5" />
               <span className="text-xs">Search...</span>
-              <kbd className="ml-1 inline-flex h-4 items-center rounded border border-slate-200 bg-white px-1 text-[9px] font-medium text-slate-400">
+              <kbd className="ml-1 inline-flex h-4 items-center rounded border border-[var(--cs-border)] bg-white px-1 text-[9px] font-medium text-[var(--cs-text-muted)]">
                 <Command className="h-2.5 w-2.5 mr-0.5" />K
               </kbd>
             </button>
             <button
               onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
-              className="sm:hidden flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+              className="sm:hidden flex h-8 w-8 items-center justify-center rounded-xl text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)] hover:text-[var(--cs-text-secondary)] transition-colors"
               title="Search"
             >
               <Search className="h-4 w-4" />

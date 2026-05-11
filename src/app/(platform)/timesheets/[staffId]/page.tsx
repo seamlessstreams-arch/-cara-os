@@ -42,7 +42,7 @@ function shiftStatusConfig(s: Shift["status"]) {
     case "in_progress": return { label: "In progress", colour: "bg-blue-100 text-blue-700 border-blue-200" };
     case "no_show":     return { label: "No show",     colour: "bg-red-100 text-red-700 border-red-200" };
     case "cancelled":   return { label: "Cancelled",   colour: "bg-slate-100 text-[var(--cs-text-muted)] border-[var(--cs-border)]" };
-    case "confirmed":   return { label: "Confirmed",   colour: "bg-violet-100 text-violet-700 border-violet-200" };
+    case "confirmed":   return { label: "Confirmed",   colour: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]" };
     default:            return { label: "Scheduled",   colour: "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]" };
   }
 }
@@ -299,7 +299,7 @@ export default function TimesheetDetailPage({
                 className="gap-1.5 text-xs"
                 onClick={() => setShowAria((v) => !v)}
               >
-                <Sparkles className="h-3.5 w-3.5 text-violet-600" />ARIA Analysis
+                <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />ARIA Analysis
               </Button>
               <Button
                 size="sm"
@@ -345,7 +345,7 @@ export default function TimesheetDetailPage({
             value: String(staffShifts.length),
             sub: `${totals.completedShifts} completed`,
             icon: Calendar,
-            colour: "text-violet-600", bg: "bg-violet-50",
+            colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]",
           },
           {
             label: "No shows",

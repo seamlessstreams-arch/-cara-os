@@ -69,7 +69,7 @@ const DOMAIN_LABELS: Record<CarePlanDomain, string> = {
 const DOMAIN_COLOUR: Record<CarePlanDomain, string> = {
   health:                "text-rose-600 bg-rose-50 border-rose-200",
   education:             "text-blue-600 bg-blue-50 border-blue-200",
-  emotional_behavioural: "text-violet-600 bg-violet-50 border-violet-200",
+  emotional_behavioural: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]",
   identity:              "text-amber-600 bg-amber-50 border-amber-200",
   family_social:         "text-emerald-600 bg-emerald-50 border-emerald-200",
   independence:          "text-sky-600 bg-sky-50 border-sky-200",

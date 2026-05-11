@@ -59,7 +59,7 @@ const COMPETENCIES: DigitalLiteracyCompetency[] = [
 
 const COMP_META: Record<DigitalLiteracyCompetency, { colour: string; order: number }> = {
   not_yet_introduced: { colour: "bg-gray-100 text-gray-700",     order: 0 },
-  aware:              { colour: "bg-violet-100 text-violet-700", order: 1 },
+  aware:              { colour: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]", order: 1 },
   did_with_help:      { colour: "bg-amber-100 text-amber-800",   order: 2 },
   did_independently:  { colour: "bg-blue-100 text-blue-700",     order: 3 },
   confident:          { colour: "bg-indigo-100 text-indigo-800", order: 4 },
@@ -67,7 +67,7 @@ const COMP_META: Record<DigitalLiteracyCompetency, { colour: string; order: numb
 
 const DOMAIN_COLOUR: Record<DigitalLiteracyDomain, string> = {
   device_basics:     "bg-indigo-50 text-indigo-700 border-indigo-200",
-  email:             "bg-violet-50 text-violet-700 border-violet-200",
+  email:             "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
   word_processing:   "bg-sky-50 text-sky-700 border-sky-200",
   cloud_storage:     "bg-cyan-50 text-cyan-700 border-cyan-200",
   online_banking:    "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -185,7 +185,7 @@ export default function DigitalLiteracySkillsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Skills tracked",           value: stats.skillsTracked, icon: Laptop, c: "text-indigo-600" },
-            { label: "Confident competencies",   value: stats.confident,     icon: Award,  c: "text-violet-600" },
+            { label: "Confident competencies",   value: stats.confident,     icon: Award,  c: "text-[var(--cs-aria-gold)]" },
             { label: "Reviews due ≤ 30 days",    value: stats.reviewsDue,    icon: Lock,   c: "text-amber-600" },
             { label: "Real-world applications",  value: stats.realWorld,     icon: Globe,  c: "text-emerald-600" },
           ].map((s) => (
@@ -253,7 +253,7 @@ export default function DigitalLiteracySkillsPage() {
                   className="w-full flex items-center justify-between p-4 hover:bg-indigo-50/40 transition-colors"
                 >
                   <div className="flex items-center gap-3 text-left">
-                    <div className="rounded-md bg-gradient-to-br from-indigo-500 to-violet-500 p-2 text-white">
+                    <div className="rounded-md bg-gradient-to-br from-indigo-500 to-[var(--cs-aria-gold)] p-2 text-white">
                       <Laptop className="h-5 w-5" />
                     </div>
                     <div>
@@ -303,11 +303,11 @@ export default function DigitalLiteracySkillsPage() {
 
                     {/* tools & real-world */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="rounded-lg border border-violet-200 bg-violet-50/60 p-3">
-                        <h4 className="text-sm font-semibold text-violet-800 mb-1.5 flex items-center gap-1.5">
+                      <div className="rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/60 p-3">
+                        <h4 className="text-sm font-semibold text-[var(--cs-navy)] mb-1.5 flex items-center gap-1.5">
                           <Mail className="h-4 w-4" /> Tools used
                         </h4>
-                        <ul className="list-disc list-inside text-sm text-violet-900 space-y-0.5">
+                        <ul className="list-disc list-inside text-sm text-[var(--cs-navy)] space-y-0.5">
                           {rec.tools_used.map((t, i) => <li key={i}>{t}</li>)}
                         </ul>
                       </div>

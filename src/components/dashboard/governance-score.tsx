@@ -42,7 +42,7 @@ function useGovernanceScore() {
 const CATEGORY_CONFIG = [
   { key: "safeguarding" as const,  label: "Safeguarding", icon: Shield,    colour: "text-red-600" },
   { key: "workforce" as const,     label: "Workforce",    icon: Users,     colour: "text-blue-600" },
-  { key: "care_quality" as const,  label: "Care Quality", icon: Heart,     colour: "text-violet-600" },
+  { key: "care_quality" as const,  label: "Care Quality", icon: Heart,     colour: "text-[var(--cs-aria-gold)]" },
   { key: "governance" as const,    label: "Governance",   icon: FileCheck, colour: "text-emerald-600" },
 ];
 
@@ -112,7 +112,7 @@ export function GovernanceScore() {
                 <span className="text-[9px] text-[var(--cs-text-muted)]">Live</span>
               </div>
             </div>
-            <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div className="h-1.5 rounded-full bg-[var(--cs-surface)] overflow-hidden">
               <div className={cn("h-full rounded-full transition-all", barColour)} style={{ width: `${overall}%` }} />
             </div>
           </div>
@@ -142,7 +142,7 @@ export function GovernanceScore() {
               <div className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-[var(--cs-surface)] transition-colors">
                 <Icon className={cn("h-3 w-3 shrink-0", colour)} />
                 <span className="text-[10px] text-[var(--cs-text-muted)] w-16 truncate">{label}</span>
-                <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                <div className="flex-1 h-1.5 rounded-full bg-[var(--cs-surface)] overflow-hidden">
                   <div className={cn("h-full rounded-full", catBar)} style={{ width: `${score}%` }} />
                 </div>
                 <span className={cn("text-[10px] font-bold tabular-nums w-6 text-right", catText)}>

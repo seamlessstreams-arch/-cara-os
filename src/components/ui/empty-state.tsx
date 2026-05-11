@@ -41,19 +41,19 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-slate-200 bg-white",
+        "flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-[var(--cs-border)] bg-white",
         compact ? "px-6 py-10" : "px-8 py-16",
         className,
       )}
     >
       {Icon && (
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 mb-4">
-          <Icon className="h-7 w-7 text-slate-300" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--cs-surface)] mb-4">
+          <Icon className="h-7 w-7 text-[var(--cs-text-gentle)]" />
         </div>
       )}
 
-      <h3 className="text-[15px] font-semibold text-slate-800 mb-1">{title}</h3>
-      <p className="text-sm text-slate-500 max-w-sm leading-relaxed mb-6">{description}</p>
+      <h3 className="text-[15px] font-semibold text-[var(--cs-navy)] mb-1">{title}</h3>
+      <p className="text-sm text-[var(--cs-text-muted)] max-w-sm leading-relaxed mb-6">{description}</p>
 
       {(actions.length > 0 || ariaPrompt) && (
         <div className="flex flex-wrap items-center justify-center gap-2">

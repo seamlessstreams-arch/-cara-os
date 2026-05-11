@@ -54,11 +54,11 @@ export default function AriaComposePage() {
 
   return (
     <PageShell title="ARIA — Compose">
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
-        <Sparkles className="h-5 w-5 mt-0.5 text-violet-600" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
         <div>
           <div className="font-semibold">ARIA suggested draft, never final</div>
-          <p className="text-violet-800">
+          <p className="text-[var(--cs-navy)]">
             This page demonstrates the universal ARIA layer in action. Each field
             below has the ARIA microphone button and the Ask ARIA command picker.
             ARIA runs on the server, every output is labelled as a draft, and
@@ -72,7 +72,7 @@ export default function AriaComposePage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ClipboardCheck className="h-4 w-4 text-violet-600" /> Acting as
+            <ClipboardCheck className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Acting as
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -164,7 +164,7 @@ export default function AriaComposePage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4 text-violet-500" /> Management oversight comment
+            <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Management oversight comment
           </CardTitle>
         </CardHeader>
         <CardContent>

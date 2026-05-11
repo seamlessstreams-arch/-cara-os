@@ -53,7 +53,7 @@ function LibraryEntryCard({ entry }: { entry: ResourceLibraryEntry }) {
   };
 
   return (
-    <Card className={cn("border transition-all hover:shadow-sm", entry.is_pinned ? "border-violet-200" : "border-[var(--cs-border-subtle)]")}>
+    <Card className={cn("border transition-all hover:shadow-sm", entry.is_pinned ? "border-[var(--cs-aria-gold-soft)]" : "border-[var(--cs-border-subtle)]")}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <div className={cn(
@@ -77,7 +77,7 @@ function LibraryEntryCard({ entry }: { entry: ResourceLibraryEntry }) {
                   className={cn(
                     "rounded p-0.5 transition-colors",
                     entry.is_pinned
-                      ? "text-violet-600 hover:text-violet-700"
+                      ? "text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)]"
                       : "text-[var(--cs-text-gentle)] hover:text-[var(--cs-text-muted)]"
                   )}
                   title={entry.is_pinned ? "Unpin" : "Pin to top"}
@@ -107,7 +107,7 @@ function LibraryEntryCard({ entry }: { entry: ResourceLibraryEntry }) {
                 </Badge>
               )}
               {entry.is_pinned && (
-                <Badge className="text-[10px] h-4 px-1.5 bg-violet-100 text-violet-700">
+                <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]">
                   Pinned
                 </Badge>
               )}
@@ -266,7 +266,7 @@ export default function ResourceLibraryPage() {
           {[
             { label: "Total Resources", value: stats.total, colour: "text-[var(--cs-text-secondary)]", bg: "bg-slate-50", icon: Library },
             { label: "Approved", value: stats.approved, colour: "text-emerald-700", bg: "bg-emerald-50", icon: CheckCircle2 },
-            { label: "Pinned", value: stats.pinned, colour: "text-violet-700", bg: "bg-violet-50", icon: Pin },
+            { label: "Pinned", value: stats.pinned, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]", icon: Pin },
             { label: "Staff Resources", value: stats.staffCount, colour: "text-teal-700", bg: "bg-teal-50", icon: Users },
             { label: "Children Resources", value: stats.childCount, colour: "text-blue-700", bg: "bg-blue-50", icon: BookOpen },
             { label: "Total Uses", value: stats.totalUsage, colour: "text-amber-700", bg: "bg-amber-50", icon: BarChart3 },

@@ -31,8 +31,8 @@ const TYPE_CONFIG: Record<KeyDate["type"], {
   training_expiry:  { icon: GraduationCap,  color: "text-amber-600",   bgColor: "bg-amber-100",   label: "Training" },
   supervision:      { icon: Users,          color: "text-indigo-600",  bgColor: "bg-indigo-100",  label: "Supervision" },
   probation_end:    { icon: Award,          color: "text-emerald-600", bgColor: "bg-emerald-100", label: "Probation" },
-  placement_review: { icon: Heart,          color: "text-violet-600",  bgColor: "bg-violet-100",  label: "Placement" },
-  document_expiry:  { icon: FileText,       color: "text-[var(--cs-text-secondary)]",   bgColor: "bg-slate-100",   label: "Document" },
+  placement_review: { icon: Heart,          color: "text-[var(--cs-aria-gold)]",  bgColor: "bg-[var(--cs-aria-gold-bg)]",  label: "Placement" },
+  document_expiry:  { icon: FileText,       color: "text-[var(--cs-text-secondary)]",   bgColor: "bg-[var(--cs-surface)]",   label: "Document" },
   care_review:      { icon: Heart,          color: "text-blue-600",    bgColor: "bg-blue-100",    label: "Care Plan" },
 };
 
@@ -41,7 +41,7 @@ const SEVERITY_DOT: Record<string, string> = {
   high:     "bg-orange-500",
   medium:   "bg-amber-400",
   low:      "bg-blue-300",
-  info:     "bg-slate-300",
+  info:     "bg-[var(--cs-text-gentle)]",
 };
 
 // ── Row component ───────────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ function KeyDateRow({ item }: { item: KeyDate }) {
     >
       <div className={cn(
         "flex h-8 w-8 items-center justify-center rounded-xl shrink-0",
-        config?.bgColor ?? "bg-slate-100",
+        config?.bgColor ?? "bg-[var(--cs-surface)]",
       )}>
         <Icon className={cn("h-4 w-4", config?.color ?? "text-[var(--cs-text-muted)]")} />
       </div>
@@ -138,7 +138,7 @@ export function KeyDatesCard({ limit = 8 }: { limit?: number }) {
         </CardHeader>
         <CardContent>
           <div className="py-6 text-center">
-            <Calendar className="h-8 w-8 text-slate-200 mx-auto mb-2" />
+            <Calendar className="h-8 w-8 text-[var(--cs-text-gentle)] mx-auto mb-2" />
             <p className="text-sm font-medium text-[var(--cs-text-muted)]">No upcoming key dates</p>
             <p className="text-[11px] text-[var(--cs-text-muted)] mt-0.5">All reviews and deadlines are clear</p>
           </div>
@@ -181,7 +181,7 @@ export function KeyDatesCard({ limit = 8 }: { limit?: number }) {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="divide-y divide-slate-100 max-h-[380px] overflow-y-auto">
+        <div className="divide-y divide-[var(--cs-border-subtle)] max-h-[380px] overflow-y-auto">
           {items.slice(0, limit).map((item) => (
             <KeyDateRow key={item.id} item={item} />
           ))}

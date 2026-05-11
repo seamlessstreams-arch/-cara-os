@@ -48,7 +48,7 @@ const REALISM_META: Record<AspirationRealism, { colour: string }> = {
   very_achievable:         { colour: "bg-green-100 text-green-800" },
   achievable_with_support: { colour: "bg-emerald-100 text-emerald-800" },
   stretch_goal:            { colour: "bg-amber-100 text-amber-800" },
-  big_dream_long_term:     { colour: "bg-violet-100 text-violet-800" },
+  big_dream_long_term:     { colour: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]" },
 };
 
 const REALISM_ORDER: Record<AspirationRealism, number> = {
@@ -157,7 +157,7 @@ export default function ChildAspirationsTrackerPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { l: "Aspirations tracked",       v: stats.total,              icon: Star,     c: "text-amber-600" },
-            { l: "Stretch goals",             v: stats.stretch,            icon: Sparkles, c: "text-violet-600" },
+            { l: "Stretch goals",             v: stats.stretch,            icon: Sparkles, c: "text-[var(--cs-aria-gold)]" },
             { l: "Reviews due",               v: stats.reviewsDue,         icon: Compass,  c: "text-sky-600" },
             { l: "Children with active plans", v: stats.childrenWithPlans, icon: Heart,    c: "text-rose-600" },
           ].map((s) => (

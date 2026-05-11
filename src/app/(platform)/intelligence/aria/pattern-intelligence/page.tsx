@@ -193,7 +193,7 @@ const DEMO_ALERTS: PatternItem[] = [
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const SOURCE_CONFIG: Record<PatternItem["source"], { label: string; icon: React.ElementType; colour: string }> = {
-  pattern: { label: "Pattern", icon: Radar, colour: "bg-violet-100 text-violet-800" },
+  pattern: { label: "Pattern", icon: Radar, colour: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]" },
   voice_gap: { label: "Voice Gap", icon: Quote, colour: "bg-blue-100 text-blue-800" },
   compliance: { label: "Compliance", icon: Calendar, colour: "bg-amber-100 text-amber-800" },
   regulatory: { label: "Regulatory", icon: Shield, colour: "bg-red-100 text-red-800" },
@@ -253,7 +253,7 @@ export default function PatternIntelligencePage() {
               <Radar className="h-3.5 w-3.5" />Pattern Alerts
             </Button>
           </Link>
-          <Badge className="bg-violet-100 text-violet-800 border-violet-200">
+          <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">
             <Sparkles className="h-3 w-3 mr-1" />ARIA V2
           </Badge>
         </div>
@@ -264,10 +264,10 @@ export default function PatternIntelligencePage() {
         {/* ── Headline stats ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[
-            { label: "Active Alerts", value: counts.total, icon: Zap, colour: "text-violet-600" },
+            { label: "Active Alerts", value: counts.total, icon: Zap, colour: "text-[var(--cs-aria-gold)]" },
             { label: "Urgent", value: counts.urgent, icon: AlertOctagon, colour: "text-red-600" },
             { label: "High", value: counts.high, icon: AlertTriangle, colour: "text-orange-600" },
-            { label: "Patterns", value: counts.patterns, icon: Radar, colour: "text-violet-600" },
+            { label: "Patterns", value: counts.patterns, icon: Radar, colour: "text-[var(--cs-aria-gold)]" },
             { label: "Voice Gaps", value: counts.voiceGaps, icon: Quote, colour: "text-blue-600" },
             { label: "Compliance", value: counts.compliance, icon: Calendar, colour: "text-amber-600" },
             { label: "Children", value: counts.childrenAffected, icon: Users, colour: "text-[var(--cs-text-secondary)]" },
@@ -385,12 +385,12 @@ export default function PatternIntelligencePage() {
                   <div className="px-5 pb-5 border-t border-[var(--cs-border-subtle)] pt-4 space-y-4">
                     <p className="text-sm text-[var(--cs-text-secondary)]">{alert.description}</p>
 
-                    <div className="rounded-xl bg-violet-50 border border-violet-200 p-4">
+                    <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="h-4 w-4 text-violet-500" />
-                        <span className="text-xs font-semibold text-violet-800">ARIA Recommendation</span>
+                        <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                        <span className="text-xs font-semibold text-[var(--cs-navy)]">ARIA Recommendation</span>
                       </div>
-                      <p className="text-sm text-violet-800">{alert.recommendation}</p>
+                      <p className="text-sm text-[var(--cs-navy)]">{alert.recommendation}</p>
                     </div>
 
                     <div className="flex items-center gap-3 text-xs text-[var(--cs-text-muted)]">

@@ -103,7 +103,7 @@ const JUDGEMENT_LABELS: Record<JudgementArea, string> = {
 const JUDGEMENT_COLOURS: Record<JudgementArea, string> = {
   overall_experiences_and_progress: "bg-blue-100 text-blue-800",
   help_and_protection: "bg-amber-100 text-amber-800",
-  effectiveness_of_leaders: "bg-violet-100 text-violet-800",
+  effectiveness_of_leaders: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
 };
 
 const CONFIDENCE_DOT: Record<string, string> = {
@@ -768,8 +768,8 @@ export default function OfstedEvidenceRoomPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50">
-                <BookOpen className="h-5 w-5 text-violet-600" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-aria-gold-bg)]">
+                <BookOpen className="h-5 w-5 text-[var(--cs-aria-gold)]" />
               </div>
               <div>
                 <p className="text-2xl font-semibold text-[var(--cs-navy)]">{packItems.length > 0 ? 1 : 0}</p>
@@ -963,7 +963,7 @@ export default function OfstedEvidenceRoomPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
-                <BookOpen className="h-4 w-4 text-violet-600" />
+                <BookOpen className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                 Evidence Pack
               </CardTitle>
             </CardHeader>
@@ -1124,7 +1124,7 @@ export default function OfstedEvidenceRoomPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-[var(--cs-navy)] flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-violet-600" />
+                    <BookOpen className="h-5 w-5 text-[var(--cs-aria-gold)]" />
                     Inspection Evidence Pack
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -1294,7 +1294,7 @@ function EvidenceCard({ item, childName, inPack, onTogglePack }: EvidenceCardPro
   const level = confidenceLevel(item.confidenceScore);
 
   return (
-    <Card className={cn("transition-colors", inPack && "ring-1 ring-violet-300 bg-violet-50/30")}>
+    <Card className={cn("transition-colors", inPack && "ring-1 ring-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30")}>
       <CardContent className="p-4">
         {/* top row: title + confidence */}
         <div className="flex items-start justify-between gap-3 mb-2">
@@ -1364,7 +1364,7 @@ function EvidenceCard({ item, childName, inPack, onTogglePack }: EvidenceCardPro
             size="sm"
             className={cn(
               "gap-1 text-xs h-7",
-              inPack && "bg-violet-100 text-violet-800 hover:bg-violet-200",
+              inPack && "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] hover:bg-[var(--cs-aria-gold-soft)]",
             )}
             onClick={onTogglePack}
           >

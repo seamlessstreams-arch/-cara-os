@@ -52,7 +52,7 @@ function CheckRow({ check }: { check: NightCheck }) {
             <span className="text-xs font-semibold text-[var(--cs-navy)]">{getYPName(check.child_id)}</span>
             <Badge className={cn("text-[9px] px-1.5 py-0 border", ss.bg, ss.color, ss.border)}>{ss.label}</Badge>
             {check.concern_raised && <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[9px] px-1.5 py-0"><AlertTriangle className="h-2.5 w-2.5 mr-0.5" />Concern</Badge>}
-            {check.check_type !== "scheduled" && <Badge className="bg-violet-50 text-violet-700 border-violet-200 text-[9px] px-1.5 py-0">{NIGHT_CHECK_TYPE_LABEL[check.check_type]}</Badge>}
+            {check.check_type !== "scheduled" && <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] text-[9px] px-1.5 py-0">{NIGHT_CHECK_TYPE_LABEL[check.check_type]}</Badge>}
           </div>
           <p className="text-[11px] text-[var(--cs-text-secondary)] line-clamp-1">{check.notes}</p>
         </div>

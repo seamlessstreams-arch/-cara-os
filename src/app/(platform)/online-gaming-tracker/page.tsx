@@ -119,7 +119,7 @@ export default function OnlineGamingTrackerPage() {
           <p className="text-xs text-muted-foreground">Active Gamers</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-violet-600">{weeklyHoursTotal}</p>
+          <p className="text-2xl font-bold text-[var(--cs-aria-gold)]">{weeklyHoursTotal}</p>
           <p className="text-xs text-muted-foreground">Total Weekly Hours</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -198,7 +198,7 @@ export default function OnlineGamingTrackerPage() {
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-indigo-100 text-indigo-800">
                     {r.console.split(" ")[0]}
                   </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-violet-100 text-violet-800">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]">
                     {r.weekly_hours} hrs/wk
                   </span>
                   <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1", r.voice_chat_used ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-[var(--cs-text-secondary)]")}>
@@ -317,8 +317,8 @@ export default function OnlineGamingTrackerPage() {
                     </div>
                   )}
 
-                  <div className="bg-violet-50 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-violet-800 uppercase tracking-wide mb-1">Screen-Time Balance</p>
+                  <div className="bg-[var(--cs-aria-gold-bg)] rounded-lg p-3">
+                    <p className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1">Screen-Time Balance</p>
                     <p className="text-sm">{r.screen_time_balance_note}</p>
                   </div>
 

@@ -46,7 +46,7 @@ const motivationColour: Record<TutoringMotivation, string> = {
 };
 
 const fundingColour: Record<TutoringFundingSource, string> = {
-  pupil_premium_plus: "bg-violet-100 text-violet-800",
+  pupil_premium_plus: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
   virtual_school_grant: "bg-indigo-100 text-indigo-800",
   leaving_care_fund: "bg-purple-100 text-purple-800",
   home_budget: "bg-slate-100 text-[var(--cs-navy)]",
@@ -152,7 +152,7 @@ export default function ChildTutoringPrivateTuitionPage() {
           <p className="text-xs text-muted-foreground">Active Tutoring Arrangements</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-violet-600">{totalHoursPerWeek}</p>
+          <p className="text-2xl font-bold text-[var(--cs-aria-gold)]">{totalHoursPerWeek}</p>
           <p className="text-xs text-muted-foreground">Total Hours / Week</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -165,9 +165,9 @@ export default function ChildTutoringPrivateTuitionPage() {
         </div>
       </div>
 
-      <div className="rounded-lg bg-violet-50 border border-violet-200 p-3 mb-6 flex items-start gap-2">
-        <Sparkles className="h-4 w-4 text-violet-600 mt-0.5 shrink-0" />
-        <p className="text-sm text-violet-800">
+      <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3 mb-6 flex items-start gap-2">
+        <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)] mt-0.5 shrink-0" />
+        <p className="text-sm text-[var(--cs-navy)]">
           Looked-after children and care leavers face a documented attainment gap. Tutoring is a
           high-leverage entitlement — funded via Pupil Premium Plus, Virtual School grants and
           Leaving Care personal budgets. We track each tutor&apos;s qualifications, DBS, and the
@@ -293,8 +293,8 @@ export default function ChildTutoringPrivateTuitionPage() {
                   </div>
 
                   {r.exam_focus && (
-                    <div className="bg-violet-50 rounded-lg p-3 border border-violet-200">
-                      <p className="text-xs font-semibold text-violet-800 uppercase tracking-wide mb-1">
+                    <div className="bg-[var(--cs-aria-gold-bg)] rounded-lg p-3 border border-[var(--cs-aria-gold-soft)]">
+                      <p className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1">
                         <Award className="h-3 w-3 inline mr-1" />
                         Exam Focus
                       </p>
@@ -336,17 +336,17 @@ export default function ChildTutoringPrivateTuitionPage() {
                             {r.baseline_grade ?? "—"}
                           </p>
                         </div>
-                        <div className="flex-1 h-1 bg-gradient-to-r from-slate-300 via-sky-400 to-violet-500 rounded-full" />
+                        <div className="flex-1 h-1 bg-gradient-to-r from-slate-300 via-sky-400 to-[var(--cs-aria-gold)] rounded-full" />
                         <div className="flex-1 text-center">
                           <p className="text-xs text-muted-foreground">Current</p>
                           <p className="text-lg font-bold text-sky-600">
                             {r.current_grade ?? "—"}
                           </p>
                         </div>
-                        <div className="flex-1 h-1 bg-gradient-to-r from-sky-400 to-violet-500 rounded-full" />
+                        <div className="flex-1 h-1 bg-gradient-to-r from-sky-400 to-[var(--cs-aria-gold)] rounded-full" />
                         <div className="flex-1 text-center">
                           <p className="text-xs text-muted-foreground">Target</p>
-                          <p className="text-lg font-bold text-violet-700">
+                          <p className="text-lg font-bold text-[var(--cs-aria-gold)]">
                             {r.target_grade ?? "—"}
                           </p>
                         </div>

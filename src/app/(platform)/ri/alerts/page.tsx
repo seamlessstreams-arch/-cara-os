@@ -74,7 +74,7 @@ const SEVERITY_ORDER: RiAlertSeverity[] = ["critical", "high", "medium", "low"];
 const TYPE_CONFIG: Record<RiAlertType, { label: string; icon: React.ReactNode; colour: string }> = {
   safeguarding_risk:  { label: "Safeguarding",       icon: <ShieldAlert className="h-3.5 w-3.5" />, colour: "text-red-600 bg-red-50 border-red-200" },
   repeated_incident:  { label: "Repeated Incident",  icon: <Flame className="h-3.5 w-3.5" />,      colour: "text-orange-600 bg-orange-50 border-orange-200" },
-  weak_oversight:     { label: "Weak Oversight",      icon: <Eye className="h-3.5 w-3.5" />,        colour: "text-violet-600 bg-violet-50 border-violet-200" },
+  weak_oversight:     { label: "Weak Oversight",      icon: <Eye className="h-3.5 w-3.5" />,        colour: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
   missing_compliance: { label: "Missing Compliance",  icon: <FileWarning className="h-3.5 w-3.5" />,colour: "text-pink-600 bg-pink-50 border-pink-200" },
   overdue_action:     { label: "Overdue Action",      icon: <Timer className="h-3.5 w-3.5" />,      colour: "text-amber-600 bg-amber-50 border-amber-200" },
   rising_risk:        { label: "Rising Risk",         icon: <TrendingUp className="h-3.5 w-3.5" />, colour: "text-rose-600 bg-rose-50 border-rose-200" },
@@ -136,7 +136,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
           <div className="shrink-0 mt-1.5 flex flex-col items-center gap-1">
             <div className={cn("w-2.5 h-2.5 rounded-full", SEVERITY_DOT[alert.severity])} />
             {alert.auto_generated && (
-              <Zap className="h-3 w-3 text-violet-400" />
+              <Zap className="h-3 w-3 text-[var(--cs-text-muted)]" />
             )}
           </div>
 
@@ -226,7 +226,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-xs h-7 gap-1 text-violet-700 border-violet-200 hover:bg-violet-50"
+                        className="text-xs h-7 gap-1 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
                         onClick={createTrainingNeed}
                         disabled={createNeed.isPending}
                       >
@@ -235,7 +235,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
                       </Button>
                     ) : (
                       <Link href="/learning/training-needs">
-                        <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-violet-600">
+                        <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-[var(--cs-aria-gold)]">
                           <CheckCircle2 className="h-3 w-3" />
                           Training need created →
                         </Button>

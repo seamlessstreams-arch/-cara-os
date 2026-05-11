@@ -113,12 +113,12 @@ export function ComplaintsSummaryCard() {
       <CardContent className="pt-0 space-y-2.5">
         {/* KPI strip */}
         <div className="grid grid-cols-3 gap-2">
-          <div className={cn("rounded-xl p-2 text-center", open > 0 ? "bg-orange-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", open > 0 ? "bg-orange-50" : "bg-[var(--cs-surface)]")}>
             <MessageCircleWarning className={cn("h-3 w-3 mx-auto mb-0.5", open > 0 ? "text-orange-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", open > 0 ? "text-orange-700" : "text-[var(--cs-text-muted)]")}>{open}</div>
             <div className={cn("text-[9px]", open > 0 ? "text-orange-500" : "text-[var(--cs-text-muted)]")}>Open</div>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", overdue > 0 ? "bg-red-50" : "bg-slate-50")}>
+          <div className={cn("rounded-xl p-2 text-center", overdue > 0 ? "bg-red-50" : "bg-[var(--cs-surface)]")}>
             <Clock className={cn("h-3 w-3 mx-auto mb-0.5", overdue > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")} />
             <div className={cn("text-sm font-bold tabular-nums", overdue > 0 ? "text-red-700" : "text-[var(--cs-text-muted)]")}>{overdue}</div>
             <div className={cn("text-[9px]", overdue > 0 ? "text-red-500" : "text-[var(--cs-text-muted)]")}>Overdue</div>

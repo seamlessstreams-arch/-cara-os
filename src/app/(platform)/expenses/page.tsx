@@ -39,7 +39,7 @@ const CAT_ICONS: Record<string, React.ElementType> = {
 
 const CAT_COLORS: Record<string, string> = {
   petty_cash: "bg-amber-100 text-amber-700",
-  young_person_activities: "bg-violet-100 text-violet-700",
+  young_person_activities: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   food_shopping: "bg-emerald-100 text-emerald-700",
   clothing: "bg-pink-100 text-pink-700",
   transport: "bg-blue-100 text-blue-700",

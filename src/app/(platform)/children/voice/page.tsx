@@ -93,7 +93,7 @@ const CATEGORY_META: Record<VoiceCategory, { label: string; color: string; icon:
   health: { label: "Health", color: "bg-emerald-100 text-emerald-800", icon: <Activity className="h-3.5 w-3.5" /> },
   safety: { label: "Safety", color: "bg-rose-100 text-rose-800", icon: <Shield className="h-3.5 w-3.5" /> },
   relationship_with_staff: { label: "Staff Relationship", color: "bg-teal-100 text-teal-800", icon: <Users className="h-3.5 w-3.5" /> },
-  general_wellbeing: { label: "General Wellbeing", color: "bg-violet-100 text-violet-800", icon: <Smile className="h-3.5 w-3.5" /> },
+  general_wellbeing: { label: "General Wellbeing", color: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]", icon: <Smile className="h-3.5 w-3.5" /> },
 };
 
 const CHILDREN = [

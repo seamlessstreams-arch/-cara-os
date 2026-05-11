@@ -38,7 +38,7 @@ import {
 const TYPE_COLOURS: Record<string, string> = {
   formal:              "bg-blue-100 text-blue-700 border-blue-200",
   informal:            "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
-  group:               "bg-violet-100 text-violet-700 border-violet-200",
+  group:               "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
   reflective_practice: "bg-teal-100 text-teal-700 border-teal-200",
   probation_review:    "bg-amber-100 text-amber-700 border-amber-200",
 };
@@ -284,7 +284,7 @@ export default function SupervisionDetailPage({
           <Button
             variant="outline"
             size="sm"
-            className="gap-1.5 text-violet-700 border-violet-200 hover:bg-violet-50"
+            className="gap-1.5 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
             onClick={() => setShowAria((p) => !p)}
           >
             <Sparkles className="h-3.5 w-3.5" />
@@ -385,7 +385,7 @@ export default function SupervisionDetailPage({
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <ClipboardList className="h-4 w-4 text-violet-500" />
+                  <ClipboardList className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                   Actions Agreed
                   {sup.actions_agreed.length > 0 && (
                     <span className="ml-auto text-xs font-normal text-[var(--cs-text-muted)]">
@@ -566,7 +566,7 @@ export default function SupervisionDetailPage({
 
               {sup.status === "completed" && sup.discussion_points && (
                 needCreated ? (
-                  <div className="flex items-center gap-2 rounded-lg bg-violet-50 border border-violet-100 px-3 py-2 text-xs text-violet-700">
+                  <div className="flex items-center gap-2 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-3 py-2 text-xs text-[var(--cs-aria-gold)]">
                     <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                     Training need created
                   </div>
@@ -574,7 +574,7 @@ export default function SupervisionDetailPage({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full gap-1.5 text-violet-700 border-violet-200 hover:bg-violet-50"
+                    className="w-full gap-1.5 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
                     onClick={handleCreateTrainingNeed}
                     disabled={createNeed.isPending}
                   >
@@ -601,11 +601,11 @@ export default function SupervisionDetailPage({
 
             {/* Linked Documents */}
             {linkedDocs.length > 0 && (
-              <div className="rounded-2xl border border-violet-100 bg-violet-50/40 p-4 space-y-3">
+              <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Library className="h-4 w-4 text-violet-600" />
-                  <span className="text-sm font-semibold text-violet-900">Staff Evidence Documents</span>
-                  <span className="ml-auto text-xs text-violet-500">{linkedDocs.length} file{linkedDocs.length !== 1 ? "s" : ""}</span>
+                  <Library className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                  <span className="text-sm font-semibold text-[var(--cs-navy)]">Staff Evidence Documents</span>
+                  <span className="ml-auto text-xs text-[var(--cs-aria-gold)]">{linkedDocs.length} file{linkedDocs.length !== 1 ? "s" : ""}</span>
                 </div>
                 <div className="space-y-1.5">
                   {linkedDocs.map((doc) => (

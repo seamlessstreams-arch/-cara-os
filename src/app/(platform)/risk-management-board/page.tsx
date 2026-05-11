@@ -62,7 +62,7 @@ import {
 const CATEGORY_CONFIG: Record<StrategicRiskCategory, { icon: React.ElementType; color: string; bg: string; border: string }> = {
   operational:    { icon: Settings,    color: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200"    },
   workforce:      { icon: Users,       color: "text-indigo-700",  bg: "bg-indigo-50",  border: "border-indigo-200"  },
-  regulatory:     { icon: Scale,       color: "text-violet-700",  bg: "bg-violet-50",  border: "border-violet-200"  },
+  regulatory:     { icon: Scale,       color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]"  },
   financial:      { icon: Coins,       color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
   reputational:   { icon: Megaphone,   color: "text-rose-700",    bg: "bg-rose-50",    border: "border-rose-200"    },
   strategic:      { icon: Target,      color: "text-[var(--cs-text-secondary)]",   bg: "bg-slate-50",   border: "border-[var(--cs-border)]"   },

@@ -72,7 +72,7 @@ const CONTACT_OUTCOME_COLORS: Record<string, string> = {
   difficult: "text-orange-600 bg-orange-50 border-orange-200",
   did_not_happen: "text-[var(--cs-text-muted)] bg-slate-50 border-[var(--cs-border)]",
   cancelled_by_family: "text-[var(--cs-text-muted)] bg-slate-50 border-[var(--cs-border)]",
-  cancelled_by_yp: "text-violet-600 bg-violet-50 border-violet-200",
+  cancelled_by_yp: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]",
 };
 
 // ── Shared UI helpers ─────────────────────────────────────────────────────────
@@ -195,13 +195,13 @@ function WhatChangedSection({ childName, incidents, chronology, recentLog }: {
 
   return (
     <>
-      <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
+      <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold text-violet-900">What Has Changed?</div>
-            <div className="text-xs text-violet-700 mt-0.5">ARIA analysis of progress, regression, risks and relationships over time</div>
+            <div className="text-sm font-semibold text-[var(--cs-navy)]">What Has Changed?</div>
+            <div className="text-xs text-[var(--cs-aria-gold)] mt-0.5">ARIA analysis of progress, regression, risks and relationships over time</div>
           </div>
-          <Button onClick={generate} disabled={generating} className="bg-violet-600 hover:bg-violet-700 shrink-0 gap-1.5" size="sm">
+          <Button onClick={generate} disabled={generating} className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 shrink-0 gap-1.5" size="sm">
             {generating ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Analysing…</> : <><Sparkles className="h-3.5 w-3.5" />Analyse</>}
           </Button>
         </div>
@@ -210,7 +210,7 @@ function WhatChangedSection({ childName, incidents, chronology, recentLog }: {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowModal(false)}>
           <div className="w-full max-w-2xl bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b">
-              <div className="flex items-center gap-2"><Activity className="h-5 w-5 text-violet-600" /><span className="text-lg font-bold text-[var(--cs-navy)]">What Has Changed — {childName}</span></div>
+              <div className="flex items-center gap-2"><Activity className="h-5 w-5 text-[var(--cs-aria-gold)]" /><span className="text-lg font-bold text-[var(--cs-navy)]">What Has Changed — {childName}</span></div>
               <button onClick={() => setShowModal(false)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"><X className="h-5 w-5" /></button>
             </div>
             <div className="max-h-[60vh] overflow-y-auto p-6">
@@ -445,7 +445,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                   { label: "Incidents",  value: meta?.open_incidents ?? 0,       color: meta?.open_incidents ? "text-red-600" : "text-emerald-600" },
                   { label: "Tasks",      value: meta?.active_tasks ?? 0,         color: meta?.active_tasks ? "text-amber-600" : "text-[var(--cs-text-secondary)]" },
                   { label: "Medication", value: yp.active_medications ?? 0,      color: "text-blue-600" },
-                  { label: "Missing",    value: yp.missing_episodes_total ?? 0,  color: yp.missing_episodes_total ? "text-violet-600" : "text-[var(--cs-text-secondary)]" },
+                  { label: "Missing",    value: yp.missing_episodes_total ?? 0,  color: yp.missing_episodes_total ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-secondary)]" },
                   { label: "Key Work",   value: keyWorkSessions.length,           color: "text-teal-600" },
                   { label: "Contacts",   value: arrangements.length,             color: "text-indigo-600" },
                 ].map(({ label, value, color }) => (
@@ -645,7 +645,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                           entry.entry_type === "behaviour" ? "bg-orange-100 text-orange-700" :
                           entry.entry_type === "health" ? "bg-blue-100 text-blue-700" :
                           entry.entry_type === "education" ? "bg-teal-100 text-teal-700" :
-                          entry.entry_type === "mood" ? "bg-violet-100 text-violet-700" :
+                          entry.entry_type === "mood" ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]" :
                           "bg-slate-100 text-[var(--cs-text-secondary)]"
                         )}>
                           {entry.entry_type}
@@ -916,7 +916,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
               <div className="flex items-center gap-2">
                 <Link href="/intelligence/aria/keywork">
                   <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                    <Sparkles className="h-3.5 w-3.5 text-violet-500" />ARIA Planner
+                    <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />ARIA Planner
                   </Button>
                 </Link>
                 <Button size="sm" className="gap-1.5 text-xs" onClick={() => setShowKWForm((p) => !p)}>
@@ -995,7 +995,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                 action={
                   <div className="flex items-center justify-center gap-2">
                     <Button size="sm" variant="outline" onClick={() => setShowKWForm(true)} className="gap-1.5 text-xs"><Plus className="h-3.5 w-3.5" />Log Session</Button>
-                    <Link href="/intelligence/aria/keywork"><Button size="sm" variant="outline" className="gap-1.5 text-xs"><Sparkles className="h-3.5 w-3.5 text-violet-500" />ARIA Planner</Button></Link>
+                    <Link href="/intelligence/aria/keywork"><Button size="sm" variant="outline" className="gap-1.5 text-xs"><Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />ARIA Planner</Button></Link>
                   </div>
                 }
               />
@@ -1034,8 +1034,8 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                       )}
                       {session.staff_reflection && <div><p className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-0.5">Staff Reflection</p><p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{session.staff_reflection}</p></div>}
                       {session.aria_summary && (
-                        <div className="rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2">
-                          <p className="text-[10px] font-semibold text-violet-600 uppercase tracking-wide mb-0.5 flex items-center gap-1"><Sparkles className="h-2.5 w-2.5" />ARIA Summary</p>
+                        <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 px-3 py-2">
+                          <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wide mb-0.5 flex items-center gap-1"><Sparkles className="h-2.5 w-2.5" />ARIA Summary</p>
                           <p className="text-xs text-[var(--cs-text-secondary)]">{session.aria_summary}</p>
                         </div>
                       )}
@@ -1103,7 +1103,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                         </Badge>
                       </div>
                       {arr.court_ordered && (
-                        <div className="mt-2 flex items-center gap-1.5 text-[10px] text-violet-600">
+                        <div className="mt-2 flex items-center gap-1.5 text-[10px] text-[var(--cs-aria-gold)]">
                           <Shield className="h-2.5 w-2.5" />Court ordered {arr.court_order_reference && `· ${arr.court_order_reference}`}
                         </div>
                       )}
@@ -1375,12 +1375,12 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
               <div className="space-y-3">
                 {linkedDocs.map((doc) => {
                   const riskLeft: Record<string, string> = { low: "border-l-emerald-400", medium: "border-l-amber-400", high: "border-l-orange-500", critical: "border-l-red-600" };
-                  const statusBg: Record<string, string> = { review: "bg-amber-100 text-amber-700", approved: "bg-blue-100 text-blue-700", actioned: "bg-emerald-100 text-emerald-700", analysing: "bg-violet-100 text-violet-700", pending: "bg-slate-100 text-[var(--cs-text-secondary)]" };
+                  const statusBg: Record<string, string> = { review: "bg-amber-100 text-amber-700", approved: "bg-blue-100 text-blue-700", actioned: "bg-emerald-100 text-emerald-700", analysing: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]", pending: "bg-slate-100 text-[var(--cs-text-secondary)]" };
                   return (
                     <div key={doc.id} className={`rounded-2xl border bg-white p-4 border-l-4 ${riskLeft[doc.ai_risk_level ?? "low"] ?? "border-l-slate-200"}`}>
                       <div className="flex items-start gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-50">
-                          <FileText className="h-4 w-4 text-violet-600" />
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-aria-gold-bg)]">
+                          <FileText className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -1394,7 +1394,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                           {doc.ai_result?.ai_summary && <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed line-clamp-2">{doc.ai_result.ai_summary}</p>}
                           <div className="flex items-center gap-3 mt-2 text-[10px] text-[var(--cs-text-muted)]">
                             <span>{formatDate(doc.uploaded_at)}</span>
-                            {doc.tasks_created.length > 0 && <span className="text-violet-600 font-medium">{doc.tasks_created.length} task{doc.tasks_created.length !== 1 ? "s" : ""} created</span>}
+                            {doc.tasks_created.length > 0 && <span className="text-[var(--cs-aria-gold)] font-medium">{doc.tasks_created.length} task{doc.tasks_created.length !== 1 ? "s" : ""} created</span>}
                           </div>
                         </div>
                       </div>
@@ -1419,8 +1419,8 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
             />
             <div className="rounded-2xl border bg-white p-4">
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100">
-                  <Brain className="h-4 w-4 text-violet-600" />
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--cs-aria-gold-bg)]">
+                  <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-[var(--cs-navy)]">Raise Training Need</div>
@@ -1455,13 +1455,13 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                       "flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-left text-xs transition-colors",
                       needsCreated.has(key)
                         ? "border-emerald-200 bg-emerald-50 text-emerald-700 cursor-default"
-                        : "border-[var(--cs-border)] bg-white hover:border-violet-300 hover:bg-violet-50 text-[var(--cs-text-secondary)]"
+                        : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)] text-[var(--cs-text-secondary)]"
                     )}
                   >
                     {needsCreated.has(key) ? (
                       <><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /><span className="font-medium">{label}</span><span className="text-emerald-500 text-[10px]">logged</span></>
                     ) : (
-                      <><Brain className="h-3.5 w-3.5 text-violet-500" /><span className="font-medium">{label}</span><Sparkles className="h-3 w-3 text-[var(--cs-text-gentle)]" /></>
+                      <><Brain className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" /><span className="font-medium">{label}</span><Sparkles className="h-3 w-3 text-[var(--cs-text-gentle)]" /></>
                     )}
                   </button>
                 ))}

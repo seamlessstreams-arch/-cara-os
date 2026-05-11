@@ -42,7 +42,7 @@ const RISK_DOT: Record<string, string> = {
 };
 
 const SEVERITY_BADGE: Record<string, string> = {
-  low: "bg-slate-100 text-[var(--cs-text-secondary)]",
+  low: "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
   medium: "bg-amber-100 text-amber-700",
   high: "bg-orange-100 text-orange-700",
   critical: "bg-red-100 text-red-700",
@@ -195,8 +195,8 @@ export function DocumentUploadModal({
       >
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white rounded-t-2xl border-b border-[var(--cs-border-subtle)] px-6 py-4 flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100">
-            <Sparkles className="h-4.5 w-4.5 text-violet-600" style={{ width: "1.125rem", height: "1.125rem" }} />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--cs-aria-gold-bg)]">
+            <Sparkles className="h-4.5 w-4.5 text-[var(--cs-aria-gold)]" style={{ width: "1.125rem", height: "1.125rem" }} />
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-[var(--cs-navy)]">ARIA Document Intelligence</p>
@@ -212,7 +212,7 @@ export function DocumentUploadModal({
             {(["select", "analysing", "review"] as Step[]).map((s, i) => (
               <React.Fragment key={s}>
                 <span className={cn("rounded-full w-5 h-5 flex items-center justify-center text-[10px]",
-                  step === s ? "bg-violet-600 text-white" : (["analysing","review"].indexOf(s) <= ["select","analysing","review"].indexOf(step)) ? "bg-emerald-500 text-white" : "bg-slate-100 text-[var(--cs-text-muted)]"
+                  step === s ? "bg-[var(--cs-navy)] text-white" : (["analysing","review"].indexOf(s) <= ["select","analysing","review"].indexOf(step)) ? "bg-emerald-500 text-white" : "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]"
                 )}>{i + 1}</span>
                 {i < 2 && <ChevronRight className="h-2.5 w-2.5" />}
               </React.Fragment>
@@ -236,7 +236,7 @@ export function DocumentUploadModal({
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
                   "rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-all",
-                  dragOver ? "border-violet-400 bg-violet-50" : "border-[var(--cs-border)] hover:border-violet-300 hover:bg-violet-50/30",
+                  dragOver ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]" : "border-[var(--cs-border)] hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]/30",
                   fileName && "border-emerald-300 bg-emerald-50/30",
                 )}
               >
@@ -257,14 +257,14 @@ export function DocumentUploadModal({
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-violet-100 flex items-center justify-center">
-                      <Upload className="h-6 w-6 text-violet-600" />
+                    <div className="h-12 w-12 rounded-2xl bg-[var(--cs-aria-gold-bg)] flex items-center justify-center">
+                      <Upload className="h-6 w-6 text-[var(--cs-aria-gold)]" />
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-[var(--cs-navy)]">Drop your document here</div>
                       <div className="text-xs text-[var(--cs-text-muted)] mt-1">PDF, DOCX, XLSX, CSV, PNG, JPG, TXT supported</div>
                     </div>
-                    <div className="rounded-lg bg-violet-600 px-4 py-1.5 text-xs font-semibold text-white">Browse files</div>
+                    <div className="rounded-lg bg-[var(--cs-navy)] px-4 py-1.5 text-xs font-semibold text-white">Browse files</div>
                   </div>
                 )}
               </div>
@@ -278,7 +278,7 @@ export function DocumentUploadModal({
                     value={fileName}
                     onChange={(e) => setFileName(e.target.value)}
                     placeholder="e.g. Alex_W_Risk_Assessment_April_2026.pdf"
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
                   />
                 </div>
               )}
@@ -296,7 +296,7 @@ export function DocumentUploadModal({
                   onChange={(e) => setExtractedText(e.target.value)}
                   rows={8}
                   placeholder="Paste the document content here. ARIA will read, classify, and extract intelligence from the full text…"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
                 />
               </div>
 
@@ -310,7 +310,7 @@ export function DocumentUploadModal({
                   value={context}
                   onChange={(e) => setContext(e.target.value)}
                   placeholder="e.g. 'Uploaded after Alex's strategy meeting' or 'Staff training record for Ryan'"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
                 />
               </div>
 
@@ -318,7 +318,7 @@ export function DocumentUploadModal({
                 <button
                   onClick={handleAnalyse}
                   disabled={!fileName.trim() || !extractedText.trim()}
-                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold text-white hover:bg-violet-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--cs-navy)]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <Sparkles className="h-4 w-4" />
                   Analyse with ARIA
@@ -329,7 +329,7 @@ export function DocumentUploadModal({
               </div>
 
               {/* Security notice */}
-              <div className="rounded-xl border border-[var(--cs-border-subtle)] bg-slate-50 p-3 flex items-start gap-2">
+              <div className="rounded-xl border border-[var(--cs-border-subtle)] bg-[var(--cs-surface)] p-3 flex items-start gap-2">
                 <Shield className="h-3.5 w-3.5 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
                 <p className="text-[10px] text-[var(--cs-text-muted)] leading-relaxed">
                   ARIA treats document content as data only. Embedded instructions within documents are detected and ignored. All analysis requires your approval before creating records.
@@ -342,9 +342,9 @@ export function DocumentUploadModal({
           {step === "analysing" && (
             <div className="py-12 flex flex-col items-center gap-6">
               <div className="relative">
-                <div className="h-20 w-20 rounded-full border-4 border-violet-100 border-t-violet-600 animate-spin" />
+                <div className="h-20 w-20 rounded-full border-4 border-[var(--cs-aria-gold-soft)] border-t-[var(--cs-aria-gold)] animate-spin" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Sparkles className="h-8 w-8 text-violet-600" />
+                  <Sparkles className="h-8 w-8 text-[var(--cs-aria-gold)]" />
                 </div>
               </div>
               <div className="text-center space-y-2">
@@ -355,7 +355,7 @@ export function DocumentUploadModal({
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {["Classifying", "Extracting entities", "Identifying risks", "Suggesting tasks", "Mapping regulations", "Checking safeguarding"].map((label) => (
-                  <span key={label} className="inline-flex items-center gap-1 rounded-full bg-violet-50 border border-violet-100 px-2.5 py-1 text-[10px] font-medium text-violet-700">
+                  <span key={label} className="inline-flex items-center gap-1 rounded-full bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-[10px] font-medium text-[var(--cs-aria-gold)]">
                     <Loader2 className="h-2.5 w-2.5 animate-spin" />
                     {label}
                   </span>
@@ -432,7 +432,7 @@ export function DocumentUploadModal({
 
               {/* Extracted info */}
               {aiResult && (
-                <div className="rounded-2xl border border-[var(--cs-border-subtle)] bg-slate-50 p-4 space-y-3">
+                <div className="rounded-2xl border border-[var(--cs-border-subtle)] bg-[var(--cs-surface)] p-4 space-y-3">
                   <div className="text-[10px] font-bold text-[var(--cs-text-muted)] uppercase tracking-wider">Extracted Intelligence</div>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                     {aiResult.extracted_entities.people.length > 0 && (
@@ -504,13 +504,13 @@ export function DocumentUploadModal({
                       className={cn(
                         "flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition-all",
                         approvedTaskIds.has(task.id)
-                          ? "border-violet-300 bg-violet-50"
+                          ? "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]"
                           : "border-[var(--cs-border-subtle)] bg-white hover:bg-[var(--cs-surface)]",
                       )}
                     >
                       <div className={cn(
                         "h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 mt-0.5",
-                        approvedTaskIds.has(task.id) ? "bg-violet-600 border-violet-600" : "border-slate-300",
+                        approvedTaskIds.has(task.id) ? "bg-[var(--cs-navy)] border-[var(--cs-navy)]" : "border-[var(--cs-border)]",
                       )}>
                         {approvedTaskIds.has(task.id) && <CheckCircle2 className="h-3 w-3 text-white" />}
                       </div>
@@ -522,13 +522,13 @@ export function DocumentUploadModal({
                             task.priority === "urgent" ? "bg-red-100 text-red-700"
                             : task.priority === "high" ? "bg-orange-100 text-orange-700"
                             : task.priority === "medium" ? "bg-amber-100 text-amber-700"
-                            : "bg-slate-100 text-[var(--cs-text-secondary)]",
+                            : "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
                           )}>{task.priority}</span>
                           {task.due_date && <span className="text-[10px] text-[var(--cs-text-muted)]">{formatDate(task.due_date)}</span>}
                         </div>
                         <p className="text-[11px] text-[var(--cs-text-secondary)] mt-0.5 leading-relaxed">{task.description}</p>
                         {task.regulation_link && (
-                          <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-[var(--cs-text-muted)]">
+                          <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-[var(--cs-surface)] px-2 py-0.5 text-[10px] text-[var(--cs-text-muted)]">
                             <BookOpen className="h-2.5 w-2.5" />
                             {task.regulation_link}
                           </div>
@@ -589,7 +589,7 @@ export function DocumentUploadModal({
 
               {/* Additional options */}
               {!actionComplete && (
-                <div className="rounded-2xl border border-[var(--cs-border-subtle)] bg-slate-50 p-4 space-y-2.5">
+                <div className="rounded-2xl border border-[var(--cs-border-subtle)] bg-[var(--cs-surface)] p-4 space-y-2.5">
                   <div className="text-[10px] font-bold text-[var(--cs-text-muted)] uppercase tracking-wider">Also create</div>
                   {aiResult?.evidence_areas && aiResult.evidence_areas.length > 0 && (
                     <label className="flex items-center gap-3 cursor-pointer">
@@ -662,7 +662,7 @@ export function DocumentUploadModal({
                   <button
                     onClick={handleApprove}
                     disabled={actioning}
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold text-white hover:bg-violet-700 transition-colors disabled:opacity-50"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-bold text-white hover:bg-[var(--cs-navy)]/90 transition-colors disabled:opacity-50"
                   >
                     {actioning
                       ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing…</>

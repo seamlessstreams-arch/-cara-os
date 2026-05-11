@@ -379,7 +379,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
                       </ul>
                     </Section>
 
-                    <Section title="Active interventions" icon={<Sparkles className="h-3.5 w-3.5 text-violet-600" />}>
+                    <Section title="Active interventions" icon={<Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />}>
                       {r.interventions_active.length === 0 ? (
                         <p className="text-xs italic text-[var(--cs-text-muted)]">None currently.</p>
                       ) : (
@@ -500,7 +500,7 @@ function StatCard({
     sky:     "bg-sky-50 text-sky-700 border-sky-100",
     emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
     amber:   "bg-amber-50 text-amber-700 border-amber-100",
-    violet:  "bg-violet-50 text-violet-700 border-violet-100",
+    violet:  "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
   };
   return (
     <div className={cn("rounded-xl border bg-white p-3", "border-[var(--cs-border)]")}>

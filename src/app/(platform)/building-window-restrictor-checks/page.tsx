@@ -44,7 +44,7 @@ const restrictorColour: Record<string, string> = {
   cable_key: "bg-sky-100 text-sky-800 border-sky-200",
   permanent_fixed: "bg-teal-100 text-teal-800 border-teal-200",
   pin_lock: "bg-indigo-100 text-indigo-800 border-indigo-200",
-  combination: "bg-violet-100 text-violet-800 border-violet-200",
+  combination: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
   standard_window_lock: "bg-slate-100 text-[var(--cs-navy)] border-[var(--cs-border)]",
   none_child_accessible: "bg-red-100 text-red-900 border-red-300",
 };

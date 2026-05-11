@@ -220,7 +220,7 @@ function HeaderStatCards() {
       <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 space-y-2 shadow-sm">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Voice Coverage</span>
-          <MessageSquareQuote className="h-4 w-4 text-violet-500" />
+          <MessageSquareQuote className="h-4 w-4 text-[var(--cs-aria-gold)]" />
         </div>
         {voiceLoading ? (
           <Skeleton className="h-8 w-12" />
@@ -264,7 +264,7 @@ function ChildOverviewCard({ child }: { child: { id: string; name: string } }) {
   return (
     <Link
       href={`/young-people/${child.id}`}
-      className="block rounded-2xl border border-[var(--cs-border)] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group focus:outline-none focus:ring-2 focus:ring-violet-400"
+      className="block rounded-2xl border border-[var(--cs-border)] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
     >
       {/* Child header */}
       <div className="flex items-center gap-3 mb-4">
@@ -658,7 +658,7 @@ function AriaWeeklyReportSection() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-violet-500" />
+          <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
           ARIA Weekly Report
           {isDone && rawOutput && (
             <Badge className="ml-auto bg-emerald-100 text-emerald-700 border-0 text-[10px] rounded-full">
@@ -669,7 +669,7 @@ function AriaWeeklyReportSection() {
       </CardHeader>
       <CardContent className="space-y-4">
         {!rawOutput && !isGenerating && (
-          <div className="rounded-xl bg-violet-50 border border-violet-100 p-4 text-xs text-violet-700 leading-relaxed">
+          <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-4 text-xs text-[var(--cs-aria-gold)] leading-relaxed">
             ARIA will generate a comprehensive management narrative covering home climate, pattern alerts,
             wellbeing scores, outstanding actions, and children&apos;s voice coverage for the week.
           </div>
@@ -688,7 +688,7 @@ function AriaWeeklyReportSection() {
               <pre className="text-xs text-[var(--cs-text-secondary)] whitespace-pre-wrap leading-relaxed font-sans">
                 {rawOutput}
                 {isGenerating && (
-                  <span className="inline-block h-3.5 w-0.5 bg-violet-500 ml-0.5 animate-pulse align-middle" />
+                  <span className="inline-block h-3.5 w-0.5 bg-[var(--cs-aria-gold-bg)]0 ml-0.5 animate-pulse align-middle" />
                 )}
               </pre>
             </div>
@@ -707,7 +707,7 @@ function AriaWeeklyReportSection() {
         <Button
           onClick={handleGenerate}
           disabled={isGenerating}
-          className="bg-violet-600 hover:bg-violet-700 text-white"
+          className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
         >
           {isGenerating ? (
             <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating...</>
@@ -881,11 +881,11 @@ function BulkComputeSection() {
   }
 
   return (
-    <Card className="border-violet-100">
+    <Card className="border-[var(--cs-aria-gold-soft)]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Cpu className="h-4 w-4 text-violet-500" />
+            <Cpu className="h-4 w-4 text-[var(--cs-aria-gold)]" />
             Compute All Wellbeing Snapshots
           </CardTitle>
           <Button
@@ -896,7 +896,7 @@ function BulkComputeSection() {
               "gap-1.5 text-xs",
               state === "done"  ? "bg-emerald-600 hover:bg-emerald-700 text-white" :
               state === "error" ? "bg-red-600 hover:bg-red-700 text-white" :
-              "bg-violet-600 hover:bg-violet-700 text-white"
+              "bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
             )}
           >
             {state === "running" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
@@ -918,9 +918,9 @@ function BulkComputeSection() {
           </p>
         )}
         {progress.length > 0 && (
-          <div className="rounded-xl border border-violet-100 bg-violet-50 px-4 py-3 space-y-1.5">
+          <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-4 py-3 space-y-1.5">
             {progress.map((line, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-violet-700">
+              <div key={i} className="flex items-center gap-2 text-xs text-[var(--cs-aria-gold)]">
                 {state === "running" && i === progress.length - 1
                   ? <Loader2 className="h-3 w-3 animate-spin shrink-0" />
                   : <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />

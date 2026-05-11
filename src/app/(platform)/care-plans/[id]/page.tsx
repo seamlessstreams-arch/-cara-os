@@ -42,7 +42,7 @@ const DOMAIN_CONFIG: Record<CarePlanDomain, {
 }> = {
   health:                { label: "Health",                icon: Heart,         colour: "text-rose-600",    bg: "bg-rose-50",    border: "border-rose-200",   ring: "ring-rose-200"   },
   education:             { label: "Education",             icon: GraduationCap, colour: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-200",   ring: "ring-blue-200"   },
-  emotional_behavioural: { label: "Emotional & Behavioural", icon: Brain,       colour: "text-violet-600",  bg: "bg-violet-50",  border: "border-violet-200", ring: "ring-violet-200" },
+  emotional_behavioural: { label: "Emotional & Behavioural", icon: Brain,       colour: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]", ring: "ring-[var(--cs-aria-gold-soft)]" },
   identity:              { label: "Identity & Culture",    icon: Fingerprint,   colour: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-200",  ring: "ring-amber-200"  },
   family_social:         { label: "Family & Social",       icon: Users,         colour: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200",ring: "ring-emerald-200"},
   independence:          { label: "Independence",          icon: Zap,           colour: "text-sky-600",     bg: "bg-sky-50",     border: "border-sky-200",    ring: "ring-sky-200"    },
@@ -70,7 +70,7 @@ const LOG_TYPE_COLOURS: Record<string, string> = {
   behaviour: "bg-orange-100 text-orange-700",
   health:    "bg-red-100 text-red-700",
   education: "bg-blue-100 text-blue-700",
-  contact:   "bg-violet-100 text-violet-700",
+  contact:   "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   activity:  "bg-emerald-100 text-emerald-700",
   mood:      "bg-amber-100 text-amber-700",
   sleep:     "bg-indigo-100 text-indigo-700",
@@ -464,7 +464,7 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
 
         {/* ── ARIA Overview (when generated) ── */}
         {ariaOverview && (
-          <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-violet-50/30 p-5 space-y-2">
+          <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-[var(--cs-aria-gold-bg)]/30 p-5 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />

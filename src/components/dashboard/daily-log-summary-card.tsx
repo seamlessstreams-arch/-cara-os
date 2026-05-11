@@ -23,11 +23,11 @@ import {
 // ── Entry type colours ───────────────────────────────────────────────────────
 
 const TYPE_COLOURS: Record<string, string> = {
-  general:   "bg-slate-100 text-[var(--cs-text-secondary)]",
+  general:   "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
   behaviour: "bg-orange-100 text-orange-700",
   health:    "bg-teal-100 text-teal-700",
   education: "bg-blue-100 text-blue-700",
-  contact:   "bg-violet-100 text-violet-700",
+  contact:   "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
   activity:  "bg-emerald-100 text-emerald-700",
   mood:      "bg-amber-100 text-amber-700",
   sleep:     "bg-indigo-100 text-indigo-700",
@@ -110,7 +110,7 @@ export function DailyLogSummaryCard() {
       <CardContent className="pt-0 space-y-2.5">
         {/* Coverage bar */}
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-[var(--cs-surface)] rounded-full overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all",
@@ -201,7 +201,7 @@ export function DailyLogSummaryCard() {
             {Object.entries(byType)
               .sort(([, a], [, b]) => (b as number) - (a as number))
               .map(([type, count]) => (
-                <span key={type} className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", TYPE_COLOURS[type] ?? "bg-slate-100 text-[var(--cs-text-muted)]")}>
+                <span key={type} className={cn("text-[9px] px-1.5 py-0.5 rounded-full font-medium", TYPE_COLOURS[type] ?? "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]")}>
                   {type} {count as number}
                 </span>
               ))}
