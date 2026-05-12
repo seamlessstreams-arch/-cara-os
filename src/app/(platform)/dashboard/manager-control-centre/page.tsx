@@ -18,6 +18,7 @@ import {
   FileSearch, BookOpen, Scale, Activity, Siren,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AriaDailyIntelligence } from "@/components/aria/aria-daily-intelligence";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -526,6 +527,9 @@ export default function ManagerControlCentrePage() {
           </Card>
         ))}
       </div>
+
+      {/* ── ARIA Daily Intelligence Brief ─────────────────────────────────── */}
+      <AriaDailyIntelligence className="mb-6" />
 
       {/* ── cross-module intelligence ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
