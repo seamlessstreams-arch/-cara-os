@@ -23,6 +23,9 @@ import {
 import { AriaActivityCard } from "@/components/aria/aria-activity-card";
 import { AriaPendingBanner } from "@/components/aria/aria-pending-banner";
 import { AriaHistoryTimeline } from "@/components/aria/aria-history-timeline";
+import { AriaConfidenceBreakdown } from "@/components/aria/aria-confidence-breakdown";
+import { AriaModuleCoverage } from "@/components/aria/aria-module-coverage";
+import { AriaProviderStatus } from "@/components/aria/aria-provider-status";
 import {
   Sparkles,
   FileText,
@@ -122,10 +125,13 @@ export default function AriaDashboardPage() {
       <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-5 mb-6">
         <div className="flex items-start gap-3">
           <Sparkles className="h-5 w-5 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
-          <div>
-            <h2 className="text-sm font-semibold text-[var(--cs-navy)] mb-1">
-              ARIA Intelligence
-            </h2>
+          <div className="flex-1">
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <h2 className="text-sm font-semibold text-[var(--cs-navy)]">
+                ARIA Intelligence
+              </h2>
+              <AriaProviderStatus />
+            </div>
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
               ARIA generates evidence-based reports, identifies oversight gaps,
               surfaces risk patterns, and builds Regulation 45 evidence
@@ -245,6 +251,12 @@ export default function AriaDashboardPage() {
           Command Activity
         </h2>
         <AriaActivityCard homeId={DEFAULT_HOME_ID} days={30} />
+      </div>
+
+      {/* ── Confidence & Module Coverage ─────────────────────────────────── */}
+      <div className="grid gap-6 lg:grid-cols-2 mb-8">
+        <AriaConfidenceBreakdown homeId={DEFAULT_HOME_ID} days={30} />
+        <AriaModuleCoverage homeId={DEFAULT_HOME_ID} days={30} />
       </div>
 
       {/* ── My ARIA History ──────────────────────────────────────────────── */}

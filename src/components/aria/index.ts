@@ -17,3 +17,7 @@ export { AriaUsageBadge } from "./aria-usage-badge";
 export { AriaActivityCard } from "./aria-activity-card";
 export { AriaHistoryTimeline } from "./aria-history-timeline";
 export { AriaPendingBanner } from "./aria-pending-banner";
+export { AriaConfidenceBreakdown } from "./aria-confidence-breakdown";
+export { AriaModuleCoverage } from "./aria-module-coverage";
+export { AriaQuickStats } from "./aria-quick-stats";
+export { AriaProviderStatus } from "./aria-provider-status";
