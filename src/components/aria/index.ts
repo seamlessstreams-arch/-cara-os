@@ -42,3 +42,5 @@ export { AriaRiskMatrix } from "./aria-risk-matrix";
 export { AriaComplianceCalendar } from "./aria-compliance-calendar";
 export { AriaStaffWellbeing } from "./aria-staff-wellbeing";
 export { AriaIncidentAnalytics } from "./aria-incident-analytics";
+export { AriaPlacementTimeline } from "./aria-placement-timeline";
+export { AriaRegulationChecker } from "./aria-regulation-checker";

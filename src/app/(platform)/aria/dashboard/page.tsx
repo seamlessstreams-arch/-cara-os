@@ -31,6 +31,7 @@ import { AriaInsightCard } from "@/components/aria/aria-insight-card";
 import { AriaReg45Evidence } from "@/components/aria/aria-reg45-evidence";
 import { AriaRiskMatrix } from "@/components/aria/aria-risk-matrix";
 import { AriaComplianceCalendar } from "@/components/aria/aria-compliance-calendar";
+import { AriaRegulationChecker } from "@/components/aria/aria-regulation-checker";
 import {
   Sparkles,
   FileText,
@@ -374,6 +375,11 @@ export default function AriaDashboardPage() {
       {/* ── Compliance Calendar ────────────────────────────────────────────── */}
       <div className="mb-8">
         <AriaComplianceCalendar />
+      </div>
+
+      {/* ── Regulation Compliance Checker ─────────────────────────────────── */}
+      <div className="mb-8">
+        <AriaRegulationChecker />
       </div>
 
       {/* ── Quick Actions ────────────────────────────────────────────────── */}

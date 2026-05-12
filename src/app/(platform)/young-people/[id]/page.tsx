@@ -23,6 +23,7 @@ import { ChildExperienceTab } from "@/components/intelligence/child-experience-t
 import { AriaQuickActions } from "@/components/intelligence/aria-quick-actions";
 import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
 import { AriaSmartSummary } from "@/components/aria/aria-smart-summary";
+import { AriaPlacementTimeline } from "@/components/aria/aria-placement-timeline";
 import { StudioQuickActions } from "@/components/aria-studio/studio-quick-actions";
 import { useYoungPerson } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
@@ -522,6 +523,9 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
         {tab === "overview" && (
           <>
           <AriaSmartSummary childId={yp.id} days={14} className="mb-4" />
+          <div className="mb-4">
+            <AriaPlacementTimeline />
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border bg-white p-4 space-y-2">
               <SectionHeading icon={MapPin} label="Placement Details" />
