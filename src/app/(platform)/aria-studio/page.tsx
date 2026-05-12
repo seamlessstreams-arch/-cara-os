@@ -6,7 +6,8 @@
 // ARIA drafts. Humans decide. Only authorised humans approve and commit.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/ui/page-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -124,6 +125,7 @@ export default function AriaStudioPage() {
   const { currentUser, currentRole } = useAuthContext();
   const staffQuery = useStaff();
   const allStaff = staffQuery.data?.data ?? [];
+  const searchParams = useSearchParams();
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [selectedArtifactType, setSelectedArtifactType] = useState<AriaStudioArtifactType | null>(null);
@@ -131,6 +133,24 @@ export default function AriaStudioPage() {
   const [selectedTone, setSelectedTone] = useState<AriaStudioTone>("balanced");
   const [selectedChildId, setSelectedChildId] = useState<string>("");
   const [additionalContext, setAdditionalContext] = useState("");
+
+  // ── Read URL params from quick action deep-links ──────────────────────────
+  useEffect(() => {
+    const type = searchParams.get("type") as AriaStudioArtifactType | null;
+    const childId = searchParams.get("childId");
+    const framework = searchParams.get("framework") as AriaStudioFramework | null;
+    const tone = searchParams.get("tone") as AriaStudioTone | null;
+    const context = searchParams.get("context");
+
+    if (type && ARIA_STUDIO_ARTIFACT_TYPES.includes(type)) {
+      setSelectedArtifactType(type);
+      setShowTypeSelector(true);
+    }
+    if (childId) setSelectedChildId(childId);
+    if (framework) setSelectedFramework(framework);
+    if (tone) setSelectedTone(tone);
+    if (context) setAdditionalContext(context);
+  }, [searchParams]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 

@@ -558,6 +558,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Outcome Loop",         href: "/aria-studio/outcome-loop",             icon: "Target",      module: "dashboard"    },
       { label: "Learning Pathways",    href: "/aria-studio/learning-pathways",        icon: "GraduationCap", module: "staff"      },
       { label: "History",              href: "/aria-studio/history",                  icon: "History",     module: "dashboard"    },
+      { label: "Audit Trail",          href: "/aria-studio/audit",                    icon: "Shield",      module: "dashboard"    },
+      { label: "Role Versions",        href: "/aria-studio/role-versions",            icon: "Users",       module: "dashboard"    },
       { label: "Intelligence Hub",    href: "/intelligence",                         icon: "Brain",       module: "dashboard"    },
       { label: "Review Queue",       href: "/aria/review",                          icon: "ClipboardCheck", module: "dashboard" },
       { label: "Pattern Alerts",     href: "/patterns",                             icon: "Radar",       module: "dashboard"    },
