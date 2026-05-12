@@ -128,6 +128,14 @@ export const PERMISSIONS = {
   MANAGE_LEARNING_STUDIO: "manage_learning_studio",
   VIEW_TRAINING_NEEDS: "view_training_needs",
   MANAGE_TRAINING_NEEDS: "manage_training_needs",
+  // ARIA Studio
+  ARIA_STUDIO_VIEW: "aria_studio_view",
+  ARIA_STUDIO_CREATE: "aria_studio_create",
+  ARIA_STUDIO_EDIT: "aria_studio_edit",
+  ARIA_STUDIO_REVIEW: "aria_studio_review",
+  ARIA_STUDIO_APPROVE: "aria_studio_approve",
+  ARIA_STUDIO_COMMIT: "aria_studio_commit",
+  ARIA_STUDIO_ADMIN: "aria_studio_admin",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -337,6 +345,14 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     PERMISSIONS.MANAGE_LEARNING_STUDIO,
     PERMISSIONS.VIEW_TRAINING_NEEDS,
     PERMISSIONS.MANAGE_TRAINING_NEEDS,
+    // ARIA Studio (full)
+    PERMISSIONS.ARIA_STUDIO_VIEW,
+    PERMISSIONS.ARIA_STUDIO_CREATE,
+    PERMISSIONS.ARIA_STUDIO_EDIT,
+    PERMISSIONS.ARIA_STUDIO_REVIEW,
+    PERMISSIONS.ARIA_STUDIO_APPROVE,
+    PERMISSIONS.ARIA_STUDIO_COMMIT,
+    PERMISSIONS.ARIA_STUDIO_ADMIN,
   ],
 
   // ── Deputy Manager ───────────────────────────────────────────────────────────
@@ -388,6 +404,12 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     PERMISSIONS.MANAGE_LEARNING_STUDIO,
     PERMISSIONS.VIEW_TRAINING_NEEDS,
     PERMISSIONS.MANAGE_TRAINING_NEEDS,
+    // ARIA Studio
+    PERMISSIONS.ARIA_STUDIO_VIEW,
+    PERMISSIONS.ARIA_STUDIO_CREATE,
+    PERMISSIONS.ARIA_STUDIO_EDIT,
+    PERMISSIONS.ARIA_STUDIO_REVIEW,
+    PERMISSIONS.ARIA_STUDIO_APPROVE,
   ],
 
   // ── Team Leader ──────────────────────────────────────────────────────────────
@@ -427,6 +449,11 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     PERMISSIONS.USE_LEARNING_STUDIO,
     PERMISSIONS.VIEW_TRAINING_NEEDS,
     PERMISSIONS.MANAGE_TRAINING_NEEDS,
+    // ARIA Studio
+    PERMISSIONS.ARIA_STUDIO_VIEW,
+    PERMISSIONS.ARIA_STUDIO_CREATE,
+    PERMISSIONS.ARIA_STUDIO_EDIT,
+    PERMISSIONS.ARIA_STUDIO_REVIEW,
   ],
 
   // ── Residential Care Worker ───────────────────────────────────────────────────
@@ -441,6 +468,10 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     PERMISSIONS.VIEW_LEARNING_STUDIO,
     PERMISSIONS.USE_LEARNING_STUDIO,
     PERMISSIONS.VIEW_TRAINING_NEEDS,
+    // ARIA Studio
+    PERMISSIONS.ARIA_STUDIO_VIEW,
+    PERMISSIONS.ARIA_STUDIO_CREATE,
+    PERMISSIONS.ARIA_STUDIO_EDIT,
   ],
 
   // ── Bank Staff ───────────────────────────────────────────────────────────────
