@@ -22,7 +22,7 @@ import {
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
-type TabId = "overview" | "tasks" | "workflows" | "evidence" | "oversight" | "readiness";
+type TabId = "overview" | "tasks" | "workflows" | "evidence" | "oversight" | "readiness" | "intelligence" | "audit";
 
 const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: BarChart3 },
@@ -31,6 +31,8 @@ const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "evidence", label: "Evidence", icon: FileCheck2 },
   { id: "oversight", label: "Oversight", icon: Eye },
   { id: "readiness", label: "Inspection Readiness", icon: Shield },
+  { id: "intelligence", label: "ARIA Intelligence", icon: Sparkles },
+  { id: "audit", label: "Audit Trail", icon: BookOpen },
 ];
 
 // ── Demo stats ──────────────────────────────────────────────────────────────
@@ -613,6 +615,282 @@ export default function OperationsPage() {
       {activeTab === "evidence" && <EvidenceTab />}
       {activeTab === "oversight" && <OversightTab />}
       {activeTab === "readiness" && <ReadinessTab />}
+      {activeTab === "intelligence" && <IntelligenceTab />}
+      {activeTab === "audit" && <AuditTab />}
     </PageShell>
+  );
+}
+
+// ── ARIA Intelligence Tab ──────────────────────────────────────────────────
+
+const DEMO_RECOMMENDATIONS = [
+  {
+    id: "r1", type: "missing_oversight", severity: "critical" as const,
+    title: "4 records without management oversight",
+    description: "4 significant records have been open for more than 48 hours without management oversight. 2 incidents, 1 safeguarding concern, 1 restraint. Ofsted expects timely, reflective management oversight of all significant events.",
+    suggested_action: "Prioritise providing written oversight for these records. Use ARIA's oversight quality prompts to ensure your oversight demonstrates reflective analysis, child focus, and clear actions.",
+    data_points: 4, confidence: 0.98, status: "active" as const,
+    created_at: "2026-05-12T08:00:00Z",
+  },
+  {
+    id: "r2", type: "staffing_concern", severity: "high" as const,
+    title: "3 unfilled shifts this week",
+    description: "There are 3 shifts without an assigned staff member in the next 7 days. Staffing gaps may affect the quality of care and regulatory compliance.",
+    suggested_action: "Fill the open shifts by assigning available staff, contacting bank workers, or reviewing whether shift patterns need adjustment.",
+    data_points: 3, confidence: 0.95, status: "active" as const,
+    created_at: "2026-05-12T06:00:00Z",
+  },
+  {
+    id: "r3", type: "incident_trend", severity: "medium" as const,
+    title: "Incident rate increased 67%",
+    description: "There have been 10 incidents in the last 30 days, compared to 6 in the previous 30 days — a 67% increase. Consider whether this reflects a genuine change in risk or improved recording.",
+    suggested_action: "Analyse the incidents for common themes, triggers, or contributing factors. Consider whether staffing, group dynamics, or external factors have changed.",
+    data_points: 16, confidence: 0.8, status: "active" as const,
+    created_at: "2026-05-11T18:00:00Z",
+  },
+  {
+    id: "r4", type: "training_due", severity: "high" as const,
+    title: "3 expired mandatory training records",
+    description: "3 mandatory training records have expired. Expired mandatory training is a regulatory compliance issue that Ofsted will scrutinise (CHR2015 Reg 34).",
+    suggested_action: "Book renewal training immediately. Prioritise safeguarding, first aid, and medication training.",
+    data_points: 3, confidence: 0.98, status: "acknowledged" as const,
+    created_at: "2026-05-10T12:00:00Z",
+  },
+  {
+    id: "r5", type: "positive_recognition", severity: "info" as const,
+    title: "Improving mood trend for Sophia",
+    description: "Average mood score has improved from 4.2 to 6.8 over recent recordings. This positive trajectory suggests current care arrangements are supporting this young person's emotional wellbeing.",
+    suggested_action: "Recognise this improvement with the young person and team. Record in the care plan review.",
+    data_points: 14, confidence: 0.75, status: "active" as const,
+    created_at: "2026-05-11T10:00:00Z",
+  },
+  {
+    id: "r6", type: "weak_recording", severity: "medium" as const,
+    title: "Brief daily log entries for Tyler",
+    description: "8 of 14 recent daily log entries are very brief (under 50 characters). Short entries may not provide sufficient detail for regulatory compliance.",
+    suggested_action: "Discuss recording standards with the team. Entries should capture the child's experience, mood, activities, and significant observations.",
+    data_points: 14, confidence: 0.8, status: "active" as const,
+    created_at: "2026-05-11T09:00:00Z",
+  },
+  {
+    id: "r7", type: "handover_quality", severity: "low" as const,
+    title: "Handover notes missing young person updates",
+    description: "5 of 10 recent handover notes do not contain individual young person updates. Effective handovers should include updates on each young person.",
+    suggested_action: "Remind staff that handover notes should include individual updates for each young person.",
+    data_points: 10, confidence: 0.8, status: "actioned" as const,
+    created_at: "2026-05-09T14:00:00Z",
+  },
+];
+
+const SEVERITY_STYLES: Record<string, { bg: string; text: string; border: string; icon: string }> = {
+  critical: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", icon: "text-red-600" },
+  high: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200", icon: "text-orange-600" },
+  medium: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "text-amber-600" },
+  low: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", icon: "text-blue-600" },
+  info: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: "text-emerald-600" },
+};
+
+const STATUS_BADGE: Record<string, string> = {
+  active: "bg-blue-100 text-blue-700",
+  acknowledged: "bg-amber-100 text-amber-700",
+  actioned: "bg-emerald-100 text-emerald-700",
+  dismissed: "bg-gray-100 text-gray-500",
+};
+
+function IntelligenceTab() {
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
+
+  const filtered = severityFilter === "all"
+    ? DEMO_RECOMMENDATIONS
+    : DEMO_RECOMMENDATIONS.filter((r) => r.severity === severityFilter);
+
+  const active = DEMO_RECOMMENDATIONS.filter((r) => r.status === "active");
+  const bySeverity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+  for (const r of active) bySeverity[r.severity] = (bySeverity[r.severity] ?? 0) + 1;
+
+  return (
+    <div className="space-y-4">
+      {/* ARIA header */}
+      <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-violet-50 border border-violet-100">
+        <Sparkles className="h-5 w-5 text-violet-500 shrink-0 mt-0.5" />
+        <div>
+          <h3 className="text-sm font-semibold text-violet-800">ARIA Operational Intelligence</h3>
+          <p className="text-xs text-violet-600 mt-0.5">
+            ARIA analyses patterns across all modules — incidents, daily logs, staffing, training, oversight,
+            and medication — to surface actionable intelligence. All recommendations require human review.
+          </p>
+        </div>
+      </div>
+
+      {/* Severity summary */}
+      <div className="grid grid-cols-5 gap-2">
+        {(["critical", "high", "medium", "low", "info"] as const).map((sev) => {
+          const s = SEVERITY_STYLES[sev];
+          return (
+            <button
+              key={sev}
+              onClick={() => setSeverityFilter(severityFilter === sev ? "all" : sev)}
+              className={cn(
+                "rounded-xl p-3 text-center border transition-all",
+                severityFilter === sev ? `${s.bg} ${s.border} ring-2 ring-offset-1` : "bg-white border-gray-200 hover:bg-gray-50",
+              )}
+            >
+              <p className={cn("text-xl font-bold", severityFilter === sev ? s.text : "text-gray-900")}>{bySeverity[sev]}</p>
+              <p className="text-[10px] text-gray-500 capitalize">{sev}</p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Recommendation cards */}
+      <div className="space-y-3">
+        {filtered.map((rec) => {
+          const s = SEVERITY_STYLES[rec.severity];
+          return (
+            <div key={rec.id} className={cn("rounded-xl border p-4", s.bg, s.border)}>
+              <div className="flex items-start gap-3">
+                <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", s.bg)}>
+                  {rec.severity === "info" ? (
+                    <CheckCircle2 className={cn("h-4 w-4", s.icon)} />
+                  ) : (
+                    <AlertTriangle className={cn("h-4 w-4", s.icon)} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className={cn("text-sm font-semibold", s.text)}>{rec.title}</h4>
+                    <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-medium", STATUS_BADGE[rec.status])}>
+                      {rec.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed mb-2">{rec.description}</p>
+                  <div className={cn("px-3 py-2 rounded-lg bg-white/60 border", s.border)}>
+                    <p className="text-xs font-medium text-gray-700 mb-0.5">Suggested Action</p>
+                    <p className="text-xs text-gray-600">{rec.suggested_action}</p>
+                  </div>
+                  <div className="flex items-center gap-4 mt-2 text-[10px] text-gray-500">
+                    <span>{rec.data_points} data points</span>
+                    <span>{Math.round(rec.confidence * 100)}% confidence</span>
+                    <span>{new Date(rec.created_at).toLocaleDateString("en-GB")}</span>
+                  </div>
+                </div>
+              </div>
+              {rec.status === "active" && (
+                <div className="flex gap-2 mt-3 ml-11">
+                  <button className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors">
+                    Acknowledge
+                  </button>
+                  <button className="px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                    Take Action
+                  </button>
+                  <button className="px-3 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                    Dismiss
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Audit Trail Tab ────────────────────────────────────────────────────────
+
+const DEMO_AUDIT_ENTRIES = [
+  { id: "a1", action: "create", entity_type: "incident", entity_id: "inc-042", reference: "INC-042", performed_by: "Sarah Mitchell", created_at: "2026-05-12T15:32:00Z", details: "Created incident: Physical intervention with Jayden" },
+  { id: "a2", action: "update", entity_type: "daily_log", entity_id: "dl-189", reference: "DL-189", performed_by: "James Wilson", created_at: "2026-05-12T14:15:00Z", details: "Updated daily log entry for Tyler" },
+  { id: "a3", action: "oversight_added", entity_type: "incident", entity_id: "inc-040", reference: "INC-040", performed_by: "Darren Laville", created_at: "2026-05-12T13:45:00Z", details: "Management oversight added: Quality score 4/5" },
+  { id: "a4", action: "approve", entity_type: "form_submission", entity_id: "fs-023", reference: "FS-023", performed_by: "Darren Laville", created_at: "2026-05-12T11:20:00Z", details: "Approved medication administration form" },
+  { id: "a5", action: "complete", entity_type: "task", entity_id: "tsk-076", reference: "SFG-A1K076", performed_by: "Emily Chen", created_at: "2026-05-12T10:45:00Z", details: "Completed safeguarding task: Update risk assessment for Amara" },
+  { id: "a6", action: "workflow_advance", entity_type: "workflow", entity_id: "wf-012", reference: "WF-012", performed_by: "Darren Laville", created_at: "2026-05-12T09:30:00Z", details: "Advanced New Placement workflow to Pre-Admission phase" },
+  { id: "a7", action: "create", entity_type: "oversight_note", entity_id: "on-034", reference: "ON-034", performed_by: "Darren Laville", created_at: "2026-05-12T09:00:00Z", details: "Oversight note for missing from care episode (Tyler)" },
+  { id: "a8", action: "sign_off", entity_type: "task", entity_id: "tsk-074", reference: "MED-B2K074", performed_by: "Darren Laville", created_at: "2026-05-11T18:30:00Z", details: "Signed off medication audit task" },
+  { id: "a9", action: "create", entity_type: "evidence_item", entity_id: "ev-019", reference: "EV-019", performed_by: "James Wilson", created_at: "2026-05-11T17:00:00Z", details: "Uploaded evidence: Fire drill log May 2026" },
+  { id: "a10", action: "escalate", entity_type: "task", entity_id: "tsk-071", reference: "CMP-C3K071", performed_by: "Sarah Mitchell", created_at: "2026-05-11T16:15:00Z", details: "Escalated complaint task to Registered Manager" },
+  { id: "a11", action: "create", entity_type: "communication_draft", entity_id: "cd-007", reference: "CD-007", performed_by: "ARIA", created_at: "2026-05-11T15:30:00Z", details: "ARIA generated shift briefing draft for night shift" },
+  { id: "a12", action: "update", entity_type: "young_person", entity_id: "yp-003", reference: "Tyler Robinson", performed_by: "Emily Chen", created_at: "2026-05-11T14:00:00Z", details: "Updated risk flags: Added substance experimentation" },
+];
+
+const ACTION_STYLES: Record<string, string> = {
+  create: "bg-emerald-100 text-emerald-700",
+  update: "bg-blue-100 text-blue-700",
+  approve: "bg-green-100 text-green-700",
+  sign_off: "bg-green-100 text-green-700",
+  complete: "bg-emerald-100 text-emerald-700",
+  escalate: "bg-red-100 text-red-700",
+  oversight_added: "bg-purple-100 text-purple-700",
+  workflow_advance: "bg-indigo-100 text-indigo-700",
+};
+
+function AuditTab() {
+  const [entityFilter, setEntityFilter] = useState<string>("all");
+
+  const entityTypes = [...new Set(DEMO_AUDIT_ENTRIES.map((e) => e.entity_type))];
+  const filtered = entityFilter === "all"
+    ? DEMO_AUDIT_ENTRIES
+    : DEMO_AUDIT_ENTRIES.filter((e) => e.entity_type === entityFilter);
+
+  return (
+    <div className="space-y-4">
+      {/* Info banner */}
+      <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200">
+        <BookOpen className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+        <div>
+          <h3 className="text-sm font-semibold text-slate-700">Immutable Audit Trail</h3>
+          <p className="text-xs text-slate-500">Every action in Cornerstone is immutably logged. Records cannot be edited or deleted. This trail provides evidence of due diligence for regulatory inspections.</p>
+        </div>
+      </div>
+
+      {/* Entity filter */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          onClick={() => setEntityFilter("all")}
+          className={cn("px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
+            entityFilter === "all" ? "bg-[var(--cs-primary)] text-white" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200")}
+        >
+          All ({DEMO_AUDIT_ENTRIES.length})
+        </button>
+        {entityTypes.map((et) => (
+          <button
+            key={et}
+            onClick={() => setEntityFilter(entityFilter === et ? "all" : et)}
+            className={cn("px-3 py-1.5 rounded-full text-xs font-medium transition-colors capitalize",
+              entityFilter === et ? "bg-[var(--cs-primary)] text-white" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200")}
+          >
+            {et.replace(/_/g, " ")} ({DEMO_AUDIT_ENTRIES.filter((e) => e.entity_type === et).length})
+          </button>
+        ))}
+      </div>
+
+      {/* Audit entries */}
+      <div className="space-y-1">
+        {filtered.map((entry) => (
+          <div key={entry.id} className="flex items-start gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors">
+            {/* Timeline dot */}
+            <div className="flex flex-col items-center mt-1">
+              <div className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+              <div className="w-px h-full bg-slate-200 mt-1" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className={cn("px-2 py-0.5 rounded text-[10px] font-medium capitalize", ACTION_STYLES[entry.action] ?? "bg-gray-100 text-gray-600")}>
+                  {entry.action.replace(/_/g, " ")}
+                </span>
+                <span className="text-[10px] text-gray-400 capitalize">{entry.entity_type.replace(/_/g, " ")}</span>
+                <span className="text-[10px] text-gray-400 font-mono">{entry.reference}</span>
+              </div>
+              <p className="text-sm text-gray-700">{entry.details}</p>
+              <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-400">
+                <span>{entry.performed_by}</span>
+                <span>{new Date(entry.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
