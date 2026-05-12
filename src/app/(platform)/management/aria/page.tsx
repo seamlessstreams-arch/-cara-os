@@ -20,6 +20,7 @@ import { AGENT_ID_LABELS } from "@/types/aria-reports";
 import type { AgentId, RiskTier } from "@/types/aria-reports";
 import { AriaActivityCard } from "@/components/aria/aria-activity-card";
 import { AriaFeedbackStats } from "@/components/aria/aria-feedback-stats";
+import { AriaNotificationPrefs } from "@/components/aria/aria-notification-prefs";
 import {
   Shield,
   Save,
@@ -331,6 +332,11 @@ export default function AriaGovernancePage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Notification Preferences */}
+      <div className="mt-6">
+        <AriaNotificationPrefs userId="staff_darren" />
       </div>
     </PageShell>
   );

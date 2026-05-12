@@ -28,6 +28,7 @@ import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { AriaQuickActions } from "@/components/intelligence/aria-quick-actions";
 import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaContextLinker } from "@/components/aria/aria-context-linker";
 import { StudioQuickActions } from "@/components/aria-studio/studio-quick-actions";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
@@ -619,6 +620,12 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
             </div>
           )}
         </div>
+
+        {/* ── ARIA Context Links ─────────────────────────────────────────── */}
+        <AriaContextLinker
+          sourceTable="incidents"
+          recordId={incident.id}
+        />
 
         {/* ── ARIA Quick Actions ────────────────────────────────────────────── */}
         <AriaQuickActions

@@ -30,3 +30,5 @@ export { AriaOnboardingCard } from "./aria-onboarding-card";
 export { AriaFeedbackWidget } from "./aria-feedback-widget";
 export { AriaInsightCard } from "./aria-insight-card";
 export { AriaFeedbackStats } from "./aria-feedback-stats";
+export { AriaContextLinker } from "./aria-context-linker";
+export { AriaNotificationPrefs } from "./aria-notification-prefs";
