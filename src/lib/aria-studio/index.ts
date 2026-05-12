@@ -18,3 +18,8 @@ export { generateHomeDynamicsSnapshot, getLatestSnapshot, listSnapshots } from "
 export { runEarlyWarningChecks, listEarlyWarnings, reviewEarlyWarning } from "./early-warning.service";
 export { createFormulation, getFormulationForChild, listFormulations, updateFormulation, approveFormulation } from "./formulation.service";
 export { createDecisionSupport, getDecisionSupport, listDecisionSupport, recordDecision } from "./decision-support.service";
+export { extractChildVoice, scanChildVoice, getChildVoiceSummary } from "./child-voice.service";
+export { buildFilingPath, fileCommittedArtifact, listFiledArtifacts, getFilingStructure } from "./filing-cabinet.service";
+export { getArtifactOutcome, getOutcomeLoopSummary } from "./outcome-loop.service";
+export { generateRoleVersion, generateAllRoleVersions, getAvailableRoles } from "./role-output.service";
+export { generateStaffPathway, getLearningPathwaySummary } from "./learning-pathway.service";
