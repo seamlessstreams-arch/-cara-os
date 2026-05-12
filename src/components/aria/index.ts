@@ -38,3 +38,5 @@ export { AriaWeeklyDigest } from "./aria-weekly-digest";
 export { AriaReg45Evidence } from "./aria-reg45-evidence";
 export { AriaRotaIntelligence } from "./aria-rota-intelligence";
 export { AriaHandoverQuality } from "./aria-handover-quality";
+export { AriaRiskMatrix } from "./aria-risk-matrix";
+export { AriaComplianceCalendar } from "./aria-compliance-calendar";

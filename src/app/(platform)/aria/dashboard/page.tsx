@@ -29,6 +29,8 @@ import { AriaProviderStatus } from "@/components/aria/aria-provider-status";
 import { AriaOnboardingCard } from "@/components/aria/aria-onboarding-card";
 import { AriaInsightCard } from "@/components/aria/aria-insight-card";
 import { AriaReg45Evidence } from "@/components/aria/aria-reg45-evidence";
+import { AriaRiskMatrix } from "@/components/aria/aria-risk-matrix";
+import { AriaComplianceCalendar } from "@/components/aria/aria-compliance-calendar";
 import {
   Sparkles,
   FileText,
@@ -362,6 +364,16 @@ export default function AriaDashboardPage() {
       {/* ── Reg 45 Evidence ────────────────────────────────────────────── */}
       <div className="mb-8">
         <AriaReg45Evidence homeId={DEFAULT_HOME_ID} />
+      </div>
+
+      {/* ── Risk Matrix ──────────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <AriaRiskMatrix />
+      </div>
+
+      {/* ── Compliance Calendar ────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <AriaComplianceCalendar />
       </div>
 
       {/* ── Quick Actions ────────────────────────────────────────────────── */}
