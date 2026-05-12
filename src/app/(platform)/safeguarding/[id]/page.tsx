@@ -28,6 +28,7 @@ import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { AriaPanel } from "@/components/aria/aria-panel";
 import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaContextLinker } from "@/components/aria/aria-context-linker";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
@@ -267,6 +268,9 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
             />
           </div>
         )}
+
+        {/* ── ARIA Context Links ─────────────────────────────────────────── */}
+        <AriaContextLinker sourceTable="safeguarding_concerns" recordId={concern.id} className="mb-4" />
 
         {/* ── Severity banner ───────────────────────────────────────────────── */}
         <div className={cn(

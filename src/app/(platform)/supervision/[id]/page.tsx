@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { AriaPanel } from "@/components/aria/aria-panel";
 import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaContextLinker } from "@/components/aria/aria-context-linker";
 import {
   useSupervision, useUpdateSupervision,
 } from "@/hooks/use-supervision";
@@ -435,6 +436,7 @@ export default function SupervisionDetailPage({
                     ✕
                   </button>
                 </div>
+                <AriaContextLinker sourceTable="supervisions" recordId={sup.id} className="mb-3" />
                 <AriaPanel
                   mode="oversee"
                   pageContext="Supervision Record Detail"
