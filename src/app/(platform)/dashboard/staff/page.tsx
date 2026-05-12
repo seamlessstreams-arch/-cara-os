@@ -10,6 +10,7 @@ import { AriaPanel } from "@/components/aria/aria-panel";
 import { AriaPendingBanner } from "@/components/aria/aria-pending-banner";
 import { AriaQuickStats } from "@/components/aria/aria-quick-stats";
 import { AriaWeeklyDigest } from "@/components/aria/aria-weekly-digest";
+import { AriaStaffWellbeing } from "@/components/aria/aria-staff-wellbeing";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -568,6 +569,11 @@ export default function StaffDashboardPage() {
 
         {/* ── ARIA Weekly Digest ────────────────────────────────────────── */}
         <AriaWeeklyDigest homeId="demo-home" userId={d.staff.id} className="mt-4" />
+
+        {/* ── ARIA Staff Wellbeing ──────────────────────────────────────── */}
+        <div className="mt-4">
+          <AriaStaffWellbeing />
+        </div>
 
         {/* ── Main Grid ─────────────────────────────────────────────────────── */}
         <div className="grid gap-5 lg:grid-cols-3">

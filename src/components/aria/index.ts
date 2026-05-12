@@ -40,3 +40,5 @@ export { AriaRotaIntelligence } from "./aria-rota-intelligence";
 export { AriaHandoverQuality } from "./aria-handover-quality";
 export { AriaRiskMatrix } from "./aria-risk-matrix";
 export { AriaComplianceCalendar } from "./aria-compliance-calendar";
+export { AriaStaffWellbeing } from "./aria-staff-wellbeing";
+export { AriaIncidentAnalytics } from "./aria-incident-analytics";

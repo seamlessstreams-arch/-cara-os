@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { AriaPanel } from "@/components/aria/aria-panel";
 import { AriaCompose } from "@/components/aria/aria-compose";
 import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaIncidentAnalytics } from "@/components/aria/aria-incident-analytics";
 import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
 import {
   AlertTriangle, Shield, Eye, Clock, CheckCircle2, FileText,
@@ -1254,6 +1255,9 @@ export default function IncidentsPage() {
           regulationRef="Children's Homes Regulations 2015, Reg 40 — Notification of significant events"
           variant="safeguarding"
         />
+        {/* ARIA Incident Analytics */}
+        <AriaIncidentAnalytics />
+
         {/* Tab bar */}
         <div className="flex items-center gap-1 rounded-2xl border bg-white p-1.5">
           {TABS.map(({ id, label, icon: Icon }) => {
