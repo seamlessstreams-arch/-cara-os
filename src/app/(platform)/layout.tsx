@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { SidebarProvider, useSidebar } from "@/contexts/sidebar-context";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
 import { AriaGlobalFab } from "@/components/aria/aria-global-fab";
+import { AriaCommandPalette } from "@/components/aria/aria-command-palette";
 
 function PlatformContent({ children }: { children: React.ReactNode }) {
   const { collapsed, isMobile } = useSidebar();
@@ -34,6 +35,7 @@ export default function PlatformLayout({
           <BottomNav />
           <KeyboardShortcuts />
           <AriaGlobalFab />
+          <AriaCommandPalette />
         </div>
       </SidebarProvider>
     </AuthProvider>

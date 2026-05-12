@@ -21,3 +21,4 @@ export { AriaConfidenceBreakdown } from "./aria-confidence-breakdown";
 export { AriaModuleCoverage } from "./aria-module-coverage";
 export { AriaQuickStats } from "./aria-quick-stats";
 export { AriaProviderStatus } from "./aria-provider-status";
+export { AriaCommandPalette } from "./aria-command-palette";
