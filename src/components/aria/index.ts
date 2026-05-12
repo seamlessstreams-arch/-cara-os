@@ -44,3 +44,5 @@ export { AriaStaffWellbeing } from "./aria-staff-wellbeing";
 export { AriaIncidentAnalytics } from "./aria-incident-analytics";
 export { AriaPlacementTimeline } from "./aria-placement-timeline";
 export { AriaRegulationChecker } from "./aria-regulation-checker";
+export { AriaKeyWorkPlanner } from "./aria-key-work-planner";
+export { AriaDocumentIntelligence } from "./aria-document-intelligence";
