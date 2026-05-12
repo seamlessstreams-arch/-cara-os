@@ -318,6 +318,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "ARIA Intelligence",href: "/children/child_1/intelligence",icon: "Brain",       module: "aria-reports"  },
       { label: "Documents",        href: "/documents",                 icon: "FileText",       module: "documents"     },
       { label: "Care Forms",       href: "/forms",                     icon: "FileCheck",      module: "forms",        badgeKey: "forms" },
+      { label: "Form Builder",     href: "/forms/builder",             icon: "Blocks",         module: "forms"         },
     ],
   },
 
