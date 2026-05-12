@@ -42,6 +42,18 @@ import {
 } from "lucide-react";
 import { AriaGuardrailBanner } from "./aria-guardrail-banner";
 import { AriaTaskCreator } from "./aria-task-creator";
+import { AriaDiffViewer } from "./aria-diff-viewer";
+
+// Commands that improve/rewrite text — show the diff viewer
+const TEXT_IMPROVEMENT_COMMANDS = new Set<string>([
+  "improve_writing",
+  "professionalise_record",
+  "simplify_language",
+  "check_tone",
+  "check_factuality",
+  "expand_text",
+  "professional_tone",
+]);
 
 // Commands that can create tasks — shown the task creator on result
 const TASK_CREATING_COMMANDS = new Set<string>([
@@ -383,6 +395,23 @@ export function AriaCommandPanel({
                   summary={aria.result.guardrails.summary}
                 />
               )}
+
+              {/* Diff viewer for text improvement commands */}
+              {selectedCommand &&
+                TEXT_IMPROVEMENT_COMMANDS.has(selectedCommand) &&
+                (inputText || sourceContent) &&
+                aria.result.generatedText &&
+                !isEditing && (
+                  <AriaDiffViewer
+                    originalText={inputText || sourceContent || ""}
+                    generatedText={aria.result.generatedText}
+                    commandLabel={
+                      COMMAND_GROUPS.flatMap((g) => g.commands).find(
+                        (c) => c.id === selectedCommand,
+                      )?.label
+                    }
+                  />
+                )}
 
               {/* Generated/edited text */}
               {isEditing ? (

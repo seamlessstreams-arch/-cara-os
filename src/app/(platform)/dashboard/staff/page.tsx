@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaPendingBanner } from "@/components/aria/aria-pending-banner";
+import { AriaQuickStats } from "@/components/aria/aria-quick-stats";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -533,9 +535,14 @@ export default function StaffDashboardPage() {
           ))}
         </div>
 
+        {/* ── ARIA Quick Stats ──────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--cs-text-muted)]">Quick Actions</h3>
+          <AriaQuickStats />
+        </div>
+
         {/* ── Quick Actions ─────────────────────────────────────────────────── */}
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--cs-text-muted)] mb-3">Quick Actions</h3>
           <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
             <QuickAction icon={BookOpen} label="New Daily Log" href="/daily-log" color="bg-blue-600" />
             <QuickAction icon={Pill} label="Record Meds" href="/medication" color="bg-purple-600"
@@ -550,6 +557,13 @@ export default function StaffDashboardPage() {
             <QuickAction icon={Shield} label="Safeguarding" href="/safeguarding" color="bg-rose-600" />
           </div>
         </div>
+
+        {/* ── ARIA pending outputs banner ────────────────────────────────── */}
+        <AriaPendingBanner
+          actorUserId={d.staff.id}
+          actorRole={d.staff.role}
+          className="mt-1"
+        />
 
         {/* ── Main Grid ─────────────────────────────────────────────────────── */}
         <div className="grid gap-5 lg:grid-cols-3">
