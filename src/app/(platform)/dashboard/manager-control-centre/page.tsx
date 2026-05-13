@@ -59,6 +59,8 @@ import { WhistleblowingCard } from "@/components/dashboard/whistleblowing-card";
 import { PoliciesRegisterCard } from "@/components/dashboard/policies-register-card";
 import { AdvocacyCard } from "@/components/dashboard/advocacy-card";
 import { MultiAgencyCard } from "@/components/dashboard/multi-agency-card";
+import { NightMonitoringCard } from "@/components/dashboard/night-monitoring-card";
+import { CulturalIdentityCard } from "@/components/dashboard/cultural-identity-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -972,6 +974,8 @@ export default function ManagerControlCentrePage() {
         <PoliciesRegisterCard />
         <AdvocacyCard />
         <MultiAgencyCard />
+        <NightMonitoringCard />
+        <CulturalIdentityCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
