@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AriaDailyIntelligence } from "@/components/aria/aria-daily-intelligence";
+import { SupervisionIntelligenceCard } from "@/components/dashboard/supervision-intelligence-card";
+import { RegulatoryReportingCard } from "@/components/dashboard/regulatory-reporting-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -889,6 +891,12 @@ export default function ManagerControlCentrePage() {
           })}
         </div>
       )}
+
+      {/* ── supervision & regulatory reporting intelligence ─────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <SupervisionIntelligenceCard />
+        <RegulatoryReportingCard />
+      </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
       <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
