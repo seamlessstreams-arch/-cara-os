@@ -108,6 +108,9 @@ import { ContactMonitoringCard } from "@/components/dashboard/contact-monitoring
 import { AttachmentRelationshipsCard } from "@/components/dashboard/attachment-relationships-card";
 import { DiversityInclusionCard } from "@/components/dashboard/diversity-inclusion-card";
 import { EmergencyPlacementCard } from "@/components/dashboard/emergency-placement-card";
+import { CourtProceedingsCard } from "@/components/dashboard/court-proceedings-card";
+import { BehaviourSupportPlansCard } from "@/components/dashboard/behaviour-support-plans-card";
+import { DischargeTransitionCard } from "@/components/dashboard/discharge-transition-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1070,6 +1073,9 @@ export default function ManagerControlCentrePage() {
         <AttachmentRelationshipsCard />
         <DiversityInclusionCard />
         <EmergencyPlacementCard />
+        <CourtProceedingsCard />
+        <BehaviourSupportPlansCard />
+        <DischargeTransitionCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
