@@ -90,6 +90,9 @@ import { StaffAbsenceCard } from "@/components/dashboard/staff-absence-card";
 import { ActivityPlanningCard } from "@/components/dashboard/activity-planning-card";
 import { OnlineSafetyCard } from "@/components/dashboard/online-safety-card";
 import { LacReviewCard } from "@/components/dashboard/lac-review-card";
+import { StaffInductionCard } from "@/components/dashboard/staff-induction-card";
+import { DutyOfCandourCard } from "@/components/dashboard/duty-of-candour-card";
+import { AntiBullyingCard } from "@/components/dashboard/anti-bullying-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1034,6 +1037,9 @@ export default function ManagerControlCentrePage() {
         <ActivityPlanningCard />
         <OnlineSafetyCard />
         <LacReviewCard />
+        <StaffInductionCard />
+        <DutyOfCandourCard />
+        <AntiBullyingCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
