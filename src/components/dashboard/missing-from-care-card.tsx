@@ -1,183 +1,218 @@
 "use client";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — MISSING FROM CARE CARD
-// Dashboard widget showing active missing episodes, outstanding return home
-// interviews, contextual safeguarding risk flags, and pattern alerts.
-// Reg 36 — Missing child procedures and return interview requirements.
+// CORNERSTONE — MISSING FROM CARE INTELLIGENCE CARD
+// Dashboard card for missing episode tracking, return interviews,
+// push/pull factors, and ARIA missing intelligence (Reg 34).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useMemo } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
-import { getYPName } from "@/lib/seed-data";
-import { cn, formatRelative } from "@/lib/utils";
 import {
-  MapPin, Loader2, AlertTriangle, CheckCircle2,
-  ShieldAlert, FileText, Activity,
+  MapPin, ChevronRight, AlertTriangle, CheckCircle2,
+  Brain, Radio, UserSearch,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-// ── Component ───────────────────────────────────────────────────────────────
+// ── Demo data ────────────────────────────────────────────────────────────────
+
+const DEMO_PROFILE = {
+  totalEpisodes: 5,
+  activeEpisodes: 0,
+  resolvedThisMonth: 1,
+  avgDurationMinutes: 127,
+  policeNotificationRate: 80,
+  returnInterviewCompletionRate: 75,
+};
+
+const RECENT_EPISODES = [
+  {
+    id: "me_1",
+    child: "Tyler R",
+    type: "missing",
+    riskLevel: "high",
+    status: "closed",
+    date: "2026-05-07",
+    duration: "2h 15m",
+    returnInterview: "completed",
+    trigger: "peer_influence",
+  },
+  {
+    id: "me_2",
+    child: "Tyler R",
+    type: "absent",
+    riskLevel: "medium",
+    status: "closed",
+    date: "2026-04-28",
+    duration: "1h 30m",
+    returnInterview: "completed",
+    trigger: "peer_influence",
+  },
+];
+
+const PUSH_PULL = {
+  push: [{ factor: "conflict_with_staff", count: 1 }],
+  pull: [{ factor: "peer_influence", count: 3 }, { factor: "romantic_relationship", count: 1 }],
+  risk: [] as { factor: string; count: number }[],
+};
+
+const TYPE_COLOURS: Record<string, string> = {
+  missing: "bg-red-100 text-red-700",
+  absent: "bg-amber-100 text-amber-700",
+  awol: "bg-red-100 text-red-700",
+  failed_to_return: "bg-orange-100 text-orange-700",
+};
+
+const RISK_COLOURS: Record<string, string> = {
+  very_high: "bg-red-100 text-red-700",
+  high: "bg-orange-100 text-orange-700",
+  medium: "bg-amber-100 text-amber-700",
+  low: "bg-green-100 text-green-700",
+};
+
+const ARIA_INSIGHTS = [
+  "Tyler R has had 3 missing episodes in the past 6 weeks, all linked to peer influence. Consider whether exploitation screening is required and discuss at next strategy meeting.",
+  "Return interview completion rate at 75% — 1 interview was refused. Ensure independent person availability is maintained and children are supported to engage.",
+  "Positive: Zero active missing episodes. Average duration reducing (from 3h to 2h15m). Push factors are minimal — most episodes are pull-related, suggesting the placement itself is not a driver.",
+];
+
+// ── Component ────────────────────────────────────────────────────────────────
 
 export function MissingFromCareCard() {
-  const { data, isPending } = useMissingEpisodes({ homeId: "home_oak" });
-  const meta = data?.meta;
-  const episodes = data?.data ?? [];
-  const patterns = data?.pattern_analysis ?? [];
-
-  const {
-    active, unresolved, contextualRisk, totalThisMonth,
-    activeList, hasAlert,
-  } = useMemo(() => {
-    const active = meta?.active ?? 0;
-    const unresolved = meta?.unresolved ?? 0;
-    const contextualRisk = meta?.contextual_risk ?? 0;
-    const totalThisMonth = meta?.this_month ?? 0;
-
-    // Active episodes for the list
-    const activeList = episodes
-      .filter((e) => e.status === "active")
-      .slice(0, 4);
-
-    return {
-      active,
-      unresolved,
-      contextualRisk,
-      totalThisMonth,
-      activeList,
-      hasAlert: active > 0,
-    };
-  }, [meta, episodes]);
-
-  if (isPending) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-[13px]">
-            <MapPin className="h-4 w-4 text-red-500" />
-            Missing from Care
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-6">
-            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const p = DEMO_PROFILE;
 
   return (
-    <Card className={cn(hasAlert && "border-red-300")}>
-      <CardHeader className="pb-2">
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-[13px]">
-            <MapPin className={cn("h-4 w-4", hasAlert ? "text-red-500 animate-pulse" : "text-red-500")} />
+          <CardTitle className="text-sm flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-brand" />
             Missing from Care
           </CardTitle>
-          <Link href="/missing-from-care">
-            <Badge className="text-[9px] bg-red-100 text-red-700 border-0 rounded-full hover:bg-red-200 cursor-pointer">
-              View all
-            </Badge>
+          <Link href="/missing" className="text-xs text-brand hover:underline flex items-center gap-1">
+            Missing <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 space-y-2.5">
-        {/* KPI strip */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className={cn("rounded-xl p-2 text-center", active > 0 ? "bg-red-50" : "bg-emerald-50")}>
-            <Activity className={cn("h-3 w-3 mx-auto mb-0.5", active > 0 ? "text-red-500" : "text-emerald-500")} />
-            <div className={cn("text-sm font-bold tabular-nums", active > 0 ? "text-red-700" : "text-emerald-700")}>{active}</div>
-            <div className={cn("text-[9px]", active > 0 ? "text-red-500" : "text-emerald-500")}>Active</div>
+      <CardContent className="space-y-4">
+
+        {/* ── Summary strip ────────────────────────────────────────────── */}
+
+        <div className="grid grid-cols-4 gap-2">
+          <div className={cn("text-center rounded-lg p-2", p.activeEpisodes > 0 ? "bg-red-50" : "bg-green-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", p.activeEpisodes > 0 ? "text-red-600" : "text-green-600")}>
+              {p.activeEpisodes}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Active</p>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", unresolved > 0 ? "bg-[var(--cs-aria-gold-bg)]" : "bg-[var(--cs-surface)]")}>
-            <FileText className={cn("h-3 w-3 mx-auto mb-0.5", unresolved > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")} />
-            <div className={cn("text-sm font-bold tabular-nums", unresolved > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")}>{unresolved}</div>
-            <div className={cn("text-[9px]", unresolved > 0 ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")}>RHI Due</div>
+          <div className="text-center rounded-lg bg-gray-50 p-2">
+            <p className="text-lg font-bold tabular-nums">{p.totalEpisodes}</p>
+            <p className="text-[10px] text-muted-foreground">Total</p>
           </div>
-          <div className="rounded-xl bg-[var(--cs-surface)] p-2 text-center">
-            <MapPin className="h-3 w-3 text-[var(--cs-text-muted)] mx-auto mb-0.5" />
-            <div className="text-sm font-bold text-[var(--cs-text-secondary)] tabular-nums">{totalThisMonth}</div>
-            <div className="text-[9px] text-[var(--cs-text-muted)]">This Month</div>
+          <div className="text-center rounded-lg bg-gray-50 p-2">
+            <p className="text-lg font-bold tabular-nums">{Math.floor(p.avgDurationMinutes / 60)}h {p.avgDurationMinutes % 60}m</p>
+            <p className="text-[10px] text-muted-foreground">Avg Duration</p>
+          </div>
+          <div className="text-center rounded-lg p-2" style={{ background: p.returnInterviewCompletionRate >= 100 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", p.returnInterviewCompletionRate >= 100 ? "text-green-600" : "text-amber-600")}>
+              {p.returnInterviewCompletionRate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Interviews</p>
           </div>
         </div>
 
-        {/* Active missing alert */}
-        {active > 0 && (
-          <div className="rounded-lg bg-red-50 border border-red-200 p-2 flex items-start gap-2">
-            <AlertTriangle className="h-3 w-3 text-red-600 shrink-0 mt-0.5 animate-pulse" />
+        {/* ── Active alert ────────────────────────────────────────────── */}
+
+        {p.activeEpisodes > 0 && (
+          <div className="rounded-lg border-2 border-red-300 bg-red-50 p-3 flex items-start gap-2">
+            <Radio className="h-4 w-4 text-red-600 shrink-0 mt-0.5 animate-pulse" />
             <div>
-              <p className="text-[10px] font-semibold text-red-700">
-                {active} young person{active !== 1 ? "s" : ""} currently missing
-              </p>
-              <p className="text-[10px] text-red-600">
-                Police and placing LA must be notified immediately
-              </p>
+              <p className="text-xs font-bold text-red-800">ACTIVE MISSING EPISODE</p>
+              <p className="text-[10px] text-red-700">Immediate action required — check police notification and placing authority contact.</p>
             </div>
           </div>
         )}
 
-        {/* Active episodes list */}
-        {activeList.length > 0 && (
-          <div className="space-y-1">
-            <span className="text-[10px] font-medium text-red-500 px-1">Currently Missing</span>
-            {activeList.map((ep) => (
-              <Link key={ep.id} href="/missing-from-care">
-                <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-red-50/50 transition-colors bg-red-50/30">
-                  <MapPin className="h-3 w-3 text-red-500 shrink-0" />
-                  <span className="text-[11px] font-medium text-[var(--cs-text-secondary)] flex-1 truncate">
-                    {getYPName(ep.child_id)}
-                  </span>
-                  <span className="text-[9px] text-red-500 font-semibold shrink-0">
-                    {formatRelative(ep.date_missing)}
-                  </span>
+        {/* ── Recent episodes ─────────────────────────────────────────── */}
+
+        <div className="space-y-1.5">
+          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+            <UserSearch className="h-3 w-3" />
+            Recent Episodes
+          </p>
+          {RECENT_EPISODES.map((ep) => (
+            <div key={ep.id} className="rounded-lg border p-3 space-y-1 text-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{ep.child}</span>
+                  <Badge className={cn("text-[10px]", TYPE_COLOURS[ep.type] ?? "bg-gray-100 text-gray-600")}>
+                    {ep.type}
+                  </Badge>
+                  <Badge className={cn("text-[10px]", RISK_COLOURS[ep.riskLevel] ?? "")}>
+                    {ep.riskLevel}
+                  </Badge>
                 </div>
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {/* Contextual safeguarding risk */}
-        {contextualRisk > 0 && (
-          <div className="rounded-lg bg-orange-50 border border-orange-100 p-2 flex items-start gap-2">
-            <ShieldAlert className="h-3 w-3 text-orange-500 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-[10px] font-semibold text-orange-700">
-                {contextualRisk} episode{contextualRisk !== 1 ? "s" : ""} flagged contextual safeguarding risk
-              </p>
-              <p className="text-[10px] text-orange-600">
-                Strategy discussion may be required
+                <span className="text-muted-foreground">{ep.date}</span>
+              </div>
+              <p className="text-muted-foreground">
+                Duration: {ep.duration} · Return interview: {ep.returnInterview} · Trigger: {ep.trigger.replace("_", " ")}
               </p>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
 
-        {/* RHI outstanding */}
-        {unresolved > 0 && !hasAlert && (
-          <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-2 flex items-start gap-2">
-            <FileText className="h-3 w-3 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
-            <div>
-              <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)]">
-                {unresolved} return home interview{unresolved !== 1 ? "s" : ""} outstanding
-              </p>
-              <p className="text-[10px] text-[var(--cs-aria-gold)]">
-                RHIs must be completed within 72 hours of return
-              </p>
+        {/* ── Push/Pull factors ────────────────────────────────────────── */}
+
+        <div className="space-y-1.5">
+          <p className="text-xs font-semibold text-muted-foreground">Push/Pull Factor Analysis</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-2.5">
+              <p className="text-[10px] font-semibold text-blue-800 mb-1">Pull Factors</p>
+              {PUSH_PULL.pull.map((f, i) => (
+                <div key={i} className="flex items-center justify-between text-[10px] text-blue-700">
+                  <span>{f.factor.replace(/_/g, " ")}</span>
+                  <span className="font-bold">{f.count}</span>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-lg border border-orange-200 bg-orange-50 p-2.5">
+              <p className="text-[10px] font-semibold text-orange-800 mb-1">Push Factors</p>
+              {PUSH_PULL.push.length > 0 ? PUSH_PULL.push.map((f, i) => (
+                <div key={i} className="flex items-center justify-between text-[10px] text-orange-700">
+                  <span>{f.factor.replace(/_/g, " ")}</span>
+                  <span className="font-bold">{f.count}</span>
+                </div>
+              )) : (
+                <p className="text-[10px] text-orange-600 flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" /> None identified
+                </p>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
-        {/* All clear */}
-        {active === 0 && unresolved === 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-            <span className="text-[11px] font-medium text-emerald-700">
-              No active missing episodes
-            </span>
-          </div>
-        )}
+        {/* ── ARIA insights ────────────────────────────────────────────── */}
+
+        <div className="space-y-1.5">
+          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+            <Brain className="h-3 w-3" />
+            ARIA Missing Intelligence
+          </p>
+          {ARIA_INSIGHTS.map((insight, i) => (
+            <div
+              key={i}
+              className={cn(
+                "rounded border p-2.5 text-xs leading-relaxed",
+                i === 0 ? "border-red-200 bg-red-50 text-red-800"
+                  : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800"
+                  : "border-green-200 bg-green-50 text-green-800",
+              )}
+            >
+              {insight}
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

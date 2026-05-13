@@ -29,6 +29,8 @@ import { MedicationIntelligenceCard } from "@/components/dashboard/medication-in
 import { ContactEngagementCard } from "@/components/dashboard/contact-engagement-card";
 import { EducationIntelligenceCard } from "@/components/dashboard/education-intelligence-card";
 import { HealthWellbeingCard } from "@/components/dashboard/health-wellbeing-card";
+import { MissingFromCareCard } from "@/components/dashboard/missing-from-care-card";
+import { ComplaintsNotificationsCard } from "@/components/dashboard/complaints-notifications-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -912,6 +914,8 @@ export default function ManagerControlCentrePage() {
         <ContactEngagementCard />
         <EducationIntelligenceCard />
         <HealthWellbeingCard />
+        <MissingFromCareCard />
+        <ComplaintsNotificationsCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
