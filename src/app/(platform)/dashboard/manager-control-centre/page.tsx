@@ -93,6 +93,12 @@ import { LacReviewCard } from "@/components/dashboard/lac-review-card";
 import { StaffInductionCard } from "@/components/dashboard/staff-induction-card";
 import { DutyOfCandourCard } from "@/components/dashboard/duty-of-candour-card";
 import { AntiBullyingCard } from "@/components/dashboard/anti-bullying-card";
+import { ConsentManagementCard } from "@/components/dashboard/consent-management-card";
+import { SignificantEventsCard } from "@/components/dashboard/significant-events-card";
+import { LegalStatusCard } from "@/components/dashboard/legal-status-card";
+import { BodyMapCard } from "@/components/dashboard/body-map-card";
+import { KeyDocumentsCard } from "@/components/dashboard/key-documents-card";
+import { PlacementStabilityCard } from "@/components/dashboard/placement-stability-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1040,6 +1046,12 @@ export default function ManagerControlCentrePage() {
         <StaffInductionCard />
         <DutyOfCandourCard />
         <AntiBullyingCard />
+        <ConsentManagementCard />
+        <SignificantEventsCard />
+        <LegalStatusCard />
+        <BodyMapCard />
+        <KeyDocumentsCard />
+        <PlacementStabilityCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}

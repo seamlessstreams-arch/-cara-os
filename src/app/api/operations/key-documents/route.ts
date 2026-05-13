@@ -1,0 +1,64 @@
+import { NextRequest, NextResponse } from "next/server";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
+import {
+  listDocuments,
+  createDocument,
+  updateDocument,
+  DOCUMENT_TYPES,
+  DOCUMENT_STATUSES,
+  REVIEW_FREQUENCIES,
+} from "@/lib/services/key-documents-service";
+import type {
+  DocumentType,
+  DocumentStatus,
+} from "@/lib/services/key-documents-service";
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const homeId = searchParams.get("homeId");
+  const type = searchParams.get("type");
+
+  if (!homeId) return NextResponse.json({ error: "homeId required" }, { status: 400 });
+
+  if (type === "document_types") {
+    return NextResponse.json({ ok: true, data: DOCUMENT_TYPES });
+  }
+  if (type === "document_statuses") {
+    return NextResponse.json({ ok: true, data: DOCUMENT_STATUSES });
+  }
+  if (type === "review_frequencies") {
+    return NextResponse.json({ ok: true, data: REVIEW_FREQUENCIES });
+  }
+
+  if (!isSupabaseEnabled()) {
+    return NextResponse.json({ ok: true, data: [], persisted: false });
+  }
+  const result = await listDocuments(homeId, {
+    childId: searchParams.get("childId") ?? undefined,
+    documentType: (searchParams.get("documentType") ?? undefined) as DocumentType | undefined,
+    status: (searchParams.get("status") ?? undefined) as DocumentStatus | undefined,
+    limit: searchParams.get("limit") ? parseInt(searchParams.get("limit")!) : undefined,
+  });
+  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+  return NextResponse.json({ ok: true, data: result.data });
+}
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const { action, ...payload } = body;
+
+  if (action === "create_document") {
+    const result = await createDocument(payload);
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+    return NextResponse.json({ ok: true, data: result.data }, { status: 201 });
+  }
+  if (action === "update_document") {
+    const { id, ...updates } = payload;
+    if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+    const result = await updateDocument(id, updates);
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
+    return NextResponse.json({ ok: true, data: result.data });
+  }
+
+  return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+}

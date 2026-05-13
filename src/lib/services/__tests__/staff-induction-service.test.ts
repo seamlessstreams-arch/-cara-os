@@ -4,7 +4,7 @@
 // constant validation, and CRUD fallback under CHR 2015 Reg 33/34.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vitest";
 import {
   _testing,
   INDUCTION_CATEGORIES,
