@@ -39,6 +39,8 @@ import { TrainingIntelligenceCard } from "@/components/dashboard/training-intell
 import { FinanceIntelligenceCard } from "@/components/dashboard/finance-intelligence-card";
 import { LifeSkillsCard } from "@/components/dashboard/life-skills-card";
 import { NotifiableEventsCard } from "@/components/dashboard/notifiable-events-card";
+import { SCCIFEvaluationCard } from "@/components/dashboard/sccif-evaluation-card";
+import { VisitorsCard } from "@/components/dashboard/visitors-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -932,6 +934,8 @@ export default function ManagerControlCentrePage() {
         <FinanceIntelligenceCard />
         <LifeSkillsCard />
         <NotifiableEventsCard />
+        <SCCIFEvaluationCard />
+        <VisitorsCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
