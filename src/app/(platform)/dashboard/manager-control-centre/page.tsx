@@ -53,6 +53,8 @@ import { SaferRecruitmentCard } from "@/components/dashboard/safer-recruitment-c
 import { LeavingCareCard } from "@/components/dashboard/leaving-care-card";
 import { StaffDisciplinaryCard } from "@/components/dashboard/staff-disciplinary-card";
 import { SanctionsRewardsCard } from "@/components/dashboard/sanctions-rewards-card";
+import { ContextualSafeguardingCard } from "@/components/dashboard/contextual-safeguarding-card";
+import { DeprivationOfLibertyCard } from "@/components/dashboard/deprivation-of-liberty-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -960,6 +962,8 @@ export default function ManagerControlCentrePage() {
         <LeavingCareCard />
         <StaffDisciplinaryCard />
         <SanctionsRewardsCard />
+        <ContextualSafeguardingCard />
+        <DeprivationOfLibertyCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
