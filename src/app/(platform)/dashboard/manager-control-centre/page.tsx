@@ -69,6 +69,10 @@ import { Reg45ReportsCard } from "@/components/dashboard/reg45-reports-card";
 import { ChildrensGuideCard } from "@/components/dashboard/childrens-guide-card";
 import { TransitionPlanningCard } from "@/components/dashboard/transition-planning-card";
 import { ChildrensParticipationCard } from "@/components/dashboard/childrens-participation-card";
+import { FoodNutritionCard } from "@/components/dashboard/food-nutrition-card";
+import { PocketMoneyCard } from "@/components/dashboard/pocket-money-card";
+import { EnvironmentalSafetyCard } from "@/components/dashboard/environmental-safety-card";
+import { RecordsManagementCard } from "@/components/dashboard/records-management-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -992,6 +996,10 @@ export default function ManagerControlCentrePage() {
         <ChildrensGuideCard />
         <TransitionPlanningCard />
         <ChildrensParticipationCard />
+        <FoodNutritionCard />
+        <PocketMoneyCard />
+        <EnvironmentalSafetyCard />
+        <RecordsManagementCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
