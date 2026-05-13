@@ -99,6 +99,9 @@ import { LegalStatusCard } from "@/components/dashboard/legal-status-card";
 import { BodyMapCard } from "@/components/dashboard/body-map-card";
 import { KeyDocumentsCard } from "@/components/dashboard/key-documents-card";
 import { PlacementStabilityCard } from "@/components/dashboard/placement-stability-card";
+import { ProviderVisitsCard } from "@/components/dashboard/provider-visits-card";
+import { MatchingReferralCard } from "@/components/dashboard/matching-referral-card";
+import { IndependencePreparationCard } from "@/components/dashboard/independence-preparation-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1052,6 +1055,9 @@ export default function ManagerControlCentrePage() {
         <BodyMapCard />
         <KeyDocumentsCard />
         <PlacementStabilityCard />
+        <ProviderVisitsCard />
+        <MatchingReferralCard />
+        <IndependencePreparationCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
