@@ -51,6 +51,8 @@ import { PossessionsCard } from "@/components/dashboard/possessions-card";
 import { EmergencyCard } from "@/components/dashboard/emergency-card";
 import { SaferRecruitmentCard } from "@/components/dashboard/safer-recruitment-card";
 import { LeavingCareCard } from "@/components/dashboard/leaving-care-card";
+import { StaffDisciplinaryCard } from "@/components/dashboard/staff-disciplinary-card";
+import { SanctionsRewardsCard } from "@/components/dashboard/sanctions-rewards-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -956,6 +958,8 @@ export default function ManagerControlCentrePage() {
         <EmergencyCard />
         <SaferRecruitmentCard />
         <LeavingCareCard />
+        <StaffDisciplinaryCard />
+        <SanctionsRewardsCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
