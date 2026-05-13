@@ -33,6 +33,10 @@ import { MissingFromCareCard } from "@/components/dashboard/missing-from-care-ca
 import { ComplaintsNotificationsCard } from "@/components/dashboard/complaints-notifications-card";
 import { PlacementIntelligenceCard } from "@/components/dashboard/placement-intelligence-card";
 import { BehaviourIntelligenceCard } from "@/components/dashboard/behaviour-intelligence-card";
+import { RotaIntelligenceCard } from "@/components/dashboard/rota-intelligence-card";
+import { PremisesIntelligenceCard } from "@/components/dashboard/premises-intelligence-card";
+import { TrainingIntelligenceCard } from "@/components/dashboard/training-intelligence-card";
+import { FinanceIntelligenceCard } from "@/components/dashboard/finance-intelligence-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -920,6 +924,10 @@ export default function ManagerControlCentrePage() {
         <ComplaintsNotificationsCard />
         <PlacementIntelligenceCard />
         <BehaviourIntelligenceCard />
+        <RotaIntelligenceCard />
+        <PremisesIntelligenceCard />
+        <TrainingIntelligenceCard />
+        <FinanceIntelligenceCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
