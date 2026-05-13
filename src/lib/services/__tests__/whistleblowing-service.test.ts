@@ -797,6 +797,8 @@ describe("computeWhistleblowingMetrics", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("identifyWhistleblowingAlerts", () => {
+  const now = new Date(new Date().toISOString().split("T")[0]);
+
   it("returns empty array for empty inputs except no_policy_review alert", () => {
     const alerts = identifyWhistleblowingAlerts([], []);
     // With no policy reviews, there should be a no_policy_review alert
@@ -991,7 +993,7 @@ describe("identifyWhistleblowingAlerts", () => {
         makeReport({ id: "r1", risk_level: "high", status: "received", disclosure_date: daysAgo(15) }),
       ];
       const reviews = [makePolicyReview()];
-      const alerts = identifyWhistleblowingAlerts(reports, reviews);
+      const alerts = identifyWhistleblowingAlerts(reports, reviews, now);
       const highRisk = alerts.find((a) => a.type === "high_risk_open");
       expect(highRisk?.message).toContain("15 days");
     });
@@ -1087,7 +1089,7 @@ describe("identifyWhistleblowingAlerts", () => {
         }),
       ];
       const reviews = [makePolicyReview()];
-      const alerts = identifyWhistleblowingAlerts(reports, reviews);
+      const alerts = identifyWhistleblowingAlerts(reports, reviews, now);
       const prolonged = alerts.find((a) => a.type === "investigation_prolonged");
       expect(prolonged?.message).toContain("45 days");
     });
@@ -1143,7 +1145,7 @@ describe("identifyWhistleblowingAlerts", () => {
         makeReport({ id: "r1", follow_up_date: daysAgo(10), follow_up_completed: false }),
       ];
       const reviews = [makePolicyReview()];
-      const alerts = identifyWhistleblowingAlerts(reports, reviews);
+      const alerts = identifyWhistleblowingAlerts(reports, reviews, now);
       const overdue = alerts.find((a) => a.type === "follow_up_overdue");
       expect(overdue?.message).toContain("10 days overdue");
     });

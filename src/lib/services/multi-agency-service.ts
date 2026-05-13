@@ -365,6 +365,7 @@ export function identifyMultiAgencyAlerts(
   contacts: ProfessionalContact[],
   lacReviews: LACReview[],
   meetings: ProfessionalMeeting[],
+  now: Date = new Date(),
 ): {
   type: string;
   severity: "critical" | "high" | "medium";
@@ -377,8 +378,6 @@ export function identifyMultiAgencyAlerts(
     message: string;
     id: string;
   }[] = [];
-
-  const now = new Date();
   const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
 
   // ── Contact alerts ───────────────────────────────────────────────────

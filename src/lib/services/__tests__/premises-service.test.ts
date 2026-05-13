@@ -512,6 +512,8 @@ describe("computeMaintenanceSummary", () => {
 // ── identifyPremisesAlerts ──────────────────────────────────────────────────
 
 describe("identifyPremisesAlerts", () => {
+  const now = new Date(new Date().toISOString().split("T")[0]);
+
   it("returns no alerts when all statutory checks are current and no issues", () => {
     // Provide recent checks for all 12 types
     const checks = CHECK_TYPES.map((ct, i) =>
@@ -628,7 +630,7 @@ describe("identifyPremisesAlerts", () => {
     const checks = CHECK_TYPES.map((ct, i) =>
       makePremisesCheck({ id: `c-${i}`, check_type: ct.type, check_date: daysAgo(1) }),
     );
-    const result = identifyPremisesAlerts(checks, [req]);
+    const result = identifyPremisesAlerts(checks, [req], now);
     const urgentAlerts = result.filter((a) => a.type === "urgent_maintenance");
     expect(urgentAlerts).toHaveLength(1);
     expect(urgentAlerts[0].severity).toBe("high");

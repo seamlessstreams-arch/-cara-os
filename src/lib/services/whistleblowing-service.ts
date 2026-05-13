@@ -291,6 +291,7 @@ export function computeWhistleblowingMetrics(
 export function identifyWhistleblowingAlerts(
   reports: WhistleblowingReport[],
   policyReviews: WhistleblowingPolicyReview[],
+  now: Date = new Date(),
 ): {
   type: string;
   severity: "critical" | "high" | "medium" | "low";
@@ -303,7 +304,6 @@ export function identifyWhistleblowingAlerts(
     message: string;
     id: string;
   }[] = [];
-  const now = new Date();
 
   const fortyEightHoursMs = 48 * 60 * 60 * 1000;
   const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;

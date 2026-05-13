@@ -890,6 +890,8 @@ describe("computeMultiAgencyMetrics", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("identifyMultiAgencyAlerts", () => {
+  const now = new Date(new Date().toISOString().split("T")[0]);
+
   it("returns empty array for empty inputs", () => {
     const alerts = identifyMultiAgencyAlerts([], [], []);
     expect(alerts).toHaveLength(0);
@@ -1068,7 +1070,7 @@ describe("identifyMultiAgencyAlerts", () => {
       const contacts = [
         makeContact({ id: "c1", role: "social_worker", status: "active", next_contact_due: daysAgo(20), professional_name: "Ms. Adams" }),
       ];
-      const alerts = identifyMultiAgencyAlerts(contacts, [], []);
+      const alerts = identifyMultiAgencyAlerts(contacts, [], [], now);
       const overdue = alerts.find((a) => a.type === "sw_contact_overdue");
       expect(overdue?.message).toContain("20 days overdue");
     });
@@ -1194,7 +1196,7 @@ describe("identifyMultiAgencyAlerts", () => {
       const reviews = [
         makeReview({ id: "r1", status: "scheduled", review_date: daysAgo(10) }),
       ];
-      const alerts = identifyMultiAgencyAlerts([], reviews, []);
+      const alerts = identifyMultiAgencyAlerts([], reviews, [], now);
       const overdue = alerts.find((a) => a.type === "lac_review_overdue");
       expect(overdue?.message).toContain("10 days overdue");
     });
@@ -1424,7 +1426,7 @@ describe("identifyMultiAgencyAlerts", () => {
       const meetings = [
         makeMeeting({ id: "m1", status: "completed", follow_up_date: daysAgo(10), follow_up_completed: false, meeting_date: daysAgo(20) }),
       ];
-      const alerts = identifyMultiAgencyAlerts([], [], meetings);
+      const alerts = identifyMultiAgencyAlerts([], [], meetings, now);
       const overdue = alerts.find((a) => a.type === "follow_up_overdue");
       expect(overdue?.message).toContain("10 days overdue");
     });

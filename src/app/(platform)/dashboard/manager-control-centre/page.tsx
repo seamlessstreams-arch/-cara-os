@@ -85,6 +85,11 @@ import { CarePlanningCard } from "@/components/dashboard/care-planning-card";
 import { FamilyEngagementCard } from "@/components/dashboard/family-engagement-card";
 import { CommissioningReferralsCard } from "@/components/dashboard/commissioning-referrals-card";
 import { ChildrensRightsCard } from "@/components/dashboard/childrens-rights-card";
+import { PracticeLearningCard } from "@/components/dashboard/practice-learning-card";
+import { StaffAbsenceCard } from "@/components/dashboard/staff-absence-card";
+import { ActivityPlanningCard } from "@/components/dashboard/activity-planning-card";
+import { OnlineSafetyCard } from "@/components/dashboard/online-safety-card";
+import { LacReviewCard } from "@/components/dashboard/lac-review-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1024,6 +1029,11 @@ export default function ManagerControlCentrePage() {
         <FamilyEngagementCard />
         <CommissioningReferralsCard />
         <ChildrensRightsCard />
+        <PracticeLearningCard />
+        <StaffAbsenceCard />
+        <ActivityPlanningCard />
+        <OnlineSafetyCard />
+        <LacReviewCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}

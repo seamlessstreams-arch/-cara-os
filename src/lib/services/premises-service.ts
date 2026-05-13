@@ -279,9 +279,9 @@ export function computeMaintenanceSummary(requests: MaintenanceRequest[]): {
 export function identifyPremisesAlerts(
   checks: PremisesCheck[],
   requests: MaintenanceRequest[],
+  now: Date = new Date(),
 ): { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] {
   const alerts: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [];
-  const now = new Date();
   const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
   const FIRE_RELATED_TYPES = [

@@ -944,7 +944,7 @@ describe("computeGuideMetrics", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("identifyGuideAlerts", () => {
-  const now = new Date();
+  const now = new Date(new Date().toISOString().split("T")[0]);
 
   it("returns no alerts for a fully compliant setup", () => {
     const guide = makeGuide({ status: "active" });

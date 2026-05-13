@@ -751,7 +751,7 @@ describe("computeParticipationMetrics", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("identifyParticipationAlerts", () => {
-  const now = new Date();
+  const now = new Date(new Date().toISOString().split("T")[0]);
 
   // ── no_recent_house_meeting ───────────────────────────────────────────
 

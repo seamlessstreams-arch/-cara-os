@@ -795,7 +795,7 @@ describe("computeTransitionMetrics", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("identifyTransitionAlerts", () => {
-  const now = new Date();
+  const now = new Date(new Date().toISOString().split("T")[0]);
 
   // ── No alerts ────────────────────────────────────────────────────────
 

@@ -810,7 +810,7 @@ describe("identifyAdvocacyAlerts", () => {
     });
 
     it("includes days elapsed in unallocated message", () => {
-      const now = new Date();
+      const now = new Date(new Date().toISOString().split("T")[0]);
       const referrals = [
         makeReferral({ id: "r1", status: "referred", allocated_date: null, referral_date: daysAgo(10) }),
       ];
@@ -919,7 +919,7 @@ describe("identifyAdvocacyAlerts", () => {
     });
 
     it("includes days elapsed in no contact message", () => {
-      const now = new Date();
+      const now = new Date(new Date().toISOString().split("T")[0]);
       const referrals = [
         makeReferral({ id: "r1", status: "active", last_contact_date: daysAgo(45), referral_date: daysAgo(60) }),
       ];

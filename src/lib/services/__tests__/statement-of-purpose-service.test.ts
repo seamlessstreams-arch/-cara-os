@@ -821,7 +821,7 @@ describe("computeStatementMetrics", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("identifyStatementAlerts", () => {
-  const now = new Date();
+  const now = new Date(new Date().toISOString().split("T")[0]);
 
   it("returns empty array when no data", () => {
     const alerts = identifyStatementAlerts([], [], [], now);
@@ -1278,7 +1278,7 @@ describe("identifyStatementAlerts", () => {
     const stmts = [
       makeStatement({
         status: "draft",
-        created_at: daysAgoISO(45),
+        created_at: daysAgo(45),
       }),
     ];
     const alerts = identifyStatementAlerts(stmts, [], [], now);
@@ -1322,7 +1322,7 @@ describe("identifyStatementAlerts", () => {
     const stmts = [
       makeStatement({
         status: "draft",
-        created_at: daysAgoISO(60),
+        created_at: daysAgo(60),
       }),
     ];
     const alerts = identifyStatementAlerts(stmts, [], [], now);
