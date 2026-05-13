@@ -126,6 +126,9 @@ import { RespiteShortBreaksCard } from "@/components/dashboard/respite-short-bre
 import { MedicationAdministrationCard } from "@/components/dashboard/medication-administration-card";
 import { StaffSupervisionSessionsCard } from "@/components/dashboard/staff-supervision-sessions-card";
 import { FireSafetyCard } from "@/components/dashboard/fire-safety-card";
+import { SecureStorageCard } from "@/components/dashboard/secure-storage-card";
+import { ComplaintsInvestigationCard } from "@/components/dashboard/complaints-investigation-card";
+import { WorkforceDiversityCard } from "@/components/dashboard/workforce-diversity-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1106,6 +1109,9 @@ export default function ManagerControlCentrePage() {
         <MedicationAdministrationCard />
         <StaffSupervisionSessionsCard />
         <FireSafetyCard />
+        <SecureStorageCard />
+        <ComplaintsInvestigationCard />
+        <WorkforceDiversityCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
