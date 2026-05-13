@@ -47,6 +47,8 @@ import { AppraisalsCard } from "@/components/dashboard/appraisals-card";
 import { MeetingsCard } from "@/components/dashboard/meetings-card";
 import { RestraintCard } from "@/components/dashboard/restraint-card";
 import { QualityAssuranceCard } from "@/components/dashboard/quality-assurance-card";
+import { PossessionsCard } from "@/components/dashboard/possessions-card";
+import { EmergencyCard } from "@/components/dashboard/emergency-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -948,6 +950,8 @@ export default function ManagerControlCentrePage() {
         <MeetingsCard />
         <RestraintCard />
         <QualityAssuranceCard />
+        <PossessionsCard />
+        <EmergencyCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
