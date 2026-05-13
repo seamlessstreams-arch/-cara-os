@@ -23,6 +23,7 @@ import { SupervisionIntelligenceCard } from "@/components/dashboard/supervision-
 import { RegulatoryReportingCard } from "@/components/dashboard/regulatory-reporting-card";
 import { RiskIntelligenceCard } from "@/components/dashboard/risk-intelligence-card";
 import { IncidentAnalyticsCard } from "@/components/dashboard/incident-analytics-card";
+import { RecordingQualityCard } from "@/components/dashboard/recording-quality-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -900,6 +901,7 @@ export default function ManagerControlCentrePage() {
         <RegulatoryReportingCard />
         <RiskIntelligenceCard />
         <IncidentAnalyticsCard />
+        <RecordingQualityCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
