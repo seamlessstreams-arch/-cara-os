@@ -165,6 +165,9 @@ import { RoomTemperatureCard } from "@/components/dashboard/room-temperature-car
 import { MedicationAuditCard } from "@/components/dashboard/medication-audit-card";
 import { ChildrensAbsenceCard } from "@/components/dashboard/childrens-absence-card";
 import { HomeImprovementCard } from "@/components/dashboard/home-improvement-card";
+import { CleaningScheduleCard } from "@/components/dashboard/cleaning-schedule-card";
+import { KeyHoldingCard } from "@/components/dashboard/key-holding-card";
+import { PersonalHygieneCard } from "@/components/dashboard/personal-hygiene-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1184,6 +1187,9 @@ export default function ManagerControlCentrePage() {
         <MedicationAuditCard />
         <ChildrensAbsenceCard />
         <HomeImprovementCard />
+        <CleaningScheduleCard />
+        <KeyHoldingCard />
+        <PersonalHygieneCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
