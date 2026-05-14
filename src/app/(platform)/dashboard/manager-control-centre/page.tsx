@@ -171,6 +171,9 @@ import { PersonalHygieneCard } from "@/components/dashboard/personal-hygiene-car
 import { MissingPersonRiskCard } from "@/components/dashboard/missing-person-risk-card";
 import { SafeguardingReferralCard } from "@/components/dashboard/safeguarding-referral-card";
 import { MedicationStorageCard } from "@/components/dashboard/medication-storage-card";
+import { AdmissionAssessmentCard } from "@/components/dashboard/admission-assessment-card";
+import { StaffCompetencyAssessmentCard } from "@/components/dashboard/staff-competency-assessment-card";
+import { EnvironmentalAuditCard } from "@/components/dashboard/environmental-audit-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1196,6 +1199,9 @@ export default function ManagerControlCentrePage() {
         <MissingPersonRiskCard />
         <SafeguardingReferralCard />
         <MedicationStorageCard />
+        <AdmissionAssessmentCard />
+        <StaffCompetencyAssessmentCard />
+        <EnvironmentalAuditCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
