@@ -231,6 +231,9 @@ import { RestorativeJusticePracticeCard } from "@/components/dashboard/restorati
 import { LeisureRecreationActivitiesCard } from "@/components/dashboard/leisure-recreation-activities-card";
 import { HomeworkAcademicSupportCard } from "@/components/dashboard/homework-academic-support-card";
 import { AdvocacyRepresentationCard } from "@/components/dashboard/advocacy-representation-card";
+import { CelebrationMilestonesCard } from "@/components/dashboard/celebration-milestones-card";
+import { WorkExperienceEmploymentCard } from "@/components/dashboard/work-experience-employment-card";
+import { DeviceScreenTimeMonitoringCard } from "@/components/dashboard/device-screen-time-monitoring-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1316,6 +1319,9 @@ export default function ManagerControlCentrePage() {
         <LeisureRecreationActivitiesCard />
         <HomeworkAcademicSupportCard />
         <AdvocacyRepresentationCard />
+        <CelebrationMilestonesCard />
+        <WorkExperienceEmploymentCard />
+        <DeviceScreenTimeMonitoringCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
