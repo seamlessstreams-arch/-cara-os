@@ -213,6 +213,9 @@ import { ChildDevelopmentMilestoneCard } from "@/components/dashboard/child-deve
 import { VisitorFeedbackCollectionCard } from "@/components/dashboard/visitor-feedback-collection-card";
 import { StaffShiftPatternMonitoringCard } from "@/components/dashboard/staff-shift-pattern-monitoring-card";
 import { ChildDigitalWellbeingCard } from "@/components/dashboard/child-digital-wellbeing-card";
+import { FamilyEngagementTrackingCard } from "@/components/dashboard/family-engagement-tracking-card";
+import { TransitionPlanningReadinessCard } from "@/components/dashboard/transition-planning-readiness-card";
+import { KeyWorkerAllocationCard } from "@/components/dashboard/key-worker-allocation-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1280,6 +1283,9 @@ export default function ManagerControlCentrePage() {
         <VisitorFeedbackCollectionCard />
         <StaffShiftPatternMonitoringCard />
         <ChildDigitalWellbeingCard />
+        <FamilyEngagementTrackingCard />
+        <TransitionPlanningReadinessCard />
+        <KeyWorkerAllocationCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
