@@ -168,6 +168,9 @@ import { HomeImprovementCard } from "@/components/dashboard/home-improvement-car
 import { CleaningScheduleCard } from "@/components/dashboard/cleaning-schedule-card";
 import { KeyHoldingCard } from "@/components/dashboard/key-holding-card";
 import { PersonalHygieneCard } from "@/components/dashboard/personal-hygiene-card";
+import { MissingPersonRiskCard } from "@/components/dashboard/missing-person-risk-card";
+import { SafeguardingReferralCard } from "@/components/dashboard/safeguarding-referral-card";
+import { MedicationStorageCard } from "@/components/dashboard/medication-storage-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1190,6 +1193,9 @@ export default function ManagerControlCentrePage() {
         <CleaningScheduleCard />
         <KeyHoldingCard />
         <PersonalHygieneCard />
+        <MissingPersonRiskCard />
+        <SafeguardingReferralCard />
+        <MedicationStorageCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
