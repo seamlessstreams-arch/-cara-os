@@ -301,6 +301,9 @@ import { HomeLegionellaRiskAssessmentCard } from "@/components/dashboard/home-le
 import { ChildBereavementSupportCard } from "@/components/dashboard/child-bereavement-support-card";
 import { StaffMandatoryRefresherTrainingCard } from "@/components/dashboard/staff-mandatory-refresher-training-card";
 import { HomeAsbestosManagementCard } from "@/components/dashboard/home-asbestos-management-card";
+import { ChildGangsAffiliationRiskCard } from "@/components/dashboard/child-gangs-affiliation-risk-card";
+import { StaffAgencyWorkerComplianceCard } from "@/components/dashboard/staff-agency-worker-compliance-card";
+import { HomeRadonTestingCard } from "@/components/dashboard/home-radon-testing-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1456,6 +1459,9 @@ export default function ManagerControlCentrePage() {
         <ChildBereavementSupportCard />
         <StaffMandatoryRefresherTrainingCard />
         <HomeAsbestosManagementCard />
+        <ChildGangsAffiliationRiskCard />
+        <StaffAgencyWorkerComplianceCard />
+        <HomeRadonTestingCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
