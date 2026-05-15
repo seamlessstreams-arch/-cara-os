@@ -313,6 +313,9 @@ import { HomeGasSafetyCard } from "@/components/dashboard/home-gas-safety-card";
 import { ChildModernSlaveryRiskCard } from "@/components/dashboard/child-modern-slavery-risk-card";
 import { StaffPayrollComplianceCard } from "@/components/dashboard/staff-payroll-compliance-card";
 import { HomeLiftEquipmentSafetyCard } from "@/components/dashboard/home-lift-equipment-safety-card";
+import { ChildHonourBasedAbuseRiskCard } from "@/components/dashboard/child-honour-based-abuse-risk-card";
+import { StaffExitInterviewManagementCard } from "@/components/dashboard/staff-exit-interview-management-card";
+import { HomeWaterHygieneManagementCard } from "@/components/dashboard/home-water-hygiene-management-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1480,6 +1483,9 @@ export default function ManagerControlCentrePage() {
         <ChildModernSlaveryRiskCard />
         <StaffPayrollComplianceCard />
         <HomeLiftEquipmentSafetyCard />
+        <ChildHonourBasedAbuseRiskCard />
+        <StaffExitInterviewManagementCard />
+        <HomeWaterHygieneManagementCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
