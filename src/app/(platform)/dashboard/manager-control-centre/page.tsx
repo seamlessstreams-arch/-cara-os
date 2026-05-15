@@ -262,6 +262,9 @@ import { ProfessionalNetworkDirectoryCard } from "@/components/dashboard/profess
 import { MenuPlanningDietaryCard } from "@/components/dashboard/menu-planning-dietary-card";
 import { EhcpSendMonitoringCard } from "@/components/dashboard/ehcp-send-monitoring-card";
 import { PlacementMatchingAssessmentCard } from "@/components/dashboard/placement-matching-assessment-card";
+import { Reg44IndependentVisitorCard } from "@/components/dashboard/reg44-independent-visitor-card";
+import { EmotionalWellbeingOutcomeCard } from "@/components/dashboard/emotional-wellbeing-outcome-card";
+import { ComplianceCertificateCard } from "@/components/dashboard/compliance-certificate-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1378,6 +1381,9 @@ export default function ManagerControlCentrePage() {
         <MenuPlanningDietaryCard />
         <EhcpSendMonitoringCard />
         <PlacementMatchingAssessmentCard />
+        <Reg44IndependentVisitorCard />
+        <EmotionalWellbeingOutcomeCard />
+        <ComplianceCertificateCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
