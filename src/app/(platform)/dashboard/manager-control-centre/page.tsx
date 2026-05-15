@@ -289,6 +289,9 @@ import { HomeInsuranceComplianceCard } from "@/components/dashboard/home-insuran
 import { ChildVoiceParticipationTrackingCard } from "@/components/dashboard/child-voice-participation-tracking-card";
 import { StaffCodeOfConductComplianceCard } from "@/components/dashboard/staff-code-of-conduct-compliance-card";
 import { HomeEnergyEfficiencyCard } from "@/components/dashboard/home-energy-efficiency-card";
+import { ChildRadicalisationPreventionCard } from "@/components/dashboard/child-radicalisation-prevention-card";
+import { StaffNvqQualificationTrackingCard } from "@/components/dashboard/staff-nvq-qualification-tracking-card";
+import { HomeAccessibilityAssessmentCard } from "@/components/dashboard/home-accessibility-assessment-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1432,6 +1435,9 @@ export default function ManagerControlCentrePage() {
         <ChildVoiceParticipationTrackingCard />
         <StaffCodeOfConductComplianceCard />
         <HomeEnergyEfficiencyCard />
+        <ChildRadicalisationPreventionCard />
+        <StaffNvqQualificationTrackingCard />
+        <HomeAccessibilityAssessmentCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
