@@ -307,6 +307,9 @@ import { HomeRadonTestingCard } from "@/components/dashboard/home-radon-testing-
 import { ChildFgmRiskAssessmentCard } from "@/components/dashboard/child-fgm-risk-assessment-card";
 import { StaffProfessionalRegistrationCard } from "@/components/dashboard/staff-professional-registration-card";
 import { HomeElectricalSafetyCard } from "@/components/dashboard/home-electrical-safety-card";
+import { ChildForcedMarriageRiskCard } from "@/components/dashboard/child-forced-marriage-risk-card";
+import { StaffSecondmentManagementCard } from "@/components/dashboard/staff-secondment-management-card";
+import { HomeGasSafetyCard } from "@/components/dashboard/home-gas-safety-card";
 import {
   useAttentionItems,
   useUpdateAttentionItem,
@@ -1468,6 +1471,9 @@ export default function ManagerControlCentrePage() {
         <ChildFgmRiskAssessmentCard />
         <StaffProfessionalRegistrationCard />
         <HomeElectricalSafetyCard />
+        <ChildForcedMarriageRiskCard />
+        <StaffSecondmentManagementCard />
+        <HomeGasSafetyCard />
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────────── */}
