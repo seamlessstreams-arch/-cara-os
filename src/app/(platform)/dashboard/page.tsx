@@ -20,6 +20,7 @@ import { AriaSupervisionIntelligence } from "@/components/aria/aria-supervision-
 import AriaMedicationIntelligence from "@/components/aria/aria-medication-intelligence";
 import AriaStaffingAdequacy from "@/components/aria/aria-staffing-adequacy";
 import AriaTrainingCompliance from "@/components/aria/aria-training-compliance";
+import AriaIncidentAnalysis from "@/components/aria/aria-incident-analysis";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { YoungPeopleStrip } from "@/components/dashboard/young-people-strip";
 import { QuickActionsDial } from "@/components/dashboard/quick-actions-dial";
@@ -1140,6 +1141,7 @@ export default function DashboardPage() {
                     <AriaMedicationIntelligence />
                     <AriaStaffingAdequacy />
                     <AriaTrainingCompliance />
+                    <AriaIncidentAnalysis />
                     <AriaDailyIntelligence />
                     <AriaDashboardPanel />
                     <IntelligenceBriefWidget />
