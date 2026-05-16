@@ -530,6 +530,8 @@ export function computeAlerts(
     record_id?: string;
   }[] = [];
 
+  const total = rows.length;
+
   // Critical: Smoke-free premises non-compliance
   for (const r of rows) {
     if (!r.smoke_free_premises_compliant) {

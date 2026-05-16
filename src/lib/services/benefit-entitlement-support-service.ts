@@ -489,6 +489,8 @@ export function computeAlerts(
     record_id?: string;
   }[] = [];
 
+  const total = rows.length;
+
   // Critical: Overdue benefit reviews
   const today = new Date();
   for (const r of rows) {
