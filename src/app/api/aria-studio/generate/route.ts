@@ -1,48 +1,131 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// API: /api/aria-studio/generate — Generate an ARIA Studio artifact
+// API: /api/aria-studio/generate — Governed AI Content Generation
+//
+// Safety-checked, profile-aware generation pipeline.
+// ARIA drafts. Humans decide. Only authorised humans approve and commit.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { generateArtifact } from "@/lib/aria-studio/generation.service";
+import { generate } from "@/lib/aria-studio/generator";
+import { generateRequestSchema } from "@/lib/aria-studio/schemas";
 import { getUserIdFromRequest, getUserRoleFromRequest } from "@/lib/auth-guard";
-import { ARIA_STUDIO_ARTIFACT_TYPES } from "@/types/aria-studio";
-import type { AriaStudioGenerateRequest } from "@/types/aria-studio";
+import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { writeStudioAuditLog } from "@/lib/aria-studio/audit.service";
+import type { GenerationRequest } from "@/lib/aria-studio/types";
+
+type SB = any;
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const userId = getUserIdFromRequest(req);
     const role = getUserRoleFromRequest(req);
+    const organisationId = process.env.SUPABASE_ORG_ID ?? "org_default";
     const homeId = process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 
-    const artifactType = body.artifact_type;
-    if (!artifactType || !ARIA_STUDIO_ARTIFACT_TYPES.includes(artifactType)) {
+    // ── Validate input ──────────────────────────────────────────────────────
+    const parsed = generateRequestSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: `Invalid artifact_type. Must be one of: ${ARIA_STUDIO_ARTIFACT_TYPES.join(", ")}` },
+        { error: "Validation failed", issues: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    const request: AriaStudioGenerateRequest = {
-      artifact_type: artifactType,
-      child_id: body.child_id,
-      home_id: body.home_id ?? homeId,
-      staff_id: body.staff_id,
-      incident_id: body.incident_id,
-      framework: body.framework,
-      tone: body.tone,
-      creative_mode: body.creative_mode,
-      source_ids: body.source_ids,
-      date_range: body.date_range,
-      additional_context: body.additional_context,
+    const input = parsed.data;
+
+    // ── Build generation request ────────────────────────────────────────────
+    const request: GenerationRequest = {
+      organisationId,
+      homeId,
+      userId,
+      childId: input.childId,
+      generationType: input.generationType,
+      title: input.title,
+      brief: input.brief,
+      tone: input.tone,
+      audience: input.audience ?? "staff",
+      additionalContext: input.additionalContext,
     };
 
-    const result = await generateArtifact(request, { userId, role, homeId });
-    return NextResponse.json(result, { status: 201 });
+    // ── Generate (safety-checked pipeline) ──────────────────────────────────
+    const result = await generate(request);
+
+    // ── Persist to database ─────────────────────────────────────────────────
+    let generationId: string | undefined;
+    const sb = createServerClient();
+
+    if (sb && isSupabaseEnabled() && result.output) {
+      const { data: inserted } = await (sb.from("aria_studio_generations") as SB)
+        .insert({
+          organisation_id: organisationId,
+          home_id: homeId,
+          child_id: input.childId ?? null,
+          generation_type: input.generationType,
+          title: input.title,
+          brief: input.brief,
+          tone: input.tone,
+          audience: input.audience ?? "staff",
+          status: result.success ? "draft" : "rejected",
+          output_json: result.output,
+          safety_json: result.safety,
+          profile_json: result.profile ?? null,
+          model: result.model,
+          created_by: userId,
+          error: result.error ?? null,
+        })
+        .select("id")
+        .single();
+
+      generationId = inserted?.id;
+    }
+
+    // ── Audit trail ─────────────────────────────────────────────────────────
+    await writeStudioAuditLog({
+      home_id: homeId,
+      actor_id: userId,
+      action_type: result.success ? "artifact_generated" : "artifact_rejected",
+      artifact_id: generationId ?? null,
+      prompt_summary: `${input.generationType}: ${input.title}`,
+      model_name: result.model,
+      request_metadata: { tone: input.tone, audience: input.audience, hasChild: !!input.childId },
+      response_metadata: { safety: result.safety, success: result.success },
+    });
+
+    // ── Return response ─────────────────────────────────────────────────────
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.error,
+          safety: result.safety,
+          generationId,
+        },
+        { status: 422 },
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        generationId,
+        output: result.output,
+        safety: result.safety,
+        profile: result.profile ? {
+          childName: result.profile.preferredName ?? result.profile.childName,
+          age: result.profile.age,
+          strengths: result.profile.strengths,
+          needs: result.profile.needs,
+          riskFlags: result.profile.riskFlags,
+        } : undefined,
+        model: result.model,
+      },
+      { status: 201 },
+    );
   } catch (err) {
     console.error("[aria-studio/generate] Error:", err);
     return NextResponse.json(
-      { error: "Failed to generate artifact", detail: String(err) },
+      { error: "Failed to generate content", detail: err instanceof Error ? err.message : String(err) },
       { status: 500 },
     );
   }
