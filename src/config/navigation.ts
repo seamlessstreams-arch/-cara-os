@@ -558,6 +558,7 @@ export const NAV_GROUPS: NavGroup[] = [
     module: "dashboard",
     children: [
       { label: "Intelligence Centre", href: "/dashboard/aria",                       icon: "Wand2",       module: "dashboard"    },
+      { label: "Aria Orchestrator",  href: "/dashboard/aria-intelligence",            icon: "Brain",       module: "dashboard"    },
       { label: "ARIA Studio",          href: "/aria-studio",                          icon: "Sparkles",    module: "dashboard"    },
       { label: "Home Dynamics",        href: "/aria-studio/home-dynamics",            icon: "Activity",    module: "dashboard"    },
       { label: "Ofsted Readiness",     href: "/aria-studio/ofsted-readiness",         icon: "ShieldCheck", module: "dashboard"    },
