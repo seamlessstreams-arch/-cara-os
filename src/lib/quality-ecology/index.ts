@@ -74,3 +74,21 @@ export type {
   AuditFilter,
   AuditSummary,
 } from "./audit-trail";
+
+export {
+  selectSamples,
+  submitQAReview,
+  calculateQAMetrics,
+} from "./qa-sampling";
+
+export type {
+  QASampleSelection,
+  SampleReason,
+  QAReviewInput,
+  QAReviewResult,
+  QAReview,
+  QualityBand,
+  QAOutcome,
+  StaffQAProfile,
+  QAMetrics,
+} from "./qa-sampling";
