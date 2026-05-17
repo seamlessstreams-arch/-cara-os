@@ -22,6 +22,25 @@ export type {
 } from "./dashboard-config";
 
 export {
+  requestBreakGlass,
+  isBreakGlassActive,
+  expireBreakGlass,
+  reviewBreakGlass,
+  logBreakGlassAction,
+  getBreakGlassReasonLabel,
+  getUnreviewedEvents,
+  getOverdueReviews,
+} from "./break-glass";
+export type {
+  BreakGlassReason,
+  BreakGlassStatus,
+  BreakGlassRequest,
+  BreakGlassEvent,
+  BreakGlassResult,
+  BreakGlassReviewResult,
+} from "./break-glass";
+
+export {
   ROLE_HIERARCHY,
   isAtLeast,
   MAX_APPROVAL_LEVEL,
