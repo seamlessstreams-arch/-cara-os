@@ -1,0 +1,1 @@
+export { BehaviourDashboardWidget } from "./BehaviourDashboardWidget";
