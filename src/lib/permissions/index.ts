@@ -9,6 +9,19 @@ export { withPermission, getUserContext } from "./middleware";
 export type { PermissionContext, ProtectedHandler, PermissionOptions } from "./middleware";
 
 export {
+  getDashboardConfig,
+  hasFeature,
+  getNavSections,
+  getAllWidgets,
+  DASHBOARD_CONFIG,
+} from "./dashboard-config";
+export type {
+  DashboardWidget,
+  NavSection,
+  RoleDashboardConfig,
+} from "./dashboard-config";
+
+export {
   ROLE_HIERARCHY,
   isAtLeast,
   MAX_APPROVAL_LEVEL,
