@@ -1,0 +1,1 @@
+export { WorkforceDashboardWidget } from "./WorkforceDashboardWidget";
