@@ -1,0 +1,1 @@
+export { DelegatedAuthorityDashboardWidget } from "./DelegatedAuthorityDashboardWidget";
