@@ -1,0 +1,1 @@
+export { SanctionsDashboardWidget } from "./SanctionsDashboardWidget";
