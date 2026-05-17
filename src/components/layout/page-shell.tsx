@@ -6,9 +6,13 @@ import { QuickCreateActions } from "@/components/common/quick-create-actions";
 import type { QuickCreateContext } from "@/components/common/quick-create-modal";
 import type { AriaDrawerContext } from "@/components/aria/aria-drawer";
 
-interface PageShellProps {
+export interface PageShellProps {
   title:             string;
   subtitle?:         string;
+  /** Page description shown below title */
+  description?:      string;
+  /** Icon rendered beside the title */
+  icon?:             React.ReactNode;
   /** Custom action nodes rendered in the top bar */
   actions?:          React.ReactNode;
   /** When provided, renders QuickCreateActions in the header */
@@ -24,6 +28,8 @@ interface PageShellProps {
 export function PageShell({
   title,
   subtitle,
+  description,
+  icon,
   actions,
   quickCreateContext,
   showQuickCreate = true,
@@ -44,7 +50,7 @@ export function PageShell({
     <div className="flex min-h-screen flex-col">
       <Header
         title={title}
-        subtitle={subtitle}
+        subtitle={subtitle ?? description}
         actions={headerActions}
         ariaContext={ariaContext}
       />
