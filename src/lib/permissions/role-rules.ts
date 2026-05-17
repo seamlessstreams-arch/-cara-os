@@ -6,7 +6,7 @@
 // the final access decision.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { PermissionRule, Role, ApprovalLevel } from "./types";
+import type { PermissionRule, Role, ApprovalLevel, EmploymentStatus } from "./types";
 
 // ── Role Hierarchy (for "at least" checks) ─────────────────────────────────
 

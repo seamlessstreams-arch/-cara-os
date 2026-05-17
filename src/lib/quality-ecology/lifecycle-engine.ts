@@ -16,7 +16,7 @@ import type {
   EscalationSeverity,
   TaskTemplate,
 } from "./types";
-import type { UserContext, Role } from "../permissions/types";
+import type { UserContext, Role, ApprovalLevel } from "../permissions/types";
 import { isAtLeast, MAX_APPROVAL_LEVEL, SELF_APPROVAL_BLOCKED_ROLES } from "../permissions/role-rules";
 
 // ── Valid Transitions ───────────────────────────────────────────────────────
