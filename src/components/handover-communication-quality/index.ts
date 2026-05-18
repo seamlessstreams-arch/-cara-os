@@ -1,0 +1,1 @@
+export { HandoverCommunicationQualityDashboardWidget } from "./HandoverCommunicationQualityDashboardWidget";

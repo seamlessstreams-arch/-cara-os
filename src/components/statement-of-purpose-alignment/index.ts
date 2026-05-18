@@ -1,0 +1,1 @@
+export { StatementOfPurposeAlignmentDashboardWidget } from "./StatementOfPurposeAlignmentDashboardWidget";
