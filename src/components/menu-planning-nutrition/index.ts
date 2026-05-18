@@ -1,0 +1,1 @@
+export { MenuPlanningNutritionDashboardWidget } from "./MenuPlanningNutritionDashboardWidget";
