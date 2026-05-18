@@ -22,7 +22,7 @@
 //     Leadership & Management
 // ══════════════════════════════════════════════════════════════════════════════
 
-import Anthropic from "@anthropic-ai/sdk";
+import { generateText } from "ai";
 import {
   ARIA_PROFESSIONAL_IDENTITY_PROMPT,
   ARIA_WRITING_STYLE_PROMPT,
@@ -719,10 +719,11 @@ async function enhanceWithLlm(
   input: OversightInput,
   deterministic: OversightReview,
 ): Promise<{ oversightDraft: string; ofstedSummary: string } | null> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return null;
-
-  const client = new Anthropic({ apiKey });
+  // Uses Vercel AI Gateway — routes through openai for management oversight
+  // Fallback: if no gateway is available, try direct Anthropic key
+  const hasGateway = !!process.env.VERCEL_OIDC_TOKEN;
+  const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
+  if (!hasGateway && !hasAnthropicKey) return null;
 
   const system = [
     `You are Aria, the intelligent professional assistant built into Cornerstone, the operating system for UK residential children's homes. You are drafting a management oversight comment for a Registered Manager to review and approve.`,
@@ -768,15 +769,19 @@ async function enhanceWithLlm(
     .join("\n");
 
   try {
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1500,
+    // Use AI Gateway (OpenAI for management oversight, with Anthropic fallback)
+    const model = hasGateway ? "openai/gpt-4.1" : "anthropic/claude-sonnet-4-6";
+
+    const result = await generateText({
+      model: model as any,
       system,
-      messages: [{ role: "user", content: userMessage }],
+      prompt: userMessage,
+      maxOutputTokens: 1500,
+      temperature: 0.3,
     });
-    const textBlock = response.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") return null;
-    const cleaned = textBlock.text
+
+    const raw = result.text;
+    const cleaned = raw
       .replace(/^```json\s*/i, "")
       .replace(/^```\s*/i, "")
       .replace(/\s*```$/i, "")
@@ -791,7 +796,7 @@ async function enhanceWithLlm(
       ofstedSummary: applyAriaPostprocessor(parsed.ofstedSummary),
     };
   } catch (err) {
-    console.warn("[managementOversightEngine] LLM enhancement failed:", err);
+    console.warn("[managementOversightEngine] AI Gateway enhancement failed:", err);
     return null;
   }
 }

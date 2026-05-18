@@ -1,0 +1,204 @@
+// ══════════════════════════════════════════════════════════════════════════════
+// API: /api/aria/oversight-intelligence
+//
+// AI-powered management oversight intelligence using Vercel AI Gateway.
+// Routes to OpenAI (management oversight) or Anthropic (operational) based
+// on the oversight domain.
+//
+// POST — Run AI analysis for a specific oversight domain
+// GET  — Health check / provider status
+// ══════════════════════════════════════════════════════════════════════════════
+
+import { NextRequest, NextResponse } from "next/server";
+import {
+  generateViaGateway,
+  runOversightAnalysis,
+  resolveProvider,
+  resolveModel,
+  type OversightDomain,
+  type AIProvider,
+  OPENAI_DOMAINS,
+  ANTHROPIC_DOMAINS,
+} from "@/lib/aria/ai/gateway";
+
+const VALID_DOMAINS: OversightDomain[] = [
+  ...OPENAI_DOMAINS,
+  ...ANTHROPIC_DOMAINS,
+];
+
+// ── POST: Run AI oversight analysis ──────────────────────────────────────────
+
+export async function POST(req: NextRequest) {
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const {
+    action,
+    domain,
+    context,
+    childPseudonym,
+    homeId,
+    additionalContext,
+    crossValidate,
+    provider,
+    systemPrompt,
+    userPrompt,
+  } = body as {
+    action?: string;
+    domain?: OversightDomain;
+    context?: string;
+    childPseudonym?: string;
+    homeId?: string;
+    additionalContext?: string;
+    crossValidate?: boolean;
+    provider?: AIProvider;
+    systemPrompt?: string;
+    userPrompt?: string;
+  };
+
+  // Action: "analyse" — Full oversight analysis with optional cross-validation
+  if (action === "analyse" || action === "analyze") {
+    if (!domain || !VALID_DOMAINS.includes(domain)) {
+      return NextResponse.json(
+        { error: `domain must be one of: ${VALID_DOMAINS.join(", ")}` },
+        { status: 400 },
+      );
+    }
+    if (!context || context.trim().length === 0) {
+      return NextResponse.json(
+        { error: "context is required and must be non-empty" },
+        { status: 400 },
+      );
+    }
+
+    try {
+      const result = await runOversightAnalysis({
+        domain,
+        context,
+        childPseudonym,
+        homeId,
+        additionalContext,
+        crossValidate: crossValidate ?? false,
+      });
+
+      return NextResponse.json({
+        data: {
+          domain,
+          provider: result.primaryAnalysis.provider,
+          model: result.primaryAnalysis.model,
+          analysis: result.primaryAnalysis.content,
+          tokensUsed: result.primaryAnalysis.tokensUsed,
+          latencyMs: result.primaryAnalysis.latencyMs,
+          crossValidation: result.crossValidation ? {
+            provider: result.crossValidation.provider,
+            model: result.crossValidation.model,
+            content: result.crossValidation.content,
+            agreement: result.agreement,
+          } : undefined,
+          combinedConfidence: result.combinedConfidence,
+          ariaLabel: "AI suggested draft",
+        },
+      });
+    } catch (err) {
+      return NextResponse.json(
+        { error: "Analysis failed", detail: err instanceof Error ? err.message : String(err) },
+        { status: 500 },
+      );
+    }
+  }
+
+  // Action: "generate" — Direct generation for a custom prompt
+  if (action === "generate") {
+    if (!domain || !VALID_DOMAINS.includes(domain)) {
+      return NextResponse.json(
+        { error: `domain must be one of: ${VALID_DOMAINS.join(", ")}` },
+        { status: 400 },
+      );
+    }
+    if (!systemPrompt || !userPrompt) {
+      return NextResponse.json(
+        { error: "systemPrompt and userPrompt are required" },
+        { status: 400 },
+      );
+    }
+
+    try {
+      const result = await generateViaGateway({
+        provider,
+        domain,
+        systemPrompt,
+        userPrompt,
+        maxOutputTokens: 2500,
+        temperature: 0.3,
+      });
+
+      return NextResponse.json({
+        data: {
+          content: result.content,
+          provider: result.provider,
+          model: result.model,
+          tokensUsed: result.tokensUsed,
+          latencyMs: result.latencyMs,
+          wasSanitised: result.wasSanitised,
+          ariaLabel: "AI suggested draft",
+        },
+      });
+    } catch (err) {
+      return NextResponse.json(
+        { error: "Generation failed", detail: err instanceof Error ? err.message : String(err) },
+        { status: 500 },
+      );
+    }
+  }
+
+  // Action: "route" — Check which provider would handle a domain
+  if (action === "route") {
+    if (!domain) {
+      return NextResponse.json({ error: "domain is required" }, { status: 400 });
+    }
+    const resolved = resolveProvider(domain as OversightDomain, provider);
+    const model = resolveModel(resolved);
+    return NextResponse.json({
+      data: {
+        domain,
+        provider: resolved,
+        model,
+        reason: OPENAI_DOMAINS.includes(domain as OversightDomain)
+          ? "Management-level oversight → OpenAI"
+          : "Operational intelligence → Anthropic (ARIA)",
+      },
+    });
+  }
+
+  return NextResponse.json(
+    { error: "action must be 'analyse', 'generate', or 'route'" },
+    { status: 400 },
+  );
+}
+
+// ── GET: Health check and provider info ──────────────────────────────────────
+
+export async function GET() {
+  return NextResponse.json({
+    status: "operational",
+    gateway: "vercel-ai-sdk",
+    providers: {
+      openai: {
+        role: "Management Oversight (Reg 45, SCCIF Leadership)",
+        model: resolveModel("openai"),
+        domains: OPENAI_DOMAINS,
+      },
+      anthropic: {
+        role: "Operational Intelligence (ARIA)",
+        model: resolveModel("anthropic"),
+        domains: ANTHROPIC_DOMAINS,
+      },
+    },
+    routing: "Automatic by domain, with OpenAI → Anthropic fallback on failure",
+    ariaLabel: "All AI output is labelled 'AI suggested draft' — never final until human-approved",
+  });
+}
