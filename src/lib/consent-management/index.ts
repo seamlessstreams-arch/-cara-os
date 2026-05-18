@@ -1,0 +1,30 @@
+export {
+  evaluateConsentRecording,
+  evaluateDelegatedAuthority,
+  evaluateGillickCompetence,
+  evaluateConsentAudit,
+  buildChildConsentProfiles,
+  generateConsentManagementIntelligence,
+  getConsentAreaLabel,
+  getConsentStatusLabel,
+  getConsentHolderLabel,
+  getGillickOutcomeLabel,
+} from "./consent-management-engine";
+
+export type {
+  ConsentArea,
+  ConsentStatus,
+  ConsentHolder,
+  GillickOutcome,
+  Rating,
+  ConsentRecord,
+  DelegatedAuthority,
+  GillickAssessment,
+  ConsentAudit,
+  ChildConsentProfile,
+  ConsentRecordingResult,
+  DelegatedAuthorityResult,
+  GillickCompetenceResult,
+  ConsentAuditResult,
+  ConsentManagementIntelligence,
+} from "./consent-management-engine";

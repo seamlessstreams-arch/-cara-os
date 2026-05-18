@@ -1,0 +1,1 @@
+export { ConsentManagementDashboardWidget } from "./ConsentManagementDashboardWidget";
