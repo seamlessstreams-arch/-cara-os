@@ -1,0 +1,1 @@
+export { EqualityDiversityDashboardWidget } from "./EqualityDiversityDashboardWidget";
