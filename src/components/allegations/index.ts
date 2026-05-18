@@ -1,0 +1,1 @@
+export { AllegationsDashboardWidget } from "./AllegationsDashboardWidget";

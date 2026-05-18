@@ -1,0 +1,1 @@
+export { GovernanceDashboardWidget } from "./GovernanceDashboardWidget";

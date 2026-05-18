@@ -1,0 +1,1 @@
+export { StaffTrainingDashboardWidget } from "./StaffTrainingDashboardWidget";

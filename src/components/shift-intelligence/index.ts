@@ -1,0 +1,1 @@
+export { ShiftIntelligenceDashboardWidget } from "./ShiftIntelligenceDashboardWidget";
