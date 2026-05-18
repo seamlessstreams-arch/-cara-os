@@ -67,5 +67,4 @@ export type {
   AccessDecision,
   PermissionRule,
   PermissionCondition,
-  BreakGlassEvent,
 } from "./types";

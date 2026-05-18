@@ -1881,7 +1881,7 @@ describe("CRUD fallback (Supabase disabled)", () => {
       staffBriefed: true,
     });
     if (!result.ok) {
-      expect(result.error.toLowerCase()).toContain("supabase");
+      expect(result.error!.toLowerCase()).toContain("supabase");
     }
   });
 
@@ -1895,7 +1895,7 @@ describe("CRUD fallback (Supabase disabled)", () => {
   it("updatePlan error message mentions Supabase", async () => {
     const result = await updatePlan("bsp-1", { staff_briefed: true });
     if (!result.ok) {
-      expect(result.error.toLowerCase()).toContain("supabase");
+      expect(result.error!.toLowerCase()).toContain("supabase");
     }
   });
 });

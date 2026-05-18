@@ -41,6 +41,7 @@ export type DisruptionIndicator =
   | "peer_conflict"
   | "staff_conflict"
   | "self_harm"
+  | "safeguarding"
   | "refusing_boundaries"
   | "disengagement"
   | "placement_request"

@@ -122,10 +122,10 @@ async function handleLiveData(
   const metrics = calculatePipelineMetrics(checklists);
 
   // Find candidates with blockers
-  const withIssues = checklists.map(c => ({
+  const withIssues = checklists.map((c: any) => ({
     ...c,
     compliance: evaluateCompliance(c),
-  })).filter(c => !c.compliance.canProgress);
+  })).filter((c: any) => !c.compliance.canProgress);
 
   // DBS renewals for current staff
   let dbsQuery = (sb.from("staff_dbs_records") as SB).select("*");

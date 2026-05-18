@@ -337,7 +337,7 @@ describe("analyzeChildWellbeing", () => {
     const result = analyzeChildWellbeing([], "child-jordan", "Jordan Williams", 30, FIXED_NOW);
     expect(result.averageMood).toBe(3);
     expect(result.moodTrend).toBe("stable");
-    expect(result.totalEpisodes).toBeUndefined(); // shouldn't have this
+    expect((result as any).totalEpisodes).toBeUndefined(); // property shouldn't exist on this type
     expect(result.schoolAttendanceRate).toBe(100);
   });
 });

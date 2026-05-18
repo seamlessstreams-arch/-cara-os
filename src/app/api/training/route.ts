@@ -57,7 +57,7 @@ const DEMO_STAFF: StaffTrainingRecord[] = [
       expiryDate: mt.refreshPeriodMonths > 0
         ? (i === 3 ? "2026-06-01T10:00:00Z" : "2027-01-10T10:00:00Z") // restraint expiring soon
         : undefined,
-      status: (i === 3 ? "expiring_soon" : "current") as const,
+      status: i === 3 ? "expiring_soon" as const : "current" as const,
       mandatory: true,
     })),
     qualifications: [
@@ -82,7 +82,7 @@ const DEMO_STAFF: StaffTrainingRecord[] = [
       expiryDate: mt.refreshPeriodMonths > 0
         ? (i === 0 ? "2026-05-20T10:00:00Z" : "2026-11-20T10:00:00Z") // safeguarding expiring soon
         : undefined,
-      status: (i === 0 ? "expiring_soon" : "current") as const,
+      status: i === 0 ? "expiring_soon" as const : "current" as const,
       mandatory: true,
     })),
     qualifications: [
@@ -105,7 +105,7 @@ const DEMO_STAFF: StaffTrainingRecord[] = [
       courseName: mt.name,
       completedDate: i < 14 ? "2025-12-01T10:00:00Z" : undefined,
       expiryDate: i < 14 && mt.refreshPeriodMonths > 0 ? "2026-12-01T10:00:00Z" : undefined,
-      status: (i < 14 ? "current" : (i === 14 ? "in_progress" : "not_started")) as const,
+      status: i < 14 ? "current" : i === 14 ? "in_progress" : "not_started",
       mandatory: true,
     })),
     qualifications: [
@@ -127,7 +127,7 @@ const DEMO_STAFF: StaffTrainingRecord[] = [
       courseName: mt.name,
       completedDate: i < 10 ? "2026-04-01T10:00:00Z" : undefined,
       expiryDate: i < 10 && mt.refreshPeriodMonths > 0 ? "2027-04-01T10:00:00Z" : undefined,
-      status: (i < 10 ? "current" : (i < 13 ? "booked" : "not_started")) as const,
+      status: i < 10 ? "current" : i < 13 ? "booked" : "not_started",
       mandatory: true,
       bookedDate: i >= 10 && i < 13 ? "2026-06-01T10:00:00Z" : undefined,
     })),
@@ -174,12 +174,7 @@ export async function GET(request: NextRequest) {
 
   // Dashboard mode
   const metrics = calculateHomeTrainingMetrics(DEMO_STAFF, homeId, now);
-  const staffResults = DEMO_STAFF.map(r => ({
-    staffId: r.staffId,
-    staffName: r.staffName,
-    role: r.role,
-    ...evaluateStaffTrainingCompliance(r, now),
-  }));
+  const staffResults = DEMO_STAFF.map(r => evaluateStaffTrainingCompliance(r, now));
 
   return NextResponse.json({
     metrics: {

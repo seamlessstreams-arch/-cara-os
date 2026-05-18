@@ -168,7 +168,7 @@ const DEMO_ADMINISTRATIONS: Administration[] = [
     childId: "child-alex",
     scheduledTime: `2026-05-${String(11 + i).padStart(2, "0")}T12:00:00Z`,
     actualTime: `2026-05-${String(11 + i).padStart(2, "0")}T12:10:00Z`,
-    status: (i === 4 ? "refused" : "given") as const,
+    status: i === 4 ? ("refused" as const) : ("given" as const),
     administeredBy: "staff-sw-01",
     refusalReason: i === 4 ? "Said it makes him feel sick" : undefined,
   })),

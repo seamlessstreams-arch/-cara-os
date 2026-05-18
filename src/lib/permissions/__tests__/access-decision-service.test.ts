@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { checkAccess, canAccess, getAllowedActions } from "../access-decision-service";
-import type { UserContext, Role, AccessCheckRequest } from "../types";
+import type { UserContext, Role, AccessRequest } from "../types";
 
 const FIXED_NOW = "2026-05-16T12:00:00Z";
 

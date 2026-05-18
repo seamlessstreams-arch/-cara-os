@@ -77,8 +77,6 @@ const ROLE_TASK_PERMISSIONS: Record<AriaRole, Partial<Record<AriaTaskType, Permi
     creative_resource_generation: "generate",
     document_extraction: "generate",
     document_classification: "generate",
-    // Can review
-    incident_summary: "review",
     // Cannot access
     safeguarding_analysis: "none",
     reg45_report: "none",

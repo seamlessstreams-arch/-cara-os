@@ -86,7 +86,7 @@ const DEMO_SLEEP_PATTERNS: SleepPattern[] = Array.from({ length: 14 }, (_, i) =>
   const dateStr = `2026-05-${String(day).padStart(2, "0")}`;
   return [
     { childId: "child-alex", childName: "Alex Turner", date: dateStr, estimatedSleepTime: "22:30", estimatedWakeTime: "07:00", totalSleepHours: 8.5, wakingEpisodes: 0, overallQuality: "good" as const },
-    { childId: "child-jordan", childName: "Jordan Clarke", date: dateStr, estimatedSleepTime: "23:00", estimatedWakeTime: "06:00", totalSleepHours: i === 2 || i === 7 ? 5.5 : 7.0, wakingEpisodes: i === 2 ? 2 : i === 7 ? 1 : 0, overallQuality: (i === 2 || i === 7 ? "poor" : "fair") as const, notes: i === 2 ? "Night terror disturbed sleep" : undefined },
+    { childId: "child-jordan", childName: "Jordan Clarke", date: dateStr, estimatedSleepTime: "23:00", estimatedWakeTime: "06:00", totalSleepHours: i === 2 || i === 7 ? 5.5 : 7.0, wakingEpisodes: i === 2 ? 2 : i === 7 ? 1 : 0, overallQuality: (i === 2 || i === 7 ? "poor" : "fair") as "poor" | "fair" | "good", notes: i === 2 ? "Night terror disturbed sleep" : undefined },
     { childId: "child-sam", childName: "Sam Patel", date: dateStr, estimatedSleepTime: "21:30", estimatedWakeTime: "07:30", totalSleepHours: 10, wakingEpisodes: 0, overallQuality: "good" as const },
   ];
 }).flat();
