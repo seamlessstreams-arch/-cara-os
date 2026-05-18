@@ -1,24 +1,44 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Leaving Care & Aftercare — Public API
+// Cornerstone Leaving Care Preparation Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  evaluateLeavingCareCompliance,
-  calculateHomeLeavingCareMetrics,
-  getLeavingCareStatusLabel,
+  evaluatePathwayPlanning,
+  evaluateIndependenceSkills,
+  evaluateAccommodationPlanning,
+  evaluateSupportNetwork,
+  buildChildLeavingProfiles,
+  generateLeavingCareIntelligence,
+  getRating,
+  getReadinessLabel,
+  getSkillCategoryLabel,
+  getSkillLevelLabel,
+  getPathwayPlanStatusLabel,
   getAccommodationTypeLabel,
-  getEETStatusLabel,
+  getAccommodationStatusLabel,
+  getSupportTypeLabel,
+  getSupportStatusLabel,
 } from "./leaving-care-engine";
 
 export type {
-  LeavingCareStatus,
+  PathwayPlanStatus,
+  SkillLevel,
+  SkillCategory,
   AccommodationType,
-  EETStatus,
-  SupportFrequency,
-  LeavingCareProfile,
+  AccommodationStatus,
+  SupportType,
+  SupportStatus,
+  Rating,
+  LeavingCareChild,
   PathwayPlan,
-  PathwayPlanReview,
-  AftercareSupportRecord,
-  LeavingCareComplianceResult,
-  HomeLeavingCareMetrics,
+  IndependenceSkillAssessment,
+  AccommodationPlan,
+  SupportArrangement,
+  PathwayPlanningResult,
+  IndependenceSkillsResult,
+  SkillCategoryBreakdown,
+  AccommodationPlanningResult,
+  SupportNetworkResult,
+  ChildLeavingProfile,
+  LeavingCareIntelligenceResult,
 } from "./leaving-care-engine";

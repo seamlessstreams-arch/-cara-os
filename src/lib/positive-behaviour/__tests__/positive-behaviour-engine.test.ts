@@ -10,6 +10,14 @@ import {
   evaluateIncidentPatterns,
   buildChildBehaviourProfiles,
   generatePositiveBehaviourIntelligence,
+  getRatingLabel,
+  getBSPStatusLabel,
+  getDeEscalationOutcomeLabel,
+  getRecognitionTypeLabel,
+  getSanctionTypeLabel,
+  getImprovementTrendLabel,
+  getSeverityLabel,
+  getStrategyTypeLabel,
 } from "../positive-behaviour-engine";
 import type {
   BehaviourSupportPlan,
@@ -1160,11 +1168,11 @@ describe("generatePositiveBehaviourIntelligence", () => {
 
   it("generates regulatory links", () => {
     expect(fullResult.regulatoryLinks.length).toBe(5);
-    expect(fullResult.regulatoryLinks[0]).toContain("Reg 19");
-    expect(fullResult.regulatoryLinks[1]).toContain("Reg 11");
-    expect(fullResult.regulatoryLinks[2]).toContain("Reg 12");
-    expect(fullResult.regulatoryLinks[3]).toContain("SCCIF");
-    expect(fullResult.regulatoryLinks[4]).toContain("BILD");
+    expect(fullResult.regulatoryLinks[0]).toContain("Reg 35");
+    expect(fullResult.regulatoryLinks[1]).toContain("Reg 19");
+    expect(fullResult.regulatoryLinks[2]).toContain("SCCIF");
+    expect(fullResult.regulatoryLinks[3]).toContain("NICE CG158");
+    expect(fullResult.regulatoryLinks[4]).toContain("UNCRC Article 3");
   });
 
   // ── Scoring edge cases ──────────────────────────────────────────────
@@ -1308,9 +1316,9 @@ describe("generatePositiveBehaviourIntelligence", () => {
     ).toBe(true);
   });
 
-  it("identifies BILD framework alignment in regulatory links", () => {
+  it("identifies UNCRC Article 3 in regulatory links", () => {
     expect(
-      fullResult.regulatoryLinks.some((r) => r.includes("BILD")),
+      fullResult.regulatoryLinks.some((r) => r.includes("UNCRC Article 3")),
     ).toBe(true);
   });
 
@@ -1438,5 +1446,169 @@ describe("edge cases", () => {
     ];
     const result = evaluateIncidentPatterns(lateNight);
     expect(result.timeOfDayPatterns.night).toBe(1);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Label Functions
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("getRatingLabel", () => {
+  it("returns Outstanding for outstanding", () => {
+    expect(getRatingLabel("outstanding")).toBe("Outstanding");
+  });
+
+  it("returns Good for good", () => {
+    expect(getRatingLabel("good")).toBe("Good");
+  });
+
+  it("returns Requires Improvement for requires_improvement", () => {
+    expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement");
+  });
+
+  it("returns Inadequate for inadequate", () => {
+    expect(getRatingLabel("inadequate")).toBe("Inadequate");
+  });
+});
+
+describe("getBSPStatusLabel", () => {
+  it("returns Active for active", () => {
+    expect(getBSPStatusLabel("active")).toBe("Active");
+  });
+
+  it("returns Draft for draft", () => {
+    expect(getBSPStatusLabel("draft")).toBe("Draft");
+  });
+
+  it("returns Under Review for under_review", () => {
+    expect(getBSPStatusLabel("under_review")).toBe("Under Review");
+  });
+
+  it("returns Expired for expired", () => {
+    expect(getBSPStatusLabel("expired")).toBe("Expired");
+  });
+
+  it("returns Archived for archived", () => {
+    expect(getBSPStatusLabel("archived")).toBe("Archived");
+  });
+
+  it("returns No Plan for no_plan", () => {
+    expect(getBSPStatusLabel("no_plan")).toBe("No Plan");
+  });
+});
+
+describe("getDeEscalationOutcomeLabel", () => {
+  it("returns Successful for successful", () => {
+    expect(getDeEscalationOutcomeLabel("successful")).toBe("Successful");
+  });
+
+  it("returns Partially Successful for partially_successful", () => {
+    expect(getDeEscalationOutcomeLabel("partially_successful")).toBe("Partially Successful");
+  });
+
+  it("returns Unsuccessful for unsuccessful", () => {
+    expect(getDeEscalationOutcomeLabel("unsuccessful")).toBe("Unsuccessful");
+  });
+
+  it("returns Not Attempted for not_attempted", () => {
+    expect(getDeEscalationOutcomeLabel("not_attempted")).toBe("Not Attempted");
+  });
+});
+
+describe("getRecognitionTypeLabel", () => {
+  it("returns Verbal Praise for verbal_praise", () => {
+    expect(getRecognitionTypeLabel("verbal_praise")).toBe("Verbal Praise");
+  });
+
+  it("returns Written Recognition for written_recognition", () => {
+    expect(getRecognitionTypeLabel("written_recognition")).toBe("Written Recognition");
+  });
+
+  it("returns Activity Reward for activity_reward", () => {
+    expect(getRecognitionTypeLabel("activity_reward")).toBe("Activity Reward");
+  });
+
+  it("returns Privilege for privilege", () => {
+    expect(getRecognitionTypeLabel("privilege")).toBe("Privilege");
+  });
+
+  it("returns Achievement Certificate for achievement_certificate", () => {
+    expect(getRecognitionTypeLabel("achievement_certificate")).toBe("Achievement Certificate");
+  });
+
+  it("returns Special Outing for special_outing", () => {
+    expect(getRecognitionTypeLabel("special_outing")).toBe("Special Outing");
+  });
+});
+
+describe("getSanctionTypeLabel", () => {
+  it("returns Verbal Warning for verbal_warning", () => {
+    expect(getSanctionTypeLabel("verbal_warning")).toBe("Verbal Warning");
+  });
+
+  it("returns Loss of Privilege for loss_of_privilege", () => {
+    expect(getSanctionTypeLabel("loss_of_privilege")).toBe("Loss of Privilege");
+  });
+
+  it("returns Restorative Task for restorative_task", () => {
+    expect(getSanctionTypeLabel("restorative_task")).toBe("Restorative Task");
+  });
+
+  it("returns Time Out for time_out", () => {
+    expect(getSanctionTypeLabel("time_out")).toBe("Time Out");
+  });
+
+  it("returns Other for other", () => {
+    expect(getSanctionTypeLabel("other")).toBe("Other");
+  });
+});
+
+describe("getImprovementTrendLabel", () => {
+  it("returns Improving for improving", () => {
+    expect(getImprovementTrendLabel("improving")).toBe("Improving");
+  });
+
+  it("returns Stable for stable", () => {
+    expect(getImprovementTrendLabel("stable")).toBe("Stable");
+  });
+
+  it("returns Declining for declining", () => {
+    expect(getImprovementTrendLabel("declining")).toBe("Declining");
+  });
+
+  it("returns Insufficient Data for insufficient_data", () => {
+    expect(getImprovementTrendLabel("insufficient_data")).toBe("Insufficient Data");
+  });
+});
+
+describe("getSeverityLabel", () => {
+  it("returns Low for low", () => {
+    expect(getSeverityLabel("low")).toBe("Low");
+  });
+
+  it("returns Medium for medium", () => {
+    expect(getSeverityLabel("medium")).toBe("Medium");
+  });
+
+  it("returns High for high", () => {
+    expect(getSeverityLabel("high")).toBe("High");
+  });
+
+  it("returns Critical for critical", () => {
+    expect(getSeverityLabel("critical")).toBe("Critical");
+  });
+});
+
+describe("getStrategyTypeLabel", () => {
+  it("returns Proactive for proactive", () => {
+    expect(getStrategyTypeLabel("proactive")).toBe("Proactive");
+  });
+
+  it("returns Active for active", () => {
+    expect(getStrategyTypeLabel("active")).toBe("Active");
+  });
+
+  it("returns Reactive for reactive", () => {
+    expect(getStrategyTypeLabel("reactive")).toBe("Reactive");
   });
 });

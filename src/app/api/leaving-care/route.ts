@@ -1,268 +1,251 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Leaving Care & Aftercare API Route
+// API: /api/leaving-care
 //
-// GET  ?homeId=...&mode=dashboard|metrics|child&childId=...
-// POST { action: "evaluate"|"metrics", ... }
+// Leaving Care Preparation Intelligence
+//
+// GET  — Returns leaving care assessment with realistic Oak House demo data
+// POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import {
-  evaluateLeavingCareCompliance,
-  calculateHomeLeavingCareMetrics,
-  getLeavingCareStatusLabel,
+  generateLeavingCareIntelligence,
+  getSkillCategoryLabel,
+  getSkillLevelLabel,
+  getPathwayPlanStatusLabel,
   getAccommodationTypeLabel,
-  getEETStatusLabel,
+  getAccommodationStatusLabel,
+  getSupportTypeLabel,
 } from "@/lib/leaving-care";
-import type { LeavingCareProfile, AftercareSupportRecord } from "@/lib/leaving-care";
+import type {
+  LeavingCareChild,
+  PathwayPlan,
+  IndependenceSkillAssessment,
+  AccommodationPlan,
+  SupportArrangement,
+} from "@/lib/leaving-care";
 
-// ── Demo Data ──────────────────────────────────────────────────────────────
+// ── Demo Data: Oak House ──────────────────────────────────────────────────
 
-const DEMO_PROFILES: LeavingCareProfile[] = [
+const DEMO_CHILDREN: LeavingCareChild[] = [
   {
-    id: "lc-001",
-    childId: "child-maya",
-    childName: "Maya Williams",
-    dateOfBirth: "2009-03-15T00:00:00Z",
-    homeId: "home-oak",
-    status: "pathway_planning",
-    personalAdviser: "Jane Carter",
-    personalAdviserAllocatedDate: "2025-03-20T10:00:00Z",
-    pathwayPlan: {
-      createdDate: "2025-04-01T10:00:00Z",
-      lastReviewedDate: "2026-03-15T10:00:00Z",
-      nextReviewDue: "2026-09-15T10:00:00Z",
-      createdBy: "staff-rm-01",
-      status: "active",
-      accommodationPlanned: true,
-      educationPlanned: true,
-      healthPlanned: true,
-      financePlanned: true,
-      socialNetworksPlanned: true,
-      contingencyPlan: true,
-      youngPersonContributed: true,
-      socialWorkerSigned: true,
-    },
-    pathwayPlanReviews: [
-      { date: "2025-09-15T10:00:00Z", reviewedBy: "staff-rm-01", attendees: ["Maya", "PA Jane", "SW"], youngPersonAttended: true, youngPersonViews: "Wants supported lodgings near college", progressSummary: "Good engagement with planning", actionsAgreed: ["Visit supported lodgings options", "Budgeting course referral"], nextReviewDate: "2026-03-15T10:00:00Z" },
-      { date: "2026-03-15T10:00:00Z", reviewedBy: "staff-rm-01", attendees: ["Maya", "PA Jane", "SW David"], youngPersonAttended: true, youngPersonViews: "Excited about college plans, nervous about living alone", progressSummary: "Good progress, accommodation shortlisted", actionsAgreed: ["Final accommodation visit", "Trial overnight at semi-independent"], nextReviewDate: "2026-09-15T10:00:00Z" },
-    ],
-    accommodationPlan: "semi_independent",
-    accommodationSecured: false,
-    eetStatus: "education_ft",
-    eetDetails: "Year 12 at Northfield Sixth Form — Health & Social Care BTEC",
-    financialCapabilityAssessed: true,
-    financialCapabilityScore: 55,
-    bankAccountOpened: true,
-    budgetingSupport: true,
-    healthPassportProvided: false,
-    gpRegistered: true,
-    dentistRegistered: true,
-    lifeStoryWorkCompleted: false,
-    stayingCloseOffered: false,
-    expectedDepartureDate: "2027-09-01T10:00:00Z",
+    id: "child-alex",
+    name: "Alex",
+    dateOfBirth: "2012-03-15",
+    age: 14,
+    placementStartDate: "2025-10-01",
+    currentPlacement: true,
+    isEligibleChild: false,
+    isRelevantChild: false,
+    hasPathwayPlan: false,
+    keyWorkerId: "staff-sarah",
+    keyWorkerName: "Sarah Johnson",
   },
   {
-    id: "lc-002",
-    childId: "child-reece",
-    childName: "Reece Donovan",
-    dateOfBirth: "2008-08-22T00:00:00Z",
-    homeId: "home-oak",
-    status: "staying_close",
-    personalAdviser: "Mark Stevens",
-    personalAdviserAllocatedDate: "2024-09-01T10:00:00Z",
-    pathwayPlan: {
-      createdDate: "2024-09-15T10:00:00Z",
-      lastReviewedDate: "2026-02-20T10:00:00Z",
-      nextReviewDue: "2026-08-20T10:00:00Z",
-      createdBy: "staff-rm-01",
-      status: "active",
-      accommodationPlanned: true,
-      educationPlanned: true,
-      healthPlanned: true,
-      financePlanned: true,
-      socialNetworksPlanned: true,
-      contingencyPlan: true,
-      youngPersonContributed: true,
-      socialWorkerSigned: true,
-    },
-    pathwayPlanReviews: [
-      { date: "2026-02-20T10:00:00Z", reviewedBy: "staff-rm-01", attendees: ["Reece", "PA Mark", "SW"], youngPersonAttended: true, youngPersonViews: "Happy in supported lodgings, wants to keep coming back to Oak House for meals", progressSummary: "Settled well in placement, attending college", actionsAgreed: ["Weekly dinner at Oak House", "Support with UCAS"], nextReviewDate: "2026-08-20T10:00:00Z" },
-    ],
-    accommodationPlan: "supported_lodgings",
-    accommodationSecured: true,
-    accommodationDetails: "Supported lodgings with Mrs Patel — 2 miles from Oak House",
-    eetStatus: "education_ft",
-    eetDetails: "Level 3 Electrical Engineering at local college",
-    financialCapabilityAssessed: true,
-    financialCapabilityScore: 68,
-    bankAccountOpened: true,
-    budgetingSupport: false,
-    healthPassportProvided: true,
-    gpRegistered: true,
-    dentistRegistered: true,
-    lifeStoryWorkCompleted: true,
-    stayingCloseOffered: true,
-    stayingCloseAccepted: true,
-    keepingInTouchFrequency: "weekly",
-    lastContactDate: "2026-05-14T18:00:00Z",
-    departureDate: "2026-02-01T10:00:00Z",
+    id: "child-jordan",
+    name: "Jordan",
+    dateOfBirth: "2013-07-22",
+    age: 13,
+    placementStartDate: "2025-11-01",
+    currentPlacement: true,
+    isEligibleChild: false,
+    isRelevantChild: false,
+    hasPathwayPlan: false,
+    keyWorkerId: "staff-tom",
+    keyWorkerName: "Tom Richards",
   },
   {
-    id: "lc-003",
-    childId: "child-tia",
-    childName: "Tia Johnson",
-    dateOfBirth: "2008-01-10T00:00:00Z",
-    homeId: "home-oak",
-    status: "aftercare",
-    personalAdviser: "Jane Carter",
-    personalAdviserAllocatedDate: "2024-01-15T10:00:00Z",
-    pathwayPlan: {
-      createdDate: "2024-02-01T10:00:00Z",
-      lastReviewedDate: "2026-01-10T10:00:00Z",
-      nextReviewDue: "2026-07-10T10:00:00Z",
-      createdBy: "staff-rm-01",
-      status: "active",
-      accommodationPlanned: true,
-      educationPlanned: true,
-      healthPlanned: true,
-      financePlanned: true,
-      socialNetworksPlanned: true,
-      contingencyPlan: true,
-      youngPersonContributed: true,
-      socialWorkerSigned: true,
-    },
-    pathwayPlanReviews: [],
-    accommodationPlan: "independent_tenancy",
-    accommodationSecured: true,
-    accommodationDetails: "Studio flat — council tenancy secured through leaving care team",
-    eetStatus: "employment_pt",
-    eetDetails: "Part-time retail job, considering returning to college",
-    financialCapabilityAssessed: true,
-    financialCapabilityScore: 72,
-    bankAccountOpened: true,
-    budgetingSupport: true,
-    healthPassportProvided: true,
-    gpRegistered: true,
-    dentistRegistered: false,
-    lifeStoryWorkCompleted: true,
-    stayingCloseOffered: true,
-    stayingCloseAccepted: false,
-    keepingInTouchFrequency: "monthly",
-    lastContactDate: "2026-05-02T14:00:00Z",
-    departureDate: "2025-07-01T10:00:00Z",
-    supportEndDate: "2033-01-10T00:00:00Z",
+    id: "child-morgan",
+    name: "Morgan",
+    dateOfBirth: "2010-12-01",
+    age: 15,
+    placementStartDate: "2026-01-10",
+    currentPlacement: true,
+    isEligibleChild: true,
+    isRelevantChild: false,
+    hasPathwayPlan: true,
+    keyWorkerId: "staff-lisa",
+    keyWorkerName: "Lisa Williams",
   },
 ];
 
-const DEMO_SUPPORT_RECORDS: AftercareSupportRecord[] = [
-  { id: "sr-001", childId: "child-reece", date: "2026-05-14T18:00:00Z", type: "visit", duration: 90, topics: ["College", "Budget", "Social"], supportProvided: ["Dinner at Oak House", "Help with assignment"], mood: "positive", recordedBy: "staff-sw-01" },
-  { id: "sr-002", childId: "child-reece", date: "2026-05-07T18:00:00Z", type: "visit", duration: 60, topics: ["Accommodation", "Health"], supportProvided: ["Dinner at Oak House"], mood: "positive", recordedBy: "staff-sw-02" },
-  { id: "sr-003", childId: "child-tia", date: "2026-05-02T14:00:00Z", type: "phone", duration: 25, topics: ["Employment", "Finance"], supportProvided: ["Advice on CV update", "Signposted to careers service"], mood: "neutral", recordedBy: "staff-rm-01" },
-  { id: "sr-004", childId: "child-tia", date: "2026-04-05T14:00:00Z", type: "visit", duration: 45, topics: ["Accommodation", "Wellbeing"], supportProvided: ["Checked flat setup", "Discussed returning to education"], concerns: ["Seemed lonely"], mood: "low", recordedBy: "staff-rm-01" },
+const DEMO_PATHWAY_PLANS: PathwayPlan[] = [
+  {
+    id: "plan-morgan",
+    childId: "child-morgan",
+    status: "current",
+    createdDate: "2026-01-15",
+    lastReviewedDate: "2026-04-15",
+    nextReviewDue: "2026-10-15",
+    youngPersonInvolved: true,
+    youngPersonViewsRecorded: true,
+    personalAdviserAssigned: true,
+    goalsSet: 8,
+    goalsAchieved: 5,
+    educationPlanIncluded: true,
+    healthPlanIncluded: true,
+    financePlanIncluded: true,
+    accommodationPlanIncluded: true,
+  },
 ];
 
-// ── GET Handler ────────────────────────────────────────────────────────────
+const DEMO_ASSESSMENTS: IndependenceSkillAssessment[] = [
+  // Morgan — comprehensive, most developed as oldest
+  { id: "sk-m01", childId: "child-morgan", skill: "cooking", currentLevel: "competent", previousLevel: "developing", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m02", childId: "child-morgan", skill: "budgeting", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "competent" },
+  { id: "sk-m03", childId: "child-morgan", skill: "cleaning", currentLevel: "competent", previousLevel: "developing", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m04", childId: "child-morgan", skill: "laundry", currentLevel: "independent", previousLevel: "competent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m05", childId: "child-morgan", skill: "shopping", currentLevel: "competent", previousLevel: "developing", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m06", childId: "child-morgan", skill: "personal_hygiene", currentLevel: "independent", previousLevel: "competent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m07", childId: "child-morgan", skill: "using_public_transport", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "competent" },
+  { id: "sk-m08", childId: "child-morgan", skill: "managing_appointments", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "competent" },
+  { id: "sk-m09", childId: "child-morgan", skill: "basic_first_aid", currentLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "competent" },
+  { id: "sk-m10", childId: "child-morgan", skill: "understanding_tenancy", currentLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "developing" },
+  // Alex — basic age-appropriate skills
+  { id: "sk-a01", childId: "child-alex", skill: "cooking", currentLevel: "emerging", assessedDate: "2026-03-15", assessedBy: "Sarah Johnson", targetLevel: "developing" },
+  { id: "sk-a02", childId: "child-alex", skill: "cleaning", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-03-15", assessedBy: "Sarah Johnson", targetLevel: "competent" },
+  { id: "sk-a03", childId: "child-alex", skill: "personal_hygiene", currentLevel: "competent", assessedDate: "2026-03-15", assessedBy: "Sarah Johnson", targetLevel: "independent" },
+  { id: "sk-a04", childId: "child-alex", skill: "laundry", currentLevel: "emerging", assessedDate: "2026-03-15", assessedBy: "Sarah Johnson", targetLevel: "developing" },
+  // Jordan — youngest, introductory
+  { id: "sk-j01", childId: "child-jordan", skill: "cooking", currentLevel: "emerging", assessedDate: "2026-03-20", assessedBy: "Tom Richards", targetLevel: "developing" },
+  { id: "sk-j02", childId: "child-jordan", skill: "personal_hygiene", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-03-20", assessedBy: "Tom Richards", targetLevel: "competent" },
+  { id: "sk-j03", childId: "child-jordan", skill: "cleaning", currentLevel: "emerging", assessedDate: "2026-03-20", assessedBy: "Tom Richards", targetLevel: "developing" },
+];
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const homeId = searchParams.get("homeId") ?? "home-oak";
-  const mode = searchParams.get("mode") ?? "dashboard";
-  const childId = searchParams.get("childId");
+const DEMO_ACCOMMODATION_PLANS: AccommodationPlan[] = [
+  {
+    id: "accom-morgan",
+    childId: "child-morgan",
+    preferredType: "staying_close",
+    identifiedOption: "staying_close",
+    status: "exploring",
+    targetMoveDate: "2027-12-01",
+    stayingPutAvailable: false,
+    stayingCloseAvailable: true,
+    transitionPlanInPlace: false,
+    trialStayCompleted: false,
+    localAreaPreference: "Within 5 miles of Oak House",
+  },
+];
 
-  const now = new Date().toISOString();
+const DEMO_SUPPORT: SupportArrangement[] = [
+  { id: "sup-m01", childId: "child-morgan", supportType: "personal_adviser", status: "active", providerName: "Jane Carter", startDate: "2026-01-20", frequency: "fortnightly", lastContactDate: "2026-05-10" },
+  { id: "sup-m02", childId: "child-morgan", supportType: "mentor", status: "active", providerName: "David Park — Volunteer Mentor", startDate: "2026-02-01", frequency: "weekly", lastContactDate: "2026-05-12" },
+  { id: "sup-m03", childId: "child-morgan", supportType: "education_support", status: "active", providerName: "Northfield College SENCO", startDate: "2026-01-10", frequency: "monthly" },
+  { id: "sup-m04", childId: "child-morgan", supportType: "social_worker", status: "active", providerName: "David Williams SW", startDate: "2025-06-01", frequency: "monthly", lastContactDate: "2026-05-01" },
+];
 
-  if (mode === "child" && childId) {
-    const profile = DEMO_PROFILES.find(p => p.childId === childId);
-    if (!profile) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
-    }
-    const childRecords = DEMO_SUPPORT_RECORDS.filter(r => r.childId === childId);
-    const compliance = evaluateLeavingCareCompliance(profile, childRecords, now);
-    return NextResponse.json({
-      compliance,
-      profile: {
-        ...profile,
-        statusLabel: getLeavingCareStatusLabel(profile.status),
-        accommodationLabel: getAccommodationTypeLabel(profile.accommodationPlan),
-        eetLabel: getEETStatusLabel(profile.eetStatus),
-      },
-      supportRecords: childRecords.slice(0, 10),
-    });
-  }
+// ── GET ────────────────────────────────────────────────────────────────────
 
-  if (mode === "metrics") {
-    const metrics = calculateHomeLeavingCareMetrics(DEMO_PROFILES, DEMO_SUPPORT_RECORDS, homeId, now);
-    return NextResponse.json(metrics);
-  }
+export async function GET() {
+  const result = generateLeavingCareIntelligence(
+    DEMO_CHILDREN,
+    DEMO_PATHWAY_PLANS,
+    DEMO_ASSESSMENTS,
+    DEMO_ACCOMMODATION_PLANS,
+    DEMO_SUPPORT,
+    "oak-house",
+    "2026-01-01",
+    "2026-05-18",
+  );
 
-  // Dashboard mode
-  const metrics = calculateHomeLeavingCareMetrics(DEMO_PROFILES, DEMO_SUPPORT_RECORDS, homeId, now);
-  const homeProfiles = DEMO_PROFILES.filter(p => p.homeId === homeId);
-  const results = homeProfiles.map(p => ({
-    ...evaluateLeavingCareCompliance(p, DEMO_SUPPORT_RECORDS, now),
-    statusLabel: getLeavingCareStatusLabel(p.status),
-    accommodationLabel: getAccommodationTypeLabel(p.accommodationPlan),
-    eetLabel: getEETStatusLabel(p.eetStatus),
-    expectedDepartureDate: p.expectedDepartureDate,
-    departureDate: p.departureDate,
+  const enrichedCategoryBreakdown = result.independenceSkills.categoryBreakdown.map((c) => ({
+    ...c,
+    skillLabel: getSkillCategoryLabel(c.skill),
+  }));
+
+  const enrichedProfiles = result.childProfiles.map((p) => ({
+    ...p,
+    pathwayPlanStatusLabel: p.pathwayPlanStatus
+      ? getPathwayPlanStatusLabel(p.pathwayPlanStatus)
+      : undefined,
+    accommodationStatusLabel: p.accommodationStatus
+      ? getAccommodationStatusLabel(p.accommodationStatus)
+      : undefined,
+    accommodationTypeLabel: p.accommodationType
+      ? getAccommodationTypeLabel(p.accommodationType)
+      : undefined,
   }));
 
   return NextResponse.json({
-    metrics: {
-      totalYoungPeople: metrics.totalYoungPeople,
-      activePreparation: metrics.activePreparation,
-      stayingClose: metrics.stayingClose,
-      aftercare: metrics.aftercare,
-      pathwayPlanComplianceRate: metrics.pathwayPlanComplianceRate,
-      personalAdviserRate: metrics.personalAdviserRate,
-      accommodationSecuredRate: metrics.accommodationSecuredRate,
-      eetRate: metrics.eetRate,
-      averagePreparedness: metrics.averagePreparedness,
-      contactComplianceRate: metrics.contactComplianceRate,
-      stayingCloseAcceptanceRate: metrics.stayingCloseAcceptanceRate,
+    data: {
+      ...result,
+      independenceSkills: {
+        ...result.independenceSkills,
+        categoryBreakdown: enrichedCategoryBreakdown,
+      },
+      childProfiles: enrichedProfiles,
+      meta: {
+        skillLevelLabels: Object.fromEntries(
+          (["not_assessed", "emerging", "developing", "competent", "independent"] as const).map(
+            (l) => [l, getSkillLevelLabel(l)],
+          ),
+        ),
+        supportTypeLabels: Object.fromEntries(
+          ([
+            "personal_adviser", "mentor", "independent_visitor", "social_worker",
+            "family_contact", "peer_support", "community_group",
+            "education_support", "employment_support", "health_support",
+          ] as const).map((t) => [t, getSupportTypeLabel(t)]),
+        ),
+      },
     },
-    youngPeople: results.map(r => ({
-      childId: r.childId,
-      childName: r.childName,
-      ageYears: r.ageYears,
-      status: r.status,
-      statusLabel: r.statusLabel,
-      eetLabel: r.eetLabel,
-      accommodationLabel: r.accommodationLabel,
-      overallPreparedness: r.overallPreparedness,
-      isCompliant: r.isCompliant,
-      issueCount: r.issues.length,
-      daysUntilDeparture: r.daysUntilDeparture,
-      daysSinceDeparture: r.daysSinceDeparture,
-      contactUpToDate: r.contactUpToDate,
-    })),
-    complianceIssues: metrics.complianceIssues,
   });
 }
 
-// ── POST Handler ──────────────────────────────────────────────────────────
+// ── POST ───────────────────────────────────────────────────────────────────
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { action } = body;
-
-  if (action === "evaluate") {
-    const { profile, supportRecords } = body;
-    if (!profile) {
-      return NextResponse.json({ error: "profile required" }, { status: 400 });
-    }
-    const result = evaluateLeavingCareCompliance(profile, supportRecords ?? []);
-    return NextResponse.json(result);
+export async function POST(req: Request) {
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  if (action === "metrics") {
-    const { profiles, supportRecords, homeId } = body;
-    if (!profiles || !homeId) {
-      return NextResponse.json({ error: "profiles and homeId required" }, { status: 400 });
-    }
-    const result = calculateHomeLeavingCareMetrics(profiles, supportRecords ?? [], homeId);
-    return NextResponse.json(result);
+  const {
+    children,
+    pathwayPlans,
+    assessments,
+    accommodationPlans,
+    supportArrangements,
+    homeId,
+    periodStart,
+    periodEnd,
+  } = body as {
+    children?: LeavingCareChild[];
+    pathwayPlans?: PathwayPlan[];
+    assessments?: IndependenceSkillAssessment[];
+    accommodationPlans?: AccommodationPlan[];
+    supportArrangements?: SupportArrangement[];
+    homeId?: string;
+    periodStart?: string;
+    periodEnd?: string;
+  };
+
+  if (!children || !Array.isArray(children) || children.length === 0) {
+    return NextResponse.json(
+      { error: "children array is required and must not be empty" },
+      { status: 400 },
+    );
+  }
+  if (!periodStart || !periodEnd) {
+    return NextResponse.json(
+      { error: "periodStart and periodEnd are required" },
+      { status: 400 },
+    );
   }
 
-  return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  const result = generateLeavingCareIntelligence(
+    children,
+    pathwayPlans ?? [],
+    assessments ?? [],
+    accommodationPlans ?? [],
+    supportArrangements ?? [],
+    homeId ?? "unknown",
+    periodStart,
+    periodEnd,
+  );
+
+  return NextResponse.json({ data: result });
 }

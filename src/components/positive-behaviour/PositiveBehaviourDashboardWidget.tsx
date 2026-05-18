@@ -312,8 +312,8 @@ export function PositiveBehaviourDashboardWidget() {
             Positive Behaviour Support Intelligence
           </h3>
           <p className="text-xs text-gray-500 mt-1">
-            {data.periodStart} to {data.periodEnd} · CHR 2015 Reg 11/12/19 ·
-            BILD PBS
+            {data.periodStart} to {data.periodEnd} · CHR 2015 Reg 35/19 ·
+            SCCIF · NICE CG158 · UNCRC Art. 3
           </p>
         </div>
         <RatingBadge rating={data.rating} score={data.overallScore} />

@@ -1,26 +1,41 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Placement Stability — Public API
+// Cornerstone Placement Stability Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  evaluatePlacementStability,
-  calculateHomeStabilityMetrics,
-  getMatchingRecommendations,
+  evaluatePlacementDuration,
+  evaluateDisruptionManagement,
+  evaluateMatchingQuality,
+  evaluateOutcomesDuringPlacement,
+  generatePlacementStabilityIntelligence,
   getPlacementStatusLabel,
-  getEndReasonLabel,
-  getMatchingDomainLabel,
-} from "./stability-engine";
+  getEndingReasonLabel,
+  getDisruptionFactorLabel,
+  getSupportTypeLabel,
+  getOutcomeAreaLabel,
+  getProgressRatingLabel,
+  getMatchingFactorLabel,
+} from "./placement-stability-engine";
 
 export type {
   PlacementStatus,
-  EndReason,
-  MatchingDomain,
-  RiskIndicator,
+  EndingReason,
+  DisruptionFactor,
+  SupportType,
+  OutcomeArea,
+  MatchingFactor,
+  ProgressRating,
   Placement,
-  MatchingAssessmentItem,
-  StabilityMilestone,
   DisruptionEvent,
-  PlacementStabilityResult,
-  HomeStabilityMetrics,
-  MatchingRecommendation,
-} from "./stability-engine";
+  StabilitySupport,
+  MatchingRecord,
+  MatchingFactorScore,
+  PlacementOutcome,
+  OutcomeAssessment,
+  PlacementDurationResult,
+  DisruptionManagementResult,
+  MatchingQualityResult,
+  OutcomesDuringPlacementResult,
+  ChildStabilityProfile,
+  PlacementStabilityIntelligence,
+} from "./placement-stability-engine";

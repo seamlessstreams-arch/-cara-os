@@ -5,6 +5,14 @@ export {
   evaluateIncidentPatterns,
   buildChildBehaviourProfiles,
   generatePositiveBehaviourIntelligence,
+  getRatingLabel,
+  getBSPStatusLabel,
+  getDeEscalationOutcomeLabel,
+  getRecognitionTypeLabel,
+  getSanctionTypeLabel,
+  getImprovementTrendLabel,
+  getSeverityLabel,
+  getStrategyTypeLabel,
 } from "./positive-behaviour-engine";
 
 export type {

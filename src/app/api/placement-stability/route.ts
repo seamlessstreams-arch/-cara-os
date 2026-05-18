@@ -1,264 +1,432 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// API: /api/placement-stability — Placement Stability & Matching
+// API: /api/placement-stability
 //
-// Returns placement stability assessments, matching recommendations,
-// home-level metrics, and disruption risk analysis. Powers the placement
-// dashboard, matching panels, and stability monitoring screens.
+// Placement Stability Intelligence
 //
-// CHR 2015 Reg 11/12/14 — Welfare, protection, care planning.
-// Ofsted SCCIF — "Children are well matched to their placements."
+// GET  — Returns Oak House demo data with full intelligence analysis
+// POST — Accepts custom placement/disruption/support/matching/outcome data
+//        and returns analysis
+//
+// CHR 2015 Reg 36 — Assessment of prospective placements
+// CHR 2015 Reg 14 — Care planning (matching)
+// SCCIF — Stability and permanence
+// Children Act 1989 s22C
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
-import {
-  evaluatePlacementStability,
-  calculateHomeStabilityMetrics,
-  getMatchingRecommendations,
+import { generatePlacementStabilityIntelligence } from "@/lib/placement-stability";
+import type {
+  Placement,
+  DisruptionEvent,
+  StabilitySupport,
+  MatchingRecord,
+  MatchingFactorScore,
+  PlacementOutcome,
 } from "@/lib/placement-stability";
-import type { Placement, MatchingAssessmentItem } from "@/lib/placement-stability";
 
-type SB = any;
+// ── Demo Data ──────────────────────────────────────────────────────────────
 
-export async function GET(req: NextRequest) {
-  try {
-    const url = new URL(req.url);
-    const homeId = url.searchParams.get("homeId") ?? "home-oak";
-    const childId = url.searchParams.get("childId");
-    const view = url.searchParams.get("view") ?? "overview";
+function generateDemoData(): {
+  placements: Placement[];
+  disruptions: DisruptionEvent[];
+  supports: StabilitySupport[];
+  matchingRecords: MatchingRecord[];
+  outcomes: PlacementOutcome[];
+} {
+  const fullFactors = (baseScore: number): MatchingFactorScore[] => {
+    const factors = [
+      "age_compatibility",
+      "needs_compatibility",
+      "risk_compatibility",
+      "peer_dynamics",
+      "cultural_needs",
+      "statement_of_purpose_fit",
+      "location_suitability",
+      "therapeutic_alignment",
+    ] as const;
+    return factors.map((factor) => ({
+      factor,
+      score: baseScore,
+      rationale: `Assessed as ${baseScore}/5 for ${factor}`,
+    }));
+  };
 
-    const sb = createServerClient();
+  const placements: Placement[] = [
+    {
+      id: "plc-001",
+      childId: "child-alex",
+      childName: "Alex",
+      childAge: 14,
+      homeId: "oak-house",
+      startDate: "2025-09-01",
+      status: "active",
+      isEmergencyPlacement: false,
+      placingAuthority: "Manchester City Council",
+      keyWorker: "Sarah Johnson",
+      plannedDurationMonths: 12,
+    },
+    {
+      id: "plc-002",
+      childId: "child-jordan",
+      childName: "Jordan",
+      childAge: 13,
+      homeId: "oak-house",
+      startDate: "2025-11-15",
+      status: "active",
+      isEmergencyPlacement: false,
+      placingAuthority: "Salford City Council",
+      keyWorker: "Tom Richards",
+      plannedDurationMonths: 18,
+    },
+    {
+      id: "plc-003",
+      childId: "child-morgan",
+      childName: "Morgan",
+      childAge: 15,
+      homeId: "oak-house",
+      startDate: "2026-01-10",
+      status: "active",
+      isEmergencyPlacement: false,
+      placingAuthority: "Bolton Council",
+      keyWorker: "Lisa Williams",
+      plannedDurationMonths: 12,
+    },
+  ];
 
-    if (sb && isSupabaseEnabled()) {
-      return await handleLiveData(sb, homeId, childId, view);
-    }
+  const disruptions: DisruptionEvent[] = [
+    {
+      id: "dis-001",
+      placementId: "plc-002",
+      childId: "child-jordan",
+      date: "2026-02-10",
+      factors: ["peer_conflict", "behavioural_escalation"],
+      severity: "medium",
+      wasAnticipated: true,
+      preventionAttempted: true,
+      preventionSuccessful: true,
+      supportProvided: ["key_worker_session", "peer_mediation"],
+      outcome: "Resolved through structured mediation between Jordan and Alex",
+      recordedBy: "Tom Richards",
+    },
+    {
+      id: "dis-002",
+      placementId: "plc-003",
+      childId: "child-morgan",
+      date: "2026-03-05",
+      factors: ["education_breakdown"],
+      severity: "low",
+      wasAnticipated: false,
+      preventionAttempted: true,
+      preventionSuccessful: false,
+      supportProvided: ["education_support", "multi_agency_meeting"],
+      outcome: "Alternative education provision identified and PEP updated",
+      recordedBy: "Lisa Williams",
+    },
+    {
+      id: "dis-003",
+      placementId: "plc-001",
+      childId: "child-alex",
+      date: "2026-04-01",
+      factors: ["family_contact_issues", "mental_health_crisis"],
+      severity: "high",
+      wasAnticipated: true,
+      preventionAttempted: true,
+      preventionSuccessful: true,
+      supportProvided: ["therapeutic_intervention", "crisis_intervention", "key_worker_session"],
+      outcome: "Family contact arrangements renegotiated and therapeutic support increased",
+      recordedBy: "Sarah Johnson",
+    },
+  ];
 
-    return NextResponse.json(getDemoData(homeId, childId, view));
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
-  }
+  const supports: StabilitySupport[] = [
+    {
+      id: "sup-001",
+      placementId: "plc-001",
+      childId: "child-alex",
+      date: "2026-01-15",
+      type: "key_worker_session",
+      description: "Weekly key worker session — reviewed placement goals and education progress",
+      providedBy: "Sarah Johnson",
+      childEngaged: true,
+      outcomePositive: true,
+    },
+    {
+      id: "sup-002",
+      placementId: "plc-002",
+      childId: "child-jordan",
+      date: "2026-02-12",
+      type: "peer_mediation",
+      description: "Structured mediation session following peer conflict with Alex",
+      providedBy: "Tom Richards",
+      childEngaged: true,
+      outcomePositive: true,
+    },
+    {
+      id: "sup-003",
+      placementId: "plc-003",
+      childId: "child-morgan",
+      date: "2026-03-10",
+      type: "education_support",
+      description: "PEP review with virtual school head and alternative provision planning",
+      providedBy: "Lisa Williams",
+      childEngaged: true,
+      outcomePositive: true,
+    },
+    {
+      id: "sup-004",
+      placementId: "plc-001",
+      childId: "child-alex",
+      date: "2026-04-02",
+      type: "therapeutic_intervention",
+      description: "Additional therapeutic session following family contact issues",
+      providedBy: "Sarah Johnson",
+      childEngaged: true,
+      outcomePositive: true,
+    },
+    {
+      id: "sup-005",
+      placementId: "plc-002",
+      childId: "child-jordan",
+      date: "2026-04-15",
+      type: "placement_review_meeting",
+      description: "6-month placement review with social worker and IRO",
+      providedBy: "Darren Laville",
+      childEngaged: true,
+      outcomePositive: true,
+    },
+  ];
+
+  const matchingRecords: MatchingRecord[] = [
+    {
+      id: "mr-001",
+      placementId: "plc-001",
+      childId: "child-alex",
+      assessedBy: "Lisa Williams",
+      assessmentDate: "2025-08-25",
+      factors: fullFactors(4),
+      overallScore: 4.0,
+      impactAssessmentCompleted: true,
+      existingChildrenConsulted: true,
+      childViewsRecorded: true,
+      riskAssessmentCompleted: true,
+      notes: "Alex is a good match for Oak House. Emotional support needs align with the home's therapeutic approach.",
+    },
+    {
+      id: "mr-002",
+      placementId: "plc-002",
+      childId: "child-jordan",
+      assessedBy: "Lisa Williams",
+      assessmentDate: "2025-11-01",
+      factors: fullFactors(3),
+      overallScore: 3.0,
+      impactAssessmentCompleted: true,
+      existingChildrenConsulted: true,
+      childViewsRecorded: false,
+      riskAssessmentCompleted: true,
+      notes: "Jordan's therapeutic needs can be met. Peer dynamics will need monitoring given existing group.",
+    },
+    {
+      id: "mr-003",
+      placementId: "plc-003",
+      childId: "child-morgan",
+      assessedBy: "Lisa Williams",
+      assessmentDate: "2026-01-05",
+      factors: [
+        { factor: "age_compatibility", score: 4, rationale: "Good age fit with current group" },
+        { factor: "needs_compatibility", score: 3, rationale: "Education needs require additional support" },
+        { factor: "risk_compatibility", score: 3, rationale: "Manageable risk with existing safety plan" },
+        { factor: "peer_dynamics", score: 4, rationale: "Good fit with existing group dynamics" },
+        { factor: "statement_of_purpose_fit", score: 4, rationale: "Matches home's statement of purpose" },
+      ],
+      overallScore: 3.6,
+      impactAssessmentCompleted: true,
+      existingChildrenConsulted: false,
+      childViewsRecorded: true,
+      riskAssessmentCompleted: true,
+      notes: "Morgan is a reasonable match. Education support will be key to placement success.",
+    },
+  ];
+
+  const outcomes: PlacementOutcome[] = [
+    {
+      id: "out-001",
+      placementId: "plc-001",
+      childId: "child-alex",
+      childName: "Alex",
+      reviewDate: "2026-04-01",
+      areas: [
+        { area: "education_engagement", rating: "some_improvement", evidence: "Attendance improved from 70% to 88% since placement" },
+        { area: "health_wellbeing", rating: "significant_improvement", evidence: "Registered with GP, attending CAMHS fortnightly, dental check completed" },
+        { area: "behaviour_progress", rating: "some_improvement", evidence: "Reduced incidents from 3/week to 1/week since January" },
+        { area: "emotional_regulation", rating: "stable", evidence: "Maintaining use of strategies learned in therapy" },
+        { area: "social_relationships", rating: "some_improvement", evidence: "Developed positive friendship with Jordan. Attending youth club." },
+        { area: "independent_skills", rating: "stable", evidence: "Cooking and cleaning skills developing. Manages pocket money." },
+      ],
+      overallProgress: "some_improvement",
+      educationAttendancePercent: 88,
+      healthAppointmentsAttended: true,
+      carePlanUpToDate: true,
+      reviewedBy: "Darren Laville",
+    },
+    {
+      id: "out-002",
+      placementId: "plc-002",
+      childId: "child-jordan",
+      childName: "Jordan",
+      reviewDate: "2026-04-01",
+      areas: [
+        { area: "education_engagement", rating: "stable", evidence: "Maintaining 75% attendance at school" },
+        { area: "health_wellbeing", rating: "some_improvement", evidence: "Engaging with CAMHS. Physical health improving." },
+        { area: "behaviour_progress", rating: "some_improvement", evidence: "Fewer incidents since peer mediation in February" },
+        { area: "emotional_regulation", rating: "some_improvement", evidence: "Using breathing techniques and key worker support" },
+        { area: "social_relationships", rating: "stable", evidence: "Peer relationships stable. Building trust with staff." },
+        { area: "independent_skills", rating: "some_improvement", evidence: "Learning budgeting and cooking with key worker support" },
+      ],
+      overallProgress: "some_improvement",
+      educationAttendancePercent: 75,
+      healthAppointmentsAttended: true,
+      carePlanUpToDate: true,
+      reviewedBy: "Darren Laville",
+    },
+    {
+      id: "out-003",
+      placementId: "plc-003",
+      childId: "child-morgan",
+      childName: "Morgan",
+      reviewDate: "2026-04-01",
+      areas: [
+        { area: "education_engagement", rating: "some_decline", evidence: "Attendance dropped to 60% after education breakdown in March" },
+        { area: "health_wellbeing", rating: "stable", evidence: "Physical health stable. CAMHS referral pending." },
+        { area: "behaviour_progress", rating: "stable", evidence: "Consistent behaviour at home. No significant incidents." },
+        { area: "emotional_regulation", rating: "some_improvement", evidence: "Engaging well with key worker. Using grounding techniques." },
+        { area: "social_relationships", rating: "some_improvement", evidence: "Building friendships at home. Starting youth club." },
+        { area: "independent_skills", rating: "significant_improvement", evidence: "Excellent progress with cooking and self-care. Very motivated." },
+      ],
+      overallProgress: "stable",
+      educationAttendancePercent: 60,
+      healthAppointmentsAttended: false,
+      carePlanUpToDate: true,
+      reviewedBy: "Darren Laville",
+    },
+  ];
+
+  return { placements, disruptions, supports, matchingRecords, outcomes };
 }
 
-// ── Live Data ──────────────────────────────────────────────────────────────
+// ── Validation ─────────────────────────────────────────────────────────────
 
-async function handleLiveData(sb: any, homeId: string, childId: string | null, view: string) {
-  let query = (sb.from("placements") as SB)
-    .select("*, matching_assessments(*), stability_milestones(*), disruption_events(*)")
-    .eq("home_id", homeId)
-    .order("admission_date", { ascending: false });
-
-  if (childId) {
-    query = query.eq("child_id", childId);
+function validatePostBody(body: unknown): {
+  valid: boolean;
+  error?: string;
+  data?: {
+    placements: Placement[];
+    disruptions: DisruptionEvent[];
+    supports: StabilitySupport[];
+    matchingRecords: MatchingRecord[];
+    outcomes: PlacementOutcome[];
+    homeId?: string;
+    periodStart?: string;
+    periodEnd?: string;
+    referenceDate?: string;
+  };
+} {
+  if (!body || typeof body !== "object") {
+    return { valid: false, error: "Request body must be a JSON object" };
   }
 
-  const { data: rows, error } = await query;
-  if (error) throw error;
+  const b = body as Record<string, unknown>;
 
-  const placements: Placement[] = (rows ?? []).map(mapToPlacement);
-
-  switch (view) {
-    case "overview":
-      return NextResponse.json(calculateHomeStabilityMetrics(placements, homeId, "Oak House", 4));
-    case "stability":
-      return NextResponse.json({
-        results: placements.map(p => evaluatePlacementStability(p)),
-      });
-    case "matching":
-      if (!childId) {
-        return NextResponse.json({ error: "childId required for matching view" }, { status: 400 });
-      }
-      const placement = placements[0];
-      if (!placement) return NextResponse.json({ error: "Placement not found" }, { status: 404 });
-      return NextResponse.json({
-        stability: evaluatePlacementStability(placement),
-        matchingRecommendations: getMatchingRecommendations(placement),
-      });
-    default:
-      return NextResponse.json({ error: `Unknown view: ${view}` }, { status: 400 });
+  if (!Array.isArray(b.placements)) {
+    return { valid: false, error: "placements must be an array" };
   }
-}
 
-function mapToPlacement(row: any): Placement {
+  if (!Array.isArray(b.disruptions)) {
+    return { valid: false, error: "disruptions must be an array" };
+  }
+
+  if (!Array.isArray(b.supports)) {
+    return { valid: false, error: "supports must be an array" };
+  }
+
+  if (!Array.isArray(b.matchingRecords)) {
+    return { valid: false, error: "matchingRecords must be an array" };
+  }
+
+  if (!Array.isArray(b.outcomes)) {
+    return { valid: false, error: "outcomes must be an array" };
+  }
+
   return {
-    id: row.id,
-    childId: row.child_id,
-    childName: row.child_name,
-    homeId: row.home_id,
-    homeName: row.home_name ?? "",
-    status: row.status,
-    referralDate: row.referral_date,
-    admissionDate: row.admission_date,
-    plannedEndDate: row.planned_end_date,
-    actualEndDate: row.actual_end_date,
-    endReason: row.end_reason,
-    matchingScore: row.matching_score ?? 70,
-    matchingAssessment: (row.matching_assessments ?? []).map((m: any) => ({
-      domain: m.domain,
-      score: m.score,
-      notes: m.notes ?? "",
-      mitigationPlan: m.mitigation_plan,
-    })),
-    currentRiskIndicators: row.current_risk_indicators ?? [],
-    stabilityMilestones: (row.stability_milestones ?? []).map((m: any) => ({
-      name: m.name,
-      targetDate: m.target_date,
-      achievedDate: m.achieved_date,
-      status: m.status,
-    })),
-    disruptionHistory: (row.disruption_events ?? []).map((d: any) => ({
-      date: d.date,
-      description: d.description,
-      severity: d.severity,
-      resolved: d.resolved ?? false,
-      actionTaken: d.action_taken ?? "",
-    })),
-    keyworkerId: row.keyworker_id ?? "",
-    keyworkerName: row.keyworker_name ?? "",
-    socialWorkerId: row.social_worker_id ?? "",
-    previousPlacements: row.previous_placements ?? 0,
+    valid: true,
+    data: {
+      placements: b.placements as Placement[],
+      disruptions: b.disruptions as DisruptionEvent[],
+      supports: b.supports as StabilitySupport[],
+      matchingRecords: b.matchingRecords as MatchingRecord[],
+      outcomes: b.outcomes as PlacementOutcome[],
+      homeId: typeof b.homeId === "string" ? b.homeId : undefined,
+      periodStart: typeof b.periodStart === "string" ? b.periodStart : undefined,
+      periodEnd: typeof b.periodEnd === "string" ? b.periodEnd : undefined,
+      referenceDate: typeof b.referenceDate === "string" ? b.referenceDate : undefined,
+    },
   };
 }
 
-// ── Demo Data ─────────────────────────────────────────────────────────────
+// ── GET ────────────────────────────────────────────────────────────────────
 
-function getDemoData(homeId: string, childId: string | null, view: string) {
-  const allPlacements = getDemoPlacements(homeId);
-  const placements = childId ? allPlacements.filter(p => p.childId === childId) : allPlacements;
+export async function GET() {
+  const { placements, disruptions, supports, matchingRecords, outcomes } = generateDemoData();
 
-  switch (view) {
-    case "overview":
-      return calculateHomeStabilityMetrics(allPlacements, homeId, "Oak House", 4);
-    case "stability":
-      return { results: placements.map(p => evaluatePlacementStability(p)) };
-    case "matching":
-      if (!childId || placements.length === 0) return { error: "Placement not found" };
-      return {
-        stability: evaluatePlacementStability(placements[0]),
-        matchingRecommendations: getMatchingRecommendations(placements[0]),
-      };
-    default:
-      return { error: `Unknown view: ${view}` };
-  }
+  const intelligence = generatePlacementStabilityIntelligence(
+    placements,
+    disruptions,
+    supports,
+    matchingRecords,
+    outcomes,
+    "oak-house",
+    "2025-09-01",
+    "2026-05-18",
+    "2026-05-18",
+  );
+
+  return NextResponse.json({ data: intelligence });
 }
 
-function getDemoPlacements(homeId: string): Placement[] {
-  const matchingBase: MatchingAssessmentItem[] = [
-    { domain: "age_appropriateness", score: 8, notes: "Within age range of current group" },
-    { domain: "peer_dynamics", score: 7, notes: "Generally positive dynamics" },
-    { domain: "risk_compatibility", score: 7, notes: "Compatible risk profile" },
-    { domain: "therapeutic_needs", score: 8, notes: "CAMHS accessible locally" },
-    { domain: "education_provision", score: 9, notes: "School placement secured" },
-    { domain: "location_suitability", score: 7, notes: "40 min from family" },
-    { domain: "cultural_identity", score: 8, notes: "Staff culturally aware" },
-    { domain: "contact_arrangements", score: 7, notes: "Weekly contact agreed" },
-    { domain: "staff_capability", score: 8, notes: "Experienced team" },
-    { domain: "physical_environment", score: 8, notes: "Suitable room allocated" },
-  ];
+// ── POST ───────────────────────────────────────────────────────────────────
 
-  return [
-    // ── Jordan — Stable, established placement ──
-    {
-      id: "pl-001",
-      childId: "child-jordan",
-      childName: "Jordan Williams",
-      homeId,
-      homeName: "Oak House",
-      status: "established",
-      referralDate: "2024-08-15T00:00:00Z",
-      admissionDate: "2024-09-01T00:00:00Z",
-      matchingScore: 78,
-      matchingAssessment: matchingBase,
-      currentRiskIndicators: [],
-      stabilityMilestones: [
-        { name: "Settled in school", targetDate: "2024-10-01", achievedDate: "2024-09-25", status: "achieved" },
-        { name: "Established keyworker relationship", targetDate: "2024-10-15", achievedDate: "2024-10-10", status: "achieved" },
-        { name: "Regular family contact", targetDate: "2024-11-01", achievedDate: "2024-11-01", status: "achieved" },
-        { name: "Community activity engaged", targetDate: "2026-06-01", status: "pending" },
-      ],
-      disruptionHistory: [],
-      keyworkerId: "staff-001",
-      keyworkerName: "Sarah Mitchell",
-      socialWorkerId: "sw-001",
-      previousPlacements: 2,
-    },
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validation = validatePostBody(body);
 
-    // ── Alex — At risk, exploitation concerns ──
-    {
-      id: "pl-002",
-      childId: "child-alex",
-      childName: "Alex Reeves",
-      homeId,
-      homeName: "Oak House",
-      status: "at_risk",
-      referralDate: "2025-06-01T00:00:00Z",
-      admissionDate: "2025-06-15T00:00:00Z",
-      matchingScore: 62,
-      matchingAssessment: [
-        { domain: "age_appropriateness", score: 7, notes: "Oldest in group" },
-        { domain: "peer_dynamics", score: 5, notes: "Tension with younger peers. Influence concern.", mitigationPlan: "Structured separate activities. Monitor closely." },
-        { domain: "risk_compatibility", score: 5, notes: "Higher risk profile than peers", mitigationPlan: "Enhanced safety plan. Staff awareness training." },
-        { domain: "therapeutic_needs", score: 6, notes: "Exploitation support needed" },
-        { domain: "education_provision", score: 7, notes: "Alternative provision in place" },
-        { domain: "location_suitability", score: 5, notes: "Known associates nearby", mitigationPlan: "Disruption strategy with police." },
-        { domain: "cultural_identity", score: 8, notes: "Good cultural match" },
-        { domain: "contact_arrangements", score: 6, notes: "Complex family dynamics" },
-        { domain: "staff_capability", score: 7, notes: "Staff trained in exploitation" },
-        { domain: "physical_environment", score: 8, notes: "Room on ground floor for monitoring" },
-      ],
-      currentRiskIndicators: ["frequent_missing", "exploitation_risk", "peer_conflict"],
-      stabilityMilestones: [
-        { name: "School engagement", targetDate: "2025-09-01", achievedDate: "2025-09-15", status: "achieved" },
-        { name: "Reduced missing episodes", targetDate: "2026-03-01", status: "overdue" },
-        { name: "MACE safety plan", targetDate: "2026-04-01", achievedDate: "2026-03-20", status: "achieved" },
-      ],
-      disruptionHistory: [
-        { date: "2026-04-28T00:00:00Z", description: "Missing 35 hours — exploitation concern", severity: "high", resolved: true, actionTaken: "Strategy meeting held. NRM referral." },
-        { date: "2026-03-10T00:00:00Z", description: "Refused to return to home after contact", severity: "medium", resolved: true, actionTaken: "Police located. Stability meeting." },
-      ],
-      keyworkerId: "staff-002",
-      keyworkerName: "Tom Richards",
-      socialWorkerId: "sw-002",
-      previousPlacements: 4,
-    },
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 },
+      );
+    }
 
-    // ── Mia — Settling in, new placement ──
-    {
-      id: "pl-003",
-      childId: "child-mia",
-      childName: "Mia Chen",
-      homeId,
-      homeName: "Oak House",
-      status: "settling_in",
-      referralDate: "2026-04-20T00:00:00Z",
-      admissionDate: "2026-05-01T00:00:00Z",
-      matchingScore: 82,
-      matchingAssessment: [
-        { domain: "age_appropriateness", score: 9, notes: "Age-appropriate peer group" },
-        { domain: "peer_dynamics", score: 8, notes: "Positive early interactions" },
-        { domain: "risk_compatibility", score: 8, notes: "Lower risk — good balance for group" },
-        { domain: "therapeutic_needs", score: 7, notes: "CAMHS referral in progress" },
-        { domain: "education_provision", score: 9, notes: "School place confirmed, strong PEP" },
-        { domain: "location_suitability", score: 8, notes: "Close to school and family" },
-        { domain: "cultural_identity", score: 9, notes: "Diverse staff team, community links" },
-        { domain: "contact_arrangements", score: 8, notes: "Twice weekly contact agreed" },
-        { domain: "staff_capability", score: 8, notes: "Keyworker experienced with similar presentations" },
-        { domain: "physical_environment", score: 9, notes: "Room personalised before arrival" },
-      ],
-      currentRiskIndicators: [],
-      stabilityMilestones: [
-        { name: "First school week completed", targetDate: "2026-05-10", achievedDate: "2026-05-09", status: "achieved" },
-        { name: "Keyworker relationship established", targetDate: "2026-05-29", status: "pending" },
-        { name: "First family contact from home", targetDate: "2026-05-15", achievedDate: "2026-05-14", status: "achieved" },
-        { name: "Engaged in house activity", targetDate: "2026-06-01", status: "pending" },
-      ],
-      disruptionHistory: [],
-      keyworkerId: "staff-003",
-      keyworkerName: "Lisa Park",
-      socialWorkerId: "sw-003",
-      previousPlacements: 1,
-    },
-  ];
+    const { placements, disruptions, supports, matchingRecords, outcomes, homeId, periodStart, periodEnd, referenceDate } =
+      validation.data!;
+
+    const now = new Date().toISOString().split("T")[0];
+    const intelligence = generatePlacementStabilityIntelligence(
+      placements,
+      disruptions,
+      supports,
+      matchingRecords,
+      outcomes,
+      homeId ?? "unknown",
+      periodStart ?? now,
+      periodEnd ?? now,
+      referenceDate ?? now,
+    );
+
+    return NextResponse.json({ data: intelligence });
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 },
+    );
+  }
 }

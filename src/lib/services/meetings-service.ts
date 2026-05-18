@@ -229,12 +229,15 @@ function identifyMeetingAlerts(
 ): { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] {
   const alerts: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [];
 
-  // No meetings in last 14 days
+  // No meetings in last 14 days (compare at day granularity to avoid time-of-day drift)
   const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
-  const recentMeetings = meetings.filter(
-    (m) => now.getTime() - new Date(m.meeting_date).getTime() <= fourteenDaysMs,
-  );
+  const recentMeetings = meetings.filter((m) => {
+    const meetingDate = new Date(m.meeting_date);
+    const meetingDay = new Date(meetingDate.getFullYear(), meetingDate.getMonth(), meetingDate.getDate());
+    return todayStart.getTime() - meetingDay.getTime() <= fourteenDaysMs;
+  });
   if (recentMeetings.length === 0 && meetings.length > 0) {
     alerts.push({
       type: "no_recent_meeting",

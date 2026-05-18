@@ -1,0 +1,1 @@
+export { RestraintAnalysisDashboardWidget } from "./RestraintAnalysisDashboardWidget";

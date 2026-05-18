@@ -10,13 +10,11 @@
 // — SCCIF Quality of Care 2023
 //
 // Regulatory framework:
-//   CHR 2015 Reg 19         — Behaviour management (positive, proportionate)
-//   CHR 2015 Reg 11         — Positive relationships
-//   CHR 2015 Reg 12         — Protection of children
-//   SCCIF Quality of Care   — Positive behaviour support, de-escalation,
-//                              reward:sanction balance, child involvement
-//   BILD Code of Practice   — PBS framework, proactive/active/reactive
-//                              strategies, restrictive practice reduction
+//   CHR 2015 Reg 35         — Behaviour management policy
+//   CHR 2015 Reg 19         — Positive relationships
+//   SCCIF                   — Experiences and progress of children
+//   NICE CG158              — Antisocial behaviour in young people
+//   UNCRC Article 3         — Best interests of the child
 //
 // Key quality indicators for Ofsted:
 //   1. Every child has an up-to-date, person-centred BSP
@@ -1166,19 +1164,19 @@ export function generatePositiveBehaviourIntelligence(
 
   // --- Regulatory links ---
   regulatoryLinks.push(
-    "CHR 2015 Reg 19 — Behaviour management must be positive, proportionate and consistent",
+    "CHR 2015 Reg 35 — Behaviour management policy must promote positive behaviour and de-escalation",
   );
   regulatoryLinks.push(
-    "CHR 2015 Reg 11 — Positive relationships underpin behaviour support",
+    "CHR 2015 Reg 19 — Positive relationships underpin behaviour support and management",
   );
   regulatoryLinks.push(
-    "CHR 2015 Reg 12 — Protection of children — proportionate response to challenging behaviour",
+    "SCCIF — Experiences and progress: children are supported through positive behaviour strategies",
   );
   regulatoryLinks.push(
-    "SCCIF Quality of Care — Children are supported through positive behaviour strategies, not punitive approaches",
+    "NICE CG158 — Antisocial behaviour and conduct disorders in children and young people: recognition and management",
   );
   regulatoryLinks.push(
-    "BILD Code of Practice — PBS framework requires proactive, active and reactive strategies with emphasis on prevention",
+    "UNCRC Article 3 — Best interests of the child must be a primary consideration in all behaviour management decisions",
   );
 
   return {
@@ -1197,4 +1195,94 @@ export function generatePositiveBehaviourIntelligence(
     actions,
     regulatoryLinks,
   };
+}
+
+// ── Label Functions ─────────────────────────────────────────────────────────
+
+export function getRatingLabel(
+  rating: PositiveBehaviourResult["rating"],
+): string {
+  const labels: Record<PositiveBehaviourResult["rating"], string> = {
+    outstanding: "Outstanding",
+    good: "Good",
+    requires_improvement: "Requires Improvement",
+    inadequate: "Inadequate",
+  };
+  return labels[rating];
+}
+
+export function getBSPStatusLabel(status: BehaviourSupportPlanStatus | "no_plan"): string {
+  const labels: Record<BehaviourSupportPlanStatus | "no_plan", string> = {
+    draft: "Draft",
+    active: "Active",
+    under_review: "Under Review",
+    expired: "Expired",
+    archived: "Archived",
+    no_plan: "No Plan",
+  };
+  return labels[status];
+}
+
+export function getDeEscalationOutcomeLabel(outcome: DeEscalationOutcome): string {
+  const labels: Record<DeEscalationOutcome, string> = {
+    successful: "Successful",
+    partially_successful: "Partially Successful",
+    unsuccessful: "Unsuccessful",
+    not_attempted: "Not Attempted",
+  };
+  return labels[outcome];
+}
+
+export function getRecognitionTypeLabel(type: RecognitionType): string {
+  const labels: Record<RecognitionType, string> = {
+    verbal_praise: "Verbal Praise",
+    written_recognition: "Written Recognition",
+    activity_reward: "Activity Reward",
+    privilege: "Privilege",
+    achievement_certificate: "Achievement Certificate",
+    special_outing: "Special Outing",
+  };
+  return labels[type];
+}
+
+export function getSanctionTypeLabel(type: SanctionType): string {
+  const labels: Record<SanctionType, string> = {
+    verbal_warning: "Verbal Warning",
+    loss_of_privilege: "Loss of Privilege",
+    restorative_task: "Restorative Task",
+    time_out: "Time Out",
+    other: "Other",
+  };
+  return labels[type];
+}
+
+export function getImprovementTrendLabel(
+  trend: ChildBehaviourProfile["improvementTrend"],
+): string {
+  const labels: Record<ChildBehaviourProfile["improvementTrend"], string> = {
+    improving: "Improving",
+    stable: "Stable",
+    declining: "Declining",
+    insufficient_data: "Insufficient Data",
+  };
+  return labels[trend];
+}
+
+export function getSeverityLabel(level: BehaviourIncident["severityLevel"]): string {
+  const labels: Record<BehaviourIncident["severityLevel"], string> = {
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    critical: "Critical",
+  };
+  return labels[level];
+}
+
+export function getStrategyTypeLabel(type: StrategyType): string {
+  const labels: Record<StrategyType, string> = {
+    proactive: "Proactive",
+    active: "Active",
+    reactive: "Reactive",
+  };
+  return labels[type];
 }
