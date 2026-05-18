@@ -67,3 +67,4 @@ export { AriaStudioGenerator } from "./AriaStudioGenerator";
 export { AriaEvidenceSearch } from "./AriaEvidenceSearch";
 export { AriaQAReviewPanel } from "./AriaQAReviewPanel";
 export { AriaAuditViewer } from "./AriaAuditViewer";
+export { AriaWhistleblowingConcerns } from "./aria-whistleblowing-concerns";
