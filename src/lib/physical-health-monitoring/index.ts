@@ -1,0 +1,31 @@
+export {
+  evaluateAppointments,
+  evaluateAssessments,
+  evaluateHealthNeeds,
+  evaluateHealthPromotion,
+  evaluateImmunisations,
+  buildChildHealthProfiles,
+  generatePhysicalHealthIntelligence,
+  getAppointmentTypeLabel,
+  getHealthNeedCategoryLabel,
+  getHealthPromotionTopicLabel,
+} from "./physical-health-monitoring-engine";
+
+export type {
+  HealthAppointmentType,
+  AppointmentStatus,
+  HealthNeedCategory,
+  ConsentStatus,
+  HealthAppointment,
+  HealthAssessment,
+  HealthNeed,
+  HealthPromotion,
+  ImmunisationRecord,
+  AppointmentResult,
+  AssessmentResult,
+  HealthNeedsResult,
+  HealthPromotionResult,
+  ImmunisationResult,
+  ChildHealthProfile,
+  PhysicalHealthMonitoringIntelligence,
+} from "./physical-health-monitoring-engine";
