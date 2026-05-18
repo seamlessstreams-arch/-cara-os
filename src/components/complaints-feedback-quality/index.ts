@@ -1,0 +1,1 @@
+export { ComplaintsFeedbackQualityDashboardWidget } from "./ComplaintsFeedbackQualityDashboardWidget";
