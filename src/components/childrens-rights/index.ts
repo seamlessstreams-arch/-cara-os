@@ -1,0 +1,1 @@
+export { ChildrensRightsDashboardWidget } from "./ChildrensRightsDashboardWidget";
