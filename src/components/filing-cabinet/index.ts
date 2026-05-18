@@ -1,0 +1,1 @@
+export { FilingCabinetDashboardWidget } from "./FilingCabinetDashboardWidget";

@@ -1,0 +1,1 @@
+export { HrFilesDashboardWidget } from "./HrFilesDashboardWidget";
