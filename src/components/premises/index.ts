@@ -1,0 +1,1 @@
+export { PremisesDashboardWidget } from "./PremisesDashboardWidget";
