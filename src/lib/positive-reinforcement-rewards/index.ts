@@ -1,0 +1,33 @@
+export {
+  generatePositiveReinforcementRewardsIntelligence,
+  evaluatePraiseRecognition,
+  evaluateRewardSystem,
+  evaluateBehaviouralImpact,
+  evaluateStaffReinforcementReadiness,
+  buildChildReinforcementProfiles,
+  pct,
+  getRating,
+  getPraiseTypeLabel,
+  getRewardCategoryLabel,
+  getBehaviourTrendLabel,
+  getChildResponseLabel,
+  getRatingLabel,
+} from "./positive-reinforcement-rewards-engine";
+
+export type {
+  PraiseType,
+  RewardCategory,
+  BehaviourTrend,
+  ChildResponse,
+  Rating,
+  PraiseRecord,
+  RewardRecord,
+  BehaviourOutcome,
+  StaffReinforcementTraining,
+  PraiseRecognitionResult,
+  RewardSystemResult,
+  BehaviouralImpactResult,
+  StaffReinforcementReadinessResult,
+  ChildReinforcementProfile,
+  PositiveReinforcementRewardsIntelligence,
+} from "./positive-reinforcement-rewards-engine";
