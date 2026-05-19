@@ -1,0 +1,31 @@
+export {
+  evaluateSessionEffectiveness,
+  evaluateTherapeuticApproach,
+  evaluateRegulationPolicy,
+  evaluateStaffRegulationReadiness,
+  buildChildRegulationProfiles,
+  generateEmotionalRegulationSupportIntelligence,
+  pct,
+  getRating,
+  getStrategyTypeLabel,
+  getOutcomeLevelLabel,
+  getRatingLabel,
+  getStrategyTypeLabels,
+  getOutcomeLevelLabels,
+  getRatingLabels,
+} from "./emotional-regulation-support-engine";
+
+export type {
+  StrategyType,
+  OutcomeLevel,
+  Rating,
+  RegulationSession,
+  RegulationPolicy,
+  StaffRegulationTraining,
+  SessionEffectivenessResult,
+  TherapeuticApproachResult,
+  RegulationPolicyResult,
+  StaffRegulationReadinessResult,
+  ChildRegulationProfile,
+  EmotionalRegulationSupportIntelligence,
+} from "./emotional-regulation-support-engine";

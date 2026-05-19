@@ -1,179 +1,188 @@
 // ==============================================================================
 // Cornerstone Family Contact Quality Intelligence Engine
 //
-// Evaluates the quality, frequency, and child-centredness of family contact
-// arrangements for looked-after children in residential care.
+// Evaluates how well a children's residential home supports and manages family
+// contact for looked-after children, including visit quality, phone contact,
+// letterbox contact, and contact plan adherence.
 //
 // Regulatory basis:
-//   CHR 2015 Reg 8 — promotion of contact between child and family
-//   CA 1989 s34 — contact with children in care
-//   CA 1989 Schedule 2 Para 15 — promotion and maintenance of contact
-//   UNCRC Article 9 — right to maintain contact with parents
+//   CHR 2015 Reg 10 — contact between child and parents, relatives, friends
+//   CHR 2015 Reg 12 — the duty to promote the child's welfare
 //   SCCIF — experiences and progress of children, including family contact
-//   NMS 10 — contact and relationships
-//   Working Together 2023 — family involvement in care planning
+//   Children Act 1989 s34 — contact with children in care
+//   Care Planning Regulations 2010 — care plans including contact arrangements
+//   NMS 9 — contact and access to family and friends
+//   UNCRC Article 9 — right to maintain contact with both parents
 //
-// Pure deterministic engine — no AI, no external calls.
+// Pure deterministic engine — no AI, no external calls, no randomness, no Date.now().
 // ==============================================================================
 
-// -- Types --------------------------------------------------------------------
+// -- Type Unions ---------------------------------------------------------------
 
 export type ContactType =
   | "face_to_face"
-  | "telephone"
+  | "phone_call"
   | "video_call"
-  | "letter"
+  | "letterbox"
   | "supervised_visit"
   | "unsupervised_visit"
-  | "family_activity"
-  | "sibling_contact"
-  | "overnight_stay";
+  | "activity_based"
+  | "family_event";
 
 export type ContactOutcome =
+  | "very_positive"
   | "positive"
-  | "mostly_positive"
-  | "mixed"
+  | "neutral"
   | "difficult"
-  | "distressing"
-  | "did_not_occur";
+  | "did_not_happen";
 
-export type ContactFrequency =
-  | "more_than_weekly"
-  | "weekly"
-  | "fortnightly"
-  | "monthly"
-  | "less_than_monthly"
-  | "no_contact";
-
-export type SupervisionLevel =
-  | "unsupervised"
-  | "light_touch"
-  | "supervised"
-  | "closely_supervised"
-  | "suspended";
-
-export type FamilyMember =
-  | "mother"
-  | "father"
+export type ContactPerson =
+  | "parent_mother"
+  | "parent_father"
   | "sibling"
   | "grandparent"
-  | "aunt_uncle"
-  | "other_relative"
-  | "significant_other";
+  | "extended_family"
+  | "other_significant";
 
-export type ChildViewOnContact =
-  | "wants_more"
-  | "happy_with_current"
-  | "wants_less"
-  | "does_not_want"
-  | "not_recorded";
+export type Rating =
+  | "outstanding"
+  | "good"
+  | "requires_improvement"
+  | "inadequate";
 
-export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
+// -- Label Maps ----------------------------------------------------------------
 
-// -- Interfaces ---------------------------------------------------------------
+const CONTACT_TYPE_LABELS: Record<ContactType, string> = {
+  face_to_face: "Face to Face",
+  phone_call: "Phone Call",
+  video_call: "Video Call",
+  letterbox: "Letterbox",
+  supervised_visit: "Supervised Visit",
+  unsupervised_visit: "Unsupervised Visit",
+  activity_based: "Activity Based",
+  family_event: "Family Event",
+};
 
-export interface ContactRecord {
+const CONTACT_OUTCOME_LABELS: Record<ContactOutcome, string> = {
+  very_positive: "Very Positive",
+  positive: "Positive",
+  neutral: "Neutral",
+  difficult: "Difficult",
+  did_not_happen: "Did Not Happen",
+};
+
+const CONTACT_PERSON_LABELS: Record<ContactPerson, string> = {
+  parent_mother: "Mother",
+  parent_father: "Father",
+  sibling: "Sibling",
+  grandparent: "Grandparent",
+  extended_family: "Extended Family",
+  other_significant: "Other Significant Person",
+};
+
+const RATING_LABELS: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
+
+// -- Label Getters -------------------------------------------------------------
+
+export function getContactTypeLabel(t: ContactType): string {
+  return CONTACT_TYPE_LABELS[t] ?? t;
+}
+
+export function getContactOutcomeLabel(o: ContactOutcome): string {
+  return CONTACT_OUTCOME_LABELS[o] ?? o;
+}
+
+export function getContactPersonLabel(p: ContactPerson): string {
+  return CONTACT_PERSON_LABELS[p] ?? p;
+}
+
+export function getRatingLabel(r: Rating): string {
+  return RATING_LABELS[r] ?? r;
+}
+
+// -- Input Interfaces ----------------------------------------------------------
+
+export interface FamilyContact {
   id: string;
   childId: string;
   childName: string;
-  familyMember: FamilyMember;
-  familyMemberName: string;
-  contactType: ContactType;
   contactDate: string;
-  supervisionLevel: SupervisionLevel;
-  outcome: ContactOutcome;
-  durationMinutes: number;
-  childPreparedForContact: boolean;
-  childViewsSought: boolean;
-  childEnjoyedContact: boolean;
-  debriefAfterContact: boolean;
-  impactOnChild: string;
-  staffFacilitator?: string;
+  contactType: ContactType;
+  contactPerson: ContactPerson;
+  contactOutcome: ContactOutcome;
+  childPrepared: boolean;
+  childViewsRecorded: boolean;
+  supervisedAppropriately: boolean;
+  recordedInCasefile: boolean;
+  contactPlanFollowed: boolean;
+  childSatisfied: boolean;
 }
 
-export interface ContactPlan {
+export interface ContactPolicy {
   id: string;
-  childId: string;
-  childName: string;
-  familyMember: FamilyMember;
-  familyMemberName: string;
-  agreedFrequency: ContactFrequency;
-  actualFrequencyMet: boolean;
-  childViewOnContact: ChildViewOnContact;
-  courtOrderInPlace: boolean;
-  contactConditions?: string;
-  lastReviewedDate: string;
-  reviewedBy: string;
-  planIsChildCentred: boolean;
+  contactPlanForEachChild: boolean;
+  familyEngagementStrategy: boolean;
+  supervisedContactGuidance: boolean;
+  letterboxProcess: boolean;
+  complaintsMechanism: boolean;
+  culturalConsideration: boolean;
+  regularReview: boolean;
 }
 
-export interface SiblingContact {
+export interface StaffContactTraining {
   id: string;
-  childId: string;
-  childName: string;
-  siblingId: string;
-  siblingName: string;
-  siblingPlacement: string;
-  contactFrequency: ContactFrequency;
-  frequencyMet: boolean;
-  lastContactDate: string;
-  qualityRating: ContactOutcome;
+  staffId: string;
+  staffName: string;
+  familyEngagement: boolean;
+  contactSupervision: boolean;
+  childPreparation: boolean;
+  conflictManagement: boolean;
+  recordKeeping: boolean;
+  culturalAwareness: boolean;
 }
 
-export interface FamilyEngagement {
-  id: string;
-  childId: string;
-  childName: string;
-  familyInvolvedInReviews: boolean;
-  familyInvolvedInCarePlanning: boolean;
-  familyRelationshipsSupported: boolean;
-  culturalLinksPromoted: boolean;
-  familyGroupConferencing: boolean;
-  lifestoryWorkIncludesFamily: boolean;
-}
-
-// -- Result Types -------------------------------------------------------------
+// -- Result Types --------------------------------------------------------------
 
 export interface ContactQualityResult {
-  overallScore: number; // 0-25
-  totalContacts: number;
+  score: number;
   positiveOutcomeRate: number;
   childPreparedRate: number;
-  childViewsSoughtRate: number;
-  childEnjoyedRate: number;
-  debriefRate: number;
-  averageDurationMinutes: number;
-  contactsByType: Record<string, number>;
+  childViewsRecordedRate: number;
+  satisfactionPlanRate: number;
 }
 
-export interface ContactPlanComplianceResult {
-  overallScore: number; // 0-25
-  totalPlans: number;
-  frequencyMetRate: number;
-  childCentredRate: number;
-  childWantsMoreCount: number;
-  childHappyCount: number;
-  recentlyReviewedRate: number;
-  courtOrderCount: number;
+export interface ContactConsistencyResult {
+  score: number;
+  recordedRate: number;
+  planAdherenceRate: number;
+  supervisedAppropriatelyRate: number;
 }
 
-export interface SiblingContactResult {
-  overallScore: number; // 0-25
-  totalSiblingPairs: number;
-  frequencyMetRate: number;
-  positiveQualityRate: number;
-  averageContactGapDays: number;
+export interface ContactPolicyResult {
+  score: number;
+  contactPlanForEachChild: boolean;
+  familyEngagementStrategy: boolean;
+  supervisedContactGuidance: boolean;
+  letterboxProcess: boolean;
+  complaintsMechanism: boolean;
+  culturalConsideration: boolean;
+  regularReview: boolean;
 }
 
-export interface FamilyEngagementResult {
-  overallScore: number; // 0-25
-  totalChildren: number;
-  reviewInvolvementRate: number;
-  carePlanningRate: number;
-  relationshipsSupportedRate: number;
-  culturalLinksRate: number;
-  familyConferencingRate: number;
-  lifestoryRate: number;
+export interface StaffContactReadinessResult {
+  score: number;
+  totalStaff: number;
+  familyEngagementRate: number;
+  contactSupervisionRate: number;
+  childPreparationRate: number;
+  conflictManagementRate: number;
+  recordKeepingRate: number;
+  culturalAwarenessRate: number;
 }
 
 export interface ChildContactProfile {
@@ -181,10 +190,10 @@ export interface ChildContactProfile {
   childName: string;
   totalContacts: number;
   positiveRate: number;
-  siblingContactMet: boolean;
-  familyEngaged: boolean;
-  childViewOnContact: ChildViewOnContact;
-  overallScore: number; // 0-10
+  preparedRate: number;
+  viewsRecordedRate: number;
+  satisfiedRate: number;
+  score: number; // 0-10
 }
 
 export interface FamilyContactQualityIntelligence {
@@ -194,9 +203,9 @@ export interface FamilyContactQualityIntelligence {
   overallScore: number;
   rating: Rating;
   contactQuality: ContactQualityResult;
-  planCompliance: ContactPlanComplianceResult;
-  siblingContact: SiblingContactResult;
-  familyEngagement: FamilyEngagementResult;
+  contactConsistency: ContactConsistencyResult;
+  contactPolicy: ContactPolicyResult;
+  staffContactReadiness: StaffContactReadinessResult;
   childProfiles: ChildContactProfile[];
   strengths: string[];
   areasForImprovement: string[];
@@ -204,86 +213,9 @@ export interface FamilyContactQualityIntelligence {
   regulatoryLinks: string[];
 }
 
-// -- Label Functions ----------------------------------------------------------
+// -- Helpers -------------------------------------------------------------------
 
-const CONTACT_TYPE_LABELS: Record<ContactType, string> = {
-  face_to_face: "Face to Face",
-  telephone: "Telephone",
-  video_call: "Video Call",
-  letter: "Letter",
-  supervised_visit: "Supervised Visit",
-  unsupervised_visit: "Unsupervised Visit",
-  family_activity: "Family Activity",
-  sibling_contact: "Sibling Contact",
-  overnight_stay: "Overnight Stay",
-};
-
-const CONTACT_OUTCOME_LABELS: Record<ContactOutcome, string> = {
-  positive: "Positive",
-  mostly_positive: "Mostly Positive",
-  mixed: "Mixed",
-  difficult: "Difficult",
-  distressing: "Distressing",
-  did_not_occur: "Did Not Occur",
-};
-
-const CONTACT_FREQUENCY_LABELS: Record<ContactFrequency, string> = {
-  more_than_weekly: "More Than Weekly",
-  weekly: "Weekly",
-  fortnightly: "Fortnightly",
-  monthly: "Monthly",
-  less_than_monthly: "Less Than Monthly",
-  no_contact: "No Contact",
-};
-
-const SUPERVISION_LEVEL_LABELS: Record<SupervisionLevel, string> = {
-  unsupervised: "Unsupervised",
-  light_touch: "Light Touch",
-  supervised: "Supervised",
-  closely_supervised: "Closely Supervised",
-  suspended: "Suspended",
-};
-
-const FAMILY_MEMBER_LABELS: Record<FamilyMember, string> = {
-  mother: "Mother",
-  father: "Father",
-  sibling: "Sibling",
-  grandparent: "Grandparent",
-  aunt_uncle: "Aunt/Uncle",
-  other_relative: "Other Relative",
-  significant_other: "Significant Other",
-};
-
-const CHILD_VIEW_LABELS: Record<ChildViewOnContact, string> = {
-  wants_more: "Wants More Contact",
-  happy_with_current: "Happy With Current",
-  wants_less: "Wants Less Contact",
-  does_not_want: "Does Not Want Contact",
-  not_recorded: "Not Recorded",
-};
-
-export function getContactTypeLabel(t: ContactType): string {
-  return CONTACT_TYPE_LABELS[t] ?? t;
-}
-export function getContactOutcomeLabel(o: ContactOutcome): string {
-  return CONTACT_OUTCOME_LABELS[o] ?? o;
-}
-export function getContactFrequencyLabel(f: ContactFrequency): string {
-  return CONTACT_FREQUENCY_LABELS[f] ?? f;
-}
-export function getSupervisionLevelLabel(l: SupervisionLevel): string {
-  return SUPERVISION_LEVEL_LABELS[l] ?? l;
-}
-export function getFamilyMemberLabel(m: FamilyMember): string {
-  return FAMILY_MEMBER_LABELS[m] ?? m;
-}
-export function getChildViewLabel(v: ChildViewOnContact): string {
-  return CHILD_VIEW_LABELS[v] ?? v;
-}
-
-// -- Helpers ------------------------------------------------------------------
-
-function pct(num: number, den: number): number {
+export function pct(num: number, den: number): number {
   if (den === 0) return 0;
   return Math.round((num / den) * 100);
 }
@@ -295,417 +227,370 @@ export function getRating(score: number): Rating {
   return "inadequate";
 }
 
-// -- Evaluation Functions -----------------------------------------------------
+// -- Evaluators ----------------------------------------------------------------
 
-export function evaluateContactQuality(records: ContactRecord[]): ContactQualityResult {
-  if (records.length === 0) {
-    return {
-      overallScore: 0,
-      totalContacts: 0,
-      positiveOutcomeRate: 0,
-      childPreparedRate: 0,
-      childViewsSoughtRate: 0,
-      childEnjoyedRate: 0,
-      debriefRate: 0,
-      averageDurationMinutes: 0,
-      contactsByType: {},
-    };
-  }
-
-  const total = records.length;
-  const occurred = records.filter((r) => r.outcome !== "did_not_occur");
-  const occurredCount = occurred.length;
-
-  const positive = occurred.filter(
-    (r) => r.outcome === "positive" || r.outcome === "mostly_positive",
-  ).length;
-  const positiveOutcomeRate = pct(positive, occurredCount);
-
-  const prepared = records.filter((r) => r.childPreparedForContact).length;
-  const childPreparedRate = pct(prepared, total);
-
-  const viewsSought = records.filter((r) => r.childViewsSought).length;
-  const childViewsSoughtRate = pct(viewsSought, total);
-
-  const enjoyed = occurred.filter((r) => r.childEnjoyedContact).length;
-  const childEnjoyedRate = pct(enjoyed, occurredCount);
-
-  const debriefed = occurred.filter((r) => r.debriefAfterContact).length;
-  const debriefRate = pct(debriefed, occurredCount);
-
-  const totalDuration = occurred.reduce((sum, r) => sum + r.durationMinutes, 0);
-  const averageDurationMinutes = occurredCount > 0 ? Math.round(totalDuration / occurredCount) : 0;
-
-  const contactsByType: Record<string, number> = {};
-  for (const r of records) {
-    contactsByType[r.contactType] = (contactsByType[r.contactType] || 0) + 1;
-  }
-
-  // Scoring: 0-25
-  let score = 0;
-
-  // Positive outcome rate (0-6)
-  if (positiveOutcomeRate >= 80) score += 6;
-  else if (positiveOutcomeRate >= 60) score += 4;
-  else if (positiveOutcomeRate >= 40) score += 2;
-
-  // Child prepared (0-5)
-  if (childPreparedRate >= 90) score += 5;
-  else if (childPreparedRate >= 70) score += 3;
-  else if (childPreparedRate >= 50) score += 1;
-
-  // Child views sought (0-5)
-  if (childViewsSoughtRate >= 90) score += 5;
-  else if (childViewsSoughtRate >= 70) score += 3;
-  else if (childViewsSoughtRate >= 50) score += 1;
-
-  // Enjoyment (0-4)
-  if (childEnjoyedRate >= 80) score += 4;
-  else if (childEnjoyedRate >= 60) score += 2;
-
-  // Debrief (0-3)
-  if (debriefRate >= 90) score += 3;
-  else if (debriefRate >= 70) score += 2;
-  else if (debriefRate >= 50) score += 1;
-
-  // Contact variety bonus (0-2)
-  const typeCount = Object.keys(contactsByType).length;
-  if (typeCount >= 4) score += 2;
-  else if (typeCount >= 2) score += 1;
-
-  return {
-    overallScore: Math.min(score, 25),
-    totalContacts: total,
-    positiveOutcomeRate,
-    childPreparedRate,
-    childViewsSoughtRate,
-    childEnjoyedRate,
-    debriefRate,
-    averageDurationMinutes,
-    contactsByType,
-  };
-}
-
-export function evaluateContactPlanCompliance(plans: ContactPlan[]): ContactPlanComplianceResult {
-  if (plans.length === 0) {
-    return {
-      overallScore: 0,
-      totalPlans: 0,
-      frequencyMetRate: 0,
-      childCentredRate: 0,
-      childWantsMoreCount: 0,
-      childHappyCount: 0,
-      recentlyReviewedRate: 0,
-      courtOrderCount: 0,
-    };
-  }
-
-  const total = plans.length;
-
-  const frequencyMet = plans.filter((p) => p.actualFrequencyMet).length;
-  const frequencyMetRate = pct(frequencyMet, total);
-
-  const childCentred = plans.filter((p) => p.planIsChildCentred).length;
-  const childCentredRate = pct(childCentred, total);
-
-  const childWantsMoreCount = plans.filter((p) => p.childViewOnContact === "wants_more").length;
-  const childHappyCount = plans.filter((p) => p.childViewOnContact === "happy_with_current").length;
-
-  // Recently reviewed = within 3 months (90 days)
-  const now = new Date();
-  const recentlyReviewed = plans.filter((p) => {
-    const reviewDate = new Date(p.lastReviewedDate);
-    const daysDiff = Math.floor((now.getTime() - reviewDate.getTime()) / (1000 * 60 * 60 * 24));
-    return daysDiff <= 90;
-  }).length;
-  const recentlyReviewedRate = pct(recentlyReviewed, total);
-
-  const courtOrderCount = plans.filter((p) => p.courtOrderInPlace).length;
-
-  // Scoring: 0-25
-  let score = 0;
-
-  // Frequency met (0-7)
-  if (frequencyMetRate >= 90) score += 7;
-  else if (frequencyMetRate >= 70) score += 5;
-  else if (frequencyMetRate >= 50) score += 3;
-  else if (frequencyMetRate > 0) score += 1;
-
-  // Child-centred plans (0-6)
-  if (childCentredRate >= 90) score += 6;
-  else if (childCentredRate >= 70) score += 4;
-  else if (childCentredRate >= 50) score += 2;
-
-  // Child satisfaction (0-5)
-  const happyRate = pct(childHappyCount, total);
-  if (happyRate >= 80) score += 5;
-  else if (happyRate >= 50) score += 3;
-  else if (happyRate > 0) score += 1;
-
-  // Recently reviewed (0-4)
-  if (recentlyReviewedRate >= 90) score += 4;
-  else if (recentlyReviewedRate >= 70) score += 2;
-  else if (recentlyReviewedRate >= 50) score += 1;
-
-  // Penalty: children wanting more contact
-  if (childWantsMoreCount > 0) {
-    score -= Math.min(childWantsMoreCount, 3);
-  }
-
-  return {
-    overallScore: Math.max(0, Math.min(score, 25)),
-    totalPlans: total,
-    frequencyMetRate,
-    childCentredRate,
-    childWantsMoreCount,
-    childHappyCount,
-    recentlyReviewedRate,
-    courtOrderCount,
-  };
-}
-
-export function evaluateSiblingContact(contacts: SiblingContact[]): SiblingContactResult {
+/**
+ * Evaluator 1: Contact Quality (0-25, capped)
+ *
+ * Positive outcome rate (very_positive + positive) -> 0-7
+ * Child prepared rate -> 0-6
+ * Child views recorded rate -> 0-6
+ * Combined satisfaction + plan followed rate -> 0-6
+ */
+export function evaluateContactQuality(contacts: FamilyContact[]): ContactQualityResult {
   if (contacts.length === 0) {
     return {
-      overallScore: 25,
-      totalSiblingPairs: 0,
-      frequencyMetRate: 100,
-      positiveQualityRate: 100,
-      averageContactGapDays: 0,
+      score: 0,
+      positiveOutcomeRate: 0,
+      childPreparedRate: 0,
+      childViewsRecordedRate: 0,
+      satisfactionPlanRate: 0,
     };
   }
 
   const total = contacts.length;
 
-  const frequencyMet = contacts.filter((c) => c.frequencyMet).length;
-  const frequencyMetRate = pct(frequencyMet, total);
-
-  const positiveQuality = contacts.filter(
-    (c) => c.qualityRating === "positive" || c.qualityRating === "mostly_positive",
+  // Positive outcome rate
+  const positiveCount = contacts.filter(
+    (c) => c.contactOutcome === "very_positive" || c.contactOutcome === "positive",
   ).length;
-  const positiveQualityRate = pct(positiveQuality, total);
+  const positiveOutcomeRate = pct(positiveCount, total);
 
-  // Average gap from last contact
-  const now = new Date();
-  const gaps = contacts.map((c) => {
-    const last = new Date(c.lastContactDate);
-    return Math.floor((now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24));
-  });
-  const averageContactGapDays = gaps.length > 0 ? Math.round(gaps.reduce((a, b) => a + b, 0) / gaps.length) : 0;
+  // Child prepared rate
+  const preparedCount = contacts.filter((c) => c.childPrepared).length;
+  const childPreparedRate = pct(preparedCount, total);
 
-  // Scoring: 0-25
+  // Child views recorded rate
+  const viewsCount = contacts.filter((c) => c.childViewsRecorded).length;
+  const childViewsRecordedRate = pct(viewsCount, total);
+
+  // Combined satisfaction + plan followed
+  const satisfiedAndPlanCount = contacts.filter(
+    (c) => c.childSatisfied && c.contactPlanFollowed,
+  ).length;
+  const satisfactionPlanRate = pct(satisfiedAndPlanCount, total);
+
+  // Scoring
   let score = 0;
 
-  // Frequency met (0-8)
-  if (frequencyMetRate >= 90) score += 8;
-  else if (frequencyMetRate >= 70) score += 6;
-  else if (frequencyMetRate >= 50) score += 4;
-  else if (frequencyMetRate > 0) score += 2;
+  // Positive outcome rate -> 0-7
+  if (positiveOutcomeRate >= 90) score += 7;
+  else if (positiveOutcomeRate >= 75) score += 5;
+  else if (positiveOutcomeRate >= 60) score += 3;
+  else if (positiveOutcomeRate >= 40) score += 1;
 
-  // Quality (0-7)
-  if (positiveQualityRate >= 80) score += 7;
-  else if (positiveQualityRate >= 60) score += 5;
-  else if (positiveQualityRate >= 40) score += 3;
+  // Child prepared -> 0-6
+  if (childPreparedRate >= 90) score += 6;
+  else if (childPreparedRate >= 75) score += 4;
+  else if (childPreparedRate >= 50) score += 2;
 
-  // Contact gap (0-5)
-  if (averageContactGapDays <= 14) score += 5;
-  else if (averageContactGapDays <= 30) score += 3;
-  else if (averageContactGapDays <= 60) score += 1;
+  // Child views recorded -> 0-6
+  if (childViewsRecordedRate >= 90) score += 6;
+  else if (childViewsRecordedRate >= 75) score += 4;
+  else if (childViewsRecordedRate >= 50) score += 2;
 
-  // All siblings in contact bonus (0-5)
-  if (frequencyMetRate === 100) score += 5;
-  else if (frequencyMetRate >= 80) score += 3;
+  // Combined satisfaction + plan followed -> 0-6
+  if (satisfactionPlanRate >= 90) score += 6;
+  else if (satisfactionPlanRate >= 75) score += 4;
+  else if (satisfactionPlanRate >= 50) score += 2;
 
   return {
-    overallScore: Math.min(score, 25),
-    totalSiblingPairs: total,
-    frequencyMetRate,
-    positiveQualityRate,
-    averageContactGapDays,
+    score: Math.min(score, 25),
+    positiveOutcomeRate,
+    childPreparedRate,
+    childViewsRecordedRate,
+    satisfactionPlanRate,
   };
 }
 
-export function evaluateFamilyEngagement(engagements: FamilyEngagement[]): FamilyEngagementResult {
-  if (engagements.length === 0) {
+/**
+ * Evaluator 2: Contact Consistency (0-25, capped)
+ *
+ * Recorded in casefile rate -> 0-8
+ * Plan adherence rate (contactPlanFollowed) -> 0-9
+ * Supervised appropriately rate -> 0-8
+ */
+export function evaluateContactConsistency(contacts: FamilyContact[]): ContactConsistencyResult {
+  if (contacts.length === 0) {
     return {
-      overallScore: 0,
-      totalChildren: 0,
-      reviewInvolvementRate: 0,
-      carePlanningRate: 0,
-      relationshipsSupportedRate: 0,
-      culturalLinksRate: 0,
-      familyConferencingRate: 0,
-      lifestoryRate: 0,
+      score: 0,
+      recordedRate: 0,
+      planAdherenceRate: 0,
+      supervisedAppropriatelyRate: 0,
     };
   }
 
-  const total = engagements.length;
+  const total = contacts.length;
 
-  const reviewInvolved = engagements.filter((e) => e.familyInvolvedInReviews).length;
-  const reviewInvolvementRate = pct(reviewInvolved, total);
+  // Recorded rate
+  const recordedCount = contacts.filter((c) => c.recordedInCasefile).length;
+  const recordedRate = pct(recordedCount, total);
 
-  const carePlanning = engagements.filter((e) => e.familyInvolvedInCarePlanning).length;
-  const carePlanningRate = pct(carePlanning, total);
+  // Plan adherence rate
+  const planCount = contacts.filter((c) => c.contactPlanFollowed).length;
+  const planAdherenceRate = pct(planCount, total);
 
-  const relSupported = engagements.filter((e) => e.familyRelationshipsSupported).length;
-  const relationshipsSupportedRate = pct(relSupported, total);
+  // Supervised appropriately rate
+  const supervisedCount = contacts.filter((c) => c.supervisedAppropriately).length;
+  const supervisedAppropriatelyRate = pct(supervisedCount, total);
 
-  const cultural = engagements.filter((e) => e.culturalLinksPromoted).length;
-  const culturalLinksRate = pct(cultural, total);
-
-  const conferencing = engagements.filter((e) => e.familyGroupConferencing).length;
-  const familyConferencingRate = pct(conferencing, total);
-
-  const lifestory = engagements.filter((e) => e.lifestoryWorkIncludesFamily).length;
-  const lifestoryRate = pct(lifestory, total);
-
-  // Scoring: 0-25
+  // Scoring
   let score = 0;
 
-  // Review involvement (0-5)
-  if (reviewInvolvementRate >= 80) score += 5;
-  else if (reviewInvolvementRate >= 60) score += 3;
-  else if (reviewInvolvementRate >= 40) score += 1;
+  // Recorded rate -> 0-8
+  if (recordedRate >= 95) score += 8;
+  else if (recordedRate >= 85) score += 6;
+  else if (recordedRate >= 70) score += 4;
+  else if (recordedRate >= 50) score += 2;
 
-  // Care planning (0-5)
-  if (carePlanningRate >= 80) score += 5;
-  else if (carePlanningRate >= 60) score += 3;
-  else if (carePlanningRate >= 40) score += 1;
+  // Plan adherence -> 0-9
+  if (planAdherenceRate >= 95) score += 9;
+  else if (planAdherenceRate >= 80) score += 7;
+  else if (planAdherenceRate >= 65) score += 4;
+  else if (planAdherenceRate >= 40) score += 2;
 
-  // Relationships supported (0-5)
-  if (relationshipsSupportedRate >= 90) score += 5;
-  else if (relationshipsSupportedRate >= 70) score += 3;
-  else if (relationshipsSupportedRate >= 50) score += 1;
-
-  // Cultural links (0-4)
-  if (culturalLinksRate >= 80) score += 4;
-  else if (culturalLinksRate >= 60) score += 2;
-
-  // Family conferencing (0-3)
-  if (familyConferencingRate >= 50) score += 3;
-  else if (familyConferencingRate >= 25) score += 1;
-
-  // Life story (0-3)
-  if (lifestoryRate >= 80) score += 3;
-  else if (lifestoryRate >= 50) score += 2;
-  else if (lifestoryRate >= 25) score += 1;
+  // Supervised appropriately -> 0-8
+  if (supervisedAppropriatelyRate >= 95) score += 8;
+  else if (supervisedAppropriatelyRate >= 80) score += 6;
+  else if (supervisedAppropriatelyRate >= 65) score += 4;
+  else if (supervisedAppropriatelyRate >= 40) score += 2;
 
   return {
-    overallScore: Math.min(score, 25),
-    totalChildren: total,
-    reviewInvolvementRate,
-    carePlanningRate,
-    relationshipsSupportedRate,
-    culturalLinksRate,
-    familyConferencingRate,
-    lifestoryRate,
+    score: Math.min(score, 25),
+    recordedRate,
+    planAdherenceRate,
+    supervisedAppropriatelyRate,
   };
 }
 
-// -- Child Profiles -----------------------------------------------------------
+/**
+ * Evaluator 3: Contact Policy (0-25, capped)
+ *
+ * Null policy = 0
+ * 7 booleans: 4 + 4 + 4 + 4 + 3 + 3 + 3 = 25
+ */
+export function evaluateContactPolicy(policy: ContactPolicy | null): ContactPolicyResult {
+  if (!policy) {
+    return {
+      score: 0,
+      contactPlanForEachChild: false,
+      familyEngagementStrategy: false,
+      supervisedContactGuidance: false,
+      letterboxProcess: false,
+      complaintsMechanism: false,
+      culturalConsideration: false,
+      regularReview: false,
+    };
+  }
+
+  let score = 0;
+
+  if (policy.contactPlanForEachChild) score += 4;
+  if (policy.familyEngagementStrategy) score += 4;
+  if (policy.supervisedContactGuidance) score += 4;
+  if (policy.letterboxProcess) score += 4;
+  if (policy.complaintsMechanism) score += 3;
+  if (policy.culturalConsideration) score += 3;
+  if (policy.regularReview) score += 3;
+
+  return {
+    score: Math.min(score, 25),
+    contactPlanForEachChild: policy.contactPlanForEachChild,
+    familyEngagementStrategy: policy.familyEngagementStrategy,
+    supervisedContactGuidance: policy.supervisedContactGuidance,
+    letterboxProcess: policy.letterboxProcess,
+    complaintsMechanism: policy.complaintsMechanism,
+    culturalConsideration: policy.culturalConsideration,
+    regularReview: policy.regularReview,
+  };
+}
+
+/**
+ * Evaluator 4: Staff Contact Readiness (0-25, capped)
+ *
+ * Empty = 0
+ * 6 weighted booleans (per-staff rate): 6 + 5 + 5 + 4 + 3 + 2 = 25
+ */
+export function evaluateStaffContactReadiness(
+  training: StaffContactTraining[],
+): StaffContactReadinessResult {
+  if (training.length === 0) {
+    return {
+      score: 0,
+      totalStaff: 0,
+      familyEngagementRate: 0,
+      contactSupervisionRate: 0,
+      childPreparationRate: 0,
+      conflictManagementRate: 0,
+      recordKeepingRate: 0,
+      culturalAwarenessRate: 0,
+    };
+  }
+
+  const total = training.length;
+
+  const familyEngagementCount = training.filter((t) => t.familyEngagement).length;
+  const familyEngagementRate = pct(familyEngagementCount, total);
+
+  const contactSupervisionCount = training.filter((t) => t.contactSupervision).length;
+  const contactSupervisionRate = pct(contactSupervisionCount, total);
+
+  const childPreparationCount = training.filter((t) => t.childPreparation).length;
+  const childPreparationRate = pct(childPreparationCount, total);
+
+  const conflictManagementCount = training.filter((t) => t.conflictManagement).length;
+  const conflictManagementRate = pct(conflictManagementCount, total);
+
+  const recordKeepingCount = training.filter((t) => t.recordKeeping).length;
+  const recordKeepingRate = pct(recordKeepingCount, total);
+
+  const culturalAwarenessCount = training.filter((t) => t.culturalAwareness).length;
+  const culturalAwarenessRate = pct(culturalAwarenessCount, total);
+
+  // Scoring: weighted rates -> points
+  let score = 0;
+  score += (familyEngagementRate / 100) * 6;
+  score += (contactSupervisionRate / 100) * 5;
+  score += (childPreparationRate / 100) * 5;
+  score += (conflictManagementRate / 100) * 4;
+  score += (recordKeepingRate / 100) * 3;
+  score += (culturalAwarenessRate / 100) * 2;
+
+  score = Math.round(score * 10) / 10;
+
+  return {
+    score: Math.min(score, 25),
+    totalStaff: total,
+    familyEngagementRate,
+    contactSupervisionRate,
+    childPreparationRate,
+    conflictManagementRate,
+    recordKeepingRate,
+    culturalAwarenessRate,
+  };
+}
+
+// -- Child Contact Profiles ----------------------------------------------------
 
 export function buildChildContactProfiles(
-  records: ContactRecord[],
-  plans: ContactPlan[],
-  siblings: SiblingContact[],
-  engagements: FamilyEngagement[],
+  contacts: FamilyContact[],
 ): ChildContactProfile[] {
   const childIds = new Set<string>();
-  records.forEach((r) => childIds.add(r.childId));
-  plans.forEach((p) => childIds.add(p.childId));
-  siblings.forEach((s) => childIds.add(s.childId));
-  engagements.forEach((e) => childIds.add(e.childId));
+  contacts.forEach((c) => childIds.add(c.childId));
 
   return Array.from(childIds).map((childId) => {
-    const childRecords = records.filter((r) => r.childId === childId);
-    const childPlans = plans.filter((p) => p.childId === childId);
-    const childSiblings = siblings.filter((s) => s.childId === childId);
-    const childEngagement = engagements.find((e) => e.childId === childId);
+    const childContacts = contacts.filter((c) => c.childId === childId);
+    const childName = childContacts[0]?.childName ?? childId;
+    const total = childContacts.length;
 
-    const childName =
-      childRecords[0]?.childName ??
-      childPlans[0]?.childName ??
-      childSiblings[0]?.childName ??
-      childEngagement?.childName ??
-      childId;
-
-    const occurred = childRecords.filter((r) => r.outcome !== "did_not_occur");
-    const totalContacts = occurred.length;
-    const positive = occurred.filter(
-      (r) => r.outcome === "positive" || r.outcome === "mostly_positive",
+    const positiveCount = childContacts.filter(
+      (c) => c.contactOutcome === "very_positive" || c.contactOutcome === "positive",
     ).length;
-    const positiveRate = pct(positive, totalContacts);
+    const positiveRate = pct(positiveCount, total);
 
-    const siblingContactMet = childSiblings.length === 0 || childSiblings.every((s) => s.frequencyMet);
-    const familyEngaged = childEngagement
-      ? childEngagement.familyInvolvedInReviews && childEngagement.familyRelationshipsSupported
-      : false;
+    const preparedCount = childContacts.filter((c) => c.childPrepared).length;
+    const preparedRate = pct(preparedCount, total);
 
-    const primaryPlan = childPlans[0];
-    const childViewOnContact = primaryPlan?.childViewOnContact ?? "not_recorded";
+    const viewsCount = childContacts.filter((c) => c.childViewsRecorded).length;
+    const viewsRecordedRate = pct(viewsCount, total);
 
-    let profileScore = 3;
-    if (positiveRate >= 80) profileScore += 2;
-    else if (positiveRate >= 50) profileScore += 1;
-    if (siblingContactMet) profileScore += 2;
-    if (familyEngaged) profileScore += 1;
-    if (childViewOnContact === "happy_with_current") profileScore += 2;
-    else if (childViewOnContact === "wants_more") profileScore += 0;
-    else if (childViewOnContact === "not_recorded") profileScore -= 1;
-    if (totalContacts === 0) profileScore -= 2;
+    const satisfiedCount = childContacts.filter((c) => c.childSatisfied).length;
+    const satisfiedRate = pct(satisfiedCount, total);
+
+    // Score 0-10
+    let score = 0;
+
+    // Positive outcome rate -> 0-3
+    if (positiveRate >= 80) score += 3;
+    else if (positiveRate >= 60) score += 2;
+    else if (positiveRate >= 40) score += 1;
+
+    // Prepared rate -> 0-2
+    if (preparedRate >= 80) score += 2;
+    else if (preparedRate >= 50) score += 1;
+
+    // Views recorded -> 0-2
+    if (viewsRecordedRate >= 80) score += 2;
+    else if (viewsRecordedRate >= 50) score += 1;
+
+    // Satisfied rate -> 0-3
+    if (satisfiedRate >= 80) score += 3;
+    else if (satisfiedRate >= 60) score += 2;
+    else if (satisfiedRate >= 40) score += 1;
 
     return {
       childId,
       childName,
-      totalContacts,
+      totalContacts: total,
       positiveRate,
-      siblingContactMet,
-      familyEngaged,
-      childViewOnContact,
-      overallScore: Math.max(0, Math.min(profileScore, 10)),
+      preparedRate,
+      viewsRecordedRate,
+      satisfiedRate,
+      score: Math.min(Math.max(score, 0), 10),
     };
   });
 }
 
-// -- Strengths / Areas / Actions ----------------------------------------------
+// -- Strengths / Areas / Actions -----------------------------------------------
 
 function generateStrengths(
   cq: ContactQualityResult,
-  pc: ContactPlanComplianceResult,
-  sc: SiblingContactResult,
-  fe: FamilyEngagementResult,
+  cc: ContactConsistencyResult,
+  cp: ContactPolicyResult,
+  sr: StaffContactReadinessResult,
+  contacts: FamilyContact[],
 ): string[] {
   const strengths: string[] = [];
 
-  if (cq.positiveOutcomeRate >= 80 && cq.totalContacts > 0) {
-    strengths.push("High proportion of family contacts have positive outcomes — children benefit from quality interactions");
+  if (cq.positiveOutcomeRate >= 80 && contacts.length > 0) {
+    strengths.push(
+      "High proportion of family contacts have positive outcomes for children",
+    );
   }
-  if (cq.childViewsSoughtRate >= 90 && cq.totalContacts > 0) {
-    strengths.push("Child views consistently sought before contact — strong UNCRC Article 9 compliance");
+  if (cq.childPreparedRate >= 90 && contacts.length > 0) {
+    strengths.push(
+      "Children are consistently well-prepared before family contact sessions",
+    );
   }
-  if (cq.childPreparedRate >= 90 && cq.totalContacts > 0) {
-    strengths.push("Children consistently prepared for family contact — reducing anxiety and improving outcomes");
+  if (cq.childViewsRecordedRate >= 90 && contacts.length > 0) {
+    strengths.push(
+      "Child views are routinely recorded for family contact — strong UNCRC Article 9 compliance",
+    );
   }
-  if (cq.debriefRate >= 90 && cq.totalContacts > 0) {
-    strengths.push("Post-contact debriefs routinely completed — supporting emotional processing");
+  if (cq.satisfactionPlanRate >= 80 && contacts.length > 0) {
+    strengths.push(
+      "High child satisfaction with contact arrangements and strong plan adherence",
+    );
   }
-  if (pc.frequencyMetRate >= 90 && pc.totalPlans > 0) {
-    strengths.push("Contact frequency plans consistently met — maintaining family relationships as planned");
+  if (cc.recordedRate >= 95 && contacts.length > 0) {
+    strengths.push(
+      "Excellent contact recording — nearly all contacts recorded in casefiles",
+    );
   }
-  if (pc.childCentredRate >= 90 && pc.totalPlans > 0) {
-    strengths.push("Contact plans are child-centred — reflecting individual needs and wishes");
+  if (cc.planAdherenceRate >= 90 && contacts.length > 0) {
+    strengths.push(
+      "Contact plans consistently followed — maintaining reliable family relationships",
+    );
   }
-  if (sc.frequencyMetRate >= 90 && sc.totalSiblingPairs > 0) {
-    strengths.push("Sibling contact maintained at agreed frequency — preserving sibling bonds");
+  if (cc.supervisedAppropriatelyRate >= 90 && contacts.length > 0) {
+    strengths.push(
+      "Supervision arrangements are appropriate and consistently applied",
+    );
   }
-  if (sc.totalSiblingPairs === 0) {
-    strengths.push("No sibling contact gaps identified");
+  if (cp.score >= 22) {
+    strengths.push(
+      "Comprehensive contact policy covering all key areas including cultural consideration",
+    );
   }
-  if (fe.reviewInvolvementRate >= 80 && fe.totalChildren > 0) {
-    strengths.push("Families actively involved in reviews — promoting partnership working");
+  if (sr.familyEngagementRate >= 90 && sr.totalStaff > 0) {
+    strengths.push(
+      "Staff are well-trained in family engagement — supporting quality contact",
+    );
   }
-  if (fe.culturalLinksRate >= 80 && fe.totalChildren > 0) {
-    strengths.push("Cultural and identity links promoted through family contact");
+  if (sr.culturalAwarenessRate >= 80 && sr.totalStaff > 0) {
+    strengths.push(
+      "Good cultural awareness among staff supporting family contact",
+    );
   }
 
   return strengths;
@@ -713,41 +598,67 @@ function generateStrengths(
 
 function generateAreasForImprovement(
   cq: ContactQualityResult,
-  pc: ContactPlanComplianceResult,
-  sc: SiblingContactResult,
-  fe: FamilyEngagementResult,
+  cc: ContactConsistencyResult,
+  cp: ContactPolicyResult,
+  sr: StaffContactReadinessResult,
+  contacts: FamilyContact[],
 ): string[] {
   const areas: string[] = [];
 
-  if (cq.totalContacts === 0) {
-    areas.push("No family contact records found — contact recording may need urgent attention");
+  if (contacts.length === 0) {
+    areas.push(
+      "No family contact records found — contact recording needs urgent attention",
+    );
   }
-  if (cq.positiveOutcomeRate < 60 && cq.totalContacts > 0) {
-    areas.push(`Only ${cq.positiveOutcomeRate}% of contacts have positive outcomes — review contact support arrangements`);
+  if (cq.positiveOutcomeRate < 60 && contacts.length > 0) {
+    areas.push(
+      `Only ${cq.positiveOutcomeRate}% of contacts have positive outcomes — review contact support arrangements`,
+    );
   }
-  if (cq.childPreparedRate < 80 && cq.totalContacts > 0) {
-    areas.push(`Children prepared for contact in only ${cq.childPreparedRate}% of cases — preparation reduces distress`);
+  if (cq.childPreparedRate < 75 && contacts.length > 0) {
+    areas.push(
+      `Children prepared for contact in only ${cq.childPreparedRate}% of cases — preparation reduces distress`,
+    );
   }
-  if (cq.childViewsSoughtRate < 80 && cq.totalContacts > 0) {
-    areas.push(`Child views sought before only ${cq.childViewsSoughtRate}% of contacts`);
+  if (cq.childViewsRecordedRate < 75 && contacts.length > 0) {
+    areas.push(
+      `Child views recorded in only ${cq.childViewsRecordedRate}% of contacts — UNCRC Article 9 requires this`,
+    );
   }
-  if (cq.debriefRate < 70 && cq.totalContacts > 0) {
-    areas.push(`Post-contact debriefs completed for only ${cq.debriefRate}% of contacts`);
+  if (cc.recordedRate < 85 && contacts.length > 0) {
+    areas.push(
+      `Contact recording at ${cc.recordedRate}% — all contacts must be recorded per CHR 2015 Reg 10`,
+    );
   }
-  if (pc.frequencyMetRate < 80 && pc.totalPlans > 0) {
-    areas.push(`Contact frequency plans met for only ${pc.frequencyMetRate}% of arrangements`);
+  if (cc.planAdherenceRate < 80 && contacts.length > 0) {
+    areas.push(
+      `Contact plan adherence at ${cc.planAdherenceRate}% — plans must be followed as per Care Planning Regulations`,
+    );
   }
-  if (pc.childWantsMoreCount > 0) {
-    areas.push(`${pc.childWantsMoreCount} child(ren) want more family contact than currently arranged`);
+  if (cc.supervisedAppropriatelyRate < 80 && contacts.length > 0) {
+    areas.push(
+      `Supervision appropriateness at ${cc.supervisedAppropriatelyRate}% — supervision levels need review`,
+    );
   }
-  if (sc.frequencyMetRate < 80 && sc.totalSiblingPairs > 0) {
-    areas.push(`Sibling contact frequency met for only ${sc.frequencyMetRate}% of sibling pairs`);
+  if (cp.score < 15) {
+    areas.push(
+      "Contact policy has significant gaps — review against CHR 2015 Reg 10 requirements",
+    );
   }
-  if (fe.reviewInvolvementRate < 60 && fe.totalChildren > 0) {
-    areas.push(`Family involvement in reviews at only ${fe.reviewInvolvementRate}% — below expected standard`);
+  if (!cp.culturalConsideration) {
+    areas.push(
+      "No cultural consideration in contact policy — cultural identity must be promoted",
+    );
   }
-  if (fe.relationshipsSupportedRate < 70 && fe.totalChildren > 0) {
-    areas.push(`Family relationships actively supported for only ${fe.relationshipsSupportedRate}% of children`);
+  if (sr.totalStaff > 0 && sr.familyEngagementRate < 70) {
+    areas.push(
+      `Only ${sr.familyEngagementRate}% of staff trained in family engagement — training gap identified`,
+    );
+  }
+  if (sr.totalStaff > 0 && sr.conflictManagementRate < 60) {
+    areas.push(
+      `Conflict management training at ${sr.conflictManagementRate}% — staff need support managing difficult contacts`,
+    );
   }
 
   return areas;
@@ -755,84 +666,119 @@ function generateAreasForImprovement(
 
 function generateActions(
   cq: ContactQualityResult,
-  pc: ContactPlanComplianceResult,
-  sc: SiblingContactResult,
-  fe: FamilyEngagementResult,
+  cc: ContactConsistencyResult,
+  cp: ContactPolicyResult,
+  sr: StaffContactReadinessResult,
+  contacts: FamilyContact[],
 ): string[] {
   const actions: string[] = [];
 
-  if (cq.totalContacts === 0) {
-    actions.push("URGENT: Establish family contact recording — Reg 8 requires promotion and monitoring of contact");
+  if (contacts.length === 0) {
+    actions.push(
+      "URGENT: Establish family contact recording system — CHR 2015 Reg 10 requires promotion and monitoring of contact",
+    );
   }
-  if (pc.childWantsMoreCount > 0) {
-    actions.push("URGENT: Review contact plans for children wanting more contact — consider increasing frequency or exploring barriers");
+  if (cq.childViewsRecordedRate < 75 && contacts.length > 0) {
+    actions.push(
+      "Implement routine child-voice capture before and after every contact session",
+    );
   }
-  if (cq.childViewsSoughtRate < 80 && cq.totalContacts > 0) {
-    actions.push("Implement routine child-voice check before every contact session");
+  if (cq.childPreparedRate < 75 && contacts.length > 0) {
+    actions.push(
+      "Develop age-appropriate contact preparation protocol to reduce child anxiety",
+    );
   }
-  if (cq.childPreparedRate < 80 && cq.totalContacts > 0) {
-    actions.push("Develop contact preparation protocol — age-appropriate preparation reduces anxiety");
+  if (cc.recordedRate < 85 && contacts.length > 0) {
+    actions.push(
+      "Audit and strengthen contact recording procedures — every contact must be on file",
+    );
   }
-  if (cq.debriefRate < 80 && cq.totalContacts > 0) {
-    actions.push("Ensure post-contact debriefs are conducted after every family contact");
+  if (cc.planAdherenceRate < 80 && contacts.length > 0) {
+    actions.push(
+      "Review contact plan adherence — identify and address barriers to following plans",
+    );
   }
-  if (pc.frequencyMetRate < 80 && pc.totalPlans > 0) {
-    actions.push("Audit contact plan adherence and address barriers to meeting agreed frequency");
+  if (cp.score === 0) {
+    actions.push(
+      "URGENT: Develop a comprehensive family contact policy covering all regulatory requirements",
+    );
   }
-  if (sc.frequencyMetRate < 80 && sc.totalSiblingPairs > 0) {
-    actions.push("Prioritise sibling contact — UNCRC Article 9 protects the right to maintain family bonds");
+  if (!cp.contactPlanForEachChild && cp.score > 0) {
+    actions.push(
+      "Ensure every child has an individual contact plan as required by Care Planning Regulations 2010",
+    );
   }
-  if (fe.reviewInvolvementRate < 60 && fe.totalChildren > 0) {
-    actions.push("Actively invite and support family attendance at reviews — remove barriers to participation");
+  if (!cp.culturalConsideration && cp.score > 0) {
+    actions.push(
+      "Add cultural consideration to contact policy — children must maintain cultural and identity links",
+    );
   }
-  if (fe.culturalLinksRate < 60 && fe.totalChildren > 0) {
-    actions.push("Strengthen cultural identity links through family contact and community engagement");
+  if (sr.totalStaff === 0) {
+    actions.push(
+      "URGENT: Implement staff training programme for family contact support",
+    );
   }
-  if (fe.familyConferencingRate < 25 && fe.totalChildren > 0) {
-    actions.push("Consider family group conferencing to improve family involvement in decision-making");
+  if (sr.totalStaff > 0 && sr.familyEngagementRate < 70) {
+    actions.push(
+      "Prioritise family engagement training for all staff — key to quality contact",
+    );
+  }
+  if (sr.totalStaff > 0 && sr.childPreparationRate < 70) {
+    actions.push(
+      "Train staff in child preparation techniques for family contact",
+    );
+  }
+  if (sr.totalStaff > 0 && sr.conflictManagementRate < 60) {
+    actions.push(
+      "Deliver conflict management training to support staff during difficult contacts",
+    );
   }
 
   return actions;
 }
 
-// -- Main Function ------------------------------------------------------------
+// -- Main Function -------------------------------------------------------------
 
 export function generateFamilyContactQualityIntelligence(
-  records: ContactRecord[],
-  plans: ContactPlan[],
-  siblings: SiblingContact[],
-  engagements: FamilyEngagement[],
+  contacts: FamilyContact[],
+  policy: ContactPolicy | null,
+  training: StaffContactTraining[],
   homeId: string,
   periodStart: string,
   periodEnd: string,
 ): FamilyContactQualityIntelligence {
-  const contactQuality = evaluateContactQuality(records);
-  const planCompliance = evaluateContactPlanCompliance(plans);
-  const siblingContact = evaluateSiblingContact(siblings);
-  const familyEngagement = evaluateFamilyEngagement(engagements);
+  const contactQuality = evaluateContactQuality(contacts);
+  const contactConsistency = evaluateContactConsistency(contacts);
+  const contactPolicy = evaluateContactPolicy(policy);
+  const staffContactReadiness = evaluateStaffContactReadiness(training);
 
   const overallScore = Math.min(
-    contactQuality.overallScore +
-    planCompliance.overallScore +
-    siblingContact.overallScore +
-    familyEngagement.overallScore,
+    contactQuality.score +
+      contactConsistency.score +
+      contactPolicy.score +
+      staffContactReadiness.score,
     100,
   );
 
-  const childProfiles = buildChildContactProfiles(records, plans, siblings, engagements);
-  const strengths = generateStrengths(contactQuality, planCompliance, siblingContact, familyEngagement);
-  const areasForImprovement = generateAreasForImprovement(contactQuality, planCompliance, siblingContact, familyEngagement);
-  const actions = generateActions(contactQuality, planCompliance, siblingContact, familyEngagement);
+  const childProfiles = buildChildContactProfiles(contacts);
+  const strengths = generateStrengths(
+    contactQuality, contactConsistency, contactPolicy, staffContactReadiness, contacts,
+  );
+  const areasForImprovement = generateAreasForImprovement(
+    contactQuality, contactConsistency, contactPolicy, staffContactReadiness, contacts,
+  );
+  const actions = generateActions(
+    contactQuality, contactConsistency, contactPolicy, staffContactReadiness, contacts,
+  );
 
   const regulatoryLinks = [
-    "CHR 2015 Reg 8 — promotion of contact between child and family members",
-    "CA 1989 s34 — contact with children in care and parental contact rights",
-    "CA 1989 Schedule 2 Para 15 — promotion and maintenance of contact",
-    "UNCRC Article 9 — right to maintain contact with parents when separated",
+    "CHR 2015 Reg 10 — contact between child and parents, relatives, friends",
+    "CHR 2015 Reg 12 — the duty to promote the child's welfare",
     "SCCIF — experiences and progress of children, quality of family contact",
-    "NMS 10 — maintaining and promoting contact with family and friends",
-    "Working Together 2023 — family involvement in care planning and review",
-    "NICE CG89 — when children are removed from their families",
+    "Children Act 1989 s34 — contact with children in care",
+    "Care Planning Regulations 2010 — care plans including contact arrangements",
+    "NMS 9 — contact and access to family and friends",
+    "UNCRC Article 9 — right to maintain contact with both parents",
   ];
 
   return {
@@ -842,9 +788,9 @@ export function generateFamilyContactQualityIntelligence(
     overallScore,
     rating: getRating(overallScore),
     contactQuality,
-    planCompliance,
-    siblingContact,
-    familyEngagement,
+    contactConsistency,
+    contactPolicy,
+    staffContactReadiness,
     childProfiles,
     strengths,
     areasForImprovement,

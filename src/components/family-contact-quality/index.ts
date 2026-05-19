@@ -1,1 +1,1 @@
-export { FamilyContactQualityDashboardWidget } from "./FamilyContactQualityDashboardWidget";
+export { default as FamilyContactQualityDashboardWidget } from "./FamilyContactQualityDashboardWidget";
