@@ -1180,3 +1180,50 @@ export interface AriaGapListResponse {
     open: number;
   };
 }
+
+// ── Backward-compatible aliases ──────────────────────────────────────────────
+// Pages under /aria-studio use the older naming convention.
+// These aliases keep them compiling without touching every import.
+
+/** @deprecated Use AriaArtifactType */
+export type AriaStudioArtifactType = AriaArtifactType;
+/** @deprecated Use AriaFramework */
+export type AriaStudioFramework = AriaFramework;
+/** @deprecated Use AriaTone */
+export type AriaStudioTone = AriaTone;
+/** @deprecated Use AriaArtifact */
+export type AriaStudioArtifact = AriaArtifact;
+/** @deprecated Use AriaQualityCheck */
+export type AriaStudioQualityCheck = AriaQualityCheck;
+/** @deprecated Use AriaGap */
+export type AriaStudioGap = AriaGap;
+/** @deprecated Use AriaSourceType */
+export type AriaStudioSourceType = AriaSourceType;
+
+/** @deprecated Use ARIA_ARTIFACT_TYPE_LABELS */
+export const ARTIFACT_TYPE_LABELS = ARIA_ARTIFACT_TYPE_LABELS;
+/** @deprecated Use ARIA_STATUS_LABELS */
+export const STATUS_LABELS = ARIA_STATUS_LABELS;
+/** @deprecated Use ARIA_FRAMEWORK_LABELS */
+export const FRAMEWORK_LABELS = ARIA_FRAMEWORK_LABELS;
+/** @deprecated Use ARIA_TONE_LABELS */
+export const TONE_LABELS = ARIA_TONE_LABELS;
+/** @deprecated Use ARIA_SOURCE_TYPE_LABELS */
+export const SOURCE_TYPE_LABELS = ARIA_SOURCE_TYPE_LABELS;
+
+/** @deprecated Derive from Object.keys(ARIA_ARTIFACT_TYPE_LABELS) */
+export const ARIA_STUDIO_ARTIFACT_TYPES = Object.keys(
+  ARIA_ARTIFACT_TYPE_LABELS,
+) as AriaArtifactType[];
+/** @deprecated Derive from Object.keys(ARIA_FRAMEWORK_LABELS) */
+export const ARIA_STUDIO_FRAMEWORKS = Object.keys(
+  ARIA_FRAMEWORK_LABELS,
+) as AriaFramework[];
+/** @deprecated Derive from Object.keys(ARIA_TONE_LABELS) */
+export const ARIA_STUDIO_TONES = Object.keys(
+  ARIA_TONE_LABELS,
+) as AriaTone[];
+/** @deprecated Derive from Object.keys(ARIA_SOURCE_TYPE_LABELS) */
+export const ARIA_STUDIO_SOURCE_TYPES = Object.keys(
+  ARIA_SOURCE_TYPE_LABELS,
+) as AriaSourceType[];
