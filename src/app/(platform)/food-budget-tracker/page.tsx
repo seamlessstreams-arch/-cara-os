@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<FoodBudgetWeekRecord>[] = [
   { header: "Week", accessor: (r: FoodBudgetWeekRecord) => r.week_starting },
@@ -69,10 +72,12 @@ export default function FoodBudgetTrackerPage() {
     <PageShell
       title="Food Budget Tracker"
       subtitle="Weekly food budget — child involvement, cultural representation, sensory inclusion, and value"
+      ariaContext={{ pageTitle: "Food Budget Tracker", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="food-budget-tracker" />
           <PrintButton title="Food Budget Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -256,6 +261,18 @@ export default function FoodBudgetTrackerPage() {
           </div>
         </>
       )}
+      <CareEventsPanel
+        title="Care Events — Food"
+        category="food"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Food Budget Tracker — household food spend, shopping receipts, children's preferences, cultural dietary needs, halal/vegetarian/allergy requirements, Reg 45 evidence"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

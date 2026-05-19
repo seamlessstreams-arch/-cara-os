@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -26,222 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import type { WakeUpRoutine } from "@/types/extended";
+import { useWakeUpRoutines } from "@/hooks/use-wake-up-routines";
 
-// ── types ───────────────────────────────────────────────────────────────────
-interface WakeUpRoutine {
-  id: string;
-  youngPerson: string;
-  weekdayWakeTime: string;
-  weekendWakeTime: string;
-  preferredWakeMethod: "Gentle voice" | "Music/playlist" | "Light + voice" | "Phone alarm" | "White noise transition";
-  wakeUpSteps: { time: string; activity: string; staffSupport: "None" | "Prompt" | "Hands-on" }[];
-  morningTriggers: string[];
-  morningProtective: string[];
-  breakfastPreferences: string[];
-  hygieneSequence: string[];
-  schoolPrep: string[];
-  arrivalTime: string;
-  ifRefusingToGetUp: string[];
-  energyPattern: "Slow starter" | "Quick starter" | "Variable";
-  medicationMorning: string;
-  childAgreed: boolean;
-  reviewedDate: string;
-  reviewedWith: string;
-  effectivenessRating: number;
-}
-
-// ── seed data ───────────────────────────────────────────────────────────────
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const data: WakeUpRoutine[] = [
-  {
-    id: "wr-001",
-    youngPerson: "yp_alex",
-    weekdayWakeTime: "07:00",
-    weekendWakeTime: "08:30",
-    preferredWakeMethod: "Light + voice",
-    wakeUpSteps: [
-      { time: "07:00", activity: "Corner lamp on lowest, gentle voice from doorway", staffSupport: "Prompt" },
-      { time: "07:05", activity: "5-minute snooze allowed (one only)", staffSupport: "None" },
-      { time: "07:10", activity: "Sit up, second prompt — 'morning Alex, breakfast in 15'", staffSupport: "Prompt" },
-      { time: "07:15", activity: "Bathroom — wash, brush teeth, sort hair", staffSupport: "None" },
-      { time: "07:30", activity: "Get dressed — outfit chosen night before", staffSupport: "None" },
-      { time: "07:40", activity: "Breakfast", staffSupport: "Prompt" },
-      { time: "07:55", activity: "ADHD medication, bag check, leave by 08:05", staffSupport: "Hands-on" },
-    ],
-    morningTriggers: [
-      "Being told to hurry up",
-      "Sudden bright lights",
-      "Pressure about previous-day issues",
-      "Phone access too early — gets stuck on screen",
-    ],
-    morningProtective: [
-      "Outfit prepared night before — reduces decision fatigue",
-      "Calm voice, predictable language",
-      "Phone NOT accessed until medication taken",
-      "Music allowed during dressing if requested",
-    ],
-    breakfastPreferences: [
-      "Cereal (chocolate-flavoured) most days",
-      "Toast with peanut butter as alternative",
-      "Always orange juice",
-      "Will sometimes refuse if rushed — allow 15 mins",
-    ],
-    hygieneSequence: [
-      "Wee, then wash face",
-      "Brush teeth (electric brush — 2 min timer)",
-      "Hair — quick gel, no fuss",
-    ],
-    schoolPrep: [
-      "Bag packed and by door night before",
-      "Lunch made fresh in morning by Alex (with prompt)",
-      "Water bottle filled",
-      "ADHD medication taken with breakfast — never on empty stomach",
-    ],
-    arrivalTime: "08:30 (school 8:50)",
-    ifRefusingToGetUp: [
-      "Don't escalate — Alex needs space to wake up properly",
-      "Offer: 'I can come back in 5 mins or we can do this together now — your call'",
-      "If still refusing at 07:30, light breakfast in bedroom acceptable as bridge",
-      "Genuine school refusal — don't force, document, contact deputy/RM",
-    ],
-    energyPattern: "Slow starter",
-    medicationMorning: "Methylphenidate XL (ADHD) — 7:55am with food, NEVER on empty stomach",
-    childAgreed: true,
-    reviewedDate: d(-14),
-    reviewedWith: "staff_edward",
-    effectivenessRating: 4,
-  },
-  {
-    id: "wr-002",
-    youngPerson: "yp_jordan",
-    weekdayWakeTime: "07:00",
-    weekendWakeTime: "08:00",
-    preferredWakeMethod: "Music/playlist",
-    wakeUpSteps: [
-      { time: "07:00", activity: "Music playlist starts low (R&B/chillhop) from speaker", staffSupport: "None" },
-      { time: "07:05", activity: "Phone returned (Jordan checks messages — agreed window)", staffSupport: "Prompt" },
-      { time: "07:15", activity: "Up, bathroom, shower (long preference, 10-15 mins)", staffSupport: "None" },
-      { time: "07:30", activity: "Get dressed, hair routine (Jordan very particular)", staffSupport: "None" },
-      { time: "07:45", activity: "Breakfast — sociable time with whoever is up", staffSupport: "None" },
-      { time: "08:00", activity: "Football kit/school prep, leave by 08:15", staffSupport: "Prompt" },
-    ],
-    morningTriggers: [
-      "Being denied phone access first thing",
-      "Anyone telling him hair/look is wrong",
-      "Conversations about birth mother in morning",
-      "Rushing — Jordan needs his shower time",
-    ],
-    morningProtective: [
-      "Phone access first 10 mins (agreed)",
-      "Music his choice — staff don't change track",
-      "Shower not negotiable — schedule allows time",
-      "Football routine on football days = built-in motivation",
-    ],
-    breakfastPreferences: [
-      "Eggs and toast (most days)",
-      "Cereal as backup",
-      "Always tea (strong, milk, one sugar)",
-      "On match days: bigger breakfast — porridge added",
-    ],
-    hygieneSequence: [
-      "Shower (long — main wake-up activity)",
-      "Skincare routine (started age 12 — important to him)",
-      "Hair gel/products — 5 mins minimum",
-      "Deodorant, body spray (his choice)",
-    ],
-    schoolPrep: [
-      "Bag packed night before",
-      "PE/football kit checked",
-      "Lunch money or packed lunch",
-      "Phone ready — important to Jordan",
-    ],
-    arrivalTime: "08:30 (school 8:45)",
-    ifRefusingToGetUp: [
-      "Often a sign something happened evening before — gently check",
-      "Offer brief chat — Jordan often opens up here",
-      "If health-related, be flexible (occasional duvet day for genuine need)",
-      "If avoidance pattern, key worker conversation that day",
-    ],
-    energyPattern: "Quick starter",
-    medicationMorning: "None prescribed",
-    childAgreed: true,
-    reviewedDate: d(-21),
-    reviewedWith: "staff_ryan",
-    effectivenessRating: 4,
-  },
-  {
-    id: "wr-003",
-    youngPerson: "yp_casey",
-    weekdayWakeTime: "07:30",
-    weekendWakeTime: "08:00",
-    preferredWakeMethod: "White noise transition",
-    wakeUpSteps: [
-      { time: "07:30", activity: "White noise switches to morning playlist (specific track) — auto-set", staffSupport: "None" },
-      { time: "07:32", activity: "Light gradually brightens via timer (smart bulb)", staffSupport: "None" },
-      { time: "07:35", activity: "Knock on door — 'Morning Casey, I'm here when you're ready'", staffSupport: "Prompt" },
-      { time: "07:40", activity: "Visual schedule reviewed for the day", staffSupport: "Hands-on" },
-      { time: "07:45", activity: "Bathroom — sequence on visual card", staffSupport: "Prompt" },
-      { time: "08:00", activity: "Same outfit pattern (3x identical sets)", staffSupport: "None" },
-      { time: "08:10", activity: "Breakfast — same options, same cup, same plate", staffSupport: "Prompt" },
-      { time: "08:25", activity: "Melatonin info noted, sensory tools packed, leave by 08:35", staffSupport: "Hands-on" },
-    ],
-    morningTriggers: [
-      "ANY change to routine without warning",
-      "Different cup/plate/spoon",
-      "Bright/sudden light",
-      "Multiple people in kitchen at breakfast",
-      "Loud voices",
-      "Being asked open questions before fully awake",
-    ],
-    morningProtective: [
-      "Visual timetable previewed evening before AND on waking",
-      "Same cutlery, same cup, same plate — DO NOT change",
-      "One staff member only in kitchen during Casey's breakfast",
-      "Predictable language, single instructions",
-      "Sensory tools always available",
-    ],
-    breakfastPreferences: [
-      "Plain Cheerios, in specific bowl (blue), with cold milk",
-      "Half-glass apple juice (specific brand)",
-      "NO variations — even running out of brand causes distress",
-      "Backup: dry toast (no butter) — only acceptable substitute",
-    ],
-    hygieneSequence: [
-      "Wee FIRST always (visual prompt)",
-      "Wash hands and face with specific cloth (no scented)",
-      "Brush teeth — same paste, same brush, 2-min timer",
-      "Hair — quick brush only, no styling (sensory issue)",
-      "Deodorant — unscented only",
-    ],
-    schoolPrep: [
-      "Same bag, same compartments, same items",
-      "Sensory bag (ear defenders, fidget, weighted lap pad) — non-negotiable",
-      "Visual day-plan card in pocket",
-      "Specific water bottle (Casey selected)",
-    ],
-    arrivalTime: "08:50 (specialist provision starts 09:00)",
-    ifRefusingToGetUp: [
-      "ASSUME sensory or anxiety reason first, never assume defiance",
-      "Reduce demands — sit nearby, don't speak unnecessarily",
-      "Use visual cards — 'school' or 'home' cards offered",
-      "If genuinely overwhelmed, planned 'home day' is acceptable — call school",
-      "Document trigger if identified — pattern recognition important",
-    ],
-    energyPattern: "Variable",
-    medicationMorning: "None in morning (melatonin only at night). Sensory regulation tools instead of medication.",
-    childAgreed: true,
-    reviewedDate: d(-7),
-    reviewedWith: "staff_anna",
-    effectivenessRating: 5,
-  },
-];
-
-// ── config ──────────────────────────────────────────────────────────────────
+// ── export columns ──────────────────────────────────────────────────────────
 function ratingColour(r: number): string {
   if (r >= 4) return "text-green-600";
   if (r === 3) return "text-amber-600";
@@ -254,9 +45,8 @@ const energyColour: Record<string, string> = {
   "Variable": "bg-purple-100 text-purple-800",
 };
 
-// ── export columns ──────────────────────────────────────────────────────────
 const exportCols: ExportColumn<WakeUpRoutine>[] = [
-  { header: "Young Person", accessor: (r: WakeUpRoutine) => getYPName(r.youngPerson) },
+  { header: "Young Person", accessor: (r: WakeUpRoutine) => getYPName(r.child_id) },
   { header: "Weekday Wake", accessor: (r: WakeUpRoutine) => r.weekdayWakeTime },
   { header: "Weekend Wake", accessor: (r: WakeUpRoutine) => r.weekendWakeTime },
   { header: "Wake Method", accessor: (r: WakeUpRoutine) => r.preferredWakeMethod },
@@ -268,18 +58,21 @@ const exportCols: ExportColumn<WakeUpRoutine>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function WakeUpRoutinesPage() {
+  const { data: result, isLoading } = useWakeUpRoutines(undefined, "home_oak");
+  const data = result?.data ?? [];
+
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     let items = [...data];
-    if (filterYP !== "all") items = items.filter((r) => r.youngPerson === filterYP);
+    if (filterYP !== "all") items = items.filter((r) => r.child_id === filterYP);
 
     items.sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return a.youngPerson.localeCompare(b.youngPerson);
+          return a.child_id.localeCompare(b.child_id);
         case "wake":
           return a.weekdayWakeTime.localeCompare(b.weekdayWakeTime);
         case "effectiveness":
@@ -289,23 +82,26 @@ export default function WakeUpRoutinesPage() {
       }
     });
     return items;
-  }, [filterYP, sortBy]);
+  }, [filterYP, sortBy, data]);
 
   const allChildAgreed = data.every((r) => r.childAgreed);
   const avgRating = (data.reduce((sum, r) => sum + r.effectivenessRating, 0) / data.length).toFixed(1);
-  const reviewedRecently = data.filter((r) => r.reviewedDate >= d(-30)).length;
+  const reviewedRecently = data.filter((r) => r.reviewedDate >= new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)).length;
 
   return (
     <PageShell
       title="Wake-Up Routines"
       subtitle="Personalised morning routines — supporting transitions from sleep, regulation, and a calm start"
+      ariaContext={{ pageTitle: "Wake-Up Routines", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="wake-up-routines" />
           <PrintButton title="Wake-Up Routines" />
+          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
+      {isLoading ? <div className="p-8 text-center text-muted-foreground">Loading...</div> : (<>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center">
           <p className="text-2xl font-bold">{data.length}</p>
@@ -368,7 +164,7 @@ export default function WakeUpRoutinesPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Sun className="h-5 w-5 text-amber-500 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(routine.youngPerson)}</p>
+                    <p className="font-medium truncate">{getYPName(routine.child_id)}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Weekday {routine.weekdayWakeTime} &middot; Weekend {routine.weekendWakeTime} &middot; {routine.preferredWakeMethod}
                     </p>
@@ -518,6 +314,19 @@ export default function WakeUpRoutinesPage() {
           and Sleep Assessments.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Sleep"
+        category="sleep"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Wake-Up Routines — morning routines, getting-up protocols, medication times, breakfast routines, school readiness, child-specific wake-up needs, daily structure evidence"
+        recordType="daily_log"
+        className="mt-6"
+      />
+      </>)}
     </PageShell>
   );
 }

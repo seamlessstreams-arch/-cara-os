@@ -13,7 +13,7 @@ import {
   Shield,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -27,6 +27,9 @@ import {
 import { useCCTVAccesses, useCreateCCTVAccess } from "@/hooks/use-cctv-accesses";
 import { toast } from "sonner";
 import type { CCTVAccess, CCTVAccessReason, CCTVCamera } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -131,10 +134,12 @@ export default function CCTVLogPage() {
     <PageShell
       title="CCTV Usage Log"
       subtitle="Footage access register — data protection compliance and audit trail"
+      ariaContext={{ pageTitle: "CCTV Usage Log", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="cctv-log" />
           <PrintButton title="CCTV Usage Log" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> Log Access
           </button>
@@ -286,6 +291,18 @@ export default function CCTVLogPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="CCTV Usage Log — CCTV access requests, footage reviewed, incidents investigated, data protection, ICO compliance, child privacy, staff access audit, retention policy, GDPR"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

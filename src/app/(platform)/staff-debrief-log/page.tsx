@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,9 @@ import {
   STAFF_DEBRIEF_STATUS_LABEL,
   STAFF_DEBRIEF_EMOTIONAL_IMPACT_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -118,10 +121,12 @@ export default function StaffDebriefLogPage() {
     <PageShell
       title="Staff Debrief Log"
       subtitle="Post-Incident · Emotional Support · TCI Reflections · Staff Welfare"
+      ariaContext={{ pageTitle: "Staff Debrief Log", sourceType: "pi_debrief" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Debrief Log" />
           <ExportButton data={exportData} columns={exportCols} filename="staff-debrief-log" />
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -308,6 +313,18 @@ export default function StaffDebriefLogPage() {
           <p>Staff debriefs are an essential part of post-incident learning and staff welfare. The Children&apos;s Homes Regulations 2015 and Quality Standards require that staff are supported following incidents and that learning is used to improve practice. All staff involved in restraints must be offered a debrief within 24 hours. Emotional debriefs should be offered after any distressing event. TCI (Therapeutic Crisis Intervention) reflections should be conducted quarterly to review the home&apos;s use of therapeutic approaches. Staff wellbeing is a leadership responsibility — the RM must ensure that debriefs are conducted sensitively and that staff have access to external support (EAP, counselling) when needed. Debrief records are confidential where marked.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Behaviour & Debriefs"
+        category={["behaviour", "physical_intervention", "safeguarding"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Debrief Log — post-incident emotional support, staff welfare, supervisor check-in, practice reflection, learning from incidents, wellbeing, resilience, vicarious trauma"
+        recordType="incident"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

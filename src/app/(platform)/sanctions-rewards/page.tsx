@@ -35,6 +35,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { SanctionRewardEntry, SRDirection, SRRewardType, SRSanctionType } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 
 
@@ -184,6 +187,7 @@ export default function SanctionsRewardsPage() {
     <PageShell
       title="Sanctions & Rewards"
       subtitle="Positive reinforcement and proportionate consequences"
+      ariaContext={{ pageTitle: "Sanctions & Rewards", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Sanctions & Rewards" subtitle="Oak House — Behaviour Management" />
@@ -191,6 +195,7 @@ export default function SanctionsRewardsPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Entry
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -488,6 +493,12 @@ export default function SanctionsRewardsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        category="behaviour"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

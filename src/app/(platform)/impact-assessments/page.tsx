@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, Users, Shield,
   ThumbsUp, ThumbsDown, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,17 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import type { ImpactAssessment, ImpactAssessmentStatus, ImpactRecommendation, ImpactArea } from "@/types/extended";
 import { IMPACT_ASSESSMENT_STATUS_LABEL, IMPACT_RECOMMENDATION_LABEL } from "@/types/extended";
-import { useImpactAssessments } from "@/hooks/use-impact-assessments";
+import { useImpactAssessments, useCreateImpactAssessment } from "@/hooks/use-impact-assessments";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const STATUSES: ImpactAssessmentStatus[] = ["draft", "in_progress", "completed", "approved", "declined"];
@@ -42,6 +49,20 @@ export default function ImpactAssessmentsPage() {
   const assessments = useMemo(() => raw?.data ?? [], [raw]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [showNew, setShowNew] = useState(false);
+  const createAssessment = useCreateImpactAssessment();
+  const [iaForm, setIaForm] = useState({ referral_name: "", referral_age: "", referral_gender: "male", referral_authority: "", rationale: "", recommendation: "proceed" as ImpactRecommendation });
+  const setIA = (k: string, v: unknown) => setIaForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveAssessment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!iaForm.referral_name.trim()) { toast.error("Referral name is required."); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    await createAssessment.mutateAsync({ referral_name: iaForm.referral_name.trim(), referral_age: parseInt(iaForm.referral_age) || 0, referral_gender: iaForm.referral_gender, referral_authority: iaForm.referral_authority.trim(), date: today, status: "draft" as ImpactAssessmentStatus, assessor: "staff_darren", impact_on_existing: [], impact_on_referral: [], overall_recommendation: iaForm.recommendation, conditions: [], rationale: iaForm.rationale.trim(), panel_date: null, panel_outcome: null, notes: "" });
+    toast.success("Impact assessment created.");
+    setIaForm({ referral_name: "", referral_age: "", referral_gender: "male", referral_authority: "", rationale: "", recommendation: "proceed" });
+    setShowNew(false);
+  };
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -103,13 +124,15 @@ export default function ImpactAssessmentsPage() {
     <PageShell
       title="Impact Assessments"
       subtitle="Assessing the impact of new admissions on existing young people"
+      ariaContext={{ pageTitle: "Impact Assessments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Impact Assessments" />
           <ExportButton data={filtered} columns={exportCols} filename="impact-assessments" />
-          <Button onClick={() => {}}>
+          <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> New Assessment
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -307,6 +330,34 @@ export default function ImpactAssessmentsPage() {
           the proposed admission with the home&apos;s Statement of Purpose.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "behaviour"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Impact Assessments — placement change impact, safeguarding decisions, physical intervention impact, restraint impact, assessment of child's experience, Reg 45 evidence"
+        recordType="risk_assessment"
+        className="mt-6"
+      />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>New Impact Assessment</DialogTitle></DialogHeader>
+          <form onSubmit={handleSaveAssessment} className="space-y-3 py-2">
+            <div><Label>Referral Name / Ref *</Label><Input className="mt-1" placeholder="e.g. Child A (Ref 2024-001)" value={iaForm.referral_name} onChange={(e) => setIA("referral_name", e.target.value)} /></div>
+            <div className="grid grid-cols-3 gap-3">
+              <div><Label>Age</Label><Input type="number" className="mt-1" placeholder="e.g. 14" value={iaForm.referral_age} onChange={(e) => setIA("referral_age", e.target.value)} /></div>
+              <div><Label>Gender</Label><Select value={iaForm.referral_gender} onValueChange={(v) => setIA("referral_gender", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select></div>
+              <div><Label>Recommendation</Label><Select value={iaForm.recommendation} onValueChange={(v) => setIA("recommendation", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(IMPACT_RECOMMENDATION_LABEL) as ImpactRecommendation[]).map((k) => (<SelectItem key={k} value={k}>{IMPACT_RECOMMENDATION_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            </div>
+            <div><Label>Referring Authority</Label><Input className="mt-1" placeholder="e.g. Barking and Dagenham LA" value={iaForm.referral_authority} onChange={(e) => setIA("referral_authority", e.target.value)} /></div>
+            <div><Label>Rationale</Label><Textarea className="mt-1" rows={3} placeholder="Summary rationale for recommendation" value={iaForm.rationale} onChange={(e) => setIA("rationale", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createAssessment.isPending}>{createAssessment.isPending ? "Saving…" : "Create Assessment"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

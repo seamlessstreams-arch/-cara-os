@@ -8,7 +8,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +41,7 @@ import type {
   MedRemedialAction,
   MedicationError,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -222,6 +225,7 @@ export default function MedicationErrorsPage() {
     <PageShell
       title="Medication Errors & Near-Misses"
       subtitle="Regulation 23 — Medication error reporting and learning"
+      ariaContext={{ pageTitle: "Medication Errors & Near-Misses", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Errors Register" />
@@ -234,6 +238,7 @@ export default function MedicationErrorsPage() {
             <Plus className="h-3.5 w-3.5" />
             Report Error
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -640,6 +645,12 @@ export default function MedicationErrorsPage() {
         open={showNewDialog}
         onClose={() => setShowNewDialog(false)}
         onSubmit={handleCreate}
+      />
+      <CareEventsPanel
+        title="Care Events — Medication"
+        category="medication"
+        days={28}
+        defaultCollapsed
       />
     </PageShell>
   );

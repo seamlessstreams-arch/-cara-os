@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -32,6 +32,9 @@ import {
   STAFF_SHADOWING_SHIFT_TYPE_LABEL,
   STAFF_SHADOWING_READY_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -98,10 +101,12 @@ export default function StaffShadowingLogPage() {
     <PageShell
       title="Staff Shadowing Log"
       subtitle="Records of new staff shadowing experienced colleagues during onboarding — supporting safe, supervised induction"
+      ariaContext={{ pageTitle: "Staff Shadowing Log", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="staff-shadowing-log" />
           <PrintButton title="Staff Shadowing Log" />
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -283,6 +288,18 @@ export default function StaffShadowingLogPage() {
           work solo until competency sign-off is complete.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Shadowing Log — new staff shadowing experienced staff, competency observation, induction, buddy system, practice assessment, probation, skill development, feedback"
+        recordType="supervision"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

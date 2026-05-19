@@ -12,10 +12,13 @@ import { cn, formatRelative } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { usePatternAlerts } from "@/hooks/use-intelligence";
+import { useNotifications, useMarkNotificationRead } from "@/hooks/use-notifications";
+import { useAuthContext } from "@/contexts/auth-context";
 import {
   Bell, AlertTriangle, Pill, MapPin, Eye, Shield,
   CheckCircle2, GraduationCap, Clock, ChevronRight,
   Building2, UserX, Flame, X, CheckCheck, ArrowRightLeft,
+  Zap, ClipboardList, RefreshCw,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -58,8 +61,11 @@ export function NotificationCentre() {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const panelRef = useRef<HTMLDivElement>(null);
 
+  const { currentUser } = useAuthContext();
   const dashboard = useDashboard();
   const patterns  = usePatternAlerts({ status: "active" });
+  const { data: apiNotifs = [] } = useNotifications({ recipientId: currentUser?.id, unreadOnly: true });
+  const markRead = useMarkNotificationRead();
   const d = dashboard.data?.data;
 
   // ── Build notification list from live data ─────────────────────────────
@@ -236,6 +242,34 @@ export function NotificationCentre() {
       });
     }
 
+    // Care events awaiting manager review
+    if ((d.care_events?.awaiting_manager_review ?? 0) > 0) {
+      const n = d.care_events!.awaiting_manager_review;
+      items.push({
+        id: "care_events_review",
+        type: "warning",
+        icon: ClipboardList,
+        title: `${n} care event${n > 1 ? "s" : ""} awaiting manager review`,
+        description: "Submitted care events need manager verification before evidence is finalised.",
+        href: "/management-oversight",
+        category: "compliance",
+      });
+    }
+
+    // Care events with routing failures
+    if ((d.care_events?.routing_failed ?? 0) > 0) {
+      const n = d.care_events!.routing_failed;
+      items.push({
+        id: "care_events_routing_failed",
+        type: "warning",
+        icon: RefreshCw,
+        title: `${n} care event${n > 1 ? "s" : ""} with routing failure`,
+        description: "One or more care event routes failed. Retry required to complete record linking.",
+        href: "/care-events",
+        category: "compliance",
+      });
+    }
+
     // All clear
     if (items.length === 0) {
       items.push({
@@ -255,7 +289,7 @@ export function NotificationCentre() {
   // Filter dismissed
   const visible = notifications.filter((n) => !dismissedIds.has(n.id));
   const criticalCount = visible.filter((n) => n.type === "critical").length;
-  const totalCount = visible.filter((n) => n.type !== "success").length;
+  const totalCount = visible.filter((n) => n.type !== "success").length + apiNotifs.length;
 
   // Close on outside click
   useEffect(() => {
@@ -334,6 +368,29 @@ export function NotificationCentre() {
               </button>
             )}
           </div>
+
+          {/* Care event notifications */}
+          {apiNotifs.length > 0 && (
+            <div className="border-b border-slate-100">
+              {apiNotifs.map((n) => (
+                <Link
+                  key={n.id}
+                  href={n.action_url ?? "/notifications"}
+                  onClick={() => { markRead.mutate(n.id); setOpen(false); }}
+                  className="flex items-start gap-3 px-4 py-3 hover:bg-indigo-50/60 transition-colors bg-indigo-50/30"
+                >
+                  <span className="h-2 w-2 rounded-full shrink-0 mt-1.5 bg-indigo-500" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-200 shrink-0">
+                    <Zap className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-indigo-800 leading-tight">{n.title}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed line-clamp-2">{n.body}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
 
           {/* Items */}
           <div className="overflow-y-auto flex-1">

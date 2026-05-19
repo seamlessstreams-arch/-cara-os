@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,15 +12,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   Clock, Sun, Moon, Sunset, AlertTriangle, CheckCircle2,
   FileText, Star, Loader2,
 } from "lucide-react";
-import { useShiftNoteRecords } from "@/hooks/use-shift-note-records";
+import { useShiftNoteRecords, useCreateShiftNoteRecord } from "@/hooks/use-shift-note-records";
+import { toast } from "sonner";
+import { STAFF } from "@/lib/seed-data";
 import type { ShiftNoteRecord, ShiftNoteShiftType } from "@/types/extended";
 import { SHIFT_NOTE_SHIFT_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config (icons are React.ReactNode — cannot serialize) ─────────── */
 
@@ -51,6 +56,21 @@ export default function ShiftNotesPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createNote = useCreateShiftNoteRecord();
+  const [snForm, setSnForm] = useState({ date: new Date().toISOString().slice(0, 10), shift: "evening" as ShiftNoteShiftType, general_notes: "", handover: "", outstanding: "" });
+  const setSNF = (k: keyof typeof snForm, v: string) => setSnForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateNote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!snForm.general_notes.trim()) { toast.error("General notes are required."); return; }
+    const meta = SHIFT_META[snForm.shift];
+    const [start, end] = meta.times.split(" – ");
+    await createNote.mutateAsync({ date: snForm.date, shift: snForm.shift, start_time: start || "19:00", end_time: end || "22:00", staff_on_duty: ["staff_darren"], child_notes: [], general_notes: snForm.general_notes.trim(), maintenance_issues: "", visitors_log: "", handover_priorities: snForm.handover ? snForm.handover.split("\n").map((s) => s.trim()).filter(Boolean) : [], incidents_ref: [], completed_tasks: [], outstanding_tasks: snForm.outstanding ? snForm.outstanding.split("\n").map((s) => s.trim()).filter(Boolean) : [], recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    toast.success("Shift note saved.");
+    setSnForm({ date: new Date().toISOString().slice(0, 10), shift: "evening", general_notes: "", handover: "", outstanding: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -109,15 +129,18 @@ export default function ShiftNotesPage() {
     <PageShell
       title="Shift Notes"
       subtitle="Detailed per-shift records for continuity of care across the team"
+      ariaContext={{ pageTitle: "Shift Notes", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Shift Notes" />
           <ExportButton data={filtered} columns={exportCols} filename="shift-notes" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Shift Note</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
+        <AriaPanel mode="assist" pageContext="Shift Notes — detailed per-shift records for continuity of care, handover observations, children's behaviour, significant events" recordType="shift_note" userRole="registered_manager" className="mb-2" />
         {/* ── Stats ────────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
@@ -287,38 +310,44 @@ export default function ShiftNotesPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Shift Note</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleCreateNote} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium">Date</label>
-                <Input type="date" />
+                <Input type="date" value={snForm.date} onChange={(e) => setSNF("date", e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium">Shift</label>
-                <Select><SelectTrigger><SelectValue placeholder="Select shift" /></SelectTrigger>
+                <Select value={snForm.shift} onValueChange={(v) => setSNF("shift", v)}><SelectTrigger><SelectValue placeholder="Select shift" /></SelectTrigger>
                   <SelectContent>{(Object.keys(SHIFT_NOTE_SHIFT_TYPE_LABEL) as ShiftNoteShiftType[]).map((k) => <SelectItem key={k} value={k}>{SHIFT_NOTE_SHIFT_TYPE_LABEL[k]} ({SHIFT_META[k].times})</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium">General Notes</label>
-              <Textarea placeholder="Overview of the shift…" rows={4} />
+              <label className="text-sm font-medium">General Notes *</label>
+              <Textarea placeholder="Overview of the shift…" rows={4} value={snForm.general_notes} onChange={(e) => setSNF("general_notes", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Handover Priorities</label>
-              <Textarea placeholder="One priority per line" rows={2} />
+              <Textarea placeholder="One priority per line" rows={2} value={snForm.handover} onChange={(e) => setSNF("handover", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Outstanding Tasks</label>
-              <Textarea placeholder="One task per line" rows={2} />
+              <Textarea placeholder="One task per line" rows={2} value={snForm.outstanding} onChange={(e) => setSNF("outstanding", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Save Shift Note</Button>
+              <Button type="submit" disabled={createNote.isPending}>{createNote.isPending ? "Saving…" : "Save Shift Note"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Daily Log"
+        category="general"
+        days={14}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

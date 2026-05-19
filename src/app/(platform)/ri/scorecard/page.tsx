@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -178,6 +180,7 @@ export default function ScorecardPage() {
     <PageShell
       title="Governance Scorecard"
       subtitle="15 live governance metrics — Oak House"
+      ariaContext={{ pageTitle: "RI Governance Scorecard", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -187,6 +190,7 @@ export default function ScorecardPage() {
             <Sparkles className="h-3.5 w-3.5" />
             {loading ? "Analysing…" : "ARIA Strategic Analysis"}
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -320,6 +324,12 @@ export default function ScorecardPage() {
           </div>
         )}
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="RI Governance Scorecard — responsible individual governance score, quality standards compliance, safeguarding performance, regulatory evidence, board reporting, Ofsted readiness, strategic analysis"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

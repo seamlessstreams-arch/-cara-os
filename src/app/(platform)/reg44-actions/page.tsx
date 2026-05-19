@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import Link from "next/link";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,11 +19,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
-  AlertTriangle, CheckCircle2, Clock, Eye, ListChecks, Loader2,
+  AlertTriangle, CheckCircle2, Clock, Eye, ListChecks, Loader2, ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
-import { useReg44ActionRecords } from "@/hooks/use-reg44-action-records";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useReg44ActionRecords, useCreateReg44ActionRecord } from "@/hooks/use-reg44-action-records";
 import type {
   Reg44ActionRecord,
   Reg44ActionPriority,
@@ -34,6 +36,9 @@ import {
   REG44_ACTION_STATUS_LABEL,
   REG44_ACTION_THEME_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 
@@ -61,6 +66,9 @@ const BORDER_PRI: Record<Reg44ActionPriority, string> = {
 
 export default function Reg44ActionsPage() {
   const { data: records = [], isLoading } = useReg44ActionRecords();
+  const createMutation = useCreateReg44ActionRecord();
+  const today = new Date().toISOString().slice(0, 10);
+
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
@@ -68,6 +76,53 @@ export default function Reg44ActionsPage() {
   const [sortBy, setSortBy] = useState("date-desc");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const [form, setForm] = useState({
+    visit_date: today,
+    visit_ref: "",
+    visitor_name: "",
+    theme: "" as Reg44ActionTheme | "",
+    priority: "medium" as Reg44ActionPriority,
+    recommendation: "",
+    action_required: "",
+    management_response: "",
+    assigned_to: "staff_darren",
+    due_date: "",
+  });
+  const setF = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.theme || !form.recommendation.trim() || !form.action_required.trim()) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+    await createMutation.mutateAsync({
+      visit_date: form.visit_date,
+      visit_ref: form.visit_ref.trim() || `R44-${form.visit_date.slice(0, 7).replace("-", "-")}`,
+      visitor_name: form.visitor_name.trim() || "Independent Person",
+      theme: form.theme as Reg44ActionTheme,
+      priority: form.priority,
+      status: "open",
+      recommendation: form.recommendation.trim(),
+      action_required: form.action_required.trim(),
+      management_response: form.management_response.trim(),
+      assigned_to: form.assigned_to,
+      due_date: form.due_date || today,
+      completed_date: null,
+      evidence_of_completion: "",
+      carried_forward_count: 0,
+      notes: "",
+    });
+    toast.success("Reg 44 action recorded.");
+    setForm({
+      visit_date: today, visit_ref: "", visitor_name: "",
+      theme: "", priority: "medium",
+      recommendation: "", action_required: "", management_response: "",
+      assigned_to: "staff_darren", due_date: "",
+    });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -127,7 +182,9 @@ export default function Reg44ActionsPage() {
   }
 
   return (
-    <PageShell title="Reg 44 Action Tracker" subtitle="Children's Homes Regulations 2015, Reg 44 — Independent Person's Report" actions={<div className="flex items-center gap-2"><PrintButton title="Reg 44 Actions" /><ExportButton data={filtered} columns={exportCols} filename="reg44-actions" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Add Action</Button></div>}>
+    <PageShell title="Reg 44 Action Tracker" subtitle="Children's Homes Regulations 2015, Reg 44 — Independent Person's Report" 
+      ariaContext={{ pageTitle: "Reg 44 Action Tracker", sourceType: "reg45" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Reg 44 Actions" /><ExportButton data={filtered} columns={exportCols} filename="reg44-actions" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Add Action</Button><AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} /></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
@@ -189,6 +246,17 @@ export default function Reg44ActionsPage() {
                       <span>Due: {r.due_date}</span>
                       <span>{r.completed_date ? `Completed: ${r.completed_date}` : "⚠ Not yet completed"}</span>
                     </div>
+                    {r.visit_ref.startsWith("CE-") && (
+                      <div className="pt-2 border-t">
+                        <Link
+                          href={`/care-events/${r.visit_ref.replace("CE-", "")}`}
+                          className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          View source care event
+                        </Link>
+                      </div>
+                    )}
                   </CardContent>
                 )}
               </Card>
@@ -204,21 +272,56 @@ export default function Reg44ActionsPage() {
 
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Add Reg 44 Action</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div><Label>Visit Date</Label><Input type="date" /></div>
-            <div><Label>Visit Reference</Label><Input placeholder="e.g. R44-2024-APR" /></div>
-            <div><Label>Visitor Name</Label><Input placeholder="Independent Person" /></div>
-            <div><Label>Theme</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(REG44_ACTION_THEME_LABEL) as Reg44ActionTheme[]).map((k) => (<SelectItem key={k} value={k}>{REG44_ACTION_THEME_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Priority</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(REG44_ACTION_PRIORITY_LABEL) as Reg44ActionPriority[]).map((k) => (<SelectItem key={k} value={k}>{REG44_ACTION_PRIORITY_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Due Date</Label><Input type="date" /></div>
-            <div className="col-span-2"><Label>Recommendation</Label><Textarea rows={3} placeholder="What did the visitor recommend?" /></div>
-            <div className="col-span-2"><Label>Action Required</Label><Textarea rows={2} placeholder="What needs to be done?" /></div>
-            <div className="col-span-2"><Label>Management Response</Label><Textarea rows={2} placeholder="RM response to the recommendation…" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Action</Button></DialogFooter>
+          <DialogHeader><DialogTitle>Add Regulation 44 Action</DialogTitle></DialogHeader>
+          <form onSubmit={handleCreate} className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1"><Label htmlFor="r44-date">Visit Date *</Label><Input id="r44-date" type="date" value={form.visit_date} max={today} onChange={(e) => setF("visit_date", e.target.value)} required /></div>
+              <div className="space-y-1"><Label htmlFor="r44-ref">Visit Reference</Label><Input id="r44-ref" placeholder="e.g. R44-2026-MAY" value={form.visit_ref} onChange={(e) => setF("visit_ref", e.target.value)} /></div>
+              <div className="space-y-1"><Label htmlFor="r44-visitor">Visitor Name</Label><Input id="r44-visitor" placeholder="Independent Person" value={form.visitor_name} onChange={(e) => setF("visitor_name", e.target.value)} /></div>
+              <div className="space-y-1"><Label htmlFor="r44-theme">Theme *</Label>
+                <Select value={form.theme} onValueChange={(v) => setF("theme", v)}>
+                  <SelectTrigger id="r44-theme"><SelectValue placeholder="Select theme…" /></SelectTrigger>
+                  <SelectContent>{(Object.keys(REG44_ACTION_THEME_LABEL) as Reg44ActionTheme[]).map((k) => (<SelectItem key={k} value={k}>{REG44_ACTION_THEME_LABEL[k]}</SelectItem>))}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1"><Label htmlFor="r44-priority">Priority</Label>
+                <Select value={form.priority} onValueChange={(v) => setF("priority", v)}>
+                  <SelectTrigger id="r44-priority"><SelectValue /></SelectTrigger>
+                  <SelectContent>{(Object.keys(REG44_ACTION_PRIORITY_LABEL) as Reg44ActionPriority[]).map((k) => (<SelectItem key={k} value={k}>{REG44_ACTION_PRIORITY_LABEL[k]}</SelectItem>))}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1"><Label htmlFor="r44-due">Due Date</Label><Input id="r44-due" type="date" value={form.due_date} onChange={(e) => setF("due_date", e.target.value)} /></div>
+              <div className="col-span-2 space-y-1"><Label htmlFor="r44-assigned">Assigned To</Label>
+                <Select value={form.assigned_to} onValueChange={(v) => setF("assigned_to", v)}>
+                  <SelectTrigger id="r44-assigned"><SelectValue /></SelectTrigger>
+                  <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent>
+                </Select>
+              </div>
+              <div className="col-span-2 space-y-1"><Label htmlFor="r44-rec">Recommendation *</Label><Textarea id="r44-rec" rows={3} placeholder="What did the visitor recommend?" value={form.recommendation} onChange={(e) => setF("recommendation", e.target.value)} required /></div>
+              <div className="col-span-2 space-y-1"><Label htmlFor="r44-action">Action Required *</Label><Textarea id="r44-action" rows={2} placeholder="What needs to be done?" value={form.action_required} onChange={(e) => setF("action_required", e.target.value)} required /></div>
+              <div className="col-span-2 space-y-1"><Label htmlFor="r44-response">Management Response</Label><Textarea id="r44-response" rows={2} placeholder="RM response to the recommendation…" value={form.management_response} onChange={(e) => setF("management_response", e.target.value)} /></div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createMutation.isPending}>
+                {createMutation.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving…</> : "Save Action"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Regulation 44 Evidence"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Reg 44 Action Tracker — Regulation 44 visitor report actions, action owners, completion status, management responses, RI oversight, statutory compliance evidence, Ofsted readiness"
+        recordType="reg45"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

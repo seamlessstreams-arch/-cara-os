@@ -6,7 +6,7 @@ import {
   AlertTriangle, Users, Layers, Info, CalendarClock,
   Shield, Lightbulb, ClipboardList, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -19,6 +19,9 @@ import { Input } from "@/components/ui/input";
 import { useMultiDisciplinaryFormulations } from "@/hooks/use-multi-disciplinary-formulations";
 import type { MultiDisciplinaryFormulation, FormulationModel } from "@/types/extended";
 import { FORMULATION_MODEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -125,10 +128,12 @@ export default function MultiDisciplinaryFormulationPage() {
     <PageShell
       title="Multi-Disciplinary Formulation"
       subtitle="Collaborative psychological case formulation across CAMHS, social work, education and home staff — aligned with NICE and BPS principles"
+      ariaContext={{ pageTitle: "Multi-Disciplinary Formulation", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Multi-Disciplinary Formulation" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="multi-disciplinary-formulation" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -290,6 +295,18 @@ export default function MultiDisciplinaryFormulationPage() {
         <strong>Regulatory and professional standards:</strong>{" "}
         Multi-disciplinary formulation aligns with the British Psychological Society&apos;s Good Practice Guidelines on the Use of Psychological Formulation (BPS, 2011) and underpins NICE-recommended care planning for children with mental health and developmental needs.
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Wellbeing"
+        category={["health", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Multi-Disciplinary Formulation — clinical formulation, CAMHS, psychology, social work, education, therapeutic formulation, shared understanding, intervention planning, care plan evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

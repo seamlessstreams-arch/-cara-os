@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { AriaQuickActions } from "@/components/intelligence/aria-quick-actions";
-import { StudioQuickActions } from "@/components/aria-studio/studio-quick-actions";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +29,8 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { ShiftSummaryCard } from "@/components/dashboard/shift-summary-card";
 import { AriaHandoverBuilder } from "@/components/handover/aria-handover-builder";
-import { AriaHandoverQuality } from "@/components/aria";
 import { HandoverPrintContext } from "@/components/handover/handover-print-context";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const HANDOVER_EXPORT_COLS: ExportColumn<HandoverEntry>[] = [
   { header: "Shift Date", accessor: (h) => h.shift_date },
@@ -55,14 +56,14 @@ const SHIFT_LABELS: Record<string, string> = {
 };
 
 const SEVERITY_COLORS: Record<string, string> = {
-  low: "bg-slate-100 text-[var(--cs-text-secondary)]",
+  low: "bg-slate-100 text-slate-600",
   medium: "bg-amber-100 text-amber-700",
   high: "bg-orange-100 text-orange-700",
   critical: "bg-red-100 text-red-700",
 };
 
 function moodColor(score: number | null): string {
-  if (score === null) return "bg-slate-100 text-[var(--cs-text-muted)]";
+  if (score === null) return "bg-slate-100 text-slate-500";
   if (score >= 8) return "bg-emerald-100 text-emerald-700";
   if (score >= 6) return "bg-amber-100 text-amber-700";
   if (score >= 4) return "bg-orange-100 text-orange-700";
@@ -84,7 +85,7 @@ function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
   return (
     <div className="rounded-xl bg-slate-50 px-4 py-3 space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-[var(--cs-navy)]">{getYPName(cu.child_id)}</span>
+        <span className="text-sm font-medium text-slate-900">{getYPName(cu.child_id)}</span>
         <div className="flex items-center gap-2">
           {cu.mood_score !== null && (
             <span className={cn("inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2 py-0.5", moodColor(cu.mood_score))}>
@@ -97,15 +98,15 @@ function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
             className={cn(
               "flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border transition-colors",
               showAria
-                ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]"
-                : "bg-white text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:bg-[var(--cs-aria-gold-bg)] hover:text-[var(--cs-aria-gold)] hover:border-[var(--cs-aria-gold-soft)]"
+                ? "bg-violet-100 text-violet-700 border-violet-200"
+                : "bg-white text-slate-500 border-slate-200 hover:bg-violet-50 hover:text-violet-600 hover:border-violet-200"
             )}
           >
             <Sparkles className="h-2.5 w-2.5" />Ask ARIA
           </button>
         </div>
       </div>
-      <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{cu.key_notes}</p>
+      <p className="text-xs text-slate-600 leading-relaxed">{cu.key_notes}</p>
       {cu.alerts.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {cu.alerts.map((alert, i) => (
@@ -116,17 +117,11 @@ function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
         </div>
       )}
       {showAria && (
-        <div className="space-y-2">
-          <AriaQuickActions
-            childId={cu.child_id}
-            sourceType="daily_log"
-            defaultOpen
-          />
-          <StudioQuickActions
-            childId={cu.child_id}
-            sourceType="handover"
-          />
-        </div>
+        <AriaQuickActions
+          childId={cu.child_id}
+          sourceType="daily_log"
+          defaultOpen
+        />
       )}
     </div>
   );
@@ -148,7 +143,7 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-[var(--cs-navy)]">
+              <span className="text-sm font-semibold text-slate-900">
                 {SHIFT_LABELS[handover.shift_from] ?? handover.shift_from}
                 {" → "}
                 {SHIFT_LABELS[handover.shift_to] ?? handover.shift_to}
@@ -160,16 +155,16 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
                 </Badge>
               )}
             </div>
-            <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">
+            <div className="text-xs text-slate-500 mt-0.5">
               {formatDate(handover.shift_date)} · {handover.handover_time}
             </div>
           </div>
         </div>
 
         {/* Staff */}
-        <div className="flex gap-4 mb-4 text-xs text-[var(--cs-text-secondary)]">
+        <div className="flex gap-4 mb-4 text-xs text-slate-600">
           <div>
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] block mb-1">Outgoing</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 block mb-1">Outgoing</span>
             {handover.outgoing_staff.map((id) => (
               <div key={id} className="flex items-center gap-1.5 mb-0.5">
                 <Avatar name={getStaffName(id)} size="xs" />
@@ -178,7 +173,7 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
             ))}
           </div>
           <div>
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] block mb-1">Incoming</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 block mb-1">Incoming</span>
             {handover.incoming_staff.map((id) => {
               const ctx = staffContexts.find((c) => c.staff_id === id);
               return (
@@ -189,7 +184,7 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
                     <span className={cn(
                       "text-[9px] rounded-full px-1.5 py-0.5 font-medium",
                       ctx.days_since_last_shift >= 4
-                        ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]"
+                        ? "bg-violet-100 text-violet-700"
                         : "bg-blue-100 text-blue-600"
                     )}>
                       {ctx.days_since_last_shift}d away
@@ -204,7 +199,7 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
         {/* Child updates */}
         {handover.child_updates.length > 0 && (
           <div className="space-y-3 mb-4">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Young People</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Young People</div>
             {handover.child_updates.map((cu) => (
               <HandoverChildCard key={cu.child_id} cu={cu} />
             ))}
@@ -214,8 +209,8 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
         {/* General notes */}
         {handover.general_notes && (
           <div className="mb-3">
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] mb-1">General Notes</div>
-            <p className="text-sm text-[var(--cs-text-secondary)] leading-relaxed">{handover.general_notes}</p>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1">General Notes</div>
+            <p className="text-sm text-slate-700 leading-relaxed">{handover.general_notes}</p>
           </div>
         )}
 
@@ -264,11 +259,11 @@ function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
   }
 
   return (
-    <div className="border-t border-[var(--cs-border-subtle)] pt-4 mt-4">
+    <div className="border-t border-slate-100 pt-4 mt-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-          <span className="text-xs font-semibold text-[var(--cs-text-secondary)]">
+          <span className="text-xs font-semibold text-slate-700">
             Acknowledgements ({totalSigned}/{totalExpected})
           </span>
         </div>
@@ -288,7 +283,7 @@ function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
                 so ? "bg-emerald-500" : "bg-slate-200"
               )} />
               <Avatar name={getStaffName(id)} size="xs" />
-              <span className={cn("flex-1", so ? "text-[var(--cs-text-secondary)]" : "text-[var(--cs-text-muted)]")}>
+              <span className={cn("flex-1", so ? "text-slate-700" : "text-slate-400")}>
                 {getStaffName(id)}
               </span>
               {so ? (
@@ -296,7 +291,7 @@ function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
                   {new Date(so.acknowledged_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                 </span>
               ) : (
-                <span className="text-[10px] text-[var(--cs-text-gentle)]">Pending</span>
+                <span className="text-[10px] text-slate-300">Pending</span>
               )}
             </div>
           );
@@ -309,7 +304,7 @@ function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
           {signOffs.filter((s) => s.notes).map((s) => (
             <div key={s.staff_id} className="rounded-lg bg-emerald-50 px-3 py-2">
               <span className="text-[10px] font-medium text-emerald-700">{getStaffName(s.staff_id).split(" ")[0]}:</span>
-              <span className="text-[11px] text-[var(--cs-text-secondary)] ml-1">{s.notes}</span>
+              <span className="text-[11px] text-slate-600 ml-1">{s.notes}</span>
             </div>
           ))}
         </div>
@@ -324,7 +319,7 @@ function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
               value={signOffNotes}
               onChange={(e) => setSignOffNotes(e.target.value)}
               placeholder="Optional note (e.g. 'Will follow up on Casey')..."
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           )}
           <div className="flex gap-2">
@@ -371,44 +366,44 @@ function HistoryCard({ handover }: { handover: HandoverEntry }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-medium text-[var(--cs-navy)]">
+              <span className="text-sm font-medium text-slate-900">
                 {SHIFT_LABELS[handover.shift_from] ?? handover.shift_from}
                 {" → "}
                 {SHIFT_LABELS[handover.shift_to] ?? handover.shift_to}
               </span>
             </div>
-            <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">
+            <div className="text-xs text-slate-500 mt-0.5">
               {formatDate(handover.shift_date)} · {handover.handover_time}
             </div>
-            <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">
+            <div className="text-xs text-slate-500 mt-0.5">
               {handover.outgoing_staff.map((id) => getStaffName(id).split(" ")[0]).join(", ")}
               {" → "}
               {handover.incoming_staff.map((id) => getStaffName(id).split(" ")[0]).join(", ")}
             </div>
           </div>
           {expanded
-            ? <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0 mt-1" />
-            : <ChevronRight className="h-4 w-4 text-[var(--cs-text-muted)] shrink-0 mt-1" />
+            ? <ChevronDown className="h-4 w-4 text-slate-400 shrink-0 mt-1" />
+            : <ChevronRight className="h-4 w-4 text-slate-400 shrink-0 mt-1" />
           }
         </button>
 
         {expanded && (
-          <div className="mt-4 border-t border-[var(--cs-border-subtle)] pt-4 space-y-3">
+          <div className="mt-4 border-t border-slate-100 pt-4 space-y-3">
             {handover.child_updates.map((cu) => (
               <div key={cu.child_id} className="rounded-xl bg-slate-50 px-3 py-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[var(--cs-navy)]">{getYPName(cu.child_id)}</span>
+                  <span className="text-xs font-medium text-slate-900">{getYPName(cu.child_id)}</span>
                   {cu.mood_score !== null && (
                     <span className={cn("text-[10px] rounded-full px-2 py-0.5 font-medium", moodColor(cu.mood_score))}>
                       {cu.mood_score}/10
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[var(--cs-text-secondary)] mt-1 leading-relaxed">{cu.key_notes}</p>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">{cu.key_notes}</p>
               </div>
             ))}
             {handover.general_notes && (
-              <p className="text-sm text-[var(--cs-text-secondary)] leading-relaxed">{handover.general_notes}</p>
+              <p className="text-sm text-slate-700 leading-relaxed">{handover.general_notes}</p>
             )}
           </div>
         )}
@@ -530,7 +525,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
     <Card className="rounded-2xl border-2 border-blue-200">
       <CardContent className="pt-5">
         <div className="flex items-center justify-between mb-5">
-          <span className="text-sm font-semibold text-[var(--cs-navy)]">Write Handover</span>
+          <span className="text-sm font-semibold text-slate-900">Write Handover</span>
           <div className="flex items-center gap-2">
             <Button
               type="button"
@@ -538,7 +533,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
               variant="outline"
               onClick={handleAriaGenerate}
               disabled={ariaGenerating || !shiftSummaryData}
-              className="border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)]"
+              className="border-violet-200 text-violet-700 hover:bg-violet-50"
             >
               {ariaGenerating ? (
                 <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />Generating...</>
@@ -546,7 +541,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
                 <><Sparkles className="h-3.5 w-3.5 mr-1" />Generate with ARIA</>
               )}
             </Button>
-            <button onClick={onClose} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]">
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -556,11 +551,11 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
           {/* Shift selectors */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Shift From</label>
+              <label className="text-xs font-medium text-slate-500 mb-1 block">Shift From</label>
               <select
                 value={shiftFrom}
                 onChange={(e) => setShiftFrom(e.target.value as ShiftFrom)}
-                className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
               >
                 <option value="day">Day</option>
                 <option value="sleep_in">Sleep-in</option>
@@ -569,11 +564,11 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Shift To</label>
+              <label className="text-xs font-medium text-slate-500 mb-1 block">Shift To</label>
               <select
                 value={shiftTo}
                 onChange={(e) => setShiftTo(e.target.value as ShiftTo)}
-                className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
               >
                 <option value="day">Day</option>
                 <option value="sleep_in">Sleep-in</option>
@@ -585,13 +580,13 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
 
           {/* Per-YP sections */}
           <div className="space-y-4">
-            <div className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Young People</div>
+            <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Young People</div>
             {currentYP.map((yp) => {
               const cu = childUpdates.find((c) => c.child_id === yp.id)!;
               return (
                 <div key={yp.id} className="rounded-xl bg-slate-50 p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-[var(--cs-navy)]">{yp.preferred_name || yp.first_name}</span>
+                    <span className="text-sm font-semibold text-slate-900">{yp.preferred_name || yp.first_name}</span>
                     {cu.mood_score !== null && (
                       <span className={cn("text-[10px] rounded-full px-2 py-0.5 font-medium", moodColor(cu.mood_score))}>
                         {cu.mood_score}/10
@@ -601,7 +596,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
 
                   {/* Mood slider */}
                   <div>
-                    <label className="text-[11px] text-[var(--cs-text-muted)] mb-1 block">
+                    <label className="text-[11px] text-slate-500 mb-1 block">
                       Mood: {cu.mood_score !== null ? `${cu.mood_score}/10` : "Not recorded"}
                     </label>
                     <input
@@ -617,7 +612,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
                       <button
                         type="button"
                         onClick={() => updateChild(yp.id, { mood_score: null })}
-                        className="text-[10px] text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"
+                        className="text-[10px] text-slate-400 hover:text-slate-600"
                       >
                         Clear
                       </button>
@@ -626,19 +621,19 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
 
                   {/* Key notes */}
                   <div>
-                    <label className="text-[11px] text-[var(--cs-text-muted)] mb-1 block">Key Notes</label>
+                    <label className="text-[11px] text-slate-500 mb-1 block">Key Notes</label>
                     <textarea
                       value={cu.key_notes}
                       onChange={(e) => updateChild(yp.id, { key_notes: e.target.value })}
                       rows={3}
                       placeholder={`Key observations for ${yp.preferred_name || yp.first_name}...`}
-                      className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
                     />
                   </div>
 
                   {/* Alerts */}
                   <div>
-                    <label className="text-[11px] text-[var(--cs-text-muted)] mb-1 block">Alerts</label>
+                    <label className="text-[11px] text-slate-500 mb-1 block">Alerts</label>
                     {cu.alerts.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-2">
                         {cu.alerts.map((alert, idx) => (
@@ -658,7 +653,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
                         onChange={(e) => setAlertInputs((prev) => ({ ...prev, [yp.id]: e.target.value }))}
                         onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAlert(yp.id); } }}
                         placeholder="Add alert..."
-                        className="flex-1 rounded-xl border border-[var(--cs-border)] bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
+                        className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
                       />
                       <button
                         type="button"
@@ -676,19 +671,19 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
 
           {/* General notes */}
           <div>
-            <label className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">General Notes</label>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">General Notes</label>
             <textarea
               value={generalNotes}
               onChange={(e) => setGeneralNotes(e.target.value)}
               rows={4}
               placeholder="Anything else the incoming team needs to know..."
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
             />
           </div>
 
           {/* Flags */}
           <div>
-            <label className="text-xs font-medium text-[var(--cs-text-muted)] mb-1 block">Flags</label>
+            <label className="text-xs font-medium text-slate-500 mb-1 block">Flags</label>
             {flags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {flags.map((flag, idx) => (
@@ -709,7 +704,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
                 onChange={(e) => setFlagInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addFlag(); } }}
                 placeholder="Add flag (e.g. medication_due)..."
-                className="flex-1 rounded-xl border border-[var(--cs-border)] bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
               <button
                 type="button"
@@ -836,6 +831,7 @@ export default function HandoverPage() {
     <PageShell
       title="Handover"
       subtitle="Shift-to-shift communication, live notes, and evidence-ready records"
+      ariaContext={{ pageTitle: "Handover", sourceType: "general" }}
       quickCreateContext={{ module: "handover", defaultTaskCategory: "admin" }}
       actions={
         <div className="flex items-center gap-2">
@@ -846,6 +842,7 @@ export default function HandoverPage() {
             <Plus className="h-3.5 w-3.5 mr-1" />
             {showForm ? "Cancel" : "Write Handover"}
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -863,43 +860,43 @@ export default function HandoverPage() {
           <Card className="rounded-2xl">
             <CardContent className="pt-4 pb-3 text-center">
               <ArrowRightLeft className="h-4 w-4 text-blue-500 mx-auto mb-1" />
-              <div className="text-lg font-bold text-[var(--cs-navy)] tabular-nums">{stats.total}</div>
-              <div className="text-[10px] text-[var(--cs-text-muted)]">Total Handovers</div>
+              <div className="text-lg font-bold text-slate-900 tabular-nums">{stats.total}</div>
+              <div className="text-[10px] text-slate-500">Total Handovers</div>
             </CardContent>
           </Card>
           <Card className="rounded-2xl">
             <CardContent className="pt-4 pb-3 text-center">
               <FileCheck className="h-4 w-4 text-emerald-500 mx-auto mb-1" />
               <div className="text-lg font-bold text-emerald-700 tabular-nums">{stats.signedOff}</div>
-              <div className="text-[10px] text-[var(--cs-text-muted)]">Signed Off</div>
+              <div className="text-[10px] text-slate-500">Signed Off</div>
             </CardContent>
           </Card>
           <Card className="rounded-2xl">
             <CardContent className="pt-4 pb-3 text-center">
               <Flag className="h-4 w-4 text-orange-500 mx-auto mb-1" />
-              <div className={cn("text-lg font-bold tabular-nums", stats.withFlags > 0 ? "text-orange-700" : "text-[var(--cs-text-muted)]")}>{stats.withFlags}</div>
-              <div className="text-[10px] text-[var(--cs-text-muted)]">With Flags</div>
+              <div className={cn("text-lg font-bold tabular-nums", stats.withFlags > 0 ? "text-orange-700" : "text-slate-400")}>{stats.withFlags}</div>
+              <div className="text-[10px] text-slate-500">With Flags</div>
             </CardContent>
           </Card>
           <Card className="rounded-2xl">
             <CardContent className="pt-4 pb-3 text-center">
               <AlertTriangle className="h-4 w-4 text-amber-500 mx-auto mb-1" />
-              <div className={cn("text-lg font-bold tabular-nums", stats.totalAlerts > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>{stats.totalAlerts}</div>
-              <div className="text-[10px] text-[var(--cs-text-muted)]">YP Alerts</div>
+              <div className={cn("text-lg font-bold tabular-nums", stats.totalAlerts > 0 ? "text-amber-700" : "text-slate-400")}>{stats.totalAlerts}</div>
+              <div className="text-[10px] text-slate-500">YP Alerts</div>
             </CardContent>
           </Card>
           <Card className="rounded-2xl">
             <CardContent className="pt-4 pb-3 text-center">
               <Heart className="h-4 w-4 text-pink-500 mx-auto mb-1" />
-              <div className="text-lg font-bold text-[var(--cs-navy)] tabular-nums">{stats.avgMood ?? "—"}</div>
-              <div className="text-[10px] text-[var(--cs-text-muted)]">Avg Mood</div>
+              <div className="text-lg font-bold text-slate-900 tabular-nums">{stats.avgMood ?? "—"}</div>
+              <div className="text-[10px] text-slate-500">Avg Mood</div>
             </CardContent>
           </Card>
           <Card className="rounded-2xl">
             <CardContent className="pt-4 pb-3 text-center">
               <Frown className="h-4 w-4 text-red-500 mx-auto mb-1" />
-              <div className={cn("text-lg font-bold tabular-nums", stats.lowMoodCount > 0 ? "text-red-700" : "text-[var(--cs-text-muted)]")}>{stats.lowMoodCount}</div>
-              <div className="text-[10px] text-[var(--cs-text-muted)]">Low Mood (≤4)</div>
+              <div className={cn("text-lg font-bold tabular-nums", stats.lowMoodCount > 0 ? "text-red-700" : "text-slate-400")}>{stats.lowMoodCount}</div>
+              <div className="text-[10px] text-slate-500">Low Mood (≤4)</div>
             </CardContent>
           </Card>
         </div>
@@ -935,18 +932,11 @@ export default function HandoverPage() {
         </div>
       )}
 
-      {/* ARIA Handover Quality Check */}
-      {!isLoading && (
-        <div className="mb-6">
-          <AriaHandoverQuality />
-        </div>
-      )}
-
       {/* ── Search & Filters ── */}
       {!isLoading && history.length > 0 && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
           <div className="relative flex-1 w-full sm:max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -965,7 +955,7 @@ export default function HandoverPage() {
                   "px-3 py-1.5 text-[11px] font-medium rounded-full border transition-colors",
                   shiftFilter === f
                     ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white text-[var(--cs-text-secondary)] border-[var(--cs-border)] hover:bg-[var(--cs-surface)]"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                 )}
               >
                 {f === "all" ? "All Shifts" : (SHIFT_LABELS[f] ?? f.replace(/_/g, " "))}
@@ -977,7 +967,7 @@ export default function HandoverPage() {
           <select
             value={sortKey}
             onChange={(e) => setSortKey(e.target.value as SortKey)}
-            className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-1.5 text-[11px] text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-slate-900"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[11px] text-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-900"
           >
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
@@ -987,7 +977,7 @@ export default function HandoverPage() {
 
       {/* Results count */}
       {isFiltered && !isLoading && (
-        <div className="text-xs text-[var(--cs-text-muted)] mb-4">
+        <div className="text-xs text-slate-500 mb-4">
           Showing {filteredHistory.length} of {history.length} previous handover{history.length !== 1 ? "s" : ""}
         </div>
       )}
@@ -996,7 +986,7 @@ export default function HandoverPage() {
         {/* ── Left 2 columns: handover content ── */}
         <div className="lg:col-span-2 space-y-5">
           {isLoading ? (
-            <div className="flex items-center justify-center py-20 text-[var(--cs-text-muted)]">
+            <div className="flex items-center justify-center py-20 text-slate-400">
               <Loader2 className="h-8 w-8 animate-spin mr-2" />
               <span className="text-sm">Loading handovers...</span>
             </div>
@@ -1015,7 +1005,7 @@ export default function HandoverPage() {
               {latest ? (
                 <LatestHandoverCard handover={latest} />
               ) : (
-                <div className="rounded-2xl border-2 border-dashed border-[var(--cs-border)] p-10 text-center text-[var(--cs-text-muted)]">
+                <div className="rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-slate-400">
                   <ArrowRightLeft className="h-10 w-10 mx-auto mb-3 text-slate-200" />
                   <div className="text-sm font-medium">No handovers yet</div>
                   <div className="text-xs mt-1">Write the first handover for today</div>
@@ -1029,12 +1019,12 @@ export default function HandoverPage() {
               {history.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide">Previous Handovers</span>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Previous Handovers</span>
                     <div className="flex-1 h-px bg-slate-100" />
-                    <span className="text-[10px] text-[var(--cs-text-muted)]">{filteredHistory.length} records</span>
+                    <span className="text-[10px] text-slate-400">{filteredHistory.length} records</span>
                   </div>
                   {filteredHistory.length === 0 && isFiltered ? (
-                    <div className="rounded-2xl border-2 border-dashed border-[var(--cs-border)] p-8 text-center text-[var(--cs-text-muted)]">
+                    <div className="rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center text-slate-400">
                       <Search className="h-8 w-8 mx-auto mb-2 text-slate-200" />
                       <div className="text-sm font-medium">No handovers match your filters</div>
                       <div className="text-xs mt-1">Try adjusting your search or shift filter</div>
@@ -1062,19 +1052,19 @@ export default function HandoverPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-xs text-[var(--cs-text-muted)] py-2">Loading...</div>
+                <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : todayShifts.length === 0 ? (
-                <div className="text-xs text-[var(--cs-text-muted)] py-2">No shifts recorded</div>
+                <div className="text-xs text-slate-400 py-2">No shifts recorded</div>
               ) : (
                 <div className="space-y-2">
                   {todayShifts.map((s) => (
                     <div key={s.id} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
                       <Avatar name={getStaffName(s.staff_id)} size="xs" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs text-[var(--cs-text-secondary)]">{getStaffName(s.staff_id).split(" ")[0]}</div>
-                        <div className="text-[10px] text-[var(--cs-text-muted)] capitalize">{s.shift_type.replace(/_/g, " ")}</div>
+                        <div className="text-xs text-slate-700">{getStaffName(s.staff_id).split(" ")[0]}</div>
+                        <div className="text-[10px] text-slate-400 capitalize">{s.shift_type.replace(/_/g, " ")}</div>
                       </div>
-                      <span className="text-[10px] text-[var(--cs-text-muted)] shrink-0">{s.start_time}–{s.end_time}</span>
+                      <span className="text-[10px] text-slate-400 shrink-0">{s.start_time}–{s.end_time}</span>
                     </div>
                   ))}
                 </div>
@@ -1092,9 +1082,9 @@ export default function HandoverPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-xs text-[var(--cs-text-muted)] py-2">Loading...</div>
+                <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : pendingTasks.length === 0 ? (
-                <div className="text-xs text-[var(--cs-text-muted)] py-2 flex items-center gap-1.5">
+                <div className="text-xs text-slate-400 py-2 flex items-center gap-1.5">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                   All tasks complete
                 </div>
@@ -1109,8 +1099,8 @@ export default function HandoverPage() {
                         t.priority === "medium" ? "bg-amber-400" : "bg-slate-300"
                       )} />
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs text-[var(--cs-text-secondary)] line-clamp-2">{t.title}</div>
-                        <div className="text-[10px] text-[var(--cs-text-muted)] capitalize mt-0.5">{t.priority} priority</div>
+                        <div className="text-xs text-slate-700 line-clamp-2">{t.title}</div>
+                        <div className="text-[10px] text-slate-400 capitalize mt-0.5">{t.priority} priority</div>
                       </div>
                     </div>
                   ))}
@@ -1132,9 +1122,9 @@ export default function HandoverPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-xs text-[var(--cs-text-muted)] py-2">Loading...</div>
+                <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : openIncidents.length === 0 ? (
-                <div className="text-xs text-[var(--cs-text-muted)] py-2 flex items-center gap-1.5">
+                <div className="text-xs text-slate-400 py-2 flex items-center gap-1.5">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                   No open incidents
                 </div>
@@ -1142,12 +1132,12 @@ export default function HandoverPage() {
                 <div className="space-y-2">
                   {openIncidents.map((inc) => (
                     <div key={inc.id} className="flex items-start gap-2 rounded-xl bg-slate-50 px-3 py-2">
-                      <Badge className={cn("text-[9px] rounded-full mt-0.5 shrink-0", SEVERITY_COLORS[inc.severity] ?? "bg-slate-100 text-[var(--cs-text-secondary)]")}>
+                      <Badge className={cn("text-[9px] rounded-full mt-0.5 shrink-0", SEVERITY_COLORS[inc.severity] ?? "bg-slate-100 text-slate-600")}>
                         {inc.severity}
                       </Badge>
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs text-[var(--cs-text-secondary)] line-clamp-2">{inc.description}</div>
-                        <div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">{formatDate(inc.date)}</div>
+                        <div className="text-xs text-slate-700 line-clamp-2">{inc.description}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">{formatDate(inc.date)}</div>
                       </div>
                     </div>
                   ))}
@@ -1163,19 +1153,19 @@ export default function HandoverPage() {
           <Card className="rounded-2xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Pill className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                <Pill className="h-4 w-4 text-violet-500" />
                 Medication Today
               </CardTitle>
             </CardHeader>
             <CardContent>
               {youngPeople.length === 0 ? (
-                <div className="text-xs text-[var(--cs-text-muted)] py-2">Loading...</div>
+                <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : (
                 <div className="space-y-2">
                   {youngPeople.map((yp) => (
                     <div key={yp.id} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2">
-                      <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)] shrink-0" />
-                      <span className="text-xs text-[var(--cs-text-secondary)] flex-1">{yp.preferred_name || yp.first_name}</span>
+                      <div className="h-1.5 w-1.5 rounded-full bg-violet-400 shrink-0" />
+                      <span className="text-xs text-slate-700 flex-1">{yp.preferred_name || yp.first_name}</span>
                       {yp.risk_flags.includes("medication refusal") && (
                         <Badge className="text-[9px] rounded-full bg-red-100 text-red-600">Risk</Badge>
                       )}
@@ -1195,6 +1185,12 @@ export default function HandoverPage() {
         <HandoverPrintContext incomingStaffIds={latest.incoming_staff} />
       )}
       </div>{/* close #handover-content */}
+      <CareEventsPanel
+        title="Care Events — Daily Log"
+        category="general"
+        days={14}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

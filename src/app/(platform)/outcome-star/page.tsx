@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,9 @@ import { useOutcomeStarAssessments } from "@/hooks/use-outcome-star-assessments"
 import type { OutcomeStarAssessment, OutcomeStarDomain } from "@/types/extended";
 import { OUTCOME_STAR_DOMAIN_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -73,14 +76,23 @@ export default function OutcomeStarPage() {
     <PageShell
       title="Outcome Star Assessments"
       subtitle="Outcomes Framework · Child-Centred Progress · 10-Domain Model"
+      ariaContext={{ pageTitle: "Outcome Star Assessments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Outcome Star Assessments" />
           <ExportButton data={exportData} columns={exportCols} filename="outcome-star" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area">
+        <AriaPanel
+          mode="assist"
+          pageContext="Outcome Star Assessments — 10-domain outcomes framework, child-centred progress measurement, LAC review evidence, care planning"
+          recordType="direct_work"
+          userRole="registered_manager"
+          className="mb-6"
+        />
         {/* per-child summary cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {entries.map((a) => {
@@ -208,6 +220,12 @@ export default function OutcomeStarPage() {
           <p>The Outcome Star is a collaborative assessment tool completed with the young person. Each domain is scored 1-10, where 1 indicates significant concern and 10 indicates the young person is thriving. Assessments should be completed quarterly and at key transition points. The child&apos;s voice is central — scores should reflect both the professional assessment and the child&apos;s own perception. Progress (and regression) across domains informs care planning, LAC reviews, and Reg 45 quality reporting. Trends over time are more meaningful than individual scores.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

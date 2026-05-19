@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import {
+  providerHomeSummaries,
+  providerOversightLog,
+  nextFallbackId,
+} from "@/lib/intelligence/fallback-store";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -11,7 +16,15 @@ export async function GET(request: NextRequest) {
   const providerId = searchParams.get("providerId");
 
   if (!isSupabaseEnabled()) {
-    return NextResponse.json({ ok: true, summaries: [], persisted: false });
+    let rows = [...providerHomeSummaries];
+    if (homeId) rows = rows.filter((r) => r.id === homeId || r.name === homeId);
+    return NextResponse.json({
+      ok: true,
+      summaries: [],
+      richSummaries: rows,
+      oversightLog: [...providerOversightLog],
+      persisted: true,
+    });
   }
 
   const supabase = createServerClient() as unknown as LooseSupabase;
@@ -36,7 +49,18 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isSupabaseEnabled()) {
-      return NextResponse.json({ ok: true, persisted: false });
+      const now = new Date().toISOString();
+      const row = {
+        id: nextFallbackId("ol"),
+        date: now.slice(0, 10),
+        home: (homeId as string) ?? "",
+        type: (body.entryType as string) ?? "comment",
+        content: (notes as string) ?? "",
+        author: (actorUserId as string) ?? "Regional Inspector",
+        status: "open",
+      };
+      providerOversightLog.unshift(row);
+      return NextResponse.json({ ok: true, summary: row, persisted: true });
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;

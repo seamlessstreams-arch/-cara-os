@@ -12,7 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import {
@@ -48,6 +48,9 @@ import {
 } from "@/types/extended";
 import { useSkinConditionPlans } from "@/hooks/use-skin-condition-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Colour Maps ──────────────────────────────────────────────────────────────
 
@@ -248,6 +251,7 @@ export default function ChildSkinConditionsPage() {
     <PageShell
       title="Skin Condition Plans"
       subtitle="Per-child dermatology care — emollients, topicals, dermatology referrals, school provision, body confidence and sun safety"
+      ariaContext={{ pageTitle: "Skin Condition Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Skin Condition Plans" />
@@ -256,6 +260,7 @@ export default function ChildSkinConditionsPage() {
             columns={exportColumns}
             filename="child-skin-conditions"
           />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -714,6 +719,18 @@ export default function ChildSkinConditionsPage() {
           months.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Skin Condition Plans — eczema, psoriasis, acne, dermatitis, cream and emollient routine, GP or dermatology referral, AHA, allergy links, care plan, daily care, self-care"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

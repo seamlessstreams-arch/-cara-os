@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
 import {
   AlertTriangle, Shield, Eye, CheckCircle2, Clock, FileText,
   Plus, Users, MapPin, Calendar, Phone, Bell, TrendingUp,
@@ -17,6 +16,8 @@ import {
 import { useIncidents, useAddOversight } from "@/hooks/use-incidents";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
+import { useMissingEpisodes } from "@/hooks/use-missing-episodes";
+import { useChronologyEntries } from "@/hooks/use-chronology-entries";
 import { api } from "@/hooks/use-api";
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
@@ -27,88 +28,17 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { PageGuidance } from "@/components/ui/page-guidance";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import NextLink from "next/link";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Static seed data (display only) ──────────────────────────────────────────
 
-const MFC_EPISODES: MissingEpisode[] = [
-  {
-    id: "mfc_001", reference: "MFC-2026-001", child_id: "yp_alex",
-    date_missing: "2026-01-15", time_missing: "21:30",
-    date_returned: "2026-01-15", time_returned: "23:25",
-    duration_hours: 1.9, risk_level: "medium",
-    location_last_seen: "Outside Oak House — said going to shop",
-    return_location: "Local park, returned voluntarily",
-    reported_to_police: false, police_reference: null,
-    reported_to_la: true, la_notified_at: "2026-01-16T09:00:00Z",
-    return_interview_completed: true, return_interview_by: "staff_ryan",
-    return_interview_date: "2026-01-16",
-    return_interview_notes: "Alex said he lost track of time. No safeguarding concerns disclosed. Agreed to check in next time.",
-    contextual_safeguarding_risk: false,
-    linked_incident_id: null,
-    pattern_notes: "First episode. Informal community time.",
-    status: "closed", home_id: "home_oak",
-    created_at: "2026-01-15T23:30:00Z", created_by: "staff_edward",
-  },
-  {
-    id: "mfc_002", reference: "MFC-2026-002", child_id: "yp_alex",
-    date_missing: "2026-02-28", time_missing: "19:00",
-    date_returned: "2026-02-28", time_returned: "23:10",
-    duration_hours: 4.2, risk_level: "high",
-    location_last_seen: "Leaving for 'mate's house' — no address given",
-    return_location: "Town centre, collected by staff",
-    reported_to_police: true, police_reference: "DERBYSHIRE/2026/001122",
-    reported_to_la: true, la_notified_at: "2026-02-28T20:00:00Z",
-    return_interview_completed: true, return_interview_by: "staff_darren",
-    return_interview_date: "2026-03-01",
-    return_interview_notes: "Alex disclosed spending time with a group of older males he met online. Names not provided. CS risk assessment initiated.",
-    contextual_safeguarding_risk: true,
-    linked_incident_id: null,
-    pattern_notes: "Second episode. Increasing duration. CS risk flagged — older peer network.",
-    status: "closed", home_id: "home_oak",
-    created_at: "2026-02-28T19:15:00Z", created_by: "staff_lackson",
-  },
-  {
-    id: "mfc_003", reference: "MFC-2026-003", child_id: "yp_alex",
-    date_missing: "2026-04-01", time_missing: "20:45",
-    date_returned: "2026-04-01", time_returned: "22:20",
-    duration_hours: 1.6, risk_level: "high",
-    location_last_seen: "Community — said going to shop",
-    return_location: "Local park, with unknown males",
-    reported_to_police: true, police_reference: "DERBYSHIRE/2026/002876",
-    reported_to_la: true, la_notified_at: "2026-04-01T21:00:00Z",
-    return_interview_completed: true, return_interview_by: "staff_edward",
-    return_interview_date: "2026-04-02",
-    return_interview_notes: "Alex was evasive. Wouldn't name contacts. Mobile phone observed — not usual device. Risk assessment updated. Strategy discussion arranged.",
-    contextual_safeguarding_risk: true,
-    linked_incident_id: "inc_001",
-    pattern_notes: "Third episode this year. Pattern emerging — always late evening, always community. Same unknown peer group suspected. Escalated to MASH.",
-    status: "closed", home_id: "home_oak",
-    created_at: "2026-04-01T20:55:00Z", created_by: "staff_edward",
-  },
-];
-
-const CHRONOLOGY_ENTRIES: ChronologyEntry[] = [
-  { id: "chr_001", child_id: "yp_alex", date: "2025-09-01", time: "14:00", category: "placement", title: "Placement commenced at Oak House", description: "Alex admitted to Oak House under S20. Initial placement meeting held with LA, IRO, and social worker. Risk assessment reviewed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-09-01T14:00:00Z" },
-  { id: "chr_002", child_id: "yp_alex", date: "2025-10-01", time: null, category: "education", title: "School placement arranged — Derby Alternative Provision", description: "Education arranged with Derby AP following exclusion from previous school. Alex settled well in first week.", significance: "significant", recorded_by: "staff_ryan", linked_incident_id: null, home_id: "home_oak", created_at: "2025-10-01T10:00:00Z" },
-  { id: "chr_003", child_id: "yp_alex", date: "2026-01-15", time: "21:30", category: "missing", title: "First missing from care episode (MFC-2026-001)", description: "Alex absent 1h 55m. Returned voluntarily. Low-risk return interview completed.", significance: "significant", recorded_by: "staff_edward", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-15T23:30:00Z" },
-  { id: "chr_004", child_id: "yp_alex", date: "2026-02-05", time: null, category: "review", title: "LAC Review — Alex W", description: "Looked After Child review held at Derby City Council. Placement stable. Education engagement improved. No change to Care Order.", significance: "significant", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-02-05T11:00:00Z" },
-  { id: "chr_005", child_id: "yp_alex", date: "2026-02-28", time: "19:00", category: "missing", title: "Second missing from care episode (MFC-2026-002) — CS risk flagged", description: "Alex absent 4h 10m. Police informed. CS risk identified — older peer network. Strategy discussion booked.", significance: "critical", recorded_by: "staff_lackson", linked_incident_id: null, home_id: "home_oak", created_at: "2026-02-28T19:15:00Z" },
-  { id: "chr_006", child_id: "yp_alex", date: "2026-04-01", time: "20:45", category: "missing", title: "Third missing from care episode (MFC-2026-003) — pattern escalated", description: "Alex absent 1h 35m. Police informed. Contextual safeguarding escalation — MASH referral made. Unknown peer group suspected.", significance: "critical", recorded_by: "staff_edward", linked_incident_id: "inc_001", home_id: "home_oak", created_at: "2026-04-01T20:55:00Z" },
-  { id: "chr_007", child_id: "yp_alex", date: "2026-04-14", time: "19:10", category: "safeguarding", title: "Safeguarding disclosure — criminal exploitation risk", description: "Alex disclosed older peer asking him to carry items. Immediate safeguarding response. Social worker, police, and RM notified. Strategy discussion arranged.", significance: "critical", recorded_by: "staff_edward", linked_incident_id: "inc_004", home_id: "home_oak", created_at: "2026-04-14T19:15:00Z" },
-  { id: "chr_010", child_id: "yp_jordan", date: "2025-11-15", time: null, category: "placement", title: "Placement commenced at Oak House", description: "Jordan admitted under Full Care Order (S31). Placement plan agreed with Nottinghamshire CC. Halal food and dietary requirements confirmed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-11-15T12:00:00Z" },
-  { id: "chr_011", child_id: "yp_jordan", date: "2025-12-01", time: null, category: "education", title: "School placement — Highfields Academy", description: "Jordan started at Highfields Academy. Initial settling in period. Positive engagement with PE.", significance: "significant", recorded_by: "staff_ryan", linked_incident_id: null, home_id: "home_oak", created_at: "2025-12-01T09:00:00Z" },
-  { id: "chr_012", child_id: "yp_jordan", date: "2026-04-14", time: "14:30", category: "behaviour", title: "Complaint raised — noise during study time (INC-2026-0042)", description: "Jordan raised formal complaint about noise levels. Complaint logged and investigation commenced.", significance: "significant", recorded_by: "staff_chervelle", linked_incident_id: "inc_003", home_id: "home_oak", created_at: "2026-04-14T14:35:00Z" },
-  { id: "chr_020", child_id: "yp_casey", date: "2026-01-10", time: null, category: "placement", title: "Placement commenced at Oak House", description: "Casey admitted under Full Care Order. From previous placement that broke down. Settling-in plan agreed. CAMHS referral in place.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-10T13:00:00Z" },
-  { id: "chr_021", child_id: "yp_casey", date: "2026-01-15", time: null, category: "health", title: "Melatonin prescribed — sleep support", description: "Dr Chen prescribed Melatonin 3mg for sleep difficulties. MAR commenced.", significance: "significant", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-15T10:00:00Z" },
-  { id: "chr_022", child_id: "yp_casey", date: "2026-02-01", time: null, category: "health", title: "Fluoxetine prescribed — mood support", description: "Dr Chen prescribed Fluoxetine 10mg for low mood. Risk assessment updated. CAMHS oversight confirmed.", significance: "significant", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-02-01T11:00:00Z" },
-  { id: "chr_023", child_id: "yp_casey", date: "2026-04-13", time: "08:15", category: "health", title: "Medication late administration — refusal episode (INC-2026-0040)", description: "Casey refused morning Fluoxetine. Incident logged. Late administration at 08:45 following second attempt.", significance: "significant", recorded_by: "staff_anna", linked_incident_id: "inc_002", home_id: "home_oak", created_at: "2026-04-13T08:20:00Z" },
-];
 
 // ── Design helpers ────────────────────────────────────────────────────────────
 
 const RISK_CONFIG = {
-  low: { badge: "bg-slate-100 text-[var(--cs-text-secondary)]", dot: "bg-slate-400", label: "Low" },
+  low: { badge: "bg-slate-100 text-slate-700", dot: "bg-slate-400", label: "Low" },
   medium: { badge: "bg-amber-100 text-amber-800", dot: "bg-amber-500", label: "Medium" },
   high: { badge: "bg-orange-100 text-orange-800", dot: "bg-orange-500", label: "High" },
   critical: { badge: "bg-red-100 text-red-800", dot: "bg-red-600", label: "Critical" },
@@ -118,7 +48,7 @@ const SEV_CONFIG = {
   critical: { badge: "bg-red-100 text-red-800", border: "border-l-red-600", dot: "bg-red-500" },
   high: { badge: "bg-orange-100 text-orange-800", border: "border-l-orange-500", dot: "bg-orange-500" },
   medium: { badge: "bg-amber-100 text-amber-800", border: "border-l-amber-400", dot: "bg-amber-400" },
-  low: { badge: "bg-slate-100 text-[var(--cs-text-secondary)]", border: "border-l-slate-300", dot: "bg-slate-400" },
+  low: { badge: "bg-slate-100 text-slate-700", border: "border-l-slate-300", dot: "bg-slate-400" },
 } as const;
 
 const CHRONO_CATEGORY_CONFIG: Record<ChronologyCategory, { color: string; dot: string; label: string }> = {
@@ -128,11 +58,11 @@ const CHRONO_CATEGORY_CONFIG: Record<ChronologyCategory, { color: string; dot: s
   safeguarding: { color: "bg-rose-50 text-rose-700 border-rose-200", dot: "bg-rose-500", label: "Safeguarding" },
   health: { color: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Health" },
   education: { color: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-500", label: "Education" },
-  contact: { color: "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]", dot: "bg-slate-500", label: "Contact" },
+  contact: { color: "bg-slate-50 text-slate-700 border-slate-200", dot: "bg-slate-500", label: "Contact" },
   legal: { color: "bg-indigo-50 text-indigo-700 border-indigo-200", dot: "bg-indigo-500", label: "Legal" },
-  review: { color: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]", dot: "bg-[var(--cs-aria-gold-bg)]0", label: "Review" },
+  review: { color: "bg-violet-50 text-violet-700 border-violet-200", dot: "bg-violet-500", label: "Review" },
   behaviour: { color: "bg-orange-50 text-orange-700 border-orange-200", dot: "bg-orange-500", label: "Behaviour" },
-  other: { color: "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]", dot: "bg-slate-400", label: "Other" },
+  other: { color: "bg-slate-50 text-slate-600 border-slate-200", dot: "bg-slate-400", label: "Other" },
 };
 
 const SIGNIFICANCE_CONFIG = {
@@ -155,7 +85,7 @@ function YPAvatar({ childId }: { childId: string }) {
   const yp = getYPById(childId);
   const name = yp?.preferred_name || yp?.first_name || "?";
   return (
-    <div className="h-8 w-8 rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] text-sm font-bold flex items-center justify-center shrink-0">
+    <div className="h-8 w-8 rounded-full bg-violet-100 text-violet-700 text-sm font-bold flex items-center justify-center shrink-0">
       {name[0]}
     </div>
   );
@@ -208,17 +138,26 @@ function ConcernCard({
         <YPAvatar childId={inc.child_id} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-bold text-[var(--cs-navy)]">{inc.reference}</span>
+            <span className="text-sm font-bold text-slate-900">{inc.reference}</span>
             <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize", sev.badge)}>
               {inc.severity}
             </span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-[var(--cs-text-secondary)]">
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
               {INCIDENT_TYPE_LABELS[inc.type] || inc.type}
             </span>
-            <AriaUsageBadge ariaAssisted={(inc as any).aria_oversight_used} sourceTable="incidents" recordId={inc.id} />
+            {(inc as never as { care_event_id?: string }).care_event_id && (
+              <NextLink
+                href={`/care-events/${(inc as never as { care_event_id: string }).care_event_id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+              >
+                <ArrowUpRight className="h-3 w-3" />
+                From Care Event
+              </NextLink>
+            )}
           </div>
-          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-[var(--cs-text-muted)]">
-            <span className="font-semibold text-[var(--cs-aria-gold)]">{getYPName(inc.child_id)}</span>
+          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-slate-500">
+            <span className="font-semibold text-violet-700">{getYPName(inc.child_id)}</span>
             <span>·</span>
             <span>{formatDate(inc.date)} at {inc.time}</span>
             {inc.location && <><span>·</span><span>{inc.location}</span></>}
@@ -227,13 +166,13 @@ function ConcernCard({
       </div>
 
       {/* Description */}
-      <p className="mt-3 text-sm text-[var(--cs-text-secondary)] leading-relaxed">{inc.description}</p>
+      <p className="mt-3 text-sm text-slate-700 leading-relaxed">{inc.description}</p>
 
       {/* Actions taken */}
       {inc.immediate_action && (
         <div className="mt-3 rounded-xl bg-slate-50 p-3">
-          <div className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-1">Actions Taken</div>
-          <p className="text-xs text-[var(--cs-text-secondary)]">{inc.immediate_action}</p>
+          <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Actions Taken</div>
+          <p className="text-xs text-slate-700">{inc.immediate_action}</p>
         </div>
       )}
 
@@ -245,7 +184,7 @@ function ConcernCard({
               key={i}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
-                n.acknowledged ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-[var(--cs-text-secondary)]"
+                n.acknowledged ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
               )}
             >
               <Bell className="h-2.5 w-2.5" />
@@ -260,7 +199,7 @@ function ConcernCard({
       <div className="mt-3 flex items-center gap-2 flex-wrap">
         <a
           href={`/safeguarding/${inc.id}`}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-[var(--cs-border)] px-2.5 py-1 text-xs font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors ml-auto"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors ml-auto"
         >
           <ChevronRight className="h-3.5 w-3.5" />
           Full Record
@@ -292,7 +231,7 @@ function ConcernCard({
           <button
             onClick={handleCreateNeed}
             disabled={createNeed.isPending}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 transition-colors disabled:opacity-50"
           >
             {createNeed.isPending
               ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -428,7 +367,7 @@ function SafeguardingConcernsTab() {
   }
 
   if (query.isPending) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-[var(--cs-text-muted)]" /></div>;
+    return <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-slate-400" /></div>;
   }
 
   return (
@@ -450,27 +389,27 @@ function SafeguardingConcernsTab() {
           { label: "Open Concerns", value: concerns.length, color: "text-red-600" },
           { label: "Critical", value: concerns.filter((c) => c.severity === "critical").length, color: "text-red-700" },
           { label: "Needs Oversight", value: concerns.filter((c) => c.requires_oversight && !c.oversight_by).length, color: "text-amber-600" },
-          { label: "YP with Risk Flags", value: allYP.filter((y) => y.risk_flags.length > 0).length, color: "text-[var(--cs-aria-gold)]" },
+          { label: "YP with Risk Flags", value: allYP.filter((y) => y.risk_flags.length > 0).length, color: "text-violet-600" },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl border bg-white p-4 text-center">
             <div className={cn("text-2xl font-bold", s.color)}>{s.value}</div>
-            <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">{s.label}</div>
+            <div className="text-xs text-slate-500 mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Safeguarding Scan Button */}
       {concerns.length > 0 && (
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
+        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-semibold text-[var(--cs-navy)]">ARIA Safeguarding Scan</div>
-              <div className="text-xs text-[var(--cs-aria-gold)] mt-0.5">Analyse all concerns for themes, patterns, and escalation risks</div>
+              <div className="text-sm font-semibold text-violet-900">ARIA Safeguarding Scan</div>
+              <div className="text-xs text-violet-700 mt-0.5">Analyse all concerns for themes, patterns, and escalation risks</div>
             </div>
             <Button
               onClick={() => { setScanResults(null); setScanOpen(true); handleScan(); }}
               disabled={isScanning}
-              className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 shrink-0"
+              className="bg-violet-600 hover:bg-violet-700 shrink-0"
               size="sm"
             >
               {isScanning ? (
@@ -486,7 +425,7 @@ function SafeguardingConcernsTab() {
       {/* Search + Filter */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
           <Input
             placeholder="Search concerns, staff, type…"
             value={concernSearch}
@@ -494,7 +433,7 @@ function SafeguardingConcernsTab() {
             className="pl-8 h-8 text-xs rounded-lg"
           />
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-[var(--cs-text-muted)] shrink-0">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 shrink-0">
           <ArrowUpDown className="h-3.5 w-3.5" />
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="bg-white border rounded-md px-2 py-1.5 text-xs">
             <option value="severity">Severity (critical first)</option>
@@ -506,21 +445,21 @@ function SafeguardingConcernsTab() {
         <select
           value={filterChild}
           onChange={(e) => setFilterChild(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+          className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
         >
           <option value="all">All young people</option>
           {allYP.map((yp) => (
             <option key={yp.id} value={yp.id}>{yp.preferred_name || yp.first_name}</option>
           ))}
         </select>
-        <span className="text-xs text-[var(--cs-text-muted)]">{concerns.length} concern{concerns.length !== 1 ? "s" : ""}</span>
+        <span className="text-xs text-slate-400">{concerns.length} concern{concerns.length !== 1 ? "s" : ""}</span>
       </div>
 
       {/* Concern cards */}
       {concerns.length === 0 ? (
         <div className="rounded-2xl border bg-white p-12 text-center">
           <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto mb-3" />
-          <div className="text-sm font-semibold text-[var(--cs-navy)]">
+          <div className="text-sm font-semibold text-slate-900">
             {concernSearch || filterChild !== "all" ? "No concerns match your filters" : "No open safeguarding concerns"}
           </div>
         </div>
@@ -539,20 +478,20 @@ function SafeguardingConcernsTab() {
       {/* Oversight drawer */}
       {oversightTarget && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/30 backdrop-blur-sm" onClick={() => setOversightTarget(null)}>
-          <div className="w-full max-w-lg bg-white shadow-[var(--cs-shadow-elevated)] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-lg bg-white shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-amber-600" />
-                  <span className="text-sm font-bold text-[var(--cs-navy)]">Safeguarding Oversight</span>
+                  <span className="text-sm font-bold text-slate-900">Safeguarding Oversight</span>
                 </div>
-                <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">{oversightTarget.reference} — {getYPName(oversightTarget.child_id)}</div>
+                <div className="text-xs text-slate-500 mt-0.5">{oversightTarget.reference} — {getYPName(oversightTarget.child_id)}</div>
               </div>
-              <button onClick={() => setOversightTarget(null)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"><X className="h-4 w-4" /></button>
+              <button onClick={() => setOversightTarget(null)} className="text-slate-400 hover:text-slate-600"><X className="h-4 w-4" /></button>
             </div>
             <div className="p-6 space-y-5">
-              <div className="rounded-2xl border border-[var(--cs-border)] p-4">
-                <p className="text-sm text-[var(--cs-text-secondary)] leading-relaxed">{oversightTarget.description}</p>
+              <div className="rounded-2xl border border-slate-200 p-4">
+                <p className="text-sm text-slate-700 leading-relaxed">{oversightTarget.description}</p>
               </div>
               <AriaPanel
                 mode="oversee"
@@ -562,13 +501,13 @@ function SafeguardingConcernsTab() {
                 onInsert={(text) => setOversightNote(text)}
               />
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-2">Oversight note <span className="text-red-500">*</span></label>
+                <label className="text-xs font-semibold text-slate-700 block mb-2">Oversight note <span className="text-red-500">*</span></label>
                 <textarea
                   value={oversightNote}
                   onChange={(e) => setOversightNote(e.target.value)}
                   rows={5}
                   placeholder="Record your safeguarding oversight — considerations, decisions, follow-up actions, strategy discussion outcomes…"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-xs text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400 leading-relaxed"
                 />
               </div>
               <div className="flex gap-3">
@@ -585,19 +524,19 @@ function SafeguardingConcernsTab() {
       {/* Safeguarding Scan Modal */}
       {scanOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setScanOpen(false)}>
-          <div className="w-full max-w-2xl bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Eye className="h-5 w-5 text-[var(--cs-aria-gold)]" />
-                <span className="text-lg font-bold text-[var(--cs-navy)]">Safeguarding Scan Results</span>
+                <Eye className="h-5 w-5 text-violet-600" />
+                <span className="text-lg font-bold text-slate-900">Safeguarding Scan Results</span>
               </div>
-              <button onClick={() => setScanOpen(false)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"><X className="h-5 w-5" /></button>
+              <button onClick={() => setScanOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="h-5 w-5" /></button>
             </div>
 
             <div className="max-h-[70vh] overflow-y-auto p-6 space-y-6">
               {isScanning ? (
                 <div className="flex items-center justify-center py-20">
-                  <Loader2 className="h-6 w-6 animate-spin text-[var(--cs-text-muted)]" />
+                  <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
                 </div>
               ) : scanResults ? (
                 <>
@@ -609,14 +548,14 @@ function SafeguardingConcernsTab() {
                     scanResults.overall_risk === "medium" ? "border-l-amber-500 bg-amber-50 border border-amber-200" :
                     "border-l-emerald-500 bg-emerald-50 border border-emerald-200"
                   )}>
-                    <div className="text-xs font-semibold uppercase tracking-wider text-[var(--cs-text-secondary)] mb-1">Overall Risk</div>
-                    <div className="text-lg font-bold capitalize text-[var(--cs-navy)]">{scanResults.overall_risk}</div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Overall Risk</div>
+                    <div className="text-lg font-bold capitalize text-slate-900">{scanResults.overall_risk}</div>
                   </div>
 
                   {/* Themes */}
                   {scanResults.themes.length > 0 && (
                     <div className="space-y-3">
-                      <div className="text-sm font-bold text-[var(--cs-navy)] flex items-center gap-2">
+                      <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
                         Identified Themes ({scanResults.themes.length})
                       </div>
@@ -624,24 +563,24 @@ function SafeguardingConcernsTab() {
                         {scanResults.themes.map((theme, i) => (
                           <div key={i} className={cn(
                             "rounded-xl border p-3",
-                            theme.escalation_flag ? "border-red-200 bg-red-50" : "border-[var(--cs-border)] bg-slate-50"
+                            theme.escalation_flag ? "border-red-200 bg-red-50" : "border-slate-200 bg-slate-50"
                           )}>
                             <div className="flex items-start justify-between gap-3 mb-2">
                               <div className="flex-1">
-                                <div className="font-semibold text-[var(--cs-navy)] text-sm">{theme.theme}</div>
-                                <div className="text-xs text-[var(--cs-text-secondary)] mt-0.5">Severity: <span className="font-medium capitalize">{theme.severity}</span></div>
+                                <div className="font-semibold text-slate-900 text-sm">{theme.theme}</div>
+                                <div className="text-xs text-slate-600 mt-0.5">Severity: <span className="font-medium capitalize">{theme.severity}</span></div>
                               </div>
                               <span className={cn(
                                 "rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize shrink-0",
                                 theme.confidence === "high" ? "bg-emerald-100 text-emerald-700" :
                                 theme.confidence === "medium" ? "bg-amber-100 text-amber-700" :
-                                "bg-slate-100 text-[var(--cs-text-secondary)]"
+                                "bg-slate-100 text-slate-600"
                               )}>
                                 {theme.confidence} confidence
                               </span>
                             </div>
                             {theme.incidents.length > 0 && (
-                              <div className="text-xs text-[var(--cs-text-secondary)]">
+                              <div className="text-xs text-slate-700">
                                 <span className="font-medium">Linked to:</span> {theme.incidents.join(", ")}
                               </div>
                             )}
@@ -660,15 +599,15 @@ function SafeguardingConcernsTab() {
                   {/* Cross-YP Patterns */}
                   {scanResults.cross_yp_patterns.length > 0 && (
                     <div className="space-y-2">
-                      <div className="text-sm font-bold text-[var(--cs-navy)] flex items-center gap-2">
+                      <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
                         <TrendingUp className="h-4 w-4" />
                         Cross-Young Person Patterns
                       </div>
-                      <div className="rounded-xl border border-[var(--cs-border)] bg-slate-50 p-3">
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                         <ul className="space-y-1.5">
                           {scanResults.cross_yp_patterns.map((pattern, i) => (
-                            <li key={i} className="text-xs text-[var(--cs-text-secondary)] flex gap-2">
-                              <span className="text-[var(--cs-text-muted)]">•</span>
+                            <li key={i} className="text-xs text-slate-700 flex gap-2">
+                              <span className="text-slate-400">•</span>
                               <span>{pattern}</span>
                             </li>
                           ))}
@@ -680,7 +619,7 @@ function SafeguardingConcernsTab() {
                   {/* Recommended Actions */}
                   {scanResults.recommended_actions.length > 0 && (
                     <div className="space-y-2">
-                      <div className="text-sm font-bold text-[var(--cs-navy)] flex items-center gap-2">
+                      <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4" />
                         Recommended Actions
                       </div>
@@ -697,14 +636,14 @@ function SafeguardingConcernsTab() {
                     </div>
                   )}
 
-                  <div className="pt-4 border-t text-xs text-[var(--cs-text-muted)] text-center">
+                  <div className="pt-4 border-t text-xs text-slate-500 text-center">
                     Scan completed {scanResults.timestamp ? `on ${formatDate(scanResults.timestamp)}` : ""}
                   </div>
                 </>
               ) : (
                 <div className="py-12 text-center">
-                  <AlertTriangle className="h-8 w-8 text-[var(--cs-text-gentle)] mx-auto mb-3" />
-                  <div className="text-sm text-[var(--cs-text-secondary)]">Unable to complete scan</div>
+                  <AlertTriangle className="h-8 w-8 text-slate-300 mx-auto mb-3" />
+                  <div className="text-sm text-slate-600">Unable to complete scan</div>
                 </div>
               )}
             </div>
@@ -728,7 +667,7 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
   return (
     <div className={cn(
       "rounded-2xl border bg-white overflow-hidden",
-      ep.contextual_safeguarding_risk ? "border-rose-200" : "border-[var(--cs-border)]"
+      ep.contextual_safeguarding_risk ? "border-rose-200" : "border-slate-200"
     )}>
       <div className="p-5">
         {/* Header */}
@@ -737,7 +676,7 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
             <div className={cn("h-2.5 w-2.5 rounded-full mt-1.5 shrink-0", risk.dot)} />
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-bold text-[var(--cs-navy)]">{ep.reference}</span>
+                <span className="text-sm font-bold text-slate-900">{ep.reference}</span>
                 <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize", risk.badge)}>
                   {ep.risk_level} risk
                 </span>
@@ -752,10 +691,10 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
                   </span>
                 )}
               </div>
-              <div className="mt-1 flex items-center gap-2 text-[11px] text-[var(--cs-text-muted)] flex-wrap">
+              <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500 flex-wrap">
                 <span>{formatDate(ep.date_missing)} at {ep.time_missing}</span>
                 {ep.duration_hours && (
-                  <span className="font-medium text-[var(--cs-text-secondary)]">{ep.duration_hours}h absent</span>
+                  <span className="font-medium text-slate-700">{ep.duration_hours}h absent</span>
                 )}
                 {ep.return_location && <span>· Returned: {ep.return_location}</span>}
               </div>
@@ -763,7 +702,7 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
           </div>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="text-xs font-medium text-[var(--cs-aria-gold)] hover:text-[var(--cs-navy)] shrink-0"
+            className="text-xs font-medium text-violet-600 hover:text-violet-800 shrink-0"
           >
             {expanded ? "Less" : "Details"}
           </button>
@@ -772,13 +711,13 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
         {/* Location */}
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="rounded-xl bg-slate-50 px-3 py-2">
-            <div className="text-[10px] font-medium text-[var(--cs-text-muted)] mb-0.5">Last seen</div>
-            <div className="text-xs text-[var(--cs-text-secondary)] leading-snug">{ep.location_last_seen}</div>
+            <div className="text-[10px] font-medium text-slate-400 mb-0.5">Last seen</div>
+            <div className="text-xs text-slate-700 leading-snug">{ep.location_last_seen}</div>
           </div>
           {ep.return_location && (
             <div className="rounded-xl bg-slate-50 px-3 py-2">
-              <div className="text-[10px] font-medium text-[var(--cs-text-muted)] mb-0.5">Return location</div>
-              <div className="text-xs text-[var(--cs-text-secondary)] leading-snug">{ep.return_location}</div>
+              <div className="text-[10px] font-medium text-slate-400 mb-0.5">Return location</div>
+              <div className="text-xs text-slate-700 leading-snug">{ep.return_location}</div>
             </div>
           )}
         </div>
@@ -787,14 +726,14 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
         <div className="mt-3 flex items-center gap-2 flex-wrap">
           <span className={cn(
             "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium",
-            ep.reported_to_police ? "bg-blue-50 text-blue-700" : "bg-slate-100 text-[var(--cs-text-muted)]"
+            ep.reported_to_police ? "bg-blue-50 text-blue-700" : "bg-slate-100 text-slate-500"
           )}>
             <Shield className="h-3 w-3" />
             Police {ep.reported_to_police ? `— ${ep.police_reference || "Reported"}` : "Not reported"}
           </span>
           <span className={cn(
             "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium",
-            ep.reported_to_la ? "bg-blue-50 text-blue-700" : "bg-slate-100 text-[var(--cs-text-muted)]"
+            ep.reported_to_la ? "bg-blue-50 text-blue-700" : "bg-slate-100 text-slate-500"
           )}>
             <Bell className="h-3 w-3" />
             LA {ep.reported_to_la ? "notified" : "not notified"}
@@ -809,7 +748,7 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
             RTH {ep.return_interview_completed ? `— ${getStaffName(ep.return_interview_by ?? "")}` : "Required"}
           </span>
           {ep.linked_incident_id && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--cs-aria-gold-bg)] px-2.5 py-1 text-[10px] font-medium text-[var(--cs-aria-gold)]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-medium text-violet-700">
               <Link2 className="h-3 w-3" />
               Linked incident
             </span>
@@ -818,7 +757,7 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
 
         {/* Expanded details */}
         {expanded && (
-          <div className="mt-4 space-y-3 pt-4 border-t border-[var(--cs-border-subtle)]">
+          <div className="mt-4 space-y-3 pt-4 border-t border-slate-100">
             {ep.pattern_notes && (
               <div className="rounded-xl bg-rose-50 border border-rose-100 p-3">
                 <div className="text-[10px] font-semibold text-rose-600 uppercase tracking-wider mb-1">Pattern Notes</div>
@@ -827,9 +766,9 @@ function MFCEpisodeCard({ ep }: { ep: MissingEpisode }) {
             )}
             {ep.return_interview_notes && (
               <div className="rounded-xl bg-slate-50 p-3">
-                <div className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-1">Return to Home Interview</div>
-                <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{ep.return_interview_notes}</p>
-                <div className="mt-1.5 text-[10px] text-[var(--cs-text-muted)]">
+                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Return to Home Interview</div>
+                <p className="text-xs text-slate-700 leading-relaxed">{ep.return_interview_notes}</p>
+                <div className="mt-1.5 text-[10px] text-slate-400">
                   Completed by {getStaffName(ep.return_interview_by ?? "")} · {formatDate(ep.return_interview_date)}
                 </div>
               </div>
@@ -851,6 +790,8 @@ function MFCTab() {
   const [logPending, setLogPending] = useState(false);
   const mfcYpQuery = useYoungPeople();
   const mfcAllYP = mfcYpQuery.data?.data ?? [];
+  const { data: mfcResult } = useMissingEpisodes({ homeId: "home_oak" });
+  const MFC_EPISODES = mfcResult?.data ?? [];
 
   const alexEpisodes = MFC_EPISODES.filter((e) => e.child_id === "yp_alex");
   const csEpisodes = MFC_EPISODES.filter((e) => e.contextual_safeguarding_risk);
@@ -924,14 +865,14 @@ function MFCTab() {
       {/* MFC stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Total Episodes", value: MFC_EPISODES.length, color: "text-[var(--cs-navy)]" },
+          { label: "Total Episodes", value: MFC_EPISODES.length, color: "text-slate-900" },
           { label: "Active", value: MFC_EPISODES.filter((e) => e.status === "active").length, color: "text-red-600" },
           { label: "High Risk", value: highRisk.length, color: "text-orange-600" },
           { label: "CS Concerns", value: csEpisodes.length, color: "text-rose-600" },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl border bg-white p-4 text-center">
             <div className={cn("text-2xl font-bold", s.color)}>{s.value}</div>
-            <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">{s.label}</div>
+            <div className="text-xs text-slate-500 mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
@@ -941,7 +882,7 @@ function MFCTab() {
         <select
           value={filterChild}
           onChange={(e) => setFilterChild(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+          className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
         >
           <option value="all">All young people</option>
           {mfcAllYP.map((yp) => (
@@ -958,7 +899,7 @@ function MFCTab() {
       {filtered.length === 0 ? (
         <div className="rounded-2xl border bg-white p-12 text-center">
           <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto mb-3" />
-          <div className="text-sm font-semibold text-[var(--cs-navy)]">No missing episodes for this young person</div>
+          <div className="text-sm font-semibold text-slate-900">No missing episodes for this young person</div>
         </div>
       ) : (
         <div className="space-y-3">
@@ -974,18 +915,18 @@ function MFCTab() {
       {/* Log episode modal */}
       {logOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setLogOpen(false)}>
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-[var(--cs-navy)]">Log Missing Episode</span>
-              <button onClick={() => setLogOpen(false)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"><X className="h-4 w-4" /></button>
+              <span className="text-sm font-bold text-slate-900">Log Missing Episode</span>
+              <button onClick={() => setLogOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="h-4 w-4" /></button>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Young Person</label>
+                <label className="text-xs font-semibold text-slate-600 block mb-1.5">Young Person</label>
                 <select
                   value={logForm.yp_id}
                   onChange={(e) => setLogForm((f) => ({ ...f, yp_id: e.target.value }))}
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
                 >
                   {mfcAllYP.map((yp) => (
                     <option key={yp.id} value={yp.id}>{yp.preferred_name || yp.first_name}</option>
@@ -994,7 +935,7 @@ function MFCTab() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Date Missing <span className="text-red-500">*</span></label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1.5">Date Missing <span className="text-red-500">*</span></label>
                   <Input
                     type="date"
                     value={logForm.date}
@@ -1003,7 +944,7 @@ function MFCTab() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Time Missing</label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1.5">Time Missing</label>
                   <Input
                     type="time"
                     value={logForm.time}
@@ -1013,11 +954,11 @@ function MFCTab() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Risk Level</label>
+                <label className="text-xs font-semibold text-slate-600 block mb-1.5">Risk Level</label>
                 <select
                   value={logForm.risk}
                   onChange={(e) => setLogForm((f) => ({ ...f, risk: e.target.value }))}
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -1026,7 +967,7 @@ function MFCTab() {
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Last Known Location</label>
+                <label className="text-xs font-semibold text-slate-600 block mb-1.5">Last Known Location</label>
                 <Input
                   value={logForm.location}
                   onChange={(e) => setLogForm((f) => ({ ...f, location: e.target.value }))}
@@ -1067,6 +1008,8 @@ function ChronologyTab() {
   const [entryPending, setEntryPending] = useState(false);
   const chronYpQuery = useYoungPeople();
   const chronAllYP = chronYpQuery.data?.data ?? [];
+  const { data: chronResult } = useChronologyEntries(selectedChild);
+  const CHRONOLOGY_ENTRIES = chronResult?.data ?? [];
 
   const entries = useMemo(() => {
     let list = CHRONOLOGY_ENTRIES.filter((e) => e.child_id === selectedChild);
@@ -1111,7 +1054,7 @@ function ChronologyTab() {
           <select
             value={selectedChild}
             onChange={(e) => setSelectedChild(e.target.value)}
-            className="h-9 rounded-xl border border-[var(--cs-border)] bg-white px-3 text-sm font-medium text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+            className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
           >
             {chronAllYP.map((yp) => (
               <option key={yp.id} value={yp.id}>{yp.preferred_name || yp.first_name} {yp.last_name}</option>
@@ -1120,7 +1063,7 @@ function ChronologyTab() {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="h-9 rounded-xl border border-[var(--cs-border)] bg-white px-3 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+            className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
           >
             <option value="all">All categories</option>
             {categories.map((c) => (
@@ -1137,12 +1080,12 @@ function ChronologyTab() {
       {/* YP info strip */}
       {yp && (
         <div className="rounded-2xl border bg-white p-4 flex items-center gap-4">
-          <div className="h-10 w-10 rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] text-base font-bold flex items-center justify-center shrink-0">
+          <div className="h-10 w-10 rounded-full bg-violet-100 text-violet-700 text-base font-bold flex items-center justify-center shrink-0">
             {(yp.preferred_name || yp.first_name)[0]}
           </div>
           <div className="flex-1">
-            <div className="text-sm font-bold text-[var(--cs-navy)]">{yp.preferred_name || yp.first_name} {yp.last_name}</div>
-            <div className="text-xs text-[var(--cs-text-muted)]">{yp.legal_status} · {yp.local_authority} · Key worker: {getStaffName(yp.key_worker_id ?? "")}</div>
+            <div className="text-sm font-bold text-slate-900">{yp.preferred_name || yp.first_name} {yp.last_name}</div>
+            <div className="text-xs text-slate-500">{yp.legal_status} · {yp.local_authority} · Key worker: {getStaffName(yp.key_worker_id ?? "")}</div>
           </div>
           {yp.risk_flags.length > 0 && (
             <div className="flex gap-1.5 flex-wrap">
@@ -1191,21 +1134,21 @@ function ChronologyTab() {
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-[var(--cs-text-muted)] shrink-0 text-right">
+                    <div className="text-[11px] text-slate-400 shrink-0 text-right">
                       <div>{formatDate(entry.date)}</div>
                       {entry.time && <div>{entry.time}</div>}
                     </div>
                   </div>
 
                   <div className="mt-2">
-                    <div className="text-sm font-semibold text-[var(--cs-navy)]">{entry.title}</div>
-                    <p className="mt-1 text-xs text-[var(--cs-text-secondary)] leading-relaxed">{entry.description}</p>
+                    <div className="text-sm font-semibold text-slate-900">{entry.title}</div>
+                    <p className="mt-1 text-xs text-slate-600 leading-relaxed">{entry.description}</p>
                   </div>
 
                   <div className="mt-2.5 flex items-center gap-3">
-                    <span className="text-[10px] text-[var(--cs-text-muted)]">Recorded by {getStaffName(entry.recorded_by)}</span>
+                    <span className="text-[10px] text-slate-400">Recorded by {getStaffName(entry.recorded_by)}</span>
                     {entry.linked_incident_id && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[var(--cs-aria-gold-bg)] px-2 py-0.5 text-[10px] font-medium text-[var(--cs-aria-gold)]">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700">
                         <Link2 className="h-2.5 w-2.5" />
                         Linked incident
                       </span>
@@ -1220,27 +1163,27 @@ function ChronologyTab() {
 
       {entries.length === 0 && (
         <div className="rounded-2xl border bg-white p-12 text-center">
-          <BookOpen className="h-8 w-8 text-[var(--cs-text-gentle)] mx-auto mb-3" />
-          <div className="text-sm font-semibold text-[var(--cs-navy)]">No chronology entries found</div>
+          <BookOpen className="h-8 w-8 text-slate-300 mx-auto mb-3" />
+          <div className="text-sm font-semibold text-slate-900">No chronology entries found</div>
         </div>
       )}
 
       {/* Add entry modal */}
       {addEntryOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setAddEntryOpen(false)}>
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-[var(--cs-navy)]">Add Chronology Entry</span>
-              <button onClick={() => setAddEntryOpen(false)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"><X className="h-4 w-4" /></button>
+              <span className="text-sm font-bold text-slate-900">Add Chronology Entry</span>
+              <button onClick={() => setAddEntryOpen(false)} className="text-slate-400 hover:text-slate-600"><X className="h-4 w-4" /></button>
             </div>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Category</label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1.5">Category</label>
                   <select
                     value={entryForm.category}
                     onChange={(e) => setEntryForm((f) => ({ ...f, category: e.target.value }))}
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
                   >
                     {Object.entries(CHRONO_CATEGORY_CONFIG).map(([k, v]) => (
                       <option key={k} value={k}>{v.label}</option>
@@ -1248,11 +1191,11 @@ function ChronologyTab() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Significance</label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1.5">Significance</label>
                   <select
                     value={entryForm.significance}
                     onChange={(e) => setEntryForm((f) => ({ ...f, significance: e.target.value }))}
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
                   >
                     <option value="routine">Routine</option>
                     <option value="significant">Significant</option>
@@ -1261,7 +1204,7 @@ function ChronologyTab() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Title <span className="text-red-500">*</span></label>
+                <label className="text-xs font-semibold text-slate-600 block mb-1.5">Title <span className="text-red-500">*</span></label>
                 <Input
                   value={entryForm.title}
                   onChange={(e) => setEntryForm((f) => ({ ...f, title: e.target.value }))}
@@ -1270,13 +1213,13 @@ function ChronologyTab() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Description</label>
+                <label className="text-xs font-semibold text-slate-600 block mb-1.5">Description</label>
                 <textarea
                   value={entryForm.description}
                   onChange={(e) => setEntryForm((f) => ({ ...f, description: e.target.value }))}
                   rows={4}
                   placeholder="What happened? Include relevant context, people present, and any outcomes…"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400 leading-relaxed"
                 />
               </div>
               {entryError && <p className="text-xs text-red-600 font-medium">{entryError}</p>}
@@ -1339,14 +1282,14 @@ function ManagerActionsTab() {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Shield className="h-4 w-4 text-amber-600" />
-          <span className="text-sm font-bold text-[var(--cs-navy)]">Oversight Queue</span>
+          <span className="text-sm font-bold text-slate-900">Oversight Queue</span>
           {oversightQueue.length > 0 && (
             <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{oversightQueue.length}</span>
           )}
         </div>
 
         {query.isPending ? (
-          <div className="flex items-center gap-2 py-6 text-[var(--cs-text-muted)]"><Loader2 className="h-4 w-4 animate-spin" /><span className="text-xs">Loading…</span></div>
+          <div className="flex items-center gap-2 py-6 text-slate-400"><Loader2 className="h-4 w-4 animate-spin" /><span className="text-xs">Loading…</span></div>
         ) : oversightQueue.length === 0 ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
             <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
@@ -1361,15 +1304,15 @@ function ManagerActionsTab() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-[var(--cs-navy)]">{inc.reference}</span>
+                        <span className="text-sm font-bold text-slate-900">{inc.reference}</span>
                         <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize", sev.badge)}>{inc.severity}</span>
-                        <span className="text-xs text-[var(--cs-text-secondary)]">{getYPName(inc.child_id)}</span>
+                        <span className="text-xs text-slate-600">{getYPName(inc.child_id)}</span>
                       </div>
-                      <p className="mt-1 text-xs text-[var(--cs-text-secondary)] line-clamp-2">{inc.description}</p>
+                      <p className="mt-1 text-xs text-slate-600 line-clamp-2">{inc.description}</p>
                     </div>
                     <button
                       onClick={() => setAriaPanelId(ariaPanelId === inc.id ? null : inc.id)}
-                      className="flex items-center gap-1 rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-2.5 py-1.5 text-[10px] font-semibold text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] shrink-0"
+                      className="flex items-center gap-1 rounded-xl border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[10px] font-semibold text-violet-700 hover:bg-violet-100 shrink-0"
                     >
                       <Sparkles className="h-3 w-3" /> Aria
                     </button>
@@ -1393,7 +1336,7 @@ function ManagerActionsTab() {
                       onChange={(e) => setOversightNote((prev) => ({ ...prev, [inc.id]: e.target.value }))}
                       rows={2}
                       placeholder="Record oversight note…"
-                      className="flex-1 rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-[var(--cs-text-muted)]"
+                      className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-400"
                     />
                     <Button
                       size="sm"
@@ -1416,7 +1359,7 @@ function ManagerActionsTab() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-bold text-[var(--cs-navy)]">Strategy Discussions</span>
+            <span className="text-sm font-bold text-slate-900">Strategy Discussions</span>
           </div>
           <Button
             size="sm"
@@ -1431,12 +1374,12 @@ function ManagerActionsTab() {
           {STRATEGY_DISCUSSIONS.map((sd) => (
             <div key={sd.ref} className={cn(
               "rounded-2xl border bg-white p-4",
-              sd.status === "scheduled" ? "border-blue-200" : "border-[var(--cs-border)]"
+              sd.status === "scheduled" ? "border-blue-200" : "border-slate-200"
             )}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-[var(--cs-navy)]">{sd.subject}</span>
+                    <span className="text-sm font-semibold text-slate-900">{sd.subject}</span>
                     <span className={cn(
                       "rounded-full px-2 py-0.5 text-[10px] font-semibold",
                       sd.status === "scheduled" ? "bg-blue-100 text-blue-700" : "bg-emerald-100 text-emerald-700"
@@ -1444,12 +1387,12 @@ function ManagerActionsTab() {
                       {sd.status === "scheduled" ? "Scheduled" : "Completed"}
                     </span>
                   </div>
-                  <div className="mt-0.5 text-xs text-[var(--cs-text-muted)]">{sd.ref} · {formatDate(sd.date)}</div>
-                  <div className="mt-1.5 text-[11px] text-[var(--cs-text-muted)]">
+                  <div className="mt-0.5 text-xs text-slate-500">{sd.ref} · {formatDate(sd.date)}</div>
+                  <div className="mt-1.5 text-[11px] text-slate-500">
                     Attendees: {sd.attendees.join(", ")}
                   </div>
                   {sd.outcome && (
-                    <div className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-xs text-[var(--cs-text-secondary)]">{sd.outcome}</div>
+                    <div className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-700">{sd.outcome}</div>
                   )}
                 </div>
               </div>
@@ -1461,16 +1404,16 @@ function ManagerActionsTab() {
       {/* Professional Notifications Log */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Bell className="h-4 w-4 text-[var(--cs-text-secondary)]" />
-          <span className="text-sm font-bold text-[var(--cs-navy)]">Professional Notifications Log</span>
+          <Bell className="h-4 w-4 text-slate-600" />
+          <span className="text-sm font-bold text-slate-900">Professional Notifications Log</span>
         </div>
         <div className="rounded-2xl border bg-white overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[var(--cs-border-subtle)] bg-slate-50">
+                <tr className="border-b border-slate-100 bg-slate-50">
                   {["Date", "Role", "Contact", "Incident", "Method", "By", "Status"].map((h) => (
-                    <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">
+                    <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                       {h}
                     </th>
                   ))}
@@ -1478,13 +1421,13 @@ function ManagerActionsTab() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {NOTIF_LOG.map((n, i) => (
-                  <tr key={i} className="hover:bg-[var(--cs-surface)] transition-colors">
-                    <td className="px-4 py-3 text-xs text-[var(--cs-text-secondary)] whitespace-nowrap">{n.date} {n.time}</td>
-                    <td className="px-4 py-3 text-xs font-medium text-[var(--cs-navy)]">{n.role}</td>
-                    <td className="px-4 py-3 text-xs text-[var(--cs-text-secondary)]">{n.contact}</td>
-                    <td className="px-4 py-3 text-xs text-[var(--cs-text-secondary)] font-mono">{n.incident}</td>
-                    <td className="px-4 py-3 text-xs text-[var(--cs-text-muted)]">{n.method}</td>
-                    <td className="px-4 py-3 text-xs text-[var(--cs-text-muted)]">{getStaffName(n.by)}</td>
+                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3 text-xs text-slate-700 whitespace-nowrap">{n.date} {n.time}</td>
+                    <td className="px-4 py-3 text-xs font-medium text-slate-800">{n.role}</td>
+                    <td className="px-4 py-3 text-xs text-slate-600">{n.contact}</td>
+                    <td className="px-4 py-3 text-xs text-slate-600 font-mono">{n.incident}</td>
+                    <td className="px-4 py-3 text-xs text-slate-500">{n.method}</td>
+                    <td className="px-4 py-3 text-xs text-slate-500">{getStaffName(n.by)}</td>
                     <td className="px-4 py-3">
                       {n.acknowledged ? (
                         <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600">
@@ -1507,8 +1450,8 @@ function ManagerActionsTab() {
       {/* Aria panel */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
-          <span className="text-sm font-bold text-[var(--cs-navy)]">ARIA — Manager Support</span>
+          <Sparkles className="h-4 w-4 text-violet-600" />
+          <span className="text-sm font-bold text-slate-900">Aria — Manager Support</span>
         </div>
         <AriaPanel
           mode="oversee"
@@ -1539,6 +1482,8 @@ const SAFEGUARDING_EXPORT_COLS: ExportColumn<Incident>[] = [
 export default function SafeguardingPage() {
   const [activeTab, setActiveTab] = useState<TabId>("concerns");
   const query = useIncidents({ status: "open" });
+  const { data: mfcTopResult } = useMissingEpisodes({ homeId: "home_oak" });
+  const MFC_EPISODES = mfcTopResult?.data ?? [];
 
   const openSafeguarding = (query.data?.data ?? []).filter((i) =>
     ["safeguarding_concern", "exploitation_concern", "self_harm", "missing_from_care", "contextual_safeguarding", "allegation"].includes(i.type)
@@ -1549,6 +1494,7 @@ export default function SafeguardingPage() {
     <PageShell
       title="Safeguarding"
       subtitle={`${openSafeguarding.length} open concern${openSafeguarding.length !== 1 ? "s" : ""} · ${awaitingOversight.length} awaiting oversight · MASH referral active`}
+      ariaContext={{ pageTitle: "Safeguarding", sourceType: "general" }}
       quickCreateContext={{
         module: "safeguarding",
         defaultTaskCategory: "safeguarding",
@@ -1560,6 +1506,7 @@ export default function SafeguardingPage() {
           <ExportButton data={openSafeguarding} columns={SAFEGUARDING_EXPORT_COLS} filename="safeguarding-concerns" />
           <PrintButton title="Safeguarding Records" subtitle="Oak House — Safeguarding & Child Protection" targetId="safeguarding-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Safeguarding — evidence upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" className="bg-rose-600 hover:bg-rose-700">
             <Plus className="h-3.5 w-3.5" />
             Log Concern
@@ -1568,14 +1515,6 @@ export default function SafeguardingPage() {
       }
     >
       <div id="safeguarding-content" className="space-y-6">
-        <PageGuidance
-          title="Safeguarding & child protection"
-          description="Central hub for all safeguarding concerns, referrals, and missing episodes. Every concern is tracked through to resolution with full management oversight."
-          evidenceTip="Demonstrate professional curiosity in every concern record. Inspectors look for evidence that concerns are explored thoroughly, not just logged."
-          ariaTip="ARIA monitors cross-referencing patterns — when a child has multiple low-level concerns, it can flag potential escalation before it reaches threshold."
-          regulationRef="Children's Homes Regulations 2015, Reg 34 — Safeguarding of children"
-          variant="safeguarding"
-        />
         {/* Tab bar */}
         <div className="flex items-center gap-1 rounded-2xl border bg-white p-1.5 flex-wrap">
           {TABS.map(({ id, label, icon: Icon }) => {
@@ -1590,7 +1529,7 @@ export default function SafeguardingPage() {
                   "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all",
                   isActive
                     ? "bg-slate-900 text-white shadow-sm"
-                    : "text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)]"
+                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -1598,8 +1537,8 @@ export default function SafeguardingPage() {
                 {badge > 0 && (
                   <span className={cn(
                     "rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                    isActive ? "bg-white text-[var(--cs-navy)]" :
-                    id === "concerns" ? "bg-amber-500 text-white" : "bg-slate-200 text-[var(--cs-text-secondary)]"
+                    isActive ? "bg-white text-slate-900" :
+                    id === "concerns" ? "bg-amber-500 text-white" : "bg-slate-200 text-slate-600"
                   )}>
                     {badge}
                   </span>
@@ -1615,6 +1554,14 @@ export default function SafeguardingPage() {
         {activeTab === "chronology" && <ChronologyTab />}
         {activeTab === "manager" && <ManagerActionsTab />}
       </div>
+
+      {/* Care Events pipeline — safeguarding events routed here */}
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "missing_episode"]}
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

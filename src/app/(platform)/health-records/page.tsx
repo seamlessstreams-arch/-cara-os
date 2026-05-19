@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,8 +27,11 @@ import { useHealthRecords, useCreateHealthRecord } from "@/hooks/use-health-reco
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { HealthRecordEntry, HealthRecordType, HealthRecordStatus } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import {
   Search, ArrowUpDown, X, Plus, Stethoscope,
   AlertTriangle, Clock, User, Calendar,
@@ -192,6 +196,7 @@ export default function HealthRecordsPage() {
     <PageShell
       title="Health Records"
       subtitle="Medical history, assessments, and health action plans"
+      ariaContext={{ pageTitle: "Health Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Health Records" subtitle="Oak House — Health & Welfare" />
@@ -199,9 +204,17 @@ export default function HealthRecordsPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Record
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
+      <AriaPanel
+        mode="assist"
+        pageContext="Health Records — medical history, assessments, health action plans, Regulation 7"
+        recordType="health_record"
+        userRole="registered_manager"
+        className="mb-5"
+      />
       {/* ── Stats ────────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
@@ -393,6 +406,16 @@ export default function HealthRecordsPage() {
                       </span>
                     )}
                   </div>
+                  {(entry as never as { care_event_id?: string }).care_event_id && (
+                    <Link
+                      href={`/care-events/${(entry as never as { care_event_id: string }).care_event_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                    >
+                      <Stethoscope className="h-3 w-3" />
+                      Logged from Care Event
+                    </Link>
+                  )}
                   <SmartLinkPanel sourceType="health_record" sourceId={entry.id} childId={entry.child_id} compact />
                 </div>
               )}
@@ -465,6 +488,14 @@ export default function HealthRecordsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Care Events pipeline — health &amp; medication events routed here */}
+      <CareEventsPanel
+        title="Care Events — Health &amp; Medication"
+        category={["health", "medication"]}
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

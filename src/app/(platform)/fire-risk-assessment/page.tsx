@@ -11,7 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import {
@@ -32,6 +32,9 @@ import {
   CheckCircle2, Clock, ListChecks, MapPin, Users, BookOpen,
   CircleDot, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -132,10 +135,12 @@ export default function FireRiskAssessmentPage() {
     <PageShell
       title="Fire Risk Assessment"
       subtitle="Hazards, controls, and remedial actions under the Regulatory Reform (Fire Safety) Order 2005"
+      ariaContext={{ pageTitle: "Fire Risk Assessment", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Fire Risk Assessment" />
           <ExportButton data={filtered} columns={exportCols} filename="fire-risk-assessment" />
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -370,6 +375,18 @@ export default function FireRiskAssessmentPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Safety"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Fire Risk Assessment — fire hazards, fire detection systems, means of escape, fire extinguishers, fire doors, evacuation plan, responsible person, Reg 31, RRFSO, Ofsted"
+        recordType="risk_assessment"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

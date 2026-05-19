@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -21,6 +21,9 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useMenstrualHealthPlans } from "@/hooks/use-menstrual-health-plans";
 import type { MenstrualHealthPlan, MenstrualStage, MenstrualComfortLevel } from "@/types/extended";
 import { MENSTRUAL_STAGE_LABEL, MENSTRUAL_COMFORT_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -147,10 +150,12 @@ export default function MenstrualHealthTrackerPage() {
     <PageShell
       title="Menstrual Health Tracker"
       subtitle="Quality Standard 7 (Health & wellbeing) · Period Products (Free Provision) Scotland Act principles applied as best practice · Sensitive record"
+      ariaContext={{ pageTitle: "Menstrual Health Tracker", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Menstrual Health Tracker" />
           <ExportButton data={filtered} columns={exportCols} filename="menstrual-health-tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -383,6 +388,18 @@ export default function MenstrualHealthTrackerPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Menstrual Health Tracker — period tracking, cycle records, health concerns, GP appointments, contraception records, PCOS, endometriosis, sanitary provision, health care plans"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

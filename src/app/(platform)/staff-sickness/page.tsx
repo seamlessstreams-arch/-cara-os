@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,8 +21,9 @@ import {
   Clock, Search, UserMinus, Calendar, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
-import { useStaffSicknessRecords } from "@/hooks/use-staff-sickness-records";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { useStaffSicknessRecords, useCreateStaffSicknessRecord } from "@/hooks/use-staff-sickness-records";
+import { toast } from "sonner";
 import type {
   StaffSicknessRecord,
   StaffSicknessCategory,
@@ -34,6 +35,9 @@ import {
   STAFF_SICKNESS_ABSENCE_REASON_LABEL,
   STAFF_SICKNESS_RTW_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -44,12 +48,53 @@ const RTW_CLR: Record<StaffSicknessRTWStatus, string> = { not_required: "bg-slat
 
 export default function StaffSicknessPage() {
   const { data: records = [], isLoading } = useStaffSicknessRecords();
+  const createAbsence = useCreateStaffSicknessRecord();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterRTW, setFilterRTW] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showNew, setShowNew] = useState(false);
+
+  const [ssForm, setSsForm] = useState({
+    staff_id: "",
+    date_started: new Date().toISOString().slice(0, 10),
+    reason: "" as StaffSicknessAbsenceReason | "",
+    reason_detail: "",
+    cover_arrangements: "",
+  });
+  const setSSF = (k: keyof typeof ssForm, v: string) => setSsForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateAbsence = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ssForm.staff_id || !ssForm.reason) {
+      toast.error("Staff member and reason are required.");
+      return;
+    }
+    await createAbsence.mutateAsync({
+      staff_id: ssForm.staff_id,
+      date_started: ssForm.date_started,
+      date_ended: null,
+      total_days: 1,
+      category: "short_term" as StaffSicknessCategory,
+      reason: ssForm.reason as StaffSicknessAbsenceReason,
+      reason_detail: ssForm.reason_detail,
+      self_certified: true,
+      fit_note: false,
+      fit_note_expiry: null,
+      cover_arrangements: ssForm.cover_arrangements,
+      rtw_status: "not_required" as StaffSicknessRTWStatus,
+      rtw_date: null,
+      rtw_conducted_by_id: null,
+      rtw_outcome: "",
+      occupational_health_referral: false,
+      trigger_points: [],
+      manager_notes: "",
+    });
+    toast.success("Sickness absence logged.");
+    setSsForm({ staff_id: "", date_started: new Date().toISOString().slice(0, 10), reason: "", reason_detail: "", cover_arrangements: "" });
+    setShowNew(false);
+  };
 
   const filtered = useMemo(() => {
     let rows = [...records];
@@ -97,11 +142,13 @@ export default function StaffSicknessPage() {
     <PageShell
       title="Staff Sickness & Return to Work"
       subtitle="Absence Management · Wellbeing · Workforce Planning"
+      ariaContext={{ pageTitle: "Staff Sickness & Absence", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Sickness Record" />
           <ExportButton data={records} columns={exportCols} filename="staff-sickness" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Absence</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -258,25 +305,19 @@ export default function StaffSicknessPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Sickness Absence</DialogTitle></DialogHeader>
-          <div className="space-y-3">
+          <form onSubmit={handleCreateAbsence} className="space-y-3">
             <div>
-              <Label>Staff Member</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
-                  <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
-                  <SelectItem value="staff_edward">{getStaffName("staff_edward")}</SelectItem>
-                  <SelectItem value="staff_anna">{getStaffName("staff_anna")}</SelectItem>
-                  <SelectItem value="staff_chervelle">{getStaffName("staff_chervelle")}</SelectItem>
-                  <SelectItem value="staff_lackson">{getStaffName("staff_lackson")}</SelectItem>
-                  <SelectItem value="staff_mirela">{getStaffName("staff_mirela")}</SelectItem>
-                </SelectContent>
+              <Label>Staff Member *</Label>
+              <Select value={ssForm.staff_id} onValueChange={(v) => setSSF("staff_id", v)}>
+                <SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><Label>Date Started</Label><Input type="date" /></div>
+            <div><Label>Date Started</Label><Input type="date" value={ssForm.date_started} onChange={(e) => setSSF("date_started", e.target.value)} /></div>
             <div>
-              <Label>Reason</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select reason" /></SelectTrigger>
+              <Label>Reason *</Label>
+              <Select value={ssForm.reason} onValueChange={(v) => setSSF("reason", v)}>
+                <SelectTrigger><SelectValue placeholder="Select reason" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(STAFF_SICKNESS_ABSENCE_REASON_LABEL) as [StaffSicknessAbsenceReason, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -284,15 +325,27 @@ export default function StaffSicknessPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Details</Label><Textarea placeholder="Describe symptoms and circumstances..." /></div>
-            <div><Label>Cover Arrangements</Label><Textarea placeholder="How will shifts be covered?" /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={() => setShowNew(false)}>Log Absence</Button>
-          </DialogFooter>
+            <div><Label>Details</Label><Textarea placeholder="Describe symptoms and circumstances..." value={ssForm.reason_detail} onChange={(e) => setSSF("reason_detail", e.target.value)} /></div>
+            <div><Label>Cover Arrangements</Label><Textarea placeholder="How will shifts be covered?" value={ssForm.cover_arrangements} onChange={(e) => setSSF("cover_arrangements", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createAbsence.isPending}>{createAbsence.isPending ? "Logging…" : "Log Absence"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Sickness & Absence — staff absence records, Bradford factor, trigger point monitoring, return-to-work interviews, staffing impact, Reg 40 workforce evidence, Ofsted evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

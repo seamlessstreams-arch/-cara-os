@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAriaSuggestions } from "@/hooks/use-intelligence-layer";
 import {
   Sparkles,
   ChevronRight,
@@ -44,68 +45,6 @@ interface AriaSuggestionSummary {
 
 // ─── Demo data ──────────────────────────────────────────────────────────────
 
-const DEMO_SUGGESTIONS: AriaSuggestionSummary[] = [
-  {
-    id: "as_001",
-    title: "Management oversight required — physical intervention incident",
-    risk_level: "urgent",
-    status: "awaiting_review",
-    suggestion_type: "management_oversight",
-    related_record_type: "incident",
-    child_name: "Alex W",
-    created_at: "2026-05-05T08:15:00Z",
-  },
-  {
-    id: "as_002",
-    title: "Risk assessment review — escalating behaviour pattern",
-    risk_level: "high",
-    status: "awaiting_review",
-    suggestion_type: "risk_review",
-    related_record_type: "incident",
-    child_name: "Alex W",
-    created_at: "2026-05-05T08:15:00Z",
-  },
-  {
-    id: "as_003",
-    title: "Staff debrief recommended — emotional incident",
-    risk_level: "medium",
-    status: "awaiting_review",
-    suggestion_type: "staff_debrief",
-    related_record_type: "incident",
-    child_name: "Jordan M",
-    created_at: "2026-05-04T16:30:00Z",
-  },
-  {
-    id: "as_004",
-    title: "Key work session — capture child's wishes and feelings",
-    risk_level: "medium",
-    status: "awaiting_review",
-    suggestion_type: "key_work",
-    related_record_type: "incident",
-    child_name: "Casey T",
-    created_at: "2026-05-04T14:00:00Z",
-  },
-  {
-    id: "as_005",
-    title: "Placement plan review — changed presentation",
-    risk_level: "high",
-    status: "approved",
-    suggestion_type: "plan_review",
-    related_record_type: "incident",
-    child_name: "Alex W",
-    created_at: "2026-05-03T10:00:00Z",
-  },
-  {
-    id: "as_006",
-    title: "Notification consideration — repeated incidents",
-    risk_level: "high",
-    status: "rejected",
-    suggestion_type: "notification",
-    related_record_type: "incident",
-    child_name: "Jordan M",
-    created_at: "2026-05-02T11:00:00Z",
-  },
-];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -147,7 +86,22 @@ function typeLabel(type: string): string {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export function AriaDashboardPanel() {
-  const suggestions = DEMO_SUGGESTIONS;
+  const { data: apiData } = useAriaSuggestions();
+  const suggestions: AriaSuggestionSummary[] = useMemo(() => {
+    if (apiData?.persisted && Array.isArray(apiData.items)) {
+      return (apiData.items as Record<string, unknown>[]).map((r) => ({
+        id: r.id as string,
+        title: r.title as string,
+        risk_level: r.risk_level as AriaSuggestionSummary["risk_level"],
+        status: r.status as string,
+        suggestion_type: r.suggestion_type as string,
+        related_record_type: r.related_record_type as string,
+        child_name: (r.child_name as string) ?? undefined,
+        created_at: r.created_at as string,
+      }));
+    }
+    return [];
+  }, [apiData]);
 
   const counts = useMemo(() => {
     const pending = suggestions.filter((s) => s.status === "awaiting_review");

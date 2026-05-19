@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import Link from "next/link";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   ShieldAlert, AlertTriangle, CheckCircle2, Clock, Calendar,
@@ -22,6 +25,7 @@ import { useRestraints, useCreateRestraint } from "@/hooks/use-restraints";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { RestraintType, RestraintReason, RestraintReviewStatus, RestraintRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const REASON_META: Record<RestraintReason, string> = {
   harm_to_self:         "Prevent harm to self",
@@ -68,6 +72,20 @@ export default function RestraintLogPage() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
 
+  const createRestraint = useCreateRestraint();
+  const [rlForm, setRlForm] = useState({ date: new Date().toISOString().slice(0, 10), child_id: "", start_time: "", end_time: "", reason: "harm_to_self" as RestraintReason, antecedent: "", de_escalation_attempts: "", description: "" });
+  const setRL = (k: string, v: unknown) => setRlForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveRestraint = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rlForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!rlForm.description.trim()) { toast.error("Description is required."); return; }
+    await createRestraint.mutateAsync({ date: rlForm.date, start_time: rlForm.start_time, end_time: rlForm.end_time, duration: 0, child_id: rlForm.child_id, staff_involved: [], reason: rlForm.reason, restraint_type: "standing", antecedent: rlForm.antecedent.trim(), behaviour: "", de_escalation_attempts: rlForm.de_escalation_attempts.split("\n").filter(Boolean), justification: "", description: rlForm.description.trim(), injuries: [], child_debriefed: false, child_debrief_notes: "", staff_debriefed: false, witnessed_by: [], review_status: "pending_rm", review_notes: "", reviewed_by: "", linked_incident_id: "", notifications_sent: [], body_map_completed: false, medical_check_completed: false, recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    toast.success("Restraint record saved.");
+    setRlForm({ date: new Date().toISOString().slice(0, 10), child_id: "", start_time: "", end_time: "", reason: "harm_to_self", antecedent: "", de_escalation_attempts: "", description: "" });
+    setShowNew(false);
+  };
+
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   const filtered = useMemo(() => {
@@ -93,11 +111,13 @@ export default function RestraintLogPage() {
     <PageShell
       title="Restraint Log"
       subtitle="Physical intervention records — Regulation 35 compliance"
+      ariaContext={{ pageTitle: "Care Events — Restraint &amp; Physical Intervention", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Restraint Log" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="restraint-log" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Restraint</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -107,6 +127,13 @@ export default function RestraintLogPage() {
         </div>
       ) : (
       <div id="print-area" className="space-y-6">
+        <AriaPanel
+          mode="assist"
+          pageContext="Restraint Log — physical intervention records, Regulation 35 compliance, debrief"
+          recordType="restraint"
+          userRole="registered_manager"
+          className="mb-2"
+        />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Total Records",    value: stats.total,         icon: <ShieldAlert className="h-4 w-4" />,    color: "text-blue-600" },
@@ -145,6 +172,16 @@ export default function RestraintLogPage() {
                         <Badge variant="outline" className="text-xs">{TYPE_META[r.restraint_type]}</Badge>
                         <Badge className={cn("text-xs", reviewM.color)}>{reviewM.label}</Badge>
                         {r.injuries.length > 0 && <Badge variant="destructive" className="text-xs">Injury recorded</Badge>}
+                        {(r as never as { care_event_id?: string }).care_event_id && (
+                          <Link
+                            href={`/care-events/${(r as never as { care_event_id: string }).care_event_id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                          >
+                            <ShieldAlert className="h-2.5 w-2.5" />
+                            Care Event
+                          </Link>
+                        )}
                       </div>
                       <p className="font-semibold">{getYPName(r.child_id)} — {REASON_META[r.reason]}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
@@ -238,38 +275,44 @@ export default function RestraintLogPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Physical Intervention</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleSaveRestraint} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" /></div>
-              <div><label className="text-sm font-medium">Young Person</label>
-                <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <div><label className="text-sm font-medium">Date</label><Input type="date" value={rlForm.date} onChange={(e) => setRL("date", e.target.value)} /></div>
+              <div><label className="text-sm font-medium">Young Person *</label>
+                <Select value={rlForm.child_id} onValueChange={(v) => setRL("child_id", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem>
-                    <SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem>
-                    <SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem>
+                    {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Start Time</label><Input type="time" /></div>
-              <div><label className="text-sm font-medium">End Time</label><Input type="time" /></div>
+              <div><label className="text-sm font-medium">Start Time</label><Input type="time" value={rlForm.start_time} onChange={(e) => setRL("start_time", e.target.value)} /></div>
+              <div><label className="text-sm font-medium">End Time</label><Input type="time" value={rlForm.end_time} onChange={(e) => setRL("end_time", e.target.value)} /></div>
             </div>
             <div><label className="text-sm font-medium">Reason</label>
-              <Select><SelectTrigger><SelectValue placeholder="Reason" /></SelectTrigger>
+              <Select value={rlForm.reason} onValueChange={(v) => setRL("reason", v)}><SelectTrigger><SelectValue placeholder="Reason" /></SelectTrigger>
                 <SelectContent>{Object.entries(REASON_META).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Antecedent</label><Textarea placeholder="What led up to the incident?" rows={2} /></div>
-            <div><label className="text-sm font-medium">De-escalation Attempts</label><Textarea placeholder="List all de-escalation attempts (one per line)" rows={2} /></div>
-            <div><label className="text-sm font-medium">Description</label><Textarea placeholder="Detailed description of the intervention…" rows={3} /></div>
+            <div><label className="text-sm font-medium">Antecedent</label><Textarea placeholder="What led up to the incident?" rows={2} value={rlForm.antecedent} onChange={(e) => setRL("antecedent", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">De-escalation Attempts</label><Textarea placeholder="List all de-escalation attempts (one per line)" rows={2} value={rlForm.de_escalation_attempts} onChange={(e) => setRL("de_escalation_attempts", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Description *</label><Textarea placeholder="Detailed description of the intervention…" rows={3} value={rlForm.description} onChange={(e) => setRL("description", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Save Record</Button>
+              <Button type="submit" disabled={createRestraint.isPending}>{createRestraint.isPending ? "Saving…" : "Save Record"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Care Events pipeline — physical intervention &amp; restraint events routed here */}
+      <CareEventsPanel
+        title="Care Events — Restraint &amp; Physical Intervention"
+        category={["physical_intervention", "restraint"]}
+        days={60}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

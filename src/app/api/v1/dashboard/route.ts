@@ -25,6 +25,10 @@ export async function GET(_req: NextRequest) {
   const pendingLeave = db.leave.findPending();
   const vehicles = db.vehicles.findAll();
 
+  // Care events requiring manager action
+  const careEventsNeedingReview = db.careEvents.findNeedingManagerReview();
+  const careEventsRoutingFailed = db.careEvents.findByStatus("routing_failed");
+
   // Certificate expiry checks
   const buildings = db.buildings.findAll();
   const certWarnings: string[] = [];
@@ -110,6 +114,10 @@ export async function GET(_req: NextRequest) {
       young_people: {
         current: db.youngPeople.findCurrent(),
         missing_episodes_total: db.missingEpisodes.findAll().length,
+      },
+      care_events: {
+        awaiting_manager_review: careEventsNeedingReview.length,
+        routing_failed: careEventsRoutingFailed.length,
       },
     },
   });

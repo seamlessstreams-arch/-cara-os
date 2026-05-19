@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,9 @@ import {
   STATUTORY_CHECK_CATEGORY_LABEL,
   STATUTORY_CHECK_FREQUENCY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (colours / icons not serializable) ────────────────────── */
 
@@ -142,9 +145,11 @@ export default function StatutoryChecksSummaryPage() {
     <PageShell
       title="Statutory Checks Summary"
       subtitle="Compliance overview at a glance — required by Quality Standard 13 and Reg 45"
+      ariaContext={{ pageTitle: "Statutory Checks Summary", sourceType: "document" }}
       actions={[
         <PrintButton key="p" title="Statutory Checks Summary" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="statutory-checks-summary" />,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -376,6 +381,18 @@ export default function StatutoryChecksSummaryPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Statutory Checks Summary — DBS checks, references, right to work, pre-employment checks, regulatory compliance, Reg 40 safer recruitment evidence, Ofsted workforce evidence"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

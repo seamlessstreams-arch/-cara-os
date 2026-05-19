@@ -25,6 +25,9 @@ import type { ExportColumn } from "@/components/common/export-button";
 import type { Shift } from "@/types";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const SHIFT_COLORS: Record<string, string> = {
   day: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -278,6 +281,7 @@ export default function RotaPage() {
     <PageShell
       title="Rota"
       subtitle={weekLabel}
+      ariaContext={{ pageTitle: "Rota", sourceType: "staff" }}
       quickCreateContext={{ module: "rota", defaultTaskCategory: "staffing" }}
       actions={
         <div className="flex items-center gap-2">
@@ -628,6 +632,18 @@ export default function RotaPage() {
           safe staffing ratios.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={14}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Rota & Scheduling — shift patterns, staffing levels, agency usage, Reg 40 staffing evidence, ratio compliance, cover arrangements, handover scheduling, Ofsted staffing evidence"
+        recordType="rota"
+        className="mt-6"
+      />
     </PageShell>
 
     {/* Add Shift Modal */}

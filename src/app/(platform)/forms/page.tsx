@@ -30,6 +30,9 @@ import { CARE_FORM_TYPE_LABELS, CARE_FORM_TYPES } from "@/lib/constants";
 import { cn, todayStr, formatRelative } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { CareForm } from "@/types";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const FORM_EXPORT_COLS: ExportColumn<CareForm>[] = [
   { header: "Title", accessor: (f) => f.title },
@@ -348,12 +351,14 @@ export default function FormsPage() {
     <PageShell
       title="Care Forms"
       subtitle={`${filtered.length} form${filtered.length !== 1 ? "s" : ""} ${hasFilters ? "(filtered)" : ""}`}
+      ariaContext={{ pageTitle: "Care Forms", sourceType: "document" }}
       quickCreateContext={FORMS_QUICK_CREATE_CONTEXT}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={FORM_EXPORT_COLS} filename="care-forms" />
           <PrintButton title="Care Forms" subtitle="Oak House — Forms Registry" targetId="forms-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Forms — supporting document upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -584,6 +589,18 @@ export default function FormsPage() {
           </Card>
         )}
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Care Forms — statutory forms, consent forms, placement forms, review forms, LAC forms, PEP forms, health assessment forms, complaints forms, referral forms, Ofsted forms"
+        recordType="uploaded_document"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

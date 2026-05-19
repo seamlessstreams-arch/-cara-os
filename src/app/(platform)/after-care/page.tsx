@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,8 +23,9 @@ import {
   AlertTriangle, CheckCircle2, Clock, Heart, Home, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useAfterCare } from "@/hooks/use-after-care";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { useAfterCare, useCreateAfterCareRecord } from "@/hooks/use-after-care";
+import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   AfterCareLeftReason,
@@ -34,6 +37,7 @@ import type {
   AfterCareSupportPkg,
   AfterCareRecord,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -55,6 +59,7 @@ const WB_CLR: Record<AfterCareWellbeing, string> = { good: "text-green-600", fai
 
 export default function AfterCarePage() {
   const { data: result, isLoading } = useAfterCare();
+  const createRecord = useCreateAfterCareRecord();
   const records = result?.data ?? [];
 
   const [search, setSearch] = useState("");
@@ -62,6 +67,51 @@ export default function AfterCarePage() {
   const [sortBy, setSortBy] = useState("rag");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [acForm, setAcForm] = useState({
+    child_id: "",
+    left_date: new Date().toISOString().slice(0, 10),
+    left_reason: "age_18" as AfterCareLeftReason,
+    current_accommodation: "",
+    education_employment: "",
+    notes: "",
+  });
+  const setACF = (k: keyof typeof acForm, v: string) => setAcForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateRecord = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!acForm.child_id || !acForm.current_accommodation.trim()) {
+      toast.error("Young person and accommodation are required.");
+      return;
+    }
+    const nextContact = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    await createRecord.mutateAsync({
+      child_id: acForm.child_id,
+      left_date: acForm.left_date,
+      left_reason: acForm.left_reason,
+      current_accommodation: acForm.current_accommodation.trim(),
+      accommodation_status: "stable" as AfterCareAccomStatus,
+      education_employment: acForm.education_employment,
+      eet_status: "education" as const,
+      staying_close_eligible: false,
+      support_package: [],
+      contact_log: [],
+      key_worker: "staff_darren",
+      personal_adviser: "",
+      pathway_plan: false,
+      pathway_plan_review_date: null,
+      emergency_contact: "",
+      current_concerns: [],
+      positives: [],
+      overall_rag: "green" as const,
+      next_contact_due: nextContact,
+      notes: acForm.notes,
+      created_at: new Date().toISOString(),
+    });
+    toast.success("After-care record saved.");
+    setAcForm({ child_id: "", left_date: new Date().toISOString().slice(0, 10), left_reason: "age_18", current_accommodation: "", education_employment: "", notes: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
   const today = new Date().toISOString().slice(0, 10);
@@ -113,10 +163,12 @@ export default function AfterCarePage() {
     <PageShell
       title="After-Care & Staying Close"
       subtitle="Post-placement support and outcomes tracking — Children Act 1989"
+      ariaContext={{ pageTitle: "After-Care & Staying Close", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="After-Care & Staying Close" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="after-care" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Add Record</Button>,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -308,20 +360,26 @@ export default function AfterCarePage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add After-Care Record</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Young Person</Label><Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{["yp_alex", "yp_jordan", "yp_casey"].map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Left Date</Label><Input type="date" /></div>
-            <div><Label>Left Reason</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(LR_LABEL) as [AfterCareLeftReason, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Current Accommodation</Label><Input placeholder="Address and provider" /></div>
-            <div><Label>Education / Employment</Label><Input placeholder="Current EET details" /></div>
-            <div><Label>Notes</Label><Textarea rows={2} placeholder="Additional notes…" /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => setDialogOpen(false)}>Save Record</Button>
-          </DialogFooter>
+          <form onSubmit={handleCreateRecord} className="space-y-3">
+            <div><Label>Young Person *</Label><Select value={acForm.child_id} onValueChange={(v) => setACF("child_id", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map(y => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Left Date</Label><Input type="date" value={acForm.left_date} onChange={(e) => setACF("left_date", e.target.value)} /></div>
+            <div><Label>Left Reason</Label><Select value={acForm.left_reason} onValueChange={(v) => setACF("left_reason", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(LR_LABEL) as [AfterCareLeftReason, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Current Accommodation *</Label><Input placeholder="Address and provider" value={acForm.current_accommodation} onChange={(e) => setACF("current_accommodation", e.target.value)} /></div>
+            <div><Label>Education / Employment</Label><Input placeholder="Current EET details" value={acForm.education_employment} onChange={(e) => setACF("education_employment", e.target.value)} /></div>
+            <div><Label>Notes</Label><Textarea rows={2} placeholder="Additional notes…" value={acForm.notes} onChange={(e) => setACF("notes", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Record"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Care Planning"
+        category={["general", "education", "finance"]}
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

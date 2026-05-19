@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -29,6 +29,9 @@ import { useIndependentTravelRecords } from "@/hooks/use-independent-travel-reco
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependentTravelRecord, TravelTrainingStage, TravelConfidence } from "@/types/extended";
 import { TRAVEL_TRAINING_STAGE_LABEL, TRAVEL_CONFIDENCE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ─────────────────────────────────────────────────────────────────── */
 
@@ -146,6 +149,7 @@ export default function IndependentTravelTrainingPage() {
     <PageShell
       title="Independent Travel Training"
       subtitle="Stage-based plans preparing young people (especially 14–18) for confident independent travel on public transport. Tracks routes mastered, routes in learning, travel cards, monthly budget, what-if-lost protocols, safety check-ins, and the child's own voice on readiness."
+      ariaContext={{ pageTitle: "Independent Travel Training", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -154,6 +158,7 @@ export default function IndependentTravelTrainingPage() {
             filename="independent-travel-training"
           />
           <PrintButton title="Independent Travel Training" />
+          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -510,6 +515,18 @@ export default function IndependentTravelTrainingPage() {
           observation in line with UNCRC Article 12.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Activities"
+        category="activity"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Independent Travel Training — public transport, bus pass, rail card, travel risk assessment, route planning, supervised travel, unsupervised travel, life skills, care plan"
+        recordType="education"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

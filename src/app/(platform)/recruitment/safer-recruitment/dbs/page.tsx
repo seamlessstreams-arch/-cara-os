@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -156,6 +158,7 @@ export default function DBSTrackerPage() {
     <PageShell
       title="DBS Tracker"
       subtitle="Enhanced DBS certificate management — Schedule 7 compliant"
+      ariaContext={{ pageTitle: "DBS Certificate Management", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -369,6 +372,12 @@ export default function DBSTrackerPage() {
         </>
       )}
       </div>{/* close #dbs-content */}
+      <AriaPanel
+        mode="assist"
+        pageContext="DBS Certificate Management — enhanced DBS checks, DBS update service, renewal tracking, barred list checks, certificate dates, staff DBS compliance, safer recruitment, Ofsted evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

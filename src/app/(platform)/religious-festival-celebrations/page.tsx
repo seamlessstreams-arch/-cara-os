@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -28,6 +28,9 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useReligiousFestivalRecords } from "@/hooks/use-religious-festival-records";
 import type { ReligiousFestivalRecord, ReligiousFestivalFaith } from "@/types/extended";
 import { RELIGIOUS_FESTIVAL_FAITH_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour map ─────────────────────────────────────────────── */
 
@@ -114,10 +117,12 @@ export default function ReligiousFestivalCelebrationsPage() {
   return (
     <PageShell
       title="Religious & Cultural Festival Celebrations"
+      ariaContext={{ pageTitle: "Religious & Cultural Festival Celebrations", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="religious-festival-celebrations" />
           <PrintButton title="Religious & Cultural Festival Celebrations" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -312,6 +317,18 @@ export default function ReligiousFestivalCelebrationsPage() {
           Diversity policy underpin this work.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Activities & Wellbeing"
+        category={["activity", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Religious & Cultural Festival Celebrations — cultural celebrations, religious observance, identity, faith practices, cultural planning, care plan cultural needs, diversity evidence, Reg 45"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

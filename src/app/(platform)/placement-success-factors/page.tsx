@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +45,9 @@ import {
   HandHeart,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ─── domain icon ─── */
 const domainIcon = (domain: SuccessFactorDomain) => {
@@ -164,10 +167,12 @@ export default function PlacementSuccessFactorsPage() {
     <PageShell
       title="Placement Success Factors"
       subtitle="Meta-analysis of what makes placements work — informing future practice across the home"
+      ariaContext={{ pageTitle: "Placement Success Factors", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="placement-success-factors" />
           <PrintButton title="Placement Success Factors" />
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -458,6 +463,18 @@ export default function PlacementSuccessFactorsPage() {
           lived experience.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Placement Evidence"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Placement Success Factors — what works for this child, strengths, protective factors, placement fit, key relationships, routines, interests, learning from previous placements, Reg 45"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

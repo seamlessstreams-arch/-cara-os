@@ -19,7 +19,7 @@ import {
   TrendingUp,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,9 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useLeavingCarePackages } from "@/hooks/use-leaving-care-packages";
 import type { LeavingCarePackage, TransitionStage } from "@/types/extended";
 import { TRANSITION_STAGE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ──────────────────────────────────────────────────────────────── */
 
@@ -135,10 +138,12 @@ export default function LeavingCareFinancialPackagePage() {
     <PageShell
       title="Leaving Care Financial Package"
       subtitle="Children (Leaving Care) Act 2000 — Setting Up Home Allowance · Junior ISA · savings · financial literacy progression"
+      ariaContext={{ pageTitle: "Leaving Care Financial Package", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="leaving-care-financial-package" />
           <PrintButton title="Leaving Care Financial Package" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -369,6 +374,18 @@ export default function LeavingCareFinancialPackagePage() {
           <strong>Children (Leaving Care) Act 2000 &amp; Quality Standard 1.</strong> The corporate parent must give every eligible looked-after child a personal advisor, a pathway plan, and a financial package that includes the Setting Up Home Allowance, ring-fenced savings (Junior ISA top-ups while in care), and progressive financial-literacy support — covering banking, budgeting, tenancy, payslips, debt awareness and scam recognition. Aftercare duties continue to age 21 (or 25 in education). Cornerstone tracks each young person&apos;s journey from pre-pathway through to post-care so transitions are planned, not reactive. <em>All balances shown are illustrative — Cornerstone never stores real account numbers, sort codes, or credentials. Former residents are referenced by anonymised initials only.</em>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Finance"
+        category="finance"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Leaving Care Financial Package — personal allowance, setting up home allowance, education bursary, employment grant, pathway plan finances, financial literacy, Reg 45 care leaver evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

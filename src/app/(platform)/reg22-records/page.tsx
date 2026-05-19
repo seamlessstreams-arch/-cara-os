@@ -7,7 +7,7 @@ import {
   Database, Archive, MapPin, XCircle,
   ClipboardCheck, X, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,9 @@ import { getStaffName } from "@/lib/seed-data";
 import { useReg22Records } from "@/hooks/use-reg22-records";
 import type { Reg22Record, Reg22ComplianceStatus } from "@/types/extended";
 import { REG22_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 
@@ -81,9 +84,11 @@ export default function Reg22RecordsPage() {
     <PageShell
       title="Regulation 22 Records"
       subtitle="Schedule 3 statutory records — compliance tracker"
+      ariaContext={{ pageTitle: "Regulation 22 Records", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Regulation 22 Records" subtitle="Oak House — Schedule 3 Compliance" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -277,6 +282,18 @@ export default function Reg22RecordsPage() {
         </div>
 
       </div>
+      <CareEventsPanel
+        title="Care Events — Regulation 22 Evidence"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Regulation 22 Records — Schedule 3 statutory records, care planning documents, placement decisions, permanence, CLA statutory reviews, LAC guidance compliance evidence"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

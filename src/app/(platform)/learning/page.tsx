@@ -22,6 +22,9 @@ import {
   Library, Sparkles, ChevronRight, AlertTriangle, Users, GraduationCap,
   FileText, Zap,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 
 const FEATURES = [
@@ -137,11 +140,13 @@ export default function LearningHubPage() {
     <PageShell
       title="Learning Studio"
       subtitle="AI-powered learning and development for staff and children"
+      ariaContext={{ pageTitle: "Learning Hub", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Learning Hub" subtitle="Oak House — Staff Learning & Development" targetId="learning-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning Studio — training resource or certificate upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -251,6 +256,18 @@ export default function LearningHubPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Education"
+        category="education"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Learning Hub — staff training, mandatory training, e-learning, training certificates, knowledge assessments, CPD, supervision learning, workforce development, Reg 45 evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

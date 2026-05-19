@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,9 @@ import {
 } from "@/types/extended";
 import { useCourtAttendanceRecords } from "@/hooks/use-court-attendance-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -177,10 +180,12 @@ export default function ChildCourtAttendanceSupportPage() {
     <PageShell
       title="Court Attendance Support"
       subtitle="Per-child preparation and support for family, criminal, youth and tribunal proceedings — child-led, trauma-informed, dignified"
+      ariaContext={{ pageTitle: "Court Attendance Support", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="court-attendance-support" />
           <PrintButton title="Court Attendance Support" />
+          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -474,6 +479,18 @@ export default function ChildCourtAttendanceSupportPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category="safeguarding"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Court Attendance Support — police interviews, ABE interviews, criminal proceedings, witness support, court preparation, ISVA, advocacy, pre-trial therapy, solicitor contact"
+        recordType="safeguarding"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +23,7 @@ import type { EduAttendanceRecord, EduProvision, EduSession, EduAttendanceCode }
 import { EDU_PROVISION_LABEL, EDU_SESSION_LABEL } from "@/types/extended";
 import { useEduAttendanceRecords } from "@/hooks/use-edu-attendance-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -171,10 +174,12 @@ export default function EducationAttendanceTrackerPage() {
     <PageShell
       title="Education Attendance Tracker"
       subtitle="Quality Standard 8 (Education) · Virtual School Oversight · Daily Attendance Monitoring"
+      ariaContext={{ pageTitle: "Education Attendance Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Education Attendance Tracker" />
           <ExportButton data={filtered} columns={exportCols} filename="education-attendance-tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -404,6 +409,12 @@ export default function EducationAttendanceTrackerPage() {
           <p>Children&apos;s Homes (England) Regulations 2015, Quality Standard 8 — the education standard requires the registered person to ensure each child has access to suitable educational provision and that their attendance and progress are actively monitored. Daily attendance must be recorded using the DfE statutory school attendance codes and shared with the Virtual School Head, who has statutory responsibility under the Children Act 2004 for monitoring the educational achievement of looked-after children. Unauthorised absences (codes O, U, N) and persistent absence (below 90%) trigger review of the Personal Education Plan (PEP). Sustained non-attendance must be reported to the Local Authority under the Children Missing Education (CME) duty (Education Act 1996, s.436A).</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Education"
+        category="education"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

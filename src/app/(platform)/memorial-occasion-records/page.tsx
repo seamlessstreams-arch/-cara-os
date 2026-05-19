@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -17,6 +17,9 @@ import {
 import { useMemorialOccasionRecords } from "@/hooks/use-memorial-occasion-records";
 import type { MemorialOccasionRecord, MemorialOccasionType } from "@/types/extended";
 import { MEMORIAL_OCCASION_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const occasionColour: Record<MemorialOccasionType, string> = {
   bereavement_death: "bg-purple-100 text-purple-800",
@@ -70,10 +73,12 @@ export default function MemorialOccasionRecordsPage() {
     <PageShell
       title="Memorial Occasions"
       subtitle="How the home marks significant losses, anniversaries, and remembrance — with care, dignity, and child-led ritual"
+      ariaContext={{ pageTitle: "Memorial & Occasion Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="memorial-occasion-records" />
           <PrintButton title="Memorial Occasions" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -225,6 +230,18 @@ export default function MemorialOccasionRecordsPage() {
           and Loss Support, Placement Anniversaries, Trauma-Informed Timeline, and Cultural Identity.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Memorial & Occasion Records — birthdays, anniversaries, bereavements, significant dates, how we mark occasions, child preferences, cultural considerations, emotional support"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

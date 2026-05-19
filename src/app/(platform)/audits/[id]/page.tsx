@@ -19,6 +19,7 @@ import { AriaPanel } from "@/components/aria/aria-panel";
 import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -476,6 +477,11 @@ export default function AuditDetailPage({
         </div>
       </div>
       </div>
+      <CareEventsPanel
+        title="Care Events in Audit Period"
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -34,6 +34,9 @@ import {
 } from "@/types/extended";
 import { useChildStaffFeedback } from "@/hooks/use-child-staff-feedback";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const sentimentColour: Record<StaffFeedbackSentiment, string> = {
   positive: "bg-green-100 text-green-800",
@@ -99,10 +102,12 @@ export default function ChildFeedbackOnStaffPage() {
     <PageShell
       title="Child Feedback on Staff"
       subtitle="Children's voice about individual staff — celebrated, addressed, never dismissed"
+      ariaContext={{ pageTitle: "Child Feedback on Staff", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-feedback-on-staff" />
           <PrintButton title="Child Feedback on Staff" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -270,6 +275,18 @@ export default function ChildFeedbackOnStaffPage() {
           Staff Recognition Log, Voice of Child, Reg 44 visits, and Children&apos;s Pledges.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Child Feedback on Staff — children's views on individual staff, allegations, compliments, concerns, CLA review input, Reg 44 evidence, safer practice, management oversight"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

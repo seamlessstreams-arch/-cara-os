@@ -7,13 +7,16 @@ import {
   Car, GraduationCap, Heart, Phone,
   Eye, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useLocationAssessmentAreas } from "@/hooks/use-location-assessment-areas";
 import type { LocationAssessmentArea, LocationRiskLevel } from "@/types/extended";
 import { LOCATION_RISK_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -66,9 +69,11 @@ export default function LocationAssessmentPage() {
     <PageShell
       title="Location Assessment"
       subtitle="Regulation 46 — Suitability of the home's location for children's care"
+      ariaContext={{ pageTitle: "Location Assessment", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Location Assessment — Oak House" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -173,6 +178,18 @@ export default function LocationAssessmentPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "missing_episode"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Location Assessment — Regulation 46 suitability of premises and area, neighbourhood risks, transport, education, health services, safety factors, mitigations, monitoring"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

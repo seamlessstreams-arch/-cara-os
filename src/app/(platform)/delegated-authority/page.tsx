@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle2, Clock,
   ChevronDown, ChevronUp, XCircle, HelpCircle, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,9 @@ import { getYPName } from "@/lib/seed-data";
 import { useDelegatedAuthority } from "@/hooks/use-delegated-authority";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { DelegatedAuthority, DelegatedAuthorityItem, DelegatedAuthStatus, DelegatedAuthCategory } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const STATUS_COLORS: Record<DelegatedAuthStatus, string> = {
@@ -100,10 +103,12 @@ export default function DelegatedAuthorityPage() {
     <PageShell
       title="Delegated Authority"
       subtitle="Regulation 20 — decisions the home is authorised to make for each child"
+      ariaContext={{ pageTitle: "Delegated Authority", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Delegated Authority" />
           <ExportButton data={exportData} columns={exportCols} filename="delegated-authority" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -236,6 +241,18 @@ export default function DelegatedAuthorityPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Finance"
+        category="finance"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Delegated Authority — LA permissions for haircuts, piercings, holidays, activities, medical consent, social media, employment, driving, age-related items per child"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

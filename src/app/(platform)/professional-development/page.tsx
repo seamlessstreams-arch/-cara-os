@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +32,9 @@ import {
 import { useCpdRecords } from "@/hooks/use-cpd-records";
 import type { CPDRecord, CPDType, CPDStatus } from "@/types/extended";
 import { CPD_TYPE_LABEL, CPD_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour maps ────────────────────────────────────────────────────── */
 
@@ -122,9 +125,11 @@ export default function ProfessionalDevelopmentPage() {
     <PageShell
       title="Professional Development"
       subtitle="CPD records, qualifications, conferences, and learning activities"
+      ariaContext={{ pageTitle: "Professional Development Records", sourceType: "staff" }}
       actions={[
         <PrintButton key="p" title="Professional Development Records" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="professional-development" />,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -278,6 +283,18 @@ export default function ProfessionalDevelopmentPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Professional Development Records — staff CPD, training courses, diplomas, Level 3/5, QCF, supervision goals, reflective practice, career development, mandatory training"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

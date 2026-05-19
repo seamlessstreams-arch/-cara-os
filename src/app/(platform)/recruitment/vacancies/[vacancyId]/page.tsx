@@ -188,6 +188,7 @@ export default function VacancyDetailPage({
     <PageShell
       title={vacancy.title}
       subtitle={`${typeLabels[vacancy.employment_type] ?? vacancy.employment_type} · ${salaryStr} · ${vacancy.days_open} days open`}
+      ariaContext={{ pageTitle: "Oak House — Vacancy Detail", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title={vacancy.title} subtitle="Oak House — Vacancy Detail" targetId="vacancy-detail-content" />

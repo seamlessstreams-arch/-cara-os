@@ -9,6 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -397,6 +399,7 @@ export default function InductionTrackerPage() {
     <PageShell
       title="Induction Tracker"
       subtitle="From Day 1 to probation completion — structured staff onboarding"
+      ariaContext={{ pageTitle: "Staff Induction Tracker", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -411,6 +414,7 @@ export default function InductionTrackerPage() {
             <Plus className="h-3.5 w-3.5" />
             New Induction
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -550,6 +554,12 @@ export default function InductionTrackerPage() {
           and during Reg 44 visits. A clear timeline with signed-off milestones demonstrates compliance.
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Induction Tracker — new staff induction records, induction milestones, safeguarding training, medication training, Reg 33 induction compliance, Reg 40 safer recruitment, Ofsted workforce evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

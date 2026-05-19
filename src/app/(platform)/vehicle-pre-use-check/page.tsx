@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import {
@@ -44,6 +44,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import type { VehiclePreUseCheck, VehiclePreUseCheckItem, VehicleCheckFuelLevel, VehicleCheckOutcome } from "@/types/extended";
+import { useVehiclePreUseChecks } from "@/hooks/use-vehicle-pre-use-checks";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Local date helper ────────────────────────────────────────────────────────
 const d = (n: number): string => {
@@ -52,54 +57,11 @@ const d = (n: number): string => {
   return date.toISOString().slice(0, 10);
 };
 
-// ── Types ────────────────────────────────────────────────────────────────────
-type FuelLevel = "Full" | "3/4" | "1/2" | "1/4" | "Refuel needed";
-type CheckOutcome =
-  | "Cleared for use"
-  | "Cleared with minor notes"
-  | "Withdrawn from use - defect";
-
-interface CheckItem {
-  item: string;
-  pass: boolean;
-  notes: string;
-}
-
-interface VehicleCheck {
-  id: string;
-  vehicle: string;
-  driver: string;
-  dateTime: string;
-  journeyPurpose: string;
-  expectedReturn: string;
-  checks: CheckItem[];
-  fuelLevel: FuelLevel;
-  mileageStart: number;
-  mileageEnd?: number;
-  defectsFound: string[];
-  defectsActionedBy: string;
-  tyresChecked: boolean;
-  tyresPressureNotedNotes: string;
-  fluidsChecked: boolean;
-  warningLightsClear: boolean;
-  windscreenAndWipersOk: boolean;
-  seatbeltsOk: boolean;
-  childCarSeatsCorrect: boolean;
-  firstAidKitPresent: boolean;
-  grabBagPresent: boolean;
-  insuranceConfirmed: boolean;
-  motValidUntil: string;
-  breakdownCoverConfirmed: boolean;
-  passengersExpected: number;
-  incidentsDuringJourney: string;
-  checkOutcome: CheckOutcome;
-  nextAction: string;
-}
 
 // ── Standard checks template ─────────────────────────────────────────────────
 const STANDARD_CHECKS = (
   overrides: Partial<Record<string, { pass: boolean; notes: string }>> = {},
-): CheckItem[] => {
+): VehiclePreUseCheckItem[] => {
   const base: string[] = [
     "Tyres — tread depth, sidewall, visible damage",
     "Lights — headlights, brake lights, fog lights",
@@ -122,236 +84,8 @@ const STANDARD_CHECKS = (
   }));
 };
 
-// ── Seed records (most recent first) ─────────────────────────────────────────
-const RECORDS: VehicleCheck[] = [
-  {
-    id: "vpu_006",
-    vehicle: "Vehicle A — VW Caddy",
-    driver: "staff_darren",
-    dateTime: `${d(0)} 08:15`,
-    journeyPurpose: "School run — Casey and Alex to Oakfield Academy",
-    expectedReturn: `${d(0)} 09:30`,
-    checks: STANDARD_CHECKS(),
-    fuelLevel: "3/4",
-    mileageStart: 48211,
-    mileageEnd: 48230,
-    defectsFound: [],
-    defectsActionedBy: "",
-    tyresChecked: true,
-    tyresPressureNotedNotes:
-      "All four tyres checked visually — pressures within tolerance from yesterday's gauge reading (32 PSI front, 35 PSI rear).",
-    fluidsChecked: true,
-    warningLightsClear: true,
-    windscreenAndWipersOk: true,
-    seatbeltsOk: true,
-    childCarSeatsCorrect: true,
-    firstAidKitPresent: true,
-    grabBagPresent: true,
-    insuranceConfirmed: true,
-    motValidUntil: "2026-09-14",
-    breakdownCoverConfirmed: true,
-    passengersExpected: 2,
-    incidentsDuringJourney:
-      "No incidents. Both young people delivered on time. Casey settled in front passenger seat as agreed in her care plan.",
-    checkOutcome: "Cleared for use",
-    nextAction: "Standard return at 14:45 for afternoon school pickup.",
-  },
-  {
-    id: "vpu_005",
-    vehicle: "Vehicle B — Ford Tourneo",
-    driver: "staff_anna",
-    dateTime: `${d(0)} 10:00`,
-    journeyPurpose:
-      "Family contact — Jordan to supervised contact at Riverside Centre",
-    expectedReturn: `${d(0)} 13:00`,
-    checks: STANDARD_CHECKS({
-      "Fuel level sufficient for planned journey": {
-        pass: true,
-        notes: "Topped up to full at the Esso on Mill Lane before departure.",
-      },
-    }),
-    fuelLevel: "Full",
-    mileageStart: 71044,
-    mileageEnd: 71103,
-    defectsFound: [],
-    defectsActionedBy: "",
-    tyresChecked: true,
-    tyresPressureNotedNotes:
-      "Pressures gauged this morning — front 34 PSI, rear 38 PSI. All within manufacturer spec.",
-    fluidsChecked: true,
-    warningLightsClear: true,
-    windscreenAndWipersOk: true,
-    seatbeltsOk: true,
-    childCarSeatsCorrect: true,
-    firstAidKitPresent: true,
-    grabBagPresent: true,
-    insuranceConfirmed: true,
-    motValidUntil: "2026-11-02",
-    breakdownCoverConfirmed: true,
-    passengersExpected: 1,
-    incidentsDuringJourney:
-      "Quiet outbound. Jordan a little anxious but engaged after a short stop at the layby for fresh air. No incidents.",
-    checkOutcome: "Cleared for use",
-    nextAction:
-      "Vehicle parked back on drive. Refuel not required. Logged on the vehicle diary.",
-  },
-  {
-    id: "vpu_004",
-    vehicle: "Vehicle A — VW Caddy",
-    driver: "staff_ryan",
-    dateTime: `${d(-1)} 16:20`,
-    journeyPurpose:
-      "Activity trip — all three young people to Roman Fields trampoline park",
-    expectedReturn: `${d(-1)} 19:30`,
-    checks: STANDARD_CHECKS({
-      "Mirrors clean, adjusted and undamaged": {
-        pass: true,
-        notes:
-          "Nearside wing mirror has a minor scuff from last week — recorded in maintenance log, no impact on visibility, cleared by manager.",
-      },
-    }),
-    fuelLevel: "1/2",
-    mileageStart: 48142,
-    mileageEnd: 48198,
-    defectsFound: [],
-    defectsActionedBy: "",
-    tyresChecked: true,
-    tyresPressureNotedNotes:
-      "All tyres visually checked — no debris or damage. Last gauge reading 31/35 PSI two days ago.",
-    fluidsChecked: true,
-    warningLightsClear: true,
-    windscreenAndWipersOk: true,
-    seatbeltsOk: true,
-    childCarSeatsCorrect: true,
-    firstAidKitPresent: true,
-    grabBagPresent: true,
-    insuranceConfirmed: true,
-    motValidUntil: "2026-09-14",
-    breakdownCoverConfirmed: true,
-    passengersExpected: 3,
-    incidentsDuringJourney:
-      "Smooth journey out and back. Brief stop at Tesco for snacks on return. All three young people appropriately seat-belted throughout.",
-    checkOutcome: "Cleared with minor notes",
-    nextAction:
-      "Wing mirror scuff to remain on watch list — no further action this trip.",
-  },
-  {
-    id: "vpu_003",
-    vehicle: "Vehicle C — Vauxhall Vivaro",
-    driver: "staff_lackson",
-    dateTime: `${d(-1)} 07:45`,
-    journeyPurpose:
-      "Medical — Jordan to CAMHS appointment at Northgate clinic",
-    expectedReturn: `${d(-1)} 10:30`,
-    checks: STANDARD_CHECKS({
-      "Lights — headlights, brake lights, fog lights": {
-        pass: false,
-        notes:
-          "Offside rear brake light not illuminating during walk-round check.",
-      },
-      "Dashboard warning lights — none illuminated": {
-        pass: false,
-        notes: "Bulb-failure warning illuminated on the dashboard.",
-      },
-    }),
-    fuelLevel: "1/2",
-    mileageStart: 102876,
-    defectsFound: [
-      "Offside rear brake light bulb failed",
-      "Dashboard bulb-failure warning illuminated",
-    ],
-    defectsActionedBy: "staff_lackson",
-    tyresChecked: true,
-    tyresPressureNotedNotes:
-      "Tyres in good condition, pressures fine. Defect is electrical only.",
-    fluidsChecked: true,
-    warningLightsClear: false,
-    windscreenAndWipersOk: true,
-    seatbeltsOk: true,
-    childCarSeatsCorrect: true,
-    firstAidKitPresent: true,
-    grabBagPresent: true,
-    insuranceConfirmed: true,
-    motValidUntil: "2026-04-22",
-    breakdownCoverConfirmed: true,
-    passengersExpected: 1,
-    incidentsDuringJourney:
-      "Vehicle did not leave site. Jordan transferred to Vehicle A for the appointment with no delay to the clinic time.",
-    checkOutcome: "Withdrawn from use - defect",
-    nextAction:
-      "Vehicle keys placed in the 'OUT OF USE' lockbox. Local garage booked for 14:00 today to replace bulb and confirm no further faults. Manager (Darren) and on-call notified. Re-inspection required before next use. MOT also approaching — flagged to fleet diary for renewal in three weeks.",
-  },
-  {
-    id: "vpu_002",
-    vehicle: "Vehicle B — Ford Tourneo",
-    driver: "staff_chervelle",
-    dateTime: `${d(-2)} 18:10`,
-    journeyPurpose:
-      "Out-of-hours pickup — Casey from athletics club at Memorial Park",
-    expectedReturn: `${d(-2)} 19:15`,
-    checks: STANDARD_CHECKS(),
-    fuelLevel: "1/4",
-    mileageStart: 70988,
-    mileageEnd: 71012,
-    defectsFound: [],
-    defectsActionedBy: "",
-    tyresChecked: true,
-    tyresPressureNotedNotes:
-      "Tyres visually checked — all sound. Last gauge reading earlier today on the morning school run.",
-    fluidsChecked: true,
-    warningLightsClear: true,
-    windscreenAndWipersOk: true,
-    seatbeltsOk: true,
-    childCarSeatsCorrect: true,
-    firstAidKitPresent: true,
-    grabBagPresent: true,
-    insuranceConfirmed: true,
-    motValidUntil: "2026-11-02",
-    breakdownCoverConfirmed: true,
-    passengersExpected: 1,
-    incidentsDuringJourney:
-      "Uneventful pickup. Casey in good spirits after winning her 800m heat. Refuel flagged on return — booked into morning routine.",
-    checkOutcome: "Cleared with minor notes",
-    nextAction:
-      "Refuel required first thing tomorrow morning — entered onto the early-shift handover.",
-  },
-  {
-    id: "vpu_001",
-    vehicle: "Vehicle A — VW Caddy",
-    driver: "staff_darren",
-    dateTime: `${d(-3)} 14:30`,
-    journeyPurpose:
-      "Statutory visit — Alex to social worker meeting at the local authority offices",
-    expectedReturn: `${d(-3)} 16:30`,
-    checks: STANDARD_CHECKS(),
-    fuelLevel: "Full",
-    mileageStart: 48029,
-    mileageEnd: 48080,
-    defectsFound: [],
-    defectsActionedBy: "",
-    tyresChecked: true,
-    tyresPressureNotedNotes:
-      "Pressures gauged at 32 PSI front, 35 PSI rear. All four tyres in good condition.",
-    fluidsChecked: true,
-    warningLightsClear: true,
-    windscreenAndWipersOk: true,
-    seatbeltsOk: true,
-    childCarSeatsCorrect: true,
-    firstAidKitPresent: true,
-    grabBagPresent: true,
-    insuranceConfirmed: true,
-    motValidUntil: "2026-09-14",
-    breakdownCoverConfirmed: true,
-    passengersExpected: 1,
-    incidentsDuringJourney:
-      "Smooth journey both ways. Alex used the time to talk through his expectations of the meeting — useful context fed back to keyworker.",
-    checkOutcome: "Cleared for use",
-    nextAction: "No follow-up required.",
-  },
-];
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
-const outcomeColour = (o: CheckOutcome): string => {
+const outcomeColour = (o: VehicleCheckOutcome): string => {
   switch (o) {
     case "Cleared for use":
       return "bg-emerald-100 text-emerald-800 border-emerald-200";
@@ -362,7 +96,7 @@ const outcomeColour = (o: CheckOutcome): string => {
   }
 };
 
-const fuelColour = (f: FuelLevel): string => {
+const fuelColour = (f: VehicleCheckFuelLevel): string => {
   switch (f) {
     case "Full":
     case "3/4":
@@ -410,12 +144,13 @@ export default function VehiclePreUseCheckPage() {
   const [filterOutcome, setFilterOutcome] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const { data: result, isLoading } = useVehiclePreUseChecks("home_oak");
+  const RECORDS = result?.data ?? [];
+
   const vehicleOptions = useMemo(() => {
     const set = new Set(RECORDS.map((r) => r.vehicle));
     return Array.from(set).sort();
-  }, []);
-
-  // ── Summary stats ──────────────────────────────────────────────────────────
+  }, [RECORDS]);
   const summary = useMemo(() => {
     const today = d(0);
     const seven = new Date();
@@ -454,7 +189,7 @@ export default function VehiclePreUseCheckPage() {
       vehiclesTotal: allVehicles.size,
       expiring30: expiring30.size,
     };
-  }, []);
+  }, [RECORDS]);
 
   // ── Filtered + sorted ──────────────────────────────────────────────────────
   const visible = useMemo(() => {
@@ -476,7 +211,7 @@ export default function VehiclePreUseCheckPage() {
         list.sort((a, b) => a.vehicle.localeCompare(b.vehicle));
         break;
       case "outcome": {
-        const order: Record<CheckOutcome, number> = {
+        const order: Record<VehicleCheckOutcome, number> = {
           "Withdrawn from use - defect": 0,
           "Cleared with minor notes": 1,
           "Cleared for use": 2,
@@ -491,108 +226,108 @@ export default function VehiclePreUseCheckPage() {
         break;
     }
     return list;
-  }, [sortKey, filterVehicle, filterOutcome]);
+  }, [RECORDS, sortKey, filterVehicle, filterOutcome]);
 
   // ── Export columns ─────────────────────────────────────────────────────────
-  const exportColumns: ExportColumn<VehicleCheck>[] = [
-    { header: "ID", accessor: (r: VehicleCheck) => r.id },
-    { header: "Date / time", accessor: (r: VehicleCheck) => r.dateTime },
-    { header: "Vehicle", accessor: (r: VehicleCheck) => r.vehicle },
+  const exportColumns: ExportColumn<VehiclePreUseCheck>[] = [
+    { header: "ID", accessor: (r: VehiclePreUseCheck) => r.id },
+    { header: "Date / time", accessor: (r: VehiclePreUseCheck) => r.dateTime },
+    { header: "Vehicle", accessor: (r: VehiclePreUseCheck) => r.vehicle },
     {
       header: "Driver",
-      accessor: (r: VehicleCheck) => getStaffName(r.driver),
+      accessor: (r: VehiclePreUseCheck) => getStaffName(r.driver),
     },
     {
       header: "Journey purpose",
-      accessor: (r: VehicleCheck) => r.journeyPurpose,
+      accessor: (r: VehiclePreUseCheck) => r.journeyPurpose,
     },
     {
       header: "Expected return",
-      accessor: (r: VehicleCheck) => r.expectedReturn,
+      accessor: (r: VehiclePreUseCheck) => r.expectedReturn,
     },
     {
       header: "Passengers expected",
-      accessor: (r: VehicleCheck) => String(r.passengersExpected),
+      accessor: (r: VehiclePreUseCheck) => String(r.passengersExpected),
     },
     {
       header: "Mileage start",
-      accessor: (r: VehicleCheck) => String(r.mileageStart),
+      accessor: (r: VehiclePreUseCheck) => String(r.mileageStart),
     },
     {
       header: "Mileage end",
-      accessor: (r: VehicleCheck) =>
+      accessor: (r: VehiclePreUseCheck) =>
         r.mileageEnd != null ? String(r.mileageEnd) : "",
     },
-    { header: "Fuel level", accessor: (r: VehicleCheck) => r.fuelLevel },
+    { header: "Fuel level", accessor: (r: VehiclePreUseCheck) => r.fuelLevel },
     {
       header: "Tyres checked",
-      accessor: (r: VehicleCheck) => (r.tyresChecked ? "Yes" : "No"),
+      accessor: (r: VehiclePreUseCheck) => (r.tyresChecked ? "Yes" : "No"),
     },
     {
       header: "Tyre pressure notes",
-      accessor: (r: VehicleCheck) => r.tyresPressureNotedNotes,
+      accessor: (r: VehiclePreUseCheck) => r.tyresPressureNotedNotes,
     },
     {
       header: "Fluids checked",
-      accessor: (r: VehicleCheck) => (r.fluidsChecked ? "Yes" : "No"),
+      accessor: (r: VehiclePreUseCheck) => (r.fluidsChecked ? "Yes" : "No"),
     },
     {
       header: "Warning lights clear",
-      accessor: (r: VehicleCheck) => (r.warningLightsClear ? "Yes" : "No"),
+      accessor: (r: VehiclePreUseCheck) => (r.warningLightsClear ? "Yes" : "No"),
     },
     {
       header: "Windscreen / wipers OK",
-      accessor: (r: VehicleCheck) => (r.windscreenAndWipersOk ? "Yes" : "No"),
+      accessor: (r: VehiclePreUseCheck) => (r.windscreenAndWipersOk ? "Yes" : "No"),
     },
     {
       header: "Seatbelts OK",
-      accessor: (r: VehicleCheck) => (r.seatbeltsOk ? "Yes" : "No"),
+      accessor: (r: VehiclePreUseCheck) => (r.seatbeltsOk ? "Yes" : "No"),
     },
     {
       header: "Child seats correct",
-      accessor: (r: VehicleCheck) => (r.childCarSeatsCorrect ? "Yes" : "No"),
+      accessor: (r: VehiclePreUseCheck) => (r.childCarSeatsCorrect ? "Yes" : "No"),
     },
     {
       header: "First aid kit present",
-      accessor: (r: VehicleCheck) => (r.firstAidKitPresent ? "Yes" : "No"),
+      accessor: (r: VehiclePreUseCheck) => (r.firstAidKitPresent ? "Yes" : "No"),
     },
     {
       header: "Grab bag present",
-      accessor: (r: VehicleCheck) => (r.grabBagPresent ? "Yes" : "No"),
+      accessor: (r: VehiclePreUseCheck) => (r.grabBagPresent ? "Yes" : "No"),
     },
     {
       header: "Insurance confirmed",
-      accessor: (r: VehicleCheck) => (r.insuranceConfirmed ? "Yes" : "No"),
+      accessor: (r: VehiclePreUseCheck) => (r.insuranceConfirmed ? "Yes" : "No"),
     },
     {
       header: "MOT valid until",
-      accessor: (r: VehicleCheck) => r.motValidUntil,
+      accessor: (r: VehiclePreUseCheck) => r.motValidUntil,
     },
     {
       header: "Breakdown cover confirmed",
-      accessor: (r: VehicleCheck) =>
+      accessor: (r: VehiclePreUseCheck) =>
         r.breakdownCoverConfirmed ? "Yes" : "No",
     },
     {
       header: "Defects found",
-      accessor: (r: VehicleCheck) => r.defectsFound.join(" | "),
+      accessor: (r: VehiclePreUseCheck) => r.defectsFound.join(" | "),
     },
     {
       header: "Defects actioned by",
-      accessor: (r: VehicleCheck) =>
+      accessor: (r: VehiclePreUseCheck) =>
         r.defectsActionedBy ? getStaffName(r.defectsActionedBy) : "",
     },
     {
       header: "Incidents during journey",
-      accessor: (r: VehicleCheck) => r.incidentsDuringJourney,
+      accessor: (r: VehiclePreUseCheck) => r.incidentsDuringJourney,
     },
     {
       header: "Outcome",
-      accessor: (r: VehicleCheck) => r.checkOutcome,
+      accessor: (r: VehiclePreUseCheck) => r.checkOutcome,
     },
     {
       header: "Next action",
-      accessor: (r: VehicleCheck) => r.nextAction,
+      accessor: (r: VehiclePreUseCheck) => r.nextAction,
     },
   ];
 
@@ -600,6 +335,7 @@ export default function VehiclePreUseCheckPage() {
     <PageShell
       title="Vehicle Pre-Use Check"
       subtitle="Recorded by the driver before any journey carrying children. Defects withdraw the vehicle from use until rectified and re-inspected."
+      ariaContext={{ pageTitle: "Vehicle Pre-Use Checks", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -608,6 +344,7 @@ export default function VehiclePreUseCheckPage() {
             filename="vehicle-pre-use-check"
           />
           <PrintButton title="Vehicle Pre-Use Checks" />
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -1178,6 +915,18 @@ export default function VehiclePreUseCheckPage() {
           feed the Reg 45 quality of care review and the SCCIF self-evaluation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Transport Safety"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Vehicle Pre-Use Checks — daily vehicle checks, tyre pressure, lights, fuel, mileage, defect reports, driver sign-off, transport safety compliance, Reg 40 premises/safety evidence"
+        recordType="risk_assessment"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -31,6 +31,9 @@ import {
 import { Input } from "@/components/ui/input";
 import type { WelfareCheckRound, WelfareCheckStatus } from "@/types/extended";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Status config ───────────────────────────────────────────────────────────
 
@@ -539,6 +542,7 @@ export default function WelfareChecksPage() {
     <PageShell
       title="Welfare Checks"
       subtitle="Night-time welfare monitoring — every child, every check, documented"
+      ariaContext={{ pageTitle: "Welfare Checks", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredRounds} columns={WELFARE_EXPORT_COLS} filename="welfare-checks" />
@@ -564,6 +568,7 @@ export default function WelfareChecksPage() {
             <Plus className="h-3.5 w-3.5" />
             New Check
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -750,6 +755,18 @@ export default function WelfareChecksPage() {
           and Reg 44 visits.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Welfare & Safety"
+        category={["general", "health", "behaviour"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Welfare Checks — overnight welfare check rounds, sleep check logs, awake check intervals, safeguarding welfare monitoring, child-specific protocols, Reg 40 safety evidence, Ofsted inspection evidence"
+        recordType="daily_log"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

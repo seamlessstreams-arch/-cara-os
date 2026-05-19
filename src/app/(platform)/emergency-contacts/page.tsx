@@ -11,7 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,17 +36,13 @@ import {
   useCreateEmergencyChildContact,
   useUpdateEmergencyChildContact,
 } from "@/hooks/use-emergency-child-contacts";
+import { useHomeEmergencyContacts } from "@/hooks/use-home-emergency-contacts";
+import type { HomeEmergencyContact } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-interface HomeContact {
-  id: string;
-  label: string;
-  number: string;
-  description: string;
-  category: "emergency_999" | "on_call" | "local_service" | "regulatory";
-  available: string;
-}
 
 interface OnCallEntry {
   day: string;
@@ -68,7 +64,7 @@ const ROLE_CONFIG: Record<EmergencyContactRole, { label: string; icon: React.Ele
   other:          { label: "Other",          icon: User,           colour: "bg-slate-100 text-[var(--cs-text-secondary)]" },
 };
 
-const CATEGORY_COLOURS: Record<HomeContact["category"], string> = {
+const CATEGORY_COLOURS: Record<HomeEmergencyContact["category"], string> = {
   emergency_999: "bg-red-600 text-white",
   on_call:       "bg-amber-100 text-amber-800",
   local_service: "bg-blue-100 text-blue-800",
@@ -94,23 +90,6 @@ const shortDate = (offset: number) => {
   dt.setDate(dt.getDate() + offset);
   return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 };
-
-// ── Seed: Home-level contacts ─────────────────────────────────────────────────
-
-const HOME_CONTACTS: HomeContact[] = [
-  { id: "hc_001", label: "Police / Ambulance / Fire", number: "999",                description: "All life-threatening emergencies",                         category: "emergency_999", available: "24/7" },
-  { id: "hc_002", label: "NHS 111",                   number: "111",                description: "Urgent medical advice (non-life-threatening)",             category: "emergency_999", available: "24/7" },
-  { id: "hc_003", label: "On-Call Manager",            number: "07XXX XXXXXX",       description: "Acacia on-call manager — all escalations outside hours",   category: "on_call",       available: "24/7" },
-  { id: "hc_004", label: "Emergency Maintenance",      number: "07XXX XXXXXX",       description: "Boiler, flooding, lock-out, structural issues",            category: "on_call",       available: "24/7" },
-  { id: "hc_005", label: "Out-of-Hours Social Care",   number: "01332 786 968",      description: "Derby City EDT — safeguarding referrals outside hours",    category: "local_service", available: "Evenings, weekends, bank holidays" },
-  { id: "hc_006", label: "MASH",                       number: "01332 641 172",      description: "Multi-Agency Safeguarding Hub — office hours referrals",   category: "local_service", available: "Mon–Fri 9am–5pm" },
-  { id: "hc_007", label: "Police Non-Emergency",       number: "101",                description: "Non-urgent police reports, missing persons follow-up",     category: "local_service", available: "24/7" },
-  { id: "hc_008", label: "Ofsted",                     number: "0300 123 1231",      description: "Notifiable events, regulatory queries, complaints",        category: "regulatory",    available: "Mon–Fri 8am–6pm" },
-  { id: "hc_009", label: "LADO (Derby)",               number: "01332 642 376",      description: "Allegations against staff — Local Authority Designated Officer", category: "regulatory", available: "Mon–Fri 9am–5pm" },
-  { id: "hc_010", label: "National Poisons Information", number: "0344 892 0111",    description: "TOXBASE — suspected poisoning or overdose advice",         category: "local_service", available: "24/7" },
-  { id: "hc_011", label: "Gas Emergency",              number: "0800 111 999",       description: "Gas leak or carbon monoxide concern",                      category: "emergency_999", available: "24/7" },
-  { id: "hc_012", label: "Childline",                  number: "0800 1111",          description: "Confidential helpline for children — display for YP",      category: "local_service", available: "24/7" },
-];
 
 // ── Seed: On-call rota ────────────────────────────────────────────────────────
 
@@ -140,6 +119,9 @@ export default function EmergencyContactsPage() {
   const updateMutation = useUpdateEmergencyChildContact();
   const contacts = query.data?.data ?? [];
   const childIds = [...new Set(contacts.map((c) => c.child_id))];
+
+  const { data: homeContactsResult } = useHomeEmergencyContacts("home_oak");
+  const HOME_CONTACTS = homeContactsResult?.data ?? [];
 
   const [editingContact, setEditingContact] = useState<EmergencyChildContact | null>(null);
   const [editingChildId, setEditingChildId] = useState<string | null>(null);
@@ -294,8 +276,12 @@ export default function EmergencyContactsPage() {
     <PageShell
       title="Emergency Contacts Board"
       subtitle="Key contacts for Oak House — print and display in office"
+      ariaContext={{ pageTitle: "Emergency Contacts Board", sourceType: "contact_log" }}
       actions={
-        <PrintButton title="Emergency Contacts Board" subtitle="Oak House" targetId="emergency-board" />
+        <div className="flex items-center gap-2">
+          <PrintButton title="Emergency Contacts Board" subtitle="Oak House" targetId="emergency-board" />
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+        </div>
       }
       showQuickCreate={false}
     >
@@ -606,6 +592,18 @@ export default function EmergencyContactsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Emergency Contacts Board — out of hours, on-call manager, LA duty team, LADO, police, ambulance, hospital, GP, local authority emergency duty, social worker, IRO contacts"
+        recordType="task"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

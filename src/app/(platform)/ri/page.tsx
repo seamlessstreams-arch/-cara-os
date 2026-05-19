@@ -31,6 +31,9 @@ import {
   CheckCircle2, ChevronRight, TrendingUp, BookOpen, Gavel,
   Building2, Sparkles, Eye, Award, Zap,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 
 // ── Score pill ─────────────────────────────────────────────────────────────────
@@ -150,6 +153,7 @@ export default function RiHubPage() {
     <PageShell
       title="RI Command Centre"
       subtitle="Responsible Individual governance dashboard — Oak House"
+      ariaContext={{ pageTitle: "RI Oversight Dashboard", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -161,6 +165,7 @@ export default function RiHubPage() {
               Full Scorecard
             </Button>
           </Link>
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -343,6 +348,18 @@ export default function RiHubPage() {
         </div>
 
       </div>
+      <CareEventsPanel
+        title="Care Events — Compliance Evidence"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="RI Oversight Dashboard — responsible individual oversight, governance alerts, compliance status, quality standards, safeguarding indicators, regulation compliance, Reg 44/45 evidence, Ofsted readiness"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

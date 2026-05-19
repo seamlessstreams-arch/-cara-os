@@ -13,7 +13,9 @@ import {
   AlertTriangle,
   Heart,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -29,6 +31,7 @@ import type { HealthAssessment, HealthAssessmentType, HealthAssessmentStatus, Sd
 import { HEALTH_ASSESSMENT_TYPE_LABEL, HEALTH_ASSESSMENT_STATUS_LABEL, SDQ_BAND_LABEL, HEALTH_FOLLOW_UP_STATUS_LABEL } from "@/types/extended";
 import { useHealthAssessments, useCreateHealthAssessment } from "@/hooks/use-health-assessments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -143,6 +146,7 @@ export default function HealthAssessmentsPage() {
     <PageShell
       title="Health Assessments"
       subtitle="LAC health assessments — IHA, RHA, dental, optician and SDQ tracking"
+      ariaContext={{ pageTitle: "Health Assessments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="health-assessments" />
@@ -150,6 +154,7 @@ export default function HealthAssessmentsPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> Log Assessment
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -342,6 +347,12 @@ export default function HealthAssessmentsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

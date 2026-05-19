@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -21,6 +21,9 @@ import type {
   WalkroundEnvironmentalCheck, WalkroundFollowUpAction,
 } from "@/types/extended";
 import { WALKROUND_TYPE_LABEL, ENVIRONMENTAL_CHECK_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -76,10 +79,12 @@ export default function ManagementWalkroundPage() {
     <PageShell
       title="Management Walkround"
       subtitle="Daily, weekly, and unannounced walkrounds — observation, recognition, and visible leadership"
+      ariaContext={{ pageTitle: "Management Walkrounds", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="management-walkrounds" />
           <PrintButton title="Management Walkround" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -310,6 +315,18 @@ export default function ManagementWalkroundPage() {
           of care). Linked to Unannounced Visits Log, Reg 44 visits, and Service Improvement Board.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Management Walkrounds — quality assurance walkrounds, home environment checks, care practice observations, safety checks, young person welfare checks, Reg 44 evidence, management oversight"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

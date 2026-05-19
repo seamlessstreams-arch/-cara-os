@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   Wallet, Calendar, Receipt, TrendingDown, TrendingUp,
@@ -21,7 +22,10 @@ import {
 } from "lucide-react";
 import type { PettyCashEntry, PettyCashTransactionType, PettyCashCategory } from "@/types/extended";
 import { PETTY_CASH_TRANSACTION_TYPE_LABEL, PETTY_CASH_CATEGORY_LABEL } from "@/types/extended";
-import { usePettyCashEntries } from "@/hooks/use-petty-cash-entries";
+import { usePettyCashEntries, useCreatePettyCashEntry } from "@/hooks/use-petty-cash-entries";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Category UI metadata ────────────────────────────────────────────────────
 const CATEGORY_META: Record<PettyCashCategory, { label: string; color: string }> = {
@@ -65,6 +69,21 @@ export default function PettyCashPage() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
 
+  const createEntry = useCreatePettyCashEntry();
+  const [pcForm, setPcForm] = useState({ date: new Date().toISOString().slice(0, 10), type: "withdrawal" as PettyCashTransactionType, amount: "", category: "activities" as PettyCashCategory, description: "", receipt_ref: "", notes: "" });
+  const setPC2 = (k: string, v: unknown) => setPcForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveEntry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amount = parseFloat(pcForm.amount);
+    if (!pcForm.description.trim()) { toast.error("Description is required."); return; }
+    if (isNaN(amount) || amount <= 0) { toast.error("Valid amount is required."); return; }
+    await createEntry.mutateAsync({ date: pcForm.date, type: pcForm.type, category: pcForm.category, amount, description: pcForm.description.trim(), receipt_ref: pcForm.receipt_ref.trim(), receipt_attached: false, child_id: "", authorised_by: "staff_darren", recorded_by: "staff_darren", notes: pcForm.notes.trim(), balance_after: 0, created_at: new Date().toISOString() });
+    toast.success("Petty cash entry saved.");
+    setPcForm({ date: new Date().toISOString().slice(0, 10), type: "withdrawal", amount: "", category: "activities", description: "", receipt_ref: "", notes: "" });
+    setShowNew(false);
+  };
+
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   const filtered = useMemo(() => {
@@ -101,11 +120,13 @@ export default function PettyCashPage() {
     <PageShell
       title="Petty Cash"
       subtitle="Tracking all petty cash transactions — withdrawals, top-ups, and receipts"
+      ariaContext={{ pageTitle: "Petty Cash", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Petty Cash" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="petty-cash" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Entry</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -245,12 +266,12 @@ export default function PettyCashPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Petty Cash Entry</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleSaveEntry} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" /></div>
+              <div><label className="text-sm font-medium">Date</label><Input type="date" value={pcForm.date} onChange={(e) => setPC2("date", e.target.value)} /></div>
               <div>
                 <label className="text-sm font-medium">Type</label>
-                <Select><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                <Select value={pcForm.type} onValueChange={(v) => setPC2("type", v)}><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="withdrawal">Withdrawal</SelectItem>
                     <SelectItem value="top_up">Top-Up</SelectItem>
@@ -260,24 +281,36 @@ export default function PettyCashPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Amount (£)</label><Input type="number" step="0.01" placeholder="0.00" /></div>
+              <div><label className="text-sm font-medium">Amount (£)</label><Input type="number" step="0.01" placeholder="0.00" value={pcForm.amount} onChange={(e) => setPC2("amount", e.target.value)} /></div>
               <div>
                 <label className="text-sm font-medium">Category</label>
-                <Select><SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+                <Select value={pcForm.category} onValueChange={(v) => setPC2("category", v)}><SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
                   <SelectContent>{Object.entries(CATEGORY_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Description</label><Input placeholder="What was the purchase for?" /></div>
-            <div><label className="text-sm font-medium">Receipt Reference</label><Input placeholder="Receipt number (if applicable)" /></div>
-            <div><label className="text-sm font-medium">Notes</label><Textarea placeholder="Any additional notes…" rows={2} /></div>
+            <div><label className="text-sm font-medium">Description *</label><Input placeholder="What was the purchase for?" value={pcForm.description} onChange={(e) => setPC2("description", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Receipt Reference</label><Input placeholder="Receipt number (if applicable)" value={pcForm.receipt_ref} onChange={(e) => setPC2("receipt_ref", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Notes</label><Textarea placeholder="Any additional notes…" rows={2} value={pcForm.notes} onChange={(e) => setPC2("notes", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Save Entry</Button>
+              <Button type="submit" disabled={createEntry.isPending}>{createEntry.isPending ? "Saving…" : "Save Entry"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Finance"
+        category="finance"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Petty Cash — cash transactions, receipts, pocket money, activities spending, clothing allowance, emergency funds, reconciliation, float balance, financial accountability, Reg 44 evidence"
+        recordType="task"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

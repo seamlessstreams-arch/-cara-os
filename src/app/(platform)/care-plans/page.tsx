@@ -8,6 +8,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate, generateId } from "@/lib/utils";
@@ -32,6 +34,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { toastSuccess } from "@/lib/toast";
 
 // ── Filter types ─────────────────────────────────────────────────────────────
@@ -681,6 +684,7 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
       title="Care Plans"
       subtitle="Statutory care plan goals, progress and LAC review tracking"
       showQuickCreate={false}
+      ariaContext={{ pageTitle: "Care Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredPlans} columns={CARE_PLAN_EXPORT_COLS} filename="care-plans" />
@@ -696,10 +700,19 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
               Young People
             </button>
           </Link>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="care-plans-content" className="space-y-5">
+
+      <AriaPanel
+        mode="assist"
+        pageContext="Care Plans — Statutory planning"
+        recordType="care_plan"
+        userRole="registered_manager"
+        className="mb-5"
+      />
 
       {/* ── LAC review alerts ── */}
       {stats.lacOverdue > 0 && (
@@ -977,6 +990,12 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
           onSave={handleAddGoal}
         />
       )}
+      <CareEventsPanel
+        title="Care Events — Care Planning"
+        category={["general", "behaviour", "health"]}
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

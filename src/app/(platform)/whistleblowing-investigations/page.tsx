@@ -16,7 +16,7 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,9 @@ import {
   WB_INVESTIGATION_OUTCOME_LABEL,
   WB_INVESTIGATION_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -161,10 +164,12 @@ export default function WhistleblowingInvestigationsPage() {
     <PageShell
       title="Whistleblowing Investigations"
       subtitle="Investigations arising from whistleblowing concerns — distinct from the concerns register"
+      ariaContext={{ pageTitle: "Whistleblowing Investigations", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="whistleblowing-investigations" />
           <PrintButton title="Whistleblowing Investigations" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -423,6 +428,18 @@ export default function WhistleblowingInvestigationsPage() {
           where allegations relate to a person who works with children.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "complaint"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Whistleblowing Investigations — formal investigations, investigation outcomes, referrals to regulatory bodies, Reg 40 notifications, management oversight, evidence of fair process"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

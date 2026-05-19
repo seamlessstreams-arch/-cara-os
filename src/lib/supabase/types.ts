@@ -752,6 +752,252 @@ export interface Database {
         Update: never;
       };
 
+      // ── Care Events Pipeline ─────────────────────────────────────────────────
+
+      care_events: {
+        Row: {
+          id: string;
+          home_id: string;
+          staff_id: string;
+          child_ids: string[];
+          shift_id: string | null;
+          category: string;
+          status: string;
+          title: string;
+          body: string;
+          evidence_prompts_completed: boolean;
+          routing_preview: Json;
+          routes_completed: number;
+          routes_failed: number;
+          requires_manager_review: boolean;
+          requires_reg40_triage: boolean;
+          contributes_to_reg45: boolean;
+          contributes_to_annex_a: boolean;
+          manager_review_by: string | null;
+          manager_review_at: string | null;
+          manager_review_notes: string | null;
+          verified_at: string | null;
+          verified_by: string | null;
+          locked_at: string | null;
+          locked_by: string | null;
+          returned_at: string | null;
+          returned_by: string | null;
+          return_reason: string | null;
+          version: number;
+          previous_version_id: string | null;
+          amendment_reason: string | null;
+          amended_at: string | null;
+          amended_by: string | null;
+          aria_suggested_category: string | null;
+          aria_suggested_routes: Json | null;
+          aria_suggested_summary: string | null;
+          submitted_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["care_events"]["Row"], "created_at" | "updated_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["care_events"]["Insert"]>;
+      };
+
+      care_event_routes: {
+        Row: {
+          id: string;
+          care_event_id: string;
+          home_id: string;
+          route_type: string;
+          status: string;
+          linked_record_id: string | null;
+          linked_record_type: string | null;
+          error_message: string | null;
+          retry_count: number;
+          last_attempted_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["care_event_routes"]["Row"], "created_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["care_event_routes"]["Insert"]>;
+      };
+
+      care_event_jobs: {
+        Row: {
+          id: string;
+          care_event_id: string;
+          home_id: string;
+          job_type: string;
+          status: string;
+          payload: Json | null;
+          result: Json | null;
+          error_message: string | null;
+          attempts: number;
+          max_attempts: number;
+          run_after: string;
+          started_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["care_event_jobs"]["Row"], "created_at" | "updated_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["care_event_jobs"]["Insert"]>;
+      };
+
+      care_event_audit_log: {
+        Row: {
+          id: string;
+          care_event_id: string;
+          home_id: string;
+          action: string;
+          actor_id: string | null;
+          detail: Json | null;
+          performed_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["care_event_audit_log"]["Row"], "id" | "performed_at"> & { id?: string };
+        Update: never;
+      };
+
+      reg45_evidence_queue: {
+        Row: {
+          id: string;
+          home_id: string;
+          care_event_id: string;
+          suggested_section: string | null;
+          suggested_text: string;
+          status: string;
+          manager_decision: string | null;
+          manager_notes: string | null;
+          manager_id: string | null;
+          decided_at: string | null;
+          approved_text: string | null;
+          source_summary: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["reg45_evidence_queue"]["Row"], "created_at" | "updated_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["reg45_evidence_queue"]["Insert"]>;
+      };
+
+      annex_a_evidence_queue: {
+        Row: {
+          id: string;
+          home_id: string;
+          care_event_id: string;
+          annex_a_section: string;
+          suggested_text: string;
+          status: string;
+          manager_decision: string | null;
+          manager_notes: string | null;
+          manager_id: string | null;
+          decided_at: string | null;
+          approved_text: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["annex_a_evidence_queue"]["Row"], "created_at" | "updated_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["annex_a_evidence_queue"]["Insert"]>;
+      };
+
+      child_daily_summaries: {
+        Row: {
+          id: string;
+          home_id: string;
+          child_id: string;
+          summary_date: string;
+          care_event_ids: string[];
+          mood_overall: string | null;
+          sleep_quality: string | null;
+          food_intake: string | null;
+          key_events: string;
+          positives: string;
+          concerns: string;
+          staff_notes: string;
+          education_attended: boolean | null;
+          medication_administered: boolean | null;
+          review_required: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["child_daily_summaries"]["Row"], "created_at" | "updated_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["child_daily_summaries"]["Insert"]>;
+      };
+
+      management_oversight_tasks: {
+        Row: {
+          id: string;
+          care_event_id: string;
+          home_id: string;
+          child_ids: string[];
+          category: string;
+          priority: string;
+          title: string;
+          summary: string;
+          status: string;
+          assigned_to: string | null;
+          due_date: string | null;
+          completed_at: string | null;
+          completed_by: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["management_oversight_tasks"]["Row"], "created_at" | "updated_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["management_oversight_tasks"]["Insert"]>;
+      };
+
+      reg40_tasks: {
+        Row: {
+          id: string;
+          care_event_id: string;
+          home_id: string;
+          category: string;
+          severity: string;
+          title: string;
+          description: string;
+          status: string;
+          triage_decision: string | null;
+          triage_notes: string | null;
+          triaged_by: string | null;
+          triaged_at: string | null;
+          notification_sent: boolean;
+          notification_sent_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["reg40_tasks"]["Row"], "created_at" | "updated_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["reg40_tasks"]["Insert"]>;
+      };
+
+      filing_cabinet_items: {
+        Row: {
+          id: string;
+          care_event_id: string;
+          home_id: string;
+          child_ids: string[];
+          category: string;
+          title: string;
+          summary: string;
+          file_date: string;
+          status: string;
+          verified_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["filing_cabinet_items"]["Row"], "created_at" | "updated_at"> & { id?: string };
+        Update: Partial<Database["public"]["Tables"]["filing_cabinet_items"]["Insert"]>;
+      };
+
+      saved_time_metrics: {
+        Row: {
+          id: string;
+          care_event_id: string;
+          home_id: string;
+          staff_id: string;
+          routes_count: number;
+          estimated_minutes_saved: number;
+          created_at: string;
+        };
+        Insert: Omit<Database["public"]["Tables"]["saved_time_metrics"]["Row"], "created_at"> & { id?: string };
+        Update: never;
+      };
+
       vacancies: {
         Row: {
           id: string;
@@ -904,6 +1150,11 @@ export interface Database {
       incident_type: string;
       incident_severity: "low" | "medium" | "high" | "critical";
       yp_status: "current" | "planned" | "ended" | "emergency";
+      care_event_status: "draft" | "submitted" | "routing" | "routed" | "manager_review_required" | "returned" | "verified" | "locked" | "routing_failed";
+      care_event_category: "general" | "behaviour" | "health" | "medication" | "education" | "family_contact" | "professional_contact" | "safeguarding" | "missing_episode" | "physical_intervention" | "restraint" | "complaint" | "activity" | "wellbeing" | "sleep" | "food" | "finance" | "other";
+      route_type: "daily_log" | "child_daily_summary" | "incident" | "missing_episode" | "physical_intervention" | "health_record" | "medication_record" | "education_record" | "family_contact_record" | "professional_contact_record" | "complaint_record" | "safeguarding_record" | "risk_assessment_task" | "behaviour_plan_task" | "followup_task" | "management_oversight" | "reg40_triage" | "reg44_evidence" | "reg45_evidence" | "annex_a_evidence" | "filing_cabinet" | "saved_time";
+      route_status: "pending" | "completed" | "failed" | "skipped" | "retry_required";
+      job_status: "queued" | "processing" | "completed" | "failed" | "cancelled";
     };
   };
 }

@@ -6,6 +6,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -464,6 +466,7 @@ export default function ChallengeLogPage() {
     <PageShell
       title="Challenge Log"
       subtitle="RI governance challenges to the management team"
+      ariaContext={{ pageTitle: "Challenge Log", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -478,6 +481,7 @@ export default function ChallengeLogPage() {
             <Plus className="h-3.5 w-3.5" />
             New Challenge
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -556,6 +560,12 @@ export default function ChallengeLogPage() {
 
       {showNew && <NewChallengeDialog open onClose={() => setShowNew(false)} />}
       {responding && <ResponseDialog log={responding} onClose={() => setResponding(null)} />}
+      <AriaPanel
+        mode="assist"
+        pageContext="RI Challenge Log — responsible individual challenge records, management responses, governance oversight, escalation evidence, scrutiny of practice, Reg 45 governance evidence, Ofsted readiness"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

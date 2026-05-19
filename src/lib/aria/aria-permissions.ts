@@ -37,7 +37,8 @@ export type AriaPermission =
   | "aria.hr"
   | "aria.recruitment"
   | "aria.ri_qa"
-  | "aria.ofsted_readiness";
+  | "aria.ofsted_readiness"
+  | "aria.export";
 
 const ALL: AriaPermission[] = [
   "aria.use", "aria.dictate", "aria.transcribe", "aria.generate_drafts",
@@ -45,7 +46,7 @@ const ALL: AriaPermission[] = [
   "aria.view_sensitive_context", "aria.create_tasks", "aria.commit_to_records",
   "aria.approve_outputs", "aria.reject_outputs", "aria.view_audit_logs",
   "aria.admin_config", "aria.hr", "aria.recruitment", "aria.ri_qa",
-  "aria.ofsted_readiness",
+  "aria.ofsted_readiness", "aria.export",
 ];
 
 const ROLE_GRANTS: Record<AriaRole, ReadonlySet<AriaPermission>> = {
@@ -66,6 +67,7 @@ const ROLE_GRANTS: Record<AriaRole, ReadonlySet<AriaPermission>> = {
     "aria.ofsted_readiness",
     "aria.hr",
     "aria.recruitment",
+    "aria.export",
   ]),
   deputy_manager: new Set([
     "aria.use",
@@ -79,6 +81,7 @@ const ROLE_GRANTS: Record<AriaRole, ReadonlySet<AriaPermission>> = {
     "aria.create_tasks",
     "aria.commit_to_records",
     "aria.approve_outputs",
+    "aria.export",
   ]),
   team_leader: new Set([
     "aria.use",
@@ -115,6 +118,7 @@ const ROLE_GRANTS: Record<AriaRole, ReadonlySet<AriaPermission>> = {
     "aria.view_audit_logs",
     "aria.ri_qa",
     "aria.ofsted_readiness",
+    "aria.export",
   ]),
   viewer: new Set(["aria.use"]),
   none: new Set(),

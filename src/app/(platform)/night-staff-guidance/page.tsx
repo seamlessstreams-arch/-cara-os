@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils";
 import { useNightStaffGuidance } from "@/hooks/use-night-staff-guidance";
 import type { NightStaffGuidanceSection, GuidancePriority, GuidanceSectionKey } from "@/types/extended";
 import { GUIDANCE_PRIORITY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const PRI_CLR: Record<GuidancePriority, string> = {
   essential: "bg-red-100 text-red-800",
@@ -43,7 +46,14 @@ export default function NightStaffGuidancePage() {
   if (isLoading) return <PageShell title="Night Staff Guidance" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
-    <PageShell title="Night Staff Guidance" subtitle="Waking Night & Sleep-In Procedures — Oak House" actions={<PrintButton title="Night Staff Guidance" />}>
+    <PageShell title="Night Staff Guidance" subtitle="Waking Night & Sleep-In Procedures — Oak House" 
+      ariaContext={{ pageTitle: "Night Staff Guidance", sourceType: "staff" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <PrintButton title="Night Staff Guidance" />
+          <AriaStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+        </div>
+      }>
       <div id="print-area">
         <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
           <p className="font-semibold text-indigo-800 mb-1">For All Night Staff — Please Read Before Every Shift</p>
@@ -86,6 +96,19 @@ export default function NightStaffGuidancePage() {
           <p>This guidance document is reviewed monthly by the Registered Manager. Staff must sign to confirm they have read and understood updated guidance. This document supports compliance with Children&apos;s Homes (England) Regulations 2015 (Reg 12, 13, 23), Working Time Regulations 1998, and Lone Working Policy.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Sleep & Wellbeing"
+        category={["sleep", "health", "medication"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Night Staff Guidance — waking night procedures, sleep-in, night-time checks, lone working, medication, emergency procedures, fire evacuation"
+        recordType="handover"
+        userRole="staff"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

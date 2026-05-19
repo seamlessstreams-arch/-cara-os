@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -29,6 +29,9 @@ import type { PlacementAnniversaryEntry } from "@/types/extended";
 import { ANNIVERSARY_SIGNIFICANCE_TYPE_LABEL, ANNIVERSARY_EMOTIONAL_SIGNIFICANCE_LABEL, ANNIVERSARY_RECURRENCE_LABEL } from "@/types/extended";
 import { usePlacementAnniversaryEntries } from "@/hooks/use-placement-anniversary-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const significanceColour: Record<string, string> = {
   celebratory: "bg-green-100 text-green-800",
@@ -97,10 +100,12 @@ export default function PlacementAnniversariesPage() {
     <PageShell
       title="Placement Anniversaries"
       subtitle="Significant dates for each child — celebrated, honoured, prepared for, never forgotten"
+      ariaContext={{ pageTitle: "Placement Anniversaries", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="placement-anniversaries" />
           <PrintButton title="Placement Anniversaries" />
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -296,6 +301,18 @@ export default function PlacementAnniversariesPage() {
           changes. Linked to Personal Passport, Trauma-Informed Timeline, and Bedtime Routines.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Placement Stability"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Placement Anniversaries — placement milestones, length of placement, stability markers, care anniversary records, relationships built, progress reviews, permanence planning, Reg 45 evidence"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

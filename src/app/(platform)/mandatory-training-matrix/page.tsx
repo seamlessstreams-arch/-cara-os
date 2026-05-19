@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,9 @@ import {
   TRAINING_COURSE_CATEGORY_LABEL, TRAINING_COURSE_STATUS_LABEL,
   TRAINING_OVERALL_COMPLIANCE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -128,10 +131,12 @@ export default function MandatoryTrainingMatrixPage() {
     <PageShell
       title="Mandatory Training Matrix"
       subtitle="Cross-staff training currency · Reg 32 · KCSIE 2024 · Quality Standard 13"
+      ariaContext={{ pageTitle: "Mandatory Training Matrix", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Mandatory Training Matrix" />
           <ExportButton data={data} columns={exportCols} filename="mandatory-training-matrix" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -352,6 +357,18 @@ export default function MandatoryTrainingMatrixPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Mandatory Training Matrix — safeguarding, first aid, moving & handling, fire safety, medication, food hygiene, attachment, trauma-informed, training expiry dates, Reg 44 evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

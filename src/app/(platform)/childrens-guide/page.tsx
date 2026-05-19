@@ -6,10 +6,13 @@ import {
   Phone, Star, Home, Smile, HelpCircle,
   ChevronDown, ChevronUp, CheckCircle2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── types ───────────────────────────────────────────────────────────── */
 interface GuideSection {
@@ -132,9 +135,11 @@ export default function ChildrensGuidePage() {
     <PageShell
       title="Children's Guide"
       subtitle="Everything young people need to know about living at Oak House"
+      ariaContext={{ pageTitle: "Children's Guide", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Children's Guide — Oak House" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -208,6 +213,18 @@ export default function ChildrensGuidePage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Children's Guide — what to expect at Oak House, who's who, house rules, bedroom, rights, compliments & complaints, emergency contacts"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

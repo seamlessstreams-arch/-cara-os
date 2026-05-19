@@ -1,6 +1,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/aria/transcribe
 //
+// GET   /api/aria/transcribe   — capability probe. Returns { configured: bool }
+//                                without requiring auth. Used by the client to
+//                                decide whether to use server or browser speech.
 // POST  /api/aria/transcribe   — multipart/form-data upload of an audio file.
 //                                Server validates auth, permission, mime, size,
 //                                and calls the provider. Audio is discarded
@@ -42,6 +45,22 @@ function normaliseMime(mime: string): string {
   // membership checks but keep the original to send to the provider.
   return mime.split(";")[0].trim().toLowerCase();
 }
+
+// ─── GET: capability probe ───────────────────────────────────────────────────
+
+export function GET() {
+  const config = getAriaProviderConfig();
+  return NextResponse.json(
+    { configured: config.configured, providerId: config.providerId },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  );
+}
+
+// ─── POST: transcribe audio ──────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   const providerConfig = getAriaProviderConfig();

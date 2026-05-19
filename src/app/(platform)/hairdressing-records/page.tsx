@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -26,6 +26,9 @@ import type { HairAppointment, SalonType } from "@/types/extended";
 import { SALON_TYPE_LABEL } from "@/types/extended";
 import { useHairAppointments } from "@/hooks/use-hair-appointments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const salonColour: Record<SalonType, string> = {
   high_street_barber: "bg-blue-100 text-blue-800",
@@ -83,10 +86,12 @@ export default function HairdressingRecordsPage() {
     <PageShell
       title="Hairdressing Records"
       subtitle="Hair appointments per child — choice, dignity, cultural and sensory awareness"
+      ariaContext={{ pageTitle: "Hairdressing Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="hairdressing-records" />
           <PrintButton title="Hairdressing Records" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -244,6 +249,18 @@ export default function HairdressingRecordsPage() {
           Sensory Profiles, and Personal Belongings.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Hairdressing Records — haircuts, appointments, child preferences, salon visits, cultural hair care, costs, looked-after child entitlement, wellbeing"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

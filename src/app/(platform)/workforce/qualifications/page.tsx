@@ -9,6 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -458,6 +460,7 @@ export default function QualificationsPage() {
     <PageShell
       title="Qualifications & DBS Tracker"
       subtitle="Regulatory fitness — mandatory qualifications, DBS checks, and compliance matrix"
+      ariaContext={{ pageTitle: "Staff Qualifications Tracker", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -468,6 +471,7 @@ export default function QualificationsPage() {
             <Plus className="h-3.5 w-3.5" />
             Add Qualification
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -687,6 +691,12 @@ export default function QualificationsPage() {
           requirements is a regulatory breach.
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Qualifications Tracker — Level 3/5 qualifications, DBS checks, right to work, Reg 5 pre-employment compliance, Reg 32 qualification requirements, mandatory training, Ofsted workforce evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

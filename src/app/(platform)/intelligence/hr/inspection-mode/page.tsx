@@ -21,8 +21,9 @@
 // download and print event.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { useHrInspection } from "@/hooks/use-intelligence-layer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -178,241 +179,6 @@ type InspectionSection =
 
 // ─── Demo data ──────────────────────────────────────────────────────────────
 
-const DEMO_WORKFORCE: WorkforceSummary = {
-  totalStaff: 18,
-  permanentStaff: 14,
-  agencyStaff: 4,
-  vacancies: 2,
-  staffInProbation: 3,
-  staffSuspended: 1,
-  averageTenureMonths: 22,
-  turnoverLast12Months: 4,
-};
-
-const DEMO_RECRUITMENT: RecruitmentCheck[] = [
-  {
-    staffRef: "Staff Member G",
-    startDate: "2026-04-01",
-    dbsCleared: true,
-    dbsDate: "2026-03-20",
-    referencesReceived: true,
-    referenceCount: 2,
-    rightToWork: true,
-    qualificationsVerified: true,
-    healthDeclaration: true,
-    safeguardingTraining: true,
-    gateOutcome: "approved",
-    outstandingItems: [],
-  },
-  {
-    staffRef: "Staff Member H",
-    startDate: "2026-04-15",
-    dbsCleared: true,
-    dbsDate: "2026-04-10",
-    referencesReceived: false,
-    referenceCount: 1,
-    rightToWork: true,
-    qualificationsVerified: true,
-    healthDeclaration: true,
-    safeguardingTraining: false,
-    gateOutcome: "blocked",
-    outstandingItems: ["Second reference", "Safeguarding training"],
-  },
-  {
-    staffRef: "Staff Member I",
-    startDate: "2026-03-10",
-    dbsCleared: true,
-    dbsDate: "2026-03-05",
-    referencesReceived: true,
-    referenceCount: 2,
-    rightToWork: true,
-    qualificationsVerified: false,
-    healthDeclaration: true,
-    safeguardingTraining: true,
-    gateOutcome: "senior_risk_acceptance",
-    outstandingItems: ["Qualification certificate — RI risk accepted pending verification"],
-  },
-];
-
-const DEMO_CASES: CaseRecord[] = [
-  {
-    id: "hrc_001",
-    staffRef: "Staff Member A",
-    caseType: "safeguarding_allegation",
-    riskLevel: "black",
-    status: "investigation",
-    safeguardingStatus: "lado_consulted",
-    openedAt: "2026-04-28",
-    daysDuration: 7,
-    actionCount: 8,
-    lettersIssued: 2,
-    guardianReviews: 2,
-    riOversightRequired: true,
-    riOversightCompleted: false,
-    outcome: undefined,
-  },
-  {
-    id: "hrc_002",
-    staffRef: "Staff Member B",
-    caseType: "disciplinary",
-    riskLevel: "red",
-    status: "meeting_scheduled",
-    safeguardingStatus: "not_safeguarding",
-    openedAt: "2026-04-15",
-    daysDuration: 20,
-    actionCount: 5,
-    lettersIssued: 1,
-    guardianReviews: 1,
-    riOversightRequired: false,
-    riOversightCompleted: false,
-    outcome: undefined,
-  },
-  {
-    id: "hrc_003",
-    staffRef: "Staff Member C",
-    caseType: "sickness_absence",
-    riskLevel: "amber",
-    status: "open",
-    safeguardingStatus: "not_safeguarding",
-    openedAt: "2026-03-20",
-    daysDuration: 46,
-    actionCount: 3,
-    lettersIssued: 1,
-    guardianReviews: 0,
-    riOversightRequired: false,
-    riOversightCompleted: false,
-    outcome: undefined,
-  },
-  {
-    id: "hrc_004",
-    staffRef: "Staff Member D",
-    caseType: "suspension",
-    riskLevel: "red",
-    status: "suspended",
-    safeguardingStatus: "safeguarding_open",
-    openedAt: "2026-04-22",
-    daysDuration: 13,
-    actionCount: 6,
-    lettersIssued: 1,
-    guardianReviews: 1,
-    riOversightRequired: true,
-    riOversightCompleted: true,
-    outcome: undefined,
-  },
-  {
-    id: "hrc_006",
-    staffRef: "Staff Member F",
-    caseType: "grievance",
-    riskLevel: "amber",
-    status: "outcome_pending",
-    safeguardingStatus: "not_safeguarding",
-    openedAt: "2026-04-01",
-    daysDuration: 34,
-    actionCount: 7,
-    lettersIssued: 2,
-    guardianReviews: 1,
-    riOversightRequired: false,
-    riOversightCompleted: false,
-    outcome: undefined,
-  },
-  {
-    id: "hrc_closed_001",
-    staffRef: "Staff Member J",
-    caseType: "conduct",
-    riskLevel: "green",
-    status: "closed",
-    safeguardingStatus: "not_safeguarding",
-    openedAt: "2026-01-10",
-    closedAt: "2026-03-05",
-    daysDuration: 54,
-    actionCount: 9,
-    lettersIssued: 3,
-    guardianReviews: 2,
-    riOversightRequired: false,
-    riOversightCompleted: false,
-    outcome: "Written warning issued",
-  },
-];
-
-const DEMO_CHRONOLOGY: ChronologyEvent[] = [
-  { date: "2026-04-28", caseRef: "hrc_001", staffRef: "Staff Member A", event: "Safeguarding allegation received — child disclosed concern to key worker", significance: "critical" },
-  { date: "2026-04-28", caseRef: "hrc_001", staffRef: "Staff Member A", event: "LADO consultation initiated within 1 hour of disclosure", significance: "critical" },
-  { date: "2026-04-28", caseRef: "hrc_001", staffRef: "Staff Member A", event: "Staff member informed of allegation and precautionary measures", significance: "significant" },
-  { date: "2026-04-22", caseRef: "hrc_004", staffRef: "Staff Member D", event: "Suspension decision taken — five risk factors assessed, alternatives considered and recorded", significance: "critical" },
-  { date: "2026-04-22", caseRef: "hrc_004", staffRef: "Staff Member D", event: "Welfare plan established for suspended staff member", significance: "significant" },
-  { date: "2026-04-15", caseRef: "hrc_002", staffRef: "Staff Member B", event: "Disciplinary concern raised following pattern of recording failures", significance: "significant" },
-  { date: "2026-04-15", caseRef: "hrc_002", staffRef: "Staff Member B", event: "Investigation commenced — terms of reference drafted and shared", significance: "significant" },
-  { date: "2026-04-01", caseRef: "hrc_006", staffRef: "Staff Member F", event: "Formal grievance submitted in writing", significance: "significant" },
-  { date: "2026-03-20", caseRef: "hrc_003", staffRef: "Staff Member C", event: "Sickness absence exceeds trigger point (10 days rolling)", significance: "routine" },
-  { date: "2026-03-05", caseRef: "hrc_closed_001", staffRef: "Staff Member J", event: "Conduct case closed — written warning issued following investigation", significance: "significant" },
-];
-
-const DEMO_SUSPENSIONS: SuspensionRecord[] = [
-  {
-    staffRef: "Staff Member D",
-    startDate: "2026-04-22",
-    daysActive: 13,
-    reason: "Safeguarding allegation — precautionary pending investigation",
-    riskFactorsConsidered: true,
-    alternativesConsidered: true,
-    welfarePlanInPlace: true,
-    reviewsDue: 2,
-    reviewsCompleted: 1,
-    ladoLinked: true,
-    resolved: false,
-  },
-  {
-    staffRef: "Staff Member K",
-    startDate: "2026-02-10",
-    endDate: "2026-03-15",
-    daysActive: 33,
-    reason: "Serious conduct allegation",
-    riskFactorsConsidered: true,
-    alternativesConsidered: true,
-    welfarePlanInPlace: true,
-    reviewsDue: 3,
-    reviewsCompleted: 3,
-    ladoLinked: false,
-    resolved: true,
-    resolutionOutcome: "Returned to work with support plan",
-  },
-];
-
-const DEMO_LADO: LadoReferral[] = [
-  {
-    staffRef: "Staff Member A",
-    referralDate: "2026-04-28",
-    allegationCategory: "Behaviour that may have harmed a child",
-    status: "open",
-    dbsReferralMade: false,
-    ofstedNotified: true,
-  },
-  {
-    staffRef: "Staff Member L",
-    referralDate: "2026-01-15",
-    allegationCategory: "Conduct towards a child",
-    ladoOutcome: "Unsubstantiated",
-    status: "closed",
-    dbsReferralMade: false,
-    ofstedNotified: true,
-    daysToResolution: 42,
-  },
-];
-
-const DEMO_COMPLIANCE: ComplianceItem[] = [
-  { staffRef: "Staff Member A", dbsStatus: "current", dbsUpdateServiceRegistered: true, mandatoryTrainingComplete: true, mandatoryTrainingGaps: [], lastSupervisionDate: "2026-04-20", supervisionOverdueDays: 0, lastAppraisalDate: "2025-11-15", appraisalOverdueDays: 0 },
-  { staffRef: "Staff Member B", dbsStatus: "current", dbsUpdateServiceRegistered: false, mandatoryTrainingComplete: true, mandatoryTrainingGaps: [], lastSupervisionDate: "2026-04-18", supervisionOverdueDays: 0, lastAppraisalDate: "2025-10-20", appraisalOverdueDays: 0 },
-  { staffRef: "Staff Member C", dbsStatus: "current", dbsUpdateServiceRegistered: true, mandatoryTrainingComplete: false, mandatoryTrainingGaps: ["First aid refresher"], lastSupervisionDate: "2026-03-10", supervisionOverdueDays: 12, lastAppraisalDate: "2025-09-15", appraisalOverdueDays: 0 },
-  { staffRef: "Staff Member D", dbsStatus: "current", dbsUpdateServiceRegistered: true, mandatoryTrainingComplete: true, mandatoryTrainingGaps: [], lastSupervisionDate: "2026-04-10", supervisionOverdueDays: 0, lastAppraisalDate: "2025-08-01", appraisalOverdueDays: 90 },
-  { staffRef: "Staff Member E", dbsStatus: "due_renewal", dbsUpdateServiceRegistered: false, mandatoryTrainingComplete: true, mandatoryTrainingGaps: [], lastSupervisionDate: "2026-04-25", supervisionOverdueDays: 0, lastAppraisalDate: "2026-01-10", appraisalOverdueDays: 0 },
-  { staffRef: "Staff Member F", dbsStatus: "current", dbsUpdateServiceRegistered: true, mandatoryTrainingComplete: false, mandatoryTrainingGaps: ["Safeguarding refresher", "Medication administration"], lastSupervisionDate: "2026-02-20", supervisionOverdueDays: 30, lastAppraisalDate: "2025-12-05", appraisalOverdueDays: 0 },
-];
-
-const DEMO_OVERSIGHT: OversightRecord[] = [
-  { caseRef: "hrc_004", staffRef: "Staff Member D", oversightType: "ri_review", completedBy: "Responsible Individual", completedAt: "2026-04-25", findingSummary: "Suspension decision proportionate. Welfare plan in place. LADO consultation timely.", actionsRequired: 1, actionsCompleted: 1 },
-  { caseRef: "hrc_closed_001", staffRef: "Staff Member J", oversightType: "rm_quality_check", completedBy: "Registered Manager", completedAt: "2026-03-06", findingSummary: "Investigation thorough. Outcome proportionate. Learning actions identified and logged.", actionsRequired: 2, actionsCompleted: 2 },
-  { caseRef: "hrc_001", staffRef: "Staff Member A", oversightType: "ri_review", completedBy: "Responsible Individual", completedAt: "2026-04-30", findingSummary: "LADO referral timely. Ofsted notified. Investigation in progress — next review 5 May.", actionsRequired: 2, actionsCompleted: 1 },
-];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -486,6 +252,32 @@ export default function HrInspectionModePage() {
   const [period, setPeriod] = useState<string>("6_months");
   const printRef = useRef<HTMLDivElement>(null);
 
+  const [rawWorkforce, setRawWorkforce] = useState<WorkforceSummary>({
+    totalStaff: 0, permanentStaff: 0, agencyStaff: 0, vacancies: 0,
+    staffInProbation: 0, staffSuspended: 0, averageTenureMonths: 0, turnoverLast12Months: 0,
+  });
+  const [rawRecruitment, setRawRecruitment] = useState<RecruitmentCheck[]>([]);
+  const [rawCases, setRawCases] = useState<CaseRecord[]>([]);
+  const [rawChronology, setRawChronology] = useState<ChronologyEvent[]>([]);
+  const [rawSuspensions, setRawSuspensions] = useState<SuspensionRecord[]>([]);
+  const [rawLado, setRawLado] = useState<LadoReferral[]>([]);
+  const [rawCompliance, setRawCompliance] = useState<ComplianceItem[]>([]);
+  const [rawOversight, setRawOversight] = useState<OversightRecord[]>([]);
+
+  const { data: apiData } = useHrInspection();
+  useEffect(() => {
+    if (apiData?.persisted) {
+      if (apiData.workforce) setRawWorkforce(apiData.workforce as WorkforceSummary);
+      if (Array.isArray(apiData.recruitment)) setRawRecruitment(apiData.recruitment as RecruitmentCheck[]);
+      if (Array.isArray(apiData.cases)) setRawCases(apiData.cases as CaseRecord[]);
+      if (Array.isArray(apiData.chronology)) setRawChronology(apiData.chronology as ChronologyEvent[]);
+      if (Array.isArray(apiData.suspensions)) setRawSuspensions(apiData.suspensions as SuspensionRecord[]);
+      if (Array.isArray(apiData.lado)) setRawLado(apiData.lado as LadoReferral[]);
+      if (Array.isArray(apiData.compliance)) setRawCompliance(apiData.compliance as ComplianceItem[]);
+      if (Array.isArray(apiData.oversight)) setRawOversight(apiData.oversight as OversightRecord[]);
+    }
+  }, [apiData]);
+
   const toggleSection = useCallback((section: InspectionSection) => {
     setExpandedSections((prev) => {
       const next = new Set(prev);
@@ -507,57 +299,57 @@ export default function HrInspectionModePage() {
     downloadCsv(
       "hr_inspection_cases.csv",
       ["Case ID", "Staff Ref", "Type", "Risk Level", "Status", "Safeguarding Status", "Opened", "Closed", "Duration (days)", "Actions", "Letters", "Guardian Reviews", "RI Oversight Required", "RI Oversight Completed", "Outcome"],
-      DEMO_CASES.map((c) => [c.id, c.staffRef, c.caseType, c.riskLevel, c.status, c.safeguardingStatus, c.openedAt, c.closedAt ?? "", String(c.daysDuration), String(c.actionCount), String(c.lettersIssued), String(c.guardianReviews), c.riOversightRequired ? "Yes" : "No", c.riOversightCompleted ? "Yes" : "No", c.outcome ?? ""]),
+      rawCases.map((c) => [c.id, c.staffRef, c.caseType, c.riskLevel, c.status, c.safeguardingStatus, c.openedAt, c.closedAt ?? "", String(c.daysDuration), String(c.actionCount), String(c.lettersIssued), String(c.guardianReviews), c.riOversightRequired ? "Yes" : "No", c.riOversightCompleted ? "Yes" : "No", c.outcome ?? ""]),
     );
     // Recruitment CSV
     downloadCsv(
       "hr_inspection_recruitment.csv",
       ["Staff Ref", "Start Date", "DBS Cleared", "DBS Date", "References Received", "Reference Count", "Right to Work", "Qualifications", "Health Declaration", "Safeguarding Training", "Gate Outcome", "Outstanding Items"],
-      DEMO_RECRUITMENT.map((r) => [r.staffRef, r.startDate, r.dbsCleared ? "Yes" : "No", r.dbsDate ?? "", r.referencesReceived ? "Yes" : "No", String(r.referenceCount), r.rightToWork ? "Yes" : "No", r.qualificationsVerified ? "Yes" : "No", r.healthDeclaration ? "Yes" : "No", r.safeguardingTraining ? "Yes" : "No", r.gateOutcome, r.outstandingItems.join("; ")]),
+      rawRecruitment.map((r) => [r.staffRef, r.startDate, r.dbsCleared ? "Yes" : "No", r.dbsDate ?? "", r.referencesReceived ? "Yes" : "No", String(r.referenceCount), r.rightToWork ? "Yes" : "No", r.qualificationsVerified ? "Yes" : "No", r.healthDeclaration ? "Yes" : "No", r.safeguardingTraining ? "Yes" : "No", r.gateOutcome, r.outstandingItems.join("; ")]),
     );
     // Compliance CSV
     downloadCsv(
       "hr_inspection_compliance.csv",
       ["Staff Ref", "DBS Status", "DBS Update Service", "Mandatory Training Complete", "Training Gaps", "Last Supervision", "Supervision Overdue (days)", "Last Appraisal", "Appraisal Overdue (days)"],
-      DEMO_COMPLIANCE.map((c) => [c.staffRef, c.dbsStatus, c.dbsUpdateServiceRegistered ? "Yes" : "No", c.mandatoryTrainingComplete ? "Yes" : "No", c.mandatoryTrainingGaps.join("; "), c.lastSupervisionDate ?? "None", String(c.supervisionOverdueDays), c.lastAppraisalDate ?? "None", String(c.appraisalOverdueDays)]),
+      rawCompliance.map((c) => [c.staffRef, c.dbsStatus, c.dbsUpdateServiceRegistered ? "Yes" : "No", c.mandatoryTrainingComplete ? "Yes" : "No", c.mandatoryTrainingGaps.join("; "), c.lastSupervisionDate ?? "None", String(c.supervisionOverdueDays), c.lastAppraisalDate ?? "None", String(c.appraisalOverdueDays)]),
     );
     // Chronology CSV
     downloadCsv(
       "hr_inspection_chronology.csv",
       ["Date", "Case Ref", "Staff Ref", "Event", "Significance"],
-      DEMO_CHRONOLOGY.map((e) => [e.date, e.caseRef, e.staffRef, e.event, e.significance]),
+      rawChronology.map((e) => [e.date, e.caseRef, e.staffRef, e.event, e.significance]),
     );
     // Suspensions CSV
     downloadCsv(
       "hr_inspection_suspensions.csv",
       ["Staff Ref", "Start Date", "End Date", "Days Active", "Reason", "Risk Factors Considered", "Alternatives Considered", "Welfare Plan", "Reviews Due", "Reviews Completed", "LADO Linked", "Resolved", "Resolution Outcome"],
-      DEMO_SUSPENSIONS.map((s) => [s.staffRef, s.startDate, s.endDate ?? "", String(s.daysActive), s.reason, s.riskFactorsConsidered ? "Yes" : "No", s.alternativesConsidered ? "Yes" : "No", s.welfarePlanInPlace ? "Yes" : "No", String(s.reviewsDue), String(s.reviewsCompleted), s.ladoLinked ? "Yes" : "No", s.resolved ? "Yes" : "No", s.resolutionOutcome ?? ""]),
+      rawSuspensions.map((s) => [s.staffRef, s.startDate, s.endDate ?? "", String(s.daysActive), s.reason, s.riskFactorsConsidered ? "Yes" : "No", s.alternativesConsidered ? "Yes" : "No", s.welfarePlanInPlace ? "Yes" : "No", String(s.reviewsDue), String(s.reviewsCompleted), s.ladoLinked ? "Yes" : "No", s.resolved ? "Yes" : "No", s.resolutionOutcome ?? ""]),
     );
     // LADO CSV
     downloadCsv(
       "hr_inspection_lado.csv",
       ["Staff Ref", "Referral Date", "Allegation Category", "LADO Outcome", "DBS Referral Made", "Ofsted Notified", "Status", "Days to Resolution"],
-      DEMO_LADO.map((l) => [l.staffRef, l.referralDate, l.allegationCategory, l.ladoOutcome ?? "", l.dbsReferralMade ? "Yes" : "No", l.ofstedNotified ? "Yes" : "No", l.status, l.daysToResolution != null ? String(l.daysToResolution) : ""]),
+      rawLado.map((l) => [l.staffRef, l.referralDate, l.allegationCategory, l.ladoOutcome ?? "", l.dbsReferralMade ? "Yes" : "No", l.ofstedNotified ? "Yes" : "No", l.status, l.daysToResolution != null ? String(l.daysToResolution) : ""]),
     );
   }, []);
 
   // ── Summary stats ─────────────────────────────────────────────────────
 
   const stats = useMemo(() => {
-    const openCases = DEMO_CASES.filter((c) => c.status !== "closed" && c.status !== "withdrawn");
-    const safeguardingCases = DEMO_CASES.filter((c) => c.safeguardingStatus !== "not_safeguarding");
-    const overdueSupervisions = DEMO_COMPLIANCE.filter((c) => c.supervisionOverdueDays > 0);
-    const blockedRecruits = DEMO_RECRUITMENT.filter((r) => r.gateOutcome === "blocked");
-    const pendingOversight = DEMO_CASES.filter((c) => c.riOversightRequired && !c.riOversightCompleted);
+    const openCases = rawCases.filter((c) => c.status !== "closed" && c.status !== "withdrawn");
+    const safeguardingCases = rawCases.filter((c) => c.safeguardingStatus !== "not_safeguarding");
+    const overdueSupervisions = rawCompliance.filter((c) => c.supervisionOverdueDays > 0);
+    const blockedRecruits = rawRecruitment.filter((r) => r.gateOutcome === "blocked");
+    const pendingOversight = rawCases.filter((c) => c.riOversightRequired && !c.riOversightCompleted);
     return {
       openCases: openCases.length,
       safeguardingCases: safeguardingCases.length,
-      activeSuspensions: DEMO_SUSPENSIONS.filter((s) => !s.resolved).length,
-      openLado: DEMO_LADO.filter((l) => l.status === "open").length,
+      activeSuspensions: rawSuspensions.filter((s) => !s.resolved).length,
+      openLado: rawLado.filter((l) => l.status === "open").length,
       overdueSupervisions: overdueSupervisions.length,
       blockedRecruits: blockedRecruits.length,
       pendingOversight: pendingOversight.length,
-      totalStaff: DEMO_WORKFORCE.totalStaff,
+      totalStaff: rawWorkforce.totalStaff,
     };
   }, []);
 
@@ -641,26 +433,26 @@ export default function HrInspectionModePage() {
             "hr_inspection_workforce.csv",
             ["Metric", "Value"],
             [
-              ["Total staff", String(DEMO_WORKFORCE.totalStaff)],
-              ["Permanent staff", String(DEMO_WORKFORCE.permanentStaff)],
-              ["Agency staff", String(DEMO_WORKFORCE.agencyStaff)],
-              ["Vacancies", String(DEMO_WORKFORCE.vacancies)],
-              ["Staff in probation", String(DEMO_WORKFORCE.staffInProbation)],
-              ["Staff suspended", String(DEMO_WORKFORCE.staffSuspended)],
-              ["Average tenure (months)", String(DEMO_WORKFORCE.averageTenureMonths)],
-              ["Turnover (last 12 months)", String(DEMO_WORKFORCE.turnoverLast12Months)],
+              ["Total staff", String(rawWorkforce.totalStaff)],
+              ["Permanent staff", String(rawWorkforce.permanentStaff)],
+              ["Agency staff", String(rawWorkforce.agencyStaff)],
+              ["Vacancies", String(rawWorkforce.vacancies)],
+              ["Staff in probation", String(rawWorkforce.staffInProbation)],
+              ["Staff suspended", String(rawWorkforce.staffSuspended)],
+              ["Average tenure (months)", String(rawWorkforce.averageTenureMonths)],
+              ["Turnover (last 12 months)", String(rawWorkforce.turnoverLast12Months)],
             ],
           )}
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <MetricCell label="Total staff" value={DEMO_WORKFORCE.totalStaff} />
-            <MetricCell label="Permanent" value={DEMO_WORKFORCE.permanentStaff} />
-            <MetricCell label="Agency" value={DEMO_WORKFORCE.agencyStaff} />
-            <MetricCell label="Vacancies" value={DEMO_WORKFORCE.vacancies} warn={DEMO_WORKFORCE.vacancies > 0} />
-            <MetricCell label="In probation" value={DEMO_WORKFORCE.staffInProbation} />
-            <MetricCell label="Suspended" value={DEMO_WORKFORCE.staffSuspended} warn={DEMO_WORKFORCE.staffSuspended > 0} />
-            <MetricCell label="Avg tenure (months)" value={DEMO_WORKFORCE.averageTenureMonths} />
-            <MetricCell label="Turnover (12m)" value={DEMO_WORKFORCE.turnoverLast12Months} />
+            <MetricCell label="Total staff" value={rawWorkforce.totalStaff} />
+            <MetricCell label="Permanent" value={rawWorkforce.permanentStaff} />
+            <MetricCell label="Agency" value={rawWorkforce.agencyStaff} />
+            <MetricCell label="Vacancies" value={rawWorkforce.vacancies} warn={rawWorkforce.vacancies > 0} />
+            <MetricCell label="In probation" value={rawWorkforce.staffInProbation} />
+            <MetricCell label="Suspended" value={rawWorkforce.staffSuspended} warn={rawWorkforce.staffSuspended > 0} />
+            <MetricCell label="Avg tenure (months)" value={rawWorkforce.averageTenureMonths} />
+            <MetricCell label="Turnover (12m)" value={rawWorkforce.turnoverLast12Months} />
           </div>
         </InspectionSectionCard>
 
@@ -672,7 +464,7 @@ export default function HrInspectionModePage() {
           onDownload={() => downloadCsv(
             "hr_inspection_recruitment.csv",
             ["Staff Ref", "Start Date", "DBS Cleared", "References", "Right to Work", "Qualifications", "Health", "Safeguarding Training", "Gate Outcome", "Outstanding"],
-            DEMO_RECRUITMENT.map((r) => [r.staffRef, r.startDate, r.dbsCleared ? "Yes" : "No", `${r.referenceCount} received`, r.rightToWork ? "Yes" : "No", r.qualificationsVerified ? "Yes" : "No", r.healthDeclaration ? "Yes" : "No", r.safeguardingTraining ? "Yes" : "No", r.gateOutcome, r.outstandingItems.join("; ")]),
+            rawRecruitment.map((r) => [r.staffRef, r.startDate, r.dbsCleared ? "Yes" : "No", `${r.referenceCount} received`, r.rightToWork ? "Yes" : "No", r.qualificationsVerified ? "Yes" : "No", r.healthDeclaration ? "Yes" : "No", r.safeguardingTraining ? "Yes" : "No", r.gateOutcome, r.outstandingItems.join("; ")]),
           )}
         >
           <div className="overflow-x-auto">
@@ -690,7 +482,7 @@ export default function HrInspectionModePage() {
                 </tr>
               </thead>
               <tbody>
-                {DEMO_RECRUITMENT.map((r) => (
+                {rawRecruitment.map((r) => (
                   <tr key={r.staffRef} className="border-b last:border-0">
                     <td className="py-2 pr-4 font-medium">{r.staffRef}</td>
                     <td className="py-2 pr-4">{formatDate(r.startDate)}</td>
@@ -715,7 +507,7 @@ export default function HrInspectionModePage() {
           onDownload={() => downloadCsv(
             "hr_inspection_cases.csv",
             ["Case ID", "Staff Ref", "Type", "Risk", "Status", "Safeguarding", "Opened", "Duration", "Actions", "Letters", "Guardian Reviews", "RI Oversight"],
-            DEMO_CASES.map((c) => [c.id, c.staffRef, c.caseType, c.riskLevel, c.status, c.safeguardingStatus, c.openedAt, String(c.daysDuration), String(c.actionCount), String(c.lettersIssued), String(c.guardianReviews), c.riOversightRequired ? (c.riOversightCompleted ? "Completed" : "Pending") : "N/A"]),
+            rawCases.map((c) => [c.id, c.staffRef, c.caseType, c.riskLevel, c.status, c.safeguardingStatus, c.openedAt, String(c.daysDuration), String(c.actionCount), String(c.lettersIssued), String(c.guardianReviews), c.riOversightRequired ? (c.riOversightCompleted ? "Completed" : "Pending") : "N/A"]),
           )}
         >
           <div className="overflow-x-auto">
@@ -737,7 +529,7 @@ export default function HrInspectionModePage() {
                 </tr>
               </thead>
               <tbody>
-                {DEMO_CASES.map((c) => (
+                {rawCases.map((c) => (
                   <tr key={c.id} className={cn("border-b last:border-0", c.riskLevel === "black" && "bg-gray-50", c.riskLevel === "red" && "bg-red-50/30")}>
                     <td className="py-2 pr-4 font-mono text-xs">{c.id}</td>
                     <td className="py-2 pr-4 font-medium">{c.staffRef}</td>
@@ -776,11 +568,11 @@ export default function HrInspectionModePage() {
           onDownload={() => downloadCsv(
             "hr_inspection_chronology.csv",
             ["Date", "Case Ref", "Staff Ref", "Event", "Significance"],
-            DEMO_CHRONOLOGY.map((e) => [e.date, e.caseRef, e.staffRef, e.event, e.significance]),
+            rawChronology.map((e) => [e.date, e.caseRef, e.staffRef, e.event, e.significance]),
           )}
         >
           <div className="space-y-2">
-            {DEMO_CHRONOLOGY.map((e, i) => (
+            {rawChronology.map((e, i) => (
               <div key={i} className={cn("flex items-start gap-3 p-3 rounded-lg border", e.significance === "critical" && "border-red-200 bg-red-50/30", e.significance === "significant" && "border-amber-200 bg-amber-50/30")}>
                 <div className="text-xs text-muted-foreground whitespace-nowrap pt-0.5 w-20 shrink-0">{formatDate(e.date)}</div>
                 <div className="flex-1">
@@ -804,11 +596,11 @@ export default function HrInspectionModePage() {
           onDownload={() => downloadCsv(
             "hr_inspection_suspensions.csv",
             ["Staff Ref", "Start", "End", "Days", "Reason", "Risk Factors", "Alternatives", "Welfare Plan", "Reviews Due", "Reviews Done", "LADO Linked", "Resolved", "Outcome"],
-            DEMO_SUSPENSIONS.map((s) => [s.staffRef, s.startDate, s.endDate ?? "", String(s.daysActive), s.reason, s.riskFactorsConsidered ? "Yes" : "No", s.alternativesConsidered ? "Yes" : "No", s.welfarePlanInPlace ? "Yes" : "No", String(s.reviewsDue), String(s.reviewsCompleted), s.ladoLinked ? "Yes" : "No", s.resolved ? "Yes" : "No", s.resolutionOutcome ?? ""]),
+            rawSuspensions.map((s) => [s.staffRef, s.startDate, s.endDate ?? "", String(s.daysActive), s.reason, s.riskFactorsConsidered ? "Yes" : "No", s.alternativesConsidered ? "Yes" : "No", s.welfarePlanInPlace ? "Yes" : "No", String(s.reviewsDue), String(s.reviewsCompleted), s.ladoLinked ? "Yes" : "No", s.resolved ? "Yes" : "No", s.resolutionOutcome ?? ""]),
           )}
         >
           <div className="space-y-4">
-            {DEMO_SUSPENSIONS.map((s, i) => (
+            {rawSuspensions.map((s, i) => (
               <div key={i} className={cn("p-4 rounded-lg border", !s.resolved ? "border-red-200 bg-red-50/30" : "border-gray-200")}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -856,11 +648,11 @@ export default function HrInspectionModePage() {
           onDownload={() => downloadCsv(
             "hr_inspection_lado.csv",
             ["Staff Ref", "Referral Date", "Category", "Outcome", "DBS Referral", "Ofsted Notified", "Status", "Days to Resolution"],
-            DEMO_LADO.map((l) => [l.staffRef, l.referralDate, l.allegationCategory, l.ladoOutcome ?? "", l.dbsReferralMade ? "Yes" : "No", l.ofstedNotified ? "Yes" : "No", l.status, l.daysToResolution != null ? String(l.daysToResolution) : ""]),
+            rawLado.map((l) => [l.staffRef, l.referralDate, l.allegationCategory, l.ladoOutcome ?? "", l.dbsReferralMade ? "Yes" : "No", l.ofstedNotified ? "Yes" : "No", l.status, l.daysToResolution != null ? String(l.daysToResolution) : ""]),
           )}
         >
           <div className="space-y-4">
-            {DEMO_LADO.map((l, i) => (
+            {rawLado.map((l, i) => (
               <div key={i} className={cn("p-4 rounded-lg border", l.status === "open" ? "border-red-200 bg-red-50/30" : "border-gray-200")}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -905,7 +697,7 @@ export default function HrInspectionModePage() {
           onDownload={() => downloadCsv(
             "hr_inspection_compliance.csv",
             ["Staff Ref", "DBS Status", "Update Service", "Mandatory Training", "Gaps", "Last Supervision", "Supervision Overdue", "Last Appraisal", "Appraisal Overdue"],
-            DEMO_COMPLIANCE.map((c) => [c.staffRef, c.dbsStatus, c.dbsUpdateServiceRegistered ? "Yes" : "No", c.mandatoryTrainingComplete ? "Yes" : "No", c.mandatoryTrainingGaps.join("; "), c.lastSupervisionDate ?? "", String(c.supervisionOverdueDays), c.lastAppraisalDate ?? "", String(c.appraisalOverdueDays)]),
+            rawCompliance.map((c) => [c.staffRef, c.dbsStatus, c.dbsUpdateServiceRegistered ? "Yes" : "No", c.mandatoryTrainingComplete ? "Yes" : "No", c.mandatoryTrainingGaps.join("; "), c.lastSupervisionDate ?? "", String(c.supervisionOverdueDays), c.lastAppraisalDate ?? "", String(c.appraisalOverdueDays)]),
           )}
         >
           <div className="overflow-x-auto">
@@ -922,7 +714,7 @@ export default function HrInspectionModePage() {
                 </tr>
               </thead>
               <tbody>
-                {DEMO_COMPLIANCE.map((c) => {
+                {rawCompliance.map((c) => {
                   const issues: string[] = [];
                   if (c.supervisionOverdueDays > 0) issues.push(`Supervision overdue ${c.supervisionOverdueDays}d`);
                   if (c.appraisalOverdueDays > 0) issues.push(`Appraisal overdue ${c.appraisalOverdueDays}d`);
@@ -976,11 +768,11 @@ export default function HrInspectionModePage() {
           onDownload={() => downloadCsv(
             "hr_inspection_oversight.csv",
             ["Case Ref", "Staff Ref", "Type", "Completed By", "Date", "Finding", "Actions Required", "Actions Completed"],
-            DEMO_OVERSIGHT.map((o) => [o.caseRef, o.staffRef, o.oversightType.replace(/_/g, " "), o.completedBy, o.completedAt, o.findingSummary, String(o.actionsRequired), String(o.actionsCompleted)]),
+            rawOversight.map((o) => [o.caseRef, o.staffRef, o.oversightType.replace(/_/g, " "), o.completedBy, o.completedAt, o.findingSummary, String(o.actionsRequired), String(o.actionsCompleted)]),
           )}
         >
           <div className="space-y-4">
-            {DEMO_OVERSIGHT.map((o, i) => (
+            {rawOversight.map((o, i) => (
               <div key={i} className="p-4 rounded-lg border">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">

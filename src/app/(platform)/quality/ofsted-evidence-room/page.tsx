@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { useEvidenceItems, useCreateEvidence } from "@/hooks/use-intelligence-layer";
-import { PageShell } from "@/components/ui/page-shell";
+import { useEvidenceItems, useCreateEvidence, useEvidenceGaps } from "@/hooks/use-intelligence-layer";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -228,290 +230,7 @@ const CHILDREN = [
 
 /* ── demo evidence ─────────────────────────────────────────────────────────── */
 
-const DEMO_EVIDENCE: (InspectionEvidenceItem & { sourceLabel: SourceType })[] = [
-  {
-    id: "ev_01",
-    homeId: "h1",
-    childId: "c1",
-    sourceType: "key_work",
-    sourceLabel: "key_work",
-    sourceId: "kw_221",
-    title: "Jordan expresses feeling settled and safe",
-    summary:
-      "In key work session, Jordan shared that he feels safe at the home and has positive relationships with staff. He identified two staff members he would approach if worried.",
-    evidenceCategory: "wishes_and_feelings",
-    judgementArea: "overall_experiences_and_progress",
-    confidenceScore: 92,
-    evidenceDate: d(-3),
-    createdBy: "Sarah Mitchell",
-    createdAt: d(-3),
-    updatedAt: d(-3),
-  },
-  {
-    id: "ev_02",
-    homeId: "h1",
-    childId: "c2",
-    sourceType: "incident",
-    sourceLabel: "incident",
-    sourceId: "inc_145",
-    title: "Casey supported through emotional crisis with de-escalation",
-    summary:
-      "Staff used TCI de-escalation techniques when Casey became distressed. Physical intervention was avoided. Casey was offered a debrief and engaged well. Manager oversight completed within 24 hours.",
-    evidenceCategory: "behaviour_support",
-    judgementArea: "help_and_protection",
-    confidenceScore: 88,
-    evidenceDate: d(-5),
-    createdBy: "Darren Laville",
-    createdAt: d(-5),
-    updatedAt: d(-4),
-  },
-  {
-    id: "ev_03",
-    homeId: "h1",
-    sourceType: "supervision",
-    sourceLabel: "supervision",
-    sourceId: "sup_098",
-    title: "Staff supervision cycle completed on time",
-    summary:
-      "All staff supervisions completed within the 6-week cycle. Reflective practice was evident in each record, with clear action points and follow-up from previous sessions.",
-    evidenceCategory: "staff_supervision",
-    judgementArea: "effectiveness_of_leaders",
-    confidenceScore: 95,
-    evidenceDate: d(-7),
-    createdBy: "Darren Laville",
-    createdAt: d(-7),
-    updatedAt: d(-7),
-  },
-  {
-    id: "ev_04",
-    homeId: "h1",
-    childId: "c3",
-    sourceType: "daily_log",
-    sourceLabel: "daily_log",
-    sourceId: "dl_1892",
-    title: "Reece attends first full week of school",
-    summary:
-      "Reece completed a full week of school attendance for the first time since placement. Staff provided consistent morning routines and positive reinforcement. School feedback was excellent.",
-    evidenceCategory: "education",
-    judgementArea: "overall_experiences_and_progress",
-    confidenceScore: 90,
-    evidenceDate: d(-10),
-    createdBy: "James Connor",
-    createdAt: d(-10),
-    updatedAt: d(-10),
-  },
-  {
-    id: "ev_05",
-    homeId: "h1",
-    childId: "c1",
-    sourceType: "risk_assessment",
-    sourceLabel: "risk_assessment",
-    sourceId: "ra_034",
-    title: "Jordan's risk assessment reviewed following community incident",
-    summary:
-      "Risk assessment updated promptly after Jordan was involved in a community incident. New control measures added, and Jordan was involved in reviewing the document. Social worker informed.",
-    evidenceCategory: "risk_assessment",
-    judgementArea: "help_and_protection",
-    confidenceScore: 85,
-    evidenceDate: d(-12),
-    createdBy: "Darren Laville",
-    createdAt: d(-12),
-    updatedAt: d(-11),
-  },
-  {
-    id: "ev_06",
-    homeId: "h1",
-    sourceType: "reg44_report",
-    sourceLabel: "reg44_report",
-    sourceId: "r44_012",
-    title: "Regulation 44 visit completed with positive findings",
-    summary:
-      "Independent visitor completed quarterly visit. All children spoken to, records reviewed, environment inspected. Two recommendations made, both acknowledged and actioned by Registered Manager.",
-    evidenceCategory: "regulation_44",
-    judgementArea: "effectiveness_of_leaders",
-    confidenceScore: 96,
-    evidenceDate: d(-14),
-    createdBy: "Margaret Thompson",
-    createdAt: d(-14),
-    updatedAt: d(-13),
-  },
-  {
-    id: "ev_07",
-    homeId: "h1",
-    childId: "c2",
-    sourceType: "child_voice",
-    sourceLabel: "child_voice",
-    sourceId: "cv_067",
-    title: "Casey contributes ideas for house improvements",
-    summary:
-      "During house meeting, Casey suggested changes to the communal lounge layout and new activity ideas. Suggestions were recorded and two were implemented within the week.",
-    evidenceCategory: "wishes_and_feelings",
-    judgementArea: "overall_experiences_and_progress",
-    confidenceScore: 80,
-    evidenceDate: d(-16),
-    createdBy: "Sarah Mitchell",
-    createdAt: d(-16),
-    updatedAt: d(-16),
-  },
-  {
-    id: "ev_08",
-    homeId: "h1",
-    sourceType: "training_record",
-    sourceLabel: "training_record",
-    sourceId: "tr_088",
-    title: "Team completes refresher safeguarding training",
-    summary:
-      "All permanent staff completed Level 3 safeguarding refresher within required timeframe. Agency staff completed induction-level safeguarding before shifts. Training matrix updated.",
-    evidenceCategory: "safeguarding",
-    judgementArea: "help_and_protection",
-    confidenceScore: 94,
-    evidenceDate: d(-18),
-    createdBy: "Darren Laville",
-    createdAt: d(-18),
-    updatedAt: d(-18),
-  },
-  {
-    id: "ev_09",
-    homeId: "h1",
-    childId: "c3",
-    sourceType: "placement_plan",
-    sourceLabel: "placement_plan",
-    sourceId: "pp_019",
-    title: "Reece's placement plan reviewed with positive trajectory",
-    summary:
-      "Six-monthly placement plan review completed on time. Reece participated in the review and identified independence goals. Social worker and IRO attended. All actions from previous review completed.",
-    evidenceCategory: "placement_planning",
-    judgementArea: "effectiveness_of_leaders",
-    confidenceScore: 91,
-    evidenceDate: d(-21),
-    createdBy: "Darren Laville",
-    createdAt: d(-21),
-    updatedAt: d(-20),
-  },
-  {
-    id: "ev_10",
-    homeId: "h1",
-    childId: "c1",
-    sourceType: "medication_record",
-    sourceLabel: "medication_record",
-    sourceId: "med_340",
-    title: "Medication administration records — zero errors this month",
-    summary:
-      "Monthly medication audit completed. Zero administration errors, all records double-signed, stock reconciliation accurate. GP review appointments attended on time for all children.",
-    evidenceCategory: "medication",
-    judgementArea: "help_and_protection",
-    confidenceScore: 97,
-    evidenceDate: d(-4),
-    createdBy: "Darren Laville",
-    createdAt: d(-4),
-    updatedAt: d(-4),
-  },
-  {
-    id: "ev_11",
-    homeId: "h1",
-    childId: "c2",
-    sourceType: "key_work",
-    sourceLabel: "key_work",
-    sourceId: "kw_225",
-    title: "Casey discusses family contact and makes positive plans",
-    summary:
-      "Casey and key worker discussed family time arrangements. Casey identified she would like more phone contact with her grandmother. Plan agreed and social worker informed.",
-    evidenceCategory: "family_time",
-    judgementArea: "overall_experiences_and_progress",
-    confidenceScore: 82,
-    evidenceDate: d(-8),
-    createdBy: "Sarah Mitchell",
-    createdAt: d(-8),
-    updatedAt: d(-8),
-  },
-  {
-    id: "ev_12",
-    homeId: "h1",
-    sourceType: "complaint",
-    sourceLabel: "complaint",
-    sourceId: "cmp_011",
-    title: "Complaint resolved within timescale with positive outcome",
-    summary:
-      "Complaint from placing authority regarding communication about a medical appointment was investigated and resolved within 10 working days. Outcome letter sent. Process improvements identified and implemented.",
-    evidenceCategory: "complaints",
-    judgementArea: "effectiveness_of_leaders",
-    confidenceScore: 78,
-    evidenceDate: d(-25),
-    createdBy: "Darren Laville",
-    createdAt: d(-25),
-    updatedAt: d(-22),
-  },
-];
-
 /* ── demo evidence gaps ────────────────────────────────────────────────────── */
-
-const DEMO_GAPS: EvidenceGap[] = [
-  {
-    type: "no_recent_key_work",
-    title: "No key work session recorded for Reece in 3 weeks",
-    description:
-      "Reece has not had a documented key work session since the placement plan review. The expected frequency is weekly.",
-    severity: "high",
-    childId: "c3",
-    sourceRecordType: "key_work",
-    recommendation:
-      "Schedule a key work session with Reece this week and ensure it is recorded in the system. Consider whether the gap was due to staffing or oversight.",
-  },
-  {
-    type: "no_child_voice",
-    title: "No child voice entry for Jordan this month",
-    description:
-      "Jordan's voice has not been captured through any formal mechanism (key work, house meeting, or wishes and feelings) this month.",
-    severity: "medium",
-    childId: "c1",
-    sourceRecordType: "child_voice",
-    recommendation:
-      "Capture Jordan's views in the next key work session or through an informal check-in. Record in the child voice log.",
-  },
-  {
-    type: "incident_no_oversight",
-    title: "Two incidents awaiting manager oversight",
-    description:
-      "Two low-level incidents from the past week have not yet received manager oversight or analysis. Oversight should be completed within 48 hours.",
-    severity: "high",
-    sourceRecordType: "incident",
-    recommendation:
-      "Complete manager oversight for both outstanding incidents today. Review whether the 48-hour standard is being communicated to deputies.",
-  },
-  {
-    type: "reg44_overdue",
-    title: "Reg 44 action response overdue by 5 days",
-    description:
-      "One action from the last Regulation 44 visit has not yet received a manager response. The expected response window is 14 days.",
-    severity: "medium",
-    sourceRecordType: "reg44_report",
-    sourceRecordId: "r44_012",
-    recommendation:
-      "Draft and submit the manager response to the outstanding Reg 44 action. Ensure all future actions are responded to within the 14-day window.",
-  },
-  {
-    type: "risk_not_reviewed",
-    title: "Casey's risk assessment not reviewed since last incident",
-    description:
-      "Casey was involved in a behaviour incident 10 days ago but her risk assessment has not been updated to reflect any changes or new control measures.",
-    severity: "high",
-    childId: "c2",
-    sourceRecordType: "risk_assessment",
-    recommendation:
-      "Review and update Casey's risk assessment in light of the recent incident. Involve Casey in the review process where appropriate.",
-  },
-  {
-    type: "supervision_overdue",
-    title: "One staff member due supervision in 3 days",
-    description:
-      "James Connor's supervision is due within 3 days. If not completed, it will breach the 6-weekly cycle.",
-    severity: "low",
-    staffId: "s3",
-    sourceRecordType: "supervision",
-    recommendation:
-      "Confirm the scheduled supervision date with James. If the RM is unavailable, arrange for the deputy to cover.",
-  },
-];
 
 /* ── period options ────────────────────────────────────────────────────────── */
 
@@ -531,13 +250,20 @@ const PERIOD_OPTIONS = [
 export default function OfstedEvidenceRoomPage() {
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useEvidenceItems();
+  const { data: gapsData } = useEvidenceGaps();
   const createEvidence = useCreateEvidence();
 
-  const [evidenceItems, setEvidenceItems] = useState<(InspectionEvidenceItem & { sourceLabel: SourceType })[]>(DEMO_EVIDENCE);
-  const [gaps, setGaps] = useState<EvidenceGap[]>(DEMO_GAPS);
+  const [evidenceItems, setEvidenceItems] = useState<(InspectionEvidenceItem & { sourceLabel: SourceType })[]>([]);
+  const [gaps, setGaps] = useState<EvidenceGap[]>([]);
 
   useEffect(() => {
-    if (apiData?.persisted && apiData.items.length > 0) {
+    if (gapsData?.persisted && Array.isArray(gapsData.gaps)) {
+      setGaps(gapsData.gaps as EvidenceGap[]);
+    }
+  }, [gapsData]);
+
+  useEffect(() => {
+    if (apiData?.persisted && Array.isArray(apiData.items)) {
       setEvidenceItems((apiData.items as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         homeId: (row.home_id as string) ?? "",
@@ -704,21 +430,25 @@ export default function OfstedEvidenceRoomPage() {
     <PageShell
       title="Ofsted Evidence Room"
       subtitle="Organised evidence for inspection readiness"
+      ariaContext={{ pageTitle: "Ofsted Evidence Room", sourceType: "document" }}
       actions={
-        <Button
-          size="sm"
-          className="gap-1.5"
-          disabled={createEvidence.isPending}
-          onClick={() => createEvidence.mutate({
-            homeId: "oak-house",
-            title: "New Evidence Item",
-            category: "general",
-            sourceType: "manual",
-          })}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          {createEvidence.isPending ? "Adding..." : "Add Evidence"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            className="gap-1.5"
+            disabled={createEvidence.isPending}
+            onClick={() => createEvidence.mutate({
+              homeId: "oak-house",
+              title: "New Evidence Item",
+              category: "general",
+              sourceType: "manual",
+            })}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            {createEvidence.isPending ? "Adding..." : "Add Evidence"}
+          </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+        </div>
       }
     >
       {/* ── summary stats ──────────────────────────────────────────────────── */}
@@ -1273,6 +1003,12 @@ export default function OfstedEvidenceRoomPage() {
           </div>
         </div>
       )}
+      <AriaPanel
+        mode="assist"
+        pageContext="Ofsted Evidence Room — inspection evidence packs, evidence categorisation, judgement areas, outstanding practice evidence, Annex A evidence, compliance documents, regulatory submissions"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

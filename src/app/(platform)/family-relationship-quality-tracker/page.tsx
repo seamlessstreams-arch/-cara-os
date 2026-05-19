@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -29,6 +29,9 @@ import {
   CheckCircle2, ChevronDown, ChevronUp, ArrowUpDown, CalendarDays,
   Sparkles, ShieldAlert, MessageCircle, Activity, Compass, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Style helpers ─────────────────────────────────────────────────────────────
 
@@ -152,6 +155,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
     <PageShell
       title="Family Relationship Quality Tracker"
       subtitle="Quarterly assessments of each child's key family relationships — temperature, indicators, and the impact of our interventions. Quality Standard 9."
+      ariaContext={{ pageTitle: "Family Relationship Quality Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -160,6 +164,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
             filename="family-relationship-quality"
           />
           <PrintButton title="Family Relationship Quality Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -479,6 +484,18 @@ export default function FamilyRelationshipQualityTrackerPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Family Contact"
+        category="family_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Family Relationship Quality Tracker — relationship quality scoring, contact frequency, quality of contact, estrangement, repair, family time, care plan evidence, Reg 45 themes"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,9 @@ import {
   TRANSPORT_LOG_BEHAVIOUR_LABEL,
   TRANSPORT_LOG_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Local config ────────────────────────────────────────────────────────────
 
@@ -247,6 +250,7 @@ export default function TransportLogPage() {
     <PageShell
       title="Transport Log"
       subtitle="Journey records, mileage tracking & safeguarding during transport"
+      ariaContext={{ pageTitle: "Transport Log", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Transport Log" />
@@ -254,6 +258,7 @@ export default function TransportLogPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> New Journey
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -670,6 +675,18 @@ export default function TransportLogPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Transport & Activities"
+        category={["activity", "general"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Transport Log — vehicle journeys, driver records, destinations, journey purposes, mileage, transport risk assessment compliance, safeguarding during transport"
+        recordType="daily_log"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

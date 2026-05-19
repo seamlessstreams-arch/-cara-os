@@ -11,7 +11,7 @@ import {
   Search,
   Sparkles,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -23,6 +23,9 @@ import type { CareAnniversaryRecord, CareAnniversaryType, CareAnniversaryAttitud
 import { CARE_ANNIVERSARY_TYPE_LABEL, CARE_ANNIVERSARY_ATTITUDE_LABEL } from "@/types/extended";
 import { useCareAnniversaryRecords } from "@/hooks/use-care-anniversary-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -154,10 +157,12 @@ export default function ChildCareAnniversaryPage() {
     <PageShell
       title="Child Care Anniversary"
       subtitle="Per-child, child-led acknowledgement of the dates that shape a young person&apos;s care story"
+      ariaContext={{ pageTitle: "Care Anniversaries", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Care Anniversaries" />
           <ExportButton data={exportRows} columns={exportCols} filename="child-care-anniversary" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -367,6 +372,18 @@ export default function ChildCareAnniversaryPage() {
       <div className="rounded-lg border border-teal-200 bg-teal-50/60 p-4 text-sm text-teal-900 mb-6">
         <strong>Regulatory framework.</strong> Recognition of care anniversaries sits within the Children&apos;s Homes (England) Regulations 2015 — Quality Standard 6 (enjoyment &amp; achievement), Quality Standard 7 (positive relationships) and Quality Standard 8 (education). Practice is grounded in trauma-informed care, and in UNCRC Article 8 (right to identity), Article 12 (the right to be heard) and Article 16 (privacy and dignity). NICE NG196 bereavement guidance principles are applied to the grief-of-care experience — these dates are losses as well as milestones, and the child leads on whether, how, and when they are marked. A child&apos;s preference can change every year. We never assume a celebration is wanted.
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Care Anniversaries — acknowledging time in care, milestone celebrations, child participation, memory-making, normalising care experience, keywork, placement stability, Reg 45"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

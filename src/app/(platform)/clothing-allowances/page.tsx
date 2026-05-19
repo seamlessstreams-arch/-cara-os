@@ -13,7 +13,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -28,6 +28,9 @@ import type { ClothingAllowanceRecord, ClothingPurchaseCategory, ClothingPurchas
 import { CLOTHING_PURCHASE_CATEGORY_LABEL } from "@/types/extended";
 import { useClothingAllowanceRecords, useCreateClothingAllowanceRecord } from "@/hooks/use-clothing-allowance-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
@@ -158,6 +161,7 @@ export default function ClothingAllowancesPage() {
     <PageShell
       title="Clothing & Allowances"
       subtitle="Individual clothing budgets, purchases and preferences — child choice and dignity"
+      ariaContext={{ pageTitle: "Clothing & Allowances", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="clothing-allowances" />
@@ -165,6 +169,7 @@ export default function ClothingAllowancesPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> Log Purchase
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -343,6 +348,18 @@ export default function ClothingAllowancesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Finance"
+        category="finance"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Clothing & Allowances — clothing budget, seasonal allowance, uniform, shoe purchases, personal spending, finance tracking, pocket money, care plan allocation, Annex A evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -25,6 +25,9 @@ import type { MaintenanceItem } from "@/types/extended";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 type MaintenanceStatus = "open" | "scheduled" | "completed";
 type MaintenancePriority = "urgent" | "high" | "medium" | "low";
@@ -294,6 +297,7 @@ export default function MaintenancePage() {
       <PageShell
         title="Maintenance"
         subtitle="Property maintenance, safety checks, and scheduled works"
+      ariaContext={{ pageTitle: "Building Maintenance Log", sourceType: "home_check" }}
         quickCreateContext={{ module: "maintenance", defaultTaskCategory: "maintenance", defaultFormType: "health_safety_check" }}
         actions={
           <div className="flex items-center gap-2">
@@ -303,6 +307,7 @@ export default function MaintenancePage() {
             <Button size="sm" onClick={() => setShowLog(true)}>
               <Plus className="h-3.5 w-3.5 mr-1" />Log Issue
             </Button>
+            <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
           </div>
         }
       >
@@ -511,7 +516,19 @@ export default function MaintenancePage() {
             water hygiene) are current. Ofsted will review maintenance logs during inspection.
           </div>
         </div>
-      </PageShell>
+        <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Building Maintenance Log — repairs, planned maintenance, contractor visits, gas safety, electrical checks, fire equipment, plumbing, Reg 44 premises, Ofsted evidence"
+        recordType="policy"
+        className="mt-6"
+      />
+    </PageShell>
 
       {/* Log Issue Modal */}
       {showLog && (

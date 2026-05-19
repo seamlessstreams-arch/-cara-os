@@ -6,6 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -358,11 +360,13 @@ export default function QuizzesPage() {
     <PageShell
       title="Knowledge Quizzes"
       subtitle="Generate interactive knowledge quizzes with ARIA"
+      ariaContext={{ pageTitle: "Staff Knowledge Quizzes", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Knowledge Quizzes" subtitle="Oak House — Staff Knowledge Assessment" targetId="quizzes-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Knowledge Quizzes upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -464,6 +468,12 @@ export default function QuizzesPage() {
           )}
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Knowledge Quizzes — knowledge assessments, safeguarding quizzes, mandatory training tests, regulatory knowledge checks, competency verification, training compliance evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

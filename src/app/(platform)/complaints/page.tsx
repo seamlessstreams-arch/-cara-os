@@ -24,6 +24,8 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { useComplaints, useCreateComplaint, useUpdateComplaint } from "@/hooks/use-complaints";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { getYPName } from "@/lib/seed-data";
 import { AriaWriteToChild } from "@/components/aria/aria-write-to-child";
 import type {
@@ -32,10 +34,11 @@ import type {
 import {
   MessageCircle, CheckCircle2, Clock, AlertTriangle, ChevronDown, ChevronUp,
   Sparkles, User, Calendar, Flag, Plus, Shield, AlertOctagon, Gavel,
-  Search, Filter, ArrowUpDown,
+  Search, Filter, ArrowUpDown, ArrowUpRight,
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/hooks/use-api";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -186,6 +189,16 @@ function ComplaintCard({
               <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-rose-50 text-rose-700 border-rose-200">
                 <Shield className="h-2.5 w-2.5 mr-0.5 inline" />Safeguarding element
               </Badge>
+            )}
+            {(complaint as never as { care_event_id?: string }).care_event_id && (
+              <Link
+                href={`/care-events/${(complaint as never as { care_event_id: string }).care_event_id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-1.5 py-0 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+              >
+                <ArrowUpRight className="h-3 w-3" />
+                From Care Event
+              </Link>
             )}
           </div>
 
@@ -627,6 +640,7 @@ ${complaint.lessons_learned ? `Learning: ${complaint.lessons_learned}` : ""}`;
     <PageShell
       title="Complaints & Representations"
       subtitle="Formal complaints register — statutory timelines, outcomes and learning"
+      ariaContext={{ pageTitle: "Complaints & Representations", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -645,10 +659,18 @@ ${complaint.lessons_learned ? `Learning: ${complaint.lessons_learned}` : ""}`;
             <Plus className="h-3.5 w-3.5" />
             Log Complaint
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="complaints-content" className="space-y-5">
+        <AriaPanel
+          mode="assist"
+          pageContext="Complaints & Representations — statutory complaints register, timelines and learning"
+          recordType="complaint"
+          userRole="registered_manager"
+          className="mb-2"
+        />
       {/* ── Summary stats ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
@@ -833,6 +855,12 @@ ${complaint.lessons_learned ? `Learning: ${complaint.lessons_learned}` : ""}`;
         open={showNew}
         onClose={() => setShowNew(false)}
         onSave={handleCreate}
+      />
+      <CareEventsPanel
+        title="Care Events — Complaints"
+        category="complaint"
+        days={90}
+        defaultCollapsed
       />
     </PageShell>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -28,6 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<WorkExpRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -116,10 +119,12 @@ export default function ChildWorkExperienceTrackerPage() {
     <PageShell
       title="Work Experience & Career Exposure"
       subtitle="Per-child work experience and career exposure — Year 10 placements, post-16 work experience, taster days, career exploration meetings, employer mentors."
+      ariaContext={{ pageTitle: "Work Experience & Career Exposure", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-work-experience-tracker" />
           <PrintButton title="Work Experience & Career Exposure" />
+          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -324,6 +329,18 @@ export default function ChildWorkExperienceTrackerPage() {
           and UNCRC Articles 28 (right to education) and 29 (development of personality and talents).
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Education"
+        category="education"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Work Experience & Career Exposure — placements, career days, job shadowing, employer visits, apprenticeship exploration, pathway 3 leaving care, PEP, skills, career aspiration"
+        recordType="education"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -31,6 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const levelColour: Record<string, string> = {
   low: "bg-green-100 text-green-800",
@@ -109,10 +112,12 @@ export default function ConsequenceFrameworkPage() {
     <PageShell
       title="Consequence Framework"
       subtitle="Restorative approach to behaviour management — relational, proportionate, and child-centred"
+      ariaContext={{ pageTitle: "Consequence Framework", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="consequence-framework" />
           <PrintButton title="Consequence Framework" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -282,6 +287,18 @@ export default function ConsequenceFrameworkPage() {
           and NICE guideline NG205.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Behaviour"
+        category="behaviour"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Consequence Framework — logical consequences, reparative approaches, therapeutic responses, behaviour management, PBS, restorative practice, sanctions policy, Reg 7"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

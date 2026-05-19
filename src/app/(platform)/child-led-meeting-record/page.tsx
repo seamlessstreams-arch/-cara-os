@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -29,6 +29,9 @@ import {
 import type { ChildLedMeetingRecord, ChildLedMeetingType } from "@/types/extended";
 import { CHILD_LED_MEETING_TYPE_LABEL } from "@/types/extended";
 import { useChildLedMeetings } from "@/hooks/use-child-led-meetings";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<ChildLedMeetingRecord>[] = [
   { header: "Date", accessor: (r: ChildLedMeetingRecord) => r.date },
@@ -81,10 +84,12 @@ export default function ChildLedMeetingRecordPage() {
     <PageShell
       title="Child-Led Meeting Record"
       subtitle="Records of meetings children themselves chaired or led — voice with audience and influence"
+      ariaContext={{ pageTitle: "Child-Led Meeting Record", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-led-meetings" />
           <PrintButton title="Child-Led Meeting Record" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -296,6 +301,18 @@ export default function ChildLedMeetingRecordPage() {
           of Child, Children&apos;s Pledges, and Feedback Loops.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Child-Led Meeting Record — house meetings, residents' meetings, children's views, complaints raised, ideas for activities, menu choices, participation, wishes and feelings, Reg 44 evidence"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

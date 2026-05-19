@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,9 @@ import { getYPName } from "@/lib/seed-data";
 import type { AnnualOutcome, AnnualOutcomeDomain } from "@/types/extended";
 import { useAnnualOutcomes } from "@/hooks/use-annual-outcomes";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -105,10 +108,12 @@ export default function AnnualOutcomesReportPage() {
     <PageShell
       title="Annual Outcomes Report"
       subtitle="Year-End Progress · Care Plan Goals · Quality of Care Indicators"
+      ariaContext={{ pageTitle: "Annual Outcomes Report", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Annual Outcomes Report" />
           <ExportButton data={data} columns={exportCols} filename="annual-outcomes-report" />
+          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -276,6 +281,18 @@ export default function AnnualOutcomesReportPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Care Planning"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Annual Outcomes Report — year-end outcomes analysis, permanence, education, health, wellbeing, placement stability, Reg 45, Annex A themes, Ofsted judgement evidence"
+        recordType="reg45"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

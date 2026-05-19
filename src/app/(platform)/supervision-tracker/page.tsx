@@ -1,19 +1,28 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
-  AlertTriangle, CheckCircle2, Clock, Users, Calendar, Loader2,
+  AlertTriangle, CheckCircle2, Clock, Users, Calendar, Loader2, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
-import { useSupervisionTrackerRecords } from "@/hooks/use-supervision-tracker-records";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { useSupervisionTrackerRecords, useCreateSupervisionTrackerRecord } from "@/hooks/use-supervision-tracker-records";
 import type { SupervisionTrackerRecord, SupervisionTrackerComplianceStatus } from "@/types/extended";
 import { SUPERVISION_TRACKER_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { toast } from "sonner";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -45,8 +54,64 @@ function getStatus(nextDue: string): SupervisionTrackerComplianceStatus {
 
 /* ── page ─────────────────────────────────────────────────────────────────── */
 
+const THEME_OPTIONS = [
+  "Safeguarding", "Wellbeing", "Professional development", "Case management",
+  "Workload management", "Boundaries", "Team dynamics", "Medication", "Risk management",
+];
+
 export default function SupervisionTrackerPage() {
   const { data: records = [], isLoading } = useSupervisionTrackerRecords();
+  const createRecord = useCreateSupervisionTrackerRecord();
+
+  // ── "Log session" dialog state ──────────────────────────────────────────
+  const [showNew, setShowNew] = useState(false);
+  const [staffId, setStaffId] = useState("");
+  const [supervisorId, setSupervisorId] = useState("");
+  const [lastDate, setLastDate] = useState(new Date().toISOString().slice(0, 10));
+  const [frequency, setFrequency] = useState("Monthly");
+  const [sessionsYear, setSessionsYear] = useState(1);
+  const [sessionsExpected, setSessionsExpected] = useState(12);
+  const [notes, setNotes] = useState("");
+  const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
+
+  function toggleTheme(t: string) {
+    setSelectedThemes((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+  }
+
+  function nextDueFromLast(last: string, freq: string): string {
+    const d = new Date(last);
+    if (freq === "Fortnightly") d.setDate(d.getDate() + 14);
+    else d.setMonth(d.getMonth() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+
+  async function handleCreate() {
+    if (!staffId || !supervisorId || !lastDate) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+    try {
+      await createRecord.mutateAsync({
+        staff_id: staffId,
+        supervisor_id: supervisorId,
+        last_supervision_date: lastDate,
+        next_due_date: nextDueFromLast(lastDate, frequency),
+        frequency,
+        sessions_this_year: sessionsYear,
+        sessions_expected_this_year: sessionsExpected,
+        cancelled_by_staff: 0,
+        cancelled_by_manager: 0,
+        themes: selectedThemes,
+        actions_pending: 0,
+        notes,
+      });
+      toast.success("Supervision session logged.");
+      setShowNew(false);
+      setStaffId(""); setSupervisorId(""); setNotes(""); setSelectedThemes([]);
+    } catch {
+      toast.error("Failed to log session. Please try again.");
+    }
+  }
 
   const withCompliance = useMemo(() => {
     return records.map((r) => ({ ...r, compliance: getStatus(r.next_due_date) }));
@@ -81,7 +146,18 @@ export default function SupervisionTrackerPage() {
   }
 
   return (
-    <PageShell title="Supervision Compliance Tracker" subtitle="Reg 33 · Staff Supervision · Workforce Development" actions={<div className="flex items-center gap-2"><PrintButton title="Supervision Tracker" /><ExportButton data={records} columns={exportCols} filename="supervision-tracker" /></div>}>
+    <PageShell title="Supervision Compliance Tracker" subtitle="Reg 33 · Staff Supervision · Workforce Development" 
+      ariaContext={{ pageTitle: "Supervision Compliance Tracker", sourceType: "staff" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <PrintButton title="Supervision Tracker" />
+          <ExportButton data={records} columns={exportCols} filename="supervision-tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <Button size="sm" onClick={() => setShowNew(true)}>
+            <Plus className="h-3.5 w-3.5 mr-1" /> Log Session
+          </Button>
+        </div>
+      }>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
@@ -145,11 +221,132 @@ export default function SupervisionTrackerPage() {
           ))}
         </div>
 
-        <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
+        <div className="mt-4 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
           <p className="font-semibold mb-1">Regulatory Framework</p>
           <p>Children&apos;s Homes (England) Regulations 2015, Reg 33 — the registered person must ensure staff receive appropriate supervision. Minimum frequency: monthly for all care staff, fortnightly during probation. Supervision must include: safeguarding, professional development, wellbeing, and case discussion. Cancelled sessions must be rescheduled within 7 days. Supervision compliance is monitored by the Responsible Individual and inspected by Ofsted.</p>
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Supervision Compliance Tracker — Regulation 33, staff supervision records, overdue supervision, themes, compliance monitoring"
+        recordType="supervision"
+        userRole="registered_manager"
+        className="mt-6"
+      />
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+
+      {/* ── Log Session Dialog ──────────────────────────────────────── */}
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Log Supervision Session</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Staff Member *</Label>
+                <select
+                  value={staffId}
+                  onChange={(e) => setStaffId(e.target.value)}
+                  className="mt-1 w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white"
+                >
+                  <option value="">Select staff…</option>
+                  {STAFF.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.first_name} {s.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label className="text-xs">Supervisor *</Label>
+                <select
+                  value={supervisorId}
+                  onChange={(e) => setSupervisorId(e.target.value)}
+                  className="mt-1 w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white"
+                >
+                  <option value="">Select supervisor…</option>
+                  {STAFF.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.first_name} {s.last_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Session Date *</Label>
+                <Input type="date" value={lastDate} onChange={(e) => setLastDate(e.target.value)} className="mt-1 text-sm" />
+              </div>
+              <div>
+                <Label className="text-xs">Frequency</Label>
+                <select
+                  value={frequency}
+                  onChange={(e) => setFrequency(e.target.value)}
+                  className="mt-1 w-full text-sm border border-slate-200 rounded-md px-3 py-2 bg-white"
+                >
+                  <option>Monthly</option>
+                  <option>Fortnightly</option>
+                  <option>Weekly</option>
+                  <option>Quarterly</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Sessions This Year</Label>
+                <Input type="number" min={0} value={sessionsYear} onChange={(e) => setSessionsYear(Number(e.target.value))} className="mt-1 text-sm" />
+              </div>
+              <div>
+                <Label className="text-xs">Sessions Expected This Year</Label>
+                <Input type="number" min={1} value={sessionsExpected} onChange={(e) => setSessionsExpected(Number(e.target.value))} className="mt-1 text-sm" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs mb-1.5 block">Key Themes Discussed</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {THEME_OPTIONS.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => toggleTheme(t)}
+                    className={cn(
+                      "px-2.5 py-1 rounded-full text-xs border transition-colors",
+                      selectedThemes.includes(t)
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-slate-600 border-slate-200 hover:border-blue-300"
+                    )}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Session Notes</Label>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Key discussion points, actions agreed, any concerns raised…"
+                className="mt-1 text-sm min-h-[80px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createRecord.isPending}>
+              {createRecord.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Log Session
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, GraduationCap, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -22,10 +22,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useAbsenceTracking, useCreateAbsence } from "@/hooks/use-absence-tracking";
 import type { AbsenceType, AbsenceSetting, AbsenceRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local label / colour maps ──────────────────────────────────────── */
 const ABSENCE_TYPES: AbsenceType[] = [
@@ -63,6 +66,19 @@ export default function AbsenceTrackingPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
+
+  const [abForm, setAbForm] = useState({ child_id: "", date: new Date().toISOString().slice(0, 10), absence_type: "unauthorised" as AbsenceType, setting: "school" as AbsenceSetting, setting_name: "", sessions: "1", reason: "", action_taken: "" });
+  const setAB = (k: string, v: unknown) => setAbForm((p) => ({ ...p, [k]: v }));
+
+  const handleRecordAbsence = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!abForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!abForm.reason.trim()) { toast.error("Reason is required."); return; }
+    await createAbsence.mutateAsync({ child_id: abForm.child_id, date: abForm.date, absence_type: abForm.absence_type, setting: abForm.setting, setting_name: abForm.setting_name.trim(), sessions: parseInt(abForm.sessions) || 1, reason: abForm.reason.trim(), action_taken: abForm.action_taken.trim(), school_notified: false, sw_notified: false, recorded_by: "staff_darren", follow_up: "", created_at: new Date().toISOString() });
+    toast.success("Absence recorded.");
+    setAbForm({ child_id: "", date: new Date().toISOString().slice(0, 10), absence_type: "unauthorised", setting: "school", setting_name: "", sessions: "1", reason: "", action_taken: "" });
+    setShowNew(false);
+  };
 
   const filtered = useMemo(() => {
     let list = [...records];
@@ -134,10 +150,12 @@ export default function AbsenceTrackingPage() {
     <PageShell
       title="Absence Tracking"
       subtitle="Monitor school and education attendance for all young people"
+      ariaContext={{ pageTitle: "Absence Tracking", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Absence Tracking" />
           <ExportButton data={filtered} columns={exportCols} filename="absence-tracking" />
+          <AriaStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Absence
           </Button>
@@ -341,16 +359,50 @@ export default function AbsenceTrackingPage() {
           <DialogHeader>
             <DialogTitle>Record Absence</DialogTitle>
           </DialogHeader>
-          <div className="py-6 text-center text-muted-foreground text-sm">
-            <CalendarX className="h-10 w-10 mx-auto mb-3 text-blue-300" />
-            <p>Full form will capture young person, absence type,</p>
-            <p>setting, reason, and notification details.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Close</Button>
-          </DialogFooter>
+          <form onSubmit={handleRecordAbsence} className="space-y-3 py-2">
+            <div><label className="text-sm font-medium">Young Person *</label>
+              <Select value={abForm.child_id} onValueChange={(v) => setAB("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm font-medium">Date</label><Input type="date" value={abForm.date} onChange={(e) => setAB("date", e.target.value)} className="mt-1" /></div>
+              <div><label className="text-sm font-medium">Sessions</label><Input type="number" value={abForm.sessions} onChange={(e) => setAB("sessions", e.target.value)} className="mt-1" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-sm font-medium">Type</label>
+                <Select value={abForm.absence_type} onValueChange={(v) => setAB("absence_type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{ABSENCE_TYPES.map((t) => <SelectItem key={t} value={t}>{t.replace(/_/g, " ")}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><label className="text-sm font-medium">Setting</label>
+                <Select value={abForm.setting} onValueChange={(v) => setAB("setting", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="school">School</SelectItem><SelectItem value="college">College</SelectItem><SelectItem value="pru">PRU</SelectItem><SelectItem value="tuition">Tuition</SelectItem><SelectItem value="activity">Activity</SelectItem><SelectItem value="appointment">Appointment</SelectItem></SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><label className="text-sm font-medium">Setting Name</label><Input className="mt-1" placeholder="Name of school / provider" value={abForm.setting_name} onChange={(e) => setAB("setting_name", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Reason *</label><Textarea className="mt-1" rows={2} placeholder="Why was the child absent?" value={abForm.reason} onChange={(e) => setAB("reason", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Action Taken</label><Textarea className="mt-1" rows={2} placeholder="What action was taken?" value={abForm.action_taken} onChange={(e) => setAB("action_taken", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createAbsence.isPending}>{createAbsence.isPending ? "Saving…" : "Record Absence"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Health & Behaviour"
+        category={["health", "behaviour", "education"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Absence Tracking — staff sickness, annual leave, TOIL, emergency leave, Bradford factor, fit notes, return to work, cover arrangements, safe staffing, Reg 44 evidence"
+        recordType="rota"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

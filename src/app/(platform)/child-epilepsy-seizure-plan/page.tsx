@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,9 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { EpilepsySeizurePlan } from "@/types/extended";
 import { useEpilepsySeizurePlans } from "@/hooks/use-epilepsy-seizure-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<EpilepsySeizurePlan>[] = [
@@ -131,10 +134,12 @@ export default function ChildEpilepsySeizurePlanPage() {
     <PageShell
       title="Epilepsy & Seizure Plans"
       subtitle="Per-child epilepsy and seizure management plan · Epilepsy12 format · NICE NG217 · Quality Standard 8"
+      ariaContext={{ pageTitle: "Epilepsy & Seizure Plans", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="epilepsy-seizure-plans" />
           <PrintButton title="Epilepsy & Seizure Plans" />
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -560,6 +565,18 @@ export default function ChildEpilepsySeizurePlanPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Medication"
+        category={["health", "medication"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Epilepsy & Seizure Plans — seizure type, rescue medication, seizure diary, triggers, post-ictal care, emergency action, school sharing, specialist review, AHA, LAC health"
+        recordType="medication"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

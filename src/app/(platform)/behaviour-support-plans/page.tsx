@@ -27,14 +27,18 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Plus, Search, Filter, ArrowUpDown,
   ChevronDown, ChevronUp, AlertTriangle,
-  CheckCircle2, Clock, Heart, Shield, Loader2,
+  CheckCircle2, Clock, Heart, Shield, Loader2, ArrowUpRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useBehaviourSupportPlans, useCreateBSP } from "@/hooks/use-behaviour-support-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import Link from "next/link";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { BehaviourSupportPlan, BSPPrimaryBehaviour, BSPKnownTrigger, BSPDeEscalationStage, BSPPositiveStrategy, BSPReward, BSPBoundary, BSPSafetyPlanItem, BSPProfessionalInput, BSPRestrictiveIntervention, BSPReviewHistoryEntry } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // -- Helpers ------------------------------------------------------------------
 
@@ -165,10 +169,12 @@ export default function BehaviourSupportPlansPage() {
     <PageShell
       title="Behaviour Support Plans"
       subtitle="Formal behaviour support strategies -- triggers, de-escalation, positive reinforcement, and safety plans"
+      ariaContext={{ pageTitle: "Behaviour Support Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Behaviour Support Plans" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="behaviour-support-plans" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> New BSP
           </Button>
@@ -326,6 +332,16 @@ export default function BehaviourSupportPlansPage() {
                         </Badge>
                         {reviewOverdue && (
                           <Badge variant="destructive" className="text-xs">Review overdue</Badge>
+                        )}
+                        {(plan as never as { care_event_id?: string }).care_event_id && (
+                          <Link
+                            href={`/care-events/${(plan as never as { care_event_id: string }).care_event_id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                          >
+                            <ArrowUpRight className="h-3 w-3" />
+                            From Care Event
+                          </Link>
                         )}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
@@ -764,6 +780,12 @@ export default function BehaviourSupportPlansPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        category="behaviour"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

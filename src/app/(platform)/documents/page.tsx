@@ -23,6 +23,9 @@ import { DOCUMENT_CATEGORIES } from "@/lib/constants";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import type { Document, DocumentReadReceipt } from "@/types";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 type Tab = "library" | "read_sign" | "upload";
 type CategoryFilter = "all" | string;
@@ -261,6 +264,7 @@ export default function DocumentsPage() {
     <PageShell
       title="Documents"
       subtitle="Secure document storage, version control, and mandatory read-and-sign"
+      ariaContext={{ pageTitle: "Documents", sourceType: "document" }}
       quickCreateContext={{ module: "documents", defaultTaskCategory: "compliance" }}
       actions={
         <div className="flex items-center gap-2">
@@ -272,6 +276,7 @@ export default function DocumentsPage() {
           <Button size="sm" onClick={() => setTab("upload")}>
             <Upload className="h-3.5 w-3.5 mr-1" />Upload Document
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -577,6 +582,18 @@ export default function DocumentsPage() {
           </Card>
         )}
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Documents — policy documents, risk assessments, care plans, staff records, Ofsted correspondence, meeting minutes, statutory reports, version control, mandatory read-and-sign"
+        recordType="uploaded_document"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

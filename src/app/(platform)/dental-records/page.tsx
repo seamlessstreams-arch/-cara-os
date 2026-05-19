@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,6 +34,9 @@ import {
   DENTAL_RECALL_INTERVAL_LABEL,
 } from "@/types/extended";
 import { useDentalRecords } from "@/hooks/use-dental-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -127,10 +130,12 @@ export default function DentalRecordsPage() {
     <PageShell
       title="Dental Records"
       subtitle="Registrations, check-ups, and treatment for each child"
+      ariaContext={{ pageTitle: "Dental Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Dental Records" />
           <ExportButton data={filtered} columns={exportCols} filename="dental-records" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -391,6 +396,18 @@ export default function DentalRecordsPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Dental Records — dental appointments, dentist name, treatments, NHS/private, x-rays, decay, fillings, extractions, orthodontics, AHA dental health, consent, LAC health"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

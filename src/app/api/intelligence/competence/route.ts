@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { staffPassportRecords } from "@/lib/intelligence/fallback-store";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -11,7 +12,9 @@ export async function GET(request: NextRequest) {
   const staffId = searchParams.get("staffId");
 
   if (!isSupabaseEnabled()) {
-    return NextResponse.json({ ok: true, records: [], persisted: false });
+    let rows = [...staffPassportRecords];
+    if (staffId) rows = rows.filter((r) => r.id === staffId);
+    return NextResponse.json({ ok: true, records: [], richRecords: rows, persisted: true });
   }
 
   const supabase = createServerClient() as unknown as LooseSupabase;
@@ -36,7 +39,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isSupabaseEnabled()) {
-      return NextResponse.json({ ok: true, persisted: false });
+      const idx = staffPassportRecords.findIndex((r) => r.id === staffId);
+      if (idx >= 0) {
+        staffPassportRecords[idx] = { ...staffPassportRecords[idx], ...fields };
+      }
+      return NextResponse.json({ ok: true, record: staffPassportRecords[idx] ?? null, persisted: true });
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;

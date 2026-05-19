@@ -3,6 +3,8 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -194,6 +196,7 @@ export default function CandidatesPage() {
     <PageShell
       title="All Candidates"
       subtitle="Manage your recruitment pipeline with full compliance visibility"
+      ariaContext={{ pageTitle: "Recruitment Candidates", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="All Candidates" subtitle="Oak House — Recruitment Pipeline" targetId="candidates-content" />
@@ -395,6 +398,12 @@ export default function CandidatesPage() {
         </Card>
       )}
       </div>{/* close #candidates-content */}
+      <AriaPanel
+        mode="assist"
+        pageContext="Recruitment Candidates — candidate pipeline, applications, interviews, DBS checks, references, safer recruitment, shortlisting, offer status, HR compliance, staff onboarding"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

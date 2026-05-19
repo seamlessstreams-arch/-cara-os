@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -29,6 +29,9 @@ import type { EatingSupportPlan, EatingPresentation } from "@/types/extended";
 import { EATING_PRESENTATION_LABEL } from "@/types/extended";
 import { useEatingSupportPlans } from "@/hooks/use-eating-support-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<EatingSupportPlan>[] = [
   { header: "Young Person", accessor: (r: EatingSupportPlan) => getYPName(r.child_id) },
@@ -113,10 +116,12 @@ export default function EatingSupportPlanPage() {
     <PageShell
       title="Eating Support Plans"
       subtitle="Per-child eating support — ARFID, sensory-led restriction, recovery from disordered eating, cultural/faith dietary needs, allergy. Sensory-led, dignified, body-neutral, externally-supported where appropriate. Distinct from menstrual or general health plans."
+      ariaContext={{ pageTitle: "Eating Support Plans", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="eating-support-plan" />
           <PrintButton title="Eating Support Plans" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -354,6 +359,18 @@ export default function EatingSupportPlanPage() {
           dietary needs receive equal dignity to clinical presentations.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Food"
+        category={["health", "food"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Eating Support Plans — eating disorders, ARFID, restricted eating, mealtime support strategies, sensory food issues, CAMHS, nutritional plan, LAC health, dietician referral"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useSubjectAccessRequestRecords } from "@/hooks/use-subject-access-request-records";
+import { useSubjectAccessRequestRecords, useCreateSubjectAccessRequestRecord } from "@/hooks/use-subject-access-request-records";
+import { toast } from "sonner";
 import type {
   SubjectAccessRequestRecord,
   SubjectAccessRequestType,
@@ -34,6 +35,9 @@ import {
   SUBJECT_ACCESS_REQUEST_STATUS_LABEL,
   SUBJECT_ACCESS_REQUESTER_TYPE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (colours not serializable) ────────────────────────────── */
 
@@ -67,6 +71,21 @@ export default function SubjectAccessRequestsPage() {
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showNew, setShowNew] = useState(false);
+
+  const createSAR = useCreateSubjectAccessRequestRecord();
+  const [sarForm, setSarForm] = useState({ requester_name: "", requester_type: "parent" as SubjectAccessRequesterType, request_type: "subject_access" as SubjectAccessRequestType, date_received: new Date().toISOString().slice(0, 10), notes: "" });
+  const setSAR = (k: keyof typeof sarForm, v: string) => setSarForm((p) => ({ ...p, [k]: v }));
+
+  const handleLogRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sarForm.requester_name.trim()) { toast.error("Requester name is required."); return; }
+    const deadline = new Date(sarForm.date_received);
+    deadline.setDate(deadline.getDate() + 30);
+    await createSAR.mutateAsync({ date_received: sarForm.date_received, deadline_date: deadline.toISOString().slice(0, 10), request_type: sarForm.request_type, requester_name: sarForm.requester_name.trim(), requester_type: sarForm.requester_type, requester_relation: "", data_subject_id: null, data_subject_type: "child", status: "received", identity_verified: false, identity_method: "", data_scope: [], redactions_required: false, redaction_categories: [], third_party_consent: false, extension_applied: false, extension_reason: "", date_completed: null, response_method: "", handled_by_id: "staff_darren", dpo_consulted: false, notes: sarForm.notes.trim() });
+    toast.success("Data request logged.");
+    setSarForm({ requester_name: "", requester_type: "parent", request_type: "subject_access", date_received: new Date().toISOString().slice(0, 10), notes: "" });
+    setShowNew(false);
+  };
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -123,11 +142,13 @@ export default function SubjectAccessRequestsPage() {
     <PageShell
       title="Subject Access Requests (SARs)"
       subtitle="GDPR · UK Data Protection Act 2018 · Information Rights"
+      ariaContext={{ pageTitle: "Subject Access Requests", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Subject Access Requests" />
           <ExportButton data={records} columns={exportCols} filename="subject-access-requests" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Request</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -306,11 +327,11 @@ export default function SubjectAccessRequestsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Data Request</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Requester Name</Label><Input placeholder="Full name of requester" /></div>
+          <form onSubmit={handleLogRequest} className="space-y-3">
+            <div><Label>Requester Name *</Label><Input placeholder="Full name of requester" value={sarForm.requester_name} onChange={(e) => setSAR("requester_name", e.target.value)} /></div>
             <div>
               <Label>Requester Type</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+              <Select value={sarForm.requester_type} onValueChange={(v) => setSAR("requester_type", v)}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(SUBJECT_ACCESS_REQUESTER_TYPE_LABEL) as [SubjectAccessRequesterType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -320,7 +341,7 @@ export default function SubjectAccessRequestsPage() {
             </div>
             <div>
               <Label>Request Type</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select request type" /></SelectTrigger>
+              <Select value={sarForm.request_type} onValueChange={(v) => setSAR("request_type", v)}><SelectTrigger><SelectValue placeholder="Select request type" /></SelectTrigger>
                 <SelectContent>
                   {(Object.entries(SUBJECT_ACCESS_REQUEST_TYPE_LABEL) as [SubjectAccessRequestType, string][]).map(([k, v]) => (
                     <SelectItem key={k} value={k}>{v}</SelectItem>
@@ -328,15 +349,27 @@ export default function SubjectAccessRequestsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Date Received</Label><Input type="date" /></div>
-            <div><Label>Details</Label><Textarea placeholder="Describe what data is being requested..." /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-            <Button onClick={() => setShowNew(false)}>Log Request</Button>
-          </DialogFooter>
+            <div><Label>Date Received</Label><Input type="date" value={sarForm.date_received} onChange={(e) => setSAR("date_received", e.target.value)} /></div>
+            <div><Label>Details</Label><Textarea placeholder="Describe what data is being requested..." value={sarForm.notes} onChange={(e) => setSAR("notes", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button type="submit" disabled={createSAR.isPending}>{createSAR.isPending ? "Saving…" : "Log Request"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Subject Access Requests — SAR requests, response deadlines, data disclosure decisions, GDPR compliance, information governance, management oversight, regulatory compliance evidence"
+        recordType="uploaded_document"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

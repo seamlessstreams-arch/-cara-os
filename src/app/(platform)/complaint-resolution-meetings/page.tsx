@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -31,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const meetingTypeColour: Record<string, string> = {
   stage_1_informal: "bg-green-100 text-green-800",
@@ -111,10 +114,12 @@ export default function ComplaintResolutionMeetingsPage() {
     <PageShell
       title="Complaint Resolution Meetings"
       subtitle="Records of meetings convened to resolve concerns — restorative, transparent, learning-focused"
+      ariaContext={{ pageTitle: "Complaint Resolution Meetings", sourceType: "complaint" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="complaint-resolution-meetings" />
           <PrintButton title="Complaint Resolution Meetings" />
+          <AriaStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -331,6 +336,12 @@ export default function ComplaintResolutionMeetingsPage() {
           restorative practice framework.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Complaints"
+        category="complaint"
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

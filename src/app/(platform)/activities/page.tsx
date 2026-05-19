@@ -34,12 +34,15 @@ import {
   Mountain, Bike, Camera, UtensilsCrossed, Trophy, Target, Calendar,
   User, CheckCircle2, Clock, Loader2, Sparkles,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const CATEGORY_CONFIG: Record<ActivityCategory, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
   sport:        { label: "Sport & Fitness",   icon: Dumbbell,          color: "text-emerald-600",  bg: "bg-emerald-50",  border: "border-emerald-200" },
-  creative:     { label: "Creative & Art",    icon: Palette,           color: "text-[var(--cs-aria-gold)]",   bg: "bg-[var(--cs-aria-gold-bg)]",   border: "border-[var(--cs-aria-gold-soft)]"  },
+  creative:     { label: "Creative & Art",    icon: Palette,           color: "text-violet-600",   bg: "bg-violet-50",   border: "border-violet-200"  },
   outdoor:      { label: "Outdoor Adventure", icon: Mountain,          color: "text-teal-600",     bg: "bg-teal-50",     border: "border-teal-200"    },
   educational:  { label: "Education",         icon: BookOpen,          color: "text-blue-600",     bg: "bg-blue-50",     border: "border-blue-200"    },
   social:       { label: "Social",            icon: Users,             color: "text-amber-600",    bg: "bg-amber-50",    border: "border-amber-200"   },
@@ -47,15 +50,15 @@ const CATEGORY_CONFIG: Record<ActivityCategory, { label: string; icon: React.Ele
   cultural:     { label: "Cultural",          icon: Music,             color: "text-pink-600",     bg: "bg-pink-50",     border: "border-pink-200"    },
   therapeutic:  { label: "Therapeutic",        icon: Heart,             color: "text-red-600",      bg: "bg-red-50",      border: "border-red-200"     },
   community:    { label: "Community",         icon: MapPin,            color: "text-indigo-600",   bg: "bg-indigo-50",   border: "border-indigo-200"  },
-  digital:      { label: "Digital & Gaming",  icon: Gamepad2,          color: "text-[var(--cs-text-secondary)]",    bg: "bg-slate-50",    border: "border-[var(--cs-border)]"   },
+  digital:      { label: "Digital & Gaming",  icon: Gamepad2,          color: "text-slate-600",    bg: "bg-slate-50",    border: "border-slate-200"   },
 };
 
 const ENGAGEMENT_CONFIG: Record<ActivityEngagement, { label: string; cls: string }> = {
   enthusiastic:    { label: "Enthusiastic",     cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   willing:         { label: "Willing",          cls: "bg-blue-50 text-blue-700 border-blue-200"          },
   reluctant:       { label: "Reluctant",        cls: "bg-amber-50 text-amber-700 border-amber-200"      },
-  refused:         { label: "Declined",         cls: "bg-slate-50 text-[var(--cs-text-muted)] border-[var(--cs-border)]"       },
-  suggested_by_yp: { label: "YP Suggested",     cls: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]"   },
+  refused:         { label: "Declined",         cls: "bg-slate-50 text-slate-500 border-slate-200"       },
+  suggested_by_yp: { label: "YP Suggested",     cls: "bg-violet-50 text-violet-700 border-violet-200"   },
 };
 
 const ACTIVITY_EXPORT_COLS: ExportColumn<Activity>[] = [
@@ -81,7 +84,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
   const engCfg = ENGAGEMENT_CONFIG[activity.engagement];
 
   return (
-    <div className="rounded-2xl border bg-white overflow-hidden border-[var(--cs-border)] transition-all hover:shadow-sm">
+    <div className="rounded-2xl border bg-white overflow-hidden border-slate-200 transition-all hover:shadow-sm">
       <div className="flex items-start gap-3 p-4">
         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", catCfg.bg)}>
           <CatIcon className={cn("h-4 w-4", catCfg.color)} />
@@ -89,15 +92,15 @@ function ActivityCard({ activity }: { activity: Activity }) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-sm font-bold text-[var(--cs-navy)]">{activity.title}</span>
+            <span className="text-sm font-bold text-slate-800">{activity.title}</span>
             {activity.is_new_experience && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]">
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-violet-50 text-violet-700 border-violet-200">
                 <Star className="h-2.5 w-2.5 mr-0.5 inline" />New Experience
               </Badge>
             )}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-[var(--cs-text-muted)] flex-wrap">
+          <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
             <span className="flex items-center gap-1">
               <User className="h-3 w-3" />
               {getYPName(activity.child_id)}
@@ -131,17 +134,17 @@ function ActivityCard({ activity }: { activity: Activity }) {
 
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] shrink-0"
+          className="text-slate-400 hover:text-slate-600 shrink-0"
         >
           {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
       </div>
 
       {expanded && (
-        <div className="border-t border-[var(--cs-border-subtle)] px-4 pb-4 pt-3 space-y-3">
-          <div className="rounded-xl border border-[var(--cs-border)] bg-slate-50 p-3">
-            <p className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-widest mb-1">What Happened</p>
-            <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{activity.description}</p>
+        <div className="border-t border-slate-100 px-4 pb-4 pt-3 space-y-3">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-1">What Happened</p>
+            <p className="text-xs text-slate-700 leading-relaxed">{activity.description}</p>
           </div>
 
           {activity.yp_feedback && (
@@ -150,7 +153,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
                 <Sparkles className="h-3 w-3 text-teal-600" />
                 <p className="text-[10px] font-semibold text-teal-700 uppercase tracking-widest">Voice of the Child</p>
               </div>
-              <p className="text-xs text-[var(--cs-text-secondary)] italic leading-relaxed">&ldquo;{activity.yp_feedback}&rdquo;</p>
+              <p className="text-xs text-slate-700 italic leading-relaxed">&ldquo;{activity.yp_feedback}&rdquo;</p>
             </div>
           )}
 
@@ -160,11 +163,11 @@ function ActivityCard({ activity }: { activity: Activity }) {
                 <Target className="h-3 w-3 text-indigo-600" />
                 <p className="text-[10px] font-semibold text-indigo-700 uppercase tracking-widest">Impact & Outcome</p>
               </div>
-              <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{activity.outcome_notes}</p>
+              <p className="text-xs text-slate-700 leading-relaxed">{activity.outcome_notes}</p>
             </div>
           )}
 
-          <div className="flex items-center gap-4 text-[10px] text-[var(--cs-text-muted)] flex-wrap">
+          <div className="flex items-center gap-4 text-[10px] text-slate-400 flex-wrap">
             <span>Staff: {getStaffName(activity.staff_id)}</span>
             {activity.photos_taken && <span className="flex items-center gap-1"><Camera className="h-3 w-3" />Photos taken</span>}
             {activity.linked_outcome_domain && (
@@ -228,14 +231,14 @@ function NewActivityDialog({
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Palette className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <Palette className="h-4 w-4 text-violet-600" />
             Log Activity
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3 text-sm">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person</label>
+              <label className="text-xs text-slate-500 font-medium mb-1 block">Young person</label>
               <Select value={form.child_id} onValueChange={(v) => setForm((p) => ({ ...p, child_id: v }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -246,7 +249,7 @@ function NewActivityDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Category</label>
+              <label className="text-xs text-slate-500 font-medium mb-1 block">Category</label>
               <Select value={form.category} onValueChange={(v) => setForm((p) => ({ ...p, category: v as ActivityCategory }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -260,33 +263,33 @@ function NewActivityDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Date</label>
+              <label className="text-xs text-slate-500 font-medium mb-1 block">Date</label>
               <Input type="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} className="h-8 text-xs" />
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Duration (mins)</label>
+              <label className="text-xs text-slate-500 font-medium mb-1 block">Duration (mins)</label>
               <Input type="number" value={form.duration_minutes} onChange={(e) => setForm((p) => ({ ...p, duration_minutes: parseInt(e.target.value) || 0 }))} className="h-8 text-xs" />
             </div>
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Activity title <span className="text-red-500">*</span></label>
+            <label className="text-xs text-slate-500 font-medium mb-1 block">Activity title <span className="text-red-500">*</span></label>
             <Input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. Swimming at Moorways" className="h-8 text-xs" />
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Location</label>
+            <label className="text-xs text-slate-500 font-medium mb-1 block">Location</label>
             <Input value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} placeholder="e.g. Derby Arena" className="h-8 text-xs" />
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Description <span className="text-red-500">*</span></label>
+            <label className="text-xs text-slate-500 font-medium mb-1 block">Description <span className="text-red-500">*</span></label>
             <Textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="What happened during the activity…" rows={3} className="text-xs" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Engagement</label>
+              <label className="text-xs text-slate-500 font-medium mb-1 block">Engagement</label>
               <Select value={form.engagement} onValueChange={(v) => setForm((p) => ({ ...p, engagement: v as ActivityEngagement }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -297,7 +300,7 @@ function NewActivityDialog({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Staff member</label>
+              <label className="text-xs text-slate-500 font-medium mb-1 block">Staff member</label>
               <Select value={form.staff_id} onValueChange={(v) => setForm((p) => ({ ...p, staff_id: v }))}>
                 <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -310,23 +313,23 @@ function NewActivityDialog({
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Young person&apos;s voice</label>
+            <label className="text-xs text-slate-500 font-medium mb-1 block">Young person&apos;s voice</label>
             <Textarea value={form.yp_feedback} onChange={(e) => setForm((p) => ({ ...p, yp_feedback: e.target.value }))} placeholder="In the young person's own words…" rows={2} className="text-xs" />
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Outcome notes</label>
+            <label className="text-xs text-slate-500 font-medium mb-1 block">Outcome notes</label>
             <Textarea value={form.outcome_notes} onChange={(e) => setForm((p) => ({ ...p, outcome_notes: e.target.value }))} placeholder="What was the impact? What did you observe?" rows={2} className="text-xs" />
           </div>
 
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={form.is_new_experience} onChange={(e) => setForm((p) => ({ ...p, is_new_experience: e.target.checked }))} className="rounded" />
-            <span className="text-xs text-[var(--cs-text-secondary)]">This was a new experience for the young person</span>
+            <span className="text-xs text-slate-600">This was a new experience for the young person</span>
           </label>
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" onClick={handleSave} disabled={!form.title.trim() || !form.description.trim()} className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white">
+          <Button size="sm" onClick={handleSave} disabled={!form.title.trim() || !form.description.trim()} className="bg-violet-600 hover:bg-violet-700 text-white">
             Log Activity
           </Button>
         </DialogFooter>
@@ -431,13 +434,15 @@ export default function ActivitiesPage() {
     <PageShell
       title="Activities & Enrichment"
       subtitle="Meaningful activities, hobbies, and new experiences for young people"
+      ariaContext={{ pageTitle: "Activities & Enrichment", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={ACTIVITY_EXPORT_COLS} filename="activities" />
           <PrintButton title="Activities & Enrichment" subtitle="Oak House — Activity Log" targetId="activities-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Activities — activity photos or evidence upload" />
-          <Button size="sm" onClick={() => setShowNew(true)} className="bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white gap-1.5 h-8 text-xs">
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <Button size="sm" onClick={() => setShowNew(true)} className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Log Activity
           </Button>
         </div>
@@ -448,16 +453,16 @@ export default function ActivitiesPage() {
         {/* ── Summary stats ────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
-            { label: "This Week", value: totalThisWeek, icon: Calendar, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
+            { label: "This Week", value: totalThisWeek, icon: Calendar, colour: "text-violet-600", bg: "bg-violet-50 border-violet-100" },
             { label: "Hours This Week", value: `${totalHoursThisWeek}h`, icon: Clock, colour: "text-teal-600", bg: "bg-teal-50 border-teal-100" },
-            { label: "Total Logged", value: activities.length, icon: Palette, colour: "text-[var(--cs-text-secondary)]", bg: "bg-slate-50 border-[var(--cs-border-subtle)]" },
+            { label: "Total Logged", value: activities.length, icon: Palette, colour: "text-slate-700", bg: "bg-slate-50 border-slate-100" },
             { label: "New Experiences", value: newExperienceCount, icon: Star, colour: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
             { label: "YP Voice Captured", value: ypVoiceCount, icon: Sparkles, colour: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
           ].map(({ label, value, icon: Icon, colour, bg }) => (
             <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
               <Icon className={cn("h-4 w-4 mx-auto mb-1", colour)} />
               <div className={cn("text-2xl font-bold tabular-nums", colour)}>{value}</div>
-              <div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5 font-medium">{label}</div>
+              <div className="text-[10px] text-slate-500 mt-0.5 font-medium">{label}</div>
             </div>
           ))}
         </div>
@@ -492,16 +497,16 @@ export default function ActivitiesPage() {
         {/* ── Search + filters ─────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search activities, locations, YP voice…" className="pl-9 h-8 text-xs" />
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <Filter className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+              <Filter className="h-3.5 w-3.5 text-slate-400" />
               <select
                 value={childFilter}
                 onChange={(e) => setChildFilter(e.target.value)}
-                className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-aria-gold-soft)] focus:ring-1 focus:ring-[var(--cs-aria-gold-soft)] outline-none"
+                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-700 focus:border-violet-300 focus:ring-1 focus:ring-violet-200 outline-none"
               >
                 <option value="all">All young people</option>
                 {childIds.map((id) => (
@@ -510,11 +515,11 @@ export default function ActivitiesPage() {
               </select>
             </div>
             <div className="flex items-center gap-1.5">
-              <ArrowUpDown className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+              <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-aria-gold-soft)] focus:ring-1 focus:ring-[var(--cs-aria-gold-soft)] outline-none"
+                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] text-slate-700 focus:border-violet-300 focus:ring-1 focus:ring-violet-200 outline-none"
               >
                 <option value="date">Date (newest)</option>
                 <option value="child">Young person</option>
@@ -526,7 +531,7 @@ export default function ActivitiesPage() {
         </div>
 
         {(search || childFilter !== "all" || categoryFilter !== "all") && (
-          <p className="text-xs text-[var(--cs-text-muted)]">
+          <p className="text-xs text-slate-400">
             {filtered.length} result{filtered.length !== 1 ? "s" : ""}
             {search && <span> matching &ldquo;{search}&rdquo;</span>}
           </p>
@@ -534,12 +539,12 @@ export default function ActivitiesPage() {
 
         {/* ── Activities list ──────────────────────────────────────────────── */}
         {filtered.length === 0 ? (
-          <div className="text-center py-16 text-[var(--cs-text-muted)]">
-            <Palette className="h-10 w-10 text-[var(--cs-text-gentle)] mx-auto mb-3" />
+          <div className="text-center py-16 text-slate-500">
+            <Palette className="h-10 w-10 text-slate-300 mx-auto mb-3" />
             <p className="text-sm font-medium">
               {search ? `No activities match "${search}"` : "No activities logged yet"}
             </p>
-            <p className="text-xs text-[var(--cs-text-muted)] mt-1">Log an activity to start building your enrichment evidence.</p>
+            <p className="text-xs text-slate-400 mt-1">Log an activity to start building your enrichment evidence.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -550,8 +555,8 @@ export default function ActivitiesPage() {
         )}
 
         {/* ── Regulatory note ──────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-[var(--cs-border-subtle)] bg-slate-50 px-4 py-3 text-xs text-[var(--cs-text-muted)]">
-          <span className="font-semibold text-[var(--cs-text-secondary)]">Regulatory Basis — </span>
+        <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+          <span className="font-semibold text-slate-600">Regulatory Basis — </span>
           Children&apos;s Homes Quality Standards 2015, Standard 2 (Quality of Care): children must be
           enabled to take part in and benefit from a range of activities and experiences that promote
           their development. Standard 1 (The Overall Experiences and Progress of Children): Ofsted
@@ -565,6 +570,18 @@ export default function ActivitiesPage() {
         open={showNew}
         onClose={() => setShowNew(false)}
         onSave={handleAddActivity}
+      />
+      <CareEventsPanel
+        title="Related Care Events"
+        category="activity"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Activities & Enrichment — sports, arts, leisure, trips, holidays, clubs, cultural activities, LAC entitlement, children's participation, wellbeing, Reg 45 positive outcomes"
+        recordType="direct_work"
+        className="mt-6"
       />
     </PageShell>
   );

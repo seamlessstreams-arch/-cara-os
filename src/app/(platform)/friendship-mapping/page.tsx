@@ -13,7 +13,7 @@ import {
   CalendarClock,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,9 @@ import {
 } from "@/types/extended";
 import { useFriendshipMaps } from "@/hooks/use-friendship-maps";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -168,10 +171,12 @@ export default function FriendshipMappingPage() {
     <PageShell
       title="Friendship Mapping"
       subtitle="Mapping each child's friendship network — quality, context, and contextual safeguarding considerations"
+      ariaContext={{ pageTitle: "Friendship Mapping", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Friendship Mapping" />
           <ExportButton data={records} columns={EXPORT_COLS} filename="friendship-mapping" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -428,6 +433,18 @@ export default function FriendshipMappingPage() {
         be reviewed at least annually, after any significant change in the child&apos;s social
         world, and as part of placement and transition planning.
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Friendship Mapping — peer relationships, social connections, positive friendships, negative influences, isolation risk, peer pressure, social skills, care plan"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

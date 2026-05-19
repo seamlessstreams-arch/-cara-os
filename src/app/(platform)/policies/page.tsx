@@ -27,6 +27,9 @@ import {
   Clock, ChevronDown, ChevronUp, Eye, Shield, Users, Calendar, Download,
   BookOpen, Loader2, RefreshCw, Star, Lock, UserCheck, Pencil,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -332,12 +335,14 @@ export default function PoliciesPage() {
     <PageShell
       title="Policies & Procedures"
       subtitle="All home policies — version control, review dates, and staff read-acknowledgements"
+      ariaContext={{ pageTitle: "Policies & Procedures", sourceType: "document" }}
       quickCreateContext={{ module: "compliance", defaultTaskCategory: "compliance" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={POLICY_EXPORT_COLS} filename="policies" />
           <PrintButton title="Policies & Procedures" subtitle="Oak House — Policies Register" targetId="policies-content" />
           <SmartUploadButton variant="inline" label="Upload Policy" uploadContext="Policies & Procedures — policy document upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -472,6 +477,18 @@ export default function PoliciesPage() {
           should be reviewed 6-monthly.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Policies & Procedures — home policies, regulatory requirements, review dates, compliance tracking, staff guidance, Ofsted evidence, Regulation 45 compliance, Annex A readiness"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

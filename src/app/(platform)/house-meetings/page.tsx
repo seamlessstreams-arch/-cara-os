@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,9 @@ import { useHouseMeetings, useCreateHouseMeeting } from "@/hooks/use-house-meeti
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { HouseMeeting, HouseMeetingType } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const TYPE_META: Record<HouseMeetingType, { label: string; color: string }> = {
   regular:   { label: "Regular",     color: "bg-blue-100 text-blue-800" },
@@ -54,6 +57,17 @@ const EXPORT_COLS: ExportColumn<HouseMeeting>[] = [
 export default function HouseMeetingsPage() {
   const { data: hmData, isLoading } = useHouseMeetings();
   const createMeeting = useCreateHouseMeeting();
+  const [hmForm, setHmForm] = useState({ date: new Date().toISOString().slice(0, 10), meeting_type: "regular" as HouseMeetingType, chair_person: "", minutes_taker: "", duration: "60", general_comments: "", next_meeting_date: "" });
+  const setHM = (k: string, v: unknown) => setHmForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateMeeting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!hmForm.general_comments.trim()) { toast.error("General comments are required."); return; }
+    await createMeeting.mutateAsync({ date: hmForm.date, meeting_type: hmForm.meeting_type, chair_person: hmForm.chair_person || "staff_darren", minutes_taker: hmForm.minutes_taker || "staff_ryan", children_present: [], children_absent: [], staff_present: [], agenda: [], child_feedback: [], actions_from_previous: [], new_actions: [], general_comments: hmForm.general_comments.trim(), next_meeting_date: hmForm.next_meeting_date, duration: parseInt(hmForm.duration) || 60, created_at: new Date().toISOString() });
+    toast.success("House meeting recorded.");
+    setHmForm({ date: new Date().toISOString().slice(0, 10), meeting_type: "regular", chair_person: "", minutes_taker: "", duration: "60", general_comments: "", next_meeting_date: "" });
+    setShowNew(false);
+  };
   const meetings = hmData?.data ?? [];
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -101,11 +115,13 @@ export default function HouseMeetingsPage() {
     <PageShell
       title="House Meetings"
       subtitle="Children&apos;s participation in household decisions — capturing voice, actions, and outcomes"
+      ariaContext={{ pageTitle: "House Meetings", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="House Meetings" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="house-meetings" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Meeting</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "team_meeting", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -311,15 +327,15 @@ export default function HouseMeetingsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New House Meeting</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleCreateMeeting} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium">Date</label>
-                <Input type="date" />
+                <Input type="date" value={hmForm.date} onChange={(e) => setHM("date", e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium">Type</label>
-                <Select><SelectTrigger><SelectValue placeholder="Meeting type" /></SelectTrigger>
+                <Select value={hmForm.meeting_type} onValueChange={(v) => setHM("meeting_type", v)}><SelectTrigger><SelectValue placeholder="Meeting type" /></SelectTrigger>
                   <SelectContent>{Object.entries(TYPE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
@@ -327,7 +343,7 @@ export default function HouseMeetingsPage() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium">Chair</label>
-                <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={hmForm.chair_person} onValueChange={(v) => setHM("chair_person", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
                     <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
@@ -337,7 +353,7 @@ export default function HouseMeetingsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium">Minutes Taker</label>
-                <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={hmForm.minutes_taker} onValueChange={(v) => setHM("minutes_taker", v)}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="staff_darren">{getStaffName("staff_darren")}</SelectItem>
                     <SelectItem value="staff_ryan">{getStaffName("staff_ryan")}</SelectItem>
@@ -348,23 +364,35 @@ export default function HouseMeetingsPage() {
             </div>
             <div>
               <label className="text-sm font-medium">Duration (minutes)</label>
-              <Input type="number" placeholder="30" />
+              <Input type="number" placeholder="30" value={hmForm.duration} onChange={(e) => setHM("duration", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium">General Comments</label>
-              <Textarea placeholder="Overall observations from the meeting…" rows={3} />
+              <label className="text-sm font-medium">General Comments *</label>
+              <Textarea placeholder="Overall observations from the meeting…" rows={3} value={hmForm.general_comments} onChange={(e) => setHM("general_comments", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Next Meeting Date</label>
-              <Input type="date" />
+              <Input type="date" value={hmForm.next_meeting_date} onChange={(e) => setHM("next_meeting_date", e.target.value)} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Create Meeting</Button>
+              <Button type="submit" disabled={createMeeting.isPending}>{createMeeting.isPending ? "Saving…" : "Create Meeting"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="House Meetings — children's meetings, house meeting minutes, actions, participation, voice of the child, decision making, house rules, complaints, Reg 45 evidence"
+        recordType="team_meeting"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

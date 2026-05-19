@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -17,6 +17,9 @@ import {
 import { useMaintenanceScheduleItems } from "@/hooks/use-maintenance-schedule-items";
 import type { MaintenanceScheduleItem, MaintenanceScheduleCategory, MaintenanceComplianceStatus, MaintenanceDefect } from "@/types/extended";
 import { MAINTENANCE_SCHEDULE_CATEGORY_LABEL, MAINTENANCE_FREQUENCY_LABEL, MAINTENANCE_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -120,10 +123,12 @@ export default function MaintenanceSchedulePage() {
     <PageShell
       title="Maintenance Schedule"
       subtitle="Planned maintenance — boilers, electrical, gas, fire safety, water hygiene, pest control. Quality Standard 25 evidence trail."
+      ariaContext={{ pageTitle: "Maintenance Schedule", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="maintenance-schedule" />
           <PrintButton title="Maintenance Schedule" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -316,6 +321,18 @@ export default function MaintenanceSchedulePage() {
           home&apos;s registration; defect histories evidence responsive landlord behaviour during Ofsted inspection.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Maintenance Schedule — planned maintenance, repairs, safety checks, contractor visits, heating system, plumbing, electrical, grounds maintenance, Reg 44 premises evidence, Annex A"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

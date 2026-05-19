@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -40,6 +40,9 @@ import {
   REMEDIAL_WORK_STATUS_LABEL,
 } from "@/types/extended";
 import { useSafetyCheckRecords } from "@/hooks/use-safety-check-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -133,10 +136,12 @@ export default function GasElectricalSafetyChecksPage() {
     <PageShell
       title="Gas & Electrical Safety Checks"
       subtitle="Statutory and routine building safety checks — annual gas safety (CP12), boiler service, EICR (5-yearly), PAT testing, weekly smoke and CO alarm tests, emergency lighting. Reg 25 (premises and grounds) compliance evidenced."
+      ariaContext={{ pageTitle: "Gas & Electrical Safety Checks", sourceType: "home_check" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="gas-electrical-safety-checks" />
           <PrintButton title="Gas & Electrical Safety Checks" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -332,6 +337,18 @@ export default function GasElectricalSafetyChecksPage() {
           certificates retained 7+ years; copies available to Ofsted on request.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Safety"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Gas & Electrical Safety Checks — annual gas safety certificate, EICR, boiler service, PAT testing, utility compliance, Reg 31, health and safety, Ofsted, Annex A evidence"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

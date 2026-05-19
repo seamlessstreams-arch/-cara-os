@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import {
@@ -56,6 +56,9 @@ import {
   STRATEGIC_RISK_APPETITE_ALIGNMENT_LABEL,
   STRATEGIC_RISK_KRI_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (icons cannot be serialized) ────────────────────── */
 
@@ -178,10 +181,12 @@ export default function RiskManagementBoardPage() {
     <PageShell
       title="Strategic Risk Management Board"
       subtitle="Organisational risk register — board-level oversight of risks to the home as a regulated business"
+      ariaContext={{ pageTitle: "Strategic Risk Management Board", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={visible} columns={exportCols} filename="strategic-risk-register" />
           <PrintButton title="Strategic Risk Management Board" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -428,6 +433,18 @@ export default function RiskManagementBoardPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding & Behaviour"
+        category={["safeguarding", "behaviour", "missing_episode"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Strategic Risk Management Board — organisational risk register, workforce risk, regulatory risk, financial risk, reputational risk, governance risk, RI oversight, QS13 evidence"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

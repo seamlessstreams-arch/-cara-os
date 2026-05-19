@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +31,9 @@ import {
   PREVENT_RISK_LEVEL_LABEL,
   PREVENT_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── label / colour maps ───────────────────────────────────────────── */
 const REFERRAL_TYPE_COLOURS: Record<PreventReferralType, string> = {
@@ -180,6 +183,7 @@ export default function PreventDutyPage() {
     <PageShell
       title="Prevent Duty"
       subtitle="Counter-Terrorism and Security Act 2015 — radicalisation awareness, referrals and Channel programme"
+      ariaContext={{ pageTitle: "Prevent Duty", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Prevent Duty" />
@@ -188,6 +192,7 @@ export default function PreventDutyPage() {
             <Plus className="h-4 w-4 mr-1" />
             New Entry
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -541,6 +546,18 @@ export default function PreventDutyPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category="safeguarding"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Prevent Duty — radicalisation risk, channel referrals, vulnerability concerns, counter-terrorism duties, staff training, referral decisions, multi-agency actions, safeguarding evidence"
+        recordType="safeguarding"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -14,17 +14,26 @@ import {
   FileText, ClipboardList, Hammer, ShieldCheck, BookOpen,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
-import { useImprovementObjectives } from "@/hooks/use-improvement-objectives";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useImprovementObjectives, useCreateImprovementObjective } from "@/hooks/use-improvement-objectives";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import type { ImprovementObjective, ObjectiveSource, ObjectivePriority, ObjectiveStatus } from "@/types/extended";
 import { OBJECTIVE_SOURCE_LABEL, OBJECTIVE_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
   reg44: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
@@ -72,6 +81,19 @@ export default function HomeImprovementPlanPage() {
   const [filterSource, setFilterSource] = useState("all");
   const [sortBy, setSortBy] = useState<"priority" | "status" | "target">("priority");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const createObjective = useCreateImprovementObjective();
+  const [objForm, setObjForm] = useState({ title: "", source: "self" as ObjectiveSource, priority: "medium" as ObjectivePriority, owner: "", target_date: "", notes: "" });
+  const setObj = (k: string, v: unknown) => setObjForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveObjective = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!objForm.title.trim()) { toast.error("Title is required."); return; }
+    await createObjective.mutateAsync({ title: objForm.title.trim(), source: objForm.source, priority: objForm.priority, status: "planned" as ObjectiveStatus, owner: objForm.owner || "staff_darren", target_date: objForm.target_date, completed_date: null, progress: 0, budget: null, notes: objForm.notes.trim(), updates: [] });
+    toast.success("Objective added.");
+    setObjForm({ title: "", source: "self", priority: "medium", owner: "", target_date: "", notes: "" });
+    setShowNew(false);
+  };
 
   /* ── filtering & sorting ────────────────────────────────────────── */
   const filtered = useMemo(() => {
@@ -138,13 +160,15 @@ export default function HomeImprovementPlanPage() {
     <PageShell
       title="Home Improvement Plan"
       subtitle="Post-inspection actions, quality objectives, Reg 45 recommendations, and development goals"
+      ariaContext={{ pageTitle: "Home Improvement Plan", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Home Improvement Plan" />
           <ExportButton data={filtered} columns={exportCols} filename="home-improvement-plan" />
-          <Button>
+          <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Add Objective
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -452,6 +476,30 @@ export default function HomeImprovementPlanPage() {
           that identified areas for improvement are acted upon within reasonable timescales.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Add Improvement Objective</DialogTitle></DialogHeader>
+          <form onSubmit={handleSaveObjective} className="space-y-3 py-2">
+            <div><Label>Title *</Label><Input className="mt-1" placeholder="e.g. Install keypad on medication room" value={objForm.title} onChange={(e) => setObj("title", e.target.value)} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Source</Label><Select value={objForm.source} onValueChange={(v) => setObj("source", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(OBJECTIVE_SOURCE_LABEL) as ObjectiveSource[]).map((k) => (<SelectItem key={k} value={k}>{OBJECTIVE_SOURCE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+              <div><Label>Priority</Label><Select value={objForm.priority} onValueChange={(v) => setObj("priority", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high">High</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="low">Low</SelectItem></SelectContent></Select></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Owner</Label><Select value={objForm.owner} onValueChange={(v) => setObj("owner", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="">Unassigned</SelectItem>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+              <div><Label>Target Date</Label><Input type="date" className="mt-1" value={objForm.target_date} onChange={(e) => setObj("target_date", e.target.value)} /></div>
+            </div>
+            <div><Label>Notes</Label><Textarea className="mt-1" rows={2} value={objForm.notes} onChange={(e) => setObj("notes", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createObjective.isPending}>{createObjective.isPending ? "Saving…" : "Add Objective"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

@@ -6,7 +6,7 @@ import {
   AlertTriangle, Clock, CheckCircle2,
   ChevronDown, ChevronUp, CloudMoon, Sun, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,9 @@ import { getStaffName } from "@/lib/seed-data";
 import { useSleepLog, useCreateSleepLogEntry } from "@/hooks/use-sleep-log";
 import { toast } from "sonner";
 import type { SleepLogEntry, SleepShiftType, SleepDisturbanceLevel, SleepDisturbance } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const SHIFT_TYPES: SleepShiftType[] = ["sleep_in", "waking_night"];
@@ -104,6 +107,7 @@ export default function SleepLogPage() {
     <PageShell
       title="Sleep-in & Waking Night Log"
       subtitle="Overnight shift records, disturbances, and morning handover"
+      ariaContext={{ pageTitle: "Sleep Log", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Sleep-in & Waking Night Log" />
@@ -111,6 +115,7 @@ export default function SleepLogPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> New Entry
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -358,6 +363,18 @@ export default function SleepLogPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Sleep"
+        category="sleep"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Sleep Log — daily child sleep records, sleep quality, night-time disturbances, sleep intervention records, bedtime routine compliance, care plan evidence, Reg 45 wellbeing evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

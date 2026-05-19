@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, Shield, Heart,
   RefreshCw, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -17,16 +17,38 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { usePositiveHandling } from "@/hooks/use-positive-handling";
+import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
+import { usePositiveHandling, useCreatePositiveHandlingPlan } from "@/hooks/use-positive-handling";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import type { PositiveHandlingPlan, PHPDeEscalation, PHPPhysicalResponse } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function PositiveHandlingPage() {
   const { data: result, isLoading } = usePositiveHandling();
   const plans = result?.data ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const createPlan = useCreatePositiveHandlingPlan();
+  const [phForm, setPhForm] = useState({ child_id: "", triggers: "", notes: "", reviewed_by: "" });
+  const setPH = (k: string, v: unknown) => setPhForm((p) => ({ ...p, [k]: v }));
+
+  const handleSavePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phForm.child_id) { toast.error("Please select a young person."); return; }
+    const dt = new Date().toISOString().slice(0, 10);
+    const nxt = new Date(); nxt.setFullYear(nxt.getFullYear() + 1);
+    await createPlan.mutateAsync({ child_id: phForm.child_id, version: "1.0", created_date: dt, last_reviewed: dt, next_review: nxt.toISOString().slice(0, 10), reviewed_by: phForm.reviewed_by, triggers: phForm.triggers.split("\n").filter(Boolean), early_warning: [], de_escalation: [], physical_responses: [], post_incident_support: [], child_preferences: "", medical_factors: "", staff_authorised: [], consent_obtained: false, sw_consulted: false, parent_notified: false, notes: phForm.notes });
+    toast.success("Positive handling plan created.");
+    setPhForm({ child_id: "", triggers: "", notes: "", reviewed_by: "" });
+    setShowNew(false);
+  };
 
   const today = new Date().toISOString().slice(0, 10);
   const reviewsDue = plans.filter((p) => p.next_review < today).length;
@@ -71,10 +93,13 @@ export default function PositiveHandlingPage() {
     <PageShell
       title="Positive Handling Plans"
       subtitle="Individual behaviour support and physical intervention plans for each young person"
+      ariaContext={{ pageTitle: "Positive Handling Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Positive Handling Plans" />
           <ExportButton data={exportData} columns={exportCols} filename="positive-handling" />
+          <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />New Plan</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -270,6 +295,30 @@ export default function PositiveHandlingPage() {
           in the restraint log.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Physical Interventions"
+        category={["physical_intervention", "restraint"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Positive Handling Plans — de-escalation strategies, safe holding techniques, PBS approaches, risk management, approved techniques, training records, debrief requirements, Reg 40 compliance"
+        recordType="care_plan"
+        className="mt-6"
+      />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>New Positive Handling Plan</DialogTitle></DialogHeader>
+          <form onSubmit={handleSavePlan} className="space-y-3 py-2">
+            <div><Label>Young Person *</Label><Select value={phForm.child_id} onValueChange={(v) => setPH("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Reviewed By</Label><Select value={phForm.reviewed_by} onValueChange={(v) => setPH("reviewed_by", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="">TBC</SelectItem>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Known Triggers (one per line)</Label><Textarea className="mt-1" rows={3} placeholder="e.g. Loud noises, crowded spaces…" value={phForm.triggers} onChange={(e) => setPH("triggers", e.target.value)} /></div>
+            <div><Label>Notes</Label><Textarea className="mt-1" rows={2} value={phForm.notes} onChange={(e) => setPH("notes", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createPlan.isPending}>{createPlan.isPending ? "Saving…" : "Create Plan"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

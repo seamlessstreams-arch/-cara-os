@@ -1,16 +1,24 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp, ArrowUpDown, MapPin, Shield, AlertTriangle, CheckCircle, Users, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ArrowUpDown, MapPin, Shield, AlertTriangle, CheckCircle, Users, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useOutdoorActivityRiskAssessments } from "@/hooks/use-outdoor-activity-risk-assessments";
+import { useOutdoorActivityRiskAssessments, useCreateOutdoorActivityRiskAssessment } from "@/hooks/use-outdoor-activity-risk-assessments";
 import type { OutdoorActivityRiskAssessment, OutdoorActivityType, OutdoorRiskLevel } from "@/types/extended";
 import { OUTDOOR_ACTIVITY_TYPE_LABEL, OUTDOOR_RISK_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { toast } from "sonner";
 
 const riskColour: Record<string, string> = { low: "bg-green-100 text-green-800", medium: "bg-amber-100 text-amber-800", high: "bg-red-100 text-red-800" };
 const exportCols: ExportColumn<OutdoorActivityRiskAssessment>[] = [
@@ -26,11 +34,52 @@ const exportCols: ExportColumn<OutdoorActivityRiskAssessment>[] = [
 
 export default function OutdoorActivityRiskAssessmentsPage() {
   const { data: res, isLoading } = useOutdoorActivityRiskAssessments();
+  const createRA = useCreateOutdoorActivityRiskAssessment();
   const data: OutdoorActivityRiskAssessment[] = res?.data ?? [];
 
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({
+    activity_name: "",
+    activity_type: "adventure_park" as OutdoorActivityType,
+    date: new Date().toISOString().split("T")[0],
+    location: "",
+    duration_hours: 2,
+    lead_staff: "",
+    behaviour_risk_rating: "low" as OutdoorRiskLevel,
+    missing_from_care_risk: "low" as OutdoorRiskLevel,
+  });
+
+  async function handleCreate() {
+    if (!form.activity_name || !form.location || !form.lead_staff) {
+      toast.error("Please complete all required fields");
+      return;
+    }
+    try {
+      await createRA.mutateAsync({
+        ...form,
+        hazards: [],
+        young_people_attending: [],
+        staff_escort: [form.lead_staff],
+        child_specific_considerations: [],
+        equipment_required: [],
+        emergency_procedures: ["Call 999 if emergency", "Contact RM immediately"],
+        supervision_ratio: "1:2",
+        pre_activity_briefing: "Standard pre-activity briefing to be completed on the day.",
+        external_risk_assessment: "N/A",
+        permissions_obtained: false,
+        signed_off_by_rm: false,
+        reviewed_by: form.lead_staff,
+      });
+      toast.success("Risk assessment logged");
+      setShowCreate(false);
+      setForm({ activity_name: "", activity_type: "adventure_park", date: new Date().toISOString().split("T")[0], location: "", duration_hours: 2, lead_staff: "", behaviour_risk_rating: "low", missing_from_care_risk: "low" });
+    } catch {
+      toast.error("Failed to save. Please try again.");
+    }
+  }
   const filtered = useMemo(() => {
     let items = [...data];
     if (filterType !== "all") items = items.filter((a) => a.activity_type === filterType);
@@ -51,7 +100,40 @@ export default function OutdoorActivityRiskAssessmentsPage() {
 
   return (
     <PageShell title="Outdoor Activity Risk Assessments" subtitle="Activity-specific RAs — trips, outings, water, climbing, festivals, and city visits"
-      actions={<div className="flex items-center gap-2"><ExportButton data={data} columns={exportCols} filename="outdoor-activity-risk-assessments" /><PrintButton title="Outdoor Activity Risk Assessments" /></div>}>
+      ariaContext={{ pageTitle: "Outdoor Activity Risk Assessments", sourceType: "child_record" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <ExportButton data={data} columns={exportCols} filename="outdoor-activity-risk-assessments" />
+          <PrintButton title="Outdoor Activity Risk Assessments" />
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />New RA</Button>
+        </div>
+      }>
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>New Outdoor Activity Risk Assessment</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div><Label>Activity Name *</Label><Input placeholder="e.g. Trip to Beamish Museum" value={form.activity_name} onChange={(e) => setForm((f) => ({ ...f, activity_name: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Activity Type</Label><Select value={form.activity_type} onValueChange={(v) => setForm((f) => ({ ...f, activity_type: v as OutdoorActivityType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(OUTDOOR_ACTIVITY_TYPE_LABEL) as [OutdoorActivityType, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Date *</Label><Input type="date" value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} /></div>
+            </div>
+            <div><Label>Location *</Label><Input placeholder="e.g. Beamish, County Durham" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Duration (hours)</Label><Input type="number" min={0.5} max={24} step={0.5} value={form.duration_hours} onChange={(e) => setForm((f) => ({ ...f, duration_hours: parseFloat(e.target.value) }))} /></div>
+              <div><Label>Lead Staff *</Label><Select value={form.lead_staff} onValueChange={(v) => setForm((f) => ({ ...f, lead_staff: v }))}><SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger><SelectContent>{STAFF.map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Behaviour Risk</Label><Select value={form.behaviour_risk_rating} onValueChange={(v) => setForm((f) => ({ ...f, behaviour_risk_rating: v as OutdoorRiskLevel }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(OUTDOOR_RISK_LEVEL_LABEL) as [OutdoorRiskLevel, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Missing Risk</Label><Select value={form.missing_from_care_risk} onValueChange={(v) => setForm((f) => ({ ...f, missing_from_care_risk: v as OutdoorRiskLevel }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(OUTDOOR_RISK_LEVEL_LABEL) as [OutdoorRiskLevel, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createRA.isPending}>{createRA.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save RA"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Active RAs</p></div>
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-amber-600">{highRisk}</p><p className="text-xs text-muted-foreground">High-Risk Activities</p></div>
@@ -96,6 +178,18 @@ export default function OutdoorActivityRiskAssessmentsPage() {
         })}
       </div>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Activity RAs support Quality Standard 5 (protection), Quality Standard 25, and Reg 23. Linked to Transport Risk Assessments and Holiday Planning.</p></div>
+      <CareEventsPanel
+        title="Care Events — Activities"
+        category="activity"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Outdoor Activity Risk Assessments — trip planning, hazard identification, child-specific risk, supervision ratios, missing from care risk, signed-off by RM"
+        recordType="risk_assessment"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

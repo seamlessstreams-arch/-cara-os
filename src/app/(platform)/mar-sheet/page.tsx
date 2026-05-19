@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -20,6 +20,9 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useMarEntries } from "@/hooks/use-mar-entries";
 import type { MarEntry, MarRoute, MarScheduleType } from "@/types/extended";
 import { MAR_ROUTE_LABEL, MAR_SCHEDULE_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -135,10 +138,12 @@ export default function MarSheetPage() {
     <PageShell
       title="MAR Sheet — Medication Administration Records"
       subtitle="Quality Standard 7 — Daily record of every medication dose given"
+      ariaContext={{ pageTitle: "Medication Administration Record", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Administration Record" />
           <ExportButton<MarEntry> data={filtered} columns={exportColumns} filename="mar-sheet" />
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -293,6 +298,18 @@ export default function MarSheetPage() {
           to Ofsted inspection and pharmacy audit.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Medication"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Medication Administration Record — MAR sheet, medication administration, controlled drugs, PRN, prescribed medications, GP instructions, pharmacist advice, Annex A evidence"
+        recordType="medication"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

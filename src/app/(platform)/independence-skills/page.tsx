@@ -14,21 +14,25 @@ import {
   Search,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getYPName }    from "@/lib/seed-data";
+import { getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useIndependenceSkillsRecords } from "@/hooks/use-independence-skills-records";
+import { useIndependenceSkillsRecords, useCreateIndependenceSkillsRecord } from "@/hooks/use-independence-skills-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependenceSkillsRecord, IndependenceSkillProficiency, IndependenceSkillCategory } from "@/types/extended";
 import { INDEPENDENCE_SKILL_PROFICIENCY_LABEL, INDEPENDENCE_SKILL_CATEGORY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -51,6 +55,21 @@ export default function IndependenceSkillsPage() {
   const [filterProf, setFilterProf] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [showDialog, setShowDialog] = useState(false);
+
+  const createRecord = useCreateIndependenceSkillsRecord();
+  const [isForm, setIsForm] = useState({ child_id: "", skill_name: "", category: "cooking" as IndependenceSkillCategory, proficiency: "not_started" as IndependenceSkillProficiency, date: new Date().toISOString().slice(0, 10), evidence: "", next_step: "" });
+  const setIS = (k: string, v: unknown) => setIsForm((p) => ({ ...p, [k]: v }));
+
+  const handleAddSkill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!isForm.skill_name.trim()) { toast.error("Skill name is required."); return; }
+    const skill = { id: crypto.randomUUID(), name: isForm.skill_name.trim(), category: isForm.category, proficiency: isForm.proficiency, target_date: "", last_assessed: isForm.date, assessed_by: "staff_darren", evidence: isForm.evidence.trim(), next_step: isForm.next_step.trim() };
+    await createRecord.mutateAsync({ child_id: isForm.child_id, review_date: isForm.date, reviewer: "staff_darren", overall_readiness: 50, skills: [skill], strengths: [], areas_for_development: [], child_view: "", pathway_notes: "", created_at: new Date().toISOString() });
+    toast.success("Independence skill record added.");
+    setIsForm({ child_id: "", skill_name: "", category: "cooking", proficiency: "not_started", date: new Date().toISOString().slice(0, 10), evidence: "", next_step: "" });
+    setShowDialog(false);
+  };
 
   /* ── per-child summary stats ─────────────────────────────────────────── */
   const ypSummaries = useMemo(() => data.map((r) => {
@@ -138,6 +157,7 @@ export default function IndependenceSkillsPage() {
     <PageShell
       title="Independence Skills Tracker"
       subtitle="Pathway to Independence — practical life skills assessment and tracking"
+      ariaContext={{ pageTitle: "Independence Skills Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="independence-skills" />
@@ -145,6 +165,7 @@ export default function IndependenceSkillsPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> New Skill
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -317,21 +338,33 @@ export default function IndependenceSkillsPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Add Independence Skill</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Select Young Person…</option>{data.map((r) => <option key={r.child_id} value={r.child_id}>{getYPName(r.child_id)}</option>)}</select>
-            <input placeholder="Skill name" className="rounded border px-3 py-2 text-sm" />
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Select Category…</option>{Object.entries(INDEPENDENCE_SKILL_CATEGORY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Select Proficiency…</option>{Object.entries(PROF_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
-            <input type="date" className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Evidence" rows={2} className="rounded border px-3 py-2 text-sm" />
-            <input placeholder="Next step" className="rounded border px-3 py-2 text-sm" />
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Add Skill</button>
-          </DialogFooter>
+          <form onSubmit={handleAddSkill} className="grid gap-3 py-2">
+            <select className="rounded border px-3 py-2 text-sm" value={isForm.child_id} onChange={(e) => setIS("child_id", e.target.value)}><option value="">Select Young Person…</option>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <option key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</option>)}</select>
+            <input placeholder="Skill name *" className="rounded border px-3 py-2 text-sm" value={isForm.skill_name} onChange={(e) => setIS("skill_name", e.target.value)} />
+            <select className="rounded border px-3 py-2 text-sm" value={isForm.category} onChange={(e) => setIS("category", e.target.value)}><option value="">Select Category…</option>{Object.entries(INDEPENDENCE_SKILL_CATEGORY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
+            <select className="rounded border px-3 py-2 text-sm" value={isForm.proficiency} onChange={(e) => setIS("proficiency", e.target.value)}><option value="">Select Proficiency…</option>{Object.entries(PROF_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
+            <input type="date" className="rounded border px-3 py-2 text-sm" value={isForm.date} onChange={(e) => setIS("date", e.target.value)} />
+            <textarea placeholder="Evidence" rows={2} className="rounded border px-3 py-2 text-sm" value={isForm.evidence} onChange={(e) => setIS("evidence", e.target.value)} />
+            <input placeholder="Next step" className="rounded border px-3 py-2 text-sm" value={isForm.next_step} onChange={(e) => setIS("next_step", e.target.value)} />
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createRecord.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">{createRecord.isPending ? "Saving…" : "Add Skill"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Activities"
+        category="activity"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Independence Skills Tracker — life skills, daily living, cooking, finances, self-care, transport, employment skills, aspirations, pathway plan, leaving care, Reg 45 evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

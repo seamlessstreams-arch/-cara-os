@@ -28,6 +28,9 @@ import {
   AlertTriangle, CheckCircle2, Clock, Calendar, Star, BookOpen,
   Loader2,
 } from "lucide-react";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Local view-model type (camelCase for the page) ──────────────────────────
 interface SessionView {
@@ -266,15 +269,24 @@ export default function KeyWorkingPage() {
     <PageShell
       title="Key Working Sessions"
       subtitle="Recording meaningful interactions and tracking progress with each young person"
+      ariaContext={{ pageTitle: "Key Working Sessions", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Key Working Sessions" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="key-working-sessions" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Session</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "keywork", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
+        <AriaPanel
+          mode="assist"
+          pageContext="Key Working Sessions — meaningful interactions, goal tracking, child voice"
+          recordType="key_work"
+          userRole="registered_manager"
+          className="mb-2"
+        />
         {/* ── Stats strip ──────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
@@ -541,6 +553,12 @@ export default function KeyWorkingPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

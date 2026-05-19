@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -33,6 +33,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const relationshipColour: Record<string, string> = {
   mentor: "bg-purple-100 text-purple-800",
@@ -136,10 +139,12 @@ export default function ChosenFamilyTrackerPage() {
     <PageShell
       title="Chosen Family Tracker"
       subtitle="Significant non-family adults in each child's life — chosen family is real family"
+      ariaContext={{ pageTitle: "Chosen Family", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="chosen-family-tracker" />
           <PrintButton title="Chosen Family" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -364,6 +369,18 @@ export default function ChosenFamilyTrackerPage() {
           Work, Cultural &amp; Religious Identity, and PEP records.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Family Contact"
+        category="family_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Chosen Family — significant relationships, friendships, mentors, support network, identity, belonging, placement stability, independence, contact arrangements, care plan"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

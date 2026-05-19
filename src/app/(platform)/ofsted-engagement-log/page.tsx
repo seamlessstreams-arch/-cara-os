@@ -6,7 +6,7 @@ import {
   ClipboardCheck, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2,
   Clock, Send, BookOpen, Calendar, MessageSquare, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,9 @@ import {
   OFSTED_ENGAGEMENT_TYPE_LABEL,
   OFSTED_ENGAGEMENT_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── derived constants ──────────────────────────────────────────────── */
 const ENGAGEMENT_TYPES = Object.entries(OFSTED_ENGAGEMENT_TYPE_LABEL) as [OfstedEngagementType, string][];
@@ -179,10 +182,12 @@ export default function OfstedEngagementLogPage() {
     <PageShell
       title="Ofsted Engagement Log"
       subtitle="All contact with Ofsted between full inspections — notifications, calls, emails, monitoring visits and statutory submissions"
+      ariaContext={{ pageTitle: "Ofsted Engagement Log", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Ofsted Engagement Log" />
           <ExportButton data={filtered} columns={exportCols} filename="ofsted-engagement-log" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -534,6 +539,18 @@ export default function OfstedEngagementLogPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Care Events — Compliance Evidence"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Ofsted Engagement Log — inspector visits, monitoring visits, Reg 44 visits, Reg 45 reports, Ofsted correspondence, self-referrals, notifications, grade history, ILACS preparation"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import {
   AlertTriangle, CheckCircle2, Clock, Smartphone, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getYPName } from "@/lib/seed-data";
+import { getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import {
   useDevicePolicyRecords,
   useCreateDevicePolicyRecord,
@@ -37,6 +37,9 @@ import {
   DEVICE_POLICY_AGREEMENT_STATUS_LABEL,
 } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -55,6 +58,20 @@ export default function DevicePolicyPage() {
   const [sortBy, setSortBy] = useState("child");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createDevice = useCreateDevicePolicyRecord();
+  const [dvForm, setDvForm] = useState({ child_id: "", device_name: "", device_type: "smartphone" as DevicePolicyDeviceType, owned_by: "child" as "child" | "home" | "family", serial_number: "", nighttime_storage: "", notes: "" });
+  const setDV = (k: string, v: unknown) => setDvForm((p) => ({ ...p, [k]: v }));
+
+  const handleAddDevice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dvForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!dvForm.device_name.trim()) { toast.error("Device name is required."); return; }
+    await createDevice.mutateAsync({ child_id: dvForm.child_id, device_type: dvForm.device_type, device_name: dvForm.device_name.trim(), owned_by: dvForm.owned_by, serial_number: dvForm.serial_number.trim(), parental_controls_enabled: false, parental_control_software: "", wifi_access: true, sim_card: false, agreement_signed: false, agreement_date: null, agreement_status: "not_signed", screen_time_rules: [], usage_log: [], incidents: [], restrictions: [], social_media_permission: false, social_media_platforms: [], social_worker_approval: false, nighttime_storage: dvForm.nighttime_storage.trim(), review_date: "", notes: dvForm.notes.trim(), created_at: new Date().toISOString() });
+    toast.success("Device record added.");
+    setDvForm({ child_id: "", device_name: "", device_type: "smartphone", owned_by: "child", serial_number: "", nighttime_storage: "", notes: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
   const today = new Date().toISOString().slice(0, 10);
@@ -100,10 +117,12 @@ export default function DevicePolicyPage() {
     <PageShell
       title="Device & Phone Policy"
       subtitle="Screen time agreements, device usage monitoring, and online safety — Reg 12"
+      ariaContext={{ pageTitle: "Device & Phone Policy", sourceType: "document" }}
       actions={[
         <PrintButton key="p" title="Device & Phone Policy" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="device-policy" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Add Device</Button>,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       {isLoading ? (
@@ -278,23 +297,35 @@ export default function DevicePolicyPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add Device Record</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Young Person</Label><Select><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Device Name</Label><Input placeholder="e.g. iPhone SE" /></div>
+          <form onSubmit={handleAddDevice} className="space-y-3">
+            <div><Label>Young Person *</Label><Select value={dvForm.child_id} onValueChange={(v) => setDV("child_id", v)}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Device Name *</Label><Input placeholder="e.g. iPhone SE" value={dvForm.device_name} onChange={(e) => setDV("device_name", e.target.value)} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Device Type</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(DEVICE_POLICY_DEVICE_TYPE_LABEL) as [DevicePolicyDeviceType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
-              <div><Label>Owned By</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="child">Child</SelectItem><SelectItem value="home">Home</SelectItem><SelectItem value="family">Family</SelectItem></SelectContent></Select></div>
+              <div><Label>Device Type</Label><Select value={dvForm.device_type} onValueChange={(v) => setDV("device_type", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(DEVICE_POLICY_DEVICE_TYPE_LABEL) as [DevicePolicyDeviceType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Owned By</Label><Select value={dvForm.owned_by} onValueChange={(v) => setDV("owned_by", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="child">Child</SelectItem><SelectItem value="home">Home</SelectItem><SelectItem value="family">Family</SelectItem></SelectContent></Select></div>
             </div>
-            <div><Label>Serial Number</Label><Input placeholder="Device serial/IMEI" /></div>
-            <div><Label>Nighttime Storage</Label><Input placeholder="Where is device stored at night?" /></div>
-            <div><Label>Notes</Label><Textarea rows={2} placeholder="Additional notes…" /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => setDialogOpen(false)}>Add Device</Button>
-          </DialogFooter>
+            <div><Label>Serial Number</Label><Input placeholder="Device serial/IMEI" value={dvForm.serial_number} onChange={(e) => setDV("serial_number", e.target.value)} /></div>
+            <div><Label>Nighttime Storage</Label><Input placeholder="Where is device stored at night?" value={dvForm.nighttime_storage} onChange={(e) => setDV("nighttime_storage", e.target.value)} /></div>
+            <div><Label>Notes</Label><Textarea rows={2} placeholder="Additional notes…" value={dvForm.notes} onChange={(e) => setDV("notes", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createDevice.isPending}>{createDevice.isPending ? "Saving…" : "Add Device"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Device & Phone Policy — mobile phones, tablets, internet access, social media rules, safe use agreements, device allocation, confiscation, online safety, policy evidence, Reg 44"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

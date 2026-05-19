@@ -12,7 +12,7 @@ import {
   Calendar,
   AlertTriangle,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -33,6 +33,9 @@ import {
 } from "@/types/extended";
 import { useTraumaTherapyLogs } from "@/hooks/use-trauma-therapy-logs";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────── */
 
@@ -204,10 +207,12 @@ export default function ChildTraumaTherapyLogPage() {
     <PageShell
       title="Child Trauma Therapy Log"
       subtitle="Per-child trauma therapy attendance and observable presentation — therapeutic content stays in the therapy room"
+      ariaContext={{ pageTitle: "Child Trauma Therapy Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Trauma Therapy Log" />
           <ExportButton data={exportRows} columns={exportCols} filename="child-trauma-therapy-log" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -438,6 +443,18 @@ export default function ChildTraumaTherapyLogPage() {
       <div className="rounded-lg border border-violet-200 bg-violet-50/60 p-4 text-sm text-violet-900 mb-6">
         <strong>Regulatory framework.</strong> Trauma therapy work in the home is governed by the standards of the practitioner&apos;s registering body — BPS, BACP or UKCP for psychologists and psychotherapists, BAAT for art therapists, and BAPT for play therapists. Specific modalities follow their evidence base: TF-CBT (Cohen, Mannarino &amp; Deblinger), EMDR (EMDR Institute / EMDR UK), and DDP (DDP Network). In line with the Children&apos;s Homes (England) Regulations 2015 — Quality Standard 8 (care planning) — staff hold therapeutic confidence by recording broad themes only, with the explicit consent of the child and the therapist on what gets shared with the home. UNCRC Article 24 (the right to the highest attainable standard of health) underpins our duty to keep these therapies accessible and well-supported between sessions.
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Wellbeing"
+        category={["health", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Child Trauma Therapy Log — therapy attendance, therapist, session presentation, observable impact, CAMHS, trauma-informed care, therapeutic relationship, PEP, care plan integration"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

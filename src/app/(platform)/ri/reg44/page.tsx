@@ -6,6 +6,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -524,6 +526,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
     <PageShell
       title="Reg 44 Independent Visits"
       subtitle="Independent person visits — tracking, findings, actions and RI review"
+      ariaContext={{ pageTitle: "Reg 44 Independent Visits", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -544,6 +547,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
               RI Hub
             </button>
           </Link>
+          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -815,6 +819,12 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <AriaPanel
+        mode="assist"
+        pageContext="Reg 44 Independent Visits — RI view of independent visitor reports, visit findings, children's views, action tracking, management responses, statutory compliance, Ofsted evidence"
+        recordType="reg45"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

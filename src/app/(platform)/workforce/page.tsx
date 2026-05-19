@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import {
   Network, Sparkles, Users, TrendingUp, GitBranch, Milestone,
   BarChart2, UserCheck, ShieldCheck, Award, Microscope, Briefcase,
@@ -32,12 +32,13 @@ import {
   COMPETENCY_DOMAIN_LABELS,
   type PathwayStage,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const STAGE_COLOURS: Record<PathwayStage, string> = {
-  inductee:           "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
+  inductee:           "bg-slate-100 text-slate-700 border-slate-200",
   rsw:                "bg-blue-50 text-blue-700 border-blue-200",
   senior_rsw:         "bg-sky-50 text-sky-700 border-sky-200",
-  team_leader:        "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+  team_leader:        "bg-violet-50 text-violet-700 border-violet-200",
   deputy_manager:     "bg-amber-50 text-amber-700 border-amber-200",
   registered_manager: "bg-emerald-50 text-emerald-700 border-emerald-200",
   ri:                 "bg-rose-50 text-rose-700 border-rose-200",
@@ -50,7 +51,7 @@ const READINESS_BG = (score: number) =>
   score >= 80 ? "bg-emerald-500" : score >= 60 ? "bg-amber-500" : "bg-red-500";
 
 const MODULE_TILES = [
-  { href: "/workforce/pathway",         icon: Milestone,      label: "Career Pathway",        desc: "5-stage progression ladder",         colour: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
+  { href: "/workforce/pathway",         icon: Milestone,      label: "Career Pathway",        desc: "5-stage progression ladder",         colour: "text-violet-600 bg-violet-50 border-violet-100" },
   { href: "/workforce/competency",      icon: BarChart2,      label: "Competency Framework",  desc: "10-domain scoring matrix",           colour: "text-blue-600 bg-blue-50 border-blue-100" },
   { href: "/workforce/aria-planner",    icon: Sparkles,       label: "ARIA Dev Planner",      desc: "ARIA-generated development plans",   colour: "text-indigo-600 bg-indigo-50 border-indigo-100" },
   { href: "/workforce/succession",      icon: GitBranch,      label: "Succession Board",      desc: "Role coverage & readiness",          colour: "text-emerald-600 bg-emerald-50 border-emerald-100" },
@@ -59,7 +60,7 @@ const MODULE_TILES = [
   { href: "/workforce/induction",       icon: ShieldCheck,    label: "Induction Tracker",     desc: "Day 1 to probation completion",      colour: "text-rose-600 bg-rose-50 border-rose-100" },
   { href: "/workforce/training-matrix", icon: GraduationCap,  label: "Training Matrix",       desc: "Team training coverage overview",    colour: "text-sky-600 bg-sky-50 border-sky-100" },
   { href: "/workforce/observations",    icon: Microscope,     label: "Practice Observations", desc: "Direct practice observation log",    colour: "text-purple-600 bg-purple-50 border-purple-100" },
-  { href: "/workforce/supervision",     icon: MessageSquare,  label: "Supervision Hub",       desc: "Reflective supervision records",     colour: "text-[var(--cs-text-secondary)] bg-slate-50 border-[var(--cs-border-subtle)]" },
+  { href: "/workforce/supervision",     icon: MessageSquare,  label: "Supervision Hub",       desc: "Reflective supervision records",     colour: "text-slate-600 bg-slate-50 border-slate-100" },
   { href: "/workforce/evidence",        icon: Briefcase,      label: "Evidence Portfolio",    desc: "CPD & practice evidence store",      colour: "text-orange-600 bg-orange-50 border-orange-100" },
   { href: "/workforce/qualifications",  icon: Award,          label: "Qualifications",        desc: "Regulatory fitness tracker",         colour: "text-green-600 bg-green-50 border-green-100" },
   { href: "/workforce/staff",           icon: Users,          label: "Staff Profiles",        desc: "Individual competency deep-dives",   colour: "text-fuchsia-600 bg-fuchsia-50 border-fuchsia-100" },
@@ -100,6 +101,7 @@ export default function WorkforceHubPage() {
     <PageShell
       title="Workforce Intelligence"
       subtitle="Staff development, competency & succession — powered by ARIA"
+      ariaContext={{ pageTitle: "Workforce Intelligence", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -107,19 +109,20 @@ export default function WorkforceHubPage() {
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Workforce Hub — staff evidence or qualification upload" />
           <Button
             size="sm"
-            className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
+            className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white"
             onClick={() => setShowAria((p) => !p)}
           >
             <Sparkles className="h-3.5 w-3.5" />
             ARIA Workforce Analysis
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       {/* ARIA Panel */}
       {showAria && (
         <div className="relative">
-          <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-xs">✕ Close</button>
+          <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs">✕ Close</button>
           <AriaPanel
             mode="staff_development_summary"
             pageContext={`Workforce hub: ${profiles.length} staff profiles, avg readiness ${avgReadiness}/100. ${overdueAppraisals} overdue appraisals. ${qualGaps} mandatory qualification gaps. Succession plans: ${activePlansCount} active.`}
@@ -162,7 +165,7 @@ export default function WorkforceHubPage() {
           <div key={kpi.label} className={cn("rounded-2xl border p-4", kpi.bg)}>
             <div className="flex items-center gap-2 mb-1">
               <kpi.icon className={cn("h-4 w-4", kpi.colour)} />
-              <span className="text-xs text-[var(--cs-text-muted)]">{kpi.label}</span>
+              <span className="text-xs text-slate-500">{kpi.label}</span>
             </div>
             <p className={cn("text-2xl font-bold", kpi.colour)}>{kpi.value}</p>
           </div>
@@ -171,11 +174,11 @@ export default function WorkforceHubPage() {
 
       {/* Staff Readiness Snapshot */}
       {profiles.length > 0 && (
-        <div className="rounded-2xl border border-[var(--cs-border)] bg-white overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--cs-border-subtle)]">
+        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <Network className="h-4 w-4 text-indigo-500" />
-              <span className="text-sm font-semibold text-[var(--cs-navy)]">Staff Readiness Snapshot</span>
+              <span className="text-sm font-semibold text-slate-800">Staff Readiness Snapshot</span>
             </div>
             <Link href="/workforce/staff">
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-indigo-600 hover:text-indigo-800">
@@ -188,7 +191,7 @@ export default function WorkforceHubPage() {
               <Link
                 key={profile.id}
                 href={`/workforce/staff/${profile.staff_id}`}
-                className="flex items-center gap-4 px-4 py-3 hover:bg-[var(--cs-surface)] transition-colors"
+                className="flex items-center gap-4 px-4 py-3 hover:bg-slate-50 transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
                   <span className="text-xs font-bold text-indigo-700">
@@ -196,16 +199,15 @@ export default function WorkforceHubPage() {
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[var(--cs-navy)] truncate">{getStaffName(profile.staff_id)}</p>
+                  <p className="text-sm font-semibold text-slate-800 truncate">{getStaffName(profile.staff_id)}</p>
                   <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", STAGE_COLOURS[profile.current_stage])}>
                     {PATHWAY_STAGE_LABELS[profile.current_stage]}
                   </Badge>
-                  <AriaUsageBadge ariaAssisted={(profile as any).aria_assist_used} sourceTable="workforce_profiles" recordId={profile.staff_id} />
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="w-24">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-[var(--cs-text-muted)]">Readiness</span>
+                      <span className="text-xs text-slate-400">Readiness</span>
                       <span className={cn("text-xs font-bold", READINESS_COLOUR(profile.overall_readiness_score))}>
                         {profile.overall_readiness_score}%
                       </span>
@@ -218,12 +220,12 @@ export default function WorkforceHubPage() {
                     </div>
                   </div>
                   {profile.target_stage && (
-                    <div className="flex items-center gap-1 text-xs text-[var(--cs-text-muted)]">
+                    <div className="flex items-center gap-1 text-xs text-slate-400">
                       <ArrowUpRight className="h-3 w-3" />
                       <span className="hidden sm:inline">{PATHWAY_STAGE_LABELS[profile.target_stage]}</span>
                     </div>
                   )}
-                  <ChevronRight className="h-4 w-4 text-[var(--cs-text-gentle)]" />
+                  <ChevronRight className="h-4 w-4 text-slate-300" />
                 </div>
               </Link>
             ))}
@@ -250,18 +252,18 @@ export default function WorkforceHubPage() {
               const urgencyColour =
                 plan.urgency === "immediate" ? "text-red-600 bg-red-50 border-red-200"
                 : plan.urgency === "six_months" ? "text-amber-600 bg-amber-50 border-amber-200"
-                : "text-[var(--cs-text-secondary)] bg-slate-50 border-[var(--cs-border)]";
+                : "text-slate-600 bg-slate-50 border-slate-200";
               return (
                 <div key={plan.id} className="px-4 py-3">
                   <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-sm font-semibold text-[var(--cs-navy)]">{plan.role_title}</p>
+                    <p className="text-sm font-semibold text-slate-800">{plan.role_title}</p>
                     <Badge variant="outline" className={cn("text-[10px] px-1.5 border capitalize", urgencyColour)}>
                       {plan.urgency.replace("_", " ")}
                     </Badge>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {plan.candidates.map((c) => (
-                      <div key={c.staff_id} className="flex items-center gap-1.5 text-xs text-[var(--cs-text-secondary)]">
+                      <div key={c.staff_id} className="flex items-center gap-1.5 text-xs text-slate-600">
                         {c.ready_now ? (
                           <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                         ) : (
@@ -283,7 +285,7 @@ export default function WorkforceHubPage() {
 
       {/* Module Tiles */}
       <div>
-        <p className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-widest mb-3">All Modules</p>
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">All Modules</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {MODULE_TILES.map((tile) => (
             <Link key={tile.href} href={tile.href}>
@@ -308,12 +310,18 @@ export default function WorkforceHubPage() {
       </div>
 
       {/* Regulatory Note */}
-      <div className="rounded-xl border border-[var(--cs-border-subtle)] bg-slate-50 px-4 py-3 text-xs text-[var(--cs-text-muted)]">
-        <span className="font-semibold text-[var(--cs-text-secondary)]">Regulatory Basis — </span>
+      <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+        <span className="font-semibold text-slate-600">Regulatory Basis — </span>
         Children&apos;s Homes (England) Regulations 2015: Reg 29 (RM qualifications), Reg 32 (staff qualifications),
         Reg 33 (induction), Reg 34 (supervision). ILACS Framework — Quality of Care theme: workforce capabilities
         and succession. Reg 44/45 — evidence of staff development activity.
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

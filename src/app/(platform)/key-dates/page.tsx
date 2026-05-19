@@ -26,6 +26,9 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn, formatDate } from "@/lib/utils";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -304,11 +307,13 @@ export default function KeyDatesPage() {
     <PageShell
       title="Key Dates"
       subtitle="Statutory deadlines, review dates, and operational milestones — next 90 days"
+      ariaContext={{ pageTitle: "Key Dates & Deadlines", sourceType: "general" }}
       quickCreateContext={{ module: "compliance", defaultTaskCategory: "compliance" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={KEY_DATE_EXPORT_COLS} filename="key-dates" />
           <PrintButton title="Key Dates" subtitle="Oak House — Key Dates & Deadlines" targetId="key-dates-content" />
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -443,6 +448,18 @@ export default function KeyDatesPage() {
           DBS/training renewals: Standard 5 &amp; 6 Quality Standards.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Key Dates & Deadlines — LAC reviews, care plan reviews, Reg 44 visits, Reg 45 reports, court dates, placement anniversary, key worker meetings, court hearings, statutory deadlines"
+        recordType="task"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

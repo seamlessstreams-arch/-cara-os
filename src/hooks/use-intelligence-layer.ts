@@ -58,6 +58,73 @@ export function useUpdateAttentionItem() {
   });
 }
 
+// ── HR Risk Command Centre ───────────────────────────────────────────────────
+
+export function useHrRisk() {
+  return useQuery({
+    queryKey: ["il", "hr-risk"],
+    queryFn: () =>
+      ilFetch<{
+        ok: boolean;
+        cases: unknown[];
+        overdueTasks: unknown[];
+        recruitment: unknown[];
+        persisted: boolean;
+      }>(`/hr-risk`),
+  });
+}
+
+export function useHrInspection() {
+  return useQuery({
+    queryKey: ["il", "hr-inspection"],
+    queryFn: () =>
+      ilFetch<{
+        ok: boolean;
+        workforce: unknown;
+        recruitment: unknown[];
+        cases: unknown[];
+        chronology: unknown[];
+        suspensions: unknown[];
+        lado: unknown[];
+        compliance: unknown[];
+        oversight: unknown[];
+        persisted: boolean;
+      }>(`/hr-inspection`),
+  });
+}
+
+// ── ARIA suggestions (review queue + detail) ─────────────────────────────────
+
+export function useAriaSuggestions(params?: { homeId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.status) query.set("status", params.status);
+  return useQuery({
+    queryKey: ["il", "aria-suggestions", params],
+    queryFn: () => ilFetch<{ ok: boolean; items: unknown[]; persisted: boolean }>(`/aria-suggestions?${query}`),
+  });
+}
+
+export function useAriaSuggestion(id?: string) {
+  return useQuery({
+    queryKey: ["il", "aria-suggestion", id],
+    queryFn: () => ilFetch<{ ok: boolean; item: unknown; persisted: boolean }>(`/aria-suggestions?id=${id}`),
+    enabled: !!id,
+  });
+}
+
+export function useUpdateAriaSuggestion() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/aria-suggestions", { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "aria-suggestions"] });
+      qc.invalidateQueries({ queryKey: ["il", "aria-suggestion"] });
+    },
+  });
+}
+
 // ── Evidence (Ofsted Evidence Room) ──────────────────────────────────────────
 
 export function useEvidenceItems(params?: {
@@ -84,6 +151,24 @@ export function useCreateEvidence() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["il", "evidence"] });
     },
+  });
+}
+
+export function useEvidenceGaps(params?: { homeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  return useQuery({
+    queryKey: ["il", "evidence-gaps", params],
+    queryFn: () =>
+      ilFetch<{
+        ok: boolean;
+        gaps: unknown[];
+        totalGaps: number;
+        criticalCount: number;
+        highCount: number;
+        gapsByType: Record<string, number>;
+        persisted: boolean;
+      }>(`/evidence-gaps?${query}`),
   });
 }
 
@@ -261,6 +346,40 @@ export function useCreateReg44Visit() {
   });
 }
 
+export function useReg44Actions(params?: { homeId?: string; visitId?: string; status?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+  if (params?.visitId) query.set("visitId", params.visitId);
+  if (params?.status) query.set("status", params.status);
+
+  return useQuery({
+    queryKey: ["il", "reg44-actions", params],
+    queryFn: () => ilFetch<{ ok: boolean; actions: unknown[]; persisted: boolean }>(`/reg44-actions?${query}`),
+  });
+}
+
+export function useCreateReg44Action() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/reg44-actions", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "reg44-actions"] });
+    },
+  });
+}
+
+export function useUpdateReg44Action() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      ilFetch("/reg44-actions", { method: "PATCH", body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["il", "reg44-actions"] });
+    },
+  });
+}
+
 // ── Reg 45 ───────────────────────────────────────────────────────────────────
 
 export function useReg45Reviews(params?: { homeId?: string; status?: string }) {
@@ -293,6 +412,16 @@ export function useUpdateReg45Review() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["il", "reg45"] });
     },
+  });
+}
+
+export function useReg45Evidence(params?: { homeId?: string }) {
+  const query = new URLSearchParams();
+  if (params?.homeId) query.set("homeId", params.homeId);
+
+  return useQuery({
+    queryKey: ["il", "reg45-evidence", params],
+    queryFn: () => ilFetch<{ ok: boolean; evidence: unknown[]; persisted: boolean }>(`/reg45-evidence?${query}`),
   });
 }
 

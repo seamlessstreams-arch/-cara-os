@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,14 +31,17 @@ import { cn, formatDate, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { PrintButton } from "@/components/common/print-button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import {
   MapPin, AlertTriangle, CheckCircle2, Clock, Shield, ChevronDown,
   ChevronUp, Plus, Sparkles, Phone, User, Calendar,
   TrendingUp, Activity, FileText, X, RotateCcw, Search, ArrowUpDown,
 } from "lucide-react";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const MFC_EXPORT_COLS: ExportColumn<MissingEpisode>[] = [
   { header: "Reference", accessor: (e) => e.reference },
@@ -175,6 +179,16 @@ function EpisodeCard({
               <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]">
                 RHI Outstanding
               </Badge>
+            )}
+            {(episode as never as { care_event_id?: string }).care_event_id && (
+              <Link
+                href={`/care-events/${(episode as never as { care_event_id: string }).care_event_id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-1.5 py-px text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+              >
+                <FileText className="h-2.5 w-2.5" />
+                Care Event
+              </Link>
             )}
           </div>
           <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-[var(--cs-text-muted)]">
@@ -845,15 +859,25 @@ export default function MissingFromCarePage() {
     <PageShell
       title="Missing from Care"
       subtitle="Track missing episodes, return home interviews, and contextual safeguarding risks"
+      ariaContext={{ pageTitle: "Missing from Care", sourceType: "incident" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Missing from Care Log" subtitle="Oak House — Missing Episodes & Return Interviews" targetId="mfc-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Missing From Care — return interview or episode upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "missing_from_care", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="mfc-content" className="space-y-6 animate-fade-in max-w-5xl">
+
+        <AriaPanel
+          mode="assist"
+          pageContext="Missing from Care — episode tracking, return home interviews, contextual safeguarding"
+          recordType="missing_episode"
+          userRole="registered_manager"
+          className="mb-2"
+        />
 
         {/* Active alert banner */}
         {activeEpisodes.length > 0 && (
@@ -1065,6 +1089,13 @@ export default function MissingFromCarePage() {
       <LogReturnDialog episode={logReturnEp} onClose={() => setLogReturnEp(null)} />
       <RhiDialog episode={rhiEp} onClose={() => setRhiEp(null)} />
 
+      {/* Care Events pipeline — missing episode events routed here */}
+      <CareEventsPanel
+        title="Care Events — Missing Episodes"
+        category="missing_episode"
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

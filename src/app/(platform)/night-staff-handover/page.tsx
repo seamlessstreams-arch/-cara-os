@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,15 +13,20 @@ import {
 } from "@/components/ui/select";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName, getStaffName, STAFF, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   Moon, Sun, Search, ArrowUpDown, ChevronUp, ChevronDown, Plus,
   AlertTriangle, CheckCircle2, Clock, Users, Pill, ShieldAlert,
   Phone, BedDouble, Eye, FileText, Sparkles, Bell, Loader2,
 } from "lucide-react";
-import { useNightStaffHandovers } from "@/hooks/use-night-staff-handovers";
+import { useNightStaffHandovers, useCreateNightStaffHandover } from "@/hooks/use-night-staff-handovers";
 import type { NightStaffHandover } from "@/types/extended";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Date helper (relative) ─────────────────────────────────────────────────
 
@@ -66,6 +73,20 @@ export default function NightStaffHandoverPage() {
   const [staffFilter, setStaffFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortKey>("date_desc");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const createHandover = useCreateNightStaffHandover();
+  const [nhForm, setNhForm] = useState({ evening_staff: "", night_staff: "", handover_time: "22:00", risk_briefing: "", notes: "" });
+  const setNH = (k: string, v: unknown) => setNhForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveHandover = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nhForm.night_staff) { toast.error("Night staff is required."); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    await createHandover.mutateAsync({ date: today, evening_staff: nhForm.evening_staff || "staff_darren", night_staff: nhForm.night_staff, handover_time: nhForm.handover_time, children_at_home: YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => y.id), children_sleeping: {}, children_awake: "", medication_given: false, medication_due: "", risk_briefing: nhForm.risk_briefing.split("\n").filter(Boolean), specific_concerns: {}, night_checks_required: {}, expected_returns: "", emergency_contacts: "", morning_wake_time: "07:00", morning_staff: "", night_events: [], morning_handover_complete: false });
+    toast.success("Night handover logged.");
+    setNhForm({ evening_staff: "", night_staff: "", handover_time: "22:00", risk_briefing: "", notes: "" });
+    setShowNew(false);
+  };
 
   // Filter + sort
   const filtered = useMemo(() => {
@@ -148,6 +169,7 @@ export default function NightStaffHandoverPage() {
     <PageShell
       title="Night Staff Handover"
       subtitle="Sleep-in / waking night handover records — distinct from main shift handover"
+      ariaContext={{ pageTitle: "Night Staff Handover", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Night Staff Handover" />
@@ -156,12 +178,14 @@ export default function NightStaffHandoverPage() {
             columns={EXPORT_COLS}
             filename="night-staff-handover"
           />
-          <Button size="sm">
+          <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> New Night Handover
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
+      <AriaPanel mode="assist" pageContext="Night staff handover — sleep-in and waking night records, concerns, child status, night events" recordType="general" userRole="registered_manager" className="mb-4" />
       <div id="print-area" className="space-y-6">
         {/* ── Stats ─────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -477,6 +501,24 @@ export default function NightStaffHandoverPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Care Events — Sleep"
+        category="sleep"
+        days={28}
+        defaultCollapsed
+      />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>New Night Handover</DialogTitle></DialogHeader>
+          <form onSubmit={handleSaveHandover} className="space-y-3 py-2">
+            <div><Label>Evening Staff</Label><Select value={nhForm.evening_staff} onValueChange={(v) => setNH("evening_staff", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select (defaults to you)…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Night Staff *</Label><Select value={nhForm.night_staff} onValueChange={(v) => setNH("night_staff", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select night staff…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Handover Time</Label><Input type="time" className="mt-1" value={nhForm.handover_time} onChange={(e) => setNH("handover_time", e.target.value)} /></div>
+            <div><Label>Risk Briefing (one point per line)</Label><Textarea className="mt-1" rows={3} placeholder="Key risk briefing items…" value={nhForm.risk_briefing} onChange={(e) => setNH("risk_briefing", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createHandover.isPending}>{createHandover.isPending ? "Saving…" : "Save Handover"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

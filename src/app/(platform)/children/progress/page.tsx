@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useProgressGoals, useProgressEntries, useProgressSnapshots, useCreateProgressRecord } from "@/hooks/use-intelligence-layer";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -107,176 +109,67 @@ const CHILDREN = [
 ];
 
 // ── Demo Data ────────────────────────────────────────────────────────────────
-
-const DEMO_GOALS: Goal[] = [
-  {
-    id: "g1",
-    title: "Achieve Grade 5 in English GCSE",
-    area: "education",
-    status: "on_track",
-    targetDate: "2026-08-20",
-    description: "Working with tutor twice weekly. Mock results showing steady improvement from Grade 3 to predicted Grade 5.",
-    progress: 72,
-  },
-  {
-    id: "g2",
-    title: "Manage anger without physical outbursts for 8 weeks",
-    area: "emotional_wellbeing",
-    status: "at_risk",
-    targetDate: "2026-06-15",
-    description: "Using breathing techniques and safe space. Had one incident in week 5 but recovered quickly with support.",
-    progress: 55,
-  },
-  {
-    id: "g3",
-    title: "Maintain weekly contact with maternal grandmother",
-    area: "relationships",
-    status: "achieved",
-    targetDate: "2026-04-01",
-    description: "Video calls every Wednesday established. Two face-to-face visits completed. Grandmother very positive about consistency.",
-    progress: 100,
-  },
-  {
-    id: "g4",
-    title: "Independently manage morning routine by July",
-    area: "independence",
-    status: "not_started",
-    targetDate: "2026-07-30",
-    description: "Wake up, shower, dress, breakfast, pack bag without staff prompts. Currently requires 2-3 prompts each morning.",
-    progress: 15,
-  },
-];
-
-const DEMO_PROGRESS: ProgressEntry[] = [
-  {
-    id: "p1",
-    date: "2026-05-04",
-    area: "education",
-    description: "Completed English mock exam independently. Showed real focus and determination throughout the paper.",
-    impactNote: "Predicted grade moved from 4 to 5. Teacher noted significant improvement in essay structure.",
-    staffMember: "Sarah Mitchell",
-  },
-  {
-    id: "p2",
-    date: "2026-05-02",
-    area: "emotional_wellbeing",
-    description: "Used breathing techniques when frustrated with homework. Chose to go to quiet room rather than escalate.",
-    impactNote: "First time choosing de-escalation independently without staff prompt. Major milestone.",
-    staffMember: "James Cooper",
-  },
-  {
-    id: "p3",
-    date: "2026-04-28",
-    area: "relationships",
-    description: "Video called grandmother. Talked for 35 minutes about school and upcoming birthday plans.",
-    impactNote: "Grandmother reported feeling much closer. Child asked if she could visit during half term.",
-    staffMember: "Sarah Mitchell",
-  },
-  {
-    id: "p4",
-    date: "2026-04-25",
-    area: "independence",
-    description: "Made own breakfast for the first time without being asked. Set alarm and got up 10 minutes early.",
-    impactNote: "Small but significant step. Staff praised effort without overdoing it. Child seemed proud.",
-    staffMember: "Tom Richards",
-  },
-  {
-    id: "p5",
-    date: "2026-04-22",
-    area: "health",
-    description: "Attended dental appointment without anxiety. Previously refused all medical appointments.",
-    impactNote: "Dentist gave positive feedback. No treatment needed. Agreed to 6-month check-up.",
-    staffMember: "James Cooper",
-  },
-  {
-    id: "p6",
-    date: "2026-04-18",
-    area: "community",
-    description: "Joined local football club training session. Engaged well with peers and followed coach instructions.",
-    impactNote: "Coach invited back next week. First sustained community activity in 8 months.",
-    staffMember: "Tom Richards",
-  },
-  {
-    id: "p7",
-    date: "2026-04-15",
-    area: "behaviour_support",
-    description: "Apologised unprompted to another young person after disagreement over TV remote.",
-    impactNote: "Relationship repair happened naturally. Other YP accepted apology. No staff mediation needed.",
-    staffMember: "Sarah Mitchell",
-  },
-  {
-    id: "p8",
-    date: "2026-04-10",
-    area: "wishes_and_feelings",
-    description: "Shared in key work session that they would like to try cooking a meal for the house.",
-    impactNote: "Activity scheduled for next week. Links to independence goal and building confidence.",
-    staffMember: "Sarah Mitchell",
-  },
-];
-
-const DEMO_OUTCOMES: OutcomeScore[] = [
-  { domain: "Education", score: 7, previousScore: 5, trend: "up" },
-  { domain: "Health", score: 6, previousScore: 6, trend: "stable" },
-  { domain: "Emotional Wellbeing", score: 5, previousScore: 4, trend: "up" },
-  { domain: "Safety", score: 8, previousScore: 7, trend: "up" },
-  { domain: "Relationships", score: 7, previousScore: 5, trend: "up" },
-  { domain: "Independence", score: 4, previousScore: 4, trend: "stable" },
-  { domain: "Engagement", score: 6, previousScore: 3, trend: "up" },
-];
+// Seed data now lives in src/lib/intelligence/fallback-store.ts and is served
+// via /api/intelligence/progress. The page renders an empty state until the
+// API responds.
 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function ChildProgressPage() {
   const [selectedChild, setSelectedChild] = useState("child-a");
   const [showAriaDraft, setShowAriaDraft] = useState(false);
-  const [goals, setGoals] = useState<Goal[]>(DEMO_GOALS);
-  const [progressEntries, setProgressEntries] = useState<ProgressEntry[]>(DEMO_PROGRESS);
-  const [outcomes, setOutcomes] = useState<OutcomeScore[]>(DEMO_OUTCOMES);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [progressEntries, setProgressEntries] = useState<ProgressEntry[]>([]);
+  const [outcomes, setOutcomes] = useState<OutcomeScore[]>([]);
 
-  /* ── API hooks (soft-wire for live data) ────────────────────────────────── */
+  /* ── API hooks (live data via intelligence-layer fallback store) ───────── */
   const { data: goalsData } = useProgressGoals(selectedChild);
   const { data: entriesData } = useProgressEntries(selectedChild);
   const { data: snapshotsData } = useProgressSnapshots(selectedChild);
   const createRecord = useCreateProgressRecord();
 
   useEffect(() => {
-    if (goalsData?.persisted && goalsData.data.length > 0) {
+    if (goalsData?.persisted && Array.isArray(goalsData.data)) {
       setGoals((goalsData.data as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         title: (row.title as string) ?? "",
         area: (row.goal_area as ProgressArea) ?? "education",
-        status: "on_track" as GoalStatus,
+        status: ((row.status as GoalStatus) ?? "on_track"),
         targetDate: (row.target_date as string) ?? "",
         description: (row.description as string) ?? "",
-        progress: 0,
+        progress: (row.progress as number) ?? 0,
       })));
     }
   }, [goalsData]);
 
   useEffect(() => {
-    if (entriesData?.persisted && entriesData.data.length > 0) {
+    if (entriesData?.persisted && Array.isArray(entriesData.data)) {
       setProgressEntries((entriesData.data as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         date: (row.entry_date as string) ?? "",
         area: (row.area as ProgressArea) ?? "education",
         description: (row.what_happened as string) ?? "",
         impactNote: (row.impact_on_child as string) ?? "",
-        staffMember: "",
+        staffMember: ((row.staff_member as string) ?? (row.created_by as string)) ?? "",
       })));
     }
   }, [entriesData]);
 
   useEffect(() => {
-    if (snapshotsData?.persisted && snapshotsData.data.length > 0) {
+    if (snapshotsData?.persisted && Array.isArray(snapshotsData.data) && snapshotsData.data.length > 0) {
       const row = snapshotsData.data[0] as Record<string, unknown>;
+      const trend = (key: string): "up" | "down" | "stable" => {
+        const v = row[key];
+        return v === "up" || v === "down" ? v : "stable";
+      };
       setOutcomes([
-        { domain: "Education", score: (row.education_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
-        { domain: "Health", score: (row.health_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
-        { domain: "Emotional Wellbeing", score: (row.emotional_wellbeing_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
-        { domain: "Safety", score: (row.safety_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
-        { domain: "Relationships", score: (row.relationships_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
-        { domain: "Independence", score: (row.independence_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
-        { domain: "Engagement", score: (row.engagement_score as number) ?? 0, previousScore: 0, trend: "stable" as const },
+        { domain: "Education", score: (row.education_score as number) ?? 0, previousScore: (row.education_previous_score as number) ?? 0, trend: trend("education_trend") },
+        { domain: "Health", score: (row.health_score as number) ?? 0, previousScore: (row.health_previous_score as number) ?? 0, trend: trend("health_trend") },
+        { domain: "Emotional Wellbeing", score: (row.emotional_wellbeing_score as number) ?? 0, previousScore: (row.emotional_wellbeing_previous_score as number) ?? 0, trend: trend("emotional_wellbeing_trend") },
+        { domain: "Safety", score: (row.safety_score as number) ?? 0, previousScore: (row.safety_previous_score as number) ?? 0, trend: trend("safety_trend") },
+        { domain: "Relationships", score: (row.relationships_score as number) ?? 0, previousScore: (row.relationships_previous_score as number) ?? 0, trend: trend("relationships_trend") },
+        { domain: "Independence", score: (row.independence_score as number) ?? 0, previousScore: (row.independence_previous_score as number) ?? 0, trend: trend("independence_trend") },
+        { domain: "Engagement", score: (row.engagement_score as number) ?? 0, previousScore: (row.engagement_previous_score as number) ?? 0, trend: trend("engagement_trend") },
       ]);
     }
   }, [snapshotsData]);
@@ -298,6 +191,8 @@ export default function ChildProgressPage() {
     <PageShell
       title="Progress & Outcomes"
       subtitle="Track goals, milestones, and outcome scores over time"
+      ariaContext={{ pageTitle: "Progress & Outcomes", sourceType: "care_plan" }}
+      actions={<AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />}
     >
       <div className="space-y-6">
         {/* Child Selector & Actions */}
@@ -544,6 +439,12 @@ export default function ChildProgressPage() {
           </CardContent>
         </Card>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Progress & Outcomes — goals, milestones, outcome scores, SDQ scores, wellbeing measures, educational progress, Reg 45 outcomes evidence, ILACS quality of care evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

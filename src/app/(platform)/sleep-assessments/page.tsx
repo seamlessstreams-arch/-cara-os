@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -29,6 +29,9 @@ import {
   SLEEP_ASSESSMENT_QUALITY_LABEL,
   SLEEP_ASSESSMENT_TREND_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ─── local config ─── */
 
@@ -132,10 +135,12 @@ export default function SleepAssessmentsPage() {
     <PageShell
       title="Sleep Assessments"
       subtitle="Individual sleep profiles, barriers, strategies, and monitoring for each young person"
+      ariaContext={{ pageTitle: "Sleep Assessments", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="sleep-assessments" />
           <PrintButton title="Sleep Assessments" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -428,6 +433,18 @@ export default function SleepAssessmentsPage() {
           arrangements, and individual care plans.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Sleep"
+        category={["health", "sleep"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Sleep Assessments — child sleep assessments, sleep disturbance, sleep interventions, bedtime routines, sleep quality evidence, care plan evidence, health assessment evidence, Reg 45 wellbeing evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

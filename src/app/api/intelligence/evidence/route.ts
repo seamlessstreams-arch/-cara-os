@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { scanEvidenceGaps, type EvidenceGapScanInput } from "@/lib/intelligence/evidence-gap-scanner";
+import { evidenceItems, nextFallbackId } from "@/lib/intelligence/fallback-store";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -13,12 +14,12 @@ export async function GET(request: NextRequest) {
   const judgementArea = searchParams.get("judgementArea");
 
   if (!isSupabaseEnabled()) {
-    return NextResponse.json({
-      ok: true,
-      items: [],
-      persisted: false,
-      message: "Supabase not configured. Evidence room operates in demo mode.",
-    });
+    let rows = [...evidenceItems];
+    if (homeId) rows = rows.filter((r) => r.home_id === homeId);
+    if (category) rows = rows.filter((r) => r.category === category);
+    if (judgementArea) rows = rows.filter((r) => r.judgement_area === judgementArea);
+    rows.sort((a, b) => b.evidence_date.localeCompare(a.evidence_date));
+    return NextResponse.json({ ok: true, items: rows, persisted: true });
   }
 
   const supabase = createServerClient() as unknown as LooseSupabase;
@@ -49,11 +50,25 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isSupabaseEnabled()) {
-      return NextResponse.json({
-        ok: true,
-        persisted: false,
-        message: "Evidence item accepted but not persisted (Supabase not configured).",
-      });
+      const now = new Date().toISOString();
+      const row = {
+        id: nextFallbackId("ev"),
+        home_id: homeId as string,
+        child_id: (childId as string) ?? null,
+        staff_id: (staffId as string) ?? null,
+        source_record_type: sourceType as string,
+        source_record_id: (sourceId as string) ?? null,
+        title: title as string,
+        description: (summary as string) ?? "",
+        category: evidenceCategory as string,
+        judgement_area: (judgementArea as string) ?? null,
+        quality_indicator: null,
+        evidence_date: (evidenceDate as string) ?? now.slice(0, 10),
+        created_by: (actorUserId as string) ?? null,
+        created_at: now,
+      };
+      evidenceItems.unshift(row);
+      return NextResponse.json({ ok: true, item: row, persisted: true });
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -23,6 +23,9 @@ import {
   STORAGE_AUDIT_CABINET_TYPE_LABEL, STORAGE_AUDIT_VERDICT_LABEL,
   CLEANLINESS_RATING_LABEL, FOLLOW_UP_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -92,10 +95,12 @@ export default function MedicationStorageAuditPage() {
     <PageShell
       title="Medication Storage Audit"
       subtitle="Regular audits of all medication storage locations — security, temperature, expiry, records"
+      ariaContext={{ pageTitle: "Medication Storage Audit", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="medication-storage-audit" />
           <PrintButton title="Medication Storage Audits" />
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -315,6 +320,18 @@ export default function MedicationStorageAuditPage() {
           to MAR Sheet, Medication Audit, Medication Stock Check, and Medication Near-Miss Log.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Medication"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Medication Storage Audit — safe storage checks, controlled drug cabinet, fridge temperatures, expiry dates, stock counts, disposal records, CQC compliance, Annex A evidence"
+        recordType="medication"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

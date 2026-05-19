@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -31,6 +31,9 @@ import {
   STAFF_RECOGNITION_RECOGNISED_BY_LABEL,
   STAFF_RECOGNITION_WAY_MARKED_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -104,10 +107,12 @@ export default function StaffRecognitionLogPage() {
     <PageShell
       title="Staff Recognition Log"
       subtitle="Recognising contributions, milestones, and relational excellence — formally and warmly"
+      ariaContext={{ pageTitle: "Staff Recognition Log", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="staff-recognition-log" />
           <PrintButton title="Staff Recognition Log" />
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -272,6 +277,18 @@ export default function StaffRecognitionLogPage() {
           Annual Reviews, and Supervision.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Recognition Log — staff achievements, commendations, positive feedback from children and families, exceptional practice, retention, wellbeing, team culture"
+        recordType="supervision"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

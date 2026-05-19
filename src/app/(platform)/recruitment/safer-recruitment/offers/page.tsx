@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -272,6 +274,7 @@ export default function OffersPage() {
     <PageShell
       title="Offers & Final Clearance"
       subtitle="Conditional offers, outstanding conditions, and final pre-start clearance"
+      ariaContext={{ pageTitle: "Offers & Pre-Start Clearance", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -426,6 +429,12 @@ export default function OffersPage() {
         </>
       )}
       </div>{/* close #offers-content */}
+      <AriaPanel
+        mode="assist"
+        pageContext="Offers & Pre-Start Clearance — conditional offers, clearance checklist, DBS clearance, references cleared, right to work confirmed, start date, induction planning, safer recruitment compliance"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

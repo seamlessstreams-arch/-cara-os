@@ -37,6 +37,9 @@ import {
   Target, TrendingUp, TrendingDown, Minus, Eye, User, Calendar,
   Sparkles, FileText, LinkIcon, Loader2, RefreshCw, X,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -667,6 +670,7 @@ export default function InterventionsPage() {
     <PageShell
       title="Interventions"
       subtitle="Child-centred interventions — tracking what we are doing, why, and whether it is working"
+      ariaContext={{ pageTitle: "Interventions Tracker", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">
@@ -681,6 +685,7 @@ export default function InterventionsPage() {
             <Plus className="h-3.5 w-3.5" />
             New Intervention
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -869,6 +874,18 @@ export default function InterventionsPage() {
         open={showNew}
         onClose={() => setShowNew(false)}
         onSave={handleCreate}
+      />
+      <CareEventsPanel
+        title="Care Events — Behaviour & Health"
+        category={["behaviour", "health", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Interventions Tracker — therapeutic interventions, evidence-based programmes, PACE, DDP, Theraplay, behaviour interventions, outcomes tracking, care plan evidence, Reg 45"
+        recordType="direct_work"
+        className="mt-6"
       />
     </PageShell>
   );

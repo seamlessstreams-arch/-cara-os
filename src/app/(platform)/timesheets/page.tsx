@@ -23,6 +23,9 @@ import type { Shift } from "@/types";
 import { useCreateLeave } from "@/hooks/use-leave";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 type Tab = "timesheets" | "clock" | "overtime" | "payroll";
 type WeekFilter = "this_week" | "last_week" | "this_month";
@@ -306,6 +309,7 @@ export default function TimesheetsPage() {
     <PageShell
       title="Timesheets"
       subtitle="Clock in/out, hours tracking, overtime, and payroll export"
+      ariaContext={{ pageTitle: "Timesheets", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Timesheets" subtitle="Oak House — Staff Timesheets" targetId="timesheets-content" />
@@ -322,6 +326,7 @@ export default function TimesheetsPage() {
             <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
             {totals.pendingApproval === 0 ? "All Approved" : "Approve All"}
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -715,6 +720,18 @@ export default function TimesheetsPage() {
           )}
         </div>
       )}
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Timesheets — staff clock-in/out, hours tracking, overtime, payroll export, shift hours, absence deductions, Reg 40 staffing evidence, management oversight"
+        recordType="rota"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

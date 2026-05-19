@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,8 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useProfessionalConsultations } from "@/hooks/use-professional-consultations";
+import { toast } from "sonner";
+import { useProfessionalConsultations, useCreateProfessionalConsultation } from "@/hooks/use-professional-consultations";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { ProfessionalConsultation, ProfConsultationType, ProfConsultationMethod } from "@/types/extended";
 import { PROF_CONSULTATION_TYPE_LABEL, PROF_CONSULTATION_METHOD_LABEL } from "@/types/extended";
@@ -21,6 +22,9 @@ import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   Calendar, AlertTriangle, Stethoscope, MessageSquare, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── local colour maps ───────────────────────────────────────────────────────
 const TYPE_COLOR: Record<ProfConsultationType, string> = {
@@ -47,6 +51,20 @@ export default function ProfessionalConsultationsPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createConsultation = useCreateProfessionalConsultation();
+  const [pcForm, setPcForm] = useState({ date: new Date().toISOString().slice(0, 10), time: "", type: "social_worker" as ProfConsultationType, method: "phone" as ProfConsultationMethod, professional_name: "", organisation: "", reason: "", advice_given: "" });
+  const setPC = (k: string, v: unknown) => setPcForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveConsultation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pcForm.professional_name.trim()) { toast.error("Professional name is required."); return; }
+    if (!pcForm.reason.trim()) { toast.error("Reason is required."); return; }
+    await createConsultation.mutateAsync({ date: pcForm.date, time: pcForm.time, type: pcForm.type, method: pcForm.method, professional_name: pcForm.professional_name.trim(), professional_role: "", organisation: pcForm.organisation.trim(), child_id: "", reason: pcForm.reason.trim(), advice_given: pcForm.advice_given.trim(), actions_agreed: [], follow_up_required: false, follow_up_date: "", follow_up_completed: false, confidential: false, recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    toast.success("Consultation recorded.");
+    setPcForm({ date: new Date().toISOString().slice(0, 10), time: "", type: "social_worker", method: "phone", professional_name: "", organisation: "", reason: "", advice_given: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -112,11 +130,13 @@ export default function ProfessionalConsultationsPage() {
     <PageShell
       title="Professional Consultations"
       subtitle="Recording advice, guidance, and discussions with external professionals"
+      ariaContext={{ pageTitle: "Professional Consultations", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Professional Consultations" />
           <ExportButton data={filtered} columns={exportCols} filename="professional-consultations" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Log Consultation</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -243,36 +263,48 @@ export default function ProfessionalConsultationsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Professional Consultation</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleSaveConsultation} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" /></div>
-              <div><label className="text-sm font-medium">Time</label><Input type="time" /></div>
+              <div><label className="text-sm font-medium">Date</label><Input type="date" value={pcForm.date} onChange={(e) => setPC("date", e.target.value)} /></div>
+              <div><label className="text-sm font-medium">Time</label><Input type="time" value={pcForm.time} onChange={(e) => setPC("time", e.target.value)} /></div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium">Type</label>
-                <Select><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                <Select value={pcForm.type} onValueChange={(v) => setPC("type", v)}><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>{(Object.entries(PROF_CONSULTATION_TYPE_LABEL) as [ProfConsultationType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="text-sm font-medium">Method</label>
-                <Select><SelectTrigger><SelectValue placeholder="Method" /></SelectTrigger>
+                <Select value={pcForm.method} onValueChange={(v) => setPC("method", v)}><SelectTrigger><SelectValue placeholder="Method" /></SelectTrigger>
                   <SelectContent>{(Object.entries(PROF_CONSULTATION_METHOD_LABEL) as [ProfConsultationMethod, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Professional Name</label><Input placeholder="Name of professional" /></div>
-            <div><label className="text-sm font-medium">Organisation</label><Input placeholder="Organisation" /></div>
-            <div><label className="text-sm font-medium">Reason</label><Textarea placeholder="Why was this consultation sought?" rows={2} /></div>
-            <div><label className="text-sm font-medium">Advice Given</label><Textarea placeholder="What advice or guidance was provided?" rows={3} /></div>
+            <div><label className="text-sm font-medium">Professional Name *</label><Input placeholder="Name of professional" value={pcForm.professional_name} onChange={(e) => setPC("professional_name", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Organisation</label><Input placeholder="Organisation" value={pcForm.organisation} onChange={(e) => setPC("organisation", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Reason *</label><Textarea placeholder="Why was this consultation sought?" rows={2} value={pcForm.reason} onChange={(e) => setPC("reason", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Advice Given</label><Textarea placeholder="What advice or guidance was provided?" rows={3} value={pcForm.advice_given} onChange={(e) => setPC("advice_given", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Save</Button>
+              <Button type="submit" disabled={createConsultation.isPending}>{createConsultation.isPending ? "Saving…" : "Save"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Professional Contact"
+        category="professional_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Professional Consultations — social worker meetings, CAMHS consultations, educational psychologist, health professionals, multi-agency discussions, advice received, action points, Reg 45"
+        recordType="task"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

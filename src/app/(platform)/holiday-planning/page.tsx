@@ -33,6 +33,9 @@ import { useTripPlans, useCreateTripPlan } from "@/hooks/use-trip-plans";
 import type { TripPlan, TripType, TripStatus, TripRiskLevel, TripStaffRole } from "@/types/extended";
 import { TRIP_TYPE_LABEL, TRIP_STATUS_LABEL, TRIP_RISK_LEVEL_LABEL, TRIP_STAFF_ROLE_LABEL } from "@/types/extended";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
@@ -661,6 +664,7 @@ export default function HolidayPlanningPage() {
     <PageShell
       title="Holiday & Trip Planning"
       subtitle="Planned outings, day trips, holidays, and residential trips for young people"
+      ariaContext={{ pageTitle: "Holiday & Trip Planning", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={TRIP_EXPORT_COLS} filename="holiday-trip-planning" />
@@ -668,6 +672,7 @@ export default function HolidayPlanningPage() {
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Plan Trip
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -876,6 +881,18 @@ export default function HolidayPlanningPage() {
         open={showNew}
         onClose={() => setShowNew(false)}
         onSave={handleAddTrip}
+      />
+      <CareEventsPanel
+        title="Care Events — Activities"
+        category="activity"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Holiday & Trip Planning — holiday consent, LA approval, passport, travel insurance, health needs abroad, risk assessment, cultural experience, aspirations, care plan evidence"
+        recordType="care_plan"
+        className="mt-6"
       />
     </PageShell>
   );

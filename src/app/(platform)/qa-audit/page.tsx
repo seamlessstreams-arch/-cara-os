@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,9 @@ import { getStaffName } from "@/lib/seed-data";
 import { useQaAuditRecords } from "@/hooks/use-qa-audit-records";
 import type { QAAuditRecord, QAAuditRating, QAAuditActionStatus } from "@/types/extended";
 import { QA_AUDIT_RATING_LABEL, QA_AUDIT_ACTION_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour maps ───────────────────────────────────────────────────── */
 
@@ -119,10 +122,12 @@ export default function QAAuditPage() {
     <PageShell
       title="QA Audit"
       subtitle="Reg 45 · Self-Assessment · Continuous Improvement · Quality Monitoring"
+      ariaContext={{ pageTitle: "QA Audit Records", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="QA Audit Records" />
           <ExportButton data={filtered} columns={exportCols} filename="qa-audit" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -296,6 +301,18 @@ export default function QAAuditPage() {
           </div>
         )}
       </div>
+      <CareEventsPanel
+        title="Care Events — Compliance Evidence"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="QA Audit Records — quality assurance audits, record-keeping checks, compliance audits, practice quality, management oversight, audit findings, improvement actions, Reg 45 governance evidence"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

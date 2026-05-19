@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
+import type { WarmWelcomePack } from "@/types/extended";
+import { useWarmWelcomePacks } from "@/hooks/use-warm-welcome-packs";
 import {
   ChevronUp,
   ChevronDown,
@@ -19,6 +21,9 @@ import {
   Star,
   ArrowUpDown,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ─── date helper ─── */
 const d = (n: number) => {
@@ -28,165 +33,20 @@ const d = (n: number) => {
 };
 
 /* ─── types ─── */
-interface WelcomeItem {
-  item: string;
-  category: "bedroom" | "toiletries" | "comfort" | "information" | "personal" | "food";
-  provided: boolean;
-  personalised: boolean;
-  notes: string;
-}
 
-interface WelcomePack {
-  id: string;
-  youngPersonId: string;
-  preparedBy: string;
-  preparedDate: string;
-  admissionDate: string;
-  status: "delivered" | "preparing" | "template";
-  items: WelcomeItem[];
-  personalTouches: string[];
-  childFeedback: string | null;
-  firstNightPlan: string;
-  keyWorkerIntro: string;
-  notes: string;
-}
 
 /* ─── seed data ─── */
-const packs: WelcomePack[] = [
-  {
-    id: "wp_001",
-    youngPersonId: "yp_casey",
-    preparedBy: "staff_chervelle",
-    preparedDate: d(-90),
-    admissionDate: d(-88),
-    status: "delivered",
-    items: [
-      { item: "New bedding set (Casey chose dark blue from photos sent in advance)", category: "bedroom", provided: true, personalised: true, notes: "Casey picked this from 3 options sent via social worker before arrival" },
-      { item: "Toiletries bag — shower gel, deodorant, toothbrush, shampoo", category: "toiletries", provided: true, personalised: false, notes: "Branded products, not institutional" },
-      { item: "Snack box in room — crisps, chocolate, juice, fruit", category: "food", provided: true, personalised: true, notes: "SW told us Casey likes salt & vinegar crisps" },
-      { item: "Welcome card signed by all staff", category: "comfort", provided: true, personalised: true, notes: "Handwritten, not printed" },
-      { item: "Soft throw blanket", category: "comfort", provided: true, personalised: false, notes: "" },
-      { item: "Children's Guide (age-appropriate version)", category: "information", provided: true, personalised: false, notes: "Given on day 2, not day 1 — too much info on arrival" },
-      { item: "Photo of key worker (Chervelle) with short intro", category: "information", provided: true, personalised: true, notes: "Sent to Casey 3 days before admission via SW" },
-      { item: "Wi-Fi password card", category: "information", provided: true, personalised: false, notes: "First thing Casey asked for!" },
-      { item: "Phone charger (spare)", category: "personal", provided: true, personalised: false, notes: "Universal USB-C — Casey's phone type checked in advance" },
-      { item: "£10 pocket money advance", category: "personal", provided: true, personalised: false, notes: "So Casey had their own money on day one" },
-      { item: "Personalised door sign (Casey's name + chosen design)", category: "bedroom", provided: true, personalised: true, notes: "Casey chose a gaming controller design" },
-    ],
-    personalTouches: [
-      "Room decorated before arrival — fairy lights and posters Casey mentioned liking",
-      "Favourite meal cooked for first dinner (burger and chips — info from SW)",
-      "Gaming console set up and ready in lounge",
-      "Staff wore casual clothes on admission day (less institutional)",
-    ],
-    childFeedback: "Casey said 'this is actually alright' on the first evening — high praise from Casey. Later told Chervelle 'the snack box was a nice touch. Nobody ever did that before.' Casey kept the welcome card in their bedside drawer.",
-    firstNightPlan: "Chervelle (key worker) on shift. Low-key evening — no pressure to socialise. Casey shown around at their pace. Other children introduced briefly but given space. Staff checked in every 30 minutes until Casey settled. Night staff briefed on Casey's background.",
-    keyWorkerIntro: "Photo and short letter from Chervelle sent 3 days before admission via SW. Casey knew who to look for on arrival. Chervelle met Casey at the door.",
-    notes: "Casey's transition was well-managed. The advance information from SW allowed genuine personalisation. Casey later said the personalised room made them feel 'like someone actually thought about me.' This is exactly the impact we want from welcome packs.",
-  },
-  {
-    id: "wp_002",
-    youngPersonId: "yp_jordan",
-    preparedBy: "staff_anna",
-    preparedDate: d(-200),
-    admissionDate: d(-198),
-    status: "delivered",
-    items: [
-      { item: "Weighted blanket (blue, 5kg — OT recommendation)", category: "comfort", provided: true, personalised: true, notes: "Ordered specifically for Jordan based on OT report" },
-      { item: "Night light (warm amber, dimmable)", category: "bedroom", provided: true, personalised: true, notes: "Jordan afraid of the dark — essential item" },
-      { item: "Sensory kit — fidget toys, stress ball, tangle", category: "comfort", provided: true, personalised: true, notes: "Based on sensory profile from previous placement" },
-      { item: "New bedding (soft jersey cotton — sensory friendly)", category: "bedroom", provided: true, personalised: true, notes: "No scratchy materials — sensory need" },
-      { item: "Toiletries — unscented products only", category: "toiletries", provided: true, personalised: true, notes: "Strong scents are a sensory trigger" },
-      { item: "Welcome card with photos of the home and staff", category: "information", provided: true, personalised: true, notes: "Visual introduction — Jordan is visual learner" },
-      { item: "Social story about moving to Oak House", category: "information", provided: true, personalised: true, notes: "Created by Anna specifically for Jordan" },
-      { item: "Comfort food box (plain biscuits, juice, banana)", category: "food", provided: true, personalised: true, notes: "Jordan has limited food preferences — no strong flavours" },
-      { item: "Tyler's photo in a frame (sibling)", category: "personal", provided: true, personalised: true, notes: "So Jordan had a familiar face in the room immediately" },
-      { item: "Audio player with calming sounds pre-loaded", category: "comfort", provided: true, personalised: true, notes: "Rain sounds, ocean waves — used in previous placement" },
-    ],
-    personalTouches: [
-      "Room was made quiet and calm — no bright colours, soft lighting",
-      "Anna (key worker) visited Jordan at previous placement before move day",
-      "Transition visits: 3 short visits before the actual move-in day",
-      "Jordan's favourite stuffed animal placed on bed before arrival",
-      "Other children briefed sensitively about Jordan's needs",
-    ],
-    childFeedback: "Jordan was initially very quiet and went straight to their room. After 2 hours, Jordan came to Anna and said 'the blanket is nice.' By day 3, Jordan said 'I like my room.' This is significant progress for Jordan given their attachment difficulties.",
-    firstNightPlan: "Anna on shift (known face from transition visits). Jordan shown room first — allowed to stay there as long as needed. No pressure to meet other children on day 1. Night light on, door ajar (Jordan's preference). Staff checked every 15 minutes. Comfort items within reach. Audio player with rain sounds.",
-    keyWorkerIntro: "Anna visited Jordan 3 times at previous placement. Relationship already established. Jordan requested Anna specifically as key worker after visits — granted.",
-    notes: "Jordan's transition was carefully planned over 3 weeks with graduated visits. The sensory-informed welcome pack was essential. Every item was chosen with Jordan's specific needs in mind. The investment in pre-admission relationship building with Anna was crucial to a successful placement start.",
-  },
-  {
-    id: "wp_003",
-    youngPersonId: "yp_alex",
-    preparedBy: "staff_ryan",
-    preparedDate: d(-300),
-    admissionDate: d(-298),
-    status: "delivered",
-    items: [
-      { item: "New bedding set — space theme (Alex loves astronomy)", category: "bedroom", provided: true, personalised: true, notes: "Info from previous foster carer about Alex's interests" },
-      { item: "Toiletries bag with age-appropriate products", category: "toiletries", provided: true, personalised: false, notes: "" },
-      { item: "Welcome bear (soft toy — Alex was 12 at admission)", category: "comfort", provided: true, personalised: false, notes: "Alex still has this bear on their bed" },
-      { item: "Book — fact book about space", category: "personal", provided: true, personalised: true, notes: "Alex's foster carer said Alex loves learning facts" },
-      { item: "Art supplies — sketchbook, pencils, pens", category: "personal", provided: true, personalised: true, notes: "Alex mentioned liking drawing in referral" },
-      { item: "Children's Guide (comic-book style version)", category: "information", provided: true, personalised: false, notes: "Age-appropriate format" },
-      { item: "Wi-Fi password and tablet available", category: "information", provided: true, personalised: false, notes: "" },
-      { item: "Snack box — fruit, chocolate milk, biscuits", category: "food", provided: true, personalised: false, notes: "" },
-      { item: "Name plaque for door (stars design)", category: "bedroom", provided: true, personalised: true, notes: "Made by staff before arrival" },
-      { item: "Photo album — empty, for Alex to fill", category: "personal", provided: true, personalised: true, notes: "For building new memories — life story approach" },
-    ],
-    personalTouches: [
-      "Glow-in-the-dark stars on bedroom ceiling",
-      "Alex's favourite dinner on first night (fish fingers & beans — from foster carer)",
-      "Ryan (deputy) did the admission as he'd spoken to Alex on the phone before",
-      "Garden shown first — Alex had mentioned wanting outdoor space",
-    ],
-    childFeedback: "Alex said 'is this really my room?' when shown the star ceiling. Staff noted Alex smiled genuinely. Alex later said to Nan on the phone 'it's actually nice here, they put stars on my ceiling.' Alex slept through the first night without waking — unusual for new placements.",
-    firstNightPlan: "Ryan and Anna both on shift (familiar voices from phone calls). Alex shown around at own pace. Met Jordan briefly (Jordan waved from doorway). Low-key evening with choice of activity. Staff available but not hovering. Check at 30-minute intervals until settled.",
-    keyWorkerIntro: "Ryan spoke to Alex on the phone twice before admission. Anna allocated as key worker but Ryan did the admission for continuity. Alex met Anna on day 2.",
-    notes: "Alex's transition was relatively smooth. Previous foster placement ended amicably (foster carer retiring) so Alex was less traumatised by the move. The personalised room was the standout — Alex talks about the stars on the ceiling regularly. Demonstrates that small gestures make huge impact.",
-  },
-  {
-    id: "wp_004",
-    youngPersonId: "yp_alex",
-    preparedBy: "staff_darren",
-    preparedDate: d(-2),
-    admissionDate: d(5),
-    status: "preparing",
-    items: [
-      { item: "New bedding (to be chosen by child from options)", category: "bedroom", provided: false, personalised: true, notes: "Options sent to SW — awaiting child's choice" },
-      { item: "Toiletries bag — branded products", category: "toiletries", provided: true, personalised: false, notes: "Standard pack ready" },
-      { item: "Snack box (preferences being confirmed)", category: "food", provided: false, personalised: true, notes: "SW asked to confirm dietary needs/preferences" },
-      { item: "Welcome card — staff to sign this week", category: "comfort", provided: false, personalised: true, notes: "Will be handwritten" },
-      { item: "Children's Guide", category: "information", provided: true, personalised: false, notes: "Ready" },
-      { item: "Key worker photo and intro letter", category: "information", provided: false, personalised: true, notes: "Edward allocated — letter being written" },
-      { item: "Wi-Fi card and phone charger", category: "information", provided: true, personalised: false, notes: "Ready" },
-      { item: "Door name sign (design TBC)", category: "bedroom", provided: false, personalised: true, notes: "Awaiting child's preference" },
-      { item: "Comfort item (age-appropriate)", category: "comfort", provided: false, personalised: true, notes: "Asking SW what would be meaningful" },
-      { item: "£10 pocket money advance", category: "personal", provided: true, personalised: false, notes: "Ready" },
-    ],
-    personalTouches: [
-      "Room being freshly painted (child asked for a specific colour via SW — sage green)",
-      "Edward (key worker) to visit child at current placement this week",
-      "First night meal preference being confirmed",
-      "Existing children being prepared via house meeting",
-    ],
-    childFeedback: null,
-    firstNightPlan: "Edward and Anna on shift. Gradual introduction plan — child has visited once already and knows the layout. Other children informed and prepared. No major activities planned for admission evening. Quiet, welcoming, no pressure.",
-    keyWorkerIntro: "Edward visiting child at current placement this Thursday. Building relationship before admission day.",
-    notes: "This is for Child T (pending referral from batch — Placement Impact Assessment approved subject to conditions). Preparation underway. Learning from previous admissions being applied — advance personalisation, relationship building, sensory/preference information gathered early.",
-  },
-];
 
 /* ─── export columns ─── */
-const exportCols: ExportColumn<WelcomePack>[] = [
-  { header: "Young Person", accessor: (r: WelcomePack) => getYPName(r.youngPersonId) },
-  { header: "Prepared By", accessor: (r: WelcomePack) => getStaffName(r.preparedBy) },
-  { header: "Prepared Date", accessor: (r: WelcomePack) => r.preparedDate },
-  { header: "Admission Date", accessor: (r: WelcomePack) => r.admissionDate },
-  { header: "Status", accessor: (r: WelcomePack) => r.status },
-  { header: "Items", accessor: (r: WelcomePack) => r.items.length.toString() },
-  { header: "Personalised Items", accessor: (r: WelcomePack) => r.items.filter((i) => i.personalised).length.toString() },
-  { header: "Child Feedback", accessor: (r: WelcomePack) => r.childFeedback ?? "N/A" },
+const exportCols: ExportColumn<WarmWelcomePack>[] = [
+  { header: "Young Person", accessor: (r: WarmWelcomePack) => getYPName(r.child_id) },
+  { header: "Prepared By", accessor: (r: WarmWelcomePack) => getStaffName(r.preparedBy) },
+  { header: "Prepared Date", accessor: (r: WarmWelcomePack) => r.preparedDate },
+  { header: "Admission Date", accessor: (r: WarmWelcomePack) => r.admissionDate },
+  { header: "Status", accessor: (r: WarmWelcomePack) => r.status },
+  { header: "Items", accessor: (r: WarmWelcomePack) => r.items.length.toString() },
+  { header: "Personalised Items", accessor: (r: WarmWelcomePack) => r.items.filter((i) => i.personalised).length.toString() },
+  { header: "Child Feedback", accessor: (r: WarmWelcomePack) => r.childFeedback ?? "N/A" },
 ];
 
 /* ─── component ─── */
@@ -194,6 +54,9 @@ export default function WarmWelcomePacksPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
+
+  const { data: result, isLoading } = useWarmWelcomePacks(undefined, "home_oak");
+  const packs = result?.data ?? [];
 
   const filtered = useMemo(() => {
     let list = [...packs];
@@ -203,7 +66,7 @@ export default function WarmWelcomePacksPage() {
         case "date":
           return b.admissionDate.localeCompare(a.admissionDate);
         case "name":
-          return getYPName(a.youngPersonId).localeCompare(getYPName(b.youngPersonId));
+          return getYPName(a.child_id).localeCompare(getYPName(b.child_id));
         default:
           return 0;
       }
@@ -221,7 +84,7 @@ export default function WarmWelcomePacksPage() {
         packs.reduce((s, p) => s + p.items.length, 0)) * 100
     );
     return { total, delivered, preparing, avgItems, personalisedPct };
-  }, []);
+  }, [packs]);
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
@@ -252,10 +115,12 @@ export default function WarmWelcomePacksPage() {
     <PageShell
       title="Warm Welcome Packs"
       subtitle="Personalised admission preparation — making children feel expected, wanted, and valued from day one"
+      ariaContext={{ pageTitle: "Warm Welcome Packs", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={packs} columns={exportCols} filename="welcome-packs" />
           <PrintButton title="Warm Welcome Packs" />
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -353,7 +218,7 @@ export default function WarmWelcomePacksPage() {
                     </div>
                     <div>
                       <CardTitle className="text-base">
-                        {getYPName(pack.youngPersonId)} — {pack.status === "preparing" ? "Upcoming" : "Admission"}
+                        {getYPName(pack.child_id)} — {pack.status === "preparing" ? "Upcoming" : "Admission"}
                       </CardTitle>
                       <div className="flex items-center gap-2 mt-1">
                         {statusBadge(pack.status)}
@@ -480,6 +345,18 @@ export default function WarmWelcomePacksPage() {
           about, and prepared for — not just &quot;placed.&quot;
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Warm Welcome Packs — new admission welcome packs, placement information, house rules, key contacts, rights and entitlements, initial settling-in support, placement plan evidence"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

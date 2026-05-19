@@ -6,7 +6,7 @@ import {
   Heart, Star, Users, ChevronDown, ChevronUp,
   MessageSquare, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,9 @@ import { useCompliments, useCreateCompliment } from "@/hooks/use-compliments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { Compliment, ComplimentSource, ComplimentCategory } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const SOURCES: ComplimentSource[] = [
@@ -112,6 +115,7 @@ export default function ComplimentsPage() {
     <PageShell
       title="Compliments Log"
       subtitle="Positive feedback, praise, and recognition from all stakeholders"
+      ariaContext={{ pageTitle: "Compliments Log", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Compliments Log" />
@@ -119,6 +123,7 @@ export default function ComplimentsPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Compliment
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -329,6 +334,18 @@ export default function ComplimentsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Compliments Log — positive feedback received from families, professionals, commissioners or community, staff achievements, Reg 44/45 evidence, inspection readiness"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -164,6 +166,7 @@ export default function StaffProfilesPage() {
     <PageShell
       title="Staff Competency Profiles"
       subtitle="Individual development profiles — click any staff member for a full deep-dive"
+      ariaContext={{ pageTitle: "Staff Competency Profiles", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -176,6 +179,7 @@ export default function StaffProfilesPage() {
               Workforce Hub
             </button>
           </Link>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -421,6 +425,12 @@ export default function StaffProfilesPage() {
           of children in the home.
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Competency Profiles — individual staff competency assessments, skills profiles, Reg 34 development needs, Reg 5 suitability evidence, ILACS workforce quality, Ofsted inspection evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

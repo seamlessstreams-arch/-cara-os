@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,9 +32,12 @@ import {
   Search, ArrowUpDown, X, Plus, GraduationCap, BookOpen,
   CheckCircle2, AlertTriangle, Clock, User, Calendar,
   ChevronDown, ChevronUp, School, TrendingUp,
-  XCircle, Shield, Award, FileText, Loader2,
+  XCircle, Shield, Award, FileText, Loader2, Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -194,6 +198,7 @@ export default function EducationPage() {
     <PageShell
       title="Education Tracker"
       subtitle="Attendance, attainment, PEPs, and education oversight"
+      ariaContext={{ pageTitle: "Education Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Education Tracker" subtitle="Oak House — Education Records" />
@@ -201,10 +206,10 @@ export default function EducationPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Entry
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
-    >
-      {/* ── Stats ────────────────────────────────────────────────────────────── */}
+    >      <AriaPanel mode="assist" pageContext="Education Tracker — attendance, attainment, Personal Education Plans, school engagement, exclusions, Children Act 1989" recordType="education_record" userRole="registered_manager" className="mb-2" />      {/* ── Stats ────────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
           { label: "Total Entries", value: stats.total, icon: BookOpen, c: "text-blue-600" },
@@ -388,6 +393,16 @@ export default function EducationPage() {
                       <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Follow-up: {formatDate(entry.follow_up_date)}</span>
                     )}
                   </div>
+                  {(entry as never as { care_event_id?: string }).care_event_id && (
+                    <Link
+                      href={`/care-events/${(entry as never as { care_event_id: string }).care_event_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      Logged from Care Event
+                    </Link>
+                  )}
                   <SmartLinkPanel sourceType="education" sourceId={entry.id} childId={entry.child_id} compact />
                 </div>
               )}
@@ -469,6 +484,14 @@ export default function EducationPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Care Events pipeline — education events routed here */}
+      <CareEventsPanel
+        title="Care Events — Education"
+        category="education"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

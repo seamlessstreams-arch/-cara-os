@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +39,7 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import { useHealthcarePlans } from "@/hooks/use-healthcare-plans";
 import type { HealthcarePlan } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── severity helpers ─── */
 const SEVERITY_META: Record<string, { label: string; color: string }> = {
@@ -130,10 +133,12 @@ export default function HealthcarePlansPage() {
     <PageShell
       title="Healthcare Plans"
       subtitle="Individual healthcare plans · medical conditions, allergies, medications and protocols (Quality Standard 7 · Reg 23)"
+      ariaContext={{ pageTitle: "Healthcare Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={plans} columns={exportCols} filename="healthcare-plans" />
           <PrintButton title="Healthcare Plans" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -576,6 +581,12 @@ export default function HealthcarePlansPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

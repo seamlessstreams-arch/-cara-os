@@ -66,6 +66,10 @@ interface DashboardData {
     current: import("@/types").YoungPerson[];
     missing_episodes_total: number;
   };
+  care_events?: {
+    awaiting_manager_review: number;
+    routing_failed: number;
+  };
   handover?: {
     latest: unknown;
     child_updates: unknown[];

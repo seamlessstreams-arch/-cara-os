@@ -17,6 +17,9 @@ import { cn, formatDate, todayStr } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -930,6 +933,7 @@ export default function VehiclesPage() {
     <PageShell
       title="Vehicle Compliance"
       subtitle="Fleet management, vehicle checks, and transport compliance"
+      ariaContext={{ pageTitle: "Vehicle Fleet Management", sourceType: "document" }}
       quickCreateContext={{ module: "vehicles", defaultTaskCategory: "maintenance" }}
       actions={
         <div className="flex items-center gap-2">
@@ -939,6 +943,7 @@ export default function VehiclesPage() {
           <Button size="sm" onClick={() => setShowCheckForm(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Log Check
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -1006,6 +1011,18 @@ export default function VehiclesPage() {
           preVehicleId={checkVehicleId}
         />
       )}
+      <CareEventsPanel
+        title="Care Events — Transport Safety"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Vehicle Fleet Management — vehicle register, MOT/service records, insurance, pre-use checks, driver records, transport safety, Reg 40 premises/transport compliance evidence"
+        recordType="risk_assessment"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

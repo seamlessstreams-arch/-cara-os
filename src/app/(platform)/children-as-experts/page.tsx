@@ -12,7 +12,7 @@ import {
   Calendar,
   Heart,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,9 @@ import type { ChildExpertEntry, ExpertiseType } from "@/types/extended";
 import { EXPERTISE_TYPE_LABEL } from "@/types/extended";
 import { useChildExpertEntries } from "@/hooks/use-child-expert-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -135,10 +138,12 @@ export default function ChildrenAsExpertsPage() {
     <PageShell
       title="Children as Experts by Experience"
       subtitle="UNCRC Article 12 · Quality Standard 1 — children advising the home, shaping policy, training staff, recruiting"
+      ariaContext={{ pageTitle: "Children as Experts", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="children-as-experts" />
           <PrintButton title="Children as Experts by Experience" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -326,6 +331,18 @@ export default function ChildrenAsExpertsPage() {
           <strong>UNCRC Article 12 &amp; Quality Standard 1 (Children&apos;s Views, Wishes and Feelings)</strong> — Children must be supported not just to give views about their own care, but to influence the home itself. Recording instances of children acting as experts by experience evidences that the home treats children&apos;s expertise as real expertise: prepared for, accommodated, recognised, paid for where appropriate, and translated into lasting change. Participation must always be genuinely optional, never tokenistic, and accessible — the child sets the terms.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Children as Experts — participation, child voice, lived experience, peer mentoring, expert by experience, review contributions, co-production, advocacy, rights"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

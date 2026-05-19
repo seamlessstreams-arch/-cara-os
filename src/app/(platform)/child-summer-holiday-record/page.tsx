@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -29,6 +29,9 @@ import {
 import { useHolidayRecords } from "@/hooks/use-holiday-records";
 import type { HolidayRecord, HolidayPeriod } from "@/types/extended";
 import { HOLIDAY_PERIOD_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const periodColour: Record<HolidayPeriod, string> = {
   summer: "bg-amber-100 text-amber-800 border-amber-200",
@@ -104,10 +107,12 @@ export default function ChildSummerHolidayRecordPage() {
     <PageShell
       title="Child Summer / Holiday Record"
       subtitle="The annual narrative — trips, places, friends, photos, what worked and what didn't. Child-led memory keeping, distinct from operational holiday planning."
+      ariaContext={{ pageTitle: "Holiday Records", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-summer-holiday-record" />
           <PrintButton title="Holiday Records" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -338,6 +343,18 @@ export default function ChildSummerHolidayRecordPage() {
           consent, and the child&rsquo;s own headline of the memory is recorded in their words.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Activities"
+        category="activity"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Holiday Records — summer activities, trips, camps, day outings, holiday fund, photo memories, peer experiences, positive outcomes, Reg 45 evidence, child-led activities"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,9 @@ import {
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useReligiousObservanceRecords } from "@/hooks/use-religious-observance-records";
 import type { ReligiousObservanceRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────── */
 
@@ -140,10 +143,12 @@ export default function ReligiousObservanceLogPage() {
     <PageShell
       title="Religious & Belief Observance Log"
       subtitle="Recording and supporting each child's religious, spiritual or belief practices — at their pace, on their terms"
+      ariaContext={{ pageTitle: "Religious & Belief Observance Log", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="religious-observance-log" />
           <PrintButton title="Religious & Belief Observance Log" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -322,6 +327,18 @@ export default function ReligiousObservanceLogPage() {
           UNCRC Article 30 protects every child&apos;s right to enjoy their own culture, profess and practise their own religion, or use their own language. Article 14 protects freedom of thought, conscience and religion — including the right to none. The Equality Act 2010 lists religion or belief (including the absence of belief) as a protected characteristic; Children&apos;s Homes Regulations 2015 Schedule 1 (Quality Standard 1 — Child-Centred Care) and Regulation 6 require care that respects each child&apos;s identity, including religion and culture. The Statement of Purpose, placement plans and dietary needs records must reflect and support this. Children should never feel pressured to adopt or abandon a belief — staff support practice, not promotion.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Religious & Belief Observance Log — faith practices, prayer, worship, religious education, religious diet, religious dress, faith communities, cultural identity, care plan evidence, Reg 45"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

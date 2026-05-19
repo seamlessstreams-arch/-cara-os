@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -36,6 +36,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<DigitalPlan>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -92,10 +95,12 @@ export default function DigitalWellbeingPlanPage() {
     <PageShell
       title="Digital Wellbeing Plan"
       subtitle="Per-child digital wellbeing — devices, apps, screen time, online safety, and trust-based oversight"
+      ariaContext={{ pageTitle: "Digital Wellbeing Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="digital-wellbeing-plans" />
           <PrintButton title="Digital Wellbeing Plans" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -345,6 +350,18 @@ export default function DigitalWellbeingPlanPage() {
           as digital landscape evolves. Linked to Online Safety, Exploitation Screening, and Device Policy.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Digital Wellbeing Plans — screen time, device agreements, social media, online safety plan, mental health and technology, healthy boundaries, parental controls, care plan"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

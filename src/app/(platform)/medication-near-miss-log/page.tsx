@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -21,6 +23,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useMedicationNearMisses } from "@/hooks/use-medication-near-misses";
 import type { MedicationNearMiss, NearMissType, NearMissRiskGrade } from "@/types/extended";
 import { NEAR_MISS_TYPE_LABEL, NEAR_MISS_RISK_GRADE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -128,10 +131,12 @@ export default function MedicationNearMissLogPage() {
     <PageShell
       title="Medication Near-Miss Log"
       subtitle="Quality Standard 7 — blame-free reporting of medication catches"
+      ariaContext={{ pageTitle: "Medication Near-Miss Log", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Near-Miss Log" />
           <ExportButton<MedicationNearMiss> data={filtered} columns={exportColumns} filename="medication-near-miss-log" />
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -298,6 +303,12 @@ export default function MedicationNearMissLogPage() {
           learning is shared with the placing authorities&apos; safeguarding networks where appropriate.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Medication"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

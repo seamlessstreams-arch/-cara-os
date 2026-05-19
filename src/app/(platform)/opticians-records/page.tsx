@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -28,6 +28,9 @@ import { useOpticiansRecords } from "@/hooks/use-opticians-records";
 import type { OpticiansRecord, OpticalStatus, OpticalRecallInterval } from "@/types/extended";
 import { OPTICAL_STATUS_LABEL, OPTICAL_RECALL_INTERVAL_LABEL, GLASSES_TYPE_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const statusColour: Record<OpticalStatus, string> = {
   active_nhs: "bg-green-100 text-green-800",
@@ -85,10 +88,12 @@ export default function OpticiansRecordsPage() {
     <PageShell
       title="Opticians Records"
       subtitle="Per-child eye care — registrations, prescriptions, glasses, and reasonable adjustments"
+      ariaContext={{ pageTitle: "Opticians Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="opticians-records" />
           <PrintButton title="Opticians Records" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -274,6 +279,18 @@ export default function OpticiansRecordsPage() {
       </div>
       </>
       )}
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Opticians Records — eye tests, glasses prescriptions, visual impairment, LAC statutory health checks, AHA, contact lenses, referrals, follow-ups, school vision"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

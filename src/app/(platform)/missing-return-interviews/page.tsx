@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -16,6 +18,7 @@ import {
 import { useReturnInterviews } from "@/hooks/use-return-interviews";
 import type { ReturnInterview, ReturnInterviewStatus, ReturnInterviewAction, ReturnInterviewActionStatus } from "@/types/extended";
 import { RETURN_INTERVIEW_STATUS_LABEL, RETURN_INTERVIEW_ACTION_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -92,10 +95,12 @@ export default function MissingReturnInterviewsPage() {
     <PageShell
       title="Missing — Return Home Interviews"
       subtitle="Statutory interviews within 72 hours of return from missing episodes"
+      ariaContext={{ pageTitle: "Missing Return Home Interviews", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={interviews} columns={exportCols} filename="return-interviews" />
           <PrintButton title="Missing — Return Home Interviews" />
+          <AriaStudioQuickActionButton context={{ record_type: "missing_from_care", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -284,6 +289,14 @@ export default function MissingReturnInterviewsPage() {
           person to take steps to locate missing children and report to appropriate persons.
         </p>
       </div>
+
+      {/* Care Events pipeline — missing episode events routed here */}
+      <CareEventsPanel
+        title="Care Events — Missing Episodes"
+        category="missing_episode"
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

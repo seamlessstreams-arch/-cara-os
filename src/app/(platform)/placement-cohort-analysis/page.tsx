@@ -16,7 +16,7 @@ import {
   ShieldCheck,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,9 @@ import {
 import type { CohortAnalysis, CohortPairDynamic } from "@/types/extended";
 import { COHORT_PAIR_DYNAMIC_LABEL } from "@/types/extended";
 import { useCohortAnalyses } from "@/hooks/use-cohort-analyses";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -121,10 +124,12 @@ export default function PlacementCohortAnalysisPage() {
     <PageShell
       title="Placement Cohort Analysis"
       subtitle="Quarterly analysis of group dynamics, peer relationships and the developmental impact of group living"
+      ariaContext={{ pageTitle: "Placement Cohort Analysis", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Placement Cohort Analysis" />
           <ExportButton data={records} columns={EXPORT_COLS} filename="placement-cohort-analysis" />
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -378,6 +383,18 @@ export default function PlacementCohortAnalysisPage() {
       </div>
       </>
       )}
+      <CareEventsPanel
+        title="Care Events — Placement Stability"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Placement Cohort Analysis — cohort demographics, placement outcomes, stability metrics, re-referral patterns, placement breakdown trends, matching analysis, commissioning evidence, Reg 45"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

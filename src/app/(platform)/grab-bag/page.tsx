@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, Clock,
   ChevronDown, ChevronUp, RefreshCw,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -20,11 +20,16 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import type { GrabBag, GrabBagItem, GrabBagStatus } from "@/types/extended";
 import { GRAB_BAG_STATUS_LABEL } from "@/types/extended";
-import { useGrabBags, useUpdateGrabBag } from "@/hooks/use-grab-bags";
+import { useGrabBags, useUpdateGrabBag, useCreateGrabBag } from "@/hooks/use-grab-bags";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── default items per bag ──────────────────────────────────────────── */
 const DEFAULT_ITEMS: Omit<GrabBagItem, "present" | "expiry_date" | "notes">[] = [
@@ -60,6 +65,21 @@ export default function GrabBagPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showChecklist, setShowChecklist] = useState(false);
   const [checkBag, setCheckBag] = useState<GrabBag | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const createBag = useCreateGrabBag();
+  const [bagForm, setBagForm] = useState({ child_id: "", location: "", notes: "" });
+  const setBAG = (k: string, v: unknown) => setBagForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveBag = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bagForm.child_id) { toast.error("Please select a young person."); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    const nextCheck = new Date(); nextCheck.setMonth(nextCheck.getMonth() + 1);
+    await createBag.mutateAsync({ child_id: bagForm.child_id, location: bagForm.location.trim() || "Secure cupboard", last_checked: today, checked_by: "", next_check_due: nextCheck.toISOString().slice(0, 10), items: DEFAULT_ITEMS.map((item) => ({ name: item.name, present: false, notes: "", required: item.required, expiry_date: null })), overall_status: "incomplete" as GrabBagStatus, notes: bagForm.notes });
+    toast.success("Grab bag record created.");
+    setBagForm({ child_id: "", location: "", notes: "" });
+    setShowNew(false);
+  };
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -133,10 +153,13 @@ export default function GrabBagPage() {
     <PageShell
       title="Emergency Grab Bags"
       subtitle="Essential documents and supplies for each young person — ready for immediate use"
+      ariaContext={{ pageTitle: "Emergency Grab Bags", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Grab Bags" />
           <ExportButton data={exportData} columns={exportCols} filename="grab-bags" />
+          <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />New Bag</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -318,6 +341,23 @@ export default function GrabBagPage() {
           risk assessments, or medication change.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Safety"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>New Grab Bag</DialogTitle></DialogHeader>
+          <form onSubmit={handleSaveBag} className="space-y-3 py-2">
+            <div><Label>Young Person *</Label><Select value={bagForm.child_id} onValueChange={(v) => setBAG("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Storage Location</Label><Input className="mt-1" placeholder="e.g. Secure cupboard, Room 2…" value={bagForm.location} onChange={(e) => setBAG("location", e.target.value)} /></div>
+            <div><Label>Notes</Label><Textarea className="mt-1" rows={2} value={bagForm.notes} onChange={(e) => setBAG("notes", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createBag.isPending}>{createBag.isPending ? "Saving…" : "Create Bag"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

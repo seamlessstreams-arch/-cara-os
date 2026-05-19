@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -13,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useSafeguardingSupervisionRecords } from "@/hooks/use-safeguarding-supervision-records";
 import type { SafeguardingSupervisionRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
 
@@ -69,14 +72,18 @@ export default function SafeguardingSupervisionPage() {
     <PageShell
       title="Safeguarding Supervision"
       subtitle="Specialist reflective supervision for staff working with children at high risk — distinct from line management"
+      ariaContext={{ pageTitle: "Safeguarding Supervision", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Safeguarding Supervision" />
           <ExportButton data={filtered} columns={exportCols} filename="safeguarding-supervision" />
+          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
+
+        <AriaPanel mode="oversee" pageContext="Safeguarding Supervision — specialist reflective supervision for staff working with children at high risk, distinct from line management, safeguarding concerns" recordType="safeguarding_supervision" userRole="registered_manager" className="mb-2" />
 
         {/* info banner */}
         <div className="rounded-lg bg-indigo-50 border border-indigo-200 p-4 flex gap-3">
@@ -240,6 +247,15 @@ export default function SafeguardingSupervisionPage() {
           <p className="font-semibold">Regulatory framework</p>
           <p>Safeguarding supervision sits alongside, but is distinct from, line management supervision. It is required practice under Working Together to Safeguard Children (2023) and is a key component of meeting Quality Standard 5 — the protection of children. Specialist supervision provides reflective space focused on the emotional and clinical impact of safeguarding work, supports staff resilience, and surfaces clinical signals such as parallel process that line management is not designed to hold. Records are stored within restricted access and disclosure is governed by safeguarding statutory thresholds.</p>
         </div>
+
+        {/* Care Events pipeline — safeguarding events routed here */}
+        <CareEventsPanel
+          title="Care Events — Safeguarding"
+          category={["safeguarding", "missing_episode"]}
+          days={90}
+          defaultCollapsed
+          className="mt-2"
+        />
       </div>
     </PageShell>
   );

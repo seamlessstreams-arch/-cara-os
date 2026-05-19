@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 import { useUtilityMonitoringRecords } from "@/hooks/use-utility-monitoring-records";
 import type { UtilityMonitoringRecord, UtilityMonitoringType } from "@/types/extended";
 import { UTILITY_MONITORING_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (icons / colours — not serialisable) ─────────────────── */
 
@@ -68,10 +71,12 @@ export default function UtilityMonitoringPage() {
     <PageShell
       title="Utility Monitoring"
       subtitle="Gas · Electric · Water · Broadband · Cost Management"
+      ariaContext={{ pageTitle: "Utility Monitoring", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Utility Monitoring" />
           <ExportButton data={records} columns={exportCols} filename="utility-monitoring" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -186,6 +191,18 @@ export default function UtilityMonitoringPage() {
           <p>Children&apos;s home utility costs are monitored monthly as part of the home&apos;s financial management. Readings are submitted to the finance team for budget tracking. Significant variances (±10%) must be investigated and explained. Energy efficiency measures should be implemented where practical. Contract renewals are managed centrally with quotes obtained at least 3 months before expiry. Smart meters are installed where available for accurate monitoring. Young people are encouraged to understand utility usage as part of independence skills development.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Utility Monitoring — electricity, gas, water, broadband usage and costs, budget variances, supplier contracts, contract renewals, energy efficiency, independence skills"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

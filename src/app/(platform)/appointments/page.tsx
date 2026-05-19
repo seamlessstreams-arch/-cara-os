@@ -28,6 +28,9 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useAppointments, useCreateAppointment, useUpdateAppointment } from "@/hooks/use-appointments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import type { Appointment, AppointmentType, AppointmentStatus } from "@/types/extended";
 import {
   Search, ArrowUpDown, X, Plus, CalendarDays,
@@ -219,10 +222,12 @@ export default function AppointmentsPage() {
     <PageShell
       title="Appointments"
       subtitle="Medical, review, and professional appointments"
+      ariaContext={{ pageTitle: "Appointments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Appointments" subtitle="Oak House — Health & Welfare" />
           <ExportButton data={filtered} columns={exportCols} filename="appointments" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> New Appointment
           </Button>
@@ -495,6 +500,18 @@ export default function AppointmentsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        category="health"
+        days={60}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Appointments — GP, dental, optician, CAMHS, hospital, health visitor, AHA, LAC health, consent, transport, outcome, follow-up, medication review, Annex A evidence"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

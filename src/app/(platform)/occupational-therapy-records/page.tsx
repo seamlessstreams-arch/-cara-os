@@ -16,7 +16,7 @@ import {
   FileCheck2,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,9 @@ import { useOccupationalTherapyRecords } from "@/hooks/use-occupational-therapy-
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { OccupationalTherapyRecord, OtSessionType, OtRecommendation } from "@/types/extended";
 import { OT_SESSION_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -237,6 +240,7 @@ export default function OccupationalTherapyRecordsPage() {
     <PageShell
       title="Occupational Therapy Records"
       subtitle="OT input per child — assessments, recommendations, sensory diets and progress (QS 7)"
+      ariaContext={{ pageTitle: "Occupational Therapy Records", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Occupational Therapy Records" />
@@ -245,6 +249,7 @@ export default function OccupationalTherapyRecordsPage() {
             columns={EXPORT_COLS}
             filename="occupational-therapy-records"
           />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -519,6 +524,18 @@ export default function OccupationalTherapyRecordsPage() {
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 mb-6">
         <strong>Quality Standard 7 — The Health and Wellbeing Standard:</strong> Children must be supported to access all health services they need, including specialist therapies. OT recommendations must be implemented consistently across the staff team, equipment provided as advised, and progress reviewed at agreed intervals. Sensory needs identified by an OT are clinical recommendations, not optional preferences — staff must be trained, supported and held accountable for implementation.
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Occupational Therapy Records — OT assessment, sensory processing, fine motor skills, daily living skills, adaptive equipment, OT referrals, therapy goals, progress, care plan evidence"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

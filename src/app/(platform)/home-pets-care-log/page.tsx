@@ -12,7 +12,7 @@ import {
   Stethoscope,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -23,6 +23,9 @@ import {
 import { usePetRecords } from "@/hooks/use-pet-records";
 import type { PetRecord, PetSpecies } from "@/types/extended";
 import { PET_SPECIES_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -166,10 +169,12 @@ export default function HomePetsCareLogPage() {
     <PageShell
       title="Home Pets Care Log"
       subtitle="The animals who share our home — welfare, vet records, child involvement, and the quiet therapeutic value they bring"
+      ariaContext={{ pageTitle: "Home Pets Care Log", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Home Pets Care Log" />
           <ExportButton data={exportRows} columns={exportCols} filename="home-pets-care-log" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -406,6 +411,18 @@ export default function HomePetsCareLogPage() {
       <div className="rounded-lg border border-teal-200 bg-teal-50/60 p-4 text-sm text-teal-900 mb-6">
         <strong>Regulatory framework.</strong> Pet welfare in the home is held within the Animal Welfare Act 2006 and the RSPCA five welfare needs (suitable environment, suitable diet, ability to behave normally, housing with or apart from other animals, protection from pain, suffering, injury and disease). Children&apos;s involvement is risk-assessed under the Health &amp; Safety at Work Act 1974 and the home&apos;s own Health &amp; Safety policy, with allergy clearance recorded against each child&apos;s health profile. The therapeutic value of pet care contributes to Quality Standard 6 (enjoyment &amp; achievement) of the Children&apos;s Homes (England) Regulations 2015 and is described in the Statement of Purpose.
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Home Pets Care Log — pets in the home, animal welfare, vet records, vaccinations, allergies, children's relationships with pets, therapeutic benefits, risk assessment"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

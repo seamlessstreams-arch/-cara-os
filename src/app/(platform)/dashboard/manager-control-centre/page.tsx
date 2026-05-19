@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -336,6 +336,13 @@ import {
   useEvidenceItems,
 } from "@/hooks/use-intelligence-layer";
 import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
+import { useIncidents } from "@/hooks/use-incidents";
+import { useYoungPeople } from "@/hooks/use-young-people";
+import { useKeyWorkingSessions } from "@/hooks/use-key-working";
+import { runProactiveAlertScan, type ProactiveAlert } from "@/lib/aria/aria-proactive-alerts";
+import type { IncidentRecord } from "@/lib/aria/aria-pattern-engine";
+import type { ChildRecord, IncidentSummary } from "@/lib/aria/aria-voice-gap-analysis";
+import Link from "next/link";
 import type {
   AttentionCategory,
   Urgency,
@@ -440,184 +447,6 @@ interface AttentionItem {
 
 /* ── demo data ─────────────────────────────────────────────────────────────── */
 
-const DEMO_ITEMS: AttentionItem[] = [
-  {
-    id: "att_001",
-    title: "Serious incident report requires manager oversight",
-    category: "serious_incident",
-    urgency: "critical",
-    status: "open",
-    reason: "A serious incident was recorded on " + d(-1) + " involving Child A. No manager oversight has been added within the required 24-hour window. Ofsted notification may be required under Reg 40.",
-    suggestedAction: "Review the incident record, add your oversight analysis, and determine whether Ofsted notification is required. Consider whether a staff debrief and learning review are needed.",
-    dueDate: d(0),
-    childName: "Child A",
-    createdAt: d(-1),
-  },
-  {
-    id: "att_002",
-    title: "Missing from care episode — return interview overdue",
-    category: "missing_from_care",
-    urgency: "critical",
-    status: "open",
-    reason: "Child B returned from a missing episode 48 hours ago. The independent return interview has not been completed. This is a statutory requirement and the placing authority must be informed.",
-    suggestedAction: "Arrange the independent return interview urgently. Ensure the placing authority and police are informed of the return. Update the missing from care log with return details.",
-    dueDate: d(-1),
-    childName: "Child B",
-    createdAt: d(-2),
-  },
-  {
-    id: "att_003",
-    title: "Incident log awaiting manager review",
-    category: "incident_oversight",
-    urgency: "high",
-    status: "open",
-    reason: "Three incident records from the past 5 days have no manager oversight recorded. Regulation 40 requires the registered person to ensure proper oversight of all significant events.",
-    suggestedAction: "Review each incident, add oversight notes covering your analysis of triggers, response quality, and follow-up actions needed. Link to relevant risk assessments.",
-    dueDate: d(1),
-    childName: "Child C",
-    createdAt: d(-3),
-  },
-  {
-    id: "att_004",
-    title: "Medication audit discrepancy identified",
-    category: "medication_check",
-    urgency: "high",
-    status: "open",
-    reason: "The weekly medication count for Child A shows a discrepancy of 2 tablets of prescribed medication. This must be investigated and resolved immediately as per the home's medication policy.",
-    suggestedAction: "Conduct a full medication reconciliation. Check all MAR sheets against stock. Interview staff who administered medication during the relevant period. Record findings and any corrective action.",
-    dueDate: d(0),
-    childName: "Child A",
-    staffName: "Staff Member D",
-    createdAt: d(-1),
-  },
-  {
-    id: "att_005",
-    title: "Staff supervision overdue by 3 weeks",
-    category: "supervision_overdue",
-    urgency: "high",
-    status: "open",
-    reason: "Staff Member B has not had formal supervision for 7 weeks. The home's statement of purpose commits to supervision every 4 weeks. This is a common area of Ofsted scrutiny.",
-    suggestedAction: "Schedule supervision within the next 5 working days. Prepare agenda covering recent incidents, training needs, wellbeing, and professional development. Record on the supervision log.",
-    dueDate: d(5),
-    staffName: "Staff Member B",
-    createdAt: d(-7),
-  },
-  {
-    id: "att_006",
-    title: "Risk assessment review overdue — self-harm",
-    category: "risk_assessment_review",
-    urgency: "high",
-    status: "in_progress",
-    reason: "Child C's self-harm risk assessment was last reviewed 8 weeks ago. The review frequency is set to 4-weekly due to active risk. A recent incident may indicate escalation.",
-    suggestedAction: "Complete the risk assessment review incorporating recent incident data. Consider whether the risk level or management strategies need updating. Consult with CAMHS if appropriate.",
-    dueDate: d(-3),
-    childName: "Child C",
-    createdAt: d(-5),
-  },
-  {
-    id: "att_007",
-    title: "Placement plan update required",
-    category: "placement_plan_update",
-    urgency: "medium",
-    status: "open",
-    reason: "Child A's placement plan has not been updated following the last LAC review held 2 weeks ago. The agreed actions from the review need to be incorporated into the plan.",
-    suggestedAction: "Update the placement plan to reflect the LAC review outcomes. Ensure all agreed actions are captured with responsible persons and timescales. Share the updated plan with the placing authority.",
-    dueDate: d(3),
-    childName: "Child A",
-    createdAt: d(-10),
-  },
-  {
-    id: "att_008",
-    title: "Key work session overdue",
-    category: "key_work_overdue",
-    urgency: "medium",
-    status: "open",
-    reason: "Child B has not had a recorded key work session for 3 weeks. The care plan specifies weekly key work. This is an important mechanism for capturing the child's voice and monitoring wellbeing.",
-    suggestedAction: "Schedule a key work session this week. Focus on the child's current wishes and feelings, any concerns, and progress against care plan targets. Record the session promptly.",
-    dueDate: d(2),
-    childName: "Child B",
-    staffName: "Staff Member E",
-    createdAt: d(-4),
-  },
-  {
-    id: "att_009",
-    title: "Wishes and feelings not captured this month",
-    category: "wishes_feelings_missing",
-    urgency: "medium",
-    status: "open",
-    reason: "No wishes and feelings entry has been recorded for Child C in the current calendar month. The voice of the child is a central focus for Ofsted inspections under the social care common inspection framework.",
-    suggestedAction: "Ensure the key worker captures Child C's wishes and feelings through an appropriate method (direct conversation, activity, creative work). Record in the child's voice where possible.",
-    childName: "Child C",
-    createdAt: d(-6),
-  },
-  {
-    id: "att_010",
-    title: "Daily logs awaiting approval",
-    category: "log_approval",
-    urgency: "medium",
-    status: "open",
-    reason: "Five daily log entries from the past 7 days have not been reviewed and approved by management. Regular log review demonstrates active oversight and ensures recording quality.",
-    suggestedAction: "Review each pending log entry for accuracy, completeness, and tone. Approve entries that meet the standard. Return any that need amendment with clear guidance for the author.",
-    dueDate: d(1),
-    createdAt: d(-2),
-  },
-  {
-    id: "att_011",
-    title: "Reg 44 visit action overdue",
-    category: "reg44_action_overdue",
-    urgency: "medium",
-    status: "open",
-    reason: "An action from the last Reg 44 independent visitor's report (dated " + d(-30) + ") regarding fire evacuation drill frequency remains incomplete. The action was due " + d(-7) + ".",
-    suggestedAction: "Complete the outstanding action or provide a written update to the independent visitor explaining the delay and revised timescale. Record completion evidence in the Reg 44 action tracker.",
-    dueDate: d(-7),
-    createdAt: d(-14),
-  },
-  {
-    id: "att_012",
-    title: "Training gap — physical intervention refresher",
-    category: "training_gap",
-    urgency: "medium",
-    status: "open",
-    reason: "Staff Member C's physical intervention certification expired 2 weeks ago. They must not be involved in any physical intervention until the refresher is completed. This affects shift planning.",
-    suggestedAction: "Book the next available physical intervention refresher course. Update the rota to ensure Staff Member C is always paired with a certified colleague until recertification. Notify Staff Member C in writing.",
-    staffName: "Staff Member C",
-    createdAt: d(-14),
-  },
-  {
-    id: "att_013",
-    title: "Complaint from placing authority — response due",
-    category: "complaint_open",
-    urgency: "high",
-    status: "in_progress",
-    reason: "A formal complaint was received from the placing authority for Child B regarding communication about a recent incident. The complaints procedure requires an initial response within 5 working days.",
-    suggestedAction: "Draft a response to the complaint. Review the incident communication timeline. Identify any gaps in the notification process and outline corrective steps. Log on the complaints register.",
-    dueDate: d(2),
-    childName: "Child B",
-    createdAt: d(-3),
-  },
-  {
-    id: "att_014",
-    title: "ARIA has detected a pattern — escalating behaviour",
-    category: "aria_pattern",
-    urgency: "medium",
-    status: "open",
-    reason: "ARIA has identified a pattern of escalating behaviour incidents involving Child A over the past 14 days. The frequency has increased from 1 per week to 3 per week, with increasing severity. This may correlate with reduced family contact during the same period.",
-    suggestedAction: "Review the behaviour trend analysis. Consider whether the behaviour support plan needs updating. Explore the link to family contact patterns. Discuss with the team and consider a multi-agency strategy meeting.",
-    childName: "Child A",
-    createdAt: d(-1),
-  },
-  {
-    id: "att_015",
-    title: "Reg 45 report — evidence gap in quality of care",
-    category: "reg45_evidence_gap",
-    urgency: "low",
-    status: "open",
-    reason: "The upcoming Reg 45 half-yearly report has a gap in evidencing quality of care outcomes for the current period. Specifically, there are limited recorded examples of how the home has responded to children's individual needs.",
-    suggestedAction: "Gather evidence from key work records, daily logs, and activity records that demonstrate individualised care. Ask staff to provide specific examples for each child. Compile into the evidence folder.",
-    dueDate: d(14),
-    createdAt: d(-7),
-  },
-];
 
 /* ── stat card type ────────────────────────────────────────────────────────── */
 
@@ -665,7 +494,55 @@ export default function ManagerControlCentrePage() {
   const { data: voiceData } = useVoiceEntries();
   const { data: evidenceData } = useEvidenceItems();
 
-  const [items, setItems] = useState<AttentionItem[]>(DEMO_ITEMS);
+  // ── ARIA proactive alert engine ─────────────────────────────────────────
+  const { data: incidentsData } = useIncidents();
+  const { data: ypData }        = useYoungPeople();
+  const { data: kwData }        = useKeyWorkingSessions();
+
+  const ariaAlerts = useMemo<ProactiveAlert[]>(() => {
+    const incidents   = incidentsData?.data ?? [];
+    const youngPeople = ypData?.data ?? [];
+    const kwSessions  = kwData?.data ?? [];
+    if (incidents.length === 0) return [];
+
+    const incidentRecords: IncidentRecord[] = incidents.map((i) => ({
+      id: i.id, reference: i.reference, type: i.type, severity: i.severity,
+      child_id: i.child_id, reported_by: i.reported_by, date: i.date,
+      time: i.time ?? undefined, location: i.location ?? undefined,
+      description: i.description, status: i.status,
+      requires_oversight: i.requires_oversight,
+      oversight_by: i.oversight_by, oversight_at: i.oversight_at,
+      home_id: "oak-house",
+    }));
+
+    const childRecords: ChildRecord[] = kwSessions.map((s) => ({
+      id: s.id, childId: s.child_id,
+      childName: youngPeople.find((yp) => yp.id === s.child_id)
+        ? `${youngPeople.find((yp) => yp.id === s.child_id)!.preferred_name ?? youngPeople.find((yp) => yp.id === s.child_id)!.first_name} ${youngPeople.find((yp) => yp.id === s.child_id)!.last_name}`
+        : s.child_id,
+      recordType: "key_work", date: s.date,
+      hasDirectQuote: (s.child_voice?.length ?? 0) > 0,
+      themes: s.topics ?? [], wordCount: s.child_voice?.split(/\s+/).length ?? 0,
+    }));
+
+    const incidentSummaries: IncidentSummary[] = incidents.map((i) => ({
+      id: i.id, childId: i.child_id, date: i.date,
+      type: i.type, severity: i.severity, hasPostIncidentVoice: false,
+    }));
+
+    const children = youngPeople.map((yp) => ({
+      id: yp.id, name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
+    }));
+
+    try {
+      return runProactiveAlertScan({
+        incidents: incidentRecords, childRecords, incidentSummaries,
+        children, complianceChecks: [], homeId: "oak-house",
+      }).alerts;
+    } catch { return []; }
+  }, [incidentsData, ypData, kwData]);
+
+  const [items, setItems] = useState<AttentionItem[]>([]);
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterUrgency, setFilterUrgency] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -674,7 +551,7 @@ export default function ManagerControlCentrePage() {
   const updateItem = useUpdateAttentionItem();
 
   useEffect(() => {
-    if (apiData?.persisted && apiData.items.length > 0) {
+    if (apiData?.persisted && Array.isArray(apiData.items)) {
       setItems((apiData.items as Record<string, unknown>[]).map((item) => ({
         id: item.id as string,
         title: item.title as string,
@@ -690,6 +567,29 @@ export default function ManagerControlCentrePage() {
       })));
     }
   }, [apiData]);
+
+  // Merge live ARIA proactive alerts into the attention items list
+  useEffect(() => {
+    if (ariaAlerts.length === 0) return;
+    const severityToUrgency = (s: string): Urgency =>
+      s === "urgent" ? "critical" : s === "high" ? "high" : s === "medium" ? "medium" : "low";
+    const ariaItems: AttentionItem[] = ariaAlerts.map((a) => ({
+      id:             `aria_${a.id}`,
+      title:          a.title,
+      category:       "aria_pattern" as AttentionCategory,
+      urgency:        severityToUrgency(a.severity),
+      status:         "open" as AttentionStatus,
+      reason:         a.description,
+      suggestedAction: a.recommendation,
+      childName:      undefined,
+      staffName:      undefined,
+      createdAt:      a.detectedAt,
+    }));
+    setItems((prev) => [
+      ...prev.filter((i) => i.category !== "aria_pattern"),
+      ...ariaItems,
+    ]);
+  }, [ariaAlerts]);
 
   const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
@@ -814,6 +714,7 @@ export default function ManagerControlCentrePage() {
     <PageShell
       title="Manager Control Centre"
       subtitle="What needs your attention today"
+      ariaContext={{ pageTitle: "Nothing needs your attention", sourceType: "child_record" }}
       actions={
         <Button variant="outline" size="sm" className="gap-1.5">
           <Download className="h-4 w-4" />
@@ -889,6 +790,30 @@ export default function ManagerControlCentrePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── ARIA proactive intelligence panel ─────────────────────────────── */}
+      {ariaAlerts.length > 0 && (
+        <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 mb-4 flex items-start gap-3">
+          <Brain className="h-5 w-5 text-violet-600 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-violet-900">
+              ARIA has detected {ariaAlerts.length} proactive {ariaAlerts.length === 1 ? "alert" : "alerts"} from live records
+            </p>
+            <p className="text-xs text-violet-700 mt-0.5">
+              {ariaAlerts.filter((a) => a.severity === "urgent").length} urgent ·{" "}
+              {ariaAlerts.filter((a) => a.severity === "high").length} high ·{" "}
+              {ariaAlerts.filter((a) => a.severity === "medium").length} medium —
+              patterns, voice gaps and compliance concerns surfaced automatically
+            </p>
+          </div>
+          <Link href="/intelligence/aria/pattern-intelligence">
+            <Button size="sm" variant="outline" className="gap-1.5 text-violet-700 border-violet-300 hover:bg-violet-100 shrink-0">
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              View all
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* ── critical alert banner ─────────────────────────────────────────── */}
       {stats[0].value > 0 && (

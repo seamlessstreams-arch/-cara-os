@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -26,196 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface OutcomeMeasure {
-  id: string;
-  youngPerson: string;
-  measureName: "SDQ (Goodman)" | "RCADS" | "CORE-YP" | "Outcome Star" | "BERS-2" | "ASEBA YSR" | "Trauma Symptom Checklist (TSCC)";
-  measureFullName: string;
-  domain: "Emotional Wellbeing" | "Behavioural" | "Anxiety/Depression" | "Trauma Symptoms" | "Strengths" | "General";
-  administeredDate: string;
-  administeredBy: string;
-  childCompleted: boolean;
-  scores: { subscale: string; rawScore: number; maxScore: number; clinicalThreshold: number; interpretation: "Within normal range" | "Borderline" | "Clinical concern" }[];
-  totalScore: number;
-  maxTotalScore: number;
-  prevTotalScore: number | null;
-  trendDirection: "Improving" | "Stable" | "Declining" | "Baseline";
-  childReflection: string;
-  staffInterpretation: string;
-  clinicalDiscussionWith: string;
-  linkedInterventions: string[];
-  nextAdministrationDate: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
-};
-
-const data: OutcomeMeasure[] = [
-  {
-    id: "om-001",
-    youngPerson: "yp_alex",
-    measureName: "SDQ (Goodman)",
-    measureFullName: "Strengths and Difficulties Questionnaire — Self-Report (11-17)",
-    domain: "Behavioural",
-    administeredDate: d(-7),
-    administeredBy: "staff_anna",
-    childCompleted: true,
-    scores: [
-      { subscale: "Emotional symptoms", rawScore: 5, maxScore: 10, clinicalThreshold: 7, interpretation: "Within normal range" },
-      { subscale: "Conduct problems", rawScore: 4, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Hyperactivity/inattention", rawScore: 8, maxScore: 10, clinicalThreshold: 7, interpretation: "Borderline" },
-      { subscale: "Peer problems", rawScore: 3, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Prosocial behaviour", rawScore: 8, maxScore: 10, clinicalThreshold: 5, interpretation: "Within normal range" },
-    ],
-    totalScore: 20,
-    maxTotalScore: 40,
-    prevTotalScore: 26,
-    trendDirection: "Improving",
-    childReflection: "Felt easier this time. I was honest about the ADHD stuff. I think I'm doing okay.",
-    staffInterpretation: "Significant improvement vs 6-month baseline (was 26). Hyperactivity remains borderline — consistent with ADHD diagnosis. Conduct and peer scores have moved into normal range. Prosocial scores high.",
-    clinicalDiscussionWith: "Dr Patel (CAMHS) — supports continued therapeutic work and ADHD medication review",
-    linkedInterventions: ["EMDR therapy", "ADHD medication", "Boxing club (regulation)"],
-    nextAdministrationDate: d(180),
-  },
-  {
-    id: "om-002",
-    youngPerson: "yp_alex",
-    measureName: "RCADS",
-    measureFullName: "Revised Children's Anxiety and Depression Scale",
-    domain: "Anxiety/Depression",
-    administeredDate: d(-14),
-    administeredBy: "staff_anna",
-    childCompleted: true,
-    scores: [
-      { subscale: "Separation anxiety", rawScore: 4, maxScore: 21, clinicalThreshold: 14, interpretation: "Within normal range" },
-      { subscale: "Generalised anxiety", rawScore: 9, maxScore: 18, clinicalThreshold: 12, interpretation: "Within normal range" },
-      { subscale: "Social phobia", rawScore: 7, maxScore: 27, clinicalThreshold: 17, interpretation: "Within normal range" },
-      { subscale: "Panic disorder", rawScore: 3, maxScore: 27, clinicalThreshold: 14, interpretation: "Within normal range" },
-      { subscale: "Obsessive compulsive", rawScore: 5, maxScore: 18, clinicalThreshold: 12, interpretation: "Within normal range" },
-      { subscale: "Major depression", rawScore: 6, maxScore: 30, clinicalThreshold: 17, interpretation: "Within normal range" },
-    ],
-    totalScore: 34,
-    maxTotalScore: 141,
-    prevTotalScore: 48,
-    trendDirection: "Improving",
-    childReflection: "I worry less than I used to. School is still hard but I have ways to deal with it.",
-    staffInterpretation: "All subscales within normal range. Improvement from baseline of 48. Generalised anxiety reduced significantly. Reflects therapeutic gains.",
-    clinicalDiscussionWith: "Dr Patel (CAMHS)",
-    linkedInterventions: ["EMDR therapy", "Anxiety management toolkit", "Key working sessions"],
-    nextAdministrationDate: d(180),
-  },
-  {
-    id: "om-003",
-    youngPerson: "yp_jordan",
-    measureName: "SDQ (Goodman)",
-    measureFullName: "Strengths and Difficulties Questionnaire — Self-Report (11-17)",
-    domain: "Behavioural",
-    administeredDate: d(-12),
-    administeredBy: "staff_chervelle",
-    childCompleted: true,
-    scores: [
-      { subscale: "Emotional symptoms", rawScore: 6, maxScore: 10, clinicalThreshold: 7, interpretation: "Within normal range" },
-      { subscale: "Conduct problems", rawScore: 5, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Hyperactivity/inattention", rawScore: 4, maxScore: 10, clinicalThreshold: 7, interpretation: "Within normal range" },
-      { subscale: "Peer problems", rawScore: 4, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Prosocial behaviour", rawScore: 9, maxScore: 10, clinicalThreshold: 5, interpretation: "Within normal range" },
-    ],
-    totalScore: 19,
-    maxTotalScore: 40,
-    prevTotalScore: 22,
-    trendDirection: "Stable",
-    childReflection: "Same answers as last time mostly. Football is good. School is okay.",
-    staffInterpretation: "Stable scores within normal range across all subscales. Prosocial scores particularly high — reflects football team leadership and pro-social peer group. No clinical concerns from this measure.",
-    clinicalDiscussionWith: "Dr Patel (CAMHS)",
-    linkedInterventions: ["CAMHS therapy", "Football club", "Cultural identity work"],
-    nextAdministrationDate: d(180),
-  },
-  {
-    id: "om-004",
-    youngPerson: "yp_jordan",
-    measureName: "Outcome Star",
-    measureFullName: "Wellbeing Star (Triangle Consulting)",
-    domain: "General",
-    administeredDate: d(-10),
-    administeredBy: "staff_ryan",
-    childCompleted: true,
-    scores: [
-      { subscale: "Physical health", rawScore: 8, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Where you live", rawScore: 8, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Money", rawScore: 7, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Self-care", rawScore: 8, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Friends and family", rawScore: 6, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Work and learning", rawScore: 7, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Feelings and behaviour", rawScore: 7, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Drugs and alcohol", rawScore: 10, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-    ],
-    totalScore: 61,
-    maxTotalScore: 80,
-    prevTotalScore: 54,
-    trendDirection: "Improving",
-    childReflection: "It's a useful way to see where I'm at. Family stuff is still complicated. Everything else is going up.",
-    staffInterpretation: "Strong overall scores. Family/friends remains the lowest area, reflecting complexity of mother contact. All other domains stable or improved. Drugs/alcohol consistently scored at maximum (good).",
-    clinicalDiscussionWith: "Internal — discussed in placement meeting",
-    linkedInterventions: ["Therapy", "Football", "Independence skills work"],
-    nextAdministrationDate: d(90),
-  },
-  {
-    id: "om-005",
-    youngPerson: "yp_casey",
-    measureName: "SDQ (Goodman)",
-    measureFullName: "Strengths and Difficulties Questionnaire — Self-Report (11-17, ASD-adapted)",
-    domain: "Behavioural",
-    administeredDate: d(-5),
-    administeredBy: "staff_anna",
-    childCompleted: true,
-    scores: [
-      { subscale: "Emotional symptoms", rawScore: 8, maxScore: 10, clinicalThreshold: 7, interpretation: "Borderline" },
-      { subscale: "Conduct problems", rawScore: 2, maxScore: 10, clinicalThreshold: 6, interpretation: "Within normal range" },
-      { subscale: "Hyperactivity/inattention", rawScore: 6, maxScore: 10, clinicalThreshold: 7, interpretation: "Within normal range" },
-      { subscale: "Peer problems", rawScore: 7, maxScore: 10, clinicalThreshold: 6, interpretation: "Borderline" },
-      { subscale: "Prosocial behaviour", rawScore: 7, maxScore: 10, clinicalThreshold: 5, interpretation: "Within normal range" },
-    ],
-    totalScore: 23,
-    maxTotalScore: 40,
-    prevTotalScore: 28,
-    trendDirection: "Improving",
-    childReflection: "I used the visual cards. The emotions one is hard. I picked what felt right.",
-    staffInterpretation: "Casey completed using visual support per ASD-adapted protocol. Improvement vs baseline. Emotional symptoms borderline — consistent with ongoing trauma and ASD profile. Peer problems borderline — reflects neurodivergent social dynamics. Conduct very low (Casey's quiet, internalising profile).",
-    clinicalDiscussionWith: "Dr Wong (CAMHS ASD pathway)",
-    linkedInterventions: ["Art therapy", "Social communication group", "Sensory regulation"],
-    nextAdministrationDate: d(180),
-  },
-  {
-    id: "om-006",
-    youngPerson: "yp_casey",
-    measureName: "Trauma Symptom Checklist (TSCC)",
-    measureFullName: "Trauma Symptom Checklist for Children",
-    domain: "Trauma Symptoms",
-    administeredDate: d(-15),
-    administeredBy: "staff_anna",
-    childCompleted: true,
-    scores: [
-      { subscale: "Anxiety", rawScore: 12, maxScore: 27, clinicalThreshold: 17, interpretation: "Within normal range" },
-      { subscale: "Depression", rawScore: 9, maxScore: 27, clinicalThreshold: 17, interpretation: "Within normal range" },
-      { subscale: "Anger", rawScore: 6, maxScore: 27, clinicalThreshold: 17, interpretation: "Within normal range" },
-      { subscale: "Post-traumatic stress", rawScore: 14, maxScore: 30, clinicalThreshold: 18, interpretation: "Within normal range" },
-      { subscale: "Dissociation", rawScore: 11, maxScore: 30, clinicalThreshold: 17, interpretation: "Within normal range" },
-    ],
-    totalScore: 52,
-    maxTotalScore: 141,
-    prevTotalScore: 71,
-    trendDirection: "Improving",
-    childReflection: "Used the cards again. Some questions were hard. I'm safe here.",
-    staffInterpretation: "Significant improvement vs 12-month baseline. All subscales below clinical threshold. Dissociation reduction particularly meaningful — aligns with reduced freeze response observed clinically. Reflects therapeutic gains and stable placement.",
-    clinicalDiscussionWith: "Dr Wong (CAMHS ASD pathway), Art Therapist Sarah",
-    linkedInterventions: ["Art therapy", "Trauma-informed care framework", "Stable routines"],
-    nextAdministrationDate: d(180),
-  },
-];
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import type { OutcomeMeasure } from "@/types/extended";
+import { useOutcomeMeasures } from "@/hooks/use-outcome-measures";
 
 const trendIcon: Record<string, typeof TrendingUp> = {
   Improving: TrendingDown, // SDQ scores: lower = better
@@ -238,7 +53,7 @@ const interpretationColour: Record<string, string> = {
 };
 
 const exportCols: ExportColumn<OutcomeMeasure>[] = [
-  { header: "Young Person", accessor: (r: OutcomeMeasure) => getYPName(r.youngPerson) },
+  { header: "Young Person", accessor: (r: OutcomeMeasure) => getYPName(r.child_id) },
   { header: "Measure", accessor: (r: OutcomeMeasure) => r.measureName },
   { header: "Domain", accessor: (r: OutcomeMeasure) => r.domain },
   { header: "Date", accessor: (r: OutcomeMeasure) => r.administeredDate },
@@ -249,6 +64,9 @@ const exportCols: ExportColumn<OutcomeMeasure>[] = [
 ];
 
 export default function TherapeuticOutcomeMeasuresPage() {
+  const { data: result, isLoading } = useOutcomeMeasures(undefined, "home_oak");
+  const data = result?.data ?? [];
+
   const [filterYP, setFilterYP] = useState("all");
   const [filterMeasure, setFilterMeasure] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -256,40 +74,44 @@ export default function TherapeuticOutcomeMeasuresPage() {
 
   const filtered = useMemo(() => {
     let items = [...data];
-    if (filterYP !== "all") items = items.filter((m) => m.youngPerson === filterYP);
+    if (filterYP !== "all") items = items.filter((m) => m.child_id === filterYP);
     if (filterMeasure !== "all") items = items.filter((m) => m.measureName === filterMeasure);
     items.sort((a, b) => {
       switch (sortBy) {
         case "date":
           return b.administeredDate.localeCompare(a.administeredDate);
         case "child":
-          return a.youngPerson.localeCompare(b.youngPerson);
-        case "trend":
+          return a.child_id.localeCompare(b.child_id);
+        case "trend": {
           const ord = { Improving: 0, Stable: 1, Baseline: 2, Declining: 3 };
           return ord[a.trendDirection] - ord[b.trendDirection];
+        }
         default:
           return 0;
       }
     });
     return items;
-  }, [filterYP, filterMeasure, sortBy]);
+  }, [filterYP, filterMeasure, sortBy, data]);
 
   const totalMeasures = data.length;
   const improving = data.filter((m) => m.trendDirection === "Improving").length;
   const childCompletedCount = data.filter((m) => m.childCompleted).length;
-  const uniqueChildren = new Set(data.map((m) => m.youngPerson)).size;
+  const uniqueChildren = new Set(data.map((m) => m.child_id)).size;
 
   return (
     <PageShell
       title="Therapeutic Outcome Measures"
       subtitle="Validated assessment tools tracking therapeutic progress — SDQ, RCADS, Outcome Star, TSCC and others"
+      ariaContext={{ pageTitle: "Therapeutic Outcome Measures", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="therapeutic-outcome-measures" />
           <PrintButton title="Therapeutic Outcome Measures" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
+      {isLoading ? <div className="p-8 text-center text-muted-foreground">Loading...</div> : (<>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center">
           <p className="text-2xl font-bold">{totalMeasures}</p>
@@ -369,7 +191,7 @@ export default function TherapeuticOutcomeMeasuresPage() {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Activity className="h-5 w-5 text-purple-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{getYPName(measure.youngPerson)} &middot; {measure.measureName}</p>
+                    <p className="font-medium truncate">{getYPName(measure.child_id)} &middot; {measure.measureName}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {measure.administeredDate} &middot; {measure.domain} &middot; Score: {measure.totalScore}/{measure.maxTotalScore}
                       {measure.prevTotalScore !== null && ` (was ${measure.prevTotalScore})`}
@@ -472,6 +294,19 @@ export default function TherapeuticOutcomeMeasuresPage() {
           mental health professional. Linked to Therapeutic Input and Multi-Disciplinary Formulation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Wellbeing"
+        category={["health", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Therapeutic Outcome Measures — therapy progress, SDQ scores, outcome tracking, goal achievement, wellbeing measures, Reg 45 quality evidence, Ofsted impact evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
+      </>)}
     </PageShell>
   );
 }

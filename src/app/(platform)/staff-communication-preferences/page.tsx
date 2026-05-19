@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, User, Phone, Video,
   FileText, Brain, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,9 @@ import {
   STAFF_COMMS_CONTACT_METHOD_LABEL,
   STAFF_COMMS_FEEDBACK_STYLE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ───────────────────────────────────────────────────── */
 
@@ -122,10 +125,12 @@ export default function StaffCommunicationPreferencesPage() {
     <PageShell
       title="Staff Communication Preferences"
       subtitle="Recording individual communication needs and reasonable adjustments for all team members"
+      ariaContext={{ pageTitle: "Staff Communication Preferences", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Communication Preferences" />
           <ExportButton data={filtered} columns={exportCols} filename="staff-communication-preferences" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -312,6 +317,18 @@ export default function StaffCommunicationPreferencesPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Communication Preferences — staff communication styles, preferred contact methods, accessibility requirements, reasonable adjustments, HR records, staff wellbeing, Reg 40 workforce evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

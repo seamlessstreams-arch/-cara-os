@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { voiceEntries, nextFallbackId } from "@/lib/intelligence/fallback-store";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -12,7 +13,12 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get("category");
 
   if (!isSupabaseEnabled()) {
-    return NextResponse.json({ ok: true, entries: [], persisted: false });
+    let rows = [...voiceEntries];
+    if (childId) rows = rows.filter((r) => r.child_id === childId);
+    if (homeId) rows = rows.filter((r) => r.home_id === homeId);
+    if (category) rows = rows.filter((r) => r.category === category);
+    rows.sort((a, b) => b.entry_date.localeCompare(a.entry_date));
+    return NextResponse.json({ ok: true, entries: rows, persisted: true });
   }
 
   const supabase = createServerClient() as unknown as LooseSupabase;
@@ -38,7 +44,24 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isSupabaseEnabled()) {
-      return NextResponse.json({ ok: true, persisted: false });
+      const now = new Date().toISOString();
+      const row = {
+        id: nextFallbackId("v"),
+        home_id: homeId as string,
+        child_id: childId as string,
+        entry_date: (entryDate as string) ?? now.slice(0, 10),
+        category: category as string,
+        child_words: (childWords as string) ?? "",
+        summary: (summary as string) ?? "",
+        action_taken: (actionTaken as string) ?? "",
+        staff_response: (staffResponse as string) ?? "",
+        created_by: (actorUserId as string) ?? "",
+        linked_record_id: (linkedRecordId as string) ?? null,
+        linked_record_type: (linkedRecordType as string) ?? null,
+        created_at: now,
+      };
+      voiceEntries.unshift(row);
+      return NextResponse.json({ ok: true, entry: row, persisted: true });
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;

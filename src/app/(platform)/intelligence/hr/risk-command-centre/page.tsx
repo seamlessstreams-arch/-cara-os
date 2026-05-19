@@ -13,8 +13,9 @@
 // empty-state guidance that explains what each section does and why it matters.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageShell } from "@/components/ui/page-shell";
+import { useHrRisk } from "@/hooks/use-intelligence-layer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,162 +91,6 @@ interface HrTaskSummary {
 // In production these come from the API. The demo set is realistic enough to
 // show the dashboard working but contains no real personal data.
 
-const DEMO_CASES: CaseSummary[] = [
-  {
-    id: "hrc_001",
-    staffName: "Staff Member A",
-    caseType: "safeguarding_allegation",
-    riskLevel: "black",
-    status: "investigation",
-    safeguardingStatus: "lado_consulted",
-    openedAt: "2026-04-28",
-    daysSinceOpened: 7,
-    lastActionAt: "2026-05-04",
-    caseOwner: "Registered Manager",
-    riOversightRequired: true,
-    riOversightCompleted: false,
-    overdueTaskCount: 1,
-  },
-  {
-    id: "hrc_002",
-    staffName: "Staff Member B",
-    caseType: "disciplinary",
-    riskLevel: "red",
-    status: "meeting_scheduled",
-    safeguardingStatus: "not_safeguarding",
-    openedAt: "2026-04-15",
-    daysSinceOpened: 20,
-    lastActionAt: "2026-05-02",
-    caseOwner: "Registered Manager",
-    riOversightRequired: false,
-    riOversightCompleted: false,
-    overdueTaskCount: 0,
-  },
-  {
-    id: "hrc_003",
-    staffName: "Staff Member C",
-    caseType: "sickness_absence",
-    riskLevel: "amber",
-    status: "open",
-    safeguardingStatus: "not_safeguarding",
-    openedAt: "2026-03-20",
-    daysSinceOpened: 46,
-    lastActionAt: "2026-04-28",
-    caseOwner: "Deputy Manager",
-    riOversightRequired: false,
-    riOversightCompleted: false,
-    overdueTaskCount: 2,
-  },
-  {
-    id: "hrc_004",
-    staffName: "Staff Member D",
-    caseType: "suspension",
-    riskLevel: "red",
-    status: "suspended",
-    safeguardingStatus: "safeguarding_open",
-    openedAt: "2026-04-22",
-    daysSinceOpened: 13,
-    lastActionAt: "2026-05-01",
-    caseOwner: "Registered Manager",
-    riOversightRequired: true,
-    riOversightCompleted: true,
-    overdueTaskCount: 0,
-  },
-  {
-    id: "hrc_005",
-    staffName: "Staff Member E",
-    caseType: "probation",
-    riskLevel: "green",
-    status: "open",
-    safeguardingStatus: "not_safeguarding",
-    openedAt: "2026-02-10",
-    daysSinceOpened: 84,
-    lastActionAt: "2026-04-30",
-    caseOwner: "Deputy Manager",
-    riOversightRequired: false,
-    riOversightCompleted: false,
-    overdueTaskCount: 0,
-  },
-  {
-    id: "hrc_006",
-    staffName: "Staff Member F",
-    caseType: "grievance",
-    riskLevel: "amber",
-    status: "outcome_pending",
-    safeguardingStatus: "not_safeguarding",
-    openedAt: "2026-04-01",
-    daysSinceOpened: 34,
-    lastActionAt: "2026-04-25",
-    caseOwner: "Registered Manager",
-    riOversightRequired: false,
-    riOversightCompleted: false,
-    overdueTaskCount: 1,
-  },
-];
-
-const DEMO_OVERDUE_TASKS: HrTaskSummary[] = [
-  {
-    id: "hrt_001",
-    title: "Schedule LADO strategy discussion",
-    linkedCaseId: "hrc_001",
-    assignedTo: "Registered Manager",
-    dueDate: "2026-05-03",
-    daysOverdue: 2,
-    priority: "urgent",
-  },
-  {
-    id: "hrt_002",
-    title: "Send return-to-work meeting invite",
-    linkedCaseId: "hrc_003",
-    assignedTo: "Deputy Manager",
-    dueDate: "2026-05-01",
-    daysOverdue: 4,
-    priority: "high",
-  },
-  {
-    id: "hrt_003",
-    title: "Chase occupational health referral",
-    linkedCaseId: "hrc_003",
-    assignedTo: "Deputy Manager",
-    dueDate: "2026-04-28",
-    daysOverdue: 7,
-    priority: "medium",
-  },
-  {
-    id: "hrt_004",
-    title: "Outcome letter to be drafted",
-    linkedCaseId: "hrc_006",
-    assignedTo: "Registered Manager",
-    dueDate: "2026-05-02",
-    daysOverdue: 3,
-    priority: "high",
-  },
-];
-
-const DEMO_RECRUITMENT: RecruitmentSummary[] = [
-  {
-    staffName: "New Starter G",
-    completedChecks: 14,
-    totalChecks: 14,
-    gateOutcome: "approved",
-    criticalMissing: [],
-  },
-  {
-    staffName: "New Starter H",
-    completedChecks: 9,
-    totalChecks: 14,
-    gateOutcome: "blocked",
-    criticalMissing: ["Enhanced DBS", "Second reference", "Barred list check", "Health declaration", "Manager sign-off"],
-  },
-  {
-    staffName: "New Starter I",
-    completedChecks: 12,
-    totalChecks: 14,
-    gateOutcome: "senior_risk_acceptance",
-    criticalMissing: ["Qualification verification", "Induction plan"],
-  },
-];
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 const RISK_COLOURS: Record<HrRiskLevel, string> = {
@@ -304,39 +149,51 @@ function formatRiskLevel(level: HrRiskLevel): string {
 export default function HrRiskCommandCentrePage() {
   const [riskFilter, setRiskFilter] = useState<HrRiskLevel | "all">("all");
   const [expandedCase, setExpandedCase] = useState<string | null>(null);
+  const [rawCases, setRawCases] = useState<CaseSummary[]>([]);
+  const [rawOverdueTasks, setRawOverdueTasks] = useState<HrTaskSummary[]>([]);
+  const [rawRecruitment, setRawRecruitment] = useState<RecruitmentSummary[]>([]);
+
+  const { data: apiData } = useHrRisk();
+  useEffect(() => {
+    if (apiData?.persisted) {
+      if (Array.isArray(apiData.cases)) setRawCases(apiData.cases as CaseSummary[]);
+      if (Array.isArray(apiData.overdueTasks)) setRawOverdueTasks(apiData.overdueTasks as HrTaskSummary[]);
+      if (Array.isArray(apiData.recruitment)) setRawRecruitment(apiData.recruitment as RecruitmentSummary[]);
+    }
+  }, [apiData]);
 
   const cases = useMemo(() => {
-    if (riskFilter === "all") return DEMO_CASES;
-    return DEMO_CASES.filter((c) => c.riskLevel === riskFilter);
-  }, [riskFilter]);
+    if (riskFilter === "all") return rawCases;
+    return rawCases.filter((c) => c.riskLevel === riskFilter);
+  }, [riskFilter, rawCases]);
 
-  // ── Risk heatmap counts ───────────────────────────────────────────────────
+  // ── Risk heatmap counts ────────────────────────────────────
   const riskCounts = useMemo(() => {
     const counts: Record<HrRiskLevel, number> = { green: 0, amber: 0, red: 0, black: 0 };
-    for (const c of DEMO_CASES) counts[c.riskLevel]++;
+    for (const c of rawCases) counts[c.riskLevel]++;
     return counts;
-  }, []);
+  }, [rawCases]);
 
   const activeSuspensions = useMemo(
-    () => DEMO_CASES.filter((c) => c.status === "suspended"),
-    [],
+    () => rawCases.filter((c) => c.status === "suspended"),
+    [rawCases],
   );
 
   const safeguardingLinked = useMemo(
-    () => DEMO_CASES.filter((c) => c.safeguardingStatus !== "not_safeguarding"),
-    [],
+    () => rawCases.filter((c) => c.safeguardingStatus !== "not_safeguarding"),
+    [rawCases],
   );
 
   const riOversightPending = useMemo(
-    () => DEMO_CASES.filter((c) => c.riOversightRequired && !c.riOversightCompleted),
-    [],
+    () => rawCases.filter((c) => c.riOversightRequired && !c.riOversightCompleted),
+    [rawCases],
   );
 
-  const totalOverdueTasks = DEMO_OVERDUE_TASKS.length;
+  const totalOverdueTasks = rawOverdueTasks.length;
 
   const recruitmentBlocked = useMemo(
-    () => DEMO_RECRUITMENT.filter((r) => r.gateOutcome === "blocked"),
-    [],
+    () => rawRecruitment.filter((r) => r.gateOutcome === "blocked"),
+    [rawRecruitment],
   );
 
   return (
@@ -348,7 +205,7 @@ export default function HrRiskCommandCentrePage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         <MetricCard
           label="Open cases"
-          value={DEMO_CASES.length}
+          value={rawCases.length}
           icon={<Activity className="h-5 w-5" />}
           accent="text-blue-600 dark:text-blue-400"
         />
@@ -581,10 +438,10 @@ export default function HrRiskCommandCentrePage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {DEMO_OVERDUE_TASKS.length === 0 ? (
+              {rawOverdueTasks.length === 0 ? (
                 <EmptyState message="No overdue HR tasks." />
               ) : (
-                DEMO_OVERDUE_TASKS.map((t) => (
+                rawOverdueTasks.map((t) => (
                   <div
                     key={t.id}
                     className="p-3 border rounded-lg text-sm space-y-1"
@@ -654,7 +511,7 @@ export default function HrRiskCommandCentrePage() {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-3 gap-4">
-            {DEMO_RECRUITMENT.map((r) => (
+            {rawRecruitment.map((r) => (
               <div
                 key={r.staffName}
                 className={cn(
@@ -776,7 +633,7 @@ export default function HrRiskCommandCentrePage() {
             <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-100 dark:border-blue-900">
               <p className="mb-3">
                 <span className="font-medium text-foreground">Position summary:</span>{" "}
-                The home is currently managing {DEMO_CASES.length} open HR cases across{" "}
+                The home is currently managing {rawCases.length} open HR cases across{" "}
                 {Object.entries(riskCounts)
                   .filter(([, v]) => v > 0)
                   .map(([k, v]) => `${v} ${formatRiskLevel(k as HrRiskLevel).toLowerCase()}`)

@@ -13,7 +13,9 @@ import {
   Scale, ShieldCheck, Calendar, User, Flag, FileText,
 } from "lucide-react";
 import { toast } from "sonner";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,6 +48,7 @@ import {
   COMPLAINT_SOURCE_LABEL,
   COMPLAINT_THEME_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local colour maps ──────────────────────────────────────────────── */
 const OUTCOME_COLOUR: Record<ComplaintOutcome, string> = {
@@ -187,6 +190,7 @@ export default function ComplaintsOutcomesPage() {
     <PageShell
       title="Complaints Outcomes"
       subtitle="Investigation outcomes, learning points, practice changes, and response timescales"
+      ariaContext={{ pageTitle: "Complaints Outcomes", sourceType: "complaint" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Complaints Outcomes" />
@@ -194,6 +198,7 @@ export default function ComplaintsOutcomesPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Outcome
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -522,6 +527,12 @@ export default function ComplaintsOutcomesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Complaints"
+        category="complaint"
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -35,346 +35,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
-type UtilityType =
-  | "Electricity"
-  | "Gas"
-  | "Water"
-  | "Broadband"
-  | "Telephone"
-  | "Council Tax"
-  | "Business Rates"
-  | "Sewerage"
-  | "TV Licence"
-  | "Refuse Collection";
+import type { UtilityBill } from "@/types/extended";
+import { useUtilityBills } from "@/hooks/use-utility-bills";
 
-interface UtilityBill {
-  id: string;
-  utilityType: UtilityType;
-  supplier: string;
-  accountNumber: string;
-  billPeriod: string;
-  billDate: string;
-  dueDate: string;
-  amountDue: number;
-  amountPaid: number;
-  paymentStatus: "Paid" | "Pending" | "Overdue" | "Disputed";
-  paymentMethod: "Direct Debit" | "BACS" | "Card";
-  readingPrevious: number;
-  readingCurrent: number;
-  unitsUsed: number;
-  comparedToLastYear: string;
-  trend: "Up" | "Down" | "Stable";
-  efficiencyNotes: string;
-  contractEndDate: string;
-  switchAvailable: boolean;
-  responsibleOwner: string;
-  reviewedBy: string;
-}
-
-const d = (n: number) => {
-  const dt = new Date();
-  dt.setDate(dt.getDate() + n);
-  return dt.toISOString().slice(0, 10);
+const utilityIcon: Record<string, typeof Zap> = {
+  Electricity: Zap,
+  Gas: Flame,
+  Water: Droplet,
+  Broadband: Wifi,
+  Phone: Phone,
+  "Council Tax": Building2,
+  Insurance: Receipt,
 };
-
-const data: UtilityBill[] = [
-  {
-    id: "ub-001",
-    utilityType: "Electricity",
-    supplier: "British Gas Lite (Business)",
-    accountNumber: "****4127",
-    billPeriod: "Mar 2026",
-    billDate: d(-12),
-    dueDate: d(16),
-    amountDue: 612.45,
-    amountPaid: 612.45,
-    paymentStatus: "Paid",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 48210,
-    readingCurrent: 50386,
-    unitsUsed: 2176,
-    comparedToLastYear: "-14%",
-    trend: "Down",
-    efficiencyNotes: "Loft insulation top-up (Oct 2025) and LED swap-out delivering measurable savings. Smart meter readings stable.",
-    contractEndDate: "2026-09-30",
-    switchAvailable: true,
-    responsibleOwner: "staff_darren",
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "ub-002",
-    utilityType: "Gas",
-    supplier: "British Gas Lite (Business)",
-    accountNumber: "****4128",
-    billPeriod: "Mar 2026",
-    billDate: d(-12),
-    dueDate: d(16),
-    amountDue: 384.20,
-    amountPaid: 384.20,
-    paymentStatus: "Paid",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 12480,
-    readingCurrent: 12921,
-    unitsUsed: 441,
-    comparedToLastYear: "-18%",
-    trend: "Down",
-    efficiencyNotes: "New combi boiler (commissioned Sept 2025) and zoned heating controls. TRVs fitted in all bedrooms.",
-    contractEndDate: "2026-09-30",
-    switchAvailable: true,
-    responsibleOwner: "staff_darren",
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "ub-003",
-    utilityType: "Water",
-    supplier: "Severn Trent Water",
-    accountNumber: "****8842",
-    billPeriod: "Q1 2026",
-    billDate: d(-20),
-    dueDate: d(8),
-    amountDue: 268.90,
-    amountPaid: 268.90,
-    paymentStatus: "Paid",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 1842,
-    readingCurrent: 1908,
-    unitsUsed: 66,
-    comparedToLastYear: "+3%",
-    trend: "Stable",
-    efficiencyNotes: "Slight uptick reflects added laundry loads. Aerated taps fitted in all bathrooms last year.",
-    contractEndDate: "Rolling",
-    switchAvailable: false,
-    responsibleOwner: "staff_darren",
-    reviewedBy: "staff_ryan",
-  },
-  {
-    id: "ub-004",
-    utilityType: "Sewerage",
-    supplier: "Severn Trent Water",
-    accountNumber: "****8843",
-    billPeriod: "Q1 2026",
-    billDate: d(-20),
-    dueDate: d(8),
-    amountDue: 192.50,
-    amountPaid: 192.50,
-    paymentStatus: "Paid",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 0,
-    readingCurrent: 0,
-    unitsUsed: 0,
-    comparedToLastYear: "+2%",
-    trend: "Stable",
-    efficiencyNotes: "Charged in line with metered water consumption. No drainage issues this period.",
-    contractEndDate: "Rolling",
-    switchAvailable: false,
-    responsibleOwner: "staff_darren",
-    reviewedBy: "staff_ryan",
-  },
-  {
-    id: "ub-005",
-    utilityType: "Broadband",
-    supplier: "BT Business",
-    accountNumber: "****6601",
-    billPeriod: "Apr 2026",
-    billDate: d(-5),
-    dueDate: d(23),
-    amountDue: 84.99,
-    amountPaid: 84.99,
-    paymentStatus: "Paid",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 0,
-    readingCurrent: 0,
-    unitsUsed: 0,
-    comparedToLastYear: "0%",
-    trend: "Stable",
-    efficiencyNotes: "Fibre 500Mbps business package. Includes office Wi-Fi, separate child-safe Wi-Fi SSID, CCTV cloud sync.",
-    contractEndDate: "2027-02-28",
-    switchAvailable: false,
-    responsibleOwner: "staff_ryan",
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "ub-006",
-    utilityType: "Telephone",
-    supplier: "BT Business",
-    accountNumber: "****6602",
-    billPeriod: "Apr 2026",
-    billDate: d(-5),
-    dueDate: d(23),
-    amountDue: 38.40,
-    amountPaid: 38.40,
-    paymentStatus: "Paid",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 0,
-    readingCurrent: 0,
-    unitsUsed: 0,
-    comparedToLastYear: "-8%",
-    trend: "Down",
-    efficiencyNotes: "Landline retained for 999/safeguarding redundancy. Use declining as VoIP/mobile dominate.",
-    contractEndDate: "2027-02-28",
-    switchAvailable: false,
-    responsibleOwner: "staff_ryan",
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "ub-007",
-    utilityType: "Council Tax",
-    supplier: "Local Authority — Billing",
-    accountNumber: "****2014",
-    billPeriod: "Apr 2026",
-    billDate: d(-3),
-    dueDate: d(11),
-    amountDue: 248.00,
-    amountPaid: 0,
-    paymentStatus: "Pending",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 0,
-    readingCurrent: 0,
-    unitsUsed: 0,
-    comparedToLastYear: "+4.5%",
-    trend: "Up",
-    efficiencyNotes: "Annual rate uplift in line with LA budget. Property in Band D.",
-    contractEndDate: "Statutory",
-    switchAvailable: false,
-    responsibleOwner: "staff_darren",
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "ub-008",
-    utilityType: "Business Rates",
-    supplier: "Local Authority — NNDR",
-    accountNumber: "****7715",
-    billPeriod: "Apr 2026",
-    billDate: d(-3),
-    dueDate: d(11),
-    amountDue: 410.50,
-    amountPaid: 0,
-    paymentStatus: "Pending",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 0,
-    readingCurrent: 0,
-    unitsUsed: 0,
-    comparedToLastYear: "+3.1%",
-    trend: "Up",
-    efficiencyNotes: "Small business multiplier applies. Rateable value unchanged this period.",
-    contractEndDate: "Statutory",
-    switchAvailable: false,
-    responsibleOwner: "staff_darren",
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "ub-009",
-    utilityType: "Refuse Collection",
-    supplier: "Biffa Commercial",
-    accountNumber: "****3390",
-    billPeriod: "Q2 2026",
-    billDate: d(-8),
-    dueDate: d(20),
-    amountDue: 156.00,
-    amountPaid: 156.00,
-    paymentStatus: "Paid",
-    paymentMethod: "BACS",
-    readingPrevious: 0,
-    readingCurrent: 0,
-    unitsUsed: 0,
-    comparedToLastYear: "+2%",
-    trend: "Stable",
-    efficiencyNotes: "Mixed recycling + general waste, fortnightly. Clinical waste handled separately under medication policy.",
-    contractEndDate: "2026-12-31",
-    switchAvailable: true,
-    responsibleOwner: "staff_ryan",
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "ub-010",
-    utilityType: "TV Licence",
-    supplier: "TV Licensing",
-    accountNumber: "****0048",
-    billPeriod: "Annual 2026/27",
-    billDate: d(-40),
-    dueDate: d(-12),
-    amountDue: 174.50,
-    amountPaid: 174.50,
-    paymentStatus: "Paid",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 0,
-    readingCurrent: 0,
-    unitsUsed: 0,
-    comparedToLastYear: "+1.7%",
-    trend: "Stable",
-    efficiencyNotes: "Statutory. Single licence covers the home as a single household for TV viewing.",
-    contractEndDate: "2027-04-01",
-    switchAvailable: false,
-    responsibleOwner: "staff_darren",
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "ub-011",
-    utilityType: "Electricity",
-    supplier: "British Gas Lite (Business)",
-    accountNumber: "****4127",
-    billPeriod: "Feb 2026",
-    billDate: d(-42),
-    dueDate: d(-14),
-    amountDue: 698.10,
-    amountPaid: 612.30,
-    paymentStatus: "Disputed",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 45920,
-    readingCurrent: 48210,
-    unitsUsed: 2290,
-    comparedToLastYear: "-12%",
-    trend: "Down",
-    efficiencyNotes: "Estimated reading on 14 Feb appears too high — actual smart meter reading submitted. £85.80 query raised with supplier; supplier credit acknowledged, awaiting next bill correction.",
-    contractEndDate: "2026-09-30",
-    switchAvailable: true,
-    responsibleOwner: "staff_darren",
-    reviewedBy: "staff_darren",
-  },
-  {
-    id: "ub-012",
-    utilityType: "Gas",
-    supplier: "British Gas Lite (Business)",
-    accountNumber: "****4128",
-    billPeriod: "Feb 2026",
-    billDate: d(-42),
-    dueDate: d(-14),
-    amountDue: 478.60,
-    amountPaid: 478.60,
-    paymentStatus: "Paid",
-    paymentMethod: "Direct Debit",
-    readingPrevious: 11952,
-    readingCurrent: 12480,
-    unitsUsed: 528,
-    comparedToLastYear: "-21%",
-    trend: "Down",
-    efficiencyNotes: "Strong year-on-year reduction reflects boiler replacement and improved insulation. Winter peak still material but trending right.",
-    contractEndDate: "2026-09-30",
-    switchAvailable: true,
-    responsibleOwner: "staff_darren",
-    reviewedBy: "staff_darren",
-  },
-];
 
 const statusColour: Record<string, string> = {
   Paid: "bg-green-100 text-green-800",
   Pending: "bg-amber-100 text-amber-800",
   Overdue: "bg-red-100 text-red-800",
   Disputed: "bg-purple-100 text-purple-800",
-};
-
-const utilityIcon: Record<UtilityType, typeof Zap> = {
-  Electricity: Zap,
-  Gas: Flame,
-  Water: Droplet,
-  Sewerage: Droplet,
-  Broadband: Wifi,
-  Telephone: Phone,
-  "Council Tax": Building2,
-  "Business Rates": Building2,
-  "Refuse Collection": Trash2,
-  "TV Licence": Tv,
 };
 
 const exportCols: ExportColumn<UtilityBill>[] = [
@@ -392,6 +74,9 @@ const exportCols: ExportColumn<UtilityBill>[] = [
 ];
 
 export default function UtilityBillsTrackerPage() {
+  const { data: result, isLoading } = useUtilityBills("home_oak");
+  const data = result?.data ?? [];
+
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("due");
@@ -416,7 +101,7 @@ export default function UtilityBillsTrackerPage() {
       }
     });
     return items;
-  }, [filterType, filterStatus, sortBy]);
+  }, [filterType, filterStatus, sortBy, data]);
 
   const today = new Date();
   const in14d = new Date();
@@ -446,13 +131,16 @@ export default function UtilityBillsTrackerPage() {
     <PageShell
       title="Utility Bills Tracker"
       subtitle="Electricity, gas, water, broadband, council tax and business rates — supporting financial governance under Quality Standard 13"
+      ariaContext={{ pageTitle: "Utility Bills Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="utility-bills-tracker" />
           <PrintButton title="Utility Bills Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
+      {isLoading ? <div className="p-8 text-center text-muted-foreground">Loading...</div> : (<>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center">
           <p className="text-2xl font-bold text-blue-600">£{monthlyCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
@@ -676,6 +364,19 @@ export default function UtilityBillsTrackerPage() {
           (last-4 only). ALL FIGURES ARE ILLUSTRATIVE.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Utility Bills Tracker — gas, electricity, water, broadband bills, payment records, budget monitoring, premises running costs, Reg 40 premises compliance evidence"
+        recordType="management_oversight"
+        className="mt-6"
+      />
+      </>)}
     </PageShell>
   );
 }

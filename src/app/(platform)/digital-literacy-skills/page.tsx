@@ -13,7 +13,7 @@ import {
   Globe,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -32,6 +32,9 @@ import {
   DIGITAL_LITERACY_COMPETENCY_LABEL,
 } from "@/types/extended";
 import { useDigitalLiteracySkillRecords } from "@/hooks/use-digital-literacy-skill-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -173,10 +176,12 @@ export default function DigitalLiteracySkillsPage() {
     <PageShell
       title="Digital Literacy Skills"
       subtitle="Per-child digital competence — from device basics to online banking, gov.uk services and scam awareness. A core preparation-for-adulthood skill, distinct from online safety."
+      ariaContext={{ pageTitle: "Digital Literacy Skills", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="digital-literacy-skills" />
           <PrintButton title="Digital Literacy Skills" />
+          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -374,6 +379,18 @@ export default function DigitalLiteracySkillsPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Education"
+        category="education"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Digital Literacy Skills — online safety, coding, internet skills, social media literacy, cyberbullying awareness, e-safety, EHCP digital support, leaving care digital skills"
+        recordType="education"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

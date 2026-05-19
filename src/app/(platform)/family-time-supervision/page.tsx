@@ -14,7 +14,9 @@ import {
   ShieldCheck,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -35,6 +37,7 @@ import {
 } from "@/types/extended";
 import { useFamilyTimeSessions } from "@/hooks/use-family-time-sessions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -144,10 +147,12 @@ export default function FamilyTimeSupervisionPage() {
     <PageShell
       title="Family Time Supervision"
       subtitle="Detailed records of supervised family time (contact) sessions — interactions, child presentation, concerns and recommendations"
+      ariaContext={{ pageTitle: "Family Time Supervision", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Family Time Supervision Records" />
           <ExportButton data={records} columns={EXPORT_COLS} filename="family-time-supervision" />
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -396,6 +401,12 @@ export default function FamilyTimeSupervisionPage() {
       </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Family Contact"
+        category="family_contact"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

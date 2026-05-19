@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -29,6 +31,7 @@ import {
   Heart,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<ContactPlan>[] = [
@@ -136,10 +139,12 @@ export default function ContactPlansPage() {
     <PageShell
       title="Contact Plans"
       subtitle="Family contact arrangements — frequency, supervision, child's wishes, and risk assessment"
+      ariaContext={{ pageTitle: "Contact Plans", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="contact-plans" />
           <PrintButton title="Contact Plans" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -432,6 +437,12 @@ export default function ContactPlansPage() {
           arrangements are reviewed alongside the placement plan and at each LAC Review.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Family Contact"
+        category="family_contact"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

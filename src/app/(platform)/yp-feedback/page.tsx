@@ -13,11 +13,11 @@ import {
   ThumbsUp,
   Heart,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -29,6 +29,9 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import type { YPFeedbackEntry, YPFeedbackCategory, YPFeedbackMethod, YPFeedbackSentiment } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── config ────────────────────────────────────────────────────────────── */
 
@@ -84,12 +87,26 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 export default function YPFeedbackPage() {
   const { data: fbData, isLoading } = useYPFeedback();
   const createFeedback = useCreateYPFeedback();
-  const data = fbData?.data ?? [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [fbForm, setFbForm] = useState({ child_id: "", category: "general" as YPFeedbackCategory, method: "verbal" as YPFeedbackMethod, sentiment: "ok" as YPFeedbackSentiment, feedback: "", collected_by: "staff_darren" });
+  const setFF = (k: keyof typeof fbForm, v: string) => setFbForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fbForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!fbForm.feedback.trim()) { toast.error("Please enter feedback."); return; }
+    await createFeedback.mutateAsync({ child_id: fbForm.child_id, date: new Date().toISOString().slice(0, 10), category: fbForm.category, method: fbForm.method, sentiment: fbForm.sentiment, feedback: fbForm.feedback.trim(), action_taken: "", action_by: "", response_given_to_child: false, response_date: null, response_details: "", child_satisfied: null, collected_by: fbForm.collected_by, notes: "" });
+    toast.success("Feedback recorded.");
+    setFbForm({ child_id: "", category: "general", method: "verbal", sentiment: "ok", feedback: "", collected_by: "staff_darren" });
+    setDialogOpen(false);
+  };
+
+  const data = fbData?.data ?? [];
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -128,6 +145,7 @@ export default function YPFeedbackPage() {
     <PageShell
       title="Young People's Feedback"
       subtitle="Capturing children's views, experiences and satisfaction — making their voice count"
+      ariaContext={{ pageTitle: "Young People's Feedback", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Young People's Feedback" />
@@ -135,6 +153,7 @@ export default function YPFeedbackPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> Record Feedback
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -268,39 +287,56 @@ export default function YPFeedbackPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Record Feedback</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
+          <form onSubmit={handleCreateFeedback} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-sm font-medium">Young Person</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{["yp_alex","yp_jordan","yp_casey"].map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
+              <div><label className="text-sm font-medium">Young Person *</label>
+                <Select value={fbForm.child_id} onValueChange={(v) => setFF("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><label className="text-sm font-medium">Category</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={fbForm.category} onValueChange={(v) => setFF("category", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(CAT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><label className="text-sm font-medium">Method</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={fbForm.method} onValueChange={(v) => setFF("method", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(METHOD_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><label className="text-sm font-medium">Sentiment</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={fbForm.sentiment} onValueChange={(v) => setFF("sentiment", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>{Object.entries(SENTIMENT_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{SENTIMENT_EMOJIS[k as YPFeedbackSentiment]} {v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Feedback</label><textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What did the child say/express?" /></div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Save Feedback</button>
-          </DialogFooter>
+            <div><label className="text-sm font-medium">Collected By</label>
+              <Select value={fbForm.collected_by} onValueChange={(v) => setFF("collected_by", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><label className="text-sm font-medium">Feedback *</label><textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What did the child say/express?" value={fbForm.feedback} onChange={(e) => setFF("feedback", e.target.value)} /></div>
+            <DialogFooter>
+              <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button type="submit" disabled={createFeedback.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">{createFeedback.isPending ? "Saving…" : "Save Feedback"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Young People's Feedback — children's views, complaints, wishes and feelings, feedback forms, advocacy, voice of the child, Reg 45 children's participation evidence, Ofsted inspection evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

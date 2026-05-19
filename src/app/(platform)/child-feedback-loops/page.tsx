@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -33,6 +33,9 @@ import {
 import type { FeedbackDecision } from "@/types/extended";
 import { useChildFeedbackLoops } from "@/hooks/use-child-feedback-loops";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const decisionColour: Record<string, string> = {
   acted_on_in_full: "bg-green-100 text-green-800",
@@ -94,10 +97,12 @@ export default function ChildFeedbackLoopsPage() {
     <PageShell
       title="Child Feedback Loops"
       subtitle="Closing the loop on feedback children give — from raised to acknowledged to acted on to communicated back"
+      ariaContext={{ pageTitle: "Child Feedback Loops", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-feedback-loops" />
           <PrintButton title="Child Feedback Loops" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -267,6 +272,18 @@ export default function ChildFeedbackLoopsPage() {
           Child, and Children&apos;s Meetings.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Child Feedback Loops — children's views on placement, staff, home, services, complaints resolved, wishes and feelings, participation, review feedback, statutory voice"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

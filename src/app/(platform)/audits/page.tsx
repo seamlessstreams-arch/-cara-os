@@ -26,6 +26,9 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import type { Audit } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Audit category → training need type ──────────────────────────────────────
 const AUDIT_CATEGORY_NEED: Record<string, string> = {
@@ -301,11 +304,13 @@ export default function AuditsPage() {
       <PageShell
         title="Audits & Quality Assurance"
         subtitle="Internal audits, quality checks, and action tracking"
+      ariaContext={{ pageTitle: "Audits & Quality Assurance", sourceType: "general" }}
         quickCreateContext={{ module: "audits", defaultTaskCategory: "compliance", defaultFormType: "health_safety_check" }}
         actions={
           <div className="flex gap-2">
             <ExportButton<Audit> filename="audits-export" data={filtered} columns={AUDIT_EXPORT_COLS} label="Export" />
             <PrintButton title="Audits & Quality Assurance" subtitle="Oak House — Audit Schedule & Compliance" targetId="audits-content" />
+            <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
             <SmartUploadButton variant="inline" label="Upload" uploadContext="Audits — evidence upload" />
             <Button size="sm" onClick={() => setShowNew(true)}>
               <Plus className="h-3.5 w-3.5 mr-1" />New Audit
@@ -507,7 +512,19 @@ export default function AuditsPage() {
             of effective governance.
           </div>
         </div>
-      </PageShell>
+        <CareEventsPanel
+        title="Care Events — Compliance Evidence"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Audits & Quality Assurance — internal audits, Reg 44 visit, Reg 45 report, case file audit, quality monitoring, action plans, compliance scoring, Ofsted evidence"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
+    </PageShell>
 
       {/* New Audit Modal */}
       {showNew && (

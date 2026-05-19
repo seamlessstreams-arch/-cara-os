@@ -22,6 +22,9 @@ import { useLeave } from "@/hooks/use-leave";
 import { cn, todayStr } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 type ReportView = "overview" | "workforce" | "compliance" | "incidents" | "finance";
 
@@ -124,6 +127,7 @@ export default function ReportsPage() {
     <PageShell
       title="Reports & Analytics"
       subtitle="Workforce, compliance, incident, and finance reporting for managers, RI, and Ofsted"
+      ariaContext={{ pageTitle: "Management Reports", sourceType: "document" }}
       quickCreateContext={{ module: "reports", defaultTaskCategory: "admin" }}
       actions={
         <div className="flex items-center gap-2">
@@ -464,6 +468,18 @@ export default function ReportsPage() {
           </div>
         )}
       </div>
+      <CareEventsPanel
+        title="Care Events — Reporting Period"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Management Reports — monthly reports, board reports, RI reports, staffing reports, incident reports, outcomes reports, Reg 45 evidence, Annex A evidence, governance oversight"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

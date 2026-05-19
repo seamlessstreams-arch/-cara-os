@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -22,8 +24,9 @@ import {
   AlertTriangle, CheckCircle2, Clock, Phone, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useSocialWorkerContactRecords } from "@/hooks/use-social-worker-contact-records";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { useSocialWorkerContactRecords, useCreateSocialWorkerContactRecord } from "@/hooks/use-social-worker-contact-records";
+import { toast } from "sonner";
 import type {
   SocialWorkerContactRecord,
   SocialWorkerContactType,
@@ -35,6 +38,7 @@ import {
   SOCIAL_WORKER_CONTACT_DIRECTION_LABEL,
   SOCIAL_WORKER_CONTACT_URGENCY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -58,12 +62,61 @@ const SW_DIR: Record<string, { name: string; team: string; email: string; phone:
 
 export default function SocialWorkerContactPage() {
   const { data: records = [], isLoading } = useSocialWorkerContactRecords();
+  const createContact = useCreateSocialWorkerContactRecord();
   const [search, setSearch] = useState("");
   const [childFilter, setChildFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [swForm, setSwForm] = useState({
+    child_id: "",
+    date: new Date().toISOString().slice(0, 10),
+    time: "09:00",
+    contact_type: "" as SocialWorkerContactType | "",
+    direction: "outgoing" as string,
+    purpose: "",
+    summary: "",
+    outcome: "",
+  });
+  const setSWF = (k: keyof typeof swForm, v: string) => setSwForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!swForm.child_id || !swForm.contact_type || !swForm.summary.trim()) {
+      toast.error("Young person, contact type and summary are required.");
+      return;
+    }
+    await createContact.mutateAsync({
+      child_id: swForm.child_id,
+      social_worker_name: "Social Worker",
+      social_worker_team: "",
+      social_worker_email: "",
+      social_worker_phone: "",
+      date: swForm.date,
+      time: swForm.time,
+      contact_type: swForm.contact_type as SocialWorkerContactType,
+      direction: swForm.direction as "incoming" | "outgoing",
+      initiated_by: "home" as const,
+      staff_member: "staff_darren",
+      purpose: swForm.purpose,
+      summary: swForm.summary.trim(),
+      key_decisions: [],
+      action_items: [],
+      child_aware: false,
+      child_views: "",
+      follow_up_required: false,
+      follow_up_date: null,
+      documents_shared: [],
+      urgency: "routine" as const,
+      outcome: swForm.outcome,
+      next_scheduled_contact: null,
+    });
+    toast.success("Contact logged.");
+    setSwForm({ child_id: "", date: new Date().toISOString().slice(0, 10), time: "09:00", contact_type: "", direction: "outgoing", purpose: "", summary: "", outcome: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
 
@@ -112,11 +165,13 @@ export default function SocialWorkerContactPage() {
     <PageShell
       title="Social Worker Contact Log"
       subtitle="Communication record with allocated social workers — Regulation 5"
+      ariaContext={{ pageTitle: "Social Worker Contact Log", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Social Worker Contact Log" />
           <ExportButton data={filtered} columns={exportCols} filename="sw-contact-log" />
           <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Log Contact</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -336,25 +391,30 @@ export default function SocialWorkerContactPage() {
         </div>
       </div>
 
-      {/* dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Social Worker Contact</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Young Person</Label><Select><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid grid-cols-2 gap-3"><div><Label>Date</Label><Input type="date" /></div><div><Label>Time</Label><Input type="time" /></div></div>
-            <div><Label>Contact Type</Label><Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.keys(SOCIAL_WORKER_CONTACT_TYPE_LABEL) as SocialWorkerContactType[]).map(k => <SelectItem key={k} value={k}>{SOCIAL_WORKER_CONTACT_TYPE_LABEL[k]}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Direction</Label><Select><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="incoming">Incoming</SelectItem><SelectItem value="outgoing">Outgoing</SelectItem></SelectContent></Select></div>
-            <div><Label>Purpose</Label><Input placeholder="Purpose of contact" /></div>
-            <div><Label>Summary</Label><Textarea rows={3} placeholder="Summary of discussion…" /></div>
-            <div><Label>Outcome</Label><Textarea rows={2} placeholder="Outcome / agreed actions…" /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => setDialogOpen(false)}>Save Contact</Button>
-          </DialogFooter>
+          <form onSubmit={handleCreateContact} className="space-y-3">
+            <div><Label>Young Person *</Label><Select value={swForm.child_id} onValueChange={(v) => setSWF("child_id", v)}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="grid grid-cols-2 gap-3"><div><Label>Date</Label><Input type="date" value={swForm.date} onChange={(e) => setSWF("date", e.target.value)} /></div><div><Label>Time</Label><Input type="time" value={swForm.time} onChange={(e) => setSWF("time", e.target.value)} /></div></div>
+            <div><Label>Contact Type *</Label><Select value={swForm.contact_type} onValueChange={(v) => setSWF("contact_type", v)}><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent>{(Object.keys(SOCIAL_WORKER_CONTACT_TYPE_LABEL) as SocialWorkerContactType[]).map(k => <SelectItem key={k} value={k}>{SOCIAL_WORKER_CONTACT_TYPE_LABEL[k]}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Direction</Label><Select value={swForm.direction} onValueChange={(v) => setSWF("direction", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="incoming">Incoming</SelectItem><SelectItem value="outgoing">Outgoing</SelectItem></SelectContent></Select></div>
+            <div><Label>Purpose</Label><Input placeholder="Purpose of contact" value={swForm.purpose} onChange={(e) => setSWF("purpose", e.target.value)} /></div>
+            <div><Label>Summary *</Label><Textarea rows={3} placeholder="Summary of discussion…" value={swForm.summary} onChange={(e) => setSWF("summary", e.target.value)} /></div>
+            <div><Label>Outcome</Label><Textarea rows={2} placeholder="Outcome / agreed actions…" value={swForm.outcome} onChange={(e) => setSWF("outcome", e.target.value)} /></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createContact.isPending}>{createContact.isPending ? "Saving…" : "Save Contact"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Professional Contact"
+        category="professional_contact"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

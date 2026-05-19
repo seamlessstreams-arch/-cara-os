@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +22,9 @@ import type { SubstanceScreening, ScreeningTool, SubstanceRiskLevel } from "@/ty
 import { SCREENING_TOOL_LABEL, SUBSTANCE_RISK_LEVEL_LABEL } from "@/types/extended";
 import { useSubstanceScreenings } from "@/hooks/use-substance-screenings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -182,6 +185,7 @@ export default function DrugAndAlcoholScreeningPage() {
     <PageShell
       title="Drug and Alcohol Screening"
       subtitle="Substance use risk screening · Early identification · Harm reduction · Quality Standard 5 · Working Together 2023"
+      ariaContext={{ pageTitle: "Drug and Alcohol Screening", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Drug and Alcohol Screening" />
@@ -190,6 +194,7 @@ export default function DrugAndAlcoholScreeningPage() {
             columns={exportCols}
             filename="drug-and-alcohol-screening"
           />
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -551,6 +556,18 @@ export default function DrugAndAlcoholScreeningPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Safeguarding & Behaviour"
+        category={["safeguarding", "behaviour"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Drug and Alcohol Screening — substance misuse, urine testing, breathalyser, county lines risk, NPS, harm reduction, safeguarding, risk assessment, CAMHS, action plan, care plan"
+        recordType="risk_assessment"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

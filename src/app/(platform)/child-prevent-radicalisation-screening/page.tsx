@@ -11,7 +11,7 @@ import {
   Search,
   Eye,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -23,6 +23,9 @@ import type { PreventScreeningRecord, PreventScreeningOutcome } from "@/types/ex
 import { PREVENT_SCREENING_OUTCOME_LABEL, PREVENT_CHANNEL_STATUS_LABEL } from "@/types/extended";
 import { usePreventScreenings } from "@/hooks/use-prevent-screenings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -174,10 +177,12 @@ export default function ChildPreventRadicalisationScreeningPage() {
     <PageShell
       title="Child Prevent Radicalisation Screening"
       subtitle="Per-child Prevent duty screening — child-rights based, proportionate, and explicit about not conflating identity with risk"
+      ariaContext={{ pageTitle: "Prevent Screening", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Prevent Screening" />
           <ExportButton data={exportRows} columns={exportCols} filename="child-prevent-radicalisation-screening" />
+          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -416,6 +421,18 @@ export default function ChildPreventRadicalisationScreeningPage() {
       <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-4 text-sm text-sky-900 mb-6">
         <strong>Regulatory framework.</strong> The Prevent duty is set out in the Counter-Terrorism and Security Act 2015 (s.26) and operationalised through the Prevent Duty Guidance (DfE, updated 2023) and the Channel Process (HMG 2020). Per-child screening is integrated with our wider safeguarding approach under KCSIE 2024 and Working Together to Safeguard Children 2023. We apply the duty in a way that is consistent with the Equality Act 2010 — particularly the protected characteristics of race and of religion or belief — and in awareness of successive David Anderson reviews of Prevent, which document the risks of disproportionate application. The screening contributes to evidence under the Children&apos;s Homes (England) Regulations 2015 — Quality Standard 9 (protection of children) — while honouring UNCRC Article 12 (the child&apos;s right to be heard), Article 14 (freedom of thought, conscience and religion) and Article 19 (protection from harm). This page exists to ensure the duty is applied; it exists equally to ensure it is not over-applied.
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category="safeguarding"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Prevent Screening — radicalisation vulnerability, Channel referral, Prevent duty, extremism indicators, safeguarding concerns, risk assessment, action plan, multi-agency, Reg 40 notification"
+        recordType="safeguarding"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

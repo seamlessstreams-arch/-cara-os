@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -30,6 +30,9 @@ import type { ChildFriendlyPolicy } from "@/types/extended";
 import { POLICY_AREA_LABEL, POLICY_AUDIENCE_AGE_LABEL, POLICY_FORMAT_LABEL } from "@/types/extended";
 import type { PolicyArea, PolicyFormat } from "@/types/extended";
 import { useChildFriendlyPolicies } from "@/hooks/use-child-friendly-policies";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── config ──────────────────────────────────────────────────────────────────
 const areaIcons: Record<string, typeof BookOpen> = {
@@ -115,10 +118,12 @@ export default function ChildFriendlyPoliciesPage() {
     <PageShell
       title="Child-Friendly Policies"
       subtitle="Plain-language, accessible policies — co-produced with children, designed to be read by them"
+      ariaContext={{ pageTitle: "Child-Friendly Policies", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-friendly-policies" />
           <PrintButton title="Child-Friendly Policies" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -316,6 +321,18 @@ export default function ChildFriendlyPoliciesPage() {
           reviewed in children&apos;s meetings. Provided in accessible formats per Equality Act 2010.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Activities & Wellbeing"
+        category={["activity", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Child-Friendly Policies — simplified policy guides for children, house rules explained, complaint process for children, rights guides, information about staying safe, participation"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

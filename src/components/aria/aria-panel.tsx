@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useAria } from "@/hooks/use-aria";
+import { useAriaStream } from "@/hooks/use-aria";
 import type { AriaMode, AriaStyle } from "@/types/extended";
 import {
   Sparkles, ChevronDown, Copy, CheckCircle2, RefreshCw,
@@ -55,7 +55,7 @@ const STYLES: { id: AriaStyle; label: string }[] = [
 
 const MODE_COLORS: Partial<Record<AriaMode, string>> & Record<string, string> = {
   write:             "text-blue-600 bg-blue-50",
-  review:            "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]",
+  review:            "text-violet-600 bg-violet-50",
   oversee:           "text-emerald-600 bg-emerald-50",
   assist:            "text-amber-600 bg-amber-50",
   document_classify: "text-indigo-600 bg-indigo-50",
@@ -85,27 +85,26 @@ export function AriaPanel({
 
   const isDocumentMode = mode === "document_classify" || mode === "document_to_form";
 
-  const { mutate: askAria, isPending } = useAria();
+  const { stream, isStreaming, abort } = useAriaStream();
 
   const handleAsk = () => {
-    askAria(
+    setResponse("");
+    const currentPrompt = prompt;
+    setPrompt("");
+    stream(
       {
         mode,
         style,
         page_context: pageContext,
         record_type: recordType,
-        source_content: sourceContent || prompt,
+        source_content: sourceContent || currentPrompt,
         linked_records: linkedRecords,
         user_role: userRole,
-        question: prompt || undefined,
+        question: currentPrompt || undefined,
         document_text: isDocumentMode && documentText ? documentText : undefined,
       },
-      {
-        onSuccess: (res) => {
-          setResponse(res.data.response);
-          setPrompt("");
-        },
-      }
+      (text) => { setResponse(text); },
+      (error) => { setResponse(`Error: ${error.message}. Please try again.`); },
     );
   };
 
@@ -118,24 +117,24 @@ export function AriaPanel({
   };
 
   return (
-    <div className={cn("rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-white overflow-hidden", className)}>
+    <div className={cn("rounded-2xl border border-violet-200 bg-white overflow-hidden", className)}>
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-blue-50 border-b border-[var(--cs-aria-gold-soft)] cursor-pointer"
+        className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-50 to-blue-50 border-b border-violet-100 cursor-pointer"
         onClick={() => setCollapsed(!collapsed)}
       >
         <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-[var(--cs-navy)] flex items-center justify-center">
+          <div className="h-7 w-7 rounded-lg bg-violet-600 flex items-center justify-center">
             <Sparkles className="h-3.5 w-3.5 text-white" />
           </div>
           <div>
-            <div className="text-sm font-bold text-[var(--cs-navy)]">Aria</div>
-            <div className="text-[10px] text-[var(--cs-text-muted)]">AI workflow assistant</div>
+            <div className="text-sm font-bold text-slate-900">Aria</div>
+            <div className="text-[10px] text-slate-500">AI workflow assistant</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className="text-[9px] rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0">BETA</Badge>
-          <ChevronDown className={cn("h-4 w-4 text-[var(--cs-text-muted)] transition-transform", collapsed && "rotate-180")} />
+          <Badge className="text-[9px] rounded-full bg-violet-100 text-violet-700 border-0">BETA</Badge>
+          <ChevronDown className={cn("h-4 w-4 text-slate-400 transition-transform", collapsed && "rotate-180")} />
         </div>
       </div>
 
@@ -150,8 +149,8 @@ export function AriaPanel({
                 className={cn(
                   "flex flex-col items-center gap-1 rounded-xl p-2 text-[10px] font-semibold transition-all border",
                   mode === id
-                    ? `${MODE_COLORS[id] ?? "text-[var(--cs-text-secondary)] bg-[var(--cs-surface)]"} border-current`
-                    : "text-[var(--cs-text-muted)] bg-[var(--cs-surface)] border-transparent hover:bg-[var(--cs-surface)]"
+                    ? `${MODE_COLORS[id] ?? "text-slate-600 bg-slate-100"} border-current`
+                    : "text-slate-500 bg-slate-50 border-transparent hover:bg-slate-100"
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -162,11 +161,11 @@ export function AriaPanel({
 
           {/* Style selector */}
           <div>
-            <label className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider block mb-1.5">Writing style</label>
+            <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">Writing style</label>
             <select
               value={style}
               onChange={(e) => setStyle(e.target.value as AriaStyle)}
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400"
             >
               {STYLES.map(({ id, label }) => (
                 <option key={id} value={id}>{label}</option>
@@ -177,11 +176,11 @@ export function AriaPanel({
           {/* Document text area — only for document modes */}
           {isDocumentMode && (
             <div>
-              <label className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider block mb-1.5">
+              <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
                 Paste document text
               </label>
               <textarea
-                className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
                 rows={4}
                 placeholder="Paste text from the document you want to classify..."
                 value={documentText}
@@ -192,12 +191,12 @@ export function AriaPanel({
 
           {/* Prompt input */}
           <div>
-            <label className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider block mb-1.5">
-              {mode === "write"             ? "What would you like ARIA to write?" :
+            <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+              {mode === "write"             ? "What would you like Aria to write?" :
                mode === "review"            ? "Any specific concerns to check?" :
-               mode === "oversee"           ? "What should ARIA focus on?" :
+               mode === "oversee"           ? "What should Aria focus on?" :
                mode === "document_classify" ? "Any specific focus for classification?" :
-               mode === "document_to_form"  ? "Which form type should ARIA create?" :
+               mode === "document_to_form"  ? "Which form type should Aria create?" :
                "What do you need help with?"}
             </label>
             <div className="relative">
@@ -213,7 +212,7 @@ export function AriaPanel({
                   "e.g. What should I do next after logging this safeguarding concern?"
                 }
                 rows={3}
-                className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 pr-10 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-10 text-xs text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-slate-400"
               />
               <div className="absolute bottom-2 right-2">
                 <DictationButton
@@ -231,16 +230,16 @@ export function AriaPanel({
 
           {/* Context indicator */}
           {(sourceContent || linkedRecords) && (
-            <div className="rounded-xl bg-[var(--cs-surface)] border border-[var(--cs-border)] px-3 py-2">
-              <div className="text-[10px] text-[var(--cs-text-muted)] font-medium">ARIA can see</div>
+            <div className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
+              <div className="text-[10px] text-slate-500 font-medium">Aria can see</div>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {sourceContent && (
                   <Badge className="text-[9px] rounded-full bg-blue-100 text-blue-700 border-0">Source record</Badge>
                 )}
                 {linkedRecords && (
-                  <Badge className="text-[9px] rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0">Linked records</Badge>
+                  <Badge className="text-[9px] rounded-full bg-violet-100 text-violet-700 border-0">Linked records</Badge>
                 )}
-                <Badge className="text-[9px] rounded-full bg-[var(--cs-surface)] text-[var(--cs-text-secondary)] border-0">{pageContext}</Badge>
+                <Badge className="text-[9px] rounded-full bg-slate-100 text-slate-600 border-0">{pageContext}</Badge>
               </div>
             </div>
           )}
@@ -248,48 +247,59 @@ export function AriaPanel({
           {/* Ask button */}
           <Button
             onClick={handleAsk}
-            disabled={isPending || (!prompt && !sourceContent && (!isDocumentMode || !documentText))}
-            className="w-full bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
+            disabled={isStreaming || (!prompt && !sourceContent && (!isDocumentMode || !documentText))}
+            className="w-full bg-violet-600 hover:bg-violet-700 text-white"
             size="sm"
           >
-            {isPending ? (
-              <><RefreshCw className="h-3.5 w-3.5 mr-2 animate-spin" />ARIA is thinking...</>
+            {isStreaming ? (
+              <><RefreshCw className="h-3.5 w-3.5 mr-2 animate-spin" />Aria is writing...</>
             ) : (
-              <><Sparkles className="h-3.5 w-3.5 mr-2" />Ask ARIA</>
+              <><Sparkles className="h-3.5 w-3.5 mr-2" />Ask Aria</>
             )}
           </Button>
 
           {/* Response */}
-          {response && (
+          {(response !== null && response !== "") && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <div className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Aria&apos;s response</div>
+                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Aria&apos;s response</div>
                 <div className="flex items-center gap-1.5">
+                  {isStreaming && (
+                    <button
+                      onClick={abort}
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <X className="h-3 w-3" />Stop
+                    </button>
+                  )}
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)] transition-colors"
+                    disabled={isStreaming}
+                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-slate-500 hover:bg-slate-100 transition-colors disabled:opacity-40"
                   >
                     {copied ? <><CheckCircle2 className="h-3 w-3 text-emerald-500" />Copied</> : <><Copy className="h-3 w-3" />Copy</>}
                   </button>
                   {onInsert && (
                     <button
-                      onClick={() => onInsert(response)}
-                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium bg-[var(--cs-navy)] text-white hover:bg-[var(--cs-navy)]/90 transition-colors"
+                      onClick={() => response && onInsert(response)}
+                      disabled={isStreaming || !response}
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium bg-violet-600 text-white hover:bg-violet-700 transition-colors disabled:opacity-40"
                     >
                       <ExternalLink className="h-3 w-3" />Insert
                     </button>
                   )}
-                  <button onClick={() => setResponse(null)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]">
+                  <button onClick={() => { abort(); setResponse(null); }} className="text-slate-400 hover:text-slate-600">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
-              <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3 text-xs text-[var(--cs-text-secondary)] whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
+              <div className="rounded-xl bg-violet-50 border border-violet-100 p-3 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
                 {response}
+                {isStreaming && <span className="inline-block w-1.5 h-3.5 bg-violet-500 ml-0.5 animate-pulse rounded-sm" />}
               </div>
-              <div className="flex items-start gap-1.5 text-[10px] text-[var(--cs-text-muted)]">
+              <div className="flex items-start gap-1.5 text-[10px] text-slate-400">
                 <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />
-                <span>Always review before use. ARIA uses only the information you provided — never fabricates facts.</span>
+                <span>Always review before use. Aria uses only the information you provided — never fabricates facts.</span>
               </div>
             </div>
           )}
@@ -305,7 +315,7 @@ export function AriaFloatingTrigger({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-[var(--cs-navy)] px-4 py-3 text-white shadow-xl hover:bg-[var(--cs-navy)]/90 transition-all hover:scale-105"
+      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-white shadow-xl hover:bg-violet-700 transition-all hover:scale-105"
     >
       <Sparkles className="h-4 w-4" />
       <span className="text-sm font-semibold">Aria</span>

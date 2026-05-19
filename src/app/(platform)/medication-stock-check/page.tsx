@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,10 +15,17 @@ import {
   Calendar, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useMedicationStockChecks } from "@/hooks/use-medication-stock-checks";
+import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useMedicationStockChecks, useCreateMedicationStockCheck } from "@/hooks/use-medication-stock-checks";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import type { MedicationStockCheck, StockCheckType, StockCheckStatus, StockCheckItem } from "@/types/extended";
 import { STOCK_CHECK_TYPE_LABEL, STOCK_CHECK_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const CHECK_TYPE_CLR: Record<StockCheckType, string> = {
   weekly: "bg-blue-100 text-blue-800",
@@ -45,6 +54,18 @@ export default function MedicationStockCheckPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date-desc");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [showNew, setShowNew] = useState(false);
+  const createCheck = useCreateMedicationStockCheck();
+  const [scForm, setScForm] = useState({ check_type: "weekly" as StockCheckType, witnessed_by: "", notes: "" });
+  const setSC = (k: string, v: unknown) => setScForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveCheck = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await createCheck.mutateAsync({ date: new Date().toISOString().slice(0, 10), check_type: scForm.check_type, checked_by: "staff_darren", witnessed_by: scForm.witnessed_by || "staff_darren", status: "balanced" as StockCheckStatus, items: [], notes: scForm.notes.trim() });
+    toast.success("Stock check logged.");
+    setScForm({ check_type: "weekly", witnessed_by: "", notes: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -118,11 +139,13 @@ export default function MedicationStockCheckPage() {
     <PageShell
       title="Medication Stock Check"
       subtitle="Physical stock counts, reconciliation & expiry monitoring"
+      ariaContext={{ pageTitle: "Medication Stock Check", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Stock Check Records" />
           <ExportButton data={filtered} columns={exportCols} filename="medication-stock-check" />
-          <Button size="sm"><Plus className="h-4 w-4 mr-1" /> New Stock Check</Button>
+          <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Stock Check</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -365,6 +388,23 @@ export default function MedicationStockCheckPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Medication"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>New Stock Check</DialogTitle></DialogHeader>
+          <form onSubmit={handleSaveCheck} className="space-y-3 py-2">
+            <div><Label>Check Type</Label><Select value={scForm.check_type} onValueChange={(v) => setSC("check_type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(STOCK_CHECK_TYPE_LABEL) as StockCheckType[]).map((k) => (<SelectItem key={k} value={k}>{STOCK_CHECK_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Witnessed By</Label><Select value={scForm.witnessed_by} onValueChange={(v) => setSC("witnessed_by", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select witness…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Notes</Label><Textarea className="mt-1" rows={2} value={scForm.notes} onChange={(e) => setSC("notes", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createCheck.isPending}>{createCheck.isPending ? "Saving…" : "Log Check"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

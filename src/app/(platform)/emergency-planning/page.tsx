@@ -7,13 +7,16 @@ import {
   Flame, CloudRain, Zap, Bug,
   Heart, Building2, RefreshCw, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 import type { EmergencyPlanType } from "@/types/extended";
 import { useEmergencyPlans } from "@/hooks/use-emergency-plans";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local icon mapping (plan_type → icon) ──────────────────────────── */
 const PLAN_TYPE_ICON: Record<EmergencyPlanType, React.ElementType> = {
@@ -50,9 +53,11 @@ export default function EmergencyPlanningPage() {
     <PageShell
       title="Emergency Planning"
       subtitle="Business continuity and emergency response procedures"
+      ariaContext={{ pageTitle: "Emergency Planning", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Planning — Oak House" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -231,6 +236,18 @@ export default function EmergencyPlanningPage() {
           annually.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Safety"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Emergency Planning — fire evacuation, medical emergencies, missing from care, flooding, power failure, cyber incident, bomb threat, chemical, staff crisis — procedures and contacts"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

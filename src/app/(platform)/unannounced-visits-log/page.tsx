@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,9 @@ import {
   UNANNOUNCED_VISIT_TYPE_LABEL,
   UNANNOUNCED_VISIT_OVERALL_ASSESSMENT_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -153,10 +156,12 @@ export default function UnannouncedVisitsLogPage() {
     <PageShell
       title="Unannounced Visits Log"
       subtitle="Management, RI, and external oversight visits — demonstrating active monitoring under Regulation 44/45"
+      ariaContext={{ pageTitle: "Unannounced Visits Log", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Unannounced Visits Log" />
           <ExportButton data={processed} columns={exportCols} filename="unannounced-visits-log" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -392,6 +397,18 @@ export default function UnannouncedVisitsLogPage() {
         </Card>
 
       </div>
+      <CareEventsPanel
+        title="Care Events — Regulatory Visits"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Unannounced Visits Log — Reg 44 unannounced visits, RI visits, local authority visits, Ofsted visits, visit outcomes, actions raised, compliance evidence, inspector notes"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

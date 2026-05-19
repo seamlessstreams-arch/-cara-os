@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,9 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useCuriosityLogEntries } from "@/hooks/use-curiosity-log-entries";
 import type { CuriosityLogEntry, CuriosityFocusArea } from "@/types/extended";
 import { CURIOSITY_FOCUS_AREA_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour/icon maps ───────────────────────────────────────────────── */
 
@@ -133,9 +136,11 @@ export default function ProfessionalCuriosityLogPage() {
     <PageShell
       title="Professional Curiosity Log"
       subtitle="Reflective practice — challenging our assumptions about children, families, professionals and ourselves"
+      ariaContext={{ pageTitle: "Professional Curiosity Log", sourceType: "general" }}
       actions={[
         <PrintButton key="p" title="Professional Curiosity Log" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="professional-curiosity-log" />,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -351,6 +356,18 @@ export default function ProfessionalCuriosityLogPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "professional_contact"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Professional Curiosity Log — professional curiosity practice, staff observations, concerns raised, follow-up actions, multi-agency information sharing, safeguarding vigilance, Reg 45"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Coins,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,9 @@ import type { PlacementBudgetTracker, PlacementBudgetCategory } from "@/types/ex
 import { PLACEMENT_BUDGET_CATEGORY_LABEL } from "@/types/extended";
 import { usePlacementBudgetTrackers } from "@/hooks/use-placement-budget-trackers";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -137,10 +140,12 @@ export default function PlacementBudgetTrackerPage() {
     <PageShell
       title="Placement Budget Tracker"
       subtitle="Each child's annual budget across categories — financial governance, transparency and corporate parenting (illustrative figures)"
+      ariaContext={{ pageTitle: "Placement Budget Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="placement-budget-tracker" />
           <PrintButton title="Placement Budget Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -385,6 +390,18 @@ export default function PlacementBudgetTrackerPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Finance"
+        category="finance"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Placement Budget Tracker — placement costs, LA funding, top-up fees, activity allowance, clothing allowance, pocket money, total placement spend per child, commissioning"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

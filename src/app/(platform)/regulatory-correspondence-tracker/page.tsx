@@ -15,7 +15,7 @@ import {
   ArrowUpRight,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -39,6 +39,9 @@ import {
   REGULATORY_CORRESPONDENCE_STATUS_LABEL,
   REGULATORY_CORRESPONDENCE_CONFIDENTIALITY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour maps ────────────────────────────────────────────── */
 
@@ -146,10 +149,12 @@ export default function RegulatoryCorrespondenceTrackerPage() {
     <PageShell
       title="Regulatory Correspondence Tracker"
       subtitle="Quality Standard 13 (Leadership and Management) — written correspondence with all regulators and statutory partners"
+      ariaContext={{ pageTitle: "Regulatory Correspondence Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="regulatory-correspondence" />
           <PrintButton title="Regulatory Correspondence Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -315,6 +320,18 @@ export default function RegulatoryCorrespondenceTrackerPage() {
           <strong>Quality Standard 13 (Leadership and Management) &amp; good governance</strong> — Registered providers must maintain a clear, auditable record of all written correspondence with regulators and statutory partners (Local Authorities, Ofsted, ICO, HMRC, HSE, Planning, Environmental Health, Fire Authority, ICB / NHS partners, DfE). Each thread should evidence the regulator&apos;s query, the home&apos;s response, any documents provided, agreed actions and the outcome. This tracker sits alongside &mdash; not in place of &mdash; the dedicated Ofsted log.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Regulatory"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Regulatory Correspondence Tracker — Ofsted letters, LA correspondence, regulatory notices, enforcement actions, notifications sent, responses received, compliance history, Annex A evidence"
+        recordType="reg45"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

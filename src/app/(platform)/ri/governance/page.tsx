@@ -9,6 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +27,11 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName } from "@/lib/seed-data";
 import type { RiGovernanceReport, RiReportType, RiReportStatus } from "@/types/extended";
+import {
+  useRiGovernanceReports,
+  useCreateRiGovernanceReport,
+  useUpdateRiGovernanceReport,
+} from "@/hooks/use-ri-governance-reports";
 import {
   Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   Plus, FileText, BarChart3, Shield, Award, Calendar,
@@ -46,191 +53,6 @@ interface LocalReport extends Omit<RiGovernanceReport, "content"> {
   };
 }
 
-const SEED_REPORTS: LocalReport[] = [
-  {
-    id: "rigr_001",
-    home_id: "home_oak",
-    report_type: "strategic_summary",
-    report_period: "April 2026",
-    generated_by_aria: true,
-    content: {
-      summary: "Oak House continues to demonstrate strong care practice with consistent key worker engagement across all three young people. Staffing stability has improved following the appointment of a new senior residential worker in March. One concern around evening agency staffing during peak periods requires attention.",
-      key_findings: [
-        "100% care plan review compliance in Q1 2026",
-        "Average child experience score improved from 65 to 74 over 8 weeks",
-        "Staff supervision completion at 92% (target 100%)",
-        "3 mandatory training gaps identified — all scheduled for completion by end of May",
-      ],
-      strengths: [
-        "Voice of the child embedded in daily practice — 14 recorded wishes/feelings entries this month",
-        "Effective use of relational practice approaches — trust moments consistently logged",
-        "Strong key worker relationships — all three children can name their preferred adult",
-      ],
-      concerns: [
-        "Evening shift agency reliance — 6 agency shifts in past 14 days",
-        "One overdue Reg 44 visit recommendation not yet actioned",
-        "Post-contact support for Casey needs strengthening",
-      ],
-      actions: [
-        "Review rota to reduce evening agency usage — target max 2 per fortnight",
-        "Action outstanding Reg 44 recommendation by 15 May 2026",
-        "Develop contact preparation plan for Casey with SW",
-        "Schedule DBS renewal for Diane (due June)",
-      ],
-    },
-    status: "approved",
-    approved_by: "staff_alicia",
-    approved_at: "2026-04-28T14:00:00Z",
-    created_by: "staff_darren",
-    created_at: "2026-04-25T09:00:00Z",
-    updated_at: "2026-04-28T14:00:00Z",
-  },
-  {
-    id: "rigr_002",
-    home_id: "home_oak",
-    report_type: "risk_analysis",
-    report_period: "April 2026",
-    generated_by_aria: true,
-    content: {
-      summary: "ARIA risk analysis identifies two medium-risk and one low-risk area. No high or critical risks currently active. The medium risks relate to staffing continuity during evening shifts and an escalating dysregulation pattern for one young person.",
-      risk_level: "medium",
-      key_findings: [
-        "MEDIUM: Agency staffing on evening shifts correlated with 75% of recent incidents",
-        "MEDIUM: Alex's dysregulation pattern between 17:00-19:00 shows no improvement despite initial intervention",
-        "LOW: One mandatory qualification gap (Level 3 Diploma — Diane, scheduled for September)",
-      ],
-      strengths: [
-        "No safeguarding referrals in 90 days",
-        "Zero physical interventions in 30 days",
-        "All medication administered correctly with no errors",
-      ],
-      concerns: [
-        "Staffing continuity risk during most vulnerable period of the day",
-        "Potential for Alex's dysregulation to escalate without adjusted intervention strategy",
-      ],
-      actions: [
-        "Immediate: Review and adjust Alex's 5pm transition intervention — consider environmental modification",
-        "Within 7 days: Propose rota restructure to RM to cover peak evening shifts with permanent staff",
-        "Within 14 days: RI to discuss staffing with provider re: recruitment to fill gap",
-      ],
-    },
-    status: "published",
-    approved_by: "staff_alicia",
-    approved_at: "2026-04-20T10:00:00Z",
-    created_by: "staff_darren",
-    created_at: "2026-04-18T08:00:00Z",
-    updated_at: "2026-04-20T10:00:00Z",
-  },
-  {
-    id: "rigr_003",
-    home_id: "home_oak",
-    report_type: "monthly_overview",
-    report_period: "March 2026",
-    generated_by_aria: true,
-    content: {
-      summary: "March saw positive progress across all three placements. Jordan achieved 100% school attendance for the first time in any placement. Casey began to settle after initial transition difficulties. Alex's pattern of evening dysregulation emerged in the final week.",
-      key_findings: [
-        "Jordan: 100% school attendance — GCSE commendation received",
-        "Casey: Placement settling well — participated in 4 group activities",
-        "Alex: 3 dysregulation episodes in final 7 days — pattern identified",
-        "Staff team: 1 new starter completed induction successfully",
-      ],
-      strengths: [
-        "Proactive identification of Alex's pattern through ARIA analysis",
-        "Jordan's achievement celebrated appropriately — confidence boost noted",
-        "Strong multi-agency working with Casey's social worker",
-      ],
-      concerns: [
-        "Alex's evening dysregulation pattern needs urgent intervention planning",
-      ],
-      actions: [
-        "Design and implement Alex transition support intervention",
-        "Continue Casey's settling-in progress monitoring",
-        "Prepare Jordan for upcoming LAC review",
-      ],
-    },
-    status: "published",
-    approved_by: "staff_alicia",
-    approved_at: "2026-04-05T09:00:00Z",
-    created_by: "staff_darren",
-    created_at: "2026-04-02T08:00:00Z",
-    updated_at: "2026-04-05T09:00:00Z",
-  },
-  {
-    id: "rigr_004",
-    home_id: "home_oak",
-    report_type: "ofsted_readiness",
-    report_period: "Q1 2026",
-    generated_by_aria: true,
-    content: {
-      summary: "Based on current evidence, ARIA projects a 'Good' judgement with notable strengths in children's voice and relational practice. Two areas require strengthening before inspection readiness can be assessed as high: staff supervision frequency and documented management oversight.",
-      key_findings: [
-        "Predicted judgement: Good — with potential for Outstanding in 'Voice of the Child'",
-        "Readiness score: 76/100",
-        "Strongest domain: Children's Experience (82/100)",
-        "Weakest domain: Leadership & Management documentation (64/100)",
-      ],
-      strengths: [
-        "Exceptional voice of the child evidence — direct quotes linked to actions and outcomes",
-        "Relational practice framework well-embedded and consistently evidenced",
-        "Good multi-agency partnership — regular LAC reviews, social worker contact",
-      ],
-      concerns: [
-        "Management oversight entries need more frequent documentation — currently 2-week gaps",
-        "Supervision records should reflect more reflective practice content",
-        "Staff development plans need linking to competency framework outcomes",
-      ],
-      actions: [
-        "Weekly management oversight entries using ARIA Oversight Writer",
-        "Refresh supervision template to include reflective practice prompts",
-        "Link all staff development plans to competency domains",
-        "Prepare evidence bundles for each Ofsted quality standard",
-      ],
-    },
-    status: "reviewed",
-    approved_by: undefined,
-    approved_at: undefined,
-    created_by: "staff_darren",
-    created_at: "2026-04-10T07:00:00Z",
-    updated_at: "2026-04-15T11:00:00Z",
-  },
-  {
-    id: "rigr_005",
-    home_id: "home_oak",
-    report_type: "reg45_draft",
-    report_period: "Q1 2026",
-    generated_by_aria: false,
-    content: {
-      summary: "Draft Regulation 45 report for Q1 2026. Covers the quality of care provided, views of children, safeguarding, and the conduct and development of the home. This draft is pending RI review before formal submission.",
-      key_findings: [
-        "Quality of care: rated 'Good' across all domains",
-        "3 children in placement — all settled or settling",
-        "2 Reg 44 visits completed with 4 recommendations — 3 actioned, 1 pending",
-        "No regulatory notifications required during this period",
-      ],
-      strengths: [
-        "Children report feeling safe and listened to",
-        "Registered Manager demonstrates strong leadership and child-centred values",
-        "Home environment is warm, personalised, and well-maintained",
-      ],
-      concerns: [
-        "Recruitment to fill senior RSW vacancy should be prioritised",
-        "Ensure outstanding Reg 44 recommendation is actioned before next visit",
-      ],
-      actions: [
-        "RI to review and approve this draft before 30 April",
-        "RM to provide update on outstanding Reg 44 recommendation",
-        "Schedule next Reg 44 visit for May",
-      ],
-    },
-    status: "draft",
-    approved_by: undefined,
-    approved_at: undefined,
-    created_by: "staff_darren",
-    created_at: "2026-04-22T10:00:00Z",
-    updated_at: "2026-04-22T10:00:00Z",
-  },
-];
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -609,7 +431,10 @@ function NewReportDialog({
 
 export default function GovernanceReportsPage() {
   const { currentUser } = useAuthContext();
-  const [reports, setReports] = useState<LocalReport[]>(SEED_REPORTS);
+  const { data: reportsResult } = useRiGovernanceReports("home_oak");
+  const reports = (reportsResult?.data ?? []) as LocalReport[];
+  const createMutation = useCreateRiGovernanceReport();
+  const updateMutation = useUpdateRiGovernanceReport();
   const [showNew, setShowNew] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -672,30 +497,24 @@ export default function GovernanceReportsPage() {
   const hasFilters = search || typeFilter !== "all";
 
   // Status change handler
-  const handleStatusChange = (id: string, newStatus: RiReportStatus) => {
+  const handleStatusChange = async (id: string, newStatus: RiReportStatus) => {
     setBusyId(id);
-    setTimeout(() => {
-      setReports((prev) =>
-        prev.map((r) =>
-          r.id === id
-            ? {
-                ...r,
-                status: newStatus,
-                updated_at: new Date().toISOString(),
-                ...(newStatus === "approved" || newStatus === "published"
-                  ? { approved_by: currentUser?.id ?? "staff_darren", approved_at: new Date().toISOString() }
-                  : {}),
-              }
-            : r
-        )
-      );
+    try {
+      await updateMutation.mutateAsync({
+        id,
+        status: newStatus,
+        ...(newStatus === "approved" || newStatus === "published"
+          ? { approved_by: currentUser?.id ?? "staff_darren", approved_at: new Date().toISOString() }
+          : {}),
+      });
+    } finally {
       setBusyId(null);
-    }, 400);
+    }
   };
 
   // Create handler
-  const handleCreate = (report: LocalReport) => {
-    setReports((prev) => [report, ...prev]);
+  const handleCreate = async (report: LocalReport) => {
+    await createMutation.mutateAsync(report as unknown as Partial<RiGovernanceReport>);
   };
 
   // Tab config
@@ -711,6 +530,7 @@ export default function GovernanceReportsPage() {
     <PageShell
       title="Governance Reports"
       subtitle="RI oversight reports — strategic summaries, risk analysis, Reg 45 drafts"
+      ariaContext={{ pageTitle: "RI Governance", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={REPORT_EXPORT_COLS} filename="governance-reports" />
@@ -723,6 +543,7 @@ export default function GovernanceReportsPage() {
             <Plus className="h-3.5 w-3.5" />
             New Report
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -865,6 +686,12 @@ export default function GovernanceReportsPage() {
         open={showNew}
         onClose={() => setShowNew(false)}
         onSubmit={handleCreate}
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="RI Governance — responsible individual governance reports, oversight visits, management oversight, Reg 45 governance, board reporting, regulatory compliance, Ofsted evidence"
+        recordType="management_oversight"
+        className="mt-6"
       />
     </PageShell>
   );

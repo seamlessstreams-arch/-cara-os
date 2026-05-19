@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -39,6 +39,9 @@ import {
   ShieldAlert,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const ragClasses = (r: RagRating) => {
   switch (r) {
@@ -134,10 +137,12 @@ export default function CaseFileAuditPage() {
     <PageShell
       title="Case File Audit"
       subtitle="Quality audits of individual children's case files — Quality Standard 13 & Reg 36"
+      ariaContext={{ pageTitle: "Case File Audit", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="case-file-audits" />
           <PrintButton title="Case File Audit" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -351,6 +356,18 @@ export default function CaseFileAuditPage() {
         <p>Quality Standard 13 (the leadership and management standard) requires the registered manager to lead and manage the home effectively, including the quality assurance of records and care planning for each child.</p>
         <p>Regulation 36 (records about children) requires accurate, current and retained case file records. Routine case file audits provide evidence that children&apos;s records meet these standards and that gaps generate timely action.</p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Audit & Compliance"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Case File Audit — compliance audit of individual child records, documentation gaps, care plan currency, review dates, missing consents, Reg 45 evidence, Annex A readiness"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

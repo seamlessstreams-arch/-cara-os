@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   flame: Flame,
@@ -90,7 +93,8 @@ export default function BusinessContinuityPage() {
     <PageShell
       title="Business Continuity Plan"
       subtitle="Emergency Preparedness · Operational Resilience · Civil Contingencies"
-      actions={<PrintButton title="Business Continuity Plan" />}
+      ariaContext={{ pageTitle: "Business Continuity Plan", sourceType: "document" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Business Continuity Plan" /><AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} /></div>}
     >
       <div id="print-area">
         {/* ── Review Status Banner ── */}
@@ -338,6 +342,18 @@ export default function BusinessContinuityPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Business Continuity Plan — emergency scenarios, staffing failure, IT outage, evacuation, flood, fire, pandemic, critical incident, recovery plan, notification chain, Reg 44 evidence"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -14,18 +14,19 @@ import {
   Eye,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useWhistleblowingRecords } from "@/hooks/use-whistleblowing-records";
+import { useWhistleblowingRecords, useCreateWhistleblowingRecord } from "@/hooks/use-whistleblowing-records";
 import type {
   WhistleblowingRecord,
   WhistleblowingCategory,
@@ -37,6 +38,9 @@ import {
   WHISTLEBLOWING_STATUS_LABEL,
   WHISTLEBLOWING_SEVERITY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -59,12 +63,56 @@ const SEV_META: Record<WhistleblowingSeverity, { colour: string }> = {
 
 export default function WhistleblowingPage() {
   const { data: records = [], isLoading } = useWhistleblowingRecords();
+  const createRecord = useCreateWhistleblowingRecord();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCat, setFilterCat] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [showDialog, setShowDialog] = useState(false);
+
+  const [wbForm, setWbForm] = useState({
+    anonymous: false,
+    category: "" as WhistleblowingCategory | "",
+    severity: "" as WhistleblowingSeverity | "",
+    subject_of_concern: "",
+    summary: "",
+    detail: "",
+    evidence: "",
+    assigned_to: "staff_darren",
+  });
+  const setWF = (k: keyof typeof wbForm, v: string | boolean) => setWbForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateWB = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!wbForm.category || !wbForm.severity || !wbForm.subject_of_concern.trim() || !wbForm.summary.trim()) {
+      toast.error("Category, severity, subject and summary are required.");
+      return;
+    }
+    const ref = `WB-${new Date().getFullYear()}-${String(records.length + 1).padStart(3, "0")}`;
+    await createRecord.mutateAsync({
+      reference: ref,
+      date_raised: new Date().toISOString().slice(0, 10),
+      raised_by: wbForm.anonymous ? "Anonymous" : "staff_darren",
+      anonymous: wbForm.anonymous,
+      category: wbForm.category as WhistleblowingCategory,
+      severity: wbForm.severity as WhistleblowingSeverity,
+      status: "received" as WhistleblowingStatus,
+      subject_of_concern: wbForm.subject_of_concern.trim(),
+      summary: wbForm.summary.trim(),
+      detail: wbForm.detail.trim(),
+      evidence_provided: wbForm.evidence.split("\n").map((e) => e.trim()).filter(Boolean),
+      assigned_to: wbForm.assigned_to,
+      external_referral: null,
+      outcome: "",
+      lessons_learned: "",
+      timeline: [{ date: new Date().toISOString().slice(0, 10), action: "Concern raised", by: wbForm.anonymous ? "Anonymous" : getStaffName(wbForm.assigned_to) }],
+      protection_measures: [],
+    });
+    toast.success("Concern submitted.");
+    setWbForm({ anonymous: false, category: "", severity: "", subject_of_concern: "", summary: "", detail: "", evidence: "", assigned_to: "staff_darren" });
+    setShowDialog(false);
+  };
 
   const stats = useMemo(() => ({
     total: records.length,
@@ -137,6 +185,7 @@ export default function WhistleblowingPage() {
     <PageShell
       title="Whistleblowing & Concerns"
       subtitle="Confidential concern reporting — staff protection and accountability"
+      ariaContext={{ pageTitle: "Whistleblowing Log", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="whistleblowing" />
@@ -144,6 +193,7 @@ export default function WhistleblowingPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> Raise Concern
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -287,26 +337,51 @@ export default function WhistleblowingPage() {
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Raise a Concern</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
+          <form onSubmit={handleCreateWB} className="grid gap-3 py-2">
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="anonymous" className="rounded border" />
+              <input type="checkbox" id="anonymous" className="rounded border" checked={wbForm.anonymous} onChange={(e) => setWF("anonymous", e.target.checked)} />
               <label htmlFor="anonymous" className="text-sm">Raise anonymously</label>
             </div>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Category…</option>{(Object.keys(WHISTLEBLOWING_CATEGORY_LABEL) as WhistleblowingCategory[]).map((k) => <option key={k} value={k}>{WHISTLEBLOWING_CATEGORY_LABEL[k]}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Severity…</option>{(Object.keys(SEV_META) as WhistleblowingSeverity[]).map((k) => <option key={k} value={k}>{WHISTLEBLOWING_SEVERITY_LABEL[k]}</option>)}</select>
-            <input placeholder="Subject of concern" className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Summary" rows={2} className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Full detail" rows={4} className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Evidence provided" rows={2} className="rounded border px-3 py-2 text-sm" />
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Submit Concern</button>
-          </DialogFooter>
+            <Select value={wbForm.category} onValueChange={(v) => setWF("category", v)}>
+              <SelectTrigger className="text-sm"><SelectValue placeholder="Category…" /></SelectTrigger>
+              <SelectContent>{(Object.keys(WHISTLEBLOWING_CATEGORY_LABEL) as WhistleblowingCategory[]).map((k) => <SelectItem key={k} value={k}>{WHISTLEBLOWING_CATEGORY_LABEL[k]}</SelectItem>)}</SelectContent>
+            </Select>
+            <Select value={wbForm.severity} onValueChange={(v) => setWF("severity", v)}>
+              <SelectTrigger className="text-sm"><SelectValue placeholder="Severity…" /></SelectTrigger>
+              <SelectContent>{(Object.keys(SEV_META) as WhistleblowingSeverity[]).map((k) => <SelectItem key={k} value={k}>{WHISTLEBLOWING_SEVERITY_LABEL[k]}</SelectItem>)}</SelectContent>
+            </Select>
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Assigned To</label>
+              <Select value={wbForm.assigned_to} onValueChange={(v) => setWF("assigned_to", v)}>
+                <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent>
+              </Select>
+            </div>
+            <input required placeholder="Subject of concern *" className="rounded border px-3 py-2 text-sm" value={wbForm.subject_of_concern} onChange={(e) => setWF("subject_of_concern", e.target.value)} />
+            <textarea required placeholder="Summary *" rows={2} className="rounded border px-3 py-2 text-sm" value={wbForm.summary} onChange={(e) => setWF("summary", e.target.value)} />
+            <textarea placeholder="Full detail" rows={4} className="rounded border px-3 py-2 text-sm" value={wbForm.detail} onChange={(e) => setWF("detail", e.target.value)} />
+            <textarea placeholder="Evidence provided (one per line)" rows={2} className="rounded border px-3 py-2 text-sm" value={wbForm.evidence} onChange={(e) => setWF("evidence", e.target.value)} />
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createRecord.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90 disabled:opacity-50">{createRecord.isPending ? "Submitting…" : "Submit Concern"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "complaint"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Whistleblowing Log — concerns raised, whistleblowing disclosures, safeguarding referrals, culture of transparency, management investigation, Reg 40 notifications, Ofsted evidence"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

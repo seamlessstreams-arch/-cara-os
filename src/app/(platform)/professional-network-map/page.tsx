@@ -12,7 +12,7 @@ import {
   Network,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,9 @@ import { useProfessionalNetworkContacts } from "@/hooks/use-professional-network
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { ProfessionalNetworkContact, NetworkContactFrequency } from "@/types/extended";
 import { NETWORK_CONTACT_FREQUENCY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -138,10 +141,12 @@ export default function ProfessionalNetworkMapPage() {
     <PageShell
       title="Professional Network Map"
       subtitle="Quality Standard 1 — Multi-agency professional contacts for each child"
+      ariaContext={{ pageTitle: "Professional Network Map", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton<ProfessionalNetworkContact> data={records} columns={exportCols} filename="professional-network-map" />
           <PrintButton title="Professional Network Map" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -267,6 +272,18 @@ export default function ProfessionalNetworkMapPage() {
           <strong>Quality Standard 1 — Child-centred care</strong> — Each child&apos;s professional network must be clearly documented and kept up to date. Effective multi-agency working requires that all professionals involved in a child&apos;s care are known to staff, that contact is maintained at the agreed frequency, and that roles and responsibilities are clearly understood by the whole team.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Professional Contact"
+        category="professional_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Professional Network Map — social workers, IROs, CAMHS, education, GP, LAC nurses, legal, commissioning, advocates, multi-agency, professional meetings, CLA reviews"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

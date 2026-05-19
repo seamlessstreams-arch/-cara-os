@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -28,6 +28,9 @@ import {
 import { useSensoryRoomUsageRecords } from "@/hooks/use-sensory-room-usage-records";
 import type { SensoryRoomUsageRecord, SensoryRoomInitiatedBy } from "@/types/extended";
 import { SENSORY_ROOM_INITIATED_BY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const initiatedByColour: Record<SensoryRoomInitiatedBy, string> = {
   self: "bg-green-100 text-green-800",
@@ -94,10 +97,12 @@ export default function SensoryRoomUsagePage() {
     <PageShell
       title="Sensory Room Usage"
       subtitle="Records of sensory regulation space use — self-initiated, staff-prompted, scheduled, and crisis"
+      ariaContext={{ pageTitle: "Sensory Room Usage", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="sensory-room-usage" />
           <PrintButton title="Sensory Room Usage" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -257,6 +262,18 @@ export default function SensoryRoomUsagePage() {
           Support Plans, and Bedtime/Wake-Up Routines.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Wellbeing"
+        category={["health", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Sensory Room Usage — sensory regulation space use, self-initiated, staff-prompted, scheduled, crisis sessions, outcomes, behaviour impact, autism, ADHD, trauma response"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

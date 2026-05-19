@@ -5,20 +5,24 @@ import {
   ChevronDown, ChevronUp, UserPlus, CheckCircle2, XCircle,
   Clock, AlertTriangle, Plus, ArrowUpDown, Search, Scale, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useMatchingReferrals } from "@/hooks/use-matching-referrals";
+import { useMatchingReferrals, useCreateMatchingReferral } from "@/hooks/use-matching-referrals";
 import type { MatchingReferral, ReferralStatus, MatchScore, ImpactOnCurrent, MatchDomain } from "@/types/extended";
 import { REFERRAL_STATUS_LABEL, MATCH_SCORE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -55,6 +59,19 @@ export default function MatchingReferralsPage() {
   const [filterMatch, setFilterMatch] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [showDialog, setShowDialog] = useState(false);
+
+  const createReferral = useCreateMatchingReferral();
+  const [mrForm, setMrForm] = useState({ child_name: "", age: "", gender: "", local_authority: "", social_worker: "", placement_type: "", presenting_needs: "", risk_factors: "" });
+  const setMR = (k: string, v: unknown) => setMrForm((p) => ({ ...p, [k]: v }));
+
+  const handleAddReferral = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mrForm.child_name.trim()) { toast.error("Child name is required."); return; }
+    await createReferral.mutateAsync({ child_name: mrForm.child_name.trim(), age: parseInt(mrForm.age) || 0, gender: mrForm.gender, local_authority: mrForm.local_authority.trim(), social_worker: mrForm.social_worker.trim(), referral_date: new Date().toISOString().slice(0, 10), status: "received", assigned_to: "", overall_match: "moderate", match_domains: [], impact_on_current: [], strengths: [], concerns: [], conditions: [], decision_date: null, decision_by: null, decision_rationale: "", placement_type: mrForm.placement_type, presenting_needs: mrForm.presenting_needs.split("\n").filter(Boolean), risk_factors: mrForm.risk_factors.split("\n").filter(Boolean), created_at: new Date().toISOString() });
+    toast.success("Referral added.");
+    setMrForm({ child_name: "", age: "", gender: "", local_authority: "", social_worker: "", placement_type: "", presenting_needs: "", risk_factors: "" });
+    setShowDialog(false);
+  };
 
   const stats = useMemo(() => ({
     total: data.length,
@@ -106,6 +123,7 @@ export default function MatchingReferralsPage() {
     <PageShell
       title="Matching & Referrals"
       subtitle="Reg 14 — Referral assessment, matching analysis and placement decisions"
+      ariaContext={{ pageTitle: "Matching & Referrals", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="matching-referrals" />
@@ -113,6 +131,7 @@ export default function MatchingReferralsPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> New Referral
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -272,24 +291,36 @@ export default function MatchingReferralsPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>New Referral</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <input placeholder="Child name" className="rounded border px-3 py-2 text-sm" />
+          <form onSubmit={handleAddReferral} className="grid gap-3 py-2">
+            <input placeholder="Child name *" className="rounded border px-3 py-2 text-sm" value={mrForm.child_name} onChange={(e) => setMR("child_name", e.target.value)} />
             <div className="grid grid-cols-2 gap-3">
-              <input type="number" placeholder="Age" className="rounded border px-3 py-2 text-sm" />
-              <select className="rounded border px-3 py-2 text-sm"><option value="">Gender…</option><option value="Male">Male</option><option value="Female">Female</option><option value="Non-binary">Non-binary</option></select>
+              <input type="number" placeholder="Age" className="rounded border px-3 py-2 text-sm" value={mrForm.age} onChange={(e) => setMR("age", e.target.value)} />
+              <select className="rounded border px-3 py-2 text-sm" value={mrForm.gender} onChange={(e) => setMR("gender", e.target.value)}><option value="">Gender…</option><option value="Male">Male</option><option value="Female">Female</option><option value="Non-binary">Non-binary</option></select>
             </div>
-            <input placeholder="Local Authority" className="rounded border px-3 py-2 text-sm" />
-            <input placeholder="Social Worker name" className="rounded border px-3 py-2 text-sm" />
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Placement type…</option><option>Long-term residential</option><option>Emergency placement</option><option>Planned move from foster care</option><option>Step-down from secure</option></select>
-            <textarea placeholder="Presenting needs (one per line)" rows={3} className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Risk factors (one per line)" rows={2} className="rounded border px-3 py-2 text-sm" />
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Add Referral</button>
-          </DialogFooter>
+            <input placeholder="Local Authority" className="rounded border px-3 py-2 text-sm" value={mrForm.local_authority} onChange={(e) => setMR("local_authority", e.target.value)} />
+            <input placeholder="Social Worker name" className="rounded border px-3 py-2 text-sm" value={mrForm.social_worker} onChange={(e) => setMR("social_worker", e.target.value)} />
+            <select className="rounded border px-3 py-2 text-sm" value={mrForm.placement_type} onChange={(e) => setMR("placement_type", e.target.value)}><option value="">Placement type…</option><option value="Long-term residential">Long-term residential</option><option value="Emergency placement">Emergency placement</option><option value="Planned move from foster care">Planned move from foster care</option><option value="Step-down from secure">Step-down from secure</option></select>
+            <textarea placeholder="Presenting needs (one per line)" rows={3} className="rounded border px-3 py-2 text-sm" value={mrForm.presenting_needs} onChange={(e) => setMR("presenting_needs", e.target.value)} />
+            <textarea placeholder="Risk factors (one per line)" rows={2} className="rounded border px-3 py-2 text-sm" value={mrForm.risk_factors} onChange={(e) => setMR("risk_factors", e.target.value)} />
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createReferral.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">{createReferral.isPending ? "Saving…" : "Add Referral"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Professional Contact"
+        category="professional_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Matching & Referrals — placement referrals, matching assessments, capacity, compatibility, placement planning, admissions, Ofsted evidence, placement stability, Reg 45"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

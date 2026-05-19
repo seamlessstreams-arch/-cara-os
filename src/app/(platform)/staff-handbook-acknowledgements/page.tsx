@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
@@ -23,6 +23,9 @@ import {
 import { useStaffHandbookAcknowledgementRecords } from "@/hooks/use-staff-handbook-acknowledgement-records";
 import type { StaffHandbookAcknowledgementRecord, StaffHandbookDocumentCategory } from "@/types/extended";
 import { STAFF_HANDBOOK_DOCUMENT_CATEGORY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config (icon not serializable — kept local) ─────────────────────────────
 
@@ -155,10 +158,12 @@ export default function StaffHandbookAcknowledgementsPage() {
     <PageShell
       title="Staff Handbook Acknowledgements"
       subtitle="Track staff acknowledgement of key documents, policies, and procedure updates"
+      ariaContext={{ pageTitle: "Staff Handbook Acknowledgements", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Handbook Acknowledgements" subtitle="Oak House — Document Acknowledgement Records" />
           <ExportButton data={filtered} columns={exportCols} filename="staff-handbook-acknowledgements" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -415,6 +420,18 @@ export default function StaffHandbookAcknowledgementsPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Handbook Acknowledgements — policy acknowledgements, handbook sign-off records, staff compliance evidence, Reg 40 workforce compliance, Ofsted staff records evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

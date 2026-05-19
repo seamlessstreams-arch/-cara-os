@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,9 @@ import {
   ArrowUpDown,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ─── export columns ─── */
 const exportCols: ExportColumn<Escalation>[] = [
@@ -120,10 +123,12 @@ export default function EscalationTrackerPage() {
     <PageShell
       title="Escalation Tracker"
       subtitle="Recording when concerns are escalated, to whom, actions taken, and outcomes"
+      ariaContext={{ pageTitle: "Escalation Tracker", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="escalation-tracker" />
           <PrintButton title="Escalation Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -351,6 +356,18 @@ export default function EscalationTrackerPage() {
           that escalation pathways work — concerns are raised, heard, and acted upon.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding & Behaviour"
+        category={["safeguarding", "behaviour"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Escalation Tracker — concerns escalated to management, RI, Ofsted, LADO, police, safeguarding, decision audit trail, management response, outcome, Reg 40, Reg 45 evidence"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

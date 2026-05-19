@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -155,6 +157,7 @@ export default function AuditLogPage() {
     <PageShell
       title="Audit Log"
       subtitle="Complete record of all safer recruitment actions — inspection-ready"
+      ariaContext={{ pageTitle: "Safer Recruitment Audit Trail", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Audit Log" subtitle="Oak House — Safer Recruitment Audit Trail" targetId="sr-audit-content" />
@@ -163,6 +166,7 @@ export default function AuditLogPage() {
             <Download className="h-3.5 w-3.5" />
             Generate Inspection Bundle
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -271,6 +275,12 @@ export default function AuditLogPage() {
         </Card>
       )}
       </div>{/* close #sr-audit-content */}
+      <AriaPanel
+        mode="assist"
+        pageContext="Safer Recruitment Audit Trail — immutable audit log, SCR evidence, safer recruitment compliance, Ofsted inspection readiness, DBS checks audit, references audit, right to work audit"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

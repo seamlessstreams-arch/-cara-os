@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,9 @@ import {
   PROF_MEETING_ACTION_STATUS_LABEL,
   PROF_MEETING_MODE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour maps ─────────────────────────────────────────────────── */
 
@@ -154,10 +157,12 @@ export default function ProfessionalMeetingAttendancePage() {
     <PageShell
       title="Professional Meeting Attendance"
       subtitle="Home representation at multi-agency professional meetings — Quality Standard 4 & 13, Working Together 2023"
+      ariaContext={{ pageTitle: "Professional Meeting Attendance", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="professional-meeting-attendance" />
           <PrintButton title="Professional Meeting Attendance" />
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -401,6 +406,18 @@ export default function ProfessionalMeetingAttendancePage() {
           — The home must ensure that children are represented effectively at all multi-agency meetings concerning them, that the child&apos;s voice is heard or sensitively represented, that decisions and actions are tracked, and that the home submits its written contribution within agreed timescales.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Professional Contact"
+        category="professional_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Professional Meeting Attendance — LAC reviews, strategy meetings, child protection conferences, multi-agency meetings, attendance records, apologies, staff representation, Reg 45 evidence"
+        recordType="task"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

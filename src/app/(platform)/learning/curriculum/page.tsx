@@ -6,6 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -179,11 +181,13 @@ export default function CurriculumBuilderPage() {
     <PageShell
       title="Curriculum Builder"
       subtitle="Design structured multi-module learning pathways with ARIA"
+      ariaContext={{ pageTitle: "Learning Curriculum", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Curriculum Builder" subtitle="Oak House — Learning Curriculum" targetId="curriculum-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Curriculum Builder upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -323,6 +327,12 @@ export default function CurriculumBuilderPage() {
           </div>
         )}
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Learning Curriculum — training curriculum structure, mandatory training topics, care skills modules, safeguarding training, children's rights, therapeutic approaches, workforce development"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

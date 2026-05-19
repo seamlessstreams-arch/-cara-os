@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,9 @@ import {
 import { useLifeStoryEntries, useCreateLifeStoryEntry } from "@/hooks/use-life-story-entries";
 import type { LifeStoryEntry, LifeStoryEntryType, LifeStoryEntryStatus } from "@/types/extended";
 import { LIFE_STORY_ENTRY_TYPE_LABEL, LIFE_STORY_ENTRY_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────────── */
 
@@ -150,6 +153,7 @@ export default function LifeStoryPage() {
     <PageShell
       title="Life Story Work"
       subtitle="Identity, heritage, memories, and milestones"
+      ariaContext={{ pageTitle: "Life Story Work", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Life Story Work" />
@@ -157,6 +161,7 @@ export default function LifeStoryPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Entry
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -367,6 +372,18 @@ export default function LifeStoryPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Life Story Work — children's histories, family origins, significant people, memories, scrapbooks, letters, photographs, therapeutic life story work, identity development, direct work evidence"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

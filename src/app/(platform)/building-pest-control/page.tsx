@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -29,6 +29,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const typeColour: Record<string, string> = {
   routine_preventive_treatment: "bg-teal-100 text-teal-800 border-teal-200",
@@ -132,10 +135,12 @@ export default function BuildingPestControlPage() {
     <PageShell
       title="Building Pest Control & Prevention"
       subtitle="Proactive routine treatments and reactive call-outs — mice, rats, ants, wasps, silverfish, bedbugs, cockroaches, moths. Child-safety-first protocols: chemical-free options first, no rodenticide indoors with children resident, transparency with young people."
+      ariaContext={{ pageTitle: "Pest Control", sourceType: "home_check" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="building-pest-control" />
           <PrintButton title="Pest Control & Prevention" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -290,6 +295,18 @@ export default function BuildingPestControlPage() {
           Records retained 7+ years; available to Ofsted on request.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Safety"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Pest Control & Prevention — pest inspection schedule, treatment records, contractor visits, mice, rats, bedbugs, infestation response, regulatory compliance, Reg 44 evidence"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

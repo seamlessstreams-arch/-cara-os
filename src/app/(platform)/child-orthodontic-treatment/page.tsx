@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -33,6 +33,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<OrthoRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -139,10 +142,12 @@ export default function ChildOrthodonticTreatmentPage() {
     <PageShell
       title="Orthodontic Treatment"
       subtitle="Per-child orthodontic journey — referral, IOTN scoring, NHS eligibility, brace type, appointment attendance, oral hygiene compliance, retention phase. Coordinated with general dental records and dietary planning."
+      ariaContext={{ pageTitle: "Orthodontic Treatment", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-orthodontic-treatment" />
           <PrintButton title="Orthodontic Treatment" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -365,6 +370,18 @@ export default function ChildOrthodonticTreatmentPage() {
           NHS-funded — contingency must be planned.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Orthodontic Treatment — braces, retainer, dental appliance, orthodontist appointments, treatment plan, consent, school impact, AHA dental check, LAC health, Annex A evidence"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

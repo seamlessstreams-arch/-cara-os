@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +40,9 @@ import {
   Target,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ─── helpers ─── */
 const ragColours = (rag: RagRating) => {
@@ -176,10 +179,12 @@ export default function BoardReportingPage() {
     <PageShell
       title="Board Reporting"
       subtitle="Formal reports submitted to the Responsible Individual and Cornerstone Care Group Board — required by Quality Standard 13 and Regulation 45"
+      ariaContext={{ pageTitle: "Board Reporting", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={reports} columns={exportCols} filename="board-reporting" />
           <PrintButton title="Board Reporting" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -555,6 +560,18 @@ export default function BoardReportingPage() {
           passive submission.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Compliance Evidence"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Board Reporting — governance reports, trustee reports, RI oversight, key performance indicators, incidents, placements, occupancy, staffing, compliance, Reg 45 summary"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

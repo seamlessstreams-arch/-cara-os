@@ -1,20 +1,29 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { getStaffName } from "@/lib/seed-data";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { getStaffName, STAFF } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { useAgencyFeedback } from "@/hooks/use-agency-feedback";
-import type { AgencyFeedback } from "@/types/extended";
+import { useAgencyFeedback, useCreateAgencyFeedback } from "@/hooks/use-agency-feedback";
+import type { AgencyFeedback, AgencyShiftType, AgencyVerdict, RecordingQuality } from "@/types/extended";
 import {
   AGENCY_SHIFT_TYPE_LABEL,
   AGENCY_VERDICT_LABEL,
   RECORDING_QUALITY_LABEL,
 } from "@/types/extended";
-import { ChevronDown, ChevronUp, ArrowUpDown, UserCheck, CheckCircle, AlertTriangle, Star, Heart, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ArrowUpDown, UserCheck, CheckCircle, AlertTriangle, Star, Heart, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { toast } from "sonner";
 
 const verdictColour: Record<string, string> = {
   approved_for_repeat: "bg-green-100 text-green-800",
@@ -36,10 +45,53 @@ const exportCols: ExportColumn<AgencyFeedback>[] = [
 
 export default function AgencyStaffFeedbackPage() {
   const { data: res, isLoading } = useAgencyFeedback();
+  const createFeedback = useCreateAgencyFeedback();
   const data = useMemo(() => res?.data ?? [], [res]);
   const [filterVerdict, setFilterVerdict] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({
+    agency_staff_name: "",
+    agency: "",
+    shift_date: new Date().toISOString().split("T")[0],
+    shift_type: "early" as AgencyShiftType,
+    permanent_staff_on_shift: "",
+    professionalism_rating: 3,
+    relational_skills_rating: 3,
+    recording_quality: "adequate" as RecordingQuality,
+    overall_verdict: "approved_for_repeat" as AgencyVerdict,
+    feedback_summary: "",
+  });
+
+  async function handleCreate() {
+    if (!form.agency_staff_name || !form.agency || !form.permanent_staff_on_shift || !form.feedback_summary) {
+      toast.error("Please complete all required fields");
+      return;
+    }
+    try {
+      await createFeedback.mutateAsync({
+        ...form,
+        induction_recorded: true,
+        children_interacted_with: [],
+        observations_positive: [],
+        observations_constructive: [],
+        child_feedback: "",
+        follows_routines: true,
+        follows_behaviour_support_plans: true,
+        follows_sensory_protocols: true,
+        feedback_to_agency_date: new Date().toISOString().split("T")[0],
+        follow_up_action: "None",
+        reviewed_by: form.permanent_staff_on_shift,
+        notes: "",
+      });
+      toast.success("Feedback logged");
+      setShowCreate(false);
+      setForm({ agency_staff_name: "", agency: "", shift_date: new Date().toISOString().split("T")[0], shift_type: "early", permanent_staff_on_shift: "", professionalism_rating: 3, relational_skills_rating: 3, recording_quality: "adequate", overall_verdict: "approved_for_repeat", feedback_summary: "" });
+    } catch {
+      toast.error("Failed to save. Please try again.");
+    }
+  }
 
   if (isLoading) {
     return (
@@ -65,7 +117,44 @@ export default function AgencyStaffFeedbackPage() {
 
   return (
     <PageShell title="Agency Staff Feedback" subtitle="Performance feedback after agency staff cover shifts — approval, development, and repeat-booking decisions"
-      actions={<div className="flex items-center gap-2"><ExportButton data={data} columns={exportCols} filename="agency-staff-feedback" /><PrintButton title="Agency Staff Feedback" /></div>}>
+      ariaContext={{ pageTitle: "Agency Staff Feedback", sourceType: "staff" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <ExportButton data={data} columns={exportCols} filename="agency-staff-feedback" />
+          <PrintButton title="Agency Staff Feedback" />
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />Log Feedback</Button>
+        </div>
+      }>
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Log Agency Staff Feedback</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Agency Staff Name *</Label><Input placeholder="Full name" value={form.agency_staff_name} onChange={(e) => setForm((f) => ({ ...f, agency_staff_name: e.target.value }))} /></div>
+              <div><Label>Agency *</Label><Input placeholder="Agency name" value={form.agency} onChange={(e) => setForm((f) => ({ ...f, agency: e.target.value }))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Shift Date *</Label><Input type="date" value={form.shift_date} onChange={(e) => setForm((f) => ({ ...f, shift_date: e.target.value }))} /></div>
+              <div><Label>Shift Type</Label><Select value={form.shift_type} onValueChange={(v) => setForm((f) => ({ ...f, shift_type: v as AgencyShiftType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(AGENCY_SHIFT_TYPE_LABEL) as [AgencyShiftType, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div><Label>Permanent Staff on Shift *</Label><Select value={form.permanent_staff_on_shift} onValueChange={(v) => setForm((f) => ({ ...f, permanent_staff_on_shift: v }))}><SelectTrigger><SelectValue placeholder="Select staff member" /></SelectTrigger><SelectContent>{STAFF.map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Professionalism (1–5)</Label><Input type="number" min={1} max={5} value={form.professionalism_rating} onChange={(e) => setForm((f) => ({ ...f, professionalism_rating: parseInt(e.target.value) }))} /></div>
+              <div><Label>Relational Skills (1–5)</Label><Input type="number" min={1} max={5} value={form.relational_skills_rating} onChange={(e) => setForm((f) => ({ ...f, relational_skills_rating: parseInt(e.target.value) }))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Recording Quality</Label><Select value={form.recording_quality} onValueChange={(v) => setForm((f) => ({ ...f, recording_quality: v as RecordingQuality }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(RECORDING_QUALITY_LABEL) as [RecordingQuality, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Verdict</Label><Select value={form.overall_verdict} onValueChange={(v) => setForm((f) => ({ ...f, overall_verdict: v as AgencyVerdict }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(AGENCY_VERDICT_LABEL) as [AgencyVerdict, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div><Label>Feedback Summary *</Label><Textarea placeholder="Key observations and decisions..." value={form.feedback_summary} onChange={(e) => setForm((f) => ({ ...f, feedback_summary: e.target.value }))} rows={3} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createFeedback.isPending}>{createFeedback.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Feedback"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Reviews</p></div>
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-green-600">{approved}</p><p className="text-xs text-muted-foreground">Approved Repeat</p></div>
@@ -112,6 +201,18 @@ export default function AgencyStaffFeedbackPage() {
         })}
       </div>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Agency staff feedback supports Quality Standard 13 (workforce), Reg 32 (fitness of workers — extends to agency cover), and consistent practice standards. Linked to Agency Staff Induction and Staff Recognition Log.</p></div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Agency Staff Feedback — performance review after cover shifts, approval decisions, repeat booking, recording quality, relational practice alignment"
+        recordType="supervision"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

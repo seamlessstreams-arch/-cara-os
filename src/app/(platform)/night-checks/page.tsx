@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,16 +15,20 @@ import {
 import { cn } from "@/lib/utils";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { getStaffName, getYPName } from "@/lib/seed-data";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Moon, Sun, Search, ArrowUpDown, X, Plus,
   AlertTriangle, Clock, Calendar,
   Eye, CloudMoon, BedDouble,
   Loader2, ChevronDown, ChevronUp,
 } from "lucide-react";
-import { useNightChecks } from "@/hooks/use-night-checks";
+import { useNightChecks, useCreateNightCheck } from "@/hooks/use-night-checks";
 import type { NightCheck, NightCheckSleepStatus, NightCheckType, DoorPosition } from "@/types/extended";
 import { NIGHT_CHECK_SLEEP_STATUS_LABEL, NIGHT_CHECK_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -45,32 +49,32 @@ function CheckRow({ check }: { check: NightCheck }) {
   return (
     <div className={cn("rounded-lg border bg-white transition-all", check.concern_raised && "border-amber-200 bg-amber-50/30")}>
       <div className="flex items-center gap-3 p-3 cursor-pointer" onClick={() => setExpanded(!expanded)}>
-        <div className="w-12 text-center flex-shrink-0"><div className="text-sm font-bold text-[var(--cs-text-secondary)] tabular-nums">{check.time}</div></div>
+        <div className="w-12 text-center flex-shrink-0"><div className="text-sm font-bold text-slate-700 tabular-nums">{check.time}</div></div>
         <div className={cn("rounded-md p-1.5 border flex-shrink-0", ss.bg, ss.border)}><SsIcon className={cn("h-3.5 w-3.5", ss.color)} /></div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-xs font-semibold text-[var(--cs-navy)]">{getYPName(check.child_id)}</span>
+            <span className="text-xs font-semibold text-slate-900">{getYPName(check.child_id)}</span>
             <Badge className={cn("text-[9px] px-1.5 py-0 border", ss.bg, ss.color, ss.border)}>{ss.label}</Badge>
             {check.concern_raised && <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[9px] px-1.5 py-0"><AlertTriangle className="h-2.5 w-2.5 mr-0.5" />Concern</Badge>}
-            {check.check_type !== "scheduled" && <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] text-[9px] px-1.5 py-0">{NIGHT_CHECK_TYPE_LABEL[check.check_type]}</Badge>}
+            {check.check_type !== "scheduled" && <Badge className="bg-violet-50 text-violet-700 border-violet-200 text-[9px] px-1.5 py-0">{NIGHT_CHECK_TYPE_LABEL[check.check_type]}</Badge>}
           </div>
-          <p className="text-[11px] text-[var(--cs-text-secondary)] line-clamp-1">{check.notes}</p>
+          <p className="text-[11px] text-slate-600 line-clamp-1">{check.notes}</p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-[var(--cs-text-muted)]">
+        <div className="flex items-center gap-2 flex-shrink-0 text-[10px] text-slate-400">
           <span>{getStaffName(check.staff_id)}</span>
           {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
         </div>
       </div>
       {expanded && (
         <div className="border-t px-3 pb-3 pt-2 space-y-2">
-          <p className="text-xs text-[var(--cs-text-secondary)]">{check.notes}</p>
+          <p className="text-xs text-slate-700">{check.notes}</p>
           {check.concern_detail && (
             <div className="rounded-md bg-amber-50 border border-amber-200 p-2">
               <p className="text-[11px] font-semibold text-amber-800 mb-0.5">Concern Raised</p>
               <p className="text-xs text-amber-700">{check.concern_detail}</p>
             </div>
           )}
-          <div className="flex items-center gap-4 text-[10px] text-[var(--cs-text-muted)]">
+          <div className="flex items-center gap-4 text-[10px] text-slate-400">
             <span>Room temp: {check.room_temp_ok ? "OK" : "Issue"}</span>
             <span>Door: {check.door_position}</span>
             <span>Staff: {getStaffName(check.staff_id)}</span>
@@ -86,6 +90,20 @@ export default function NightChecksPage() {
   const checks: NightCheck[] = res?.data ?? [];
 
   const [showNew, setShowNew] = useState(false);
+
+  const createNightCheck = useCreateNightCheck();
+  const [ncForm, setNcForm] = useState({ child_id: "", check_type: "scheduled" as NightCheckType, sleep_status: "sleeping" as NightCheckSleepStatus, door_position: "ajar" as DoorPosition, notes: "" });
+  const setNC = (k: string, v: unknown) => setNcForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveCheck = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ncForm.child_id) { toast.error("Please select a young person."); return; }
+    const now = new Date();
+    await createNightCheck.mutateAsync({ date: now.toISOString().slice(0, 10), time: now.toTimeString().slice(0, 5), child_id: ncForm.child_id, staff_id: "staff_darren", sleep_status: ncForm.sleep_status, check_type: ncForm.check_type, notes: ncForm.notes.trim(), concern_raised: false, concern_detail: "", room_temp_ok: true, door_position: ncForm.door_position, created_at: now.toISOString() });
+    toast.success("Night check recorded.");
+    setNcForm({ child_id: "", check_type: "scheduled", sleep_status: "sleeping", door_position: "ajar", notes: "" });
+    setShowNew(false);
+  };
   const [dateFilter, setDateFilter] = useState(d(0));
   const [childFilter, setChildFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<NightCheckSleepStatus | "all">("all");
@@ -156,11 +174,13 @@ export default function NightChecksPage() {
     <PageShell
       title="Night Checks"
       subtitle="Overnight welfare observations and sleep monitoring"
+      ariaContext={{ pageTitle: "Night Checks", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={CHECK_EXPORT_COLS} filename={`night-checks-${dateFilter}`} />
           <PrintButton title="Night Checks" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Record Check</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -174,7 +194,7 @@ export default function NightChecksPage() {
         ].map((s) => (
           <div key={s.label} className={cn("rounded-lg border p-3 text-center", s.bg, s.border)}>
             <div className={cn("text-xl font-bold", s.color)}>{s.value}</div>
-            <div className="text-[10px] text-[var(--cs-text-muted)] font-medium mt-0.5">{s.label}</div>
+            <div className="text-[10px] text-slate-500 font-medium mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
@@ -183,16 +203,16 @@ export default function NightChecksPage() {
         {ypSummary.map((yp) => {
           const lastSs = yp.lastCheck ? SLEEP_STATUS_CONFIG[yp.lastCheck.sleep_status] : null;
           return (
-            <div key={yp.id} className={cn("rounded-lg border p-3", yp.hasConcern ? "border-amber-200 bg-amber-50/30" : "border-[var(--cs-border)] bg-white")}>
+            <div key={yp.id} className={cn("rounded-lg border p-3", yp.hasConcern ? "border-amber-200 bg-amber-50/30" : "border-slate-200 bg-white")}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-[var(--cs-navy)]">{yp.name}</span>
+                <span className="text-xs font-semibold text-slate-900">{yp.name}</span>
                 {yp.hasConcern && <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[9px] px-1.5 py-0">Concern</Badge>}
               </div>
-              <div className="text-[10px] text-[var(--cs-text-muted)]">{yp.checkCount} check{yp.checkCount !== 1 ? "s" : ""} recorded</div>
+              <div className="text-[10px] text-slate-500">{yp.checkCount} check{yp.checkCount !== 1 ? "s" : ""} recorded</div>
               {yp.lastCheck && lastSs && (
                 <div className="flex items-center gap-1.5 mt-1.5">
                   <lastSs.icon className={cn("h-3 w-3", lastSs.color)} />
-                  <span className="text-[10px] text-[var(--cs-text-secondary)]">Last: {yp.lastCheck.time} — {lastSs.label}</span>
+                  <span className="text-[10px] text-slate-600">Last: {yp.lastCheck.time} — {lastSs.label}</span>
                 </div>
               )}
               {yp.checkCount === 0 && <div className="text-[10px] text-red-500 font-medium mt-1">No checks recorded yet</div>}
@@ -203,7 +223,7 @@ export default function NightChecksPage() {
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="flex items-center gap-1.5">
-          <Calendar className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+          <Calendar className="h-3.5 w-3.5 text-slate-400" />
           <Select value={dateFilter} onValueChange={setDateFilter}>
             <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -212,7 +232,7 @@ export default function NightChecksPage() {
           </Select>
         </div>
         <div className="relative flex-1 min-w-[160px] max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
           <Input placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-8 text-xs" />
         </div>
         <Select value={childFilter} onValueChange={setChildFilter}>
@@ -232,7 +252,7 @@ export default function NightChecksPage() {
           </SelectContent>
         </Select>
         <div className="flex items-center gap-1">
-          <ArrowUpDown className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="h-8 w-[120px] text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -243,14 +263,14 @@ export default function NightChecksPage() {
           </Select>
         </div>
         {hasFilters && (
-          <Button variant="ghost" size="sm" className="h-8 text-xs text-[var(--cs-text-muted)]" onClick={() => { setSearch(""); setChildFilter("all"); setStatusFilter("all"); }}>
+          <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500" onClick={() => { setSearch(""); setChildFilter("all"); setStatusFilter("all"); }}>
             <X className="h-3 w-3 mr-1" /> Clear
           </Button>
         )}
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-[var(--cs-text-muted)]">
+        <div className="text-center py-16 text-slate-400">
           <Moon className="h-10 w-10 mx-auto mb-3 opacity-40" />
           <p className="text-sm font-medium">No checks recorded</p>
           <p className="text-xs mt-1">{hasFilters ? "Try adjusting your filters" : "No night checks for this date yet"}</p>
@@ -259,16 +279,16 @@ export default function NightChecksPage() {
         <div className="space-y-2">{filtered.map((check) => <CheckRow key={check.id} check={check} />)}</div>
       )}
 
-      <div className="text-center text-[10px] text-[var(--cs-text-muted)] mt-6">
+      <div className="text-center text-[10px] text-slate-400 mt-6">
         Showing {filtered.length} check{filtered.length !== 1 ? "s" : ""} for {dateFilter === d(0) ? "tonight" : dateFilter}
       </div>
 
-      <div className="mt-8 rounded-lg bg-slate-50 border border-[var(--cs-border)] p-4">
+      <div className="mt-8 rounded-lg bg-slate-50 border border-slate-200 p-4">
         <div className="flex items-start gap-3">
           <Moon className="h-5 w-5 text-indigo-500 mt-0.5 flex-shrink-0" />
           <div>
-            <h4 className="text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">About Night Checks</h4>
-            <p className="text-[11px] text-[var(--cs-text-muted)] leading-relaxed">
+            <h4 className="text-xs font-semibold text-slate-700 mb-1">About Night Checks</h4>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
               Night checks are a regulatory requirement under the Children&apos;s Homes Regulations 2015
               (Reg 12 — Protection of Children). Staff must monitor the welfare of young people during
               overnight hours, recording sleep observations, any concerns, and follow-up actions.
@@ -280,38 +300,50 @@ export default function NightChecksPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle className="flex items-center gap-2 text-base"><Moon className="h-4 w-4 text-indigo-600" /> Record Night Check</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3 py-2">
+          <form onSubmit={handleSaveCheck} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Young Person</label>
-                <Select defaultValue="yp_alex"><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yp_alex">{getYPName("yp_alex")}</SelectItem><SelectItem value="yp_casey">{getYPName("yp_casey")}</SelectItem><SelectItem value="yp_jordan">{getYPName("yp_jordan")}</SelectItem></SelectContent></Select>
+                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Young Person *</label>
+                <Select value={ncForm.child_id} onValueChange={(v) => setNC("child_id", v)}><SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent></Select>
               </div>
               <div>
-                <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Check Type</label>
-                <Select defaultValue="scheduled"><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(NIGHT_CHECK_TYPE_LABEL) as NightCheckType[]).map((t) => <SelectItem key={t} value={t}>{NIGHT_CHECK_TYPE_LABEL[t]}</SelectItem>)}</SelectContent></Select>
+                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Check Type</label>
+                <Select value={ncForm.check_type} onValueChange={(v) => setNC("check_type", v)}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(NIGHT_CHECK_TYPE_LABEL) as NightCheckType[]).map((t) => <SelectItem key={t} value={t}>{NIGHT_CHECK_TYPE_LABEL[t]}</SelectItem>)}</SelectContent></Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Sleep Status</label>
-                <Select defaultValue="sleeping"><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(SLEEP_STATUS_CONFIG) as NightCheckSleepStatus[]).map((s) => <SelectItem key={s} value={s}>{SLEEP_STATUS_CONFIG[s].label}</SelectItem>)}</SelectContent></Select>
+                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Sleep Status</label>
+                <Select value={ncForm.sleep_status} onValueChange={(v) => setNC("sleep_status", v)}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(SLEEP_STATUS_CONFIG) as NightCheckSleepStatus[]).map((s) => <SelectItem key={s} value={s}>{SLEEP_STATUS_CONFIG[s].label}</SelectItem>)}</SelectContent></Select>
               </div>
               <div>
-                <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Door Position</label>
-                <Select defaultValue="ajar"><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="ajar">Ajar</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent></Select>
+                <label className="text-[11px] font-medium text-slate-600 mb-1 block">Door Position</label>
+                <Select value={ncForm.door_position} onValueChange={(v) => setNC("door_position", v)}><SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="open">Open</SelectItem><SelectItem value="ajar">Ajar</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent></Select>
               </div>
             </div>
             <div>
-              <label className="text-[11px] font-medium text-[var(--cs-text-secondary)] mb-1 block">Notes</label>
-              <Textarea placeholder="Observations during this check…" className="text-xs min-h-[60px]" />
+              <label className="text-[11px] font-medium text-slate-600 mb-1 block">Notes</label>
+              <Textarea placeholder="Observations during this check…" className="text-xs min-h-[60px]" value={ncForm.notes} onChange={(e) => setNC("notes", e.target.value)} />
             </div>
             <DialogFooter>
-              <Button variant="outline" size="sm" className="text-xs" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button size="sm" className="text-xs" type="submit">Record Check</Button>
+              <Button variant="outline" size="sm" className="text-xs" type="button" onClick={() => setShowNew(false)}>Cancel</Button>
+              <Button size="sm" className="text-xs" type="submit" disabled={createNightCheck.isPending}>{createNightCheck.isPending ? "Saving…" : "Record Check"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Sleep"
+        category="sleep"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Night Checks — welfare checks, sleep observation records, night-time routines, safe sleeping, presence monitoring, waking night staff, Reg 31 evidence, young person welfare"
+        recordType="daily_log"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

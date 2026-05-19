@@ -7,10 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaPendingBanner } from "@/components/aria/aria-pending-banner";
-import { AriaQuickStats } from "@/components/aria/aria-quick-stats";
-import { AriaWeeklyDigest } from "@/components/aria/aria-weekly-digest";
-import { AriaStaffWellbeing } from "@/components/aria/aria-staff-wellbeing";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -101,9 +98,9 @@ function ShiftTypePill({ type }: { type: string }) {
     late: { label: "Late Shift", color: "bg-amber-100 text-amber-700" },
     night: { label: "Night Shift", color: "bg-indigo-100 text-indigo-700" },
     sleep_in: { label: "Sleep In", color: "bg-purple-100 text-purple-700" },
-    waking_night: { label: "Waking Night", color: "bg-slate-100 text-[var(--cs-text-secondary)]" },
+    waking_night: { label: "Waking Night", color: "bg-slate-100 text-slate-700" },
   };
-  const cfg = map[type] ?? { label: type, color: "bg-slate-100 text-[var(--cs-text-secondary)]" };
+  const cfg = map[type] ?? { label: type, color: "bg-slate-100 text-slate-600" };
   return (
     <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium", cfg.color)}>
       {cfg.label}
@@ -131,12 +128,12 @@ function QuickAction({
   color: string; badge?: number;
 }) {
   return (
-    <Link href={href} className="group flex flex-col items-center gap-2 rounded-2xl border border-[var(--cs-border)] bg-white p-4 hover:border-slate-300 hover:shadow-sm transition-all">
+    <Link href={href} className="group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 hover:border-slate-300 hover:shadow-sm transition-all">
       <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl text-white", color)}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="flex flex-col items-center gap-0.5">
-        <span className="text-xs font-medium text-[var(--cs-text-secondary)] text-center leading-tight">{label}</span>
+        <span className="text-xs font-medium text-slate-700 text-center leading-tight">{label}</span>
         {badge && badge > 0 ? (
           <span className="rounded-full bg-red-100 px-1.5 text-[10px] font-semibold text-red-700">{badge} due</span>
         ) : null}
@@ -152,12 +149,12 @@ function SectionHeader({ icon: Icon, title, count, countColor }: {
 }) {
   return (
     <div className="flex items-center gap-2 mb-3">
-      <Icon className="h-4 w-4 text-[var(--cs-text-muted)]" />
-      <h3 className="text-sm font-semibold text-[var(--cs-navy)]">{title}</h3>
+      <Icon className="h-4 w-4 text-slate-500" />
+      <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
       {count !== undefined && count > 0 && (
         <span className={cn(
           "ml-auto rounded-full px-2 py-0.5 text-[11px] font-bold",
-          countColor ?? "bg-slate-100 text-[var(--cs-text-secondary)]"
+          countColor ?? "bg-slate-100 text-slate-600"
         )}>
           {count}
         </span>
@@ -170,9 +167,9 @@ function SectionHeader({ icon: Icon, title, count, countColor }: {
 
 function EmptyState({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-xl border border-dashed border-[var(--cs-border)] px-4 py-3.5">
-      <Icon className="h-4 w-4 text-[var(--cs-text-gentle)]" />
-      <span className="text-sm text-[var(--cs-text-muted)]">{text}</span>
+    <div className="flex items-center gap-2.5 rounded-xl border border-dashed border-slate-200 px-4 py-3.5">
+      <Icon className="h-4 w-4 text-slate-300" />
+      <span className="text-sm text-slate-400">{text}</span>
     </div>
   );
 }
@@ -195,12 +192,12 @@ function NotificationsList({ notifications }: {
     <div className="space-y-2">
       {notifications.slice(0, 4).map((n) => (
         <div key={n.id} className={cn(
-          "rounded-xl border-l-[3px] px-3 py-2.5 border border-[var(--cs-border-subtle)]",
+          "rounded-xl border-l-[3px] px-3 py-2.5 border border-slate-100",
           priorityColor[n.priority] ?? priorityColor.normal
         )}>
-          <div className="text-xs font-semibold text-[var(--cs-navy)]">{n.title}</div>
-          <div className="mt-0.5 text-[11px] text-[var(--cs-text-muted)] leading-relaxed">{n.body}</div>
-          <div className="mt-1 text-[10px] text-[var(--cs-text-muted)]">{formatRelative(n.created_at)}</div>
+          <div className="text-xs font-semibold text-slate-800">{n.title}</div>
+          <div className="mt-0.5 text-[11px] text-slate-500 leading-relaxed">{n.body}</div>
+          <div className="mt-1 text-[10px] text-slate-400">{formatRelative(n.created_at)}</div>
         </div>
       ))}
     </div>
@@ -222,13 +219,13 @@ function HandoverSection({ handover, yp }: {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5">
-        <ArrowRightLeft className="h-4 w-4 text-[var(--cs-text-muted)]" />
+      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+        <ArrowRightLeft className="h-4 w-4 text-slate-400" />
         <div className="flex-1 min-w-0">
-          <div className="text-xs font-medium text-[var(--cs-text-secondary)]">
+          <div className="text-xs font-medium text-slate-700">
             {handover.latest.shift_type.replace("_", " ")} handover — {handover.latest.date}
           </div>
-          <div className="text-[11px] text-[var(--cs-text-muted)]">
+          <div className="text-[11px] text-slate-400">
             Written by {staffName(handover.latest.written_by)}
           </div>
         </div>
@@ -251,10 +248,10 @@ function HandoverSection({ handover, yp }: {
       {handover.child_updates.length > 0 && (
         <div className="space-y-2">
           {handover.child_updates.map((upd, i) => (
-            <div key={i} className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5">
+            <div key={i} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5">
               <div className="flex items-center gap-2 mb-1.5">
                 <Heart className="h-3.5 w-3.5 text-rose-400" />
-                <span className="text-xs font-semibold text-[var(--cs-text-secondary)]">{ypName(upd.child_id)}</span>
+                <span className="text-xs font-semibold text-slate-700">{ypName(upd.child_id)}</span>
                 {upd.mood_score !== null && (
                   <span className={cn(
                     "ml-auto rounded-full px-2 py-0.5 text-[10px] font-semibold",
@@ -266,7 +263,7 @@ function HandoverSection({ handover, yp }: {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{upd.key_notes}</p>
+              <p className="text-xs text-slate-600 leading-relaxed">{upd.key_notes}</p>
               {upd.alerts.length > 0 && (
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {upd.alerts.map((a, ai) => (
@@ -303,7 +300,7 @@ function HandoverSection({ handover, yp }: {
 function TaskRow({ task, onComplete }: { task: Task; onComplete: (id: string) => void }) {
   const overdue = task.due_date && isOverdue(task.due_date, task.status);
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-[var(--cs-border)] bg-white px-3 py-3 hover:border-slate-300 transition-colors group">
+    <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 hover:border-slate-300 transition-colors group">
       <button
         onClick={() => onComplete(task.id)}
         className="mt-0.5 h-4 w-4 rounded border-2 border-slate-300 hover:border-emerald-500 hover:bg-emerald-50 transition-colors shrink-0 group-hover:border-emerald-400"
@@ -314,24 +311,24 @@ function TaskRow({ task, onComplete }: { task: Task; onComplete: (id: string) =>
           <PriorityDot priority={task.priority} />
           <span className={cn(
             "text-sm font-medium leading-snug",
-            overdue ? "text-red-700" : "text-[var(--cs-navy)]"
+            overdue ? "text-red-700" : "text-slate-800"
           )}>
             {task.title}
           </span>
         </div>
         {task.description && (
-          <p className="mt-0.5 text-xs text-[var(--cs-text-muted)] line-clamp-1">{task.description}</p>
+          <p className="mt-0.5 text-xs text-slate-500 line-clamp-1">{task.description}</p>
         )}
         <div className="mt-1 flex items-center gap-2">
           {task.due_date && (
             <span className={cn(
               "text-[11px] font-medium",
-              overdue ? "text-red-600" : "text-[var(--cs-text-muted)]"
+              overdue ? "text-red-600" : "text-slate-400"
             )}>
               {overdue ? "OVERDUE — " : "Due "}{task.due_date}
             </span>
           )}
-          <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] text-[var(--cs-text-muted)] capitalize">
+          <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500 capitalize">
             {task.category.replace(/_/g, " ")}
           </span>
         </div>
@@ -385,6 +382,7 @@ export default function StaffDashboardPage() {
     <PageShell
       title="My Dashboard"
       subtitle={`${getGreeting()}, ${d.staff.full_name.split(" ")[0]} — ${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}`}
+      ariaContext={{ pageTitle: "My Dashboard", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           {d.summary.notifications_unread > 0 && (
@@ -409,6 +407,7 @@ export default function StaffDashboardPage() {
             <Sparkles className="mr-1.5 h-4 w-4" />
             Aria
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -416,17 +415,17 @@ export default function StaffDashboardPage() {
 
         {/* ── Shift Banner ──────────────────────────────────────────────────── */}
         {d.shift.today ? (
-          <div className="rounded-2xl border border-[var(--cs-border)] bg-gradient-to-r from-slate-900 to-slate-700 p-5 text-white">
+          <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-700 p-5 text-white">
             <div className="flex items-start justify-between flex-wrap gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <ShiftTypePill type={d.shift.today.shift_type} />
-                  <span className="text-[var(--cs-text-gentle)] text-sm">
+                  <span className="text-slate-300 text-sm">
                     {d.shift.today.start_time} — {d.shift.today.end_time}
                   </span>
                 </div>
                 <h2 className="text-lg font-bold">You&apos;re on shift at Oak House</h2>
-                <p className="mt-0.5 text-sm text-[var(--cs-text-gentle)]">
+                <p className="mt-0.5 text-sm text-slate-300">
                   {d.shift.on_shift_count} staff on shift today
                   {d.shift.co_workers.length > 0
                     ? ` — with ${d.shift.co_workers.slice(0, 2).map((c) => c.staff?.full_name.split(" ")[0]).join(", ")}`
@@ -437,7 +436,7 @@ export default function StaffDashboardPage() {
                 <div className="text-3xl font-bold tabular-nums">
                   {Math.round(progress)}%
                 </div>
-                <div className="text-xs text-[var(--cs-text-muted)]">Shift complete</div>
+                <div className="text-xs text-slate-400">Shift complete</div>
               </div>
             </div>
             {/* Progress bar */}
@@ -456,7 +455,7 @@ export default function StaffDashboardPage() {
                       {cw.staff?.full_name.charAt(0) ?? "?"}
                     </div>
                     <span className="text-xs text-slate-200">{cw.staff?.full_name.split(" ")[0] ?? "Staff"}</span>
-                    <span className="text-[10px] text-[var(--cs-text-muted)]">{cw.shift.start_time}–{cw.shift.end_time}</span>
+                    <span className="text-[10px] text-slate-400">{cw.shift.start_time}–{cw.shift.end_time}</span>
                   </div>
                 ))}
               </div>
@@ -464,8 +463,8 @@ export default function StaffDashboardPage() {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-center">
-            <Clock className="h-6 w-6 text-[var(--cs-text-gentle)] mx-auto mb-1" />
-            <p className="text-sm text-[var(--cs-text-muted)]">No shift scheduled for you today</p>
+            <Clock className="h-6 w-6 text-slate-300 mx-auto mb-1" />
+            <p className="text-sm text-slate-500">No shift scheduled for you today</p>
             {d.shift.open_shifts.length > 0 && (
               <Link href="/rota" className="mt-2 inline-block text-xs font-medium text-blue-600 hover:underline">
                 {d.shift.open_shifts.length} open shift(s) available
@@ -495,7 +494,7 @@ export default function StaffDashboardPage() {
               label: "Tasks Due",
               value: d.tasks.due_today.length + d.tasks.overdue.length,
               icon: CheckCircle2,
-              color: d.tasks.overdue.length > 0 ? "text-red-600" : "text-[var(--cs-text-secondary)]",
+              color: d.tasks.overdue.length > 0 ? "text-red-600" : "text-slate-700",
               bg: d.tasks.overdue.length > 0 ? "bg-red-50" : "bg-slate-50",
               sub: d.tasks.overdue.length > 0 ? `${d.tasks.overdue.length} overdue` : "All on track",
             },
@@ -503,7 +502,7 @@ export default function StaffDashboardPage() {
               label: "Recordings Due",
               value: d.recordings_due.total_outstanding,
               icon: BookOpen,
-              color: d.recordings_due.total_outstanding > 0 ? "text-amber-600" : "text-[var(--cs-text-secondary)]",
+              color: d.recordings_due.total_outstanding > 0 ? "text-amber-600" : "text-slate-700",
               bg: d.recordings_due.total_outstanding > 0 ? "bg-amber-50" : "bg-slate-50",
               sub: `${d.recordings_due.daily_logs_needed.length} logs · ${d.recordings_due.medication_schedule.length} meds`,
             },
@@ -511,7 +510,7 @@ export default function StaffDashboardPage() {
               label: "Checks Due",
               value: d.home_checks.total_due + d.vehicles.needing_daily_check.length,
               icon: Clipboard,
-              color: d.home_checks.overdue.length > 0 ? "text-orange-600" : "text-[var(--cs-text-secondary)]",
+              color: d.home_checks.overdue.length > 0 ? "text-orange-600" : "text-slate-700",
               bg: d.home_checks.overdue.length > 0 ? "bg-orange-50" : "bg-slate-50",
               sub: `${d.home_checks.total_due} home · ${d.vehicles.needing_daily_check.length} vehicles`,
             },
@@ -519,32 +518,27 @@ export default function StaffDashboardPage() {
               label: "Notifications",
               value: d.notifications.length,
               icon: Bell,
-              color: d.notifications.filter((n) => n.priority === "urgent").length > 0 ? "text-red-600" : "text-[var(--cs-text-secondary)]",
+              color: d.notifications.filter((n) => n.priority === "urgent").length > 0 ? "text-red-600" : "text-slate-700",
               bg: d.notifications.filter((n) => n.priority === "urgent").length > 0 ? "bg-red-50" : "bg-slate-50",
               sub: d.notifications.filter((n) => n.priority === "urgent").length > 0
                 ? `${d.notifications.filter((n) => n.priority === "urgent").length} urgent`
                 : "No urgent alerts",
             },
           ].map((s) => (
-            <div key={s.label} className={cn("rounded-2xl border border-[var(--cs-border)] p-4", s.bg)}>
+            <div key={s.label} className={cn("rounded-2xl border border-slate-200 p-4", s.bg)}>
               <div className="flex items-center gap-2 mb-1">
                 <s.icon className={cn("h-4 w-4", s.color)} />
-                <span className="text-xs text-[var(--cs-text-muted)]">{s.label}</span>
+                <span className="text-xs text-slate-500">{s.label}</span>
               </div>
               <div className={cn("text-2xl font-bold tabular-nums", s.color)}>{s.value}</div>
-              <div className="mt-0.5 text-[11px] text-[var(--cs-text-muted)]">{s.sub}</div>
+              <div className="mt-0.5 text-[11px] text-slate-400">{s.sub}</div>
             </div>
           ))}
         </div>
 
-        {/* ── ARIA Quick Stats ──────────────────────────────────────────────── */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--cs-text-muted)]">Quick Actions</h3>
-          <AriaQuickStats />
-        </div>
-
         {/* ── Quick Actions ─────────────────────────────────────────────────── */}
         <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Quick Actions</h3>
           <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
             <QuickAction icon={BookOpen} label="New Daily Log" href="/daily-log" color="bg-blue-600" />
             <QuickAction icon={Pill} label="Record Meds" href="/medication" color="bg-purple-600"
@@ -558,21 +552,6 @@ export default function StaffDashboardPage() {
               badge={d.vehicles.needing_daily_check.length} />
             <QuickAction icon={Shield} label="Safeguarding" href="/safeguarding" color="bg-rose-600" />
           </div>
-        </div>
-
-        {/* ── ARIA pending outputs banner ────────────────────────────────── */}
-        <AriaPendingBanner
-          actorUserId={d.staff.id}
-          actorRole={d.staff.role}
-          className="mt-1"
-        />
-
-        {/* ── ARIA Weekly Digest ────────────────────────────────────────── */}
-        <AriaWeeklyDigest homeId="demo-home" userId={d.staff.id} className="mt-4" />
-
-        {/* ── ARIA Staff Wellbeing ──────────────────────────────────────── */}
-        <div className="mt-4">
-          <AriaStaffWellbeing />
         </div>
 
         {/* ── Main Grid ─────────────────────────────────────────────────────── */}
@@ -591,7 +570,7 @@ export default function StaffDashboardPage() {
                       countColor={d.tasks.overdue.length > 0 ? "bg-red-100 text-red-700" : undefined}
                     />
                   </CardTitle>
-                  <Link href="/tasks" className="text-xs text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] flex items-center gap-1">
+                  <Link href="/tasks" className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
                     View all <ChevronRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -613,7 +592,7 @@ export default function StaffDashboardPage() {
                       <TaskRow key={task.id} task={task} onComplete={(id) => completeTask.mutate(id)} />
                     ))}
                     {d.tasks.my_tasks.length > 6 && (
-                      <Link href="/tasks" className="block text-center text-xs text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] py-2">
+                      <Link href="/tasks" className="block text-center text-xs text-slate-400 hover:text-slate-600 py-2">
                         +{d.tasks.my_tasks.length - 6} more tasks
                       </Link>
                     )}
@@ -631,7 +610,7 @@ export default function StaffDashboardPage() {
                       count={d.handover.flags.length}
                     />
                   </CardTitle>
-                  <Link href="/handover" className="text-xs text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] flex items-center gap-1">
+                  <Link href="/handover" className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
                     Full handover <ChevronRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -654,7 +633,7 @@ export default function StaffDashboardPage() {
               <CardContent className="space-y-4">
                 {/* Daily Logs */}
                 <div>
-                  <div className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-2">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
                     Daily Log
                   </div>
                   {d.recordings_due.daily_logs_needed.length === 0 ? (
@@ -683,7 +662,7 @@ export default function StaffDashboardPage() {
 
                 {/* Medication schedule */}
                 <div>
-                  <div className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-2">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
                     Medication Rounds
                   </div>
                   {d.recordings_due.medication_schedule.length === 0 ? (
@@ -723,16 +702,16 @@ export default function StaffDashboardPage() {
                 <CardContent>
                   <div className="space-y-2">
                     {d.appointments.map((apt) => (
-                      <div key={apt.id} className="flex items-start gap-3 rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5">
-                        <CalendarDays className="h-4 w-4 text-[var(--cs-text-muted)] mt-0.5 shrink-0" />
+                      <div key={apt.id} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5">
+                        <CalendarDays className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium text-[var(--cs-navy)]">{apt.title}</div>
+                          <div className="text-xs font-medium text-slate-800">{apt.title}</div>
                           {apt.due_date && (
-                            <div className="mt-0.5 text-[11px] text-[var(--cs-text-muted)]">{apt.due_date}</div>
+                            <div className="mt-0.5 text-[11px] text-slate-400">{apt.due_date}</div>
                           )}
                         </div>
                         {apt.linked_child_id && (
-                          <span className="text-[11px] text-[var(--cs-text-muted)] shrink-0">{ypName(apt.linked_child_id)}</span>
+                          <span className="text-[11px] text-slate-500 shrink-0">{ypName(apt.linked_child_id)}</span>
                         )}
                       </div>
                     ))}
@@ -774,7 +753,7 @@ export default function StaffDashboardPage() {
                       countColor={d.home_checks.overdue.length > 0 ? "bg-orange-100 text-orange-700" : undefined}
                     />
                   </CardTitle>
-                  <Link href="/buildings" className="text-xs text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] flex items-center gap-1">
+                  <Link href="/buildings" className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
                     View <ChevronRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -791,17 +770,17 @@ export default function StaffDashboardPage() {
                           "flex items-start gap-2.5 rounded-xl border px-3 py-2.5",
                           check.status === "overdue"
                             ? "border-orange-200 bg-orange-50"
-                            : "border-[var(--cs-border)] bg-white"
+                            : "border-slate-200 bg-white"
                         )}>
                           <Building2 className={cn(
                             "h-4 w-4 mt-0.5 shrink-0",
-                            check.status === "overdue" ? "text-orange-500" : "text-[var(--cs-text-muted)]"
+                            check.status === "overdue" ? "text-orange-500" : "text-slate-400"
                           )} />
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs font-medium text-[var(--cs-navy)] capitalize">
+                            <div className="text-xs font-medium text-slate-800 capitalize">
                               {check.check_type.replace(/_/g, " ")}
                             </div>
-                            <div className="text-[11px] text-[var(--cs-text-muted)]">
+                            <div className="text-[11px] text-slate-400">
                               {building?.name ?? "Building"} — Due {check.due_date}
                             </div>
                           </div>
@@ -812,7 +791,7 @@ export default function StaffDashboardPage() {
                       );
                     })}
                     {d.home_checks.due.length > 4 && (
-                      <Link href="/buildings" className="block text-center text-xs text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] py-1">
+                      <Link href="/buildings" className="block text-center text-xs text-slate-400 hover:text-slate-600 py-1">
                         +{d.home_checks.due.length - 4} more
                       </Link>
                     )}
@@ -831,7 +810,7 @@ export default function StaffDashboardPage() {
                       countColor={d.vehicles.needing_daily_check.length > 0 ? "bg-amber-100 text-amber-700" : undefined}
                     />
                   </CardTitle>
-                  <Link href="/vehicles" className="text-xs text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] flex items-center gap-1">
+                  <Link href="/vehicles" className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
                     View <ChevronRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -851,17 +830,17 @@ export default function StaffDashboardPage() {
                             ? "border-red-200 bg-red-50"
                             : needsCheck
                               ? "border-amber-200 bg-amber-50"
-                              : "border-[var(--cs-border)] bg-white"
+                              : "border-slate-200 bg-white"
                         )}>
                           <Car className={cn(
                             "h-4 w-4 shrink-0",
-                            hasDefect ? "text-red-500" : needsCheck ? "text-amber-500" : "text-[var(--cs-text-muted)]"
+                            hasDefect ? "text-red-500" : needsCheck ? "text-amber-500" : "text-slate-400"
                           )} />
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs font-medium text-[var(--cs-navy)]">
+                            <div className="text-xs font-medium text-slate-800">
                               {v.make} {v.model}
                             </div>
-                            <div className="text-[11px] text-[var(--cs-text-muted)]">{v.registration}</div>
+                            <div className="text-[11px] text-slate-400">{v.registration}</div>
                           </div>
                           {hasDefect ? (
                             <Badge variant="destructive" className="text-[10px]">Defect</Badge>
@@ -889,7 +868,7 @@ export default function StaffDashboardPage() {
                   <CardTitle className="text-sm">
                     <SectionHeader icon={Heart} title="My Young People" count={d.young_people.my_yp.length} />
                   </CardTitle>
-                  <Link href="/young-people" className="text-xs text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] flex items-center gap-1">
+                  <Link href="/young-people" className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
                     All <ChevronRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -903,14 +882,14 @@ export default function StaffDashboardPage() {
                       <Link
                         key={yp.id}
                         href="/young-people"
-                        className="flex items-center gap-3 rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 hover:border-slate-300 transition-colors"
+                        className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 hover:border-slate-300 transition-colors"
                       >
-                        <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-[var(--cs-text-secondary)] shrink-0">
+                        <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
                           {(yp.preferred_name ?? yp.first_name).charAt(0)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium text-[var(--cs-navy)]">{yp.preferred_name}</div>
-                          <div className="text-[11px] text-[var(--cs-text-muted)]">{yp.legal_status}</div>
+                          <div className="text-xs font-medium text-slate-800">{yp.preferred_name}</div>
+                          <div className="text-[11px] text-slate-400">{yp.legal_status}</div>
                         </div>
                         {yp.risk_flags.length > 0 && (
                           <div title={yp.risk_flags.join(", ")}>
@@ -935,7 +914,7 @@ export default function StaffDashboardPage() {
                         countColor="bg-red-100 text-red-700"
                       />
                     </CardTitle>
-                    <Link href="/incidents" className="text-xs text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] flex items-center gap-1">
+                    <Link href="/incidents" className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1">
                       View <ChevronRight className="h-3 w-3" />
                     </Link>
                   </div>
@@ -947,15 +926,15 @@ export default function StaffDashboardPage() {
                         "flex items-start gap-2.5 rounded-xl border px-3 py-2.5",
                         inc.severity === "critical" || inc.severity === "serious"
                           ? "border-red-200 bg-red-50"
-                          : "border-[var(--cs-border)] bg-white"
+                          : "border-slate-200 bg-white"
                       )}>
                         <AlertTriangle className={cn(
                           "h-3.5 w-3.5 mt-0.5 shrink-0",
                           inc.severity === "critical" ? "text-red-600" : "text-amber-500"
                         )} />
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium text-[var(--cs-navy)] line-clamp-1">{inc.title}</div>
-                          <div className="text-[11px] text-[var(--cs-text-muted)]">
+                          <div className="text-xs font-medium text-slate-800 line-clamp-1">{inc.title}</div>
+                          <div className="text-[11px] text-slate-400">
                             {inc.reference} · {ypName(inc.child_id)}
                           </div>
                         </div>
@@ -977,7 +956,7 @@ export default function StaffDashboardPage() {
         {/* ── Aria Panel ────────────────────────────────────────────────────── */}
         {showAria && (
           <AriaPanel
-            pageContext="staff_dashboard"
+            pageContext="Staff Dashboard — personal task list, due recordings, shift handovers, training compliance, supervision schedule, welfare check duties, daily activity log"
             sourceContent={`Staff dashboard for ${d.staff.full_name} — ${d.tasks.total_active} active tasks, ${d.recordings_due.total_outstanding} recordings outstanding`}
             userRole={d.staff.role}
           />

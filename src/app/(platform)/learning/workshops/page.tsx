@@ -6,6 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -316,11 +318,13 @@ export default function WorkshopPlannerPage() {
     <PageShell
       title="Workshop Planner"
       subtitle="Plan structured learning workshops with ARIA"
+      ariaContext={{ pageTitle: "Learning Workshops", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Workshop Planner" subtitle="Oak House — Learning Workshops" targetId="workshops-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Workshop Planner upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -413,6 +417,12 @@ export default function WorkshopPlannerPage() {
           )}
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Learning Workshops — staff training workshops, group learning sessions, therapeutic skills workshops, safeguarding training days, practice development events, CPD evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

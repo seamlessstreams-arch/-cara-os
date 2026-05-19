@@ -14,7 +14,7 @@ import {
   Target, AlertTriangle, Lightbulb, FileText,
   BookOpen, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,9 @@ import { getStaffName } from "@/lib/seed-data";
 import { useSelfEvaluationAreas } from "@/hooks/use-self-evaluation-areas";
 import type { SelfEvaluationArea, SelfEvaluationGrade } from "@/types/extended";
 import { SELF_EVALUATION_GRADE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 const d = (n: number) => {
@@ -120,10 +123,12 @@ export default function OfstedSelfEvaluationPage() {
     <PageShell
       title="Ofsted Self-Evaluation"
       subtitle="Self-assessment against the Social Care Common Inspection Framework (SCCIF) judgement areas"
+      ariaContext={{ pageTitle: "Ofsted Self-Evaluation", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Ofsted Self-Evaluation" />
           <ExportButton data={filtered} columns={exportCols} filename="ofsted-self-evaluation" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -405,6 +410,18 @@ export default function OfstedSelfEvaluationPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Compliance Evidence"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Ofsted Self-Evaluation — SEF, quality of care judgements, leadership and management, outstanding practice, areas for development, evidence gathering, ILACS framework, Reg 45"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

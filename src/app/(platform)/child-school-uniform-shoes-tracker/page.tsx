@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -33,6 +33,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<UniformRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -126,10 +129,12 @@ export default function ChildSchoolUniformShoesTrackerPage() {
     <PageShell
       title="School Uniform & Shoes Tracker"
       subtitle="Per-child school clothing — uniform, PE kit, shoes, trainers, outerwear. Sensory considerations, child-chosen styles, growth tracking, sustainable funding (Pupil Premium Plus, Virtual School grant, leaving care fund, school uniform exchange)."
+      ariaContext={{ pageTitle: "School Uniform & Shoes Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-school-uniform-shoes-tracker" />
           <PrintButton title="School Uniform & Shoes Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -301,6 +306,18 @@ export default function ChildSchoolUniformShoesTrackerPage() {
           considered alongside dignity. UNCRC Articles 12 (voice) + 28 (education).
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Education"
+        category="education"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="School Uniform & Shoes Tracker — LAC clothing allowance for school, uniform purchases, shoe sizes, seasonal replacements, PE kit, budget spent, school readiness"
+        recordType="education"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

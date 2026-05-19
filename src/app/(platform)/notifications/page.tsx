@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import Link from "next/link";
+import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +14,14 @@ import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useAlertNotifications } from "@/hooks/use-alert-notifications";
+import { useNotifications, useMarkNotificationRead } from "@/hooks/use-notifications";
+import { useAuthContext } from "@/contexts/auth-context";
 import type {
   AlertNotification,
   AlertNotificationType,
   AlertSeverity,
   AlertStatus,
+  Notification,
 } from "@/types/extended";
 import {
   ALERT_NOTIFICATION_TYPE_LABEL,
@@ -27,8 +31,12 @@ import {
   Search, ArrowUpDown, X, Bell, BellRing,
   CheckCircle2, AlertTriangle, Clock, Calendar,
   Shield, FileText, User, Pill, Flame,
-  GraduationCap, Heart, Eye, Loader2,
+  GraduationCap, Heart, Eye, Loader2, Zap,
+  ExternalLink,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +65,19 @@ const SEVERITY_CONFIG: Record<AlertSeverity, { label: string; colour: string }> 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function NotificationsPage() {
+  const { currentUser } = useAuthContext();
   const { data: records = [], isLoading } = useAlertNotifications();
+  const { data: careEventNotifs = [] } = useNotifications({ recipientId: currentUser?.id });
+  const markRead = useMarkNotificationRead();
+
+  const PRIORITY_COLOUR: Record<Notification["priority"], string> = {
+    urgent: "bg-red-100 text-red-700 border-red-200",
+    high:   "bg-orange-100 text-orange-700 border-orange-200",
+    normal: "bg-blue-100 text-blue-700 border-blue-200",
+    low:    "bg-slate-100 text-slate-600 border-slate-200",
+  };
+
+  const unreadCareEventNotifs = careEventNotifs.filter((n) => !n.read);
 
   const [localStatuses, setLocalStatuses] = useState<Record<string, AlertStatus>>({});
   const [search, setSearch] = useState("");
@@ -136,10 +156,12 @@ export default function NotificationsPage() {
     <PageShell
       title="Notifications & Alerts"
       subtitle="System alerts, deadlines, and action items"
+      ariaContext={{ pageTitle: "Notifications", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Notifications" />
           <ExportButton data={filtered} columns={exportCols} filename="notifications" />
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -160,6 +182,58 @@ export default function NotificationsPage() {
           </div>
         ))}
       </div>
+
+      {/* ── Care Event Alerts ──────────────────────────────────────────────── */}
+      {unreadCareEventNotifs.length > 0 && (
+        <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 mb-6 space-y-2">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="h-4 w-4 text-indigo-600" />
+            <span className="text-sm font-semibold text-indigo-800">
+              Care Event Alerts ({unreadCareEventNotifs.length} unread)
+            </span>
+          </div>
+          {unreadCareEventNotifs.map((n) => (
+            <div
+              key={n.id}
+              className={cn(
+                "rounded-lg border bg-white p-3 flex items-start justify-between gap-3",
+                n.priority === "urgent" && "border-red-200",
+                n.priority === "high" && "border-orange-200",
+              )}
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  <span className="text-sm font-medium text-slate-900">{n.title}</span>
+                  <Badge variant="outline" className={cn("text-[10px]", PRIORITY_COLOUR[n.priority])}>
+                    {n.priority}
+                  </Badge>
+                </div>
+                <p className="text-xs text-slate-600 mb-1">{n.body}</p>
+                <p className="text-[10px] text-slate-400">{formatDate(n.created_at.slice(0, 10))}</p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                {n.action_url && (
+                  <Link
+                    href={n.action_url}
+                    className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded hover:bg-indigo-100"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    View
+                  </Link>
+                )}
+                <Button
+                  size="sm" variant="ghost" className="h-7 px-2 text-xs"
+                  onClick={() => markRead.mutate(n.id)}
+                  disabled={markRead.isPending}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                  Done
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {stats.critical > 0 && (
         <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 p-3 mb-6 flex items-center gap-3">
@@ -303,6 +377,18 @@ export default function NotificationsPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={14}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Notifications — system alerts, task reminders, review deadlines, incident alerts, management notifications, regulatory deadlines, in-app notifications, action required"
+        recordType="task"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

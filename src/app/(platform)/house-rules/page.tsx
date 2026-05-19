@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,9 @@ import {
 import type { HouseRule, HouseRuleCategory } from "@/types/extended";
 import { HOUSE_RULE_STATUS_LABEL } from "@/types/extended";
 import { useHouseRules } from "@/hooks/use-house-rules";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ─── category meta ─── */
 const categoryConfig: Record<HouseRuleCategory, { label: string; color: string; icon: typeof BookOpen }> = {
@@ -116,10 +119,12 @@ export default function HouseRulesPage() {
     <PageShell
       title="House Rules & Boundaries"
       subtitle="Co-produced expectations — agreed with young people, linked to rights, regularly reviewed"
+      ariaContext={{ pageTitle: "House Rules & Boundaries", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={rules} columns={exportCols} filename="house-rules" />
           <PrintButton title="House Rules & Boundaries" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -330,6 +335,18 @@ export default function HouseRulesPage() {
           proportionality.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Behaviour"
+        category="behaviour"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="House Rules & Boundaries — clear boundaries, expectations, rewards, consequences, behaviour management, children's participation in rule-setting, Reg 45 evidence"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

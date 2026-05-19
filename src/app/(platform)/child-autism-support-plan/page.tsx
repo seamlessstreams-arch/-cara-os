@@ -13,7 +13,7 @@ import {
   Clock,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn, todayStr } from "@/lib/utils";
@@ -29,6 +29,9 @@ import type { AutismPlan, AutismDiagnosisStatus, AutismSensoryPattern } from "@/
 import { AUTISM_DIAGNOSIS_STATUS_LABEL, AUTISM_SENSORY_PATTERN_LABEL } from "@/types/extended";
 import { useAutismPlans } from "@/hooks/use-autism-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -217,10 +220,12 @@ export default function ChildAutismSupportPlanPage() {
     <PageShell
       title="Autism Support Plans"
       subtitle="Per-child, strength-based, neurodiversity-affirming support — monotropism, sensory regulation, masking and unmasking, meltdown vs shutdown protocols"
+      ariaContext={{ pageTitle: "Autism Support Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Autism Support Plans" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="autism-support-plans" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -623,6 +628,18 @@ export default function ChildAutismSupportPlanPage() {
           centring of this plan. Functioning labels are avoided.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Autism Support Plans — ASD diagnosis, sensory needs, communication strategies, meltdown prevention, routine support, social skills, EHCP, occupational therapy, specialist support"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

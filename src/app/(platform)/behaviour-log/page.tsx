@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,9 @@ import {
   ChevronDown, ChevronUp, Shield, Smile, Frown,
   TrendingUp, Zap, Heart, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -188,6 +192,7 @@ export default function BehaviourLogPage() {
     <PageShell
       title="Behaviour Log"
       subtitle="ABC observations — antecedent, behaviour, consequence"
+      ariaContext={{ pageTitle: "Behaviour Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Behaviour Log" subtitle="Oak House — Behaviour Management" />
@@ -195,10 +200,10 @@ export default function BehaviourLogPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Log Behaviour
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
-    >
-      {/* ── Stats ────────────────────────────────────────────────────────────── */}
+    >      <AriaPanel mode="assist" pageContext="Behaviour Log — ABC observations, antecedent-behaviour-consequence, intensity tracking, positive behaviour support" recordType="behaviour_log" userRole="registered_manager" className="mb-2" />      {/* ── Stats ────────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
           { label: "Total Entries", value: stats.total, icon: Activity, c: "text-blue-600" },
@@ -345,6 +350,16 @@ export default function BehaviourLogPage() {
 
               {isOpen && (
                 <div className="border-t px-4 py-3 space-y-3 bg-muted/30">
+                  {(entry as never as { care_event_id?: string }).care_event_id && (
+                    <Link
+                      href={`/care-events/${(entry as never as { care_event_id: string }).care_event_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                    >
+                      <Zap className="h-3 w-3" />
+                      Logged from Care Event
+                    </Link>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div className="rounded-lg border p-2.5">
                       <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">A — Antecedent</p>
@@ -477,6 +492,14 @@ export default function BehaviourLogPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Care Events pipeline — behaviour events routed here */}
+      <CareEventsPanel
+        title="Care Events — Behaviour"
+        category={["behaviour", "physical_intervention", "restraint"]}
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

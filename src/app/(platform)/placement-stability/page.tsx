@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, Calendar, Shield,
   Heart, Target, Clock, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,9 @@ import type { PlacementStabilityRecord, StabilityFactor, PlacementEvent, Stabili
 import { STABILITY_RISK_LEVEL_LABEL } from "@/types/extended";
 import { usePlacementStabilityRecords } from "@/hooks/use-placement-stability-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ──────────────────────────────────────────────────────── */
 const RISK_LEVELS: StabilityRiskLevel[] = ["low", "medium", "high", "critical"];
@@ -97,10 +100,12 @@ export default function PlacementStabilityPage() {
     <PageShell
       title="Placement Stability"
       subtitle="Monitor and support placement stability for every young person"
+      ariaContext={{ pageTitle: "Placement Stability", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Placement Stability" />
           <ExportButton data={filtered} columns={exportCols} filename="placement-stability" />
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -293,6 +298,18 @@ export default function PlacementStabilityPage() {
           skilled relationship-building, and partnership with placing authorities.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Placement Stability"
+        category={["behaviour", "safeguarding", "general"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Placement Stability — stability indicators, breakdown risk, protective factors, stability plan, length of placement, relationship quality, placement timeline, Reg 45 evidence, Annex A"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,14 +10,22 @@ import { Button } from "@/components/ui/button";
 import {
   GraduationCap, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp,
   Calendar, AlertTriangle, CheckCircle2, BookOpen, Target, Star, Clock,
-  ArrowUpDown, Loader2,
+  ArrowUpDown, Loader2, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { usePepRecords } from "@/hooks/use-pep-records";
+import { getStaffName, getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { usePepRecords, useCreatePepRecord } from "@/hooks/use-pep-records";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 import type { PepRecord, PepStatus, PepAttainmentLevel, PepProgress, PepSenStatus, PepActionStatus } from "@/types/extended";
 import { PEP_STATUS_LABEL, PEP_ATTAINMENT_LEVEL_LABEL, PEP_PROGRESS_LABEL, PEP_SEN_STATUS_LABEL, PEP_ACTION_STATUS_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -48,6 +56,20 @@ export default function PepTrackerPage() {
   const { data: res, isLoading } = usePepRecords();
   const peps: PepRecord[] = res?.data ?? [];
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const createPep = useCreatePepRecord();
+  const [pepForm, setPepForm] = useState({ child_id: "", school: "", year_group: "", pep_date: new Date().toISOString().slice(0, 10) });
+  const setPEP = (k: string, v: unknown) => setPepForm((p) => ({ ...p, [k]: v }));
+
+  const handleSavePep = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pepForm.child_id) { toast.error("Please select a young person."); return; }
+    const next = new Date(); next.setMonth(next.getMonth() + 4);
+    await createPep.mutateAsync({ child_id: pepForm.child_id, school: pepForm.school.trim(), year_group: parseInt(pepForm.year_group) || 9, key_stage: "KS4", designated_teacher: "", virtual_school_contact: "", pep_date: pepForm.pep_date, next_review_date: next.toISOString().slice(0, 10), status: "draft" as PepStatus, attendance: 0, exclusions: 0, exclusion_days: 0, sen_status: "none" as PepSenStatus, sen_details: "", targets: [], pupil_premium: { annual_allocation: 2530, spent_to_date: 0, items: [] }, child_views: "", carer_views: "", social_worker_views: "", strengths: [], barriers: [], key_worker: "", actions: [] });
+    toast.success("PEP record created.");
+    setPepForm({ child_id: "", school: "", year_group: "", pep_date: new Date().toISOString().slice(0, 10) });
+    setShowNew(false);
+  };
   const [sortBy, setSortBy] = useState<"date" | "attendance" | "name">("date");
 
   const sorted = useMemo(() => {
@@ -110,10 +132,13 @@ export default function PepTrackerPage() {
     <PageShell
       title="PEP Tracker"
       subtitle="Personal Education Plans · Pupil Premium · Educational Attainment"
+      ariaContext={{ pageTitle: "PEP Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="PEP Tracker" />
           <ExportButton data={exportData} columns={exportCols} filename="pep-tracker" />
+          <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />New PEP</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -385,6 +410,30 @@ export default function PepTrackerPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Education"
+        category="education"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="PEP Tracker — Personal Education Plans, school attendance, attainment, virtual school head, designated teacher, exclusions, PEP reviews, education targets, Annex A evidence"
+        recordType="education"
+        className="mt-6"
+      />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>New PEP Record</DialogTitle></DialogHeader>
+          <form onSubmit={handleSavePep} className="space-y-3 py-2">
+            <div><Label>Young Person *</Label><Select value={pepForm.child_id} onValueChange={(v) => setPEP("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>School</Label><Input className="mt-1" placeholder="School name" value={pepForm.school} onChange={(e) => setPEP("school", e.target.value)} /></div>
+            <div><Label>Year Group</Label><Input className="mt-1" type="number" min={7} max={13} placeholder="9" value={pepForm.year_group} onChange={(e) => setPEP("year_group", e.target.value)} /></div>
+            <div><Label>PEP Date</Label><Input className="mt-1" type="date" value={pepForm.pep_date} onChange={(e) => setPEP("pep_date", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createPep.isPending}>{createPep.isPending ? "Saving…" : "Create PEP"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

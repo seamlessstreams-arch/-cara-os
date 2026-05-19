@@ -6,7 +6,7 @@ import {
   CheckCircle2, XCircle, HelpCircle, Shield, PhoneCall,
   Mail, Search, ArrowUpDown, Timer, Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +26,9 @@ import {
   EMERGENCY_PLACEMENT_URGENCY_LABEL,
 } from "@/types/extended";
 import { useEmergencyReferrals } from "@/hooks/use-emergency-referrals";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Meta maps ───────────────────────────────────────────────────────────────
 const STATUS_META: Record<EmergencyPlacementStatus, { label: string; color: string }> = {
@@ -126,10 +129,12 @@ export default function EmergencyPlacementsPage() {
     <PageShell
       title="Emergency & Out-of-Hours Placements"
       subtitle="Urgent referrals, emergency admissions, and out-of-hours placement requests"
+      ariaContext={{ pageTitle: "Emergency & Out-of-Hours Placements", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency & Out-of-Hours Placements" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="emergency-placements" />
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -313,6 +318,18 @@ export default function EmergencyPlacementsPage() {
           </CardContent>
         </Card>
       </div>
+      <CareEventsPanel
+        title="Care Events — Admissions & Placements"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Emergency & Out-of-Hours Placements — emergency admissions, out-of-hours referrals, placement matching, placement authority, risk assessment, first night protocol, welfare checks"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

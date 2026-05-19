@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,9 @@ import type { ContinencePlan, ContinencePresentation } from "@/types/extended";
 import { CONTINENCE_PRESENTATION_LABEL } from "@/types/extended";
 import { useContinencePlans } from "@/hooks/use-continence-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 export default function ChildContinenceSupportPlanPage() {
   const { data: res, isLoading } = useContinencePlans();
@@ -98,10 +101,12 @@ export default function ChildContinenceSupportPlanPage() {
     <PageShell
       title="Child Continence Support Plan"
       subtitle="Per-child, dignity-led continence support · NICE NG111 · NICE CG99 · ERIC framework · UNCRC Art. 12, 16, 24"
+      ariaContext={{ pageTitle: "Continence Support Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Continence Support Plans" />
           <ExportButton data={data} columns={exportCols} filename="child-continence-support-plan" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -355,6 +360,18 @@ export default function ChildContinenceSupportPlanPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Continence Support Plans — bedwetting, enuresis, encopresis, bowel management, bladder training, dignity, night-time routine, referral, occupational therapy, care plan update"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

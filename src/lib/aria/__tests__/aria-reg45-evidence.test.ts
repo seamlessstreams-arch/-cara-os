@@ -1,89 +1,151 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Tests: AriaReg45Evidence _testing exports
+// ARIA Reg 45 Live Evidence Bank — engine tests
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect } from "vitest";
-import { _testing } from "@/components/aria/aria-reg45-evidence";
+import { describe, it, expect, beforeEach } from "vitest";
+import { db } from "@/lib/db/store";
+import {
+  runReg45EvidenceBuild,
+  loadReg45Evidence,
+} from "@/lib/aria/aria-reg45-evidence";
+import type { AriaReg45EvidenceItem } from "@/types/aria-studio";
 
-const { STATUS_CONFIG, getDemoReg45 } = _testing;
+const HOME_ID = "home_oak";
+const CHILD_ID = "yp_alex";
 
-describe("AriaReg45Evidence", () => {
-  describe("STATUS_CONFIG", () => {
-    it("has all evidence statuses", () => {
-      expect(STATUS_CONFIG.complete).toBeDefined();
-      expect(STATUS_CONFIG.partial).toBeDefined();
-      expect(STATUS_CONFIG.missing).toBeDefined();
-      expect(STATUS_CONFIG.not_applicable).toBeDefined();
-    });
+function todayMinus(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
+}
 
-    it("each status has label, colour, bg, and dot", () => {
-      for (const [, cfg] of Object.entries(STATUS_CONFIG)) {
-        expect(cfg.label).toBeTruthy();
-        expect(cfg.colour).toBeTruthy();
-        expect(cfg.bg).toBeTruthy();
-        expect(cfg.dot).toBeTruthy();
-      }
-    });
+function seedSafeguardingPattern() {
+  return db.ariaSafeguardingPatterns.create({
+    home_id: HOME_ID,
+    child_id: CHILD_ID,
+    pattern_type: "repeat_missing",
+    title: "Reg45 test pattern",
+    description: "Two missing episodes in 14 days.",
+    severity: "high",
+    window_start: todayMinus(20),
+    window_end: todayMinus(0),
+    evidence_refs: [],
+    reflective_prompt: "Reflect on contextual safeguarding.",
+    status: "open",
+    acknowledged_by: null,
+    acknowledged_at: null,
+    resolution_note: null,
+    is_ai_draft: true,
+    detected_at: new Date().toISOString(),
+  });
+}
+
+function seedComplaint() {
+  return db.complaintOutcomeRecords.create({
+    complaint_date: todayMinus(10),
+    complainant: "Parent A",
+    source: "parent_carer",
+    theme: "communication",
+    outcome: "upheld",
+    investigated_by: "u1",
+    date_resolved: todayMinus(3),
+    response_time_days: 7,
+    child_id: CHILD_ID,
+    summary: "Reg45 test complaint summary about communication.",
+    findings: "Improvements needed.",
+    lessons_learned: "Daily call back.",
+    practice_changes: ["call schedule"],
+    complainant_satisfied: true,
+    escalated: false,
+    escalated_to: null,
+    ofsted_notified: false,
+    created_at: new Date().toISOString(),
+  });
+}
+
+function wipe() {
+  for (const item of db.ariaReg45EvidenceItems.findAll(HOME_ID)) {
+    db.ariaReg45EvidenceItems.patch(item.id, { status: "rejected" });
+  }
+  for (const p of db.ariaSafeguardingPatterns.findAll(HOME_ID)) {
+    if (p.title === "Reg45 test pattern") {
+      db.ariaSafeguardingPatterns.patch(p.id, { status: "dismissed" });
+    }
+  }
+}
+
+describe("runReg45EvidenceBuild", () => {
+  beforeEach(() => {
+    wipe();
   });
 
-  describe("getDemoReg45", () => {
-    const data = getDemoReg45();
+  it("returns an empty snapshot for an unknown home", () => {
+    const snap = runReg45EvidenceBuild("home_with_no_evidence_xyz");
+    expect(snap.summary.total).toBe(0);
+    expect(snap.summary.concerns).toBe(0);
+  });
 
-    it("has month label", () => {
-      expect(data.monthLabel).toBeTruthy();
+  it("drafts safeguarding evidence chips from a recent pattern", () => {
+    seedSafeguardingPattern();
+    const snap = runReg45EvidenceBuild(HOME_ID);
+    const safeguarding = snap.themes.safeguarding;
+    expect(safeguarding.length).toBeGreaterThan(0);
+    const chip = safeguarding.find((e) => e.title === "Reg45 test pattern");
+    expect(chip).toBeDefined();
+    expect(chip!.status).toBe("ai_draft");
+    expect(chip!.is_ai_draft).toBe(true);
+    expect(chip!.severity).toBe("high");
+    expect(chip!.sentiment).toBe("concern");
+    expect(chip!.source_table).toBe("aria_safeguarding_patterns");
+  });
+
+  it("drafts a complaints_voice chip from a recent complaint", () => {
+    seedComplaint();
+    const snap = runReg45EvidenceBuild(HOME_ID);
+    const complaints = snap.themes.complaints_voice;
+    expect(complaints.length).toBeGreaterThan(0);
+    const chip = complaints.find((e) => e.source_table === "complaint_outcome_records");
+    expect(chip).toBeDefined();
+    expect(chip!.sentiment).toBe("positive"); // complainant_satisfied=true
+  });
+
+  it("is idempotent: rerunning patches the existing chip rather than creating a duplicate", () => {
+    seedSafeguardingPattern();
+    const a = runReg45EvidenceBuild(HOME_ID);
+    const b = runReg45EvidenceBuild(HOME_ID);
+    const aChips = a.themes.safeguarding.filter(
+      (e) => e.title === "Reg45 test pattern" && e.status === "ai_draft",
+    );
+    const bChips = b.themes.safeguarding.filter(
+      (e) => e.title === "Reg45 test pattern" && e.status === "ai_draft",
+    );
+    expect(aChips).toHaveLength(1);
+    expect(bChips).toHaveLength(1);
+    expect(aChips[0].id).toBe(bChips[0].id);
+  });
+
+  it("preserves manager decisions across reruns", () => {
+    seedSafeguardingPattern();
+    const a = runReg45EvidenceBuild(HOME_ID);
+    const chip = a.themes.safeguarding.find((e) => e.title === "Reg45 test pattern");
+    expect(chip).toBeDefined();
+    db.ariaReg45EvidenceItems.patch(chip!.id, {
+      status: "accepted" as AriaReg45EvidenceItem["status"],
+      decided_by: "u_manager",
+      decided_at: new Date().toISOString(),
     });
 
-    it("has due date and days until due", () => {
-      expect(data.dueDate).toBeTruthy();
-      expect(data.daysUntilDue).toBeGreaterThanOrEqual(0);
-    });
+    const b = runReg45EvidenceBuild(HOME_ID);
+    const after = b.themes.safeguarding.find((e) => e.id === chip!.id);
+    expect(after).toBeDefined();
+    expect(after!.status).toBe("accepted");
+    expect(after!.decided_by).toBe("u_manager");
+  });
 
-    it("has 9 Reg 45 categories", () => {
-      expect(data.categories).toHaveLength(9);
-    });
-
-    it("progress is between 0 and 100", () => {
-      expect(data.overallProgress).toBeGreaterThanOrEqual(0);
-      expect(data.overallProgress).toBeLessThanOrEqual(100);
-    });
-
-    it("completeCategories matches actual complete count", () => {
-      const complete = data.categories.filter((c) => c.status === "complete").length;
-      expect(data.completeCategories).toBe(complete);
-    });
-
-    it("each category has required fields", () => {
-      for (const cat of data.categories) {
-        expect(cat.id).toBeTruthy();
-        expect(cat.label).toBeTruthy();
-        expect(cat.icon).toBeTruthy();
-        expect(cat.regulation).toMatch(/^Reg 45/);
-        expect(cat.description).toBeTruthy();
-        expect(["complete", "partial", "missing", "not_applicable"]).toContain(cat.status);
-        expect(typeof cat.itemCount).toBe("number");
-        expect(typeof cat.requiredCount).toBe("number");
-        expect(Array.isArray(cat.gaps)).toBe(true);
-      }
-    });
-
-    it("categories with gaps have status partial or missing", () => {
-      for (const cat of data.categories) {
-        if (cat.gaps.length > 0) {
-          expect(["partial", "missing"]).toContain(cat.status);
-        }
-      }
-    });
-
-    it("includes safeguarding as first category", () => {
-      expect(data.categories[0].id).toBe("safeguarding");
-      expect(data.categories[0].regulation).toBe("Reg 45(2)(a)");
-    });
-
-    it("covers all 9 Reg 45 subsections (a through i)", () => {
-      const regs = data.categories.map((c) => c.regulation);
-      for (const letter of ["a", "b", "c", "d", "e", "f", "g", "h", "i"]) {
-        expect(regs.some((r) => r.includes(`(${letter})`))).toBe(true);
-      }
-    });
+  it("loadReg45Evidence returns persisted items for the period", () => {
+    seedSafeguardingPattern();
+    runReg45EvidenceBuild(HOME_ID);
+    const loaded = loadReg45Evidence(HOME_ID);
+    expect(loaded.summary.total).toBeGreaterThan(0);
   });
 });

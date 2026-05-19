@@ -8,7 +8,7 @@ import {
   AlertTriangle, CheckCircle2, Smile, Calendar,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,9 @@ import {
   WELLBEING_PULSE_TREND_LABEL,
   WELLBEING_PULSE_DIMENSION_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 const d = (n: number) => {
@@ -163,10 +166,12 @@ export default function WellbeingPulseSurveyPage() {
     <PageShell
       title="Wellbeing Pulse Survey"
       subtitle="Short, frequent check-ins capturing each child's voice — distinct from full assessments"
+      ariaContext={{ pageTitle: "Wellbeing Pulse Survey", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Wellbeing Pulse Survey" />
           <ExportButton data={filtered} columns={exportCols} filename="wellbeing-pulse-survey" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -445,6 +450,18 @@ export default function WellbeingPulseSurveyPage() {
           Reg 44 visitors. Patterns across surveys feed into care plan reviews and key work planning.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Wellbeing Pulse Survey — child wellbeing surveys, staff wellbeing, emotional health tracking, pulse check results, wellbeing trends, Reg 45 children's views evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

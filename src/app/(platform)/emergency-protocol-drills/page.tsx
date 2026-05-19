@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -39,6 +39,9 @@ import {
   DRILL_OUTCOME_LABEL,
 } from "@/types/extended";
 import { useProtocolDrills } from "@/hooks/use-protocol-drills";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -199,6 +202,7 @@ export default function EmergencyProtocolDrillsPage() {
     <PageShell
       title="Emergency Protocol Drills"
       subtitle="Testing emergency responses beyond fire drills — QS25 & Regulation 22"
+      ariaContext={{ pageTitle: "Emergency Protocol Drills", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Protocol Drills" />
@@ -207,6 +211,7 @@ export default function EmergencyProtocolDrillsPage() {
             columns={exportColumns}
             filename="emergency-protocol-drills"
           />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -481,6 +486,18 @@ export default function EmergencyProtocolDrillsPage() {
           maintained and available for inspection.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Safety"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Emergency Protocol Drills — fire drill, lockdown drill, missing from care drill, medical emergency, flood protocol, evacuation, drill records, frequency, Ofsted, Annex A evidence"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

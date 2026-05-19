@@ -33,6 +33,9 @@ import {
   ChevronUp, Shield, TrendingUp, ListChecks, FileText,
   Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -187,6 +190,7 @@ export default function PlacementPlanPage() {
     <PageShell
       title="Placement Plans"
       subtitle="Objectives, targets, and progress tracking"
+      ariaContext={{ pageTitle: "Placement Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Placement Plans" subtitle="Oak House — Care Planning" />
@@ -194,6 +198,7 @@ export default function PlacementPlanPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Objective
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -454,6 +459,18 @@ export default function PlacementPlanPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Care Planning"
+        category={["general", "behaviour", "health"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Placement Plans — placement objectives, care plan goals, placement purpose, anticipated length, stability targets, education plan, health plan, family contact plan, Reg 45 outcomes evidence"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,7 +23,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useParentPartnershipRecords } from "@/hooks/use-parent-partnership-records";
+import { useParentPartnershipRecords, useCreateParentPartnershipRecord } from "@/hooks/use-parent-partnership-records";
+import { toast } from "sonner";
+import { YOUNG_PEOPLE } from "@/lib/seed-data";
 import type {
   ParentPartnershipRecord,
   ParentContactType,
@@ -38,6 +40,9 @@ import {
   PARENT_CONTACT_INITIATOR_LABEL,
 } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -91,6 +96,21 @@ export default function ParentPartnershipPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const createContact = useCreateParentPartnershipRecord();
+  const [ppForm, setPpForm] = useState({ child_id: "", family_member_name: "", relationship_type: "birth_parent" as ParentRelationshipType, contact_type: "phone_call" as ParentContactType, date: new Date().toISOString().slice(0, 10), duration: "", engagement_level: "neutral" as ParentEngagementLevel, initiated_by: "home" as ParentContactInitiator, summary: "", concerns: "", positive_outcomes: "", follow_up_actions: "", notes: "" });
+  const setPP = (k: keyof typeof ppForm, v: string) => setPpForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveContact = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ppForm.child_id) { toast.error("Please select a young person."); return; }
+    if (!ppForm.family_member_name.trim()) { toast.error("Family member name is required."); return; }
+    if (!ppForm.summary.trim()) { toast.error("Summary is required."); return; }
+    await createContact.mutateAsync({ date: ppForm.date, child_id: ppForm.child_id, family_member_name: ppForm.family_member_name.trim(), relationship_type: ppForm.relationship_type, contact_type: ppForm.contact_type, engagement_level: ppForm.engagement_level, initiated_by: ppForm.initiated_by, duration: parseInt(ppForm.duration) || 0, staff_member_id: "staff_darren", summary: ppForm.summary.trim(), concerns: ppForm.concerns.trim(), positive_outcomes: ppForm.positive_outcomes ? ppForm.positive_outcomes.split("\n").map((s) => s.trim()).filter(Boolean) : [], follow_up_actions: ppForm.follow_up_actions ? ppForm.follow_up_actions.split("\n").map((s) => s.trim()).filter(Boolean) : [], sw_informed: false, notes: ppForm.notes.trim(), created_at: new Date().toISOString() });
+    toast.success("Contact logged.");
+    setPpForm({ child_id: "", family_member_name: "", relationship_type: "birth_parent", contact_type: "phone_call", date: new Date().toISOString().slice(0, 10), duration: "", engagement_level: "neutral", initiated_by: "home", summary: "", concerns: "", positive_outcomes: "", follow_up_actions: "", notes: "" });
+    setDialogOpen(false);
+  };
+
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
 
   const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
@@ -136,10 +156,12 @@ export default function ParentPartnershipPage() {
     <PageShell
       title="Parent &amp; Carer Partnership"
       subtitle="Family engagement, contact quality and partnership working — Children Act 1989"
+      ariaContext={{ pageTitle: "Parent Partnership Log", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Parent Partnership Log" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="parent-partnership-log" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Log Contact</Button>,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -351,24 +373,24 @@ export default function ParentPartnershipPage() {
           <DialogHeader>
             <DialogTitle>Log Family Contact</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
+          <form onSubmit={handleSaveContact} className="space-y-3">
             <div>
-              <Label>Young Person</Label>
-              <Select>
+              <Label>Young Person *</Label>
+              <Select value={ppForm.child_id} onValueChange={(v) => setPP("child_id", v)}>
                 <SelectTrigger><SelectValue placeholder="Select young person" /></SelectTrigger>
                 <SelectContent>
-                  {childIds.map(id => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}
+                  {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Family Member Name</Label>
-              <Input placeholder="e.g. Mark (birth father)" />
+              <Label>Family Member Name *</Label>
+              <Input placeholder="e.g. Mark (birth father)" value={ppForm.family_member_name} onChange={(e) => setPP("family_member_name", e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Relationship</Label>
-                <Select>
+                <Select value={ppForm.relationship_type} onValueChange={(v) => setPP("relationship_type", v)}>
                   <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(PARENT_RELATIONSHIP_TYPE_LABEL) as [ParentRelationshipType, string][]).map(([k, v]) => (
@@ -379,7 +401,7 @@ export default function ParentPartnershipPage() {
               </div>
               <div>
                 <Label>Contact Type</Label>
-                <Select>
+                <Select value={ppForm.contact_type} onValueChange={(v) => setPP("contact_type", v)}>
                   <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(PARENT_CONTACT_TYPE_LABEL) as [ParentContactType, string][]).map(([k, v]) => (
@@ -392,17 +414,17 @@ export default function ParentPartnershipPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Date</Label>
-                <Input type="date" />
+                <Input type="date" value={ppForm.date} onChange={(e) => setPP("date", e.target.value)} />
               </div>
               <div>
                 <Label>Duration (minutes)</Label>
-                <Input type="number" placeholder="e.g. 30" />
+                <Input type="number" placeholder="e.g. 30" value={ppForm.duration} onChange={(e) => setPP("duration", e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Engagement Level</Label>
-                <Select>
+                <Select value={ppForm.engagement_level} onValueChange={(v) => setPP("engagement_level", v)}>
                   <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(PARENT_ENGAGEMENT_LEVEL_LABEL) as [ParentEngagementLevel, string][]).map(([k, v]) => (
@@ -413,7 +435,7 @@ export default function ParentPartnershipPage() {
               </div>
               <div>
                 <Label>Initiated By</Label>
-                <Select>
+                <Select value={ppForm.initiated_by} onValueChange={(v) => setPP("initiated_by", v)}>
                   <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
                     {(Object.entries(PARENT_CONTACT_INITIATOR_LABEL) as [ParentContactInitiator, string][]).map(([k, v]) => (
@@ -424,32 +446,44 @@ export default function ParentPartnershipPage() {
               </div>
             </div>
             <div>
-              <Label>Summary</Label>
-              <Textarea rows={3} placeholder="Describe the contact, how it went, and the quality of engagement…" />
+              <Label>Summary *</Label>
+              <Textarea rows={3} placeholder="Describe the contact, how it went, and the quality of engagement…" value={ppForm.summary} onChange={(e) => setPP("summary", e.target.value)} />
             </div>
             <div>
               <Label>Concerns</Label>
-              <Textarea rows={2} placeholder="Any concerns arising from this contact (leave blank if none)…" />
+              <Textarea rows={2} placeholder="Any concerns arising from this contact (leave blank if none)…" value={ppForm.concerns} onChange={(e) => setPP("concerns", e.target.value)} />
             </div>
             <div>
               <Label>Positive Outcomes</Label>
-              <Textarea rows={2} placeholder="One per line…" />
+              <Textarea rows={2} placeholder="One per line…" value={ppForm.positive_outcomes} onChange={(e) => setPP("positive_outcomes", e.target.value)} />
             </div>
             <div>
               <Label>Follow-Up Actions</Label>
-              <Textarea rows={2} placeholder="One per line…" />
+              <Textarea rows={2} placeholder="One per line…" value={ppForm.follow_up_actions} onChange={(e) => setPP("follow_up_actions", e.target.value)} />
             </div>
             <div>
               <Label>Notes</Label>
-              <Textarea rows={2} placeholder="Additional notes…" />
+              <Textarea rows={2} placeholder="Additional notes…" value={ppForm.notes} onChange={(e) => setPP("notes", e.target.value)} />
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => setDialogOpen(false)}>Save Contact</Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createContact.isPending}>{createContact.isPending ? "Saving…" : "Save Contact"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Family Contact"
+        category="family_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Parent Partnership Log — family contact records, parental involvement, parent meetings, family relationships, care planning with parents, contact frequency, family support, Reg 45 evidence"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

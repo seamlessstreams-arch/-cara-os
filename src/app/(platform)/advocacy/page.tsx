@@ -13,7 +13,9 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -25,7 +27,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { useAdvocacy } from "@/hooks/use-advocacy";
+import { useAdvocacy, useCreateAdvocacyRecord } from "@/hooks/use-advocacy";
+import { YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type {
   AdvocacyType,
@@ -33,6 +36,7 @@ import type {
   AdvocacyVisit,
   AdvocacyRecord,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -56,6 +60,7 @@ const VISIT_LABELS: Record<string, string> = {
 
 export default function AdvocacyPage() {
   const { data: result, isLoading } = useAdvocacy();
+  const createAdvocacy = useCreateAdvocacyRecord();
   const data = result?.data ?? [];
 
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -64,6 +69,44 @@ export default function AdvocacyPage() {
   const [filterYP, setFilterYP] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [showDialog, setShowDialog] = useState(false);
+
+  const [advForm, setAdvForm] = useState({
+    child_id: "",
+    advocacy_type: "" as AdvocacyType | "",
+    provider: "",
+    advocate_name: "",
+    reason: "",
+    review_date: "",
+  });
+  const setAF = (k: keyof typeof advForm, v: string) => setAdvForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateAdvocacy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!advForm.child_id || !advForm.advocacy_type || !advForm.reason.trim()) {
+      toast.error("Young person, type and reason are required.");
+      return;
+    }
+    await createAdvocacy.mutateAsync({
+      child_id: advForm.child_id,
+      advocacy_type: advForm.advocacy_type as AdvocacyType,
+      status: "pending" as AdvocacyStatus,
+      provider: advForm.provider,
+      advocate_name: advForm.advocate_name,
+      referral_date: new Date().toISOString().slice(0, 10),
+      start_date: null,
+      reason: advForm.reason.trim(),
+      issues_raised: [],
+      visits: [],
+      child_view: "",
+      home_response: "",
+      review_date: advForm.review_date || new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+      notes: "",
+      created_at: new Date().toISOString(),
+    });
+    toast.success("Advocacy referral submitted.");
+    setAdvForm({ child_id: "", advocacy_type: "", provider: "", advocate_name: "", reason: "", review_date: "" });
+    setShowDialog(false);
+  };
 
   const stats = useMemo(() => ({
     total: data.length,
@@ -141,6 +184,7 @@ export default function AdvocacyPage() {
     <PageShell
       title="Advocacy Tracker"
       subtitle="Reg 7 — Independent advocacy, children's rights and representation"
+      ariaContext={{ pageTitle: "Advocacy Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="advocacy" />
@@ -148,6 +192,7 @@ export default function AdvocacyPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> New Referral
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -293,21 +338,37 @@ export default function AdvocacyPage() {
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Advocacy Referral</DialogTitle></DialogHeader>
-          <div className="grid gap-3 py-2">
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Young Person…</option>{ypIds.map((id) => <option key={id} value={id}>{getYPName(id)}</option>)}</select>
-            <select className="rounded border px-3 py-2 text-sm"><option value="">Advocacy type…</option>{Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-            <input placeholder="Provider organisation" className="rounded border px-3 py-2 text-sm" />
-            <input placeholder="Advocate name" className="rounded border px-3 py-2 text-sm" />
-            <textarea placeholder="Reason for referral" rows={3} className="rounded border px-3 py-2 text-sm" />
-          </div>
-          <DialogFooter>
-            <button onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
-            <button onClick={() => setShowDialog(false)} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90">Submit Referral</button>
-          </DialogFooter>
+          <form onSubmit={handleCreateAdvocacy} className="grid gap-3 py-2">
+            <Select value={advForm.child_id} onValueChange={(v) => setAF("child_id", v)}>
+              <SelectTrigger className="text-sm"><SelectValue placeholder="Young Person…" /></SelectTrigger>
+              <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent>
+            </Select>
+            <Select value={advForm.advocacy_type} onValueChange={(v) => setAF("advocacy_type", v)}>
+              <SelectTrigger className="text-sm"><SelectValue placeholder="Advocacy type…" /></SelectTrigger>
+              <SelectContent>{Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+            </Select>
+            <input required placeholder="Provider organisation *" className="rounded border px-3 py-2 text-sm" value={advForm.provider} onChange={(e) => setAF("provider", e.target.value)} />
+            <input placeholder="Advocate name" className="rounded border px-3 py-2 text-sm" value={advForm.advocate_name} onChange={(e) => setAF("advocate_name", e.target.value)} />
+            <textarea required placeholder="Reason for referral *" rows={3} className="rounded border px-3 py-2 text-sm" value={advForm.reason} onChange={(e) => setAF("reason", e.target.value)} />
+            <div>
+              <label className="text-xs text-slate-600 mb-1 block">Review Date</label>
+              <input type="date" className="rounded border px-3 py-2 text-sm w-full" value={advForm.review_date} onChange={(e) => setAF("review_date", e.target.value)} />
+            </div>
+            <DialogFooter>
+              <button type="button" onClick={() => setShowDialog(false)} className="rounded-md border px-4 py-2 text-sm">Cancel</button>
+              <button type="submit" disabled={createAdvocacy.isPending} className="rounded-md bg-brand px-4 py-2 text-sm text-white hover:bg-brand/90 disabled:opacity-50">{createAdvocacy.isPending ? "Submitting…" : "Submit Referral"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Professional Contact"
+        category="professional_contact"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

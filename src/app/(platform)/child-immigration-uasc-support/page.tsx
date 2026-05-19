@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,9 @@ import type { ImmigrationUascRecord, ImmigrationStatus } from "@/types/extended"
 import { IMMIGRATION_STATUS_LABEL, ENGLISH_LANGUAGE_LEVEL_LABEL } from "@/types/extended";
 import { useImmigrationUascRecords } from "@/hooks/use-immigration-uasc-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -164,9 +167,11 @@ export default function ChildImmigrationUascSupportPage() {
     <PageShell
       title="Child Immigration & UASC Support"
       subtitle="Per-child immigration status, age assessment, asylum claim, family tracing, leave-to-remain reviews — handled with trauma-informed care"
+      ariaContext={{ pageTitle: "Immigration & UASC Support", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Immigration & UASC Support" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="child-immigration-uasc-support" />,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -427,6 +432,18 @@ export default function ChildImmigrationUascSupportPage() {
           <p>Immigration Act 1971 and Nationality and Borders Act 2022 — primary statutes governing immigration status, asylum claims and removal. Children Act 1989 — local authority duties to UASC under s.20 (accommodation) and s.17 (children in need); LA holds full corporate parenting responsibility regardless of immigration status. Children (Leaving Care) Act 2000 — care leaver entitlements continue for eligible/relevant/former-relevant young people while immigration matters resolve. Modern Slavery Act 2015 — National Referral Mechanism (NRM) where trafficking is a reasonable suspicion. Statutory Guidance for Local Authorities on the care of unaccompanied asylum-seeking and trafficked children (DfE 2017). Hillingdon Judgment (R (Hillingdon LBC) v Secretary of State 2003) — confirms LA duty to provide s.20 accommodation to UASC. Merton-compliant principles (R (B) v Merton LBC 2003) and ADCS Age Assessment Guidance (AAR) — joint assessment by two qualified social workers, benefit of the doubt, interpreter, appropriate adult, no purely visual assessments. Working Together to Safeguard Children 2023. UNCRC Articles 7 (identity), 8 (preservation of identity), 22 (refugee children). External partners: British Red Cross International Family Tracing; Refugee Council Children's Section; Freedom from Torture; Helen Bamber Foundation; UK Visas and Immigration. Records retained securely; access controlled; data shared only on lawful basis with the child's interests paramount.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category="safeguarding"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Immigration & UASC Support — unaccompanied asylum-seeking child, age dispute, NRPF, immigration solicitor, Home Office, NTS referral, Dubs, resettlement, Section 20 to care order, asylum claim"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

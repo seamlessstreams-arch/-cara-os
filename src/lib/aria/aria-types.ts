@@ -117,16 +117,14 @@ export type AriaCommandId =
   | "identify_upcoming_compliance_dates"
   | "equality_diversity_calendar_prompt"
   | "trigger_related_document_update"
-  // Writing to the Child
-  | "write_to_child_incident"
-  | "write_to_child_complaint"
-  | "write_to_child_missing_from_care"
-  | "write_to_child_weekly_summary"
-  | "write_to_child_direct_work"
-  | "write_to_child_oversight"
-  | "write_to_child_key_work"
-  | "child_lens_check"
-  | "improve_child_friendly_text";
+  // Care plans
+  | "draft_care_plan_update"
+  | "identify_care_plan_gaps"
+  | "check_care_plan_progress"
+  // Missing episodes
+  | "draft_missing_episode_report"
+  | "missing_episode_risk_analysis"
+  | "missing_episode_return_interview_notes";
 
 export interface AriaCommandSpec {
   id: AriaCommandId;
@@ -171,14 +169,6 @@ export interface AriaActorPayload {
   staffSelfId?: string;
 }
 
-export interface AriaGuardrailFlag {
-  id: string;
-  severity: "critical" | "warning" | "info";
-  category: string;
-  message: string;
-  matchedSnippet?: string;
-}
-
 export interface AriaGenerationResult {
   requestId: string;
   outputId?: string;
@@ -193,13 +183,6 @@ export interface AriaGenerationResult {
   modelId?: string;
   approvalRequired: boolean;
   persisted: boolean;
-  /** Safeguarding guardrail scan results */
-  guardrails?: {
-    flagged: boolean;
-    mandatoryReview: boolean;
-    flags: AriaGuardrailFlag[];
-    summary: string;
-  };
 }
 
 export interface AriaTranscriptionInput {

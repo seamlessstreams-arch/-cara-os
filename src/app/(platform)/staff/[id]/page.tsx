@@ -23,6 +23,7 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
 import type { TrainingRecord, Supervision, Task } from "@/types";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import {
   ArrowLeft, BookOpen, ClipboardList, CheckSquare, Loader2,
   AlertTriangle, CheckCircle2, Clock, ShieldCheck, Calendar,
@@ -992,6 +993,12 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
           </div>
         )}
 
+      <CareEventsPanel
+        title="Care Events Logged by This Staff Member"
+        days={30}
+        defaultCollapsed
+        className="mt-6"
+      />
       </div>
     </PageShell>
   );

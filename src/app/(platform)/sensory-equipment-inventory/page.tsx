@@ -1,21 +1,30 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { getYPName } from "@/lib/seed-data";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { getYPName, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp, ArrowUpDown, Sparkles, Package, Heart, AlertTriangle, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ArrowUpDown, Sparkles, Package, Heart, AlertTriangle, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useSensoryEquipmentRecords } from "@/hooks/use-sensory-equipment-records";
-import type { SensoryEquipmentRecord, SensoryEquipmentCategory, SensoryEquipmentCondition } from "@/types/extended";
+import { useSensoryEquipmentRecords, useCreateSensoryEquipmentRecord } from "@/hooks/use-sensory-equipment-records";
+import type { SensoryEquipmentRecord, SensoryEquipmentCategory, SensoryEquipmentCondition, SensoryEquipmentLocation, SensoryEquipmentUseFrequency } from "@/types/extended";
 import {
   SENSORY_EQUIPMENT_CATEGORY_LABEL,
   SENSORY_EQUIPMENT_LOCATION_LABEL,
   SENSORY_EQUIPMENT_CONDITION_LABEL,
   SENSORY_EQUIPMENT_USE_FREQUENCY_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { toast } from "sonner";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -44,10 +53,42 @@ const conditionColour: Record<SensoryEquipmentCondition, string> = {
 
 export default function SensoryEquipmentInventoryPage() {
   const { data: records = [], isLoading } = useSensoryEquipmentRecords();
+  const createRecord = useCreateSensoryEquipmentRecord();
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterCondition, setFilterCondition] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({
+    item_name: "",
+    category: "calming" as SensoryEquipmentCategory,
+    location: "lounge_sensory_corner" as SensoryEquipmentLocation,
+    assigned_to_child: "",
+    condition: "good" as SensoryEquipmentCondition,
+    use_frequency: "as_needed" as SensoryEquipmentUseFrequency,
+    purchase_cost: 0,
+    purchase_date: new Date().toISOString().split("T")[0],
+    replacement_due: "",
+    recommended_by: "",
+    child_preference: "",
+    sensory_profile: "",
+    notes: "",
+  });
+
+  async function handleCreate() {
+    if (!form.item_name || !form.recommended_by) {
+      toast.error("Please complete all required fields");
+      return;
+    }
+    try {
+      await createRecord.mutateAsync(form);
+      toast.success("Item added to inventory");
+      setShowCreate(false);
+      setForm({ item_name: "", category: "calming", location: "lounge_sensory_corner", assigned_to_child: "", condition: "good", use_frequency: "as_needed", purchase_cost: 0, purchase_date: new Date().toISOString().split("T")[0], replacement_due: "", recommended_by: "", child_preference: "", sensory_profile: "", notes: "" });
+    } catch {
+      toast.error("Failed to save. Please try again.");
+    }
+  }
 
   const filtered = useMemo(() => {
     let items = [...records];
@@ -85,7 +126,44 @@ export default function SensoryEquipmentInventoryPage() {
 
   return (
     <PageShell title="Sensory Equipment Inventory" subtitle="All sensory regulation items — owned, shared, mobile — with condition, replacement, and child assignment"
-      actions={<div className="flex items-center gap-2"><ExportButton data={records} columns={exportCols} filename="sensory-equipment-inventory" /><PrintButton title="Sensory Equipment Inventory" /></div>}>
+      ariaContext={{ pageTitle: "Sensory Equipment Inventory", sourceType: "child_record" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <ExportButton data={records} columns={exportCols} filename="sensory-equipment-inventory" />
+          <PrintButton title="Sensory Equipment Inventory" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />Add Item</Button>
+        </div>
+      }>
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Add Sensory Equipment Item</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div><Label>Item Name *</Label><Input placeholder="e.g. Weighted blanket (2kg)" value={form.item_name} onChange={(e) => setForm((f) => ({ ...f, item_name: e.target.value }))} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Category</Label><Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v as SensoryEquipmentCategory }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(SENSORY_EQUIPMENT_CATEGORY_LABEL) as [SensoryEquipmentCategory, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Location</Label><Select value={form.location} onValueChange={(v) => setForm((f) => ({ ...f, location: v as SensoryEquipmentLocation }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(SENSORY_EQUIPMENT_LOCATION_LABEL) as [SensoryEquipmentLocation, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Condition</Label><Select value={form.condition} onValueChange={(v) => setForm((f) => ({ ...f, condition: v as SensoryEquipmentCondition }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(SENSORY_EQUIPMENT_CONDITION_LABEL) as [SensoryEquipmentCondition, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Use Frequency</Label><Select value={form.use_frequency} onValueChange={(v) => setForm((f) => ({ ...f, use_frequency: v as SensoryEquipmentUseFrequency }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(SENSORY_EQUIPMENT_USE_FREQUENCY_LABEL) as [SensoryEquipmentUseFrequency, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div><Label>Assigned To Child</Label><Select value={form.assigned_to_child || "shared"} onValueChange={(v) => setForm((f) => ({ ...f, assigned_to_child: v === "shared" ? "" : v }))}><SelectTrigger><SelectValue placeholder="Shared item" /></SelectTrigger><SelectContent><SelectItem value="shared">Shared</SelectItem>{YOUNG_PEOPLE.map((yp) => <SelectItem key={yp.id} value={yp.id}>{yp.preferred_name ?? yp.first_name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Purchase Date</Label><Input type="date" value={form.purchase_date} onChange={(e) => setForm((f) => ({ ...f, purchase_date: e.target.value }))} /></div>
+              <div><Label>Cost (£)</Label><Input type="number" min={0} step={0.01} value={form.purchase_cost} onChange={(e) => setForm((f) => ({ ...f, purchase_cost: parseFloat(e.target.value) || 0 }))} /></div>
+            </div>
+            <div><Label>Replacement Due</Label><Input type="date" value={form.replacement_due} onChange={(e) => setForm((f) => ({ ...f, replacement_due: e.target.value }))} /></div>
+            <div><Label>Recommended By *</Label><Input placeholder="e.g. OT / Sensory team / Staff" value={form.recommended_by} onChange={(e) => setForm((f) => ({ ...f, recommended_by: e.target.value }))} /></div>
+            <div><Label>Child Preference Note</Label><Textarea placeholder="How this item helps, child's response..." value={form.child_preference} onChange={(e) => setForm((f) => ({ ...f, child_preference: e.target.value }))} rows={2} /></div>
+            <div><Label>Sensory Profile Link</Label><Textarea placeholder="Which sensory need this addresses..." value={form.sensory_profile} onChange={(e) => setForm((f) => ({ ...f, sensory_profile: e.target.value }))} rows={2} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createRecord.isPending}>{createRecord.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add Item"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Total Items</p></div>
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-pink-600">{childAssigned}</p><p className="text-xs text-muted-foreground">Child-Assigned</p></div>
@@ -140,6 +218,18 @@ export default function SensoryEquipmentInventoryPage() {
         })}
       </div>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Sensory equipment supports Quality Standard 5 (protection — non-restrictive practice), Quality Standard 7 (health and wellbeing). Linked to Sensory Profiles, Bedroom Personalisation, and Sensory Room Usage.</p></div>
+      <CareEventsPanel
+        title="Care Events — Health & Wellbeing"
+        category={["health", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Sensory Equipment Inventory — sensory regulation items, OT recommendations, child-specific preferences, condition monitoring, replacement scheduling"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

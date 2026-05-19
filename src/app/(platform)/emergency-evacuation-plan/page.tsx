@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -28,6 +28,9 @@ import {
 import type { EvacuationPlan, EvacuationScenarioType } from "@/types/extended";
 import { EVACUATION_SCENARIO_TYPE_LABEL } from "@/types/extended";
 import { useEvacuationPlans } from "@/hooks/use-evacuation-plans";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<EvacuationPlan>[] = [
   { header: "Scenario", accessor: (r: EvacuationPlan) => r.scenario_name },
@@ -87,10 +90,12 @@ export default function EmergencyEvacuationPlanPage() {
     <PageShell
       title="Emergency Evacuation Plan"
       subtitle="Building emergency response plans — fire, gas leak, lockdown — with child-specific considerations"
+      ariaContext={{ pageTitle: "Emergency Evacuation Plan", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="emergency-evacuation-plan" />
           <PrintButton title="Emergency Evacuation Plan" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -327,6 +332,18 @@ export default function EmergencyEvacuationPlanPage() {
           Drills.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Safety"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Emergency Evacuation Plan — fire evacuation, assembly point, PEEP for mobility needs, drill records, fire warden, alarm tests, building safety, Ofsted, Annex A evidence"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

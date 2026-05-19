@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +30,9 @@ import {
   GIFT_DIRECTION_LABEL, GIFT_RECIPIENT_TYPE_LABEL, GIFT_SOURCE_LABEL, GIFT_APPROVAL_STATUS_LABEL,
 } from "@/types/extended";
 import { useGiftRecords, useCreateGiftRecord } from "@/hooks/use-gift-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local styling maps ───────────────────────────────────────────────────── */
 
@@ -105,7 +108,9 @@ export default function GiftsRegisterPage() {
   }
 
   return (
-    <PageShell title="Gifts & Hospitality Register" subtitle="Anti-Bribery Policy · Safeguarding · Reg 12 · Delegated Authority" actions={<div className="flex items-center gap-2"><PrintButton title="Gifts Register" /><ExportButton data={filtered} columns={exportCols} filename="gifts-register" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Gift</Button></div>}>
+    <PageShell title="Gifts & Hospitality Register" subtitle="Anti-Bribery Policy · Safeguarding · Reg 12 · Delegated Authority" 
+      ariaContext={{ pageTitle: "Gifts & Hospitality Register", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Gifts Register" /><ExportButton data={filtered} columns={exportCols} filename="gifts-register" /><AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Gift</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
@@ -201,6 +206,18 @@ export default function GiftsRegisterPage() {
           <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button disabled={createMutation.isPending} onClick={() => createMutation.mutate(draft, { onSuccess: () => { toast.success("Gift recorded"); setShowNew(false); setDraft({}); } })}>{createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-1" />}Save Record</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Gifts & Hospitality Register — gifts to staff, gifts to children, hospitality, transparency, conflicts of interest, professional boundaries, Reg 35 notifications"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

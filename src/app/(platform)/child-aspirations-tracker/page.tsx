@@ -12,7 +12,7 @@ import {
   Search,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,9 @@ import type { AspirationRecord, AspirationDomain, AspirationRealism } from "@/ty
 import { ASPIRATION_DOMAIN_LABEL, ASPIRATION_REALISM_LABEL } from "@/types/extended";
 import { useAspirationRecords } from "@/hooks/use-aspiration-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -145,10 +148,12 @@ export default function ChildAspirationsTrackerPage() {
     <PageShell
       title="Child Aspirations Tracker"
       subtitle="Hopes, dreams and ambitions — child-led, evolving over time, woven into care planning"
+      ariaContext={{ pageTitle: "Child Aspirations Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="child-aspirations" />
           <PrintButton title="Child Aspirations Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -413,6 +418,18 @@ export default function ChildAspirationsTrackerPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Child Aspirations Tracker — goals, dreams, future plans, career interests, hobbies, vocational training, higher education, personal achievements, PEP targets, Reg 45 positive outcomes"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

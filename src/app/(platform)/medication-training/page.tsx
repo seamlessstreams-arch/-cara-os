@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,10 +21,14 @@ import {
   AlertTriangle, CheckCircle2, Clock, GraduationCap, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
-import { useMedTrainingRecords } from "@/hooks/use-med-training-records";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useMedTrainingRecords, useCreateMedTrainingRecord } from "@/hooks/use-med-training-records";
 import type { MedTrainingRecord, MedCompetencyType, MedCompetencyStatus } from "@/types/extended";
 import { MED_COMPETENCY_TYPE_LABEL, MED_COMPETENCY_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const STATUS_CLR: Record<MedCompetencyStatus, string> = { competent: "bg-green-100 text-green-800", not_yet_competent: "bg-red-100 text-red-800", expired: "bg-amber-100 text-amber-800", in_training: "bg-blue-100 text-blue-800", supervised_only: "bg-purple-100 text-purple-800" };
 const BORDER_ST: Record<MedCompetencyStatus, string> = { competent: "border-l-green-400", not_yet_competent: "border-l-red-500", expired: "border-l-amber-400", in_training: "border-l-blue-400", supervised_only: "border-l-purple-400" };
@@ -43,6 +47,21 @@ export default function MedicationTrainingPage() {
   const [sortBy, setSortBy] = useState("date-desc");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createRecord = useCreateMedTrainingRecord();
+  const [mtForm, setMtForm] = useState({ staff_id: "", competency_type: "administration" as MedCompetencyType, assessment_date: new Date().toISOString().slice(0, 10), score: "", notes: "" });
+  const setMT = (k: string, v: unknown) => setMtForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveAssessment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mtForm.staff_id) { toast.error("Please select a staff member."); return; }
+    const expiry = new Date(mtForm.assessment_date);
+    expiry.setFullYear(expiry.getFullYear() + 1);
+    await createRecord.mutateAsync({ staff_id: mtForm.staff_id, competency_type: mtForm.competency_type, status: "competent", assessment_date: mtForm.assessment_date, assessed_by: "staff_darren", expiry_date: expiry.toISOString().slice(0, 10), score: mtForm.score ? parseInt(mtForm.score) : null, pass_threshold: 80, practical_assessment: false, written_assessment: true, observations: 0, notes: mtForm.notes.trim(), action_plan: "", next_assessment_date: expiry.toISOString().slice(0, 10), created_at: new Date().toISOString() });
+    toast.success("Competency assessment recorded.");
+    setMtForm({ staff_id: "", competency_type: "administration", assessment_date: new Date().toISOString().slice(0, 10), score: "", notes: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -88,7 +107,9 @@ export default function MedicationTrainingPage() {
   if (isLoading) return <PageShell title="Medication Training & Competency" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
-    <PageShell title="Medication Training & Competency" subtitle="Reg 23 · NICE · Safe Medicines Management" actions={<div className="flex items-center gap-2"><PrintButton title="Medication Training" /><ExportButton data={filtered} columns={exportCols} filename="medication-training" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Assessment</Button></div>}>
+    <PageShell title="Medication Training & Competency" subtitle="Reg 23 · NICE · Safe Medicines Management" 
+      ariaContext={{ pageTitle: "Medication Training & Competency", sourceType: "medication" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Medication Training" /><ExportButton data={filtered} columns={exportCols} filename="medication-training" /><AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Assessment</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
@@ -182,16 +203,28 @@ export default function MedicationTrainingPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Competency Assessment</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div><Label>Staff Member</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{STAFF_IDS.map((s) => (<SelectItem key={s} value={s}>{getStaffName(s)}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Competency Type</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(MED_COMPETENCY_TYPE_LABEL) as MedCompetencyType[]).map((k) => (<SelectItem key={k} value={k}>{MED_COMPETENCY_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Assessment Date</Label><Input type="date" /></div>
-            <div><Label>Score (%)</Label><Input type="number" placeholder="e.g. 88" /></div>
-            <div className="col-span-2"><Label>Notes</Label><Textarea rows={3} placeholder="Assessment details…" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Assessment</Button></DialogFooter>
+          <form onSubmit={handleSaveAssessment} className="grid grid-cols-2 gap-4 py-2">
+            <div><Label>Staff Member *</Label><Select value={mtForm.staff_id} onValueChange={(v) => setMT("staff_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Competency Type</Label><Select value={mtForm.competency_type} onValueChange={(v) => setMT("competency_type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(MED_COMPETENCY_TYPE_LABEL) as MedCompetencyType[]).map((k) => (<SelectItem key={k} value={k}>{MED_COMPETENCY_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Assessment Date</Label><Input type="date" className="mt-1" value={mtForm.assessment_date} onChange={(e) => setMT("assessment_date", e.target.value)} /></div>
+            <div><Label>Score (%)</Label><Input type="number" className="mt-1" placeholder="e.g. 88" value={mtForm.score} onChange={(e) => setMT("score", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Notes</Label><Textarea className="mt-1" rows={3} placeholder="Assessment details…" value={mtForm.notes} onChange={(e) => setMT("notes", e.target.value)} /></div>
+            <DialogFooter className="col-span-2"><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Assessment"}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Medication"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Medication Training & Competency — staff competency assessments, MAR chart training, controlled drugs, competency expiry, retraining, regulatory compliance, Reg 44 evidence"
+        recordType="medication"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

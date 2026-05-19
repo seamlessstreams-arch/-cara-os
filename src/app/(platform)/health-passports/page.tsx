@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +17,7 @@ import { useHealthPassports } from "@/hooks/use-health-passports";
 import type { HealthPassport, AllergySeverity } from "@/types/extended";
 import { ALLERGY_SEVERITY_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -45,7 +48,8 @@ export default function HealthPassportsPage() {
     <PageShell
       title="Health Passports"
       subtitle="Portable Health Summary · Key Health Information · Emergency Protocols"
-      actions={<PrintButton title="Health Passports" />}
+      ariaContext={{ pageTitle: "Health Passports", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Health Passports" /><AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} /></div>}
     >
       <div id="print-area">
         {/* summary */}
@@ -250,6 +254,12 @@ export default function HealthPassportsPage() {
           <p>Health passports provide a portable summary of each child&apos;s essential health information. Under the Children&apos;s Homes Regulations 2015 (Reg 23) and the Quality Standards, children&apos;s homes must promote and protect each child&apos;s health and wellbeing. Health assessments must be completed within 20 working days of admission (initial) and annually thereafter. Children must be registered with a GP, dentist, and optician. Medication must be managed safely in line with the home&apos;s medication policy. Health passports should accompany the child to all medical appointments and should be shared during placement transitions. The passport must be kept up to date — reviewed at least quarterly or whenever health circumstances change.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

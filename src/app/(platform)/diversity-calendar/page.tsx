@@ -17,7 +17,7 @@ import {
   Loader2,
   Filter,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,9 @@ import {
   DIVERSITY_EVENT_CATEGORY_LABEL,
   DIVERSITY_EVENT_STATUS_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ───────────────────────────────────────────────────────── */
 const CATEGORY_COLOURS: Record<DiversityEventCategory, string> = {
@@ -98,9 +101,11 @@ export default function DiversityCalendarPage() {
     <PageShell
       title="Diversity & Cultural Calendar"
       subtitle="Religious observances, awareness days, and cultural celebrations — and how we mark them in the home"
+      ariaContext={{ pageTitle: "Diversity & Cultural Calendar", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Diversity & Cultural Calendar" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -299,6 +304,18 @@ export default function DiversityCalendarPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Activities"
+        category="activity"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Diversity & Cultural Calendar — cultural events, religious observances, heritage months, celebrations, identity support, anti-discrimination, equalities duty, Reg 44/45 evidence"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

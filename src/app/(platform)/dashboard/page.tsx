@@ -58,6 +58,7 @@ import { AuditComplianceCard } from "@/components/dashboard/audit-compliance-car
 import { ExpensesSummaryCard } from "@/components/dashboard/expenses-summary-card";
 import { FormComplianceCard } from "@/components/dashboard/form-compliance-card";
 import { useDashboard, useHealthCheck, useTimeSaved } from "@/hooks/use-dashboard";
+import { useCareEvents } from "@/hooks/use-care-events";
 import { useAddOversight } from "@/hooks/use-incidents";
 import { useCompleteTask } from "@/hooks/use-tasks";
 import { getStaffName, getYPName } from "@/lib/seed-data";
@@ -74,6 +75,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
 import type { AppRole } from "@/lib/permissions";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -754,6 +756,7 @@ export default function DashboardPage() {
   const dashboard   = useDashboard();
   const healthCheck = useHealthCheck();
   const timeSaved   = useTimeSaved();
+  const careEvents  = useCareEvents({ days: 1, limit: 5 });
   const addOversight = useAddOversight();
   const completeTask = useCompleteTask();
 
@@ -975,6 +978,62 @@ export default function DashboardPage() {
         {!config.showReadOnlyBanner && !isLoading && (
           <YoungPeopleStrip />
         )}
+
+        {/* Care Event Routing Status — recent 24h entries */}
+        {!config.showReadOnlyBanner && (() => {
+          const recentEvents = careEvents.data?.data ?? [];
+          if (recentEvents.length === 0) return null;
+          const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+            draft:          { label: "Draft",             color: "bg-slate-100 text-slate-600",   icon: <Circle className="w-3 h-3" /> },
+            submitted:      { label: "Submitted",         color: "bg-blue-50 text-blue-700",      icon: <Clock className="w-3 h-3" /> },
+            routing:        { label: "Routing…",          color: "bg-indigo-50 text-indigo-700",  icon: <Activity className="w-3 h-3 animate-pulse" /> },
+            routed:         { label: "Pending review",    color: "bg-amber-50 text-amber-700",    icon: <Clock className="w-3 h-3" /> },
+            manager_review: { label: "Manager review",   color: "bg-orange-50 text-orange-700",  icon: <Eye className="w-3 h-3" /> },
+            returned:       { label: "Returned",          color: "bg-red-50 text-red-700",        icon: <AlertCircle className="w-3 h-3" /> },
+            verified:       { label: "Verified",          color: "bg-emerald-50 text-emerald-700",icon: <CheckCircle2 className="w-3 h-3" /> },
+            locked:         { label: "Locked",            color: "bg-slate-50 text-slate-600",    icon: <CheckCheck className="w-3 h-3" /> },
+            routing_failed: { label: "Routing failed",   color: "bg-red-50 text-red-700",        icon: <AlertTriangle className="w-3 h-3" /> },
+          };
+          return (
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-indigo-500" />
+                  <span className="text-sm font-semibold text-slate-800">Care Events — Last 24 Hours</span>
+                  <span className="text-xs text-slate-400">Live routing status</span>
+                </div>
+                <Link href="/care-events" className="text-xs text-indigo-600 hover:underline flex items-center gap-0.5">
+                  All events <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {recentEvents.map((event) => {
+                  const sc = statusConfig[event.status] ?? { label: event.status, color: "bg-slate-100 text-slate-600", icon: <Circle className="w-3 h-3" /> };
+                  const enriched = event as never as { staff_name?: string; child_name?: string };
+                  return (
+                    <div key={event.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/50 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <Link href={`/care-events/${event.id}`} className="text-sm font-medium text-slate-900 hover:text-indigo-700 hover:underline truncate block">
+                          {event.title}
+                        </Link>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {enriched.staff_name ?? event.staff_id}{enriched.child_name ? ` · ${enriched.child_name}` : ""}
+                          {event.routing_summary && event.routing_summary.records_updated > 0 && (
+                            <> · <span className="text-emerald-600">{event.routing_summary.records_updated} records updated</span></>
+                          )}
+                        </p>
+                      </div>
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full ${sc.color}`}>
+                        {sc.icon}
+                        {sc.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ════════════════════════════════════════════════════════════════════ */}
         {/* ZONE B — TODAY'S OPERATION                                          */}
@@ -1398,6 +1457,12 @@ export default function DashboardPage() {
 
       {/* Quick Actions Speed Dial — floating bottom-right */}
       {!config.showReadOnlyBanner && <QuickActionsDial />}
+      <CareEventsPanel
+        title="Recent Care Events"
+        category="general"
+        days={14}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

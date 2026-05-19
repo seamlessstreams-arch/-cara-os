@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -30,6 +30,9 @@ import type { PlacementMeeting, PlacementMeetingType, PlacementMeetingActionStat
 import { PLACEMENT_MEETING_TYPE_LABEL, PLACEMENT_MEETING_ACTION_STATUS_LABEL } from "@/types/extended";
 import { usePlacementMeetings } from "@/hooks/use-placement-meetings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const typeColour: Record<PlacementMeetingType, string> = {
   weekly_review: "bg-blue-100 text-blue-800",
@@ -106,10 +109,12 @@ export default function PlacementMeetingMinutesPage() {
     <PageShell
       title="Placement Meeting Minutes"
       subtitle="Internal placement reviews — multi-disciplinary discussion, decisions, and actions per child"
+      ariaContext={{ pageTitle: "Placement Meeting Minutes", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={entries} columns={exportCols} filename="placement-meeting-minutes" />
           <PrintButton title="Placement Meeting Minutes" />
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -337,6 +342,18 @@ export default function PlacementMeetingMinutesPage() {
           views are central per UNCRC Article 12.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Professional Contact"
+        category="professional_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Placement Meeting Minutes — placement planning meetings, review meetings, multi-agency meetings, action points, attendees, decisions made, next steps, placement support, Reg 45 governance"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

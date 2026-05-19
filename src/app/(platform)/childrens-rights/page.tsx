@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,9 @@ import { getYPName } from "@/lib/seed-data";
 import { useChildrensRights } from "@/hooks/use-childrens-rights";
 import type { ChildrensRightEntry, RightsComplianceLevel } from "@/types/extended";
 import { RIGHTS_COMPLIANCE_LEVEL_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -54,7 +57,13 @@ export default function ChildrensRightsPage() {
     <PageShell
       title="Children's Rights"
       subtitle="UNCRC · Rights-Based Practice · How We Uphold Children's Rights at Oak House"
-      actions={<PrintButton title="Children's Rights Charter" />}
+      ariaContext={{ pageTitle: "Children's Rights", sourceType: "child_record" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <PrintButton title="Children's Rights Charter" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+        </div>
+      }
     >
       <div id="print-area">
         {/* intro banner */}
@@ -191,6 +200,18 @@ export default function ChildrensRightsPage() {
           <p>The UK ratified the UNCRC in 1991. While not directly incorporated into domestic law, the principles underpin the Children Act 1989, the Children&apos;s Homes (England) Regulations 2015, and the Quality Standards. Ofsted inspectors assess whether children&apos;s rights are upheld in practice — this includes listening to children, acting in their best interests, and ensuring they can participate in decisions about their lives. The Children&apos;s Commissioner for England promotes and protects children&apos;s rights. Every children&apos;s home should have a rights-based culture where children understand their rights and can exercise them. This charter should be reviewed quarterly and updated when evidence changes. Children should be involved in the review process.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Children's Rights — UNCRC articles, rights-based practice, children's participation, how we uphold each right, evidence, compliance status, quarterly review"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

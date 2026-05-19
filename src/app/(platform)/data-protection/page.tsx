@@ -13,11 +13,12 @@ import {
   Clock,
   FileText,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -36,7 +37,10 @@ import {
   DATA_PROTECTION_RECORD_STATUS_LABEL,
   DATA_PROTECTION_BREACH_SEVERITY_LABEL,
 } from "@/types/extended";
-import { useDataProtectionRecords } from "@/hooks/use-data-protection-records";
+import { useDataProtectionRecords, useCreateDataProtectionRecord } from "@/hooks/use-data-protection-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── types ─────────────────────────────────────────────────────────────── */
 
@@ -98,6 +102,7 @@ const EXPORT_COLS: ExportColumn<FlatRow>[] = [
 
 export default function DataProtectionPage() {
   const { data: raw, isLoading } = useDataProtectionRecords();
+  const createRecord = useCreateDataProtectionRecord();
   const records = raw?.data ?? [];
 
   const [retention] = useState<RetentionCategory[]>(RETENTION);
@@ -106,6 +111,44 @@ export default function DataProtectionPage() {
   const [filterType, setFilterType] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [dpForm, setDpForm] = useState({
+    type: "" as DataProtectionRecordType | "",
+    subject: "",
+    description: "",
+    due_date: "",
+  });
+  const setDPF = (k: keyof typeof dpForm, v: string) => setDpForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateRecord = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dpForm.type || !dpForm.subject.trim()) {
+      toast.error("Type and subject are required.");
+      return;
+    }
+    await createRecord.mutateAsync({
+      type: dpForm.type as DataProtectionRecordType,
+      status: "received" as const,
+      subject: dpForm.subject.trim(),
+      description: dpForm.description,
+      date_raised: new Date().toISOString().slice(0, 10),
+      due_date: dpForm.due_date || new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
+      completed_date: null,
+      handled_by: "staff_darren",
+      breach_severity: null,
+      ico_notified: false,
+      ico_notification_date: null,
+      individuals_notified: false,
+      root_cause: "",
+      remedial_actions: [],
+      lessons_learned: "",
+      notes: "",
+      created_at: new Date().toISOString(),
+    });
+    toast.success("Record created.");
+    setDpForm({ type: "", subject: "", description: "", due_date: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -145,6 +188,7 @@ export default function DataProtectionPage() {
     <PageShell
       title="Data Protection & GDPR"
       subtitle="Subject access requests, breach management, impact assessments and retention schedules"
+      ariaContext={{ pageTitle: "Data Protection Register", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Data Protection Register" />
@@ -152,6 +196,7 @@ export default function DataProtectionPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> New Record
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -301,22 +346,34 @@ export default function DataProtectionPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>New Data Protection Record</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
-            <div><label className="text-sm font-medium">Type</label>
-              <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+          <form onSubmit={handleCreateRecord} className="space-y-3 py-2">
+            <div><label className="text-sm font-medium">Type *</label>
+              <Select value={dpForm.type} onValueChange={(v) => setDPF("type", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{Object.entries(DATA_PROTECTION_RECORD_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Subject</label><input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Brief title" /></div>
-            <div><label className="text-sm font-medium">Description</label><textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Full details…" /></div>
-            <div><label className="text-sm font-medium">Due Date</label><input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" /></div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Create Record</button>
-          </DialogFooter>
+            <div><label className="text-sm font-medium">Subject *</label><input required className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Brief title" value={dpForm.subject} onChange={(e) => setDPF("subject", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Description</label><textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Full details…" value={dpForm.description} onChange={(e) => setDPF("description", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Due Date</label><input type="date" className="mt-1 w-full rounded-md border px-3 py-2 text-sm" value={dpForm.due_date} onChange={(e) => setDPF("due_date", e.target.value)} /></div>
+            <DialogFooter>
+              <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button type="submit" disabled={createRecord.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50">{createRecord.isPending ? "Saving…" : "Create Record"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Data Protection Register — GDPR compliance, data sharing agreements, privacy notices, subject access requests, retention schedules, lawful basis, DPO, ICO registration"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

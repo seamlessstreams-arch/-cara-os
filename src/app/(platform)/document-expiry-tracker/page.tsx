@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/ui/print-button";
@@ -25,6 +25,9 @@ import {
   CheckCircle2, Clock, Calendar, FileText, Car, Flame,
   ClipboardCheck, User, BookOpen, Loader2,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -153,10 +156,12 @@ export default function DocumentExpiryTrackerPage() {
     <PageShell
       title="Document Expiry Tracker"
       subtitle="Track and manage expiry dates for all critical compliance documents"
+      ariaContext={{ pageTitle: "Document Expiry Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Document Expiry Tracker" subtitle="Oak House — Compliance Management" />
           <ExportButton data={filtered} columns={exportCols} filename="document-expiry-tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -356,6 +361,18 @@ export default function DocumentExpiryTrackerPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Document Expiry Tracker — staff DBS expiry, training certificates, Ofsted registration, insurance, care plan reviews, risk assessment reviews, compliance deadlines, Annex A"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

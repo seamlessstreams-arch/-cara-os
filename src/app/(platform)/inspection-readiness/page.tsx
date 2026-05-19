@@ -1,546 +1,540 @@
 "use client";
 
-import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import {
-  Shield, CheckCircle2, AlertTriangle, XCircle,
-  ClipboardList, Eye, FileText, Users,
-  Heart, Pill, BookOpen, Activity,
-  Sparkles, ChevronDown, ChevronUp,
-  TrendingUp, Clock, Target, Award,
-  ExternalLink, Zap,
-} from "lucide-react";
+import { api } from "@/hooks/use-api";
+import { useQuery } from "@tanstack/react-query";
+import { daysFromNow, todayStr } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
-// ── Regulation framework ───────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-interface RegulationRef {
-  code: string;
-  title: string;
-  description: string;
-  framework: "CHR2015" | "SCCIF" | "Reg44" | "Reg45" | "NMS" | "JTAI";
-  module: string;
-  evidenceAreas: string[];
-  complianceStatus: "compliant" | "attention" | "non_compliant" | "not_assessed";
-  lastAssessed: string | null;
-  evidenceCount: number;
-  gaps: string[];
+interface AnnexASection {
+  key: string;
+  label: string;
+  evidence_count: number;
+  approved_count: number;
+  pending_count: number;
+  rejected_count: number;
 }
 
-const REGULATION_MAP: RegulationRef[] = [
-  // CHR 2015 — Core Regulations
-  {
-    code: "CHR2015-3", title: "Statement of Purpose",
-    description: "The registered person must compile a statement of purpose",
-    framework: "CHR2015", module: "compliance",
-    evidenceAreas: ["Statement of purpose document", "Children's guide", "Annual review evidence"],
-    complianceStatus: "compliant", lastAssessed: "2026-04-15", evidenceCount: 4, gaps: [],
-  },
-  {
-    code: "CHR2015-5", title: "Engaging with the Responsible Authority",
-    description: "Engagement with the placing authority in relation to the child's care",
-    framework: "CHR2015", module: "young_people",
-    evidenceAreas: ["Social worker communication logs", "LAC review attendance", "Placement plan reviews", "Professional update records"],
-    complianceStatus: "compliant", lastAssessed: "2026-05-01", evidenceCount: 12, gaps: [],
-  },
-  {
-    code: "CHR2015-6", title: "Quality and Purpose of Care",
-    description: "Standard of care focused on quality and purpose",
-    framework: "CHR2015", module: "daily_logs",
-    evidenceAreas: ["Daily log quality", "Key work session records", "Activity programme", "Children's voice evidence"],
-    complianceStatus: "attention", lastAssessed: "2026-05-08", evidenceCount: 8,
-    gaps: ["Some daily logs lack sufficient detail (ARIA detected weak recording)"],
-  },
-  {
-    code: "CHR2015-7", title: "Children's Views, Wishes and Feelings",
-    description: "Ascertaining and having regard to the child's wishes and feelings",
-    framework: "CHR2015", module: "young_people",
-    evidenceAreas: ["Voice of child records", "YP feedback forms", "Complaints outcomes", "Key work session notes"],
-    complianceStatus: "compliant", lastAssessed: "2026-05-05", evidenceCount: 18, gaps: [],
-  },
-  {
-    code: "CHR2015-8", title: "Fitness and Sustainability of the Home",
-    description: "Financial viability and organisation fitness",
-    framework: "CHR2015", module: "staffing",
-    evidenceAreas: ["Staffing records", "Supervision logs", "Training records", "DBS update checks"],
-    complianceStatus: "attention", lastAssessed: "2026-05-10", evidenceCount: 9,
-    gaps: ["3 expired mandatory training records identified"],
-  },
-  {
-    code: "CHR2015-12", title: "Health and Wellbeing Standard",
-    description: "Promoting and protecting children's health",
-    framework: "CHR2015", module: "medication",
-    evidenceAreas: ["Medication administration records", "Health assessments", "GP registration evidence", "CAMHS referrals"],
-    complianceStatus: "compliant", lastAssessed: "2026-05-07", evidenceCount: 15, gaps: [],
-  },
-  {
-    code: "CHR2015-13", title: "Leadership and Management",
-    description: "Effective leadership and management of the home",
-    framework: "CHR2015", module: "oversight",
-    evidenceAreas: ["Management oversight notes", "Supervision records", "Reg 44 reports", "Reg 45 reviews", "Staff meeting minutes"],
-    complianceStatus: "attention", lastAssessed: "2026-05-12", evidenceCount: 11,
-    gaps: ["4 records without management oversight >48hrs"],
-  },
-  {
-    code: "CHR2015-34", title: "Employment of Staff",
-    description: "Recruitment, training, and development of staff",
-    framework: "CHR2015", module: "staffing",
-    evidenceAreas: ["Recruitment records", "Training matrix", "Induction checklists", "Competency assessments"],
-    complianceStatus: "attention", lastAssessed: "2026-05-10", evidenceCount: 7,
-    gaps: ["3 mandatory training records expired"],
-  },
-  {
-    code: "CHR2015-35", title: "Safeguarding",
-    description: "Arrangements to safeguard and promote welfare",
-    framework: "CHR2015", module: "safeguarding",
-    evidenceAreas: ["Safeguarding policy", "Risk assessments", "Incident records", "Missing episodes", "Body maps", "Restraint records"],
-    complianceStatus: "compliant", lastAssessed: "2026-05-11", evidenceCount: 22, gaps: [],
-  },
-  {
-    code: "CHR2015-40", title: "Notification of Significant Events",
-    description: "Notification to relevant persons of significant events",
-    framework: "CHR2015", module: "compliance",
-    evidenceAreas: ["Ofsted notifications", "Police notifications", "LA notifications", "Incident reporting logs"],
-    complianceStatus: "compliant", lastAssessed: "2026-05-11", evidenceCount: 6, gaps: [],
-  },
-  {
-    code: "CHR2015-44", title: "Independent Person: Visits and Reports",
-    description: "Monthly independent person visits",
-    framework: "CHR2015", module: "compliance",
-    evidenceAreas: ["Reg 44 visit reports", "Recommendation tracking", "Action plan progress"],
-    complianceStatus: "compliant", lastAssessed: "2026-04-28", evidenceCount: 5, gaps: [],
-  },
-  {
-    code: "CHR2015-45", title: "Review of Quality of Care",
-    description: "Six-monthly quality of care review by registered person",
-    framework: "CHR2015", module: "compliance",
-    evidenceAreas: ["Reg 45 review reports", "Improvement plans", "Outcome data", "Young people feedback analysis"],
-    complianceStatus: "compliant", lastAssessed: "2026-03-15", evidenceCount: 3, gaps: [],
-  },
-
-  // SCCIF Social Care Common Inspection Framework
-  {
-    code: "SCCIF-EXP", title: "Children's Experiences",
-    description: "The overall experiences and progress of children living in the home",
-    framework: "SCCIF", module: "young_people",
-    evidenceAreas: ["Outcome tracking", "Progress records", "Voice of child", "Key work sessions", "Education progress"],
-    complianceStatus: "compliant", lastAssessed: "2026-05-05", evidenceCount: 24, gaps: [],
-  },
-  {
-    code: "SCCIF-SAFE", title: "How Safe Children Are",
-    description: "The effectiveness of safeguarding arrangements",
-    framework: "SCCIF", module: "safeguarding",
-    evidenceAreas: ["Safeguarding incidents", "Risk assessments", "Missing episodes", "Restraint records", "Online safety"],
-    complianceStatus: "compliant", lastAssessed: "2026-05-11", evidenceCount: 19, gaps: [],
-  },
-  {
-    code: "SCCIF-LEAD", title: "Leadership and Management",
-    description: "Effectiveness of leaders and managers",
-    framework: "SCCIF", module: "oversight",
-    evidenceAreas: ["Management oversight quality", "Staff development", "Quality assurance", "Improvement tracking"],
-    complianceStatus: "attention", lastAssessed: "2026-05-12", evidenceCount: 8,
-    gaps: ["Oversight timeliness needs improvement"],
-  },
-];
-
-// ── Inspection readiness grades ────────────────────────────────────────────
-
-const MODULE_SCORES: { module: string; label: string; icon: React.ElementType; score: number; weight: number }[] = [
-  { module: "safeguarding", label: "Safeguarding", icon: Shield, score: 92, weight: 25 },
-  { module: "daily_logs", label: "Daily Recording", icon: BookOpen, score: 74, weight: 15 },
-  { module: "oversight", label: "Management Oversight", icon: Eye, score: 68, weight: 15 },
-  { module: "young_people", label: "Young People", icon: Heart, score: 88, weight: 15 },
-  { module: "staffing", label: "Staffing & Training", icon: Users, score: 71, weight: 10 },
-  { module: "medication", label: "Medication", icon: Pill, score: 95, weight: 5 },
-  { module: "compliance", label: "Regulatory Compliance", icon: ClipboardList, score: 84, weight: 10 },
-  { module: "contact", label: "Contact & Communication", icon: Activity, score: 81, weight: 5 },
-];
-
-function getGrade(score: number): { grade: string; color: string; bg: string } {
-  if (score >= 90) return { grade: "Outstanding", color: "text-emerald-700", bg: "bg-emerald-50" };
-  if (score >= 75) return { grade: "Good", color: "text-blue-700", bg: "bg-blue-50" };
-  if (score >= 50) return { grade: "Requires Improvement", color: "text-amber-700", bg: "bg-amber-50" };
-  return { grade: "Inadequate", color: "text-red-700", bg: "bg-red-50" };
+interface AnnexAData {
+  readiness_score: number;
+  total_evidence: number;
+  approved_evidence: number;
+  pending_evidence: number;
+  sections: AnnexASection[];
 }
 
-function getScoreColor(score: number): string {
-  if (score >= 90) return "bg-emerald-500";
-  if (score >= 75) return "bg-blue-500";
-  if (score >= 50) return "bg-amber-500";
-  return "bg-red-500";
+interface Reg45Item {
+  id: string;
+  manager_decision: string;
+  suggested_theme: string;
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+interface AnnexAItem {
+  id: string;
+  manager_decision: string;
+  annex_section: string;
+}
 
-type ViewTab = "dashboard" | "regulations" | "evidence" | "actions";
+interface ManagementOversightItem {
+  id: string;
+  status: string;
+  priority: string;
+}
 
-export default function InspectionReadinessPage() {
-  const [activeTab, setActiveTab] = useState<ViewTab>("dashboard");
-  const [expandedReg, setExpandedReg] = useState<Set<string>>(new Set());
-  const [frameworkFilter, setFrameworkFilter] = useState<string>("all");
+interface Reg40Item {
+  id: string;
+  triage_status: string;
+  priority: string;
+}
 
-  const overallScore = Math.round(
-    MODULE_SCORES.reduce((sum, m) => sum + m.score * (m.weight / 100), 0),
+interface CareEvent {
+  id: string;
+  status: string;
+  category: string;
+  is_significant: boolean;
+  requires_manager_review: boolean;
+  contributes_to_reg45: boolean;
+  contributes_to_annex_a: boolean;
+  event_date: string;
+}
+
+interface FilingItem {
+  id: string;
+  is_verified: boolean;
+  category: string;
+}
+
+interface SavedTimeMeta {
+  total_minutes: number;
+  total_hours: number;
+  total_entries: number;
+  estimated_value_gbp: number;
+  by_staff: Record<string, { minutes: number; count: number; name: string }>;
+}
+
+// ── Hooks ─────────────────────────────────────────────────────────────────────
+
+function useAnnexAReadiness() {
+  return useQuery<{ data: AnnexAData }>({
+    queryKey: ["annex-a-readiness"],
+    queryFn: () => api.get("/api/v1/annex-a-readiness"),
+    staleTime: 60_000,
+  });
+}
+
+function useReg45Evidence() {
+  return useQuery<{ data: Reg45Item[]; meta: { total: number; pending: number; approved: number } }>({
+    queryKey: ["reg45-evidence"],
+    queryFn: () => api.get("/api/v1/reg45-evidence"),
+    staleTime: 60_000,
+  });
+}
+
+function useManagementOversight() {
+  return useQuery<{ data: ManagementOversightItem[]; meta: { total: number; pending: number } }>({
+    queryKey: ["management-oversight"],
+    queryFn: () => api.get("/api/v1/management-oversight"),
+    staleTime: 60_000,
+  });
+}
+
+function useReg40Triage() {
+  return useQuery<{ data: Reg40Item[]; meta: { total: number; pending: number } }>({
+    queryKey: ["reg40-triage"],
+    queryFn: () => api.get("/api/v1/reg40-triage"),
+    staleTime: 60_000,
+  });
+}
+
+function useCareEventsSummary() {
+  const thirtyDaysAgo = daysFromNow(-30);
+  return useQuery<{ data: CareEvent[]; meta: { total: number } }>({
+    queryKey: ["care-events-inspection", thirtyDaysAgo],
+    queryFn: () => api.get(`/api/v1/care-events?from_date=${thirtyDaysAgo}`),
+    staleTime: 60_000,
+  });
+}
+
+function useFilingCabinetSummary() {
+  return useQuery<{ data: FilingItem[]; meta: { total: number; verified: number; unverified: number; category_counts: Record<string, number> } }>({
+    queryKey: ["filing-cabinet-inspection"],
+    queryFn: () => api.get("/api/v1/filing-cabinet"),
+    staleTime: 60_000,
+  });
+}
+
+function useSavedTimeSummary() {
+  return useQuery<{ metrics: unknown[]; meta: SavedTimeMeta }>({
+    queryKey: ["saved-time-inspection"],
+    queryFn: () => api.get("/api/v1/saved-time"),
+    staleTime: 60_000,
+  });
+}
+
+// ── Status badge helpers ──────────────────────────────────────────────────────
+
+function ReadinessScore({ score }: { score: number }) {
+  const colour =
+    score >= 80 ? "text-green-700 bg-green-50 border-green-200" :
+    score >= 60 ? "text-yellow-700 bg-yellow-50 border-yellow-200" :
+    "text-red-700 bg-red-50 border-red-200";
+  const label = score >= 80 ? "Ready" : score >= 60 ? "Needs Attention" : "Action Required";
+  return (
+    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${colour}`}>
+      <span className="text-2xl font-bold">{score}%</span>
+      <span>{label}</span>
+    </div>
   );
-  const overallGrade = getGrade(overallScore);
+}
 
-  const compliant = REGULATION_MAP.filter((r) => r.complianceStatus === "compliant").length;
-  const attention = REGULATION_MAP.filter((r) => r.complianceStatus === "attention").length;
-  const nonCompliant = REGULATION_MAP.filter((r) => r.complianceStatus === "non_compliant").length;
-  const totalEvidence = REGULATION_MAP.reduce((sum, r) => sum + r.evidenceCount, 0);
+function StatusPill({ label, colour }: { label: string; colour: string }) {
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colour}`}>
+      {label}
+    </span>
+  );
+}
 
-  const toggleReg = (code: string) => {
-    setExpandedReg((prev) => {
-      const next = new Set(prev);
-      if (next.has(code)) next.delete(code); else next.add(code);
-      return next;
-    });
-  };
-
-  const filteredRegs = frameworkFilter === "all"
-    ? REGULATION_MAP
-    : REGULATION_MAP.filter((r) => r.framework === frameworkFilter);
+function MetricCard({
+  title,
+  value,
+  sub,
+  colour,
+  href,
+}: {
+  title: string;
+  value: string | number;
+  sub?: string;
+  colour: "green" | "yellow" | "red" | "blue" | "purple" | "neutral";
+  href?: string;
+}) {
+  const colours = {
+    green: "border-l-4 border-l-green-400 bg-green-50",
+    yellow: "border-l-4 border-l-yellow-400 bg-yellow-50",
+    red: "border-l-4 border-l-red-400 bg-red-50",
+    blue: "border-l-4 border-l-blue-400 bg-blue-50",
+    purple: "border-l-4 border-l-purple-400 bg-purple-50",
+    neutral: "border-l-4 border-l-slate-300 bg-slate-50",
+  }[colour];
 
   return (
-    <PageShell title="Inspection Readiness" subtitle="Real-time regulatory compliance and Ofsted preparation">
-      <div className="space-y-6">
-        {/* Tab bar */}
-        <div className="flex gap-1 border-b border-gray-200 pb-0">
-          {([
-            { id: "dashboard", label: "Dashboard", icon: Target },
-            { id: "regulations", label: "Regulation Map", icon: Shield },
-            { id: "evidence", label: "Evidence Tracker", icon: FileText },
-            { id: "actions", label: "Action Plan", icon: ClipboardList },
-          ] as { id: ViewTab; label: string; icon: React.ElementType }[]).map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 -mb-[1px] transition-colors",
-                  activeTab === tab.id ? "border-[var(--cs-primary)] text-[var(--cs-primary)]" : "border-transparent text-gray-500 hover:text-gray-700",
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+    <div className={`rounded-lg p-4 ${colours}`}>
+      <div className="text-xs font-medium text-slate-600 uppercase tracking-wide mb-1">{title}</div>
+      <div className="text-2xl font-bold text-slate-900">{value}</div>
+      {sub && <div className="text-xs text-slate-500 mt-1">{sub}</div>}
+      {href && (
+        <a href={href} className="text-xs text-blue-600 hover:underline mt-2 inline-block">
+          View →
+        </a>
+      )}
+    </div>
+  );
+}
 
-        {/* Dashboard */}
-        {activeTab === "dashboard" && (
-          <div className="space-y-6">
-            {/* Overall grade */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-              <Card className="lg:col-span-1">
-                <CardContent className="p-6 text-center">
-                  <div className={cn("inline-flex h-24 w-24 rounded-full items-center justify-center mb-3", overallGrade.bg)}>
-                    <span className={cn("text-3xl font-bold", overallGrade.color)}>{overallScore}</span>
-                  </div>
-                  <p className={cn("text-lg font-bold", overallGrade.color)}>{overallGrade.grade}</p>
-                  <p className="text-xs text-gray-500 mt-1">Overall Readiness Score</p>
-                </CardContent>
-              </Card>
-              <Card className="lg:col-span-3">
-                <CardContent className="p-6">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-4">Module Readiness</h3>
-                  <div className="space-y-3">
-                    {MODULE_SCORES.map((m) => {
-                      const Icon = m.icon;
-                      const moduleGrade = getGrade(m.score);
-                      return (
-                        <div key={m.module} className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                            <Icon className="h-4 w-4 text-gray-600" />
-                          </div>
-                          <span className="text-sm font-medium text-gray-700 w-40">{m.label}</span>
-                          <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                              className={cn("h-full rounded-full transition-all", getScoreColor(m.score))}
-                              style={{ width: `${m.score}%` }}
-                            />
-                          </div>
-                          <span className={cn("text-sm font-bold w-12 text-right", moduleGrade.color)}>
-                            {m.score}%
-                          </span>
-                          <span className="text-[10px] text-gray-400 w-6">{m.weight}%</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
+function SectionBar({ label, approved, pending, total }: { label: string; approved: number; pending: number; total: number }) {
+  const approvedPct = total > 0 ? (approved / total) * 100 : 0;
+  const pendingPct = total > 0 ? (pending / total) * 100 : 0;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-slate-700 truncate max-w-xs">{label}</span>
+        <span className="text-slate-500 ml-2 shrink-0">{approved}/{total}</span>
+      </div>
+      <div className="h-2 bg-slate-200 rounded-full overflow-hidden flex">
+        <div className="h-full bg-green-500 transition-all" style={{ width: `${approvedPct}%` }} />
+        <div className="h-full bg-yellow-400 transition-all" style={{ width: `${pendingPct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default function InspectionReadinessPage() {
+  const annexA = useAnnexAReadiness();
+  const reg45 = useReg45Evidence();
+  const oversight = useManagementOversight();
+  const reg40 = useReg40Triage();
+  const careEvents = useCareEventsSummary();
+  const filingCabinet = useFilingCabinetSummary();
+  const savedTime = useSavedTimeSummary();
+
+  const annexAData = annexA.data?.data;
+  const reg45Data = reg45.data;
+  const oversightData = oversight.data;
+  const reg40Data = reg40.data;
+  const ceData = careEvents.data;
+  const filingData = filingCabinet.data;
+  const savedTimeData = savedTime.data;
+
+  // Derive care event stats
+  const events30 = ceData?.data ?? [];
+  const verifiedEvents = events30.filter((e) => e.status === "verified" || e.status === "locked").length;
+  const pendingReviewEvents = events30.filter((e) => e.status === "manager_review_required").length;
+  const returnedEvents = events30.filter((e) => e.status === "returned").length;
+  const significantEvents = events30.filter((e) => e.is_significant).length;
+  const reg45Contributing = events30.filter((e) => e.contributes_to_reg45).length;
+  const annexAContributing = events30.filter((e) => e.contributes_to_annex_a).length;
+
+  const readinessScore = annexAData?.readiness_score ?? 0;
+  const overallColour =
+    readinessScore >= 80 ? "green" :
+    readinessScore >= 60 ? "yellow" : "red";
+
+  const isLoading =
+    annexA.isLoading ||
+    reg45.isLoading ||
+    oversight.isLoading ||
+    reg40.isLoading ||
+    careEvents.isLoading ||
+    filingCabinet.isLoading ||
+    savedTime.isLoading;
+
+  return (
+    <PageShell
+      title="Inspection Readiness"
+      subtitle="Live connected view of compliance status — Annex A, Regulation 45, Management Oversight, Reg 40, Filing and Saved Time"
+      ariaContext={{ pageTitle: "Inspection Readiness", sourceType: "document" }}
+      actions={<AriaStudioQuickActionButton context={{ record_type: "annex_a", record_id: "home_oak", home_id: "home_oak" }} />}
+    >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-24 text-slate-400 text-sm">Loading readiness data…</div>
+      ) : (
+        <div className="space-y-8">
+
+          {/* ── Overall Readiness Score ── */}
+          <section className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 className="text-base font-semibold text-slate-900">Overall Inspection Readiness</h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Based on {annexAData?.total_evidence ?? 0} evidence items across {annexAData?.sections?.length ?? 0} Annex A sections.
+                  Snapshot as of {todayStr()}.
+                </p>
+              </div>
+              <ReadinessScore score={readinessScore} />
             </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <StatCard label="Compliant" value={compliant} icon={CheckCircle2} color="text-emerald-600 bg-emerald-50" />
-              <StatCard label="Needs Attention" value={attention} icon={AlertTriangle} color="text-amber-600 bg-amber-50" />
-              <StatCard label="Non-Compliant" value={nonCompliant} icon={XCircle} color="text-red-600 bg-red-50" />
-              <StatCard label="Evidence Items" value={totalEvidence} icon={FileText} color="text-blue-600 bg-blue-50" />
+            {/* Summary pills */}
+            <div className="flex flex-wrap gap-2 mt-5">
+              <StatusPill
+                label={`${annexAData?.approved_evidence ?? 0} Annex A approved`}
+                colour="bg-green-100 text-green-800"
+              />
+              <StatusPill
+                label={`${annexAData?.pending_evidence ?? 0} Annex A pending`}
+                colour="bg-yellow-100 text-yellow-800"
+              />
+              <StatusPill
+                label={`${reg45Data?.meta?.approved ?? 0} Reg 45 approved`}
+                colour="bg-blue-100 text-blue-800"
+              />
+              <StatusPill
+                label={`${reg45Data?.meta?.pending ?? 0} Reg 45 awaiting review`}
+                colour={reg45Data?.meta?.pending ? "bg-yellow-100 text-yellow-800" : "bg-slate-100 text-slate-600"}
+              />
+              <StatusPill
+                label={`${oversightData?.meta?.pending ?? 0} oversight items outstanding`}
+                colour={oversightData?.meta?.pending ? "bg-orange-100 text-orange-800" : "bg-slate-100 text-slate-600"}
+              />
+              <StatusPill
+                label={`${reg40Data?.meta?.pending ?? 0} Reg 40 pending`}
+                colour={reg40Data?.meta?.pending ? "bg-red-100 text-red-800" : "bg-slate-100 text-slate-600"}
+              />
             </div>
+          </section>
 
-            {/* ARIA readiness insight */}
-            <Card>
-              <CardContent className="p-5">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="h-5 w-5 text-violet-500 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-sm font-semibold text-violet-800 mb-1">ARIA Inspection Readiness Analysis</h4>
-                    <p className="text-xs text-violet-600 leading-relaxed">
-                      Overall readiness is <strong>{overallGrade.grade.toLowerCase()}</strong> at {overallScore}%.
-                      Priority areas: Management oversight timeliness (4 records &gt;48hrs without oversight),
-                      mandatory training compliance (3 expired records), and daily recording quality
-                      (weak recording detected for 2 young people). Safeguarding and medication are strong —
-                      these areas will evidence well. Recommend focusing on oversight completion before any
-                      anticipated inspection visit.
-                    </p>
+          {/* ── Four Quadrant Grid ── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Care Events (last 30 days) */}
+            <section className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-slate-900">Care Events — Last 30 Days</h2>
+                <a href="/care-events" className="text-xs text-blue-600 hover:underline">View all →</a>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <MetricCard title="Total Events" value={events30.length} colour="neutral" />
+                <MetricCard title="Verified" value={verifiedEvents} colour="green" />
+                <MetricCard title="Pending Review" value={pendingReviewEvents} colour={pendingReviewEvents > 0 ? "yellow" : "neutral"} />
+                <MetricCard title="Returned" value={returnedEvents} colour={returnedEvents > 0 ? "red" : "neutral"} />
+                <MetricCard title="Significant" value={significantEvents} colour="purple" />
+                <MetricCard title="Reg 45 Contributing" value={reg45Contributing} colour="blue" />
+              </div>
+            </section>
+
+            {/* Annex A Readiness */}
+            <section className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-slate-900">Annex A Readiness</h2>
+                <a href="/annex-a" className="text-xs text-blue-600 hover:underline">View Annex A →</a>
+              </div>
+              {annexAData?.sections && annexAData.sections.length > 0 ? (
+                <div className="space-y-3">
+                  {annexAData.sections.map((s) => (
+                    <SectionBar
+                      key={s.key}
+                      label={s.label}
+                      approved={s.approved_count}
+                      pending={s.pending_count}
+                      total={s.evidence_count}
+                    />
+                  ))}
+                  <div className="flex items-center gap-3 pt-1 text-xs text-slate-500">
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-500 inline-block" /> Approved</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-yellow-400 inline-block" /> Pending</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              ) : (
+                <p className="text-sm text-slate-400 py-4">No Annex A evidence yet.</p>
+              )}
+            </section>
 
-            {/* Quick action items */}
-            <Card>
-              <CardContent className="p-5">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-amber-500" /> Priority Actions for Inspection Readiness
-                </h3>
-                <div className="space-y-2">
-                  {[
-                    { action: "Complete management oversight on 4 outstanding records", severity: "critical", reg: "CHR2015 Reg 13" },
-                    { action: "Renew 3 expired mandatory training records", severity: "high", reg: "CHR2015 Reg 34" },
-                    { action: "Improve daily log recording quality for Tyler and Jayden", severity: "medium", reg: "CHR2015 Reg 6" },
-                    { action: "Schedule overdue supervisions for 2 staff members", severity: "medium", reg: "CHR2015 Reg 8" },
-                    { action: "Fill 3 unfilled shifts in the next 7 days", severity: "high", reg: "CHR2015 Reg 34" },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className={cn(
-                        "h-2 w-2 rounded-full shrink-0",
-                        item.severity === "critical" ? "bg-red-500" :
-                        item.severity === "high" ? "bg-orange-500" :
-                        "bg-amber-500",
-                      )} />
-                      <span className="text-sm text-gray-700 flex-1">{item.action}</span>
-                      <Badge variant="outline" className="text-[10px] bg-gray-50">{item.reg}</Badge>
+            {/* Regulation 45 */}
+            <section className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-slate-900">Regulation 45 Evidence</h2>
+                <a href="/regulation-45" className="text-xs text-blue-600 hover:underline">View Reg 45 →</a>
+              </div>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <MetricCard title="Total" value={reg45Data?.meta?.total ?? 0} colour="neutral" />
+                <MetricCard title="Approved" value={reg45Data?.meta?.approved ?? 0} colour="green" />
+                <MetricCard title="Pending" value={reg45Data?.meta?.pending ?? 0} colour={reg45Data?.meta?.pending ? "yellow" : "neutral"} />
+              </div>
+              {reg45Contributing > 0 && (
+                <p className="text-xs text-slate-500">
+                  {reg45Contributing} care event{reg45Contributing !== 1 ? "s" : ""} from the last 30 days contribute to Regulation 45.
+                </p>
+              )}
+              {reg45Data?.data && reg45Data.data.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  {reg45Data.data.slice(0, 4).map((item) => (
+                    <div key={item.id} className="flex items-center justify-between text-xs text-slate-600 border-t border-slate-100 pt-1.5">
+                      <span className="capitalize">{item.suggested_theme || "General"}</span>
+                      <StatusPill
+                        label={item.manager_decision}
+                        colour={
+                          item.manager_decision === "approved" ? "bg-green-100 text-green-700" :
+                          item.manager_decision === "rejected" ? "bg-red-100 text-red-700" :
+                          item.manager_decision === "deferred" ? "bg-orange-100 text-orange-700" :
+                          "bg-yellow-100 text-yellow-700"
+                        }
+                      />
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              )}
+            </section>
 
-        {/* Regulation Map */}
-        {activeTab === "regulations" && (
-          <div className="space-y-4">
-            {/* Framework filter */}
-            <div className="flex items-center gap-2">
-              {["all", "CHR2015", "SCCIF"].map((fw) => (
-                <button
-                  key={fw}
-                  onClick={() => setFrameworkFilter(fw)}
-                  className={cn(
-                    "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
-                    frameworkFilter === fw ? "bg-[var(--cs-primary)] text-white" : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200",
-                  )}
+            {/* Management Oversight + Reg 40 */}
+            <section className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-slate-900">Management Queues</h2>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-700">Management Oversight</span>
+                    <a href="/management-oversight" className="text-xs text-blue-600 hover:underline">View →</a>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <MetricCard title="Total items" value={oversightData?.meta?.total ?? 0} colour="neutral" />
+                    <MetricCard title="Pending" value={oversightData?.meta?.pending ?? 0} colour={oversightData?.meta?.pending ? "yellow" : "green"} />
+                  </div>
+                </div>
+                <div className="border-t border-slate-100 pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-700">Regulation 40 Triage</span>
+                    <a href="/regulation-40" className="text-xs text-blue-600 hover:underline">View →</a>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <MetricCard title="Total items" value={reg40Data?.meta?.total ?? 0} colour="neutral" />
+                    <MetricCard
+                      title="Pending"
+                      value={reg40Data?.meta?.pending ?? 0}
+                      colour={reg40Data?.meta?.pending ? "red" : "green"}
+                      sub={reg40Data?.meta?.pending ? "Action required" : undefined}
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          </div>
+
+          {/* ── Filing Cabinet + Saved Time ── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <section className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-slate-900">Filing Cabinet</h2>
+                <a href="/filing-cabinet" className="text-xs text-blue-600 hover:underline">View →</a>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <MetricCard title="Total filed" value={filingData?.meta?.total ?? 0} colour="neutral" />
+                <MetricCard title="Verified" value={filingData?.meta?.verified ?? 0} colour="green" />
+                <MetricCard title="Unverified" value={filingData?.meta?.unverified ?? 0} colour={filingData?.meta?.unverified ? "yellow" : "neutral"} />
+                <MetricCard
+                  title="Categories"
+                  value={Object.keys(filingData?.meta?.category_counts ?? {}).length}
+                  colour="blue"
+                />
+              </div>
+              {filingData?.meta?.category_counts && Object.keys(filingData.meta.category_counts).length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.entries(filingData.meta.category_counts).map(([cat, count]) => (
+                    <span key={cat} className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full capitalize">
+                      {cat.replace(/_/g, " ")} ({count})
+                    </span>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-slate-900">Time Saved by Routing</h2>
+                <a href="/saved-time" className="text-xs text-blue-600 hover:underline">View →</a>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <MetricCard
+                  title="Total hours saved"
+                  value={savedTimeData?.meta ? `${savedTimeData.meta.total_hours}h` : "0h"}
+                  colour="purple"
+                />
+                <MetricCard
+                  title="Estimated value"
+                  value={savedTimeData?.meta ? `£${Math.round(savedTimeData.meta.estimated_value_gbp)}` : "£0"}
+                  colour="green"
+                />
+                <MetricCard
+                  title="Routing events"
+                  value={savedTimeData?.meta?.total_entries ?? 0}
+                  colour="neutral"
+                />
+                <MetricCard
+                  title="Staff benefiting"
+                  value={Object.keys(savedTimeData?.meta?.by_staff ?? {}).length}
+                  colour="blue"
+                />
+              </div>
+              {savedTimeData?.meta && (
+                <p className="text-xs text-slate-500">
+                  Auto-routing has saved an estimated {savedTimeData.meta.total_minutes} minutes of administrative time
+                  across {Object.keys(savedTimeData.meta.by_staff ?? {}).length} staff members.
+                </p>
+              )}
+            </section>
+
+          </div>
+
+          {/* ── Quick Links ── */}
+          <section className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-slate-900 mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              {[
+                { label: "Care Events", href: "/care-events" },
+                { label: "Management Oversight", href: "/management-oversight" },
+                { label: "Reg 40 Triage", href: "/regulation-40" },
+                { label: "Reg 45 Evidence", href: "/regulation-45" },
+                { label: "Annex A", href: "/annex-a" },
+                { label: "Filing Cabinet", href: "/filing-cabinet" },
+                { label: "Saved Time", href: "/saved-time" },
+                { label: "Audit Trail", href: "/audit-trail" },
+                { label: "Child Summaries", href: "/child-daily-summaries" },
+                { label: "Inspection Pack", href: "/inspection-readiness-pack" },
+                { label: "Inspection", href: "/inspection" },
+                { label: "Activity Feed", href: "/activity-log" },
+              ].map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="flex items-center justify-center text-center text-xs font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-3 py-2.5 transition-colors"
                 >
-                  {fw === "all" ? `All (${REGULATION_MAP.length})` : `${fw} (${REGULATION_MAP.filter((r) => r.framework === fw).length})`}
-                </button>
+                  {link.label}
+                </a>
               ))}
             </div>
+          </section>
 
-            {/* Regulation cards */}
-            <div className="space-y-2">
-              {filteredRegs.map((reg) => {
-                const isExpanded = expandedReg.has(reg.code);
-                const statusColor = reg.complianceStatus === "compliant" ? "text-emerald-600 bg-emerald-50 border-emerald-200" :
-                  reg.complianceStatus === "attention" ? "text-amber-600 bg-amber-50 border-amber-200" :
-                  reg.complianceStatus === "non_compliant" ? "text-red-600 bg-red-50 border-red-200" :
-                  "text-gray-600 bg-gray-50 border-gray-200";
-                const StatusIcon = reg.complianceStatus === "compliant" ? CheckCircle2 :
-                  reg.complianceStatus === "attention" ? AlertTriangle : XCircle;
-
-                return (
-                  <Card key={reg.code}>
-                    <button
-                      onClick={() => toggleReg(reg.code)}
-                      className="w-full text-left p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors"
-                    >
-                      <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", statusColor)}>
-                        <StatusIcon className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-gray-500">{reg.code}</span>
-                          <h4 className="text-sm font-semibold text-gray-900">{reg.title}</h4>
-                          <Badge className={cn("text-[10px]", statusColor)}>
-                            {reg.complianceStatus.replace("_", " ")}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-0.5 truncate">{reg.description}</p>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-xs text-gray-500">{reg.evidenceCount} evidence items</span>
-                        {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
-                      </div>
-                    </button>
-                    {isExpanded && (
-                      <CardContent className="px-4 pb-4 pt-0 space-y-3">
-                        <div>
-                          <h5 className="text-xs font-semibold text-gray-600 mb-1.5">Evidence Areas</h5>
-                          <div className="flex flex-wrap gap-1.5">
-                            {reg.evidenceAreas.map((ea) => (
-                              <span key={ea} className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">{ea}</span>
-                            ))}
-                          </div>
-                        </div>
-                        {reg.gaps.length > 0 && (
-                          <div>
-                            <h5 className="text-xs font-semibold text-red-600 mb-1.5">Identified Gaps</h5>
-                            {reg.gaps.map((gap, i) => (
-                              <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-50">
-                                <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0 mt-0.5" />
-                                <span className="text-xs text-red-700">{gap}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {reg.lastAssessed && (
-                          <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> Last assessed: {new Date(reg.lastAssessed).toLocaleDateString("en-GB")}
-                          </p>
-                        )}
-                      </CardContent>
-                    )}
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Evidence Tracker */}
-        {activeTab === "evidence" && (
-          <div className="space-y-4">
-            <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-blue-50 border border-blue-100">
-              <FileText className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-700">
-                Evidence is automatically tracked across all Cornerstone modules. Each record, form submission,
-                oversight note, and communication draft is mapped to relevant regulations. The scores above reflect
-                real-time evidence coverage.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {MODULE_SCORES.map((m) => {
-                const Icon = m.icon;
-                const moduleGrade = getGrade(m.score);
-                const regs = REGULATION_MAP.filter((r) => r.module === m.module);
-                const totalEv = regs.reduce((sum, r) => sum + r.evidenceCount, 0);
-                return (
-                  <Card key={m.module}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", moduleGrade.bg)}>
-                          <Icon className={cn("h-4 w-4", moduleGrade.color)} />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-semibold text-gray-900">{m.label}</h4>
-                          <p className="text-[10px] text-gray-500">{regs.length} regulations mapped</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500">Evidence items</span>
-                        <span className="font-bold text-gray-900">{totalEv}</span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
-                        <div className={cn("h-full rounded-full", getScoreColor(m.score))} style={{ width: `${m.score}%` }} />
-                      </div>
-                      <p className={cn("text-xs font-medium mt-1", moduleGrade.color)}>{m.score}% — {moduleGrade.grade}</p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Action Plan */}
-        {activeTab === "actions" && (
-          <div className="space-y-4">
-            <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-violet-50 border border-violet-100">
-              <Sparkles className="h-4 w-4 text-violet-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-violet-700">
-                ARIA generates an inspection action plan based on current compliance gaps. Actions are prioritised
-                by regulatory impact and timeliness. Complete these before any anticipated inspection visit.
-              </p>
-            </div>
-            {[
-              { priority: 1, action: "Complete management oversight for 4 outstanding significant records", owner: "Registered Manager", deadline: "2026-05-14", reg: "CHR2015 Reg 13", status: "overdue" },
-              { priority: 2, action: "Book and complete mandatory training renewals (safeguarding, first aid, medication)", owner: "Deputy Manager", deadline: "2026-05-19", reg: "CHR2015 Reg 34", status: "in_progress" },
-              { priority: 3, action: "Review and improve daily log recording standards with team", owner: "Senior RSW", deadline: "2026-05-16", reg: "CHR2015 Reg 6", status: "not_started" },
-              { priority: 4, action: "Complete overdue staff supervisions", owner: "Registered Manager", deadline: "2026-05-18", reg: "CHR2015 Reg 8", status: "not_started" },
-              { priority: 5, action: "Fill unfilled shifts for the coming week", owner: "Deputy Manager", deadline: "2026-05-13", reg: "CHR2015 Reg 34", status: "in_progress" },
-              { priority: 6, action: "Update fire safety drill log and evacuation plan", owner: "Maintenance Lead", deadline: "2026-05-20", reg: "NMS 10.3", status: "not_started" },
-              { priority: 7, action: "Prepare Reg 45 review — due June 2026", owner: "Responsible Individual", deadline: "2026-06-15", reg: "CHR2015 Reg 45", status: "not_started" },
-            ].map((item) => (
-              <Card key={item.priority}>
-                <CardContent className="p-4 flex items-start gap-4">
-                  <div className={cn(
-                    "h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0",
-                    item.priority <= 2 ? "bg-red-100 text-red-700" :
-                    item.priority <= 4 ? "bg-amber-100 text-amber-700" :
-                    "bg-blue-100 text-blue-700",
-                  )}>
-                    {item.priority}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-sm font-semibold text-gray-900">{item.action}</h4>
-                      <Badge className={cn(
-                        "text-[10px]",
-                        item.status === "overdue" ? "bg-red-100 text-red-700" :
-                        item.status === "in_progress" ? "bg-blue-100 text-blue-700" :
-                        "bg-gray-100 text-gray-600",
-                      )}>
-                        {item.status.replace("_", " ")}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span>Owner: {item.owner}</span>
-                      <span>Due: {new Date(item.deadline).toLocaleDateString("en-GB")}</span>
-                      <Badge variant="outline" className="text-[10px]">{item.reg}</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+        </div>
+      )}
+      <CareEventsPanel
+        title="Care Events — Compliance Evidence"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Inspection Readiness — Annex A completeness, Reg 45, management oversight, Reg 40, filing, Ofsted evidence, compliance gaps, readiness score, documentation status"
+        recordType="annex_a"
+        className="mt-6"
+      />
     </PageShell>
-  );
-}
-
-// ── Stat card ──────────────────────────────────────────────────────────────
-
-function StatCard({ label, value, icon: Icon, color }: { label: string; value: number; icon: React.ElementType; color: string }) {
-  return (
-    <Card>
-      <CardContent className="p-4 flex items-center gap-3">
-        <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", color)}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-          <p className="text-xs text-gray-500">{label}</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

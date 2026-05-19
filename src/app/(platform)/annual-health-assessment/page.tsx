@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,9 @@ import { getYPName, getStaffName } from "@/lib/seed-data";
 import type { AnnualHealthAssessment, AHAHealthDomain } from "@/types/extended";
 import { useAnnualHealthAssessments } from "@/hooks/use-annual-health-assessments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -101,14 +104,17 @@ export default function AnnualHealthAssessmentPage() {
     <PageShell
       title="Annual Health Assessment"
       subtitle="Statutory AHA · Care Planning Regulations 2010 · Quality Standard 7"
+      ariaContext={{ pageTitle: "Annual Health Assessment", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Annual Health Assessment" />
           <ExportButton data={data} columns={exportCols} filename="annual-health-assessment" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area">
+        <AriaPanel mode="assist" pageContext="Annual Health Assessment — statutory AHA, Care Planning Regulations 2010, Quality Standard 7, health action plans, immunisations, dental" recordType="annual_health_assessment" userRole="registered_manager" className="mb-5" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: "Active Assessments", value: total, icon: Heart, clr: "text-rose-600" },
@@ -314,6 +320,12 @@ export default function AnnualHealthAssessmentPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Related Care Events"
+        category="health"
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

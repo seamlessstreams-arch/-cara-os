@@ -11,7 +11,7 @@ import {
   Clock,
   Pin,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -32,6 +32,9 @@ import {
   useCreateCommunicationBookEntry,
 } from "@/hooks/use-communication-book-entries";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -157,10 +160,12 @@ export default function CommunicationBookPage() {
     <PageShell
       title="Communication Book"
       subtitle="Shift-to-shift communications, updates and action items"
+      ariaContext={{ pageTitle: "Communication Book", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="communication-book" />
           <PrintButton title="Communication Book" />
+          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> New Entry
           </button>
@@ -279,6 +284,18 @@ export default function CommunicationBookPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={14}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Communication Book — shift handover messages, parent/carer communication, professional messages, school liaison, daily updates, important notices, appointment reminders"
+        recordType="daily_log"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

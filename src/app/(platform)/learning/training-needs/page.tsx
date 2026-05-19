@@ -6,6 +6,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -810,6 +812,7 @@ export default function TrainingNeedsPage() {
     <PageShell
       title="Training Needs"
       subtitle="The core intelligence loop — from identification to completion"
+      ariaContext={{ pageTitle: "Training Needs Analysis", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -820,6 +823,7 @@ export default function TrainingNeedsPage() {
             <Plus className="h-3.5 w-3.5" />
             Add Need
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -902,6 +906,12 @@ export default function TrainingNeedsPage() {
 
       {showNew && <NewNeedDialog open onClose={() => setShowNew(false)} />}
       {sendingToStudio && <SendToStudioDialog need={sendingToStudio} onClose={() => setSendingToStudio(null)} />}
+      <AriaPanel
+        mode="assist"
+        pageContext="Training Needs Analysis — individual training needs, mandatory training gaps, skills assessments, competency development, workforce planning, CPD tracking, Reg 45 training evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -9,6 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -492,12 +494,14 @@ export default function RiAlertsPage() {
     <PageShell
       title="RI Alerts"
       subtitle="Auto-detected governance, compliance, and safeguarding alerts"
+      ariaContext={{ pageTitle: "RI Alerts", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={displayed} columns={ALERT_EXPORT_COLS} filename="ri-alerts" />
           <PrintButton title="RI Alerts Report" subtitle="Oak House Compliance" targetId="ri-alerts-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI Alerts — evidence upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -675,6 +679,13 @@ export default function RiAlertsPage() {
           </div>
         )}
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="RI Alerts — auto-detected governance alerts, compliance alerts, safeguarding alerts, regulatory triggers, escalation evidence, RI oversight, Ofsted readiness indicators"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }
+

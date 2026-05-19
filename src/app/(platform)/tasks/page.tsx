@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,9 @@ import type { Task } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { PageGuidance } from "@/components/ui/page-guidance";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const TASK_EXPORT_COLS: ExportColumn<Task>[] = [
   { header: "Title", accessor: (t) => t.title },
@@ -48,18 +51,18 @@ const TASKS_QUICK_CREATE_CONTEXT = { module: "tasks" } as const;
 // ── Status and priority display config ───────────────────────────────────────
 
 const STATUS_CONFIG: Record<string, { color: string; bgColor: string; icon: React.ElementType; label: string }> = {
-  not_started: { color: "text-[var(--cs-text-muted)]", bgColor: "bg-slate-100", icon: Circle, label: "Not Started" },
+  not_started: { color: "text-slate-500", bgColor: "bg-slate-100", icon: Circle, label: "Not Started" },
   in_progress:  { color: "text-blue-600",   bgColor: "bg-blue-100",   icon: Clock,       label: "In Progress" },
   blocked:      { color: "text-red-600",     bgColor: "bg-red-100",    icon: Ban,         label: "Blocked" },
   completed:    { color: "text-emerald-600", bgColor: "bg-emerald-100",icon: CheckCircle2,label: "Completed" },
-  cancelled:    { color: "text-[var(--cs-text-muted)]",   bgColor: "bg-slate-100",  icon: X,           label: "Cancelled" },
+  cancelled:    { color: "text-slate-400",   bgColor: "bg-slate-100",  icon: X,           label: "Cancelled" },
 };
 
 const PRIORITY_CONFIG: Record<string, { color: string; border: string; icon: React.ElementType; label: string }> = {
   urgent: { color: "bg-red-100 text-red-800",       border: "border-l-red-600",   icon: Flame,     label: "Urgent" },
   high:   { color: "bg-orange-100 text-orange-800", border: "border-l-orange-500",icon: ArrowUp,   label: "High"   },
   medium: { color: "bg-blue-100 text-blue-800",     border: "border-l-blue-400",  icon: ArrowRight,label: "Medium" },
-  low:    { color: "bg-slate-100 text-[var(--cs-text-secondary)]",   border: "border-l-slate-300", icon: ArrowDown, label: "Low"    },
+  low:    { color: "bg-slate-100 text-slate-600",   border: "border-l-slate-300", icon: ArrowDown, label: "Low"    },
 };
 
 type ViewMode = "list" | "kanban";
@@ -172,40 +175,35 @@ export default function TasksPage() {
     <PageShell
       title="Tasks"
       subtitle={`${filtered.length} task${filtered.length !== 1 ? "s" : ""} ${hasFilters ? "(filtered)" : ""}`}
+      ariaContext={{ pageTitle: "Tasks", sourceType: "general" }}
       quickCreateContext={TASKS_QUICK_CREATE_CONTEXT}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={TASK_EXPORT_COLS} filename="tasks" />
           <PrintButton title="Tasks" subtitle="Oak House — Task Management" targetId="tasks-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Tasks — supporting document upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="tasks-content" className="space-y-4 animate-fade-in">
-
-        <PageGuidance
-          title="Task management"
-          description="Assign, track, and sign off tasks across the home. Overdue tasks are flagged automatically. Manager sign-off is required before tasks can be closed."
-          evidenceTip="A clear task trail demonstrates accountability. Link tasks to care plans or incidents so inspectors can see follow-through."
-          ariaTip="ARIA can identify recurring overdue patterns and suggest workload rebalancing across your team."
-        />
 
         {/* ── Stats row ───────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
           {[
             { label: "Active",       value: stats.active,         icon: Target,       colour: "text-indigo-600", bg: "bg-indigo-50" },
             { label: "Overdue",      value: stats.overdue,        icon: AlertTriangle, colour: stats.overdue > 0 ? "text-red-600" : "text-emerald-600", bg: stats.overdue > 0 ? "bg-red-50" : "bg-emerald-50" },
-            { label: "Due Today",    value: stats.dueToday,       icon: CalendarDays,  colour: stats.dueToday > 0 ? "text-amber-600" : "text-[var(--cs-text-muted)]", bg: stats.dueToday > 0 ? "bg-amber-50" : "bg-slate-50" },
-            { label: "Urgent",       value: stats.urgent,         icon: Flame,         colour: stats.urgent > 0 ? "text-red-600" : "text-[var(--cs-text-muted)]", bg: stats.urgent > 0 ? "bg-red-50" : "bg-slate-50" },
-            { label: "Blocked",      value: stats.blocked,        icon: Ban,           colour: stats.blocked > 0 ? "text-red-600" : "text-[var(--cs-text-muted)]", bg: stats.blocked > 0 ? "bg-red-50" : "bg-slate-50" },
-            { label: "Sign-off",     value: stats.awaitingSignOff,icon: Star,          colour: stats.awaitingSignOff > 0 ? "text-amber-600" : "text-[var(--cs-text-muted)]", bg: stats.awaitingSignOff > 0 ? "bg-amber-50" : "bg-slate-50" },
-            { label: "Unassigned",   value: stats.unassigned,     icon: User,          colour: stats.unassigned > 0 ? "text-orange-600" : "text-[var(--cs-text-muted)]", bg: stats.unassigned > 0 ? "bg-orange-50" : "bg-slate-50" },
+            { label: "Due Today",    value: stats.dueToday,       icon: CalendarDays,  colour: stats.dueToday > 0 ? "text-amber-600" : "text-slate-400", bg: stats.dueToday > 0 ? "bg-amber-50" : "bg-slate-50" },
+            { label: "Urgent",       value: stats.urgent,         icon: Flame,         colour: stats.urgent > 0 ? "text-red-600" : "text-slate-400", bg: stats.urgent > 0 ? "bg-red-50" : "bg-slate-50" },
+            { label: "Blocked",      value: stats.blocked,        icon: Ban,           colour: stats.blocked > 0 ? "text-red-600" : "text-slate-400", bg: stats.blocked > 0 ? "bg-red-50" : "bg-slate-50" },
+            { label: "Sign-off",     value: stats.awaitingSignOff,icon: Star,          colour: stats.awaitingSignOff > 0 ? "text-amber-600" : "text-slate-400", bg: stats.awaitingSignOff > 0 ? "bg-amber-50" : "bg-slate-50" },
+            { label: "Unassigned",   value: stats.unassigned,     icon: User,          colour: stats.unassigned > 0 ? "text-orange-600" : "text-slate-400", bg: stats.unassigned > 0 ? "bg-orange-50" : "bg-slate-50" },
             { label: "Completed",    value: stats.completed,      icon: CheckCircle2,  colour: "text-emerald-600", bg: "bg-emerald-50" },
           ].map(({ label, value, icon: Icon, colour, bg }) => (
-            <div key={label} className={cn("rounded-xl border border-[var(--cs-border-subtle)] p-2.5 text-center", bg)}>
+            <div key={label} className={cn("rounded-xl border border-slate-100 p-2.5 text-center", bg)}>
               <Icon className={cn("h-3 w-3 mx-auto mb-0.5", colour)} />
               <div className={cn("text-sm font-bold tabular-nums", colour)}>{value}</div>
-              <div className="text-[9px] text-[var(--cs-text-muted)]">{label}</div>
+              <div className="text-[9px] text-slate-500">{label}</div>
             </div>
           ))}
         </div>
@@ -227,26 +225,26 @@ export default function TasksPage() {
 
         {/* ── ARIA follow-up task prompt ────────────────────────────────────── */}
         {ariaLinkContext && (
-          <div className="flex items-start gap-3 rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--cs-navy)]">
+          <div className="flex items-start gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-4">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[var(--cs-navy)]">
+              <p className="text-sm font-semibold text-violet-900">
                 Create a follow-up task for {getYPName(ariaLinkContext.childId)}
               </p>
-              <p className="text-xs text-[var(--cs-aria-gold)] mt-0.5 flex items-center gap-1">
+              <p className="text-xs text-violet-700 mt-0.5 flex items-center gap-1">
                 <Link2 className="h-3 w-3 shrink-0" />
                 Linked from {ariaLinkContext.sourceType.replace(/_/g, " ")} record{ariaLinkContext.linkedId ? ` · ${ariaLinkContext.linkedId}` : ""}
               </p>
-              <p className="text-xs text-[var(--cs-text-secondary)] mt-1">
+              <p className="text-xs text-violet-600 mt-1">
                 Use the <strong>+ New Task</strong> button at the top right to create a task.
                 The young person filter has been pre-set for you.
               </p>
             </div>
             <button
               onClick={() => setAriaLinkContext(null)}
-              className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] shrink-0"
+              className="text-violet-400 hover:text-violet-600 shrink-0"
             >
               <X className="h-4 w-4" />
             </button>
@@ -256,7 +254,7 @@ export default function TasksPage() {
         {/* ── Toolbar ──────────────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--cs-text-muted)]" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tasks…" className="pl-9" />
           </div>
 
@@ -283,7 +281,7 @@ export default function TasksPage() {
           <select
             value={filterPerson || ""}
             onChange={(e) => setFilterPerson(e.target.value || null)}
-            className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2 text-xs text-[var(--cs-text-secondary)] outline-none"
+            className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none"
           >
             <option value="">All staff</option>
             {activeStaff.map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
@@ -293,7 +291,7 @@ export default function TasksPage() {
           <select
             value={filterCategory || ""}
             onChange={(e) => setFilterCategory(e.target.value || null)}
-            className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2 text-xs text-[var(--cs-text-secondary)] outline-none"
+            className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none"
           >
             <option value="">All categories</option>
             {availableCategories.map((cat) => (
@@ -303,11 +301,11 @@ export default function TasksPage() {
 
           {/* Sort */}
           <div className="flex items-center gap-1">
-            <ArrowUpDown className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+            <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
             <select
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as SortKey)}
-              className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2 text-xs text-[var(--cs-text-secondary)] outline-none"
+              className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700 outline-none"
             >
               <option value="priority">Priority</option>
               <option value="due_date">Due date</option>
@@ -340,9 +338,9 @@ export default function TasksPage() {
 
         {/* Results count */}
         {hasFilters && (
-          <p className="text-xs text-[var(--cs-text-muted)]">
+          <p className="text-xs text-slate-500">
             Showing {filtered.length} of {allTasks.length} task{allTasks.length !== 1 ? "s" : ""}
-            {search && <span className="text-[var(--cs-text-muted)]"> matching &ldquo;{search}&rdquo;</span>}
+            {search && <span className="text-slate-400"> matching &ldquo;{search}&rdquo;</span>}
           </p>
         )}
 
@@ -379,11 +377,11 @@ export default function TasksPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h4 className={cn("text-sm font-semibold leading-snug", isComplete ? "line-through text-[var(--cs-text-muted)]" : "text-[var(--cs-navy)]")}>
+                          <h4 className={cn("text-sm font-semibold leading-snug", isComplete ? "line-through text-slate-400" : "text-slate-900")}>
                             {task.title}
                           </h4>
                           {task.description && (
-                            <p className="text-xs text-[var(--cs-text-muted)] mt-0.5 line-clamp-1">{task.description}</p>
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{task.description}</p>
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -407,12 +405,12 @@ export default function TasksPage() {
                           {TASK_CATEGORY_LABELS[task.category as keyof typeof TASK_CATEGORY_LABELS] || task.category}
                         </Badge>
                         {task.due_date && (
-                          <span className={cn("text-[11px] font-medium flex items-center gap-1", overdue ? "text-red-600" : dueToday ? "text-orange-600" : "text-[var(--cs-text-muted)]")}>
+                          <span className={cn("text-[11px] font-medium flex items-center gap-1", overdue ? "text-red-600" : dueToday ? "text-orange-600" : "text-slate-500")}>
                             <CalendarDays className="h-3 w-3" />{formatRelative(task.due_date)}
                           </span>
                         )}
                         {task.estimated_minutes && (
-                          <span className="text-[11px] text-[var(--cs-text-muted)] flex items-center gap-1">
+                          <span className="text-[11px] text-slate-400 flex items-center gap-1">
                             <Timer className="h-3 w-3" />{task.estimated_minutes}m
                           </span>
                         )}
@@ -427,6 +425,16 @@ export default function TasksPage() {
                             <AlertTriangle className="h-3 w-3" />{task.linked_incident_id.replace("inc_", "INC-")}
                           </Badge>
                         )}
+                        {(task as never as { care_event_id?: string }).care_event_id && (
+                          <Link
+                            href={`/care-events/${(task as never as { care_event_id: string }).care_event_id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[9px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                          >
+                            <Sparkles className="h-3 w-3" />
+                            Care Event
+                          </Link>
+                        )}
                       </div>
 
                       {/* Assignee + open indicator */}
@@ -434,14 +442,14 @@ export default function TasksPage() {
                         {task.assigned_to ? (
                           <div className="flex items-center gap-2">
                             <Avatar name={getStaffName(task.assigned_to)} size="xs" />
-                            <span className="text-xs text-[var(--cs-text-secondary)]">{getStaffName(task.assigned_to)}</span>
+                            <span className="text-xs text-slate-600">{getStaffName(task.assigned_to)}</span>
                           </div>
                         ) : (
-                          <span className="text-xs text-[var(--cs-text-muted)] flex items-center gap-1">
+                          <span className="text-xs text-slate-400 flex items-center gap-1">
                             <User className="h-3 w-3" />Unassigned
                           </span>
                         )}
-                        <ChevronRight className="h-4 w-4 text-[var(--cs-text-gentle)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ChevronRight className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                       {isComplete && task.evidence_note && (
                         <p className="mt-1 text-[10px] text-emerald-600 italic truncate">{task.evidence_note}</p>
@@ -478,7 +486,7 @@ export default function TasksPage() {
                       status === "in_progress"  ? "bg-blue-500"  :
                       status === "blocked"       ? "bg-red-500"   : "bg-emerald-500"
                     )} />
-                    <span className="text-sm font-semibold text-[var(--cs-text-secondary)]">{cfg.label}</span>
+                    <span className="text-sm font-semibold text-slate-700">{cfg.label}</span>
                     <Badge variant="outline" className="rounded-full text-xs ml-auto">{colTasks.length}</Badge>
                   </div>
                   <div className="space-y-2">
@@ -498,11 +506,11 @@ export default function TasksPage() {
                             overdue && "ring-1 ring-red-200",
                           )}
                         >
-                          <div className="text-xs font-semibold text-[var(--cs-navy)] leading-snug">{task.title}</div>
+                          <div className="text-xs font-semibold text-slate-900 leading-snug">{task.title}</div>
                           <div className="mt-2 flex flex-wrap items-center gap-1.5">
                             <Badge className={cn("text-[9px] rounded-full border-0", prio.color)}>{prio.label}</Badge>
                             {task.due_date && (
-                              <span className={cn("text-[10px]", overdue ? "text-red-600 font-semibold" : "text-[var(--cs-text-muted)]")}>
+                              <span className={cn("text-[10px]", overdue ? "text-red-600 font-semibold" : "text-slate-400")}>
                                 {formatRelative(task.due_date)}
                               </span>
                             )}
@@ -510,7 +518,7 @@ export default function TasksPage() {
                           {task.assigned_to && (
                             <div className="mt-2 flex items-center gap-1.5">
                               <Avatar name={getStaffName(task.assigned_to)} size="xs" />
-                              <span className="text-[10px] text-[var(--cs-text-muted)]">{getStaffName(task.assigned_to).split(" ")[0]}</span>
+                              <span className="text-[10px] text-slate-500">{getStaffName(task.assigned_to).split(" ")[0]}</span>
                             </div>
                           )}
                         </div>
@@ -532,6 +540,18 @@ export default function TasksPage() {
           </div>
         )}
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={14}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Tasks — outstanding tasks, follow-up tasks, management tasks, safeguarding tasks, compliance tasks, task assignment, task tracking, care planning tasks, Reg 45 action evidence"
+        recordType="task"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

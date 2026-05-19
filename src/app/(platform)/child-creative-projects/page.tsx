@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +40,9 @@ import {
 } from "@/types/extended";
 import { useCreativeProjectRecords } from "@/hooks/use-creative-project-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const mediumIcon = (m: CreativeProjectMedium) => {
   if (m === "music_instrument" || m === "music_production" || m === "singing") return Music;
@@ -133,10 +136,12 @@ export default function ChildCreativeProjectsPage() {
     <PageShell
       title="Child Creative Projects"
       subtitle="Per-child portfolios of creative work — therapeutic expression, identity, and growing skill"
+      ariaContext={{ pageTitle: "Creative Projects", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="child-creative-projects" />
           <PrintButton title="Creative Projects" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -391,6 +396,18 @@ export default function ChildCreativeProjectsPage() {
           Linked to After-School Clubs, Activities, Cultural Identity, and Outcomes pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Activities"
+        category="activity"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Creative Projects — art, music, writing, photography, drama, craft, film, individual creative pursuits, therapeutic expression, exhibition, portfolio, achievements, Reg 45 wellbeing"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

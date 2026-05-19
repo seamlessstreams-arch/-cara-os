@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,9 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useCommunicationProfiles } from "@/hooks/use-communication-profiles";
 import type { CommunicationProfile, CommLevel, CommSupportLevel, CommEffectiveness, SendStatus } from "@/types/extended";
 import { COMM_LEVEL_LABEL, COMM_SUPPORT_LEVEL_LABEL, COMM_EFFECTIVENESS_LABEL, SEND_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
@@ -55,7 +58,13 @@ export default function LanguageCommunicationPage() {
     <PageShell
       title="Language & Communication"
       subtitle="Communication Profiles · SEND · AAC · Staff Guidance"
-      actions={<PrintButton title="Communication Profiles" />}
+      ariaContext={{ pageTitle: "Language & Communication", sourceType: "child_record" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <PrintButton title="Communication Profiles" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+        </div>
+      }
     >
       <div id="print-area">
         {/* summary */}
@@ -247,6 +256,18 @@ export default function LanguageCommunicationPage() {
           <p>The Children&apos;s Homes Regulations 2015 and Quality Standards require that children&apos;s communication needs are understood and met. This includes ensuring that children can express their views, understand what is happening to them, and participate in decisions about their care. For children with SEND, reasonable adjustments must be made in line with the Equality Act 2010 and the Children and Families Act 2014. Communication profiles should be reviewed at least annually or when needs change. SALT recommendations must be integrated into daily practice. All staff should be trained in the communication strategies relevant to the children in their care. Ofsted inspectors will assess whether children&apos;s communication needs are being met and whether staff are equipped to support them.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Education & Wellbeing"
+        category={["education", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Language & Communication — child communication profiles, verbal/non-verbal, SEND, AAC devices, EHCP, speech therapy, staff communication strategies, interpreters"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

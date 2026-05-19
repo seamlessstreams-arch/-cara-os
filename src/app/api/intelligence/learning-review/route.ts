@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { incidentLearningReviews, nextFallbackId } from "@/lib/intelligence/fallback-store";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -12,7 +13,12 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get("status");
 
   if (!isSupabaseEnabled()) {
-    return NextResponse.json({ ok: true, reviews: [], persisted: false });
+    let rows = [...incidentLearningReviews];
+    if (homeId) rows = rows.filter((r) => r.home_id === homeId);
+    if (incidentId) rows = rows.filter((r) => r.incident_id === incidentId);
+    if (status) rows = rows.filter((r) => r.review_status === status);
+    rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    return NextResponse.json({ ok: true, reviews: rows, persisted: true });
   }
 
   const supabase = createServerClient() as unknown as LooseSupabase;
@@ -38,7 +44,27 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isSupabaseEnabled()) {
-      return NextResponse.json({ ok: true, persisted: false });
+      const now = new Date().toISOString();
+      const row = {
+        id: nextFallbackId("inc"),
+        home_id: homeId as string,
+        child_id: (childId as string) ?? "",
+        incident_id: incidentId as string,
+        incident_date: now.slice(0, 10),
+        incident_title: "",
+        incident_category: "",
+        severity: "medium",
+        summary: "",
+        staff_involved: [],
+        review_status: "required",
+        manager_notes: "",
+        learning_summary: "",
+        trigger_analysis: null,
+        created_at: now,
+        updated_at: now,
+      };
+      incidentLearningReviews.unshift(row);
+      return NextResponse.json({ ok: true, review: row, persisted: true });
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;
@@ -74,7 +100,18 @@ export async function PATCH(request: NextRequest) {
     const { id, homeId, actorUserId, actorRole, ...updates } = body;
 
     if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
-    if (!isSupabaseEnabled()) return NextResponse.json({ ok: true, persisted: false });
+    if (!isSupabaseEnabled()) {
+      const idx = incidentLearningReviews.findIndex((r) => r.id === id);
+      if (idx === -1) return NextResponse.json({ error: "not found" }, { status: 404 });
+      const row = incidentLearningReviews[idx];
+      const patched = { ...row, updated_at: new Date().toISOString() };
+      if (updates.reviewStatus) patched.review_status = updates.reviewStatus;
+      if (updates.managerNotes !== undefined) patched.manager_notes = updates.managerNotes;
+      if (updates.learningSummary !== undefined) patched.learning_summary = updates.learningSummary;
+      if (updates.triggerAnalysis !== undefined) patched.trigger_analysis = updates.triggerAnalysis;
+      incidentLearningReviews[idx] = patched;
+      return NextResponse.json({ ok: true, review: patched, persisted: true });
+    }
 
     const supabase = createServerClient() as unknown as LooseSupabase;
     const dbUpdates: Record<string, unknown> = { updated_at: new Date().toISOString() };

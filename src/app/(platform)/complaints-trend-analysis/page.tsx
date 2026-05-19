@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -28,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { useComplaintTrends } from "@/hooks/use-complaint-trends";
 import type { ComplaintTrend } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 export default function ComplaintsTrendAnalysisPage() {
   const { data: res, isLoading } = useComplaintTrends();
@@ -76,10 +79,12 @@ export default function ComplaintsTrendAnalysisPage() {
     <PageShell
       title="Complaints Trend Analysis"
       subtitle="Quarterly aggregated analysis — patterns, root causes, and improvements"
+      ariaContext={{ pageTitle: "Complaints Trend Analysis", sourceType: "complaint" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="complaints-trend-analysis" />
           <PrintButton title="Complaints Trend Analysis" />
+          <AriaStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -301,6 +306,12 @@ export default function ComplaintsTrendAnalysisPage() {
           authorities. Children&apos;s complaints are tracked separately to ensure their voice is amplified.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Complaints"
+        category="complaint"
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

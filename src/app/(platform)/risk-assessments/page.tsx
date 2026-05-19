@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useRiskAssessments, useCreateRiskAssessment } from "@/hooks/use-risk-assessments";
@@ -20,8 +21,11 @@ import type { RiskAssessment, RiskDomain, RiskLevel, RiskTrend, RiskMitigation }
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   ShieldAlert, AlertTriangle, CheckCircle2, Clock, Calendar,
-  Shield, ArrowUp, ArrowDown, Minus, Loader2
+  Shield, ArrowUp, ArrowDown, Minus, Loader2, ArrowUpRight,
 } from "lucide-react";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 
 const DOMAIN_META: Record<RiskDomain, { label: string; color: string }> = {
@@ -133,10 +137,12 @@ export default function RiskAssessmentsPage() {
     <PageShell
       title="Risk Assessments"
       subtitle="Individual risk assessments — triggers, mitigations, and contingency plans"
+      ariaContext={{ pageTitle: "Risk Assessments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Risk Assessments" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="risk-assessments" />
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Assessment</Button>
         </div>
       }
@@ -145,6 +151,7 @@ export default function RiskAssessmentsPage() {
         <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
       ) : (
       <div id="print-area" className="space-y-6">
+        <AriaPanel mode="assist" pageContext="Risk Assessments — individual risk assessment, triggers, mitigations, contingency planning, placement risk management" recordType="risk_assessment" userRole="registered_manager" className="mb-2" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Total Assessments", value: stats.total,     icon: <ShieldAlert className="h-4 w-4" />,    color: "text-blue-600" },
@@ -229,6 +236,16 @@ export default function RiskAssessmentsPage() {
                         <Badge className={cn("text-xs", levelM.bg, levelM.color)}>{levelM.label}</Badge>
                         <span className="flex items-center gap-0.5 text-xs">{TREND_ICON[a.trend]} <span className="text-muted-foreground">{a.trend}</span></span>
                         {reviewDue && <Badge variant="destructive" className="text-xs">Review due</Badge>}
+                        {(a as never as { care_event_id?: string }).care_event_id && (
+                          <Link
+                            href={`/care-events/${(a as never as { care_event_id: string }).care_event_id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                          >
+                            <ArrowUpRight className="h-3 w-3" />
+                            From Care Event
+                          </Link>
+                        )}
                       </div>
                       <p className="font-semibold">{getYPName(a.child_id)} — {domainM.label}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
@@ -359,6 +376,12 @@ export default function RiskAssessmentsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Behaviour & Risk"
+        category={["behaviour", "safeguarding"]}
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

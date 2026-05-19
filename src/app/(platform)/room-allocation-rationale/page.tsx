@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -30,6 +30,9 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useRoomAllocationRecords } from "@/hooks/use-room-allocation-records";
 import type { RoomAllocationRecord } from "@/types/extended";
 import { ROOM_ALLOCATION_SUITABILITY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── page ────────────────────────────────────────────────────────────── */
 
@@ -87,10 +90,12 @@ export default function RoomAllocationRationalePage() {
     <PageShell
       title="Room Allocation Rationale"
       subtitle="Why each child has the bedroom they have — documented, child-led, regularly reviewed"
+      ariaContext={{ pageTitle: "Room Allocation Rationale", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="room-allocation-rationale" />
           <PrintButton title="Room Allocation Rationale" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -341,6 +346,18 @@ export default function RoomAllocationRationalePage() {
           Checklist.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Placement"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Room Allocation Rationale — bedroom allocation decisions, placement compatibility, safety rationale, gender considerations, needs-based allocation, Reg 12/13 compliance evidence"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

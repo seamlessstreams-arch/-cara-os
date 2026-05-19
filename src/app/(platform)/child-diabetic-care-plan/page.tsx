@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,9 @@ import {
 import type { DiabetesType } from "@/types/extended";
 import { useDiabeticCarePlans } from "@/hooks/use-diabetic-care-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -125,10 +128,12 @@ export default function ChildDiabeticCarePlanPage() {
     <PageShell
       title="Child Diabetic Care Plan"
       subtitle="Per-child Type 1/2 diabetes plan · NICE NG18 · JBDS-IP · Diabetes UK School Plan · Quality Standard 8"
+      ariaContext={{ pageTitle: "Diabetic Care Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Diabetic Care Plans" />
           <ExportButton data={data} columns={exportCols} filename="child-diabetic-care-plan" />
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -421,6 +426,18 @@ export default function ChildDiabeticCarePlanPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Medication"
+        category={["health", "medication"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Diabetic Care Plans — Type 1/Type 2 diabetes, blood glucose monitoring, insulin regime, hypo/hyperglycaemia management, dietary needs, school insulin pen, emergency action, AHA"
+        recordType="medication"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

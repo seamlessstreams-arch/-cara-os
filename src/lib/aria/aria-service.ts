@@ -36,9 +36,6 @@ import type {
   AriaGenerationResult,
   AriaInvocationInput,
 } from "@/lib/aria/aria-types";
-import { buildAriaContext } from "@/lib/aria/aria-context-builder";
-import { scanForSafeguardingFlags } from "@/lib/aria/aria-safeguarding-guardrails";
-import { linkCommittedOutput } from "@/lib/aria/aria-smart-linking";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = SupabaseClient<any, "public", any>;
@@ -1323,132 +1320,92 @@ export const ARIA_COMMANDS: Record<AriaCommandId, AriaCommandSpec> = {
       "Identify documents, plans, or records that may need updating following the change described in the source. For each: document type, why it may need updating, and suggested action. Stay grounded in the source.",
   },
 
-  // ── Writing to the Child ────────────────────────────────────────────────
-  write_to_child_incident: {
-    id: "write_to_child_incident",
-    label: "Write to child — incident",
-    description:
-      "Generate a child-friendly version of an incident record using trauma-informed language.",
-    modules: ["incidents"],
-    requiredPermission: "aria.rewrite",
+  // ─── Care plans ────────────────────────────────────────────────────────────
+
+  draft_care_plan_update: {
+    id: "draft_care_plan_update",
+    label: "Draft care plan update",
+    description: "Draft a professional update to a child's care plan based on recent records and observations.",
+    modules: ["care_plan"],
+    requiredPermission: "aria.generate_drafts",
     approvalRequired: true,
-    canCreateTasks: false,
-    canCommit: true,
-    riskLevel: "high",
-    systemPromptFragment:
-      "Translate this incident record into a letter a child can understand. Use PACE (Playfulness, Acceptance, Curiosity, Empathy) and ARC (Attachment, Regulation, Competency) frameworks. Avoid all professional jargon. Never blame the child. Explain adult concern with dignity. Offer clear support. Adjust reading level to the child's age.",
-  },
-  write_to_child_complaint: {
-    id: "write_to_child_complaint",
-    label: "Write to child — complaint",
-    description:
-      "Generate a child-friendly version of a complaint response using trauma-informed language.",
-    modules: ["complaints"],
-    requiredPermission: "aria.rewrite",
-    approvalRequired: true,
-    canCreateTasks: false,
-    canCommit: true,
-    riskLevel: "high",
-    systemPromptFragment:
-      "Translate this complaint response into a letter the child can understand. Validate the child's voice. Explain what was looked into and what happens next. Use PACE and ARC. Avoid jargon and blame. Age-appropriate language.",
-  },
-  write_to_child_missing_from_care: {
-    id: "write_to_child_missing_from_care",
-    label: "Write to child — missing from care",
-    description:
-      "Generate a child-friendly version of a missing-from-care return discussion.",
-    modules: ["missing_from_care"],
-    requiredPermission: "aria.rewrite",
-    approvalRequired: true,
-    canCreateTasks: false,
-    canCommit: true,
-    riskLevel: "high",
-    systemPromptFragment:
-      "Translate this missing-from-care return record into a letter the child can understand. Express genuine worry without blame. Explain why adults were concerned. Use PACE and ARC frameworks. Focus on safety and support. Age-appropriate language.",
-  },
-  write_to_child_weekly_summary: {
-    id: "write_to_child_weekly_summary",
-    label: "Write to child — weekly summary",
-    description:
-      "Generate a child-friendly version of the weekly summary highlighting positives and next steps.",
-    modules: ["daily_logs"],
-    requiredPermission: "aria.rewrite",
-    approvalRequired: true,
-    canCreateTasks: false,
-    canCommit: true,
+    canCreateTasks: true,
+    canCommit: false,
     riskLevel: "medium",
     systemPromptFragment:
-      "Translate this weekly summary into a letter the child can read. Celebrate positives. Gently mention any challenges with empathy. Explain what is planned next week. Use PACE and ARC. Avoid jargon. Age-appropriate language.",
+      "Draft a care plan update based on the source records provided. Include: progress against current goals, changes in the child's presentation or needs, updated objectives, and any areas where the plan no longer reflects the child's reality. Use child-centred, outcome-focused language. This is a draft for professional review — do not present as final.",
   },
-  write_to_child_direct_work: {
-    id: "write_to_child_direct_work",
-    label: "Write to child — direct work",
-    description:
-      "Generate a child-friendly summary of a direct work or key work session.",
-    modules: ["key_work"],
-    requiredPermission: "aria.rewrite",
+
+  identify_care_plan_gaps: {
+    id: "identify_care_plan_gaps",
+    label: "Identify care plan gaps",
+    description: "Review a care plan and identify areas that are missing, vague, or not outcome-focused.",
+    modules: ["care_plan"],
+    requiredPermission: "aria.analyse_risk",
     approvalRequired: true,
-    canCreateTasks: false,
-    canCommit: true,
+    canCreateTasks: true,
+    canCommit: false,
     riskLevel: "medium",
     systemPromptFragment:
-      "Translate this direct work / key work session record into a letter the child can understand. Reflect what was discussed and what the child shared. Validate their feelings. Explain any plans or goals. Use PACE and ARC. Age-appropriate language.",
+      "Review the care plan provided. Identify: goals that lack measurable outcomes, areas where the child's voice is absent, gaps in health, education, or emotional wellbeing, inconsistencies with the child's current presentation, and missing review dates. Be specific and constructive. Focus on what needs strengthening, not just what is present.",
   },
-  write_to_child_oversight: {
-    id: "write_to_child_oversight",
-    label: "Write to child — management oversight",
-    description:
-      "Generate a child-friendly version of management oversight notes.",
-    modules: ["management_oversight"],
-    requiredPermission: "aria.rewrite",
+
+  check_care_plan_progress: {
+    id: "check_care_plan_progress",
+    label: "Check care plan progress",
+    description: "Assess whether care plan goals are being actively worked towards based on the record of care.",
+    modules: ["care_plan"],
+    requiredPermission: "aria.analyse_risk",
     approvalRequired: true,
-    canCreateTasks: false,
-    canCommit: true,
-    riskLevel: "high",
-    systemPromptFragment:
-      "Translate this management oversight note into a letter the child can understand. Explain adult decisions in plain language. Show the child their voice was heard. Use PACE and ARC. Never use statutory or professional jargon. Age-appropriate language.",
-  },
-  write_to_child_key_work: {
-    id: "write_to_child_key_work",
-    label: "Write to child — key work session",
-    description:
-      "Generate a child-friendly summary of a key work session.",
-    modules: ["key_work"],
-    requiredPermission: "aria.rewrite",
-    approvalRequired: true,
-    canCreateTasks: false,
-    canCommit: true,
-    riskLevel: "medium",
-    systemPromptFragment:
-      "Translate this key work session record into a letter the child can understand. Reflect the session warmly. Validate the child's participation. Note any goals or next steps in child-friendly terms. Use PACE and ARC. Age-appropriate language.",
-  },
-  child_lens_check: {
-    id: "child_lens_check",
-    label: "Child Lens Check",
-    description:
-      "Score any text against the Child Lens: clarity, dignity, jargon risk, blame risk, explanation of concern, and support offered.",
-    modules: [],
-    requiredPermission: "aria.summarise",
-    approvalRequired: false,
     canCreateTasks: false,
     canCommit: false,
-    riskLevel: "low",
-    systemPromptFragment:
-      "Analyse the text through the Child Lens. Score 0-100 on: clarity (sentence simplicity), dignity (absence of blame/labelling), jargon risk (presence of professional terms), blame risk (presence of blaming language), explanation of concern (how well adult worry is explained), support offered (how clearly help is described). Return overall weighted score and per-dimension breakdowns.",
-  },
-  improve_child_friendly_text: {
-    id: "improve_child_friendly_text",
-    label: "Improve child-friendly text",
-    description:
-      "Improve existing child-facing text to raise its Child Lens score.",
-    modules: [],
-    requiredPermission: "aria.rewrite",
-    approvalRequired: true,
-    canCreateTasks: false,
-    canCommit: true,
     riskLevel: "medium",
     systemPromptFragment:
-      "Improve the child-facing text to raise the Child Lens score. Replace any jargon with plain words. Remove any blaming language. Shorten sentences for clarity. Add supportive phrases. Ensure adult concern is explained with dignity. Use PACE and ARC frameworks. Maintain the original meaning. Age-appropriate language.",
+      "Review the source records and assess progress against the care plan goals. For each goal: is there evidence of active work? What does the evidence show about the child's progress? What is missing? Be evidence-based and child-centred. Flag goals where there is no evidence of progress or where the child's needs appear to have changed.",
+  },
+
+  // ─── Missing episodes ──────────────────────────────────────────────────────
+
+  draft_missing_episode_report: {
+    id: "draft_missing_episode_report",
+    label: "Draft missing episode report",
+    description: "Draft a professional missing episode record including notifications and immediate actions.",
+    modules: ["missing_episode"],
+    requiredPermission: "aria.generate_drafts",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Draft a missing episode record based on the details provided. Include: time and circumstances of going missing, notifications made (police, social worker, responsible individual), search undertaken, return details, and immediate risk assessment. Use factual, precise language. Flag any contextual risk factors. This is a statutory record — all content requires verification and human approval.",
+  },
+
+  missing_episode_risk_analysis: {
+    id: "missing_episode_risk_analysis",
+    label: "Missing episode risk analysis",
+    description: "Analyse the risk factors in a missing episode based on the child's history and current context.",
+    modules: ["missing_episode"],
+    requiredPermission: "aria.analyse_risk",
+    approvalRequired: true,
+    canCreateTasks: true,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Analyse the risk factors in this missing episode. Apply the LIVERS framework: consider the child's lived experience, immediate and cumulative risk, environmental factors, relational drivers, and whether safe return is sustainable. Identify whether this episode is consistent with previous patterns, whether contextual safeguarding risks are present, and what actions are required. Be specific. High confidence claims require clear evidence from the source records provided.",
+  },
+
+  missing_episode_return_interview_notes: {
+    id: "missing_episode_return_interview_notes",
+    label: "Draft return to care interview notes",
+    description: "Draft structured notes for a return-to-care interview following a missing episode.",
+    modules: ["missing_episode"],
+    requiredPermission: "aria.generate_drafts",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "high",
+    systemPromptFragment:
+      "Draft structured notes for a return-to-care interview following a missing episode. Use a trauma-informed, child-centred approach. Include: where the child went, who they were with, whether they felt safe, any disclosures, how the child is feeling now, any immediate needs, and the child's voice captured in their own words where possible. This is a draft — the interview must be conducted by a trained professional. Do not invent content; use only what is provided.",
   },
 };
 
@@ -1506,20 +1463,9 @@ export async function invokeAriaCommand(
     };
   }
 
-  // Build safe context from Cornerstone records (Phase 9)
-  const context = await buildAriaContext({
-    actor: args.actor,
-    homeId: args.homeId,
-    childId: args.childId,
-    staffId: args.staffId,
-    sourceModule: args.sourceModule,
-    sourceRecordId: args.sourceRecordId,
-    sourceRecordType: args.sourceRecordType,
-  });
-
-  // Build the prompts (context injected into user prompt)
+  // Build the prompts
   const systemPrompt = buildSystemPrompt(command);
-  const userPrompt = buildUserPrompt(args, context.contextSnippet);
+  const userPrompt = buildUserPrompt(args);
 
   // Persist the request (best effort — if Supabase is not configured, we
   // still call the provider and return the draft, but with persisted=false).
@@ -1558,7 +1504,6 @@ export async function invokeAriaCommand(
 
   const cleanedText = applyAriaPostprocessor(generation.text);
   const confidence = inferConfidence(command, cleanedText);
-  const guardrails = scanForSafeguardingFlags(cleanedText, command.riskLevel);
   const outputId = `aria_out_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   if (supabase) {
@@ -1578,13 +1523,8 @@ export async function invokeAriaCommand(
       approval_required: command.approvalRequired,
       status: "draft",
       confidence,
-      redacted_context_summary: context.fetched
-        ? `${redactedContextSummaryFor(args)}; ${context.redactedSummary}`
-        : redactedContextSummaryFor(args),
-      context_record_ids: [
-        ...contextRecordIdsFor(args),
-        ...context.records.map((r) => r.sourceRecordId),
-      ],
+      redacted_context_summary: redactedContextSummaryFor(args),
+      context_record_ids: contextRecordIdsFor(args),
     });
 
     await writeAuditEvent({
@@ -1610,20 +1550,14 @@ export async function invokeAriaCommand(
       generatedText: cleanedText,
       structuredOutput: {},
       confidence,
-      redactedContextSummary: context.fetched
-        ? `${redactedContextSummaryFor(args)}; ${context.redactedSummary}`
-        : redactedContextSummaryFor(args),
-      contextRecordIds: [
-        ...contextRecordIdsFor(args),
-        ...context.records.map((r) => r.sourceRecordId),
-      ],
+      redactedContextSummary: redactedContextSummaryFor(args),
+      contextRecordIds: contextRecordIdsFor(args),
       ariaLabel: "Aria suggested draft",
       llmUsed: generation.llmUsed,
       providerId: generation.providerId,
       modelId: generation.modelId,
-      approvalRequired: guardrails.mandatoryReview || command.approvalRequired,
+      approvalRequired: command.approvalRequired,
       persisted: !!supabase,
-      guardrails: guardrails.flagged ? guardrails : undefined,
     },
     status: 200,
     providerConfig,
@@ -1771,19 +1705,6 @@ export async function applyApprovalDecision(args: ApplyApprovalArgs): Promise<{
     eventDetail: { decisionText: args.decisionText },
   });
 
-  // Smart linking — when committing, write the bidirectional link
-  if (
-    args.decision === "commit" &&
-    args.committedRecordType &&
-    args.committedRecordId
-  ) {
-    await linkCommittedOutput(
-      args.outputId,
-      args.committedRecordType,
-      args.committedRecordId,
-    );
-  }
-
   return { ok: true, status: 200 };
 }
 
@@ -1807,7 +1728,7 @@ function buildSystemPrompt(command: AriaCommandSpec): string {
   ].join("\n");
 }
 
-function buildUserPrompt(args: AriaInvokeArgs, contextSnippet?: string): string {
+function buildUserPrompt(args: AriaInvokeArgs): string {
   const lines: string[] = [];
   lines.push(`COMMAND: ${args.commandId}`);
   if (args.homeId) lines.push(`HOME: ${args.homeId}`);
@@ -1821,10 +1742,6 @@ function buildUserPrompt(args: AriaInvokeArgs, contextSnippet?: string): string 
     lines.push("");
     lines.push("ADDITIONAL CONTEXT (metadata, do not invent beyond this):");
     lines.push(JSON.stringify(args.inputMetadata, null, 2));
-  }
-  if (contextSnippet) {
-    lines.push("");
-    lines.push(contextSnippet);
   }
   return lines.join("\n");
 }

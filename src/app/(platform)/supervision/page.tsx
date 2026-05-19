@@ -27,6 +27,9 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { api } from "@/hooks/use-api";
 import type { Supervision, SupervisionAction } from "@/types";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 type Tab = "supervision" | "probation" | "appraisals" | "goals";
 
@@ -689,6 +692,7 @@ export default function SupervisionPage() {
     <PageShell
       title="Supervision & Performance"
       subtitle="Supervision records, probation, appraisals, and individual goal tracking"
+      ariaContext={{ pageTitle: "Supervision & Performance", sourceType: "general" }}
       quickCreateContext={{ module: "supervision", defaultTaskCategory: "supervision", defaultFormType: "supervision_record", preferredTab: "form" }}
       actions={
         <div className="flex items-center gap-2">
@@ -698,6 +702,7 @@ export default function SupervisionPage() {
           <Button size="sm" onClick={() => setScheduleOpen(true)}>
             <Plus className="h-3.5 w-3.5" />Schedule Supervision
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -1098,6 +1103,18 @@ export default function SupervisionPage() {
           </div>
         )}
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Supervision & Performance — staff supervision records, performance reviews, development plans, appraisal records, management oversight, Reg 40 supervision compliance, Ofsted workforce evidence"
+        recordType="supervision"
+        className="mt-6"
+      />
     </PageShell>
     </>
   );

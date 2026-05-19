@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,9 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useStaffSaferCaringRecords } from "@/hooks/use-staff-safer-caring-records";
 import type { StaffSaferCaringRecord, StaffSaferCaringPlanStatus } from "@/types/extended";
 import { STAFF_SAFER_CARING_PLAN_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -87,7 +90,9 @@ export default function StaffSaferCaringPage() {
   }
 
   return (
-    <PageShell title="Safer Caring Plans" subtitle="Children's Homes (England) Regulations 2015 · Schedule 1 · Safer Recruitment" actions={<div className="flex items-center gap-2"><PrintButton title="Safer Caring Plans" /><ExportButton data={filtered} columns={exportCols} filename="safer-caring-plans" /></div>}>
+    <PageShell title="Safer Caring Plans" subtitle="Children's Homes (England) Regulations 2015 · Schedule 1 · Safer Recruitment" 
+      ariaContext={{ pageTitle: "Safer Caring Plans", sourceType: "staff" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Safer Caring Plans" /><ExportButton data={filtered} columns={exportCols} filename="safer-caring-plans" /><AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} /></div>}>
       <div id="print-area">
         {/* ── summary stats ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -209,6 +214,18 @@ export default function StaffSaferCaringPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category={["safeguarding", "behaviour"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Safer Caring Plans — staff individual safe caring agreements, physical boundaries, professional conduct, safeguarding obligations, allegation risk reduction, DBS, restrictions"
+        recordType="safeguarding"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

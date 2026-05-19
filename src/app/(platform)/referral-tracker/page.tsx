@@ -18,19 +18,27 @@ import {
   Timer,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useReferralTrackerRecords } from "@/hooks/use-referral-tracker-records";
+import { useReferralTrackerRecords, useCreateReferralTrackerRecord } from "@/hooks/use-referral-tracker-records";
 import type { ReferralTrackerRecord, ReferralTrackerStatus } from "@/types/extended";
 import { REFERRAL_TRACKER_STATUS_LABEL } from "@/types/extended";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour map ────────────────────────────────────────────────── */
 
@@ -50,6 +58,19 @@ const STATUS_META: Record<ReferralTrackerStatus, { colour: string }> = {
 export default function ReferralTrackerPage() {
   const { data: records = [], isLoading } = useReferralTrackerRecords();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const createReferral = useCreateReferralTrackerRecord();
+  const [rfForm, setRfForm] = useState({ child_ref: "", age: "", gender: "male", referring_authority: "", social_worker_name: "", reason: "", referral_date: new Date().toISOString().slice(0, 10) });
+  const setRF = (k: string, v: unknown) => setRfForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveReferral = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rfForm.referring_authority.trim()) { toast.error("Referring authority is required."); return; }
+    await createReferral.mutateAsync({ child_ref: rfForm.child_ref.trim() || `REF-${Date.now()}`, age: parseInt(rfForm.age) || 0, gender: rfForm.gender, referring_authority: rfForm.referring_authority.trim(), social_worker_name: rfForm.social_worker_name.trim(), referral_date: rfForm.referral_date, status: "received" as ReferralTrackerStatus, reason_for_placement: rfForm.reason.trim(), referral_documents_received: false, impact_assessment_completed: false, matching_panel_date: null, matching_panel_outcome: null, decision_date: null, admission_date: null, decline_reason: null, notes: "", timeline: [] });
+    toast.success("Referral added.");
+    setRfForm({ child_ref: "", age: "", gender: "male", referring_authority: "", social_worker_name: "", reason: "", referral_date: new Date().toISOString().slice(0, 10) });
+    setShowNew(false);
+  };
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -143,13 +164,15 @@ export default function ReferralTrackerPage() {
     <PageShell
       title="Referral Tracker"
       subtitle="Tracking incoming placement referrals from initial contact through to matching panel decision and outcome"
+      ariaContext={{ pageTitle: "Referral Tracker", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="referral-tracker" />
           <PrintButton title="Referral Tracker" />
-          <Button onClick={() => {}}>
+          <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> New Referral
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -380,6 +403,37 @@ export default function ReferralTrackerPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Admissions & Referrals"
+        category="professional_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Referral Tracker — placement referrals, matching requests, commissioning, referral outcomes, placement decisions, matching criteria, new admissions pipeline, Annex A evidence"
+        recordType="placement_plan"
+        className="mt-6"
+      />
+      <Dialog open={showNew} onOpenChange={setShowNew}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>New Referral</DialogTitle></DialogHeader>
+          <form onSubmit={handleSaveReferral} className="space-y-3 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Child Ref</Label><Input className="mt-1" placeholder="e.g. REF-001" value={rfForm.child_ref} onChange={(e) => setRF("child_ref", e.target.value)} /></div>
+              <div><Label>Age</Label><Input type="number" className="mt-1" placeholder="e.g. 14" value={rfForm.age} onChange={(e) => setRF("age", e.target.value)} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Gender</Label><Select value={rfForm.gender} onValueChange={(v) => setRF("gender", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select></div>
+              <div><Label>Referral Date</Label><Input type="date" className="mt-1" value={rfForm.referral_date} onChange={(e) => setRF("referral_date", e.target.value)} /></div>
+            </div>
+            <div><Label>Referring Authority *</Label><Input className="mt-1" placeholder="e.g. Essex County Council" value={rfForm.referring_authority} onChange={(e) => setRF("referring_authority", e.target.value)} /></div>
+            <div><Label>Social Worker Name</Label><Input className="mt-1" placeholder="Name of allocated social worker" value={rfForm.social_worker_name} onChange={(e) => setRF("social_worker_name", e.target.value)} /></div>
+            <div><Label>Reason for Placement</Label><Textarea className="mt-1" rows={3} placeholder="Brief reason for placement referral" value={rfForm.reason} onChange={(e) => setRF("reason", e.target.value)} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createReferral.isPending}>{createReferral.isPending ? "Saving…" : "Add Referral"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

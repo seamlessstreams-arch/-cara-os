@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
+import { reg44Visits, nextFallbackId } from "@/lib/intelligence/fallback-store";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = any;
@@ -11,7 +12,11 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get("status");
 
   if (!isSupabaseEnabled()) {
-    return NextResponse.json({ ok: true, visits: [], persisted: false });
+    let rows = [...reg44Visits];
+    if (homeId) rows = rows.filter((r) => r.home_id === homeId);
+    if (status) rows = rows.filter((r) => r.status === status);
+    rows.sort((a, b) => b.visit_date.localeCompare(a.visit_date));
+    return NextResponse.json({ ok: true, visits: rows, persisted: true });
   }
 
   const supabase = createServerClient() as unknown as LooseSupabase;
@@ -36,7 +41,26 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isSupabaseEnabled()) {
-      return NextResponse.json({ ok: true, persisted: false });
+      const now = new Date().toISOString();
+      const row = {
+        id: nextFallbackId("v"),
+        home_id: homeId as string,
+        visit_date: visitDate as string,
+        visitor_name: visitorName as string,
+        status: "scheduled",
+        summary: (findings as string) ?? null,
+        strengths: null,
+        concerns: null,
+        children_views_summary: null,
+        staff_views_summary: null,
+        manager_response: null,
+        ri_response: null,
+        created_by: (actorUserId as string) ?? null,
+        created_at: now,
+        updated_at: now,
+      };
+      reg44Visits.unshift(row);
+      return NextResponse.json({ ok: true, visit: row, persisted: true });
     }
 
     const supabase = createServerClient() as unknown as LooseSupabase;

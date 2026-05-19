@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,9 @@ import { cn } from "@/lib/utils";
 import { useKeyworkSessions, useCreateKeyworkSession, type KeyworkSession } from "@/hooks/use-keywork-sessions";
 import { type KeyworkerSessionFormat, KEYWORKER_SESSION_FORMAT_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
@@ -117,9 +120,11 @@ export default function ChildKeyworker1to1SessionsPage() {
     <PageShell
       title="1:1 Keyworker Sessions"
       subtitle="Protected weekly/fortnightly time between key worker and young person — themes, voice, agreed actions, follow-up"
+      ariaContext={{ pageTitle: "1:1 Keyworker Sessions", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="1:1 Keyworker Sessions" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="keyworker-1to1-sessions" />,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "keywork", record_id: "home_oak", home_id: "home_oak" }} />,
         <Button key="n" size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Session</Button>,
       ]}
     >
@@ -360,6 +365,18 @@ export default function ChildKeyworker1to1SessionsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="1:1 Keyworker Sessions — keywork records, session notes, emotional check-in, care plan review, goals, wishes and feelings, direct work, LAC review preparation, Reg 45 evidence"
+        recordType="keywork"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

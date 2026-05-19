@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -33,6 +33,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<RiteRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -142,10 +145,12 @@ export default function ChildReligiousRiteMilestonesPage() {
     <PageShell
       title="Religious Rites & Milestones"
       subtitle="Per-child rite-of-passage record — honouring faith milestones in care, including those that pre-date the placement"
+      ariaContext={{ pageTitle: "Religious Rites & Milestones", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-religious-rite-milestones" />
           <PrintButton title="Religious Rites & Milestones" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -351,6 +356,18 @@ export default function ChildReligiousRiteMilestonesPage() {
           practice).
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Religious Rites & Milestones — faith celebrations, baptism, bar/bat mitzvah, confirmation, Eid, Diwali, Ramadan, religious instruction, cultural identity, spiritual needs, care plan"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

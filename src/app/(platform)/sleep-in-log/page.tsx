@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,10 +21,14 @@ import {
   AlertTriangle, CheckCircle2, Clock, Moon, XCircle, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useSleepInRecords } from "@/hooks/use-sleep-in-records";
+import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { useSleepInRecords, useCreateSleepInRecord } from "@/hooks/use-sleep-in-records";
 import type { SleepInRecord, SleepInStatus, SleepInRoomCondition } from "@/types/extended";
 import { SLEEP_IN_STATUS_LABEL, SLEEP_IN_ROOM_CONDITION_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -41,6 +45,19 @@ export default function SleepInLogPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createSleepIn = useCreateSleepInRecord();
+  const [siForm, setSiForm] = useState({ date: new Date().toISOString().slice(0, 10), staff_member: "staff_darren", start_time: "22:00", end_time: "07:00", room_used: "Sleep-in room (ground floor)", handover_notes: "", handover_to: "staff_ryan" });
+  const setSI = (k: keyof typeof siForm, v: string) => setSiForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateSleepIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!siForm.handover_notes.trim()) { toast.error("Handover notes are required."); return; }
+    await createSleepIn.mutateAsync({ date: siForm.date, staff_member: siForm.staff_member, start_time: siForm.start_time, end_time: siForm.end_time, room_used: siForm.room_used, disturbances: [], total_disturbance_minutes: 0, rest_achieved: true, handover_notes: siForm.handover_notes.trim(), handover_to: siForm.handover_to, room_condition: "clean", safety_check_completed: true, alarms_working: true, issues_reported: [], compensatory_rest: false, compensatory_rest_date: null, status: "completed", notes: "" });
+    toast.success("Sleep-in logged.");
+    setSiForm({ date: new Date().toISOString().slice(0, 10), staff_member: "staff_darren", start_time: "22:00", end_time: "07:00", room_used: "Sleep-in room (ground floor)", handover_notes: "", handover_to: "staff_ryan" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded(expanded === id ? null : id);
 
@@ -101,11 +118,13 @@ export default function SleepInLogPage() {
     <PageShell
       title="Staff Sleep-In Log"
       subtitle="Sleep-in shift records, disturbances, and compensatory rest tracking"
+      ariaContext={{ pageTitle: "Sleep-In Log", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Sleep-In Log" />
           <ExportButton data={filtered} columns={exportCols} filename="sleep-in-log" />
           <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Log Sleep-In</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -261,20 +280,32 @@ export default function SleepInLogPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Log Sleep-In</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Date</Label><Input type="date" /></div>
-            <div><Label>Staff Member</Label><Select><SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger><SelectContent>{staffIds.map(id => <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid grid-cols-2 gap-3"><div><Label>Start Time</Label><Input type="time" defaultValue="22:00" /></div><div><Label>End Time</Label><Input type="time" defaultValue="07:00" /></div></div>
-            <div><Label>Room Used</Label><Input defaultValue="Sleep-in room (ground floor)" /></div>
-            <div><Label>Handover Notes</Label><Textarea rows={3} placeholder="Summary of the night…" /></div>
-            <div><Label>Handover To</Label><Select><SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger><SelectContent>{staffIds.map(id => <SelectItem key={id} value={id}>{getStaffName(id)}</SelectItem>)}</SelectContent></Select></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => setDialogOpen(false)}>Save Entry</Button>
-          </DialogFooter>
+          <form onSubmit={handleCreateSleepIn} className="space-y-3">
+            <div><Label>Date</Label><Input type="date" value={siForm.date} onChange={(e) => setSI("date", e.target.value)} /></div>
+            <div><Label>Staff Member</Label><Select value={siForm.staff_member} onValueChange={(v) => setSI("staff_member", v)}><SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent></Select></div>
+            <div className="grid grid-cols-2 gap-3"><div><Label>Start Time</Label><Input type="time" value={siForm.start_time} onChange={(e) => setSI("start_time", e.target.value)} /></div><div><Label>End Time</Label><Input type="time" value={siForm.end_time} onChange={(e) => setSI("end_time", e.target.value)} /></div></div>
+            <div><Label>Room Used</Label><Input value={siForm.room_used} onChange={(e) => setSI("room_used", e.target.value)} /></div>
+            <div><Label>Handover Notes *</Label><Textarea rows={3} placeholder="Summary of the night…" value={siForm.handover_notes} onChange={(e) => setSI("handover_notes", e.target.value)} /></div>
+            <div><Label>Handover To</Label><Select value={siForm.handover_to} onValueChange={(v) => setSI("handover_to", v)}><SelectTrigger><SelectValue placeholder="Select staff" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent></Select></div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createSleepIn.isPending}>{createSleepIn.isPending ? "Saving…" : "Save Entry"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Sleep"
+        category="sleep"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Sleep-In Log — staff sleep-in duty records, waking night cover, sleep-in entitlements, staffing compliance, Reg 40 staffing evidence, overnight incident evidence, Ofsted evidence"
+        recordType="rota"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

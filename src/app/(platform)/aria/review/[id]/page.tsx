@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // ARIA SUGGESTION DETAIL + APPROVAL WORKFLOW
 //
-// Full view of a single ARIA suggestion with:
+// Full view of a single Aria suggestion with:
 // - Suggestion detail (title, summary, reason, risk, confidence)
 // - Draft text (editable before approval)
 // - Linked record suggestions
@@ -13,7 +13,7 @@
 // Every action is audit-logged. Rejection requires a reason.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, use } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useAriaSuggestion, useUpdateAriaSuggestion } from "@/hooks/use-intelligence-layer";
 import { cn } from "@/lib/utils";
 import {
   Sparkles,
@@ -45,9 +46,6 @@ import {
   Link as LinkIcon,
   ChevronRight,
 } from "lucide-react";
-import { AriaChallengeModePanel } from "@/components/aria/aria-challenge-mode";
-import { AriaFeedbackWidget } from "@/components/aria/aria-feedback-widget";
-import { AriaContextLinker } from "@/components/aria/aria-context-linker";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -92,9 +90,7 @@ interface SuggestionDetail {
   audit_timeline: AuditEntry[];
 }
 
-// ─── Demo data ──────────────────────────────────────────────────────────────
-
-const DEMO_SUGGESTION: SuggestionDetail = {
+const DEMO_SUGGESTION_FALLBACK: SuggestionDetail = {
   id: "as_001",
   title: "Management oversight required — physical intervention incident",
   summary: "A physical intervention was recorded. The Registered Manager should review the response, consider whether the intervention was proportionate, check that the child's voice has been captured, and record oversight.",
@@ -106,7 +102,7 @@ const DEMO_SUGGESTION: SuggestionDetail = {
   risk_level: "urgent",
   confidence_level: "high",
   status: "awaiting_review",
-  draft_text: `ARIA suggested draft — requires manager review before saving.
+  draft_text: `Aria suggested draft — requires manager review before saving.
 
 I have reviewed this incident involving a physical intervention with Alex on 5 May 2026.
 
@@ -189,13 +185,13 @@ const RISK_CONFIG: Record<string, { label: string; bg: string }> = {
   urgent: { label: "Urgent", bg: "bg-red-100 text-red-800" },
   high:   { label: "High",   bg: "bg-orange-100 text-orange-800" },
   medium: { label: "Medium", bg: "bg-amber-100 text-amber-800" },
-  low:    { label: "Low",    bg: "bg-slate-100 text-[var(--cs-text-secondary)]" },
+  low:    { label: "Low",    bg: "bg-slate-100 text-slate-700" },
 };
 
 const CONFIDENCE_CONFIG: Record<string, { label: string; bg: string }> = {
   high:   { label: "High confidence",   bg: "bg-emerald-100 text-emerald-800" },
   medium: { label: "Medium confidence",  bg: "bg-amber-100 text-amber-800" },
-  low:    { label: "Low confidence",     bg: "bg-slate-100 text-[var(--cs-text-secondary)]" },
+  low:    { label: "Low confidence",     bg: "bg-slate-100 text-slate-700" },
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -252,57 +248,60 @@ export default function AriaSuggestionDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const suggestion = DEMO_SUGGESTION;
+  const { data: apiData } = useAriaSuggestion(id);
+  const updateMutation = useUpdateAriaSuggestion();
+  const suggestion = ((apiData?.item as SuggestionDetail | null) ?? DEMO_SUGGESTION_FALLBACK);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(suggestion.draft_text);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [actionTaken, setActionTaken] = useState<string | null>(null);
-  const [challengeAction, setChallengeAction] = useState<"approve" | "reject" | "dismiss" | "amend_and_approve" | "no_action_required" | null>(null);
+
+  useEffect(() => {
+    if (apiData?.item) {
+      setEditedText((apiData.item as SuggestionDetail).draft_text);
+    }
+  }, [apiData]);
 
   const risk = RISK_CONFIG[suggestion.risk_level] ?? RISK_CONFIG.medium;
   const confidence = CONFIDENCE_CONFIG[suggestion.confidence_level] ?? CONFIDENCE_CONFIG.medium;
 
   function handleApprove() {
     const isAmended = editedText !== suggestion.draft_text;
-    setChallengeAction(isAmended ? "amend_and_approve" : "approve");
+    const status = isAmended ? "amended_and_approved" : "approved";
+    setActionTaken(status);
+    updateMutation.mutate({ id, status, finalText: isAmended ? editedText : undefined });
   }
 
   function handleReject() {
     if (!rejectionReason.trim()) return;
-    setChallengeAction("reject");
+    setActionTaken("rejected");
     setShowRejectForm(false);
+    updateMutation.mutate({ id, status: "rejected", rejectionReason });
   }
 
   function handleNoAction() {
-    setChallengeAction("no_action_required");
+    setActionTaken("no_action_required");
+    updateMutation.mutate({ id, status: "no_action_required" });
   }
 
   function handleCommit() {
     setActionTaken("committed");
-  }
-
-  function handleChallengeComplete(justification: string) {
-    setActionTaken(challengeAction);
-    setChallengeAction(null);
-  }
-
-  function handleChallengeCancel() {
-    setChallengeAction(null);
+    updateMutation.mutate({ id, status: "committed" });
   }
 
   const isReviewed = actionTaken !== null || suggestion.status !== "awaiting_review";
 
   return (
     <PageShell
-      title="ARIA Suggestion"
-      subtitle="Review, edit and approve or reject this ARIA suggestion."
+      title="Aria Suggestion"
+      subtitle="Review, edit and approve or reject this Aria suggestion."
     >
       {/* Back link */}
       <Link
         href="/aria/review"
-        className="inline-flex items-center gap-1.5 text-xs text-[var(--cs-text-muted)] hover:text-blue-600 mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-600 mb-6 transition-colors"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to Review Queue
@@ -318,12 +317,12 @@ export default function AriaSuggestionDetailPage({
               ? "bg-red-50 border-red-200"
               : actionTaken === "committed"
                 ? "bg-blue-50 border-blue-200"
-                : "bg-slate-50 border-[var(--cs-border)]",
+                : "bg-slate-50 border-slate-200",
         )}>
           {actionTaken.includes("approved") && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
           {actionTaken === "rejected" && <XCircle className="h-5 w-5 text-red-600" />}
           {actionTaken === "committed" && <CheckCircle2 className="h-5 w-5 text-blue-600" />}
-          {actionTaken === "no_action_required" && <Eye className="h-5 w-5 text-[var(--cs-text-muted)]" />}
+          {actionTaken === "no_action_required" && <Eye className="h-5 w-5 text-slate-500" />}
           <div>
             <p className="text-sm font-medium">
               {actionTaken === "approved" && "Suggestion approved"}
@@ -332,7 +331,7 @@ export default function AriaSuggestionDetailPage({
               {actionTaken === "committed" && "Committed to record"}
               {actionTaken === "no_action_required" && "Marked as no action required"}
             </p>
-            <p className="text-xs text-[var(--cs-text-muted)] mt-0.5">This action has been audit-logged.</p>
+            <p className="text-xs text-slate-500 mt-0.5">This action has been audit-logged.</p>
           </div>
         </div>
       )}
@@ -349,41 +348,41 @@ export default function AriaSuggestionDetailPage({
                     <Badge className={cn("text-xs", risk.bg)}>{risk.label}</Badge>
                     <Badge className={cn("text-xs", confidence.bg)}>{confidence.label}</Badge>
                     {suggestion.mock_mode && (
-                      <Badge variant="outline" className="text-xs text-[var(--cs-text-muted)]">Mock mode</Badge>
+                      <Badge variant="outline" className="text-xs text-slate-400">Mock mode</Badge>
                     )}
                   </div>
-                  <h2 className="text-lg font-semibold text-[var(--cs-navy)]">{suggestion.title}</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">{suggestion.title}</h2>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                 <div>
-                  <span className="text-[var(--cs-text-muted)]">Type:</span>{" "}
+                  <span className="text-slate-500">Type:</span>{" "}
                   <span className="font-medium">{TYPE_LABELS[suggestion.suggestion_type] ?? suggestion.suggestion_type}</span>
                 </div>
                 <div>
-                  <span className="text-[var(--cs-text-muted)]">Related record:</span>{" "}
+                  <span className="text-slate-500">Related record:</span>{" "}
                   <span className="font-medium">{suggestion.related_record_type} {suggestion.related_record_id}</span>
                 </div>
                 {suggestion.child_name && (
                   <div>
-                    <span className="text-[var(--cs-text-muted)]">Child:</span>{" "}
+                    <span className="text-slate-500">Child:</span>{" "}
                     <span className="font-medium">{suggestion.child_name}</span>
                   </div>
                 )}
                 <div>
-                  <span className="text-[var(--cs-text-muted)]">Created:</span>{" "}
+                  <span className="text-slate-500">Created:</span>{" "}
                   <span className="font-medium">{new Date(suggestion.created_at).toLocaleString("en-GB")}</span>
                 </div>
               </div>
 
               <div className="p-3 bg-slate-50 rounded-lg text-sm">
-                <p className="font-medium text-[var(--cs-text-secondary)] mb-1">Summary</p>
-                <p className="text-[var(--cs-text-secondary)]">{suggestion.summary}</p>
+                <p className="font-medium text-slate-700 mb-1">Summary</p>
+                <p className="text-slate-600">{suggestion.summary}</p>
               </div>
 
               <div className="p-3 bg-amber-50 rounded-lg text-sm mt-3">
-                <p className="font-medium text-amber-800 mb-1">Reason ARIA raised this</p>
+                <p className="font-medium text-amber-800 mb-1">Reason Aria raised this</p>
                 <p className="text-amber-700">{suggestion.reason}</p>
               </div>
             </CardContent>
@@ -395,7 +394,7 @@ export default function AriaSuggestionDetailPage({
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Sparkles className="h-4 w-4 text-blue-600" />
-                  ARIA draft
+                  Aria draft
                 </CardTitle>
                 {!isReviewed && (
                   <Button
@@ -413,7 +412,7 @@ export default function AriaSuggestionDetailPage({
             <CardContent>
               <div className="rounded-lg border border-blue-200 bg-blue-50/30 p-1 mb-3">
                 <p className="text-[10px] text-blue-600 font-medium px-2 py-1">
-                  ARIA suggested draft — the Registered Manager reviews, edits and decides.
+                  Aria suggested draft — the Registered Manager reviews, edits and decides.
                 </p>
               </div>
               {isEditing ? (
@@ -424,7 +423,7 @@ export default function AriaSuggestionDetailPage({
                   className="text-sm font-mono"
                 />
               ) : (
-                <div className="prose prose-sm max-w-none text-[var(--cs-text-secondary)] whitespace-pre-wrap">
+                <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap">
                   {actionTaken?.includes("approved") ? editedText : suggestion.draft_text}
                 </div>
               )}
@@ -435,11 +434,11 @@ export default function AriaSuggestionDetailPage({
           {!isReviewed && (
             <Card className="border-amber-200 bg-amber-50/30">
               <CardContent className="pt-6">
-                <h3 className="text-sm font-semibold text-[var(--cs-navy)] mb-4">Manager decision</h3>
+                <h3 className="text-sm font-semibold text-slate-900 mb-4">Manager decision</h3>
 
                 {showRejectForm ? (
                   <div className="space-y-3">
-                    <p className="text-sm text-[var(--cs-text-secondary)]">Please record your reason for rejecting this suggestion.</p>
+                    <p className="text-sm text-slate-600">Please record your reason for rejecting this suggestion.</p>
                     <Textarea
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
@@ -483,37 +482,12 @@ export default function AriaSuggestionDetailPage({
             </Card>
           )}
 
-          {/* Challenge mode panel */}
-          {challengeAction && (
-            <AriaChallengeModePanel
-              action={challengeAction}
-              outputId={suggestion.id}
-              outputSummary={suggestion.draft_text?.slice(0, 200)}
-              onComplete={handleChallengeComplete}
-              onCancel={handleChallengeCancel}
-            />
-          )}
-
-          {/* ARIA Context Links */}
-          <AriaContextLinker
-            sourceTable={suggestion.related_record_type + "s"}
-            recordId={suggestion.related_record_id}
-          />
-
-          {/* Feedback widget */}
-          {suggestion.draft_text && (
-            <AriaFeedbackWidget
-              outputId={suggestion.id}
-              commandId={suggestion.suggestion_type}
-            />
-          )}
-
           {/* Commit action (post-approval) */}
           {actionTaken?.includes("approved") && (
             <Card className="border-blue-200 bg-blue-50/30">
               <CardContent className="pt-6">
-                <h3 className="text-sm font-semibold text-[var(--cs-navy)] mb-2">Commit to record</h3>
-                <p className="text-xs text-[var(--cs-text-muted)] mb-4">
+                <h3 className="text-sm font-semibold text-slate-900 mb-2">Commit to record</h3>
+                <p className="text-xs text-slate-500 mb-4">
                   Save the approved text as the management oversight for the linked incident.
                 </p>
                 <Button size="sm" onClick={handleCommit} className="gap-1.5">
@@ -531,7 +505,7 @@ export default function AriaSuggestionDetailPage({
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
-                <LinkIcon className="h-4 w-4 text-[var(--cs-text-muted)]" />
+                <LinkIcon className="h-4 w-4 text-slate-400" />
                 Linked record suggestions ({suggestion.linked_records.length})
               </CardTitle>
             </CardHeader>
@@ -539,15 +513,15 @@ export default function AriaSuggestionDetailPage({
               {suggestion.linked_records.map((lr) => (
                 <div key={lr.id} className="p-3 border rounded-lg text-sm space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-[var(--cs-navy)]">
+                    <span className="font-medium text-slate-800">
                       {LINKED_TYPE_LABELS[lr.linked_record_type] ?? lr.linked_record_type}
                     </span>
-                    <Badge className={cn("text-[10px]", RISK_CONFIG[lr.risk_level]?.bg ?? "bg-slate-100 text-[var(--cs-text-secondary)]")}>
+                    <Badge className={cn("text-[10px]", RISK_CONFIG[lr.risk_level]?.bg ?? "bg-slate-100 text-slate-700")}>
                       {RISK_CONFIG[lr.risk_level]?.label ?? lr.risk_level}
                     </Badge>
                   </div>
-                  <p className="text-xs text-[var(--cs-text-muted)]">{lr.reason}</p>
-                  <p className="text-xs text-[var(--cs-text-secondary)] font-medium">{lr.suggested_action}</p>
+                  <p className="text-xs text-slate-500">{lr.reason}</p>
+                  <p className="text-xs text-slate-600 font-medium">{lr.suggested_action}</p>
                 </div>
               ))}
             </CardContent>
@@ -557,7 +531,7 @@ export default function AriaSuggestionDetailPage({
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
-                <History className="h-4 w-4 text-[var(--cs-text-muted)]" />
+                <History className="h-4 w-4 text-slate-400" />
                 Audit timeline
               </CardTitle>
             </CardHeader>
@@ -572,10 +546,10 @@ export default function AriaSuggestionDetailPage({
                       )}
                     </div>
                     <div className="pb-3">
-                      <p className="text-xs font-medium text-[var(--cs-text-secondary)]">
+                      <p className="text-xs font-medium text-slate-700">
                         {AUDIT_LABELS[entry.action] ?? entry.action}
                       </p>
-                      <p className="text-[10px] text-[var(--cs-text-muted)]">
+                      <p className="text-[10px] text-slate-400">
                         {new Date(entry.created_at).toLocaleString("en-GB")} &middot; {entry.actor_role}
                       </p>
                     </div>
@@ -594,7 +568,7 @@ export default function AriaSuggestionDetailPage({
                          actionTaken === "committed" ? "Committed" :
                          "Marked no action required"}
                       </p>
-                      <p className="text-[10px] text-[var(--cs-text-muted)]">
+                      <p className="text-[10px] text-slate-400">
                         {new Date().toLocaleString("en-GB")} &middot; registered_manager
                       </p>
                     </div>

@@ -28,6 +28,10 @@ export interface SidebarCounts {
   incidents: number;
   /** Care forms currently awaiting review/approval */
   forms: number;
+  /** Unread notifications count */
+  notifications: number;
+  /** Care events awaiting manager review */
+  care_events_review: number;
 }
 
 export function useSidebarCounts(): SidebarCounts {
@@ -49,13 +53,27 @@ export function useSidebarCounts(): SidebarCounts {
     ...OPTS,
   });
 
+  const notifsQ = useQuery<Notification[] | null>({
+    queryKey: ["sidebar", "notifications"],
+    queryFn: () => get(`/api/v1/notifications?recipient_id=${userId()}&unread_only=true`),
+    ...OPTS,
+  });
+
+  const careEventsReviewQ = useQuery<{ meta: { status_counts: Record<string, number> } } | null>({
+    queryKey: ["sidebar", "care-events-review"],
+    queryFn: () => get("/api/v1/care-events?status=manager_review_required&limit=1"),
+    ...OPTS,
+  });
+
   // Show overdue + urgent for tasks — the most actionable number
   const taskOverdue = tasksQ.data?.meta?.overdue ?? 0;
   const taskUrgent  = tasksQ.data?.meta?.urgent  ?? 0;
 
   return {
-    tasks:     Math.max(taskOverdue, taskUrgent), // pick the larger attention signal
-    incidents: incidentsQ.data?.meta?.open          ?? 0,
-    forms:     formsQ.data?.meta?.pending_review    ?? 0,
+    tasks:              Math.max(taskOverdue, taskUrgent),
+    incidents:          incidentsQ.data?.meta?.open          ?? 0,
+    forms:              formsQ.data?.meta?.pending_review    ?? 0,
+    notifications:      Array.isArray(notifsQ.data) ? notifsQ.data.length : 0,
+    care_events_review: careEventsReviewQ.data?.meta?.status_counts?.manager_review_required ?? 0,
   };
 }

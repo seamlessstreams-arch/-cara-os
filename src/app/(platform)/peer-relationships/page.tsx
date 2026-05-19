@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -25,7 +25,9 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { usePeerDynamics } from "@/hooks/use-peer-dynamics";
+import { usePeerDynamics, useCreatePeerDynamic } from "@/hooks/use-peer-dynamics";
+import { toast } from "sonner";
+import { YOUNG_PEOPLE } from "@/lib/seed-data";
 import { usePeerGroupDynamics } from "@/hooks/use-peer-group-dynamics";
 import type {
   PeerDynamic,
@@ -41,6 +43,9 @@ import {
   PEER_ENTRY_TYPE_LABEL,
   PEER_GROUP_ATMOSPHERE_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── colour maps ──────────────────────────────────────────────────────── */
 
@@ -98,6 +103,21 @@ export default function PeerRelationshipsPage() {
   const [filterQuality, setFilterQuality] = useState("all");
   const [sortBy, setSortBy] = useState("risk");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const createPeer = useCreatePeerDynamic();
+  const [prForm, setPrForm] = useState({ child_id_1: "", child_id_2: "", entry_type: "observation" as PeerEntryType, description: "", outcome: "" });
+  const setPR = (k: string, v: unknown) => setPrForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveEntry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prForm.child_id_1 || !prForm.child_id_2) { toast.error("Please select both children."); return; }
+    if (prForm.child_id_1 === prForm.child_id_2) { toast.error("Please select two different children."); return; }
+    if (!prForm.description.trim()) { toast.error("Description is required."); return; }
+    await createPeer.mutateAsync({ child_id_1: prForm.child_id_1, child_id_2: prForm.child_id_2, quality: "neutral", risk_level: "none", strengths: [], concerns: [], strategies: [], entries: [{ id: crypto.randomUUID(), date: new Date().toISOString(), type: prForm.entry_type, staff_witness: "staff_darren", intervention_used: "", description: prForm.description.trim(), outcome: prForm.outcome.trim() }], last_review_date: new Date().toISOString().slice(0, 10), reviewed_by: "staff_darren", next_review_due: "", notes: "", created_at: new Date().toISOString() });
+    toast.success("Peer relationship entry saved.");
+    setPrForm({ child_id_1: "", child_id_2: "", entry_type: "observation", description: "", outcome: "" });
+    setDialogOpen(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -174,6 +194,7 @@ export default function PeerRelationshipsPage() {
     <PageShell
       title="Peer Relationships"
       subtitle="Peer dynamic mapping, group living assessments and relationship tracking"
+      ariaContext={{ pageTitle: "Peer Relationships", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Peer Relationships" />
@@ -181,6 +202,7 @@ export default function PeerRelationshipsPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> Log Entry
           </button>
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -364,42 +386,54 @@ export default function PeerRelationshipsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Log Peer Relationship Entry</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
+          <form onSubmit={handleSaveEntry} className="space-y-3 py-2">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium">Child 1</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{pairs.map((p) => p.child_id_1).filter((v, i, a) => a.indexOf(v) === i).map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
+                <label className="text-sm font-medium">Child 1 *</label>
+                <Select value={prForm.child_id_1} onValueChange={(v) => setPR("child_id_1", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium">Child 2</label>
-                <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>{pairs.map((p) => p.child_id_2).filter((v, i, a) => a.indexOf(v) === i).map((id) => <SelectItem key={id} value={id}>{getYPName(id)}</SelectItem>)}</SelectContent>
+                <label className="text-sm font-medium">Child 2 *</label>
+                <Select value={prForm.child_id_2} onValueChange={(v) => setPR("child_id_2", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
             <div>
               <label className="text-sm font-medium">Entry Type</label>
-              <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+              <Select value={prForm.entry_type} onValueChange={(v) => setPR("entry_type", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{Object.entries(PEER_ENTRY_TYPE_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Description</label>
-              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Describe the interaction or observation…" />
+              <label className="text-sm font-medium">Description *</label>
+              <textarea rows={3} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="Describe the interaction or observation…" value={prForm.description} onChange={(e) => setPR("description", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium">Outcome</label>
-              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What happened as a result?" />
+              <input className="mt-1 w-full rounded-md border px-3 py-2 text-sm" placeholder="What happened as a result?" value={prForm.outcome} onChange={(e) => setPR("outcome", e.target.value)} />
             </div>
-          </div>
-          <DialogFooter>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
-            <button onClick={() => setDialogOpen(false)} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">Save Entry</button>
-          </DialogFooter>
+            <DialogFooter>
+              <button type="button" onClick={() => setDialogOpen(false)} className="rounded-md border px-3 py-1.5 text-sm">Cancel</button>
+              <button type="submit" disabled={createPeer.isPending} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700">{createPeer.isPending ? "Saving…" : "Save Entry"}</button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Behaviour & Wellbeing"
+        category={["behaviour", "wellbeing"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Peer Relationships — friendships, peer dynamics, conflict, bullying, positive relationships, peer group concerns, peer support, social development, care plan evidence, Reg 45"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

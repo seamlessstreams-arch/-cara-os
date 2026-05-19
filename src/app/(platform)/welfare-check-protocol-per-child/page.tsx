@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -32,206 +32,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── types ───────────────────────────────────────────────────────────────────
-type CheckType =
-  | "Visual through doorway"
-  | "Knock and verbal"
-  | "Sensor-only"
-  | "Standard observation";
 
-interface WelfareProtocol {
-  id: string;
-  youngPerson: string;
-  checkFrequencyByDay: string;
-  checkFrequencyByNight: string;
-  checkType: CheckType;
-  reasonForFrequency: string;
-  signsOfWellbeingToObserve: string[];
-  signsOfConcernToWatchFor: string[];
-  howToCheckSensorivelyAware: string;
-  nightCheckTechnique: string;
-  childCanRequestModifications: boolean;
-  childPreferences: string;
-  staffApproachWhenChildAwake: string;
-  escalationCriteria: string[];
-  reviewedDate: string;
-  reviewedWithChild: boolean;
-  reviewedBy: string;
-  nextReviewDate: string;
-}
-
-// ── seed data ───────────────────────────────────────────────────────────────
 const d = (n: number) => {
   const dt = new Date();
   dt.setDate(dt.getDate() + n);
   return dt.toISOString().slice(0, 10);
 };
 
-const data: WelfareProtocol[] = [
-  {
-    id: "wcp-001",
-    youngPerson: "yp_alex",
-    checkFrequencyByDay: "Hourly when in bedroom alone, otherwise standard observation in shared spaces",
-    checkFrequencyByNight: "30-minutely until midnight, then 2-hourly until 06:00",
-    checkType: "Visual through doorway",
-    reasonForFrequency:
-      "Historic risk of self-harm during periods of low mood (last incident 14 months ago). Risk reviewed weekly. Higher frequency at night reflects elevated vulnerability around bedtime — Alex has previously disclosed that night-time is when intrusive thoughts surface.",
-    signsOfWellbeingToObserve: [
-      "Settled breathing, comfortable sleep position",
-      "Phone visible from doorway (Alex's agreed compromise)",
-      "Room tidy in usual way — Alex's organisation is a wellbeing indicator",
-      "Familiar comfort items present (football scarf, weighted blanket arranged)",
-    ],
-    signsOfConcernToWatchFor: [
-      "Sudden change in sleep posture or restlessness",
-      "Sounds of distress, crying, or muffled phone calls late at night",
-      "Lights on after agreed bedtime (signal Alex may be struggling)",
-      "Items moved or hidden — particularly anything sharp or ligature-risk",
-      "Withdrawal earlier in evening from communal areas",
-      "Refusal of evening hot drink (a strong wellbeing signal for Alex)",
-    ],
-    howToCheckSensorivelyAware:
-      "Approach corridor without rushing. No torch beam directly into room — use corridor light only. Pause at doorway, listen for breathing for 5–10 seconds before looking in. Alex has said being watched closely feels intrusive — keep checks brief and from doorway only.",
-    nightCheckTechnique:
-      "Door is left ajar by 6 inches at Alex's request. Stand at door edge, lean in with eyes only — do not enter unless required. If line of sight is blocked, gently widen door 2 inches more, then return it to original position. Log time and outcome on shift handover.",
-    childCanRequestModifications: true,
-    childPreferences:
-      "Alex has asked: no torches in face; no entering room unless I ask or you genuinely think something's wrong; if I'm awake just say hi quietly so I know it's you. Co-produced and signed by Alex 2026-04-20.",
-    staffApproachWhenChildAwake:
-      "Quiet greeting, ask if everything is okay, do not linger unless invited. Offer warm drink or chat. Do not interrogate — Alex tends to open up when given space. If Alex appears low, offer to sit on the landing rather than enter the room.",
-    escalationCriteria: [
-      "Any sounds of self-harm or distress — enter immediately, do not wait",
-      "Door locked or barricaded — call senior on-shift, do not force entry alone",
-      "Item missing that could be used to harm (kitchen item, ligature point)",
-      "Two consecutive checks where Alex cannot be visually confirmed safe",
-      "Disclosure of suicidal ideation — follow safeguarding pathway, stay with Alex",
-    ],
-    reviewedDate: d(-14),
-    reviewedWithChild: true,
-    reviewedBy: "staff_darren",
-    nextReviewDate: d(16),
-  },
-  {
-    id: "wcp-002",
-    youngPerson: "yp_jordan",
-    checkFrequencyByDay: "Standard observation — checked in every 2 hours when in bedroom, otherwise as part of normal house flow",
-    checkFrequencyByNight: "Hourly until 23:00, then 3-hourly through the night",
-    checkType: "Knock and verbal",
-    reasonForFrequency:
-      "Lower frequency reflects Jordan's stable presentation and explicit request to be treated 'like any other 13-year-old'. Risk is low and managed. Verbal-confirmation checks were Jordan's request — feels less surveillance-like than silent observation.",
-    signsOfWellbeingToObserve: [
-      "Music playing at expected low volume (Jordan's evening routine)",
-      "Football kit prepped for next day on chair",
-      "Phone in normal position by bedside",
-      "Verbal response when knocked: 'yep' or similar",
-    ],
-    signsOfConcernToWatchFor: [
-      "No verbal response on two consecutive checks",
-      "Music abnormally loud or absent (deviation from routine)",
-      "Sounds of distress or raised voices on phone late at night",
-      "Light on past 23:00 — Jordan is typically asleep or settled",
-      "Withdrawal from evening contact with staff (a key relational marker)",
-      "Mention of birth mother or contact-related anxiety not previously raised",
-    ],
-    howToCheckSensorivelyAware:
-      "Knock twice softly, wait 3 seconds, say name quietly: 'Jordan, just checking in.' Wait for verbal acknowledgement. If no response after second knock, open door slowly and check visually. Hallway light visible through 6-inch door gap is Jordan's preference — do not close door fully.",
-    nightCheckTechnique:
-      "Stand at door, knock-and-verbal as above. If asleep and not responding to soft knock, lean in to confirm settled breathing, then withdraw without entering. Never use torch — Jordan finds this disturbing. Log on shift app.",
-    childCanRequestModifications: true,
-    childPreferences:
-      "Jordan has asked: knock and say my name so I know it's not random; don't barge in; if I'm on the phone just wait — I'll wave. Don't read what's on my screen. Co-produced 2026-04-25.",
-    staffApproachWhenChildAwake:
-      "Friendly check-in voice, brief. Jordan often opens up at bedtime — do not rush away if he initiates conversation. Ask open questions about day. Avoid topics around birth family unless he raises them. If he asks staff to sit, this is significant — make time.",
-    escalationCriteria: [
-      "No verbal response and no visual confirmation of safe sleep",
-      "Sounds of distressed phone call — pause, listen, offer support if appropriate",
-      "Disclosure relating to birth family or contact — log and inform social worker",
-      "Out of bed and dressed in middle of night — possible going-missing risk",
-      "Strong smell of cannabis or other substances — follow substance protocol",
-    ],
-    reviewedDate: d(-21),
-    reviewedWithChild: true,
-    reviewedBy: "staff_anna",
-    nextReviewDate: d(9),
-  },
-  {
-    id: "wcp-003",
-    youngPerson: "yp_casey",
-    checkFrequencyByDay: "Hourly visual confirmation, no door entry unless invited",
-    checkFrequencyByNight: "30-minutely until 22:00, then sensor-only via agreed bed-occupancy mat through to 07:00",
-    checkType: "Sensor-only",
-    reasonForFrequency:
-      "Casey is autistic and finds physical entries to room highly dysregulating, particularly at night. Sensor-based monitoring (bed-occupancy mat with silent staff alert) was agreed with Casey, paediatrician, and placing authority — preserves dignity while ensuring safety. Higher daytime frequency reflects sensory and emotional regulation needs.",
-    signsOfWellbeingToObserve: [
-      "Sensor showing continuous bed occupancy through night",
-      "White noise track audible at agreed volume (consistent overnight)",
-      "Otter (comfort toy) visible from doorway during morning check",
-      "Visual timetable on wall — undisturbed",
-      "Predictable wake at 07:30 with usual morning routine",
-    ],
-    signsOfConcernToWatchFor: [
-      "Sensor alert: bed unoccupied for more than 4 minutes overnight",
-      "White noise track stopped or changed (Casey will not tolerate change)",
-      "Sensory items thrown or displaced — sign of dysregulation",
-      "Clothing removed and discarded (sensory overload indicator)",
-      "Door opened by Casey (unusual — Casey strongly prefers door closed)",
-      "Vocal stimming louder or more distressed in pattern",
-    ],
-    howToCheckSensorivelyAware:
-      "Do NOT enter room without prior verbal agreement. Daytime: pause at doorway, visual only, do not speak unless Casey speaks first. Avoid sudden movement in corridor near room. Night: rely on sensor — only enter if alert triggered or in genuine emergency. If entry needed, knock first, count to 10, then announce yourself in a flat predictable tone.",
-    nightCheckTechnique:
-      "Sensor-only monitoring overnight. Staff station has discreet visual indicator showing bed-occupancy status. If sensor alerts as unoccupied: wait 60 seconds (Casey may use bathroom), then approach corridor, listen, knock if needed. Never enter unannounced at night — risk of severe dysregulation.",
-    childCanRequestModifications: true,
-    childPreferences:
-      "Casey has asked (via communication passport and key worker): no surprise checks; no torches ever; talk slowly and the same way every time; don't ask 'are you okay' — ask 'green or yellow today?' Co-produced with SALT and key worker 2026-04-12.",
-    staffApproachWhenChildAwake:
-      "Use Casey's agreed scripts ('green/yellow/red' regulation language). Do not improvise small talk near bedtime. If Casey is awake unexpectedly, do not show alarm — calm, predictable presence. Offer Otter and weighted blanket adjustment. Do not touch unless invited. Refer to visual timetable to anchor conversation.",
-    escalationCriteria: [
-      "Sensor alert unresolved after 4 minutes — physical check required",
-      "Casey out of bed and not responding to agreed scripts",
-      "Self-injurious behaviour observed (head banging, biting) — follow PBS plan, do not restrain",
-      "Sensory meltdown lasting more than 20 minutes — call on-call manager",
-      "Any change to sensor equipment status (battery, disconnect) — replace immediately",
-      "Casey requests removal of sensor — pause, log, escalate to manager next morning",
-    ],
-    reviewedDate: d(-7),
-    reviewedWithChild: true,
-    reviewedBy: "staff_chervelle",
-    nextReviewDate: d(23),
-  },
-];
-
-// ── config ──────────────────────────────────────────────────────────────────
-function checkTypeColour(t: CheckType): string {
+function checkTypeColour(t: string): string {
   switch (t) {
-    case "Visual through doorway":
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    case "Knock and verbal":
-      return "bg-green-100 text-green-800 border-green-200";
-    case "Sensor-only":
-      return "bg-purple-100 text-purple-800 border-purple-200";
-    case "Standard observation":
-      return "bg-slate-100 text-[var(--cs-navy)] border-[var(--cs-border)]";
+    case "Visual through doorway": return "bg-blue-50 text-blue-700 border-blue-200";
+    case "Knock and verbal": return "bg-purple-50 text-purple-700 border-purple-200";
+    case "Sensor-only": return "bg-cyan-50 text-cyan-700 border-cyan-200";
+    case "Standard observation": return "bg-slate-50 text-slate-700 border-slate-200";
+    default: return "bg-slate-50 text-slate-700 border-slate-200";
   }
 }
 
-function checkTypeIcon(t: CheckType) {
+function checkTypeIcon(t: string) {
   switch (t) {
-    case "Visual through doorway":
-      return <Eye className="h-3.5 w-3.5" />;
-    case "Knock and verbal":
-      return <MessageSquare className="h-3.5 w-3.5" />;
-    case "Sensor-only":
-      return <Activity className="h-3.5 w-3.5" />;
-    case "Standard observation":
-      return <UserCheck className="h-3.5 w-3.5" />;
+    case "Visual through doorway": return <Eye className="h-3 w-3" />;
+    case "Knock and verbal": return <Ear className="h-3 w-3" />;
+    case "Sensor-only": return <Activity className="h-3 w-3" />;
+    case "Standard observation": return <Eye className="h-3 w-3" />;
+    default: return <Shield className="h-3 w-3" />;
   }
 }
 
-// ── export columns ──────────────────────────────────────────────────────────
+import type { WelfareProtocol } from "@/types/extended";
+import { useWelfareProtocols } from "@/hooks/use-welfare-protocols";
+
 const exportCols: ExportColumn<WelfareProtocol>[] = [
-  { header: "Young Person", accessor: (r: WelfareProtocol) => getYPName(r.youngPerson) },
+  { header: "Young Person", accessor: (r: WelfareProtocol) => getYPName(r.child_id) },
   { header: "Day Frequency", accessor: (r: WelfareProtocol) => r.checkFrequencyByDay },
   { header: "Night Frequency", accessor: (r: WelfareProtocol) => r.checkFrequencyByNight },
   { header: "Check Type", accessor: (r: WelfareProtocol) => r.checkType },
@@ -244,6 +81,9 @@ const exportCols: ExportColumn<WelfareProtocol>[] = [
 
 // ── component ───────────────────────────────────────────────────────────────
 export default function WelfareCheckProtocolPerChildPage() {
+  const { data: result, isLoading } = useWelfareProtocols(undefined, "home_oak");
+  const data = result?.data ?? [];
+
   const [filterYP, setFilterYP] = useState("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [sortBy, setSortBy] = useState("name");
@@ -251,13 +91,13 @@ export default function WelfareCheckProtocolPerChildPage() {
 
   const filtered = useMemo(() => {
     let items = [...data];
-    if (filterYP !== "all") items = items.filter((r) => r.youngPerson === filterYP);
+    if (filterYP !== "all") items = items.filter((r) => r.child_id === filterYP);
     if (filterType !== "all") items = items.filter((r) => r.checkType === filterType);
 
     items.sort((a, b) => {
       switch (sortBy) {
         case "name":
-          return a.youngPerson.localeCompare(b.youngPerson);
+          return a.child_id.localeCompare(b.child_id);
         case "review":
           return a.nextReviewDate.localeCompare(b.nextReviewDate);
         case "type":
@@ -267,7 +107,7 @@ export default function WelfareCheckProtocolPerChildPage() {
       }
     });
     return items;
-  }, [filterYP, filterType, sortBy]);
+  }, [filterYP, filterType, sortBy, data]);
 
   // ── stats ─────────────────────────────────────────────────────────────────
   const totalProtocols = data.length;
@@ -281,13 +121,16 @@ export default function WelfareCheckProtocolPerChildPage() {
     <PageShell
       title="Welfare Check Protocol — Per Child"
       subtitle="Individualised welfare check plans — frequency, method, signs to watch for. Co-produced with each child."
+      ariaContext={{ pageTitle: "Welfare Check Protocol — Per Child", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="welfare-check-protocol-per-child" />
           <PrintButton title="Welfare Check Protocol — Per Child" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
+      {isLoading ? <div className="p-8 text-center text-muted-foreground">Loading...</div> : (<>
       {/* ── summary stats ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -378,7 +221,7 @@ export default function WelfareCheckProtocolPerChildPage() {
               {/* ── header row (click to toggle) ─────────────────────── */}
               <button
                 onClick={() => setExpandedId(open ? null : r.id)}
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] rounded-xl"
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 rounded-xl"
               >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   <div className="h-10 w-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
@@ -386,7 +229,7 @@ export default function WelfareCheckProtocolPerChildPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold truncate">{getYPName(r.youngPerson)}</p>
+                      <p className="font-semibold truncate">{getYPName(r.child_id)}</p>
                       <span
                         className={cn(
                           "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border",
@@ -484,7 +327,7 @@ export default function WelfareCheckProtocolPerChildPage() {
                         <Ear className="h-4 w-4 text-muted-foreground" />
                         How to check sensitively
                       </h4>
-                      <p className="text-muted-foreground">{r.howToCheckSensorivelyAware}</p>
+                      <p className="text-muted-foreground">{r.howToCheckSensitivelyAware}</p>
                     </div>
                     <div className="rounded-lg border p-3 bg-slate-50">
                       <h4 className="font-medium mb-1 flex items-center gap-2">
@@ -565,9 +408,9 @@ export default function WelfareCheckProtocolPerChildPage() {
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────────── */}
-      <div className="mt-8 rounded-lg border bg-slate-50 p-4 text-sm text-[var(--cs-text-secondary)]">
+      <div className="mt-8 rounded-lg border bg-slate-50 p-4 text-sm text-slate-700">
         <p className="font-medium mb-1 flex items-center gap-2">
-          <Shield className="h-4 w-4 text-[var(--cs-text-secondary)]" />
+          <Shield className="h-4 w-4 text-slate-600" />
           Regulatory basis — Quality Standard 5 (Protection of Children)
         </p>
         <p>
@@ -579,6 +422,19 @@ export default function WelfareCheckProtocolPerChildPage() {
           the Children's Homes Regulations.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Welfare & Safety"
+        category={["general", "health", "behaviour"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Welfare Check Protocol — individual child welfare check requirements, check frequency, overnight protocols, sleep check records, safeguarding welfare monitoring, Reg 40 evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
+      </>)}
     </PageShell>
   );
 }

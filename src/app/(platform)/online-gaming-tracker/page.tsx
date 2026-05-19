@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -28,6 +28,9 @@ import { useOnlineGamingRecords } from "@/hooks/use-online-gaming-records";
 import type { OnlineGamingRecord, PegiRating } from "@/types/extended";
 import { PEGI_RATING_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const pegiColour: Record<string, string> = {
   "3": "bg-green-100 text-green-800",
@@ -106,10 +109,12 @@ export default function OnlineGamingTrackerPage() {
     <PageShell
       title="Online Gaming Tracker"
       subtitle="Per-child gaming activity — child-led with safeguarding lens. Console, games, online interactions, time, spend, and online safety."
+      ariaContext={{ pageTitle: "Online Gaming Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="online-gaming-tracker" />
           <PrintButton title="Online Gaming Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -347,6 +352,18 @@ export default function OnlineGamingTrackerPage() {
           Linked to Safeguarding, Risk Assessments, Pocket Money, and Child Voice pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category="safeguarding"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Online Gaming Tracker — game usage, age ratings, online contacts, spending, screen time, grooming risks, gaming addiction, consent, parental controls, online safety plan"
+        recordType="risk_assessment"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

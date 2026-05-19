@@ -5,7 +5,7 @@ import type { AsthmaPlan, AsthmaDiagnosis } from "@/types/extended";
 import { ASTHMA_DIAGNOSIS_LABEL } from "@/types/extended";
 import { useAsthmaPlans } from "@/hooks/use-asthma-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,9 @@ import {
 } from "lucide-react";
 import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -100,10 +103,12 @@ export default function ChildAsthmaActionPlanPage() {
     <PageShell
       title="Child Asthma Action Plan"
       subtitle="Personal Asthma Action Plan · BTS/SIGN 158 · NICE NG80 · Quality Standard 8"
+      ariaContext={{ pageTitle: "Asthma Action Plans", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Asthma Action Plans" />
           <ExportButton data={data} columns={exportCols} filename="child-asthma-action-plan" />
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -354,6 +359,18 @@ export default function ChildAsthmaActionPlanPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Medication"
+        category={["health", "medication"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Asthma Action Plans — asthma diagnosis, inhaler types, reliever/preventer, triggers, peak flow, emergency action, school sharing, review date, AHA, LAC health"
+        recordType="medication"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

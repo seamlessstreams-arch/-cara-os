@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -32,6 +32,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const outcomeColour: Record<string, string> = {
   pass: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -125,10 +128,12 @@ export default function BuildingWindowRestrictorChecksPage() {
     <PageShell
       title="Building — Window Restrictor & High-Window Safety Checks"
       subtitle="Quarterly inspection of all upstairs and at-height windows. Restrictor functioning, key location, child awareness, no-tampering signage, school-age-appropriate locks. RoSPA falls-from-windows guidance and the 100mm aperture rule applied throughout."
+      ariaContext={{ pageTitle: "Window Restrictor Checks", sourceType: "home_check" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="building-window-restrictor-checks" />
           <PrintButton title="Window Restrictor Checks" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -318,6 +323,18 @@ export default function BuildingWindowRestrictorChecksPage() {
           immediately and is repaired within 24 hours. Records retained 7+ years and available to Ofsted on request.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health & Safety"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Window Restrictor Checks — FENSA compliance, window restrictor testing, safe opening limits, first-floor and above checks, fall prevention, HSE guidance, Reg 44 evidence"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

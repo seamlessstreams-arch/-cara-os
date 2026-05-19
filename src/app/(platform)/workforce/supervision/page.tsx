@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -112,6 +114,7 @@ export default function WorkforceSupervisionPage() {
     <PageShell
       title="Supervision Hub"
       subtitle="Reflective supervision tracker — Reg 34 compliance at a glance"
+      ariaContext={{ pageTitle: "Supervision Hub", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -124,6 +127,7 @@ export default function WorkforceSupervisionPage() {
               New Supervision
             </Button>
           </Link>
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -400,6 +404,12 @@ export default function WorkforceSupervisionPage() {
         reflective and development-focused. Frequency and quality are assessed by Ofsted at inspection.
       </div>
       </div>{/* close #supervision-hub-content */}
+      <AriaPanel
+        mode="assist"
+        pageContext="Supervision Hub — staff supervision schedule, Reg 34 supervision compliance, overdue supervision, reflective supervision records, management oversight, ILACS workforce quality, Ofsted inspection evidence"
+        recordType="supervision"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

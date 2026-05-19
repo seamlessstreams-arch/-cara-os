@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +20,9 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useSelfHarmSafetyPlanRecords } from "@/hooks/use-self-harm-safety-plan-records";
 import type { SelfHarmSafetyPlanRecord, SelfHarmSafetyPlanStatus, SelfHarmSafetyPlanReviewFrequency } from "@/types/extended";
 import { SELF_HARM_SAFETY_PLAN_STATUS_LABEL, SELF_HARM_SAFETY_PLAN_REVIEW_FREQUENCY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -170,10 +173,12 @@ export default function SelfHarmSafetyPlanPage() {
     <PageShell
       title="Self-Harm Safety Plans"
       subtitle="Per-child, co-produced safety plans using the Stanley-Brown framework. Trauma-informed, hopeful, and child-led — never sensational."
+      ariaContext={{ pageTitle: "Self-Harm Safety Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Self-Harm Safety Plans" />
           <ExportButton data={filtered} columns={exportCols} filename="self-harm-safety-plans" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -533,6 +538,18 @@ export default function SelfHarmSafetyPlanPage() {
           never used in place of clinical assessment.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding & Wellbeing"
+        category={["safeguarding", "wellbeing"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Self-Harm Safety Plans — individual safety plans, risk triggers, protective factors, crisis responses, staff guidance, safeguarding evidence, care plan evidence, Reg 45 quality evidence"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

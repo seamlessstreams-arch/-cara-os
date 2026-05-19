@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import {
@@ -42,6 +42,9 @@ import { getStaffName } from "@/lib/seed-data";
 import type { HandoverAudit, HandoverDomainScore, RagRating } from "@/types/extended";
 import { RAG_RATING_LABEL } from "@/types/extended";
 import { useHandoverAudits } from "@/hooks/use-handover-audits";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 // ── RAG colour helpers ───────────────────────────────────────────────────────
 const ragColour = (rag: RagRating): string => {
@@ -209,6 +212,7 @@ export default function HandoverQualityAuditPage() {
     <PageShell
       title="Handover Quality Audit"
       subtitle="Observation-based scoring of shift handovers — required by Quality Standard 13 and Reg 33."
+      ariaContext={{ pageTitle: "Handover Quality Audits", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -217,6 +221,7 @@ export default function HandoverQualityAuditPage() {
             filename="handover-quality-audits"
           />
           <PrintButton title="Handover Quality Audits" />
+          <AriaStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -670,6 +675,18 @@ export default function HandoverQualityAuditPage() {
           reviews and the SCCIF self-evaluation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Daily Log"
+        category="general"
+        days={14}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Handover Quality Audits — shift handover quality, information completeness, safeguarding alerts, medication records, incident follow-up, audit scores, Reg 45 evidence"
+        recordType="handover"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

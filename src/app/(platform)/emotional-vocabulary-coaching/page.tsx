@@ -13,7 +13,7 @@ import {
   Smile,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,9 @@ import type {
 import { EMOTIONAL_FRAMEWORK_LABEL } from "@/types/extended";
 import { useEmotionalVocabRecords } from "@/hooks/use-emotional-vocab-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -200,6 +203,7 @@ export default function EmotionalVocabularyCoachingPage() {
     <PageShell
       title="Emotional Vocabulary Coaching"
       subtitle="Per-child language work — what feelings each young person can name, what they confuse, the tools and frameworks in use, and the breakthroughs that change everything"
+      ariaContext={{ pageTitle: "Emotional Vocabulary Coaching", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emotional Vocabulary Coaching" />
@@ -208,6 +212,7 @@ export default function EmotionalVocabularyCoachingPage() {
             columns={EXPORT_COLS}
             filename="emotional-vocabulary-coaching"
           />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -531,6 +536,18 @@ export default function EmotionalVocabularyCoachingPage() {
         expression) and 17 (access to information that supports their
         wellbeing).
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Emotional Vocabulary Coaching — feelings identification, emotion coaching, zones of regulation, therapeutic direct work, self-expression, communication, behaviour support"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

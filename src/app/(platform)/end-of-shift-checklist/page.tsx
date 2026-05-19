@@ -7,7 +7,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import {
@@ -50,6 +52,7 @@ import {
   CHECKLIST_CATEGORY_LABEL,
 } from "@/types/extended";
 import type { EndOfShiftType, ChecklistCategory } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const shiftColour = (s: EndOfShiftType): string => {
@@ -244,6 +247,7 @@ export default function EndOfShiftChecklistPage() {
     <PageShell
       title="End-of-Shift Checklist"
       subtitle="Standardised closing-down tasks completed by every member of staff before handover."
+      ariaContext={{ pageTitle: "End-of-Shift Checklist", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -252,6 +256,7 @@ export default function EndOfShiftChecklistPage() {
             filename="end-of-shift-checklist"
           />
           <PrintButton title="End-of-Shift Checklists" />
+          <AriaStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -711,6 +716,12 @@ export default function EndOfShiftChecklistPage() {
           reviews and the SCCIF self-evaluation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Daily Log"
+        category="general"
+        days={14}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

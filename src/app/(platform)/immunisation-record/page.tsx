@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import {
@@ -18,6 +18,9 @@ import type { ImmunisationRecord, VaccineStatus } from "@/types/extended";
 import { VACCINE_STATUS_LABEL } from "@/types/extended";
 import { useImmunisationRecords } from "@/hooks/use-immunisation-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const STATUS_COLOUR: Record<VaccineStatus, string> = {
   up_to_date:          "bg-green-100 text-green-700",
@@ -122,10 +125,12 @@ export default function ImmunisationRecordPage() {
     <PageShell
       title="Immunisation Record"
       subtitle="UK schedule tracking · Vaccine history · Side effects · Catch-up programmes · Child voice"
+      ariaContext={{ pageTitle: "Immunisation Record", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Immunisation Record" />
           <ExportButton data={filtered} columns={exportCols} filename="immunisation-record" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -472,6 +477,18 @@ export default function ImmunisationRecordPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Immunisation Record — vaccinations, immunisations, MMR, catch-up schedule, NHS records, refusals, consent, health action plan, annual health assessment, LAC review"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -22,10 +24,12 @@ import {
   AlertTriangle, CheckCircle2, Clock, Pill, Package, Trash2, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useMedicationAudits } from "@/hooks/use-medication-audits";
-import type { MedicationAuditRecord, MedAuditType, MedAuditResult } from "@/types/extended";
+import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
+import { useMedicationAudits, useCreateMedicationAudit } from "@/hooks/use-medication-audits";
+import { toast } from "sonner";
+import type { MedicationAuditRecord, MedAuditType, MedAuditResult, MedAuditMedicationType } from "@/types/extended";
 import { MED_AUDIT_TYPE_LABEL, MED_AUDIT_RESULT_LABEL, MED_AUDIT_MEDICATION_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -57,7 +61,63 @@ const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); 
 
 export default function MedicationAuditPage() {
   const { data: res, isLoading } = useMedicationAudits();
+  const createAudit = useCreateMedicationAudit();
   const data: MedicationAuditRecord[] = res?.data ?? [];
+
+  const [maForm, setMaForm] = useState({
+    date: new Date().toISOString().slice(0, 10),
+    time: new Date().toTimeString().slice(0, 5),
+    child_id: "",
+    audit_type: "" as MedAuditType | "",
+    medication_name: "",
+    strength: "",
+    expected_count: "",
+    actual_count: "",
+    batch_number: "",
+    expiry_date: "",
+    audited_by: "staff_darren",
+    witnessed_by: "",
+    notes: "",
+  });
+  const setMA = (k: keyof typeof maForm, v: string) => setMaForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateAudit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!maForm.child_id || !maForm.audit_type || !maForm.medication_name.trim()) {
+      toast.error("Young person, audit type and medication name are required.");
+      return;
+    }
+    const expected = maForm.expected_count !== "" ? parseInt(maForm.expected_count) : null;
+    const actual = maForm.actual_count !== "" ? parseInt(maForm.actual_count) : null;
+    const discrepancy = (expected !== null && actual !== null) ? actual - expected : 0;
+    await createAudit.mutateAsync({
+      date: maForm.date,
+      time: maForm.time,
+      audited_by: maForm.audited_by,
+      witnessed_by: maForm.witnessed_by || maForm.audited_by,
+      audit_type: maForm.audit_type as MedAuditType,
+      result: discrepancy !== 0 ? "discrepancy" as MedAuditResult : "pass" as MedAuditResult,
+      child_id: maForm.child_id,
+      medication_name: maForm.medication_name.trim(),
+      medication_type: "tablet" as MedAuditMedicationType,
+      strength: maForm.strength,
+      expected_count: expected,
+      actual_count: actual,
+      discrepancy,
+      expiry_date: maForm.expiry_date || null,
+      batch_number: maForm.batch_number,
+      storage_correct: true,
+      temperature_ok: true,
+      labelling_correct: true,
+      destruction_method: "",
+      destruction_witness: "",
+      pharmacy_name: "",
+      notes: maForm.notes,
+    });
+    toast.success("Medication audit recorded.");
+    setMaForm({ date: new Date().toISOString().slice(0, 10), time: new Date().toTimeString().slice(0, 5), child_id: "", audit_type: "", medication_name: "", strength: "", expected_count: "", actual_count: "", batch_number: "", expiry_date: "", audited_by: "staff_darren", witnessed_by: "", notes: "" });
+    setShowNew(false);
+  };
 
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
@@ -126,11 +186,13 @@ export default function MedicationAuditPage() {
     <PageShell
       title="Medication Audit"
       subtitle="Reg 23 · NICE Medicines Management · CQC KLoE — Safe"
+      ariaContext={{ pageTitle: "Medication Audit", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Audit Records" />
           <ExportButton data={filtered} columns={exportCols} filename="medication-audit" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Audit</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -251,23 +313,32 @@ export default function MedicationAuditPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Medication Audit</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div><Label>Date</Label><Input type="date" /></div>
-            <div><Label>Time</Label><Input type="time" /></div>
-            <div><Label>Young Person</Label><Select><SelectTrigger><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent><SelectItem value="yp_alex">Alex</SelectItem><SelectItem value="yp_jordan">Jordan</SelectItem><SelectItem value="yp_casey">Casey</SelectItem></SelectContent></Select></div>
-            <div><Label>Audit Type</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(MED_AUDIT_TYPE_LABEL) as MedAuditType[]).map((k) => (<SelectItem key={k} value={k}>{MED_AUDIT_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Medication Name</Label><Input placeholder="e.g. Melatonin" /></div>
-            <div><Label>Strength</Label><Input placeholder="e.g. 3mg" /></div>
-            <div><Label>Expected Count</Label><Input type="number" /></div>
-            <div><Label>Actual Count</Label><Input type="number" /></div>
-            <div><Label>Batch Number</Label><Input placeholder="e.g. MEL-2024-8842" /></div>
-            <div><Label>Expiry Date</Label><Input type="date" /></div>
-            <div className="col-span-2"><Label>Notes</Label><Textarea placeholder="Audit findings…" rows={3} /></div>
-            <div className="col-span-2"><Label>Action Required</Label><Textarea placeholder="If issues found, what actions?" rows={2} /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Audit</Button></DialogFooter>
+          <form onSubmit={handleCreateAudit} className="grid grid-cols-2 gap-4">
+            <div><Label>Date</Label><Input type="date" value={maForm.date} onChange={(e) => setMA("date", e.target.value)} /></div>
+            <div><Label>Time</Label><Input type="time" value={maForm.time} onChange={(e) => setMA("time", e.target.value)} /></div>
+            <div><Label>Young Person *</Label><Select value={maForm.child_id} onValueChange={(v) => setMA("child_id", v)}><SelectTrigger><SelectValue placeholder="Select child…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => <SelectItem key={y.id} value={y.id}>{y.first_name} {y.last_name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Audit Type *</Label><Select value={maForm.audit_type} onValueChange={(v) => setMA("audit_type", v)}><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(MED_AUDIT_TYPE_LABEL) as MedAuditType[]).map((k) => (<SelectItem key={k} value={k}>{MED_AUDIT_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Audited By</Label><Select value={maForm.audited_by} onValueChange={(v) => setMA("audited_by", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Witnessed By</Label><Select value={maForm.witnessed_by} onValueChange={(v) => setMA("witnessed_by", v)}><SelectTrigger><SelectValue placeholder="Select witness…" /></SelectTrigger><SelectContent>{STAFF.filter((s) => s.employment_status === "active").map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Medication Name *</Label><Input required placeholder="e.g. Melatonin" value={maForm.medication_name} onChange={(e) => setMA("medication_name", e.target.value)} /></div>
+            <div><Label>Strength</Label><Input placeholder="e.g. 3mg" value={maForm.strength} onChange={(e) => setMA("strength", e.target.value)} /></div>
+            <div><Label>Expected Count</Label><Input type="number" value={maForm.expected_count} onChange={(e) => setMA("expected_count", e.target.value)} /></div>
+            <div><Label>Actual Count</Label><Input type="number" value={maForm.actual_count} onChange={(e) => setMA("actual_count", e.target.value)} /></div>
+            <div><Label>Batch Number</Label><Input placeholder="e.g. MEL-2024-8842" value={maForm.batch_number} onChange={(e) => setMA("batch_number", e.target.value)} /></div>
+            <div><Label>Expiry Date</Label><Input type="date" value={maForm.expiry_date} onChange={(e) => setMA("expiry_date", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Notes</Label><Textarea placeholder="Audit findings…" rows={3} value={maForm.notes} onChange={(e) => setMA("notes", e.target.value)} /></div>
+            <div className="col-span-2">
+              <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createAudit.isPending}>{createAudit.isPending ? "Saving…" : "Save Audit"}</Button></DialogFooter>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Related Care Events"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

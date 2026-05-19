@@ -13,7 +13,7 @@ import {
   Lightbulb,
   Loader2,
 } from "lucide-react";
-import { PageShell }    from "@/components/ui/page-shell";
+import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -28,6 +28,9 @@ import { toast } from "sonner";
 import { useAttachmentProfiles, useCreateAttachmentProfile } from "@/hooks/use-attachment-profiles";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AttachmentProfile, AttachmentStyle, AttachmentProfileStatus, AttachmentBehaviour, AttachmentKeyRelationship } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -190,10 +193,12 @@ export default function AttachmentProfilesPage() {
     <PageShell
       title="Attachment Profiles"
       subtitle="Individualised attachment assessments, care strategies and relational guidance for staff"
+      ariaContext={{ pageTitle: "Attachment Profiles", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Attachment Profiles" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="attachment-profiles" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> New Profile
           </button>
@@ -462,6 +467,18 @@ export default function AttachmentProfilesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Attachment Profiles — attachment style, relational history, trauma-informed responses, triggers, co-regulation, therapeutic parenting, needs behind behaviour, key worker"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

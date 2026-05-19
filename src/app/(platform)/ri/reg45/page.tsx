@@ -6,6 +6,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -604,6 +606,7 @@ export default function Reg45Page() {
     <PageShell
       title="Regulation 45 Engine"
       subtitle="Evidence collection and Reg 45 report generation"
+      ariaContext={{ pageTitle: "Regulation 45 Engine", sourceType: "reg45" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -613,6 +616,7 @@ export default function Reg45Page() {
             targetId="reg45-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI — Regulation 45 evidence upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -650,6 +654,12 @@ export default function Reg45Page() {
           )}
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Regulation 45 Engine — RI view of Reg 45 report building, evidence review, quarterly reporting, thematic analysis, quality of care evidence, outcomes evidence, Ofsted readiness"
+        recordType="reg45"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

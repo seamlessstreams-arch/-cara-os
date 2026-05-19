@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -31,6 +31,9 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useRseTrackerRecords } from "@/hooks/use-rse-tracker-records";
 import type { RseTrackerRecord, RseTrackerTopic, RseTrackerMethod } from "@/types/extended";
 import { RSE_TRACKER_TOPIC_LABEL, RSE_TRACKER_METHOD_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ────────────────────────────────────────────────────── */
 
@@ -112,10 +115,12 @@ export default function RseTrackerPage() {
     <PageShell
       title="RSE Tracker"
       subtitle="Relationships and Sex Education — per-child delivery covering relationships, consent, online safety, healthy bodies"
+      ariaContext={{ pageTitle: "RSE Tracker", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="rse-tracker" />
           <PrintButton title="RSE Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -317,6 +322,18 @@ export default function RseTrackerPage() {
           alongside school PSHE. Linked to Online Safety, Safeguarding, Health, and Identity pages.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Education"
+        category="education"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="RSE Tracker — relationships and sex education delivery, age-appropriate RSE, PSHE provision, statutory RSE compliance, care plan education evidence, safeguarding context, Reg 45 education evidence"
+        recordType="education"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

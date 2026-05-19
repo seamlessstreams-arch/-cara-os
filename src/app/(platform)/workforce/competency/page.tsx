@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -210,6 +212,7 @@ export default function CompetencyFrameworkPage() {
     <PageShell
       title="Competency Framework"
       subtitle="10-domain scoring matrix across all staff — gaps, strengths & team averages"
+      ariaContext={{ pageTitle: "Staff Competency Matrix", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -222,6 +225,7 @@ export default function CompetencyFrameworkPage() {
               Workforce Hub
             </button>
           </Link>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -522,6 +526,12 @@ export default function CompetencyFrameworkPage() {
         regular supervision). ILACS — Quality of Care: workforce capability and competency directly assessed by inspectors.
       </div>
       </div>{/* close #competency-content */}
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Competency Matrix — competency assessments, skills frameworks, Reg 34 development, ILACS workforce quality, competency gaps, professional development, Ofsted inspection evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

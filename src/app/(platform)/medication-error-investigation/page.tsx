@@ -1,17 +1,26 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { getYPName, getStaffName } from "@/lib/seed-data";
+import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp, ArrowUpDown, Pill, AlertTriangle, CheckCircle, Heart, Lightbulb, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ArrowUpDown, Pill, AlertTriangle, CheckCircle, Heart, Lightbulb, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useMedicationErrorInvestigations } from "@/hooks/use-medication-error-investigations";
-import type { MedicationErrorInvestigation, MedInvSeverity, MedInvStatus } from "@/types/extended";
+import { useMedicationErrorInvestigations, useCreateMedicationErrorInvestigation } from "@/hooks/use-medication-error-investigations";
+import type { MedicationErrorInvestigation, MedInvSeverity, MedInvStatus, MedInvErrorType } from "@/types/extended";
 import { MED_INV_ERROR_TYPE_LABEL, MED_INV_SEVERITY_LABEL, MED_INV_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { toast } from "sonner";
 
 const severityColour: Record<MedInvSeverity, string> = {
   no_harm: "bg-green-100 text-green-800",
@@ -28,12 +37,60 @@ const statusColour: Record<MedInvStatus, string> = {
 
 export default function MedicationErrorInvestigationPage() {
   const { data: res, isLoading } = useMedicationErrorInvestigations();
+  const createInvestigation = useCreateMedicationErrorInvestigation();
   const data: MedicationErrorInvestigation[] = res?.data ?? [];
 
   const [filterSeverity, setFilterSeverity] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState({
+    child_id: "",
+    error_type: "wrong_dose_given" as MedInvErrorType,
+    error_severity: "no_harm" as MedInvSeverity,
+    date_of_error: new Date().toISOString().split("T")[0],
+    staff_involved: "",
+    child_impact_observed: "",
+    root_cause_analysis: "",
+  });
+
+  async function handleCreate() {
+    if (!form.child_id || !form.staff_involved || !form.child_impact_observed || !form.root_cause_analysis) {
+      toast.error("Please complete all required fields");
+      return;
+    }
+    try {
+      await createInvestigation.mutateAsync({
+        ...form,
+        date_discovered: form.date_of_error,
+        immediate_actions_taken: [],
+        gp_consulted: false,
+        gp_advice: "",
+        parent_la_informed: false,
+        child_informed_age_appropriately: false,
+        child_response: "",
+        contributing_factors: [],
+        systemic_changes: [],
+        training_arising: [],
+        policy_arising: "",
+        staff_emotional_impact: "",
+        debrief_held: false,
+        debrief_date: "",
+        ofsted_notification_required: form.error_severity === "major_harm",
+        ofsted_notification_date: "",
+        status: "investigating" as MedInvStatus,
+        preventive_action_embedded: false,
+        reviewed_by: form.staff_involved,
+        notes: "",
+      });
+      toast.success("Investigation opened");
+      setShowCreate(false);
+      setForm({ child_id: "", error_type: "wrong_dose_given", error_severity: "no_harm", date_of_error: new Date().toISOString().split("T")[0], staff_involved: "", child_impact_observed: "", root_cause_analysis: "" });
+    } catch {
+      toast.error("Failed to save. Please try again.");
+    }
+  }
 
   const filtered = useMemo(() => {
     let items = [...data];
@@ -63,7 +120,37 @@ export default function MedicationErrorInvestigationPage() {
 
   return (
     <PageShell title="Medication Error Investigation" subtitle="Where harm or near-harm occurred — investigated through just-culture lens, learning embedded"
-      actions={<div className="flex items-center gap-2"><ExportButton data={data} columns={exportCols} filename="medication-error-investigation" /><PrintButton title="Medication Error Investigation" /></div>}>
+      ariaContext={{ pageTitle: "Medication Error Investigation", sourceType: "medication" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <ExportButton data={data} columns={exportCols} filename="medication-error-investigation" />
+          <PrintButton title="Medication Error Investigation" />
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />Log Error</Button>
+        </div>
+      }>
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Log Medication Error Investigation</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Child *</Label><Select value={form.child_id} onValueChange={(v) => setForm((f) => ({ ...f, child_id: v }))}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.map((yp) => <SelectItem key={yp.id} value={yp.id}>{yp.preferred_name ?? yp.first_name}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Date of Error *</Label><Input type="date" value={form.date_of_error} onChange={(e) => setForm((f) => ({ ...f, date_of_error: e.target.value }))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Error Type</Label><Select value={form.error_type} onValueChange={(v) => setForm((f) => ({ ...f, error_type: v as MedInvErrorType }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(MED_INV_ERROR_TYPE_LABEL) as [MedInvErrorType, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+              <div><Label>Severity</Label><Select value={form.error_severity} onValueChange={(v) => setForm((f) => ({ ...f, error_severity: v as MedInvSeverity }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(MED_INV_SEVERITY_LABEL) as [MedInvSeverity, string][]).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select></div>
+            </div>
+            <div><Label>Staff Involved *</Label><Select value={form.staff_involved} onValueChange={(v) => setForm((f) => ({ ...f, staff_involved: v }))}><SelectTrigger><SelectValue placeholder="Select staff member" /></SelectTrigger><SelectContent>{STAFF.map((s) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Child Impact Observed *</Label><Textarea placeholder="What was observed, how the child was affected..." value={form.child_impact_observed} onChange={(e) => setForm((f) => ({ ...f, child_impact_observed: e.target.value }))} rows={2} /></div>
+            <div><Label>Initial Root Cause *</Label><Textarea placeholder="What went wrong and why..." value={form.root_cause_analysis} onChange={(e) => setForm((f) => ({ ...f, root_cause_analysis: e.target.value }))} rows={2} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createInvestigation.isPending}>{createInvestigation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Open Investigation"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Investigations</p></div>
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-green-600">{noHarm}/{total}</p><p className="text-xs text-muted-foreground">No Harm</p></div>
@@ -113,6 +200,12 @@ export default function MedicationErrorInvestigationPage() {
         })}
       </div>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Medication errors investigated per CQC standards, NICE NG5, and Reg 40 (notification where required). Just-culture lens. Linked to Medication Near-Miss Log, MAR Sheet, and Lessons Learned Register.</p></div>
+      <CareEventsPanel
+        title="Care Events — Medication"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

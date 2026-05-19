@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,15 +12,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
-import { getStaffName } from "@/lib/seed-data";
+import { getStaffName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
   Users, Calendar, Clock, CheckCircle2, AlertTriangle,
   Star, MessageSquare, Loader2,
 } from "lucide-react";
-import { useStaffMeetingRecords } from "@/hooks/use-staff-meeting-records";
+import { useStaffMeetingRecords, useCreateStaffMeetingRecord } from "@/hooks/use-staff-meeting-records";
 import type { StaffMeetingRecord, StaffMeetingType, StaffMeetingAction } from "@/types/extended";
 import { STAFF_MEETING_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config (colours not serializable) ─────────────────────────────── */
 
@@ -51,6 +55,19 @@ export default function StaffMeetingsPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createMeeting = useCreateStaffMeetingRecord();
+  const [smForm, setSmForm] = useState({ date: new Date().toISOString().slice(0, 10), type: "team_meeting" as StaffMeetingType, title: "", general_notes: "", next_meeting_date: "" });
+  const setSM = (k: string, v: unknown) => setSmForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveMeeting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!smForm.title.trim()) { toast.error("Meeting title is required."); return; }
+    await createMeeting.mutateAsync({ date: smForm.date, type: smForm.type, title: smForm.title.trim(), chair: "staff_darren", attendees: [], apologies: [], agenda_items: [], actions_from_previous: [], new_actions: [], general_notes: smForm.general_notes.trim(), next_meeting_date: smForm.next_meeting_date, duration: 60, recorded_by: "staff_darren", created_at: new Date().toISOString() });
+    toast.success("Staff meeting recorded.");
+    setSmForm({ date: new Date().toISOString().slice(0, 10), type: "team_meeting", title: "", general_notes: "", next_meeting_date: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -108,11 +125,13 @@ export default function StaffMeetingsPage() {
     <PageShell
       title="Staff Meetings"
       subtitle="Team meetings, management meetings, and clinical formulations"
+      ariaContext={{ pageTitle: "Staff Meetings", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Meetings" />
           <ExportButton data={filtered} columns={exportCols} filename="staff-meetings" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Meeting</Button>
+          <AriaStudioQuickActionButton context={{ record_type: "team_meeting", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -269,26 +288,38 @@ export default function StaffMeetingsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Staff Meeting</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleSaveMeeting} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" /></div>
+              <div><label className="text-sm font-medium">Date</label><Input type="date" value={smForm.date} onChange={(e) => setSM("date", e.target.value)} /></div>
               <div>
                 <label className="text-sm font-medium">Type</label>
-                <Select><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                <Select value={smForm.type} onValueChange={(v) => setSM("type", v)}><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>{(Object.entries(STAFF_MEETING_TYPE_LABEL) as [StaffMeetingType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">Title</label><Input placeholder="Meeting title" /></div>
-            <div><label className="text-sm font-medium">General Notes</label><Textarea placeholder="Meeting notes…" rows={4} /></div>
-            <div><label className="text-sm font-medium">Next Meeting Date</label><Input type="date" /></div>
+            <div><label className="text-sm font-medium">Title *</label><Input placeholder="Meeting title" value={smForm.title} onChange={(e) => setSM("title", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">General Notes</label><Textarea placeholder="Meeting notes…" rows={4} value={smForm.general_notes} onChange={(e) => setSM("general_notes", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Next Meeting Date</label><Input type="date" value={smForm.next_meeting_date} onChange={(e) => setSM("next_meeting_date", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Save Meeting</Button>
+              <Button type="submit" disabled={createMeeting.isPending}>{createMeeting.isPending ? "Saving…" : "Save Meeting"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Meetings — staff team meetings, agendas, minutes, attendance, action tracking, team communication, management oversight evidence, Reg 45 team practice evidence"
+        recordType="team_meeting"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -10,7 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +30,9 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useNeedsAssessments } from "@/hooks/use-needs-assessments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NeedsAssessment, NeedsDomain, NeedsComplexity, NeedsDomainAssessment } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -198,10 +201,12 @@ export default function AssessmentOfNeedPage() {
     <PageShell
       title="Assessment of Need"
       subtitle="Care Planning Regulations 2010, Reg 14 (28-day report) · Quality Standard 4 — comprehensive baseline assessment on admission"
+      ariaContext={{ pageTitle: "Assessment of Need", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Assessment of Need" />
           <ExportButton data={filtered} columns={exportCols} filename="assessment-of-need" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -498,6 +503,18 @@ export default function AssessmentOfNeedPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Care Planning"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Assessment of Need — Section 47, CIN assessment, LAC assessment, needs analysis, developmental domains, strengths and risks, placement matching, care planning"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

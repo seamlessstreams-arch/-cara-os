@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -29,6 +29,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const exportCols: ExportColumn<MoneyRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -109,10 +112,12 @@ export default function ChildMoneyManagementBudgetingPage() {
     <PageShell
       title="Money Management & Budgeting"
       subtitle="Per-child practical money management — bank app fluency, weekly budget, payslip reading, scam recognition, BNPL risks, comparison shopping, debt awareness. Critical preparation for leaving care."
+      ariaContext={{ pageTitle: "Money Management & Budgeting", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-money-management-budgeting" />
           <PrintButton title="Money Management & Budgeting" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -284,6 +289,18 @@ export default function ChildMoneyManagementBudgetingPage() {
           exploitation.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Finance"
+        category="finance"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Money Management & Budgeting — pocket money, savings, spending records, independent living skills, financial education, benefit transitions, Pathway Plan finance, LAC entitlements"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

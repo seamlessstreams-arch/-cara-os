@@ -21530,3 +21530,612 @@ export interface YPSavingsAccountRecord {
   child_manages: boolean;
   notes: string;
 }
+
+// ── Inspection History ─────────────────────────────────────────────────────────
+
+export type OfstedGrade = "Outstanding" | "Good" | "Requires improvement" | "Inadequate";
+export type InspectionType = "Full inspection" | "Short notice" | "Focused visit" | "Monitoring visit";
+
+export interface InspectionRecord {
+  id: string;
+  home_id: string;
+  inspection_date: string;
+  inspection_type: InspectionType;
+  grade: OfstedGrade;
+  inspector_name: string;
+  report_reference: string | null;
+  report_url: string | null;
+  actions_required: number;
+  actions_completed: number;
+  summary: string | null;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Wake-Up Routines ───────────────────────────────────────────────────────────
+
+export type WakeUpMethod = "Gentle voice" | "Music/playlist" | "Light + voice" | "Phone alarm" | "White noise transition";
+export type WakeUpStaffSupport = "None" | "Prompt" | "Hands-on";
+export type EnergyPattern = "Slow starter" | "Quick starter" | "Variable";
+
+export interface WakeUpStep {
+  time: string;
+  activity: string;
+  staffSupport: WakeUpStaffSupport;
+}
+
+export interface WakeUpRoutine {
+  id: string;
+  child_id: string;
+  home_id: string;
+  weekdayWakeTime: string;
+  weekendWakeTime: string;
+  preferredWakeMethod: WakeUpMethod;
+  wakeUpSteps: WakeUpStep[];
+  morningTriggers: string[];
+  morningProtective: string[];
+  breakfastPreferences: string[];
+  hygieneSequence: string[];
+  schoolPrep: string[];
+  arrivalTime: string;
+  ifRefusingToGetUp: string[];
+  energyPattern: EnergyPattern;
+  medicationMorning: string;
+  childAgreed: boolean;
+  reviewedDate: string;
+  reviewedWith: string;
+  effectivenessRating: number;
+  created_at: string;
+}
+
+// ── Therapeutic Outcome Measures ───────────────────────────────────────────────
+
+export type OutcomeMeasureName = "SDQ (Goodman)" | "RCADS" | "CORE-YP" | "Outcome Star" | "BERS-2" | "ASEBA YSR" | "Trauma Symptom Checklist (TSCC)";
+export type OutcomeMeasureDomain = "Emotional Wellbeing" | "Behavioural" | "Anxiety/Depression" | "Trauma Symptoms" | "Strengths" | "General";
+export type TomTrendDirection = "Improving" | "Stable" | "Declining" | "Baseline";
+export type ScoreInterpretation = "Within normal range" | "Borderline" | "Clinical concern";
+
+export interface OutcomeSubscale {
+  subscale: string;
+  rawScore: number;
+  maxScore: number;
+  clinicalThreshold: number;
+  interpretation: ScoreInterpretation;
+}
+
+export interface OutcomeMeasure {
+  id: string;
+  child_id: string;
+  home_id: string;
+  measureName: OutcomeMeasureName;
+  measureFullName: string;
+  domain: OutcomeMeasureDomain;
+  administeredDate: string;
+  administeredBy: string;
+  childCompleted: boolean;
+  scores: OutcomeSubscale[];
+  totalScore: number;
+  maxTotalScore: number;
+  prevTotalScore: number | null;
+  trendDirection: TomTrendDirection;
+  childReflection: string;
+  staffInterpretation: string;
+  clinicalDiscussionWith: string;
+  linkedInterventions: string[];
+  nextAdministrationDate: string;
+  created_at: string;
+}
+
+// ── Welfare Check Protocol Per Child ──────────────────────────────────────────
+
+export type WelfareCheckType =
+  | "Visual through doorway"
+  | "Full welfare check"
+  | "Voice check"
+  | "Thermal sensor"
+  | "Baby monitor observation"
+  | "Knock and verbal"
+  | "Sensor-only"
+  | "Standard observation";
+
+export interface WelfareProtocol {
+  id: string;
+  child_id: string;
+  home_id: string;
+  checkFrequencyByDay: string;
+  checkFrequencyByNight: string;
+  checkType: WelfareCheckType;
+  reasonForFrequency: string;
+  signsOfWellbeingToObserve: string[];
+  signsOfConcernToWatchFor: string[];
+  howToCheckSensitivelyAware: string;
+  nightCheckTechnique: string;
+  childCanRequestModifications: boolean;
+  childPreferences: string;
+  staffApproachWhenChildAwake: string;
+  escalationCriteria: string[];
+  reviewedDate: string;
+  reviewedWithChild: boolean;
+  reviewedBy: string;
+  nextReviewDate: string;
+  created_at: string;
+}
+
+// ── Young Carer Status ────────────────────────────────────────────────────────
+
+export type YoungCarerStatus = "Identified young carer" | "Previous young carer (pre-care)" | "Risk of young carer role on family contact" | "Not a young carer";
+
+export interface YoungCarerRecord {
+  id: string;
+  child_id: string;
+  home_id: string;
+  assessmentDate: string;
+  carerStatus: YoungCarerStatus;
+  caringResponsibilities: string[];
+  caringRecipient: string;
+  ageWhenCaringStarted: number;
+  durationOfCaringRole: string;
+  emotionalImpactObserved: string[];
+  practicalImpactObserved: string[];
+  childWishesAroundCaring: string;
+  parentLAAware: boolean;
+  formalYoungCarerAssessment: boolean;
+  assessmentLA: string;
+  assessmentDate2: string;
+  supportInPlace: string[];
+  educationImpactProtections: string[];
+  contactSupportArrangements: string;
+  childAcceptsCarerStatus: boolean;
+  childRefusesIdentification: string;
+  reviewSchedule: string;
+  reviewedDate: string;
+  reviewedBy: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Young Person Job Tracker ──────────────────────────────────────────────────
+
+export type YpJobType = "Saturday job" | "Newspaper round" | "Babysitting (family)" | "Volunteering" | "Apprenticeship" | "Work experience placement" | "Internal home task (paid)" | "Sports coaching assistant";
+export type YpJobStatus = "Active" | "Trial period" | "Ended" | "On hold";
+export type PayRateUnit = "per hour" | "per shift" | "per week" | "per task";
+
+export interface YpJobLegalCheck {
+  check: string;
+  verified: boolean;
+}
+
+export interface YpJob {
+  id: string;
+  child_id: string;
+  home_id: string;
+  jobType: YpJobType;
+  employer: string;
+  jobTitle: string;
+  startDate: string;
+  ongoingStatus: YpJobStatus;
+  endDate: string;
+  hoursPerWeek: number;
+  payRate: number;
+  payRateUnit: PayRateUnit;
+  legalChecks: YpJobLegalCheck[];
+  workPermitObtained: boolean;
+  workPermitNumber: string;
+  schoolImpactAssessment: string;
+  parentLAConsent: boolean;
+  childAge: number;
+  childMotivation: string;
+  riskAssessmentCompleted: boolean;
+  riskAssessmentDate: string;
+  travelArrangements: string;
+  emergencyContacts: string;
+  childExperience: string;
+  skillsBeingDeveloped: string[];
+  earningsToDate: number;
+  earningsManagement: string;
+  reviewedDate: string;
+  reviewedBy: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Transport Risk Assessments ────────────────────────────────────────────────
+
+export type JourneyType =
+  | "Routine recurring"
+  | "School run"
+  | "Activity"
+  | "Appointment"
+  | "Family contact"
+  | "Holiday/trip"
+  | "Emergency";
+
+export interface TransportHazard {
+  hazard: string;
+  likelihood: "Low" | "Medium" | "High";
+  severity: "Low" | "Medium" | "High";
+  control: string;
+  residualRisk: "Low" | "Medium" | "High";
+}
+
+export interface TransportRA {
+  id: string;
+  child_id: string;
+  home_id: string;
+  journeyTitle: string;
+  journeyType: JourneyType;
+  youngPeople: string[];
+  staffDriver: string;
+  passengers: number;
+  vehicle: string;
+  routeDescription: string;
+  expectedDurationMins: number;
+  recurringFrequency?: string;
+  hazards: TransportHazard[];
+  childSpecificConsiderations: Record<string, string>;
+  behaviourRiskRating: "Low" | "Medium" | "High";
+  behaviourMitigations: string[];
+  missingFromCareRisk: "Low" | "Medium" | "High";
+  missingMitigations: string[];
+  specificRisksByRoute: string[];
+  emergencyProcedure: string;
+  breakdownProcedure: string;
+  lastReviewedDate: string;
+  reviewedBy: string;
+  nextReviewDate: string;
+  signedOffByRM: boolean;
+  inUseStatus: boolean;
+  created_at: string;
+}
+
+// ── Utility Bills Tracker ─────────────────────────────────────────────────────
+
+export type UtilityType = "Electricity" | "Gas" | "Water" | "Broadband" | "Phone" | "Council Tax" | "Insurance";
+export type PaymentStatus = "Paid" | "Pending" | "Overdue" | "Disputed";
+export type PaymentMethod = "Direct Debit" | "BACS" | "Card";
+export type TrendDirection2 = "Up" | "Down" | "Stable";
+
+export interface UtilityBill {
+  id: string;
+  home_id: string;
+  utilityType: UtilityType;
+  supplier: string;
+  accountNumber: string;
+  billPeriod: string;
+  billDate: string;
+  dueDate: string;
+  amountDue: number;
+  amountPaid: number;
+  paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod;
+  readingPrevious: number;
+  readingCurrent: number;
+  unitsUsed: number;
+  comparedToLastYear: string;
+  trend: TrendDirection2;
+  efficiencyNotes: string;
+  contractEndDate: string;
+  switchAvailable: boolean;
+  responsibleOwner: string;
+  reviewedBy: string;
+  created_at: string;
+}
+
+// ── Trauma-Informed Timeline ──────────────────────────────────────────────────
+
+export type TimelineEventCategory = "Loss" | "Trauma" | "Placement" | "Positive" | "Health" | "Education" | "Family" | "Legal";
+export type TimelineEventImpact = "High" | "Medium" | "Low";
+
+export interface TimelineEvent {
+  id: string;
+  child_id: string;
+  home_id: string;
+  date: string;
+  ageAtEvent: number;
+  category: TimelineEventCategory;
+  title: string;
+  description: string;
+  impact: TimelineEventImpact;
+  therapeuticRelevance: string;
+  linkedInterventions: string[];
+  source: string;
+  addedBy: string;
+  addedDate: string;
+  created_at: string;
+}
+
+// ── Welcome Tour Checklist ────────────────────────────────────────────────────
+
+export interface WelcomeTourStep {
+  step: string;
+  shown: boolean;
+  childResponse: string;
+  noteForCarePlan: string;
+}
+
+export interface WelcomeTourResident {
+  residentInitials: string;
+  meetingType: "Brief introduction" | "Longer chat" | "Activity together" | "Parallel only — not introduced";
+  observations: string;
+}
+
+export interface WelcomeTour {
+  id: string;
+  child_id: string;
+  home_id: string;
+  childInitials: string;
+  ageAtArrival: number;
+  arrivalDate: string;
+  tourDate: string;
+  tourLeader: string;
+  durationMinutes: number;
+  childArrivedFromWhere: string;
+  toursPaceAdjusted: boolean;
+  paceAdjustmentReason: string;
+  preTourActivities: string[];
+  toursteps: WelcomeTourStep[];
+  meetingChildrenDuringTour: WelcomeTourResident[];
+  emotionalState: { onArrival: string; midTour: string; postTour: string };
+  childChoseFirstActivity: string;
+  bedroomFirstSighting: string;
+  bedroomPersonalisationStarted: boolean;
+  childToldAboutPledges: boolean;
+  childToldAboutAdvocate: boolean;
+  childToldAboutComplaints: boolean;
+  childToldAboutContact: boolean;
+  childGivenPersonalisedWelcomePack: boolean;
+  childGivenContactNumbers: boolean;
+  childCalmAtNightOne: boolean;
+  followUpActions: string[];
+  notes: string;
+  created_at: string;
+}
+
+// ── Trans-Affirming Care Plan ─────────────────────────────────────────────────
+
+export type TransSocialTransitionStage =
+  | "Pre-questioning"
+  | "Questioning / exploring"
+  | "Privately identified"
+  | "Out to staff only"
+  | "Selectively out"
+  | "Fully socially transitioned"
+  | "Detransitioned / re-exploring";
+
+export type TransParentalAwareness =
+  | "Out and supported"
+  | "Out — strained"
+  | "Selectively"
+  | "Not yet — child's choice"
+  | "Not yet — risk-assessed"
+  | "Hostile family — no contact agreed";
+
+export type TransSchoolAwareness = "Fully" | "Partially" | "Not aware — child's choice";
+
+export interface TransAffirmingPlan {
+  id: string;
+  child_id: string;
+  home_id: string;
+  planDate: string;
+  identitySharedWithStaff: string;
+  pronouns: string;
+  pronounsUsedConsistently: boolean;
+  preferredName: string;
+  legalNameMatches: boolean;
+  preferredNameWhereUsed: string[];
+  whereDeadnameStillAppears: string[];
+  socialTransitionStage: TransSocialTransitionStage;
+  childPaceConfirmed: boolean;
+  affirmingActions: string[];
+  clothingAccessSupported: string[];
+  bindingPolicy?: string;
+  packerPolicy?: string;
+  voiceCoachingActive?: string;
+  hairCareAffirming: string[];
+  pronounEducationForVisitors: boolean;
+  externalSupport: { agency: string; clinician?: string; frequency: string }[];
+  giccConsidered: boolean;
+  giccStatus?: string;
+  childCanRequestPause: boolean;
+  parentalAwareness: TransParentalAwareness;
+  schoolAware: TransSchoolAwareness;
+  schoolUsingPreferredNamePronouns: boolean;
+  bathroomChangingArrangements: string;
+  safetyRiskAssessment: string[];
+  recordsLanguageUpdated: boolean;
+  childVoice: string;
+  staffObservation: string;
+  flagsForReview: string[];
+  reviewDate: string;
+  keyWorker: string;
+  created_at: string;
+}
+
+// ── Vehicle Pre-Use Check ─────────────────────────────────────────────────────
+
+export type VehicleCheckFuelLevel = "Full" | "3/4" | "1/2" | "1/4" | "Refuel needed";
+export type VehicleCheckOutcome =
+  | "Cleared for use"
+  | "Cleared with minor notes"
+  | "Withdrawn from use - defect";
+
+export interface VehiclePreUseCheckItem {
+  item: string;
+  pass: boolean;
+  notes: string;
+}
+
+export interface VehiclePreUseCheck {
+  id: string;
+  home_id: string;
+  vehicle: string;
+  driver: string;
+  dateTime: string;
+  journeyPurpose: string;
+  expectedReturn: string;
+  checks: VehiclePreUseCheckItem[];
+  fuelLevel: VehicleCheckFuelLevel;
+  mileageStart: number;
+  mileageEnd?: number;
+  defectsFound: string[];
+  defectsActionedBy: string;
+  tyresChecked: boolean;
+  tyresPressureNotedNotes: string;
+  fluidsChecked: boolean;
+  warningLightsClear: boolean;
+  windscreenAndWipersOk: boolean;
+  seatbeltsOk: boolean;
+  childCarSeatsCorrect: boolean;
+  firstAidKitPresent: boolean;
+  grabBagPresent: boolean;
+  insuranceConfirmed: boolean;
+  motValidUntil: string;
+  breakdownCoverConfirmed: boolean;
+  passengersExpected: number;
+  incidentsDuringJourney: string;
+  checkOutcome: VehicleCheckOutcome;
+  nextAction: string;
+  created_at: string;
+}
+
+// ── Voter Registration / Civic Record ────────────────────────────────────────
+
+export type VoterRegistrationStatus =
+  | "Too young"
+  | "Eligible — not registered"
+  | "Registered (attainer)"
+  | "Registered — full"
+  | "Postal vote arranged"
+  | "Voter ID confirmed";
+
+export type VoterRegistrationMethod =
+  | "gov.uk online"
+  | "Paper form"
+  | "Council assisted"
+  | "Pathway plan support";
+
+export interface CivicElection {
+  name: string;
+  date: string;
+}
+
+export interface CivicElectionParticipated {
+  name: string;
+  date: string;
+  voted: boolean;
+  firstTime?: boolean;
+}
+
+export interface CivicRecord {
+  id: string;
+  child_id: string;
+  home_id: string;
+  recordedDate: string;
+  ageAtRecord: number;
+  voterRegistrationStatus: VoterRegistrationStatus;
+  registrationDate?: string;
+  registrationMethod?: VoterRegistrationMethod;
+  voterIdHeld?: string;
+  electionsEligibleNext: CivicElection[];
+  electionsParticipated: CivicElectionParticipated[];
+  civicEducationCovered: string[];
+  causesOfInterest: string[];
+  communityActivities: string[];
+  hasContactedRepresentative: boolean;
+  representativesKnown: string[];
+  childVoice: string;
+  staffObservation: string;
+  nextStep: string;
+  reviewDate: string;
+  keyWorker: string;
+  created_at: string;
+}
+
+// ── Warm Welcome Packs ────────────────────────────────────────────────────────
+
+export type WelcomePackStatus = "delivered" | "preparing" | "template";
+export type WelcomeItemCategory =
+  | "bedroom"
+  | "toiletries"
+  | "comfort"
+  | "information"
+  | "personal"
+  | "food";
+
+export interface WarmWelcomePackItem {
+  item: string;
+  category: WelcomeItemCategory;
+  provided: boolean;
+  personalised: boolean;
+  notes: string;
+}
+
+export interface WarmWelcomePack {
+  id: string;
+  child_id: string;
+  home_id: string;
+  preparedBy: string;
+  preparedDate: string;
+  admissionDate: string;
+  status: WelcomePackStatus;
+  items: WarmWelcomePackItem[];
+  personalTouches: string[];
+  childFeedback: string | null;
+  firstNightPlan: string;
+  keyWorkerIntro: string;
+  notes: string;
+  created_at: string;
+}
+
+// ── Therapeutic Care Model ────────────────────────────────────────────────────
+
+export type TherapeuticCompetencyLevel = "foundation" | "practitioner" | "advanced";
+
+export interface TherapeuticTrainingCourse {
+  course: string;
+  date: string;
+}
+
+export interface TherapeuticStaffTraining {
+  id: string;
+  home_id: string;
+  staffId: string;
+  competencyLevel: TherapeuticCompetencyLevel;
+  trainingCompleted: TherapeuticTrainingCourse[];
+  lastReflectivePractice: string;
+  areasOfStrength: string[];
+  developmentNeeds: string[];
+  notes: string;
+  created_at: string;
+}
+
+export interface TherapeuticChildImpact {
+  id: string;
+  child_id: string;
+  home_id: string;
+  keyOutcomes: string[];
+  evidenceOfProgress: string;
+  modelApplication: string[];
+  reviewDate: string;
+  created_at: string;
+}
+
+// ── Home Emergency Contacts ───────────────────────────────────────────────────
+
+export type HomeContactCategory =
+  | "emergency_999"
+  | "on_call"
+  | "local_service"
+  | "regulatory";
+
+export interface HomeEmergencyContact {
+  id: string;
+  home_id: string;
+  label: string;
+  number: string;
+  description: string;
+  category: HomeContactCategory;
+  available: string;
+  created_at: string;
+}

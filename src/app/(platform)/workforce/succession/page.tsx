@@ -16,7 +16,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { cn } from "@/lib/utils";
 import {
   GitBranch, Sparkles, CheckCircle2, Clock, AlertTriangle,
@@ -33,7 +33,7 @@ const URGENCY_CONFIG: Record<string, { label: string; colour: string; order: num
   immediate:     { label: "Immediate",   colour: "text-red-700 bg-red-50 border-red-200",       order: 0 },
   six_months:    { label: "6 Months",    colour: "text-amber-700 bg-amber-50 border-amber-200", order: 1 },
   twelve_months: { label: "12 Months",   colour: "text-blue-700 bg-blue-50 border-blue-200",    order: 2 },
-  long_term:     { label: "Long Term",   colour: "text-[var(--cs-text-secondary)] bg-slate-50 border-[var(--cs-border)]", order: 3 },
+  long_term:     { label: "Long Term",   colour: "text-slate-700 bg-slate-50 border-slate-200", order: 3 },
 };
 
 const READINESS_COLOUR = (score: number) =>
@@ -69,7 +69,7 @@ function ReadinessChart({
       <CardContent className="pt-0 space-y-2">
         {allCandidates.map((c) => (
           <div key={`${c.staff_id}-${c.role}`} className="flex items-center gap-2">
-            <p className="text-[10px] text-[var(--cs-text-secondary)] w-16 truncate shrink-0 font-medium">
+            <p className="text-[10px] text-slate-600 w-16 truncate shrink-0 font-medium">
               {c.name.split(" ")[0]}
             </p>
             <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -115,7 +115,7 @@ function CoverageRisk({
           return (
             <div key={plan.role_title} className={cn("rounded-lg border p-2.5", riskBg)}>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[11px] font-semibold text-[var(--cs-navy)]">{plan.role_title}</p>
+                <p className="text-[11px] font-semibold text-slate-800">{plan.role_title}</p>
                 <Badge variant="outline" className={cn("text-[9px] h-4 px-1.5 border", urgencyCfg.colour)}>
                   {urgencyCfg.label}
                 </Badge>
@@ -124,7 +124,7 @@ function CoverageRisk({
                 <span className={cn("text-[10px] font-bold capitalize", riskColour)}>
                   {riskLevel === "at risk" ? "At Risk" : riskLevel === "developing" ? "Developing" : "Covered"}
                 </span>
-                <span className="text-[9px] text-[var(--cs-text-muted)]">
+                <span className="text-[9px] text-slate-400">
                   {plan.candidates.length} candidate{plan.candidates.length !== 1 ? "s" : ""} · Best: {bestScore}%
                 </span>
               </div>
@@ -207,6 +207,7 @@ export default function SuccessionBoardPage() {
     <PageShell
       title="Succession Planning Board"
       subtitle="Role coverage, internal readiness & ARIA gap analysis"
+      ariaContext={{ pageTitle: "Succession Planning Board", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -229,6 +230,7 @@ export default function SuccessionBoardPage() {
           <Link href="/workforce">
             <Button variant="outline" size="sm">Workforce Hub</Button>
           </Link>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -237,7 +239,7 @@ export default function SuccessionBoardPage() {
         {/* ── ARIA Panel ──────────────────────────────────────────────────── */}
         {showAria && (
           <div className="relative">
-            <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-xs">✕ Close</button>
+            <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs">✕ Close</button>
             <AriaPanel
               mode="staff_development_summary"
               pageContext={`Succession board: ${plans.length} active succession plans. ${plans.map((p) => `${p.role_title}: ${p.candidates.length} candidates, urgency ${p.urgency}`).join(". ")}`}
@@ -270,10 +272,10 @@ export default function SuccessionBoardPage() {
               icon: <AlertTriangle className={cn("h-4 w-4", rolesAtRisk > 0 ? "text-red-500" : "text-emerald-500")} />,
             },
           ].map(({ label, value, colour, bg, icon }) => (
-            <div key={label} className={cn("rounded-xl border border-[var(--cs-border-subtle)] bg-white p-3 text-center", bg)}>
+            <div key={label} className={cn("rounded-xl border border-slate-100 bg-white p-3 text-center", bg)}>
               <div className="flex justify-center mb-1">{icon}</div>
               <div className={cn("text-xl font-bold tabular-nums", colour)}>{value}</div>
-              <div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">{label}</div>
+              <div className="text-[10px] text-slate-500 mt-0.5">{label}</div>
             </div>
           ))}
         </div>
@@ -288,7 +290,7 @@ export default function SuccessionBoardPage() {
         {plans.length > 0 && (
           <div className="flex items-center gap-3">
             <div className="relative w-64">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <Input
                 placeholder="Search plans or candidates…"
                 value={search}
@@ -297,21 +299,21 @@ export default function SuccessionBoardPage() {
               />
             </div>
             {search.trim() && (
-              <span className="text-xs text-[var(--cs-text-muted)]">{filteredPlans.length} of {plans.length} plans</span>
+              <span className="text-xs text-slate-400">{filteredPlans.length} of {plans.length} plans</span>
             )}
           </div>
         )}
 
         {/* ── Succession Plans ────────────────────────────────────────────── */}
         {filteredPlans.length === 0 && !search.trim() ? (
-          <div className="text-center py-16 text-[var(--cs-text-muted)]">
-            <GitBranch className="h-10 w-10 mx-auto mb-3 text-[var(--cs-text-gentle)]" />
+          <div className="text-center py-16 text-slate-500">
+            <GitBranch className="h-10 w-10 mx-auto mb-3 text-slate-300" />
             <p className="font-medium">No succession plans configured</p>
             <p className="text-xs mt-1">Use ARIA to generate initial succession recommendations</p>
           </div>
         ) : filteredPlans.length === 0 ? (
-          <div className="text-center py-16 text-[var(--cs-text-muted)]">
-            <Search className="h-10 w-10 mx-auto mb-3 text-[var(--cs-text-gentle)]" />
+          <div className="text-center py-16 text-slate-500">
+            <Search className="h-10 w-10 mx-auto mb-3 text-slate-300" />
             <p className="font-medium">No plans match your search</p>
             <p className="text-xs mt-1">Try a different search term</p>
           </div>
@@ -322,29 +324,28 @@ export default function SuccessionBoardPage() {
               const isExpanded = expandedPlan === plan.id;
 
               return (
-                <div key={plan.id} className="rounded-2xl border border-[var(--cs-border)] bg-white overflow-hidden">
+                <div key={plan.id} className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
                   {/* Header */}
                   <button
                     onClick={() => setExpandedPlan(isExpanded ? null : plan.id)}
-                    className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-[var(--cs-border-subtle)] text-left hover:bg-[var(--cs-surface)] transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-100 text-left hover:bg-slate-100 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <GitBranch className="h-4 w-4 text-[var(--cs-text-muted)]" />
+                      <GitBranch className="h-4 w-4 text-slate-500" />
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-bold text-[var(--cs-navy)]">{plan.role_title}</p>
+                          <p className="text-sm font-bold text-slate-800">{plan.role_title}</p>
                           <Badge variant="outline" className={cn("text-[10px] border", urgency.colour)}>
                             {urgency.label}
                           </Badge>
-                          <AriaUsageBadge ariaAssisted={(plan as any).aria_assist_used} sourceTable="succession_plans" recordId={plan.id} />
                         </div>
-                        <p className="text-[11px] text-[var(--cs-text-muted)] mt-0.5">
+                        <p className="text-[11px] text-slate-500 mt-0.5">
                           {PATHWAY_STAGE_LABELS[plan.target_stage]} · {plan.candidates.length} candidate{plan.candidates.length !== 1 ? "s" : ""}
                           {plan.review_date && ` · Review: ${plan.review_date}`}
                         </p>
                       </div>
                     </div>
-                    {isExpanded ? <ChevronUp className="h-4 w-4 text-[var(--cs-text-muted)]" /> : <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted)]" />}
+                    {isExpanded ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
                   </button>
 
                   {/* Candidates — always visible */}
@@ -354,7 +355,7 @@ export default function SuccessionBoardPage() {
                       return (
                         <div key={candidate.staff_id} className={cn(
                           "rounded-xl border p-3",
-                          candidate.ready_now ? "border-emerald-200 bg-emerald-50/30" : "border-[var(--cs-border)] bg-white",
+                          candidate.ready_now ? "border-emerald-200 bg-emerald-50/30" : "border-slate-200 bg-white",
                         )}>
                           <div className="flex items-start gap-3">
                             <div className={cn(
@@ -365,7 +366,7 @@ export default function SuccessionBoardPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap mb-1">
-                                <Link href={`/workforce/staff/${candidate.staff_id}`} className="text-sm font-semibold text-[var(--cs-navy)] hover:text-indigo-600 transition-colors">
+                                <Link href={`/workforce/staff/${candidate.staff_id}`} className="text-sm font-semibold text-slate-800 hover:text-indigo-600 transition-colors">
                                   {getStaffName(candidate.staff_id)}
                                 </Link>
                                 {candidate.ready_now ? (
@@ -394,7 +395,7 @@ export default function SuccessionBoardPage() {
                                 </span>
                               </div>
 
-                              <div className="flex items-center gap-3 text-[10px] text-[var(--cs-text-muted)] flex-wrap">
+                              <div className="flex items-center gap-3 text-[10px] text-slate-400 flex-wrap">
                                 {profile && (
                                   <span className="flex items-center gap-0.5">
                                     <Target className="h-2.5 w-2.5" />
@@ -416,11 +417,11 @@ export default function SuccessionBoardPage() {
                               </div>
 
                               {candidate.notes && (
-                                <p className="text-[11px] text-[var(--cs-text-muted)] mt-1.5 leading-relaxed">{candidate.notes}</p>
+                                <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">{candidate.notes}</p>
                               )}
                             </div>
                             <Link href={`/workforce/staff/${candidate.staff_id}`}>
-                              <ChevronRight className="h-4 w-4 text-[var(--cs-text-gentle)] hover:text-[var(--cs-text-muted)] transition-colors shrink-0" />
+                              <ChevronRight className="h-4 w-4 text-slate-300 hover:text-slate-500 transition-colors shrink-0" />
                             </Link>
                           </div>
                         </div>
@@ -445,8 +446,8 @@ export default function SuccessionBoardPage() {
         )}
 
         {/* ── Regulatory Footer ───────────────────────────────────────────── */}
-        <div className="rounded-xl border border-[var(--cs-border-subtle)] bg-slate-50 px-4 py-3 text-xs text-[var(--cs-text-muted)]">
-          <span className="font-semibold text-[var(--cs-text-secondary)]">Regulatory Basis — </span>
+        <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+          <span className="font-semibold text-slate-600">Regulatory Basis — </span>
           Children&apos;s Homes Regulations 2015: Reg 5 (fit and proper person), Reg 29 (RM qualifications).
           Providers must evidence organisational resilience and succession planning to Ofsted (ILACS).
         </div>

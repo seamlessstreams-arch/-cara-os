@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronUp, MessageSquare, FileText,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,9 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useVisitorReports } from "@/hooks/use-visitor-reports";
 import type { VisitorReport, VisitorRecommendation, VisitorChildView } from "@/types/extended";
 import { VISITOR_VISIT_TYPE_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function IndependentVisitorPage() {
@@ -75,10 +78,12 @@ export default function IndependentVisitorPage() {
     <PageShell
       title="Independent Visitor Reports"
       subtitle="Regulation 44 — monthly independent person's visits and reports"
+      ariaContext={{ pageTitle: "Independent Visitor Reports", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Independent Visitor Reports" />
           <ExportButton data={filtered} columns={exportCols} filename="independent-visitor" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -258,6 +263,18 @@ export default function IndependentVisitorPage() {
           unannounced.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Family Contact"
+        category="family_contact"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Independent Visitor Reports — volunteer visits, child relationship building, activities, frequency, DBS, matching, IRO oversight, looked-after child regulation, s23B CA 1989"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

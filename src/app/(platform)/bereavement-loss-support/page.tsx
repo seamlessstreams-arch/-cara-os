@@ -14,7 +14,7 @@ import {
   BookOpen,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -25,6 +25,9 @@ import {
 import type { BereavementLossType, GriefStage, BereavementRecord } from "@/types/extended";
 import { useBereavementRecords } from "@/hooks/use-bereavement-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── label maps ──────────────────────────────────────────────────────── */
 
@@ -195,10 +198,12 @@ export default function BereavementLossSupportPage() {
     <PageShell
       title="Bereavement &amp; Loss Support"
       subtitle="Holding space for grief — child-led, trauma-informed support across every kind of loss"
+      ariaContext={{ pageTitle: "Bereavement & Loss Support", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Bereavement & Loss Support" />
           <ExportButton data={exportRows} columns={exportCols} filename="bereavement-loss-support" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -401,6 +406,18 @@ export default function BereavementLossSupportPage() {
       <div className="rounded-lg border border-rose-200 bg-rose-50/60 p-4 text-sm text-rose-900 mb-6">
         <strong>Regulatory framework.</strong> Bereavement and loss support is held within the Children&apos;s Homes (England) Regulations 2015 — particularly Quality Standard 6 (enjoyment &amp; achievement) and Quality Standard 7 (positive relationships). Practice draws on Working Together to Safeguard Children 2023, UNCRC Article 12 (the right to be heard) and Article 16 (privacy and dignity), and NICE guidance on bereavement (NG196). All grief work is child-led, paced by the young person, and recognises the breadth of loss experienced by children in care — including disenfranchised grief that the wider world may not see.
       </div>
+      <CareEventsPanel
+        title="Care Events — Wellbeing"
+        category="wellbeing"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Bereavement & Loss Support — grief, trauma, loss of family, pet bereavement, ambiguous loss, therapeutic support, memory boxes, direct work, CAMHS, keywork sessions"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -13,7 +13,7 @@ import {
   Pill,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,9 @@ import type {
 } from "@/types/extended";
 import { useADHDPlans } from "@/hooks/use-adhd-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── label maps ───────────────────────────────────────────────────────── */
 
@@ -160,6 +163,7 @@ export default function ChildADHDSupportPlanPage() {
     <PageShell
       title="ADHD Support Plans"
       subtitle="Per-child, strength-based ADHD support planning — neurodiversity-affirming, NICE NG87 aligned"
+      ariaContext={{ pageTitle: "ADHD Support Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="ADHD Support Plans" />
@@ -168,6 +172,7 @@ export default function ChildADHDSupportPlanPage() {
             columns={EXPORT_COLS}
             filename="adhd-support-plans"
           />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -589,6 +594,18 @@ export default function ChildADHDSupportPlanPage() {
           </div>
         </>
       )}
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="ADHD Support Plans — ADHD diagnosis, medication, coping strategies, school liaison, attention support, impulsivity strategies, reward systems, EHCP, key worker support"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

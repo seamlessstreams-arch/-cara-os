@@ -2,6 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -236,6 +238,7 @@ export default function InterviewsPage() {
     <PageShell
       title="Interviews"
       subtitle="Panel interviews with safer recruitment compliance"
+      ariaContext={{ pageTitle: "Safer Recruitment Interviews", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -319,6 +322,12 @@ export default function InterviewsPage() {
         </div>
       )}
       </div>{/* close #interviews-content */}
+      <AriaPanel
+        mode="assist"
+        pageContext="Safer Recruitment Interviews — interview panels, safer recruitment questions, scoring, gaps in employment, references discussed, candidate suitability, interview records, Ofsted evidence"
+        recordType="staff_training"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

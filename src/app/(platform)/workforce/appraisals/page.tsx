@@ -9,6 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -512,6 +514,7 @@ export default function AppraisalsPage() {
     <PageShell
       title="Appraisals & Probation"
       subtitle="Annual appraisals, mid-year reviews, probation assessments & competency tracking"
+      ariaContext={{ pageTitle: "Staff Appraisals", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -522,6 +525,7 @@ export default function AppraisalsPage() {
             <Plus className="h-3.5 w-3.5" />
             New Appraisal
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -724,6 +728,12 @@ export default function AppraisalsPage() {
           ILACS — Quality of Care: evidence of staff receiving regular, structured appraisal linked to professional development.
         </div>
       </div>
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Appraisals — annual appraisals, performance reviews, professional development, Reg 34 compliance, ILACS workforce quality evidence, management oversight, Ofsted inspection evidence"
+        recordType="supervision"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

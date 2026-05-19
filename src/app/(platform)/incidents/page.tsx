@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,7 @@ import {
   AlertTriangle, Shield, Eye, Clock, CheckCircle2, FileText,
   Users, MapPin, Calendar, Plus, Search, Sparkles, Phone,
   UserCheck, X, ChevronRight, Bell, ClipboardList, Loader2,
-  TrendingUp, ArrowUpRight, Brain, Link, ArrowUpDown,
+  TrendingUp, ArrowUpRight, Brain, Link as LinkIcon, ArrowUpDown,
 } from "lucide-react";
 import { useIncidents, useAddOversight, useCreateIncident } from "@/hooks/use-incidents";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -25,6 +26,7 @@ import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { PageGuidance } from "@/components/ui/page-guidance";
 import { ApprovalBanner } from "@/components/ui/approval-banner";
@@ -33,6 +35,7 @@ import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { INCIDENT_TYPE_LABELS, INCIDENT_TYPES, INCIDENT_SEVERITIES } from "@/lib/constants";
 import { cn, formatDate, formatRelative, todayStr } from "@/lib/utils";
 import type { Incident, IncidentNotification } from "@/types";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -242,7 +245,7 @@ function IncidentCard({
                   onClick={(e) => e.stopPropagation()}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors"
                 >
-                  <Link className="h-3.5 w-3.5" />
+                  <LinkIcon className="h-3.5 w-3.5" />
                   Training need created
                 </a>
               ) : (
@@ -282,6 +285,16 @@ function IncidentCard({
               )}>
                 Body map {inc.body_map_completed ? "done" : "required"}
               </span>
+            )}
+            {(inc as never as { care_event_id?: string }).care_event_id && (
+              <Link
+                href={`/care-events/${(inc as never as { care_event_id: string }).care_event_id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+              >
+                <ArrowUpRight className="h-3 w-3" />
+                From Care Event
+              </Link>
             )}
           </div>
         </div>
@@ -569,7 +582,7 @@ function AllIncidentsTab() {
               {/* Aria write help */}
               <AriaPanel
                 mode="oversee"
-                pageContext="Incidents — Oversight Queue"
+                pageContext="Incidents — oversight queue, management review, safeguarding triage, Regulation 40 notifications, behaviour and physical intervention monitoring"
                 recordType="incident_oversight"
                 sourceContent={`${oversightTarget.description}\n\nImmediate action: ${oversightTarget.immediate_action}`}
                 onInsert={(text) => setOversightNote(text)}
@@ -800,7 +813,7 @@ function OversightQueueTab() {
                   <div className="mt-3">
                     <AriaPanel
                       mode="oversee"
-                      pageContext="Incidents — Oversight Queue"
+                      pageContext="Incidents — oversight queue, management review, safeguarding triage, Regulation 40 notifications, behaviour and physical intervention monitoring"
                       recordType="incident_oversight"
                       sourceContent={`Description: ${inc.description}\n\nImmediate action: ${inc.immediate_action}\n\nSeverity: ${inc.severity}\nType: ${INCIDENT_TYPE_LABELS[inc.type]}\nYoung person: ${getYPName(inc.child_id)}`}
                       onInsert={(text) => setNotesById((prev) => ({ ...prev, [inc.id]: text }))}
@@ -1060,7 +1073,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
         {ariaOpen && (
           <AriaPanel
             mode="write"
-            pageContext="Log New Incident"
+            pageContext="Log New Incident — describe what happened, who was involved, immediate actions taken, injuries, witnesses, safeguarding indicators, Regulation 40 triggers"
             recordType="incident"
             sourceContent={form.type ? `Incident type: ${INCIDENT_TYPE_LABELS[form.type as keyof typeof INCIDENT_TYPE_LABELS] || form.type}, severity: ${form.severity}, child: ${getYPName(form.child_id)}` : undefined}
             onInsert={(text) => setForm((p) => ({ ...p, description: text }))}
@@ -1230,11 +1243,13 @@ export default function IncidentsPage() {
     <PageShell
       title="Incidents"
       subtitle="Log, review, and oversee all incident records"
+      ariaContext={{ pageTitle: "Care Events — Behaviour &amp; Safeguarding", sourceType: "incident" }}
       quickCreateContext={{ module: "incidents", defaultTaskCategory: "safeguarding", defaultFormType: "safeguarding_referral" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Incident Report" subtitle="Oak House — Incident Records" targetId="incidents-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Incidents — evidence upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
           <Button
             size="sm"
             className="bg-rose-600 hover:bg-rose-700"
@@ -1293,6 +1308,14 @@ export default function IncidentsPage() {
         {activeTab === "all" && <AllIncidentsTab />}
         {activeTab === "oversight" && <OversightQueueTab />}
         {activeTab === "log" && <LogIncidentTab onSuccess={() => setActiveTab("all")} />}
+
+        {/* Care Events pipeline — behaviour, safeguarding events routed here */}
+        <CareEventsPanel
+          title="Care Events — Behaviour &amp; Safeguarding"
+          category={["behaviour", "safeguarding", "missing_episode", "physical_intervention", "restraint"]}
+          days={28}
+          defaultCollapsed
+        />
       </div>
     </PageShell>
   );

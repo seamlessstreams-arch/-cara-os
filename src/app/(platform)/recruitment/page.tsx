@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import {
   UserPlus, Search, Plus, Filter, AlertTriangle, AlertCircle,
   Users, Clock, Zap, TrendingUp, Briefcase, Shield, FileCheck,
@@ -23,6 +23,7 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import type { CandidateDetail, CheckStatus, CheckType, ComplianceAlert, Vacancy } from "@/hooks/use-recruitment";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const CANDIDATE_EXPORT_COLS: ExportColumn<CandidateDetail>[] = [
   { header: "Name", accessor: (c) => `${c.first_name} ${c.last_name}` },
@@ -47,7 +48,7 @@ type MainTab = "pipeline" | "candidates" | "vacancies" | "safer_recruitment" | "
 
 function statusClasses(status: CheckStatus | string): string {
   switch (status) {
-    case "not_started": return "bg-slate-100 text-[var(--cs-text-muted)]";
+    case "not_started": return "bg-slate-100 text-slate-500";
     case "in_progress": return "bg-blue-100 text-blue-700";
     case "received": return "bg-amber-100 text-amber-700";
     case "verified":
@@ -56,7 +57,7 @@ function statusClasses(status: CheckStatus | string): string {
     case "concern": return "bg-red-100 text-red-700";
     case "override_approved":
     case "exceptional": return "bg-purple-100 text-purple-700";
-    default: return "bg-slate-100 text-[var(--cs-text-muted)]";
+    default: return "bg-slate-100 text-slate-500";
   }
 }
 
@@ -172,7 +173,7 @@ function RiskBadge({ level }: { level: string }) {
     critical: "bg-red-200 text-red-800 font-bold",
   };
   return (
-    <span className={cn("text-[9px] rounded-full px-2 py-0.5 font-semibold uppercase tracking-wide", classes[level] || "bg-slate-100 text-[var(--cs-text-muted)]")}>
+    <span className={cn("text-[9px] rounded-full px-2 py-0.5 font-semibold uppercase tracking-wide", classes[level] || "bg-slate-100 text-slate-500")}>
       {level}
     </span>
   );
@@ -180,7 +181,7 @@ function RiskBadge({ level }: { level: string }) {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 space-y-3 animate-pulse">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 animate-pulse">
       <div className="flex gap-3">
         <div className="h-10 w-10 rounded-full bg-slate-200" />
         <div className="flex-1 space-y-2">
@@ -213,19 +214,18 @@ function KanbanCard({ candidate }: { candidate: CandidateDetail }) {
         stageBorderColor(cardStatus)
       )}>
         <div className="flex items-start gap-2.5">
-          <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-[var(--cs-text-secondary)] shrink-0">
+          <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600 shrink-0">
             {initials.toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold text-[var(--cs-navy)] truncate">{fullName}</div>
-            <div className="text-[10px] text-[var(--cs-text-muted)] truncate">{candidate.role_applied}</div>
+            <div className="text-xs font-semibold text-slate-900 truncate">{fullName}</div>
+            <div className="text-[10px] text-slate-500 truncate">{candidate.role_applied}</div>
           </div>
           <ComplianceRing score={candidate.compliance_score} size="sm" />
         </div>
         <div className="flex items-center gap-1.5 flex-wrap">
           <RiskBadge level={candidate.risk_level} />
-          <AriaUsageBadge ariaAssisted={(candidate as any).aria_assist_used} sourceTable="recruitment_candidates" recordId={candidate.id} />
-          <span className="text-[9px] text-[var(--cs-text-muted)] flex items-center gap-0.5">
+          <span className="text-[9px] text-slate-400 flex items-center gap-0.5">
             <Clock className="h-2.5 w-2.5" />{candidate.days_in_stage}d
           </span>
         </div>
@@ -270,10 +270,10 @@ function PipelineTab({
           { label: "Exceptional Starts", value: loading ? "–" : stats.exceptional_starts, icon: Zap, color: "text-purple-600", bg: "bg-purple-50" },
           { label: "Avg Days to Appoint", value: loading ? "–" : stats.avg_days_to_appoint, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
         ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="rounded-2xl border border-[var(--cs-border)] bg-white p-5">
+          <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">{label}</div>
+                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{label}</div>
                 <div className={cn("mt-1 text-3xl font-bold tabular-nums", color)}>{value}</div>
               </div>
               <div className={cn("rounded-2xl p-3", bg)}>
@@ -287,7 +287,7 @@ function PipelineTab({
       {/* Compliance alerts */}
       {alerts.length > 0 && (
         <div className="space-y-2">
-          <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider flex items-center gap-1.5">
+          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
             <AlertCircle className="h-3.5 w-3.5 text-amber-500" />Compliance Alerts ({alerts.length})
           </div>
           {alerts.map((alert, i) => (
@@ -297,8 +297,8 @@ function PipelineTab({
             )}>
               <AlertTriangle className={cn("h-4 w-4 shrink-0 mt-0.5", alert.severity === "critical" ? "text-red-500" : "text-amber-500")} />
               <div className="flex-1 min-w-0">
-                <span className="text-sm font-semibold text-[var(--cs-navy)]">{alert.candidate_name}</span>
-                <span className="text-xs text-[var(--cs-text-secondary)] ml-2">{alert.issue}</span>
+                <span className="text-sm font-semibold text-slate-900">{alert.candidate_name}</span>
+                <span className="text-xs text-slate-600 ml-2">{alert.issue}</span>
               </div>
               <Link href={`/recruitment/candidates/${alert.candidate_id}`}>
                 <Button size="sm" variant="outline" className="h-7 text-xs shrink-0">View</Button>
@@ -317,10 +317,10 @@ function PipelineTab({
               <div key={stage} className="w-60 flex-shrink-0">
                 <div className="flex items-center gap-2 mb-3">
                   <span className={cn("text-[10px] font-semibold rounded-full px-2.5 py-1",
-                    stage === "application_received" ? "bg-slate-100 text-[var(--cs-text-secondary)]" :
+                    stage === "application_received" ? "bg-slate-100 text-slate-600" :
                     stage === "shortlisted" ? "bg-blue-100 text-blue-700" :
                     stage === "interview_scheduled" ? "bg-amber-100 text-amber-700" :
-                    stage === "interview_completed" ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]" :
+                    stage === "interview_completed" ? "bg-violet-100 text-violet-700" :
                     stage === "references_requested" ? "bg-orange-100 text-orange-700" :
                     stage === "dbs_submitted" ? "bg-cyan-100 text-cyan-700" :
                     stage === "offer_made" ? "bg-emerald-100 text-emerald-700" :
@@ -328,13 +328,13 @@ function PipelineTab({
                   )}>
                     {STAGE_LABELS[stage]}
                   </span>
-                  <span className="text-xs font-semibold text-[var(--cs-text-muted)]">{stageCandidates.length}</span>
+                  <span className="text-xs font-semibold text-slate-400">{stageCandidates.length}</span>
                 </div>
                 <div className="space-y-2.5">
                   {loading && [1, 2].map((n) => <SkeletonCard key={n} />)}
                   {!loading && stageCandidates.map((c) => <KanbanCard key={c.id} candidate={c} />)}
                   {!loading && stageCandidates.length === 0 && (
-                    <div className="rounded-xl border-2 border-dashed border-[var(--cs-border)] p-5 text-center text-[10px] text-[var(--cs-text-muted)]">
+                    <div className="rounded-xl border-2 border-dashed border-slate-200 p-5 text-center text-[10px] text-slate-400">
                       Empty
                     </div>
                   )}
@@ -391,7 +391,7 @@ function CandidatesTab({ candidates, loading }: { candidates: CandidateDetail[];
     <div className="space-y-4">
       <div className="flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-48 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
           <Input
             placeholder="Search candidates..."
             value={search}
@@ -399,7 +399,7 @@ function CandidatesTab({ candidates, loading }: { candidates: CandidateDetail[];
             className="pl-9 h-9"
           />
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-[var(--cs-text-muted)] shrink-0">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500 shrink-0">
           <ArrowUpDown className="h-3.5 w-3.5" />
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="bg-white border rounded-md px-2 py-1.5 text-xs">
             <option value="stage">Pipeline stage</option>
@@ -411,7 +411,7 @@ function CandidatesTab({ candidates, loading }: { candidates: CandidateDetail[];
         <select
           value={stageFilter}
           onChange={(e) => setStageFilter(e.target.value)}
-          className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-text-secondary)] h-9 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 h-9 focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           <option value="all">All stages</option>
           {STAGE_ORDER.map((s) => (
@@ -420,17 +420,17 @@ function CandidatesTab({ candidates, loading }: { candidates: CandidateDetail[];
         </select>
       </div>
 
-      <div className="rounded-2xl border border-[var(--cs-border)] bg-white overflow-hidden">
+      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[var(--cs-border-subtle)] bg-slate-50">
-              <th className="text-left px-4 py-3 text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Name</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Stage</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Role</th>
-              <th className="text-center px-4 py-3 text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Compliance%</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Risk</th>
-              <th className="text-left px-4 py-3 text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Manager</th>
-              <th className="text-center px-4 py-3 text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Days</th>
+            <tr className="border-b border-slate-100 bg-slate-50">
+              <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Name</th>
+              <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Stage</th>
+              <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Role</th>
+              <th className="text-center px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Compliance%</th>
+              <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Risk</th>
+              <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Manager</th>
+              <th className="text-center px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Days</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -446,30 +446,30 @@ function CandidatesTab({ candidates, loading }: { candidates: CandidateDetail[];
             ))}
             {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-12 text-center text-[var(--cs-text-muted)] text-sm">
+                <td colSpan={8} className="px-4 py-12 text-center text-slate-400 text-sm">
                   No candidates found
                 </td>
               </tr>
             )}
             {!loading && filtered.map((c) => (
-              <tr key={c.id} className="hover:bg-[var(--cs-surface)] transition-colors">
+              <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
                     <ComplianceRing score={c.compliance_score} size="sm" />
                     <div>
-                      <div className="font-medium text-[var(--cs-navy)]">{c.first_name} {c.last_name}</div>
-                      <div className="text-[10px] text-[var(--cs-text-muted)]">{c.email}</div>
+                      <div className="font-medium text-slate-900">{c.first_name} {c.last_name}</div>
+                      <div className="text-[10px] text-slate-400">{c.email}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3">
                   <span className={cn("text-[10px] rounded-full px-2.5 py-1 font-semibold",
-                    STAGE_LABELS[c.stage] ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-[var(--cs-text-muted)]"
+                    STAGE_LABELS[c.stage] ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-500"
                   )}>
                     {STAGE_LABELS[c.stage] || c.stage}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-[var(--cs-text-secondary)] text-xs">{c.role_applied}</td>
+                <td className="px-4 py-3 text-slate-700 text-xs">{c.role_applied}</td>
                 <td className="px-4 py-3 text-center">
                   <span className={cn("text-xs font-bold tabular-nums",
                     c.compliance_score >= 80 ? "text-emerald-600" :
@@ -479,8 +479,8 @@ function CandidatesTab({ candidates, loading }: { candidates: CandidateDetail[];
                   </span>
                 </td>
                 <td className="px-4 py-3"><RiskBadge level={c.risk_level} /></td>
-                <td className="px-4 py-3 text-xs text-[var(--cs-text-muted)]">{c.manager_assigned || "—"}</td>
-                <td className="px-4 py-3 text-center text-xs text-[var(--cs-text-muted)]">{c.days_total}</td>
+                <td className="px-4 py-3 text-xs text-slate-500">{c.manager_assigned || "—"}</td>
+                <td className="px-4 py-3 text-center text-xs text-slate-500">{c.days_total}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
                     <Link href={`/recruitment/candidates/${c.id}`}>
@@ -517,23 +517,23 @@ function VacanciesTab({ vacancies }: { vacancies: import("@/hooks/use-recruitmen
           : "Salary on request";
         const typeLabel = v.employment_type === "permanent" ? "Permanent" : v.employment_type === "bank" ? "Bank" : v.employment_type;
         return (
-          <div key={v.id} className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 flex items-center gap-5">
+          <div key={v.id} className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center gap-5">
             <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
               <Briefcase className="h-6 w-6 text-blue-600" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-sm font-semibold text-[var(--cs-navy)]">{v.role_title}</span>
+                <span className="text-sm font-semibold text-slate-900">{v.role_title}</span>
                 <Badge variant={v.employment_type === "permanent" ? "info" : "warning"} className="text-[9px]">{typeLabel}</Badge>
                 <Badge variant="success" className="text-[9px]">{v.status}</Badge>
               </div>
-              <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">
+              <div className="text-xs text-slate-500 mt-0.5">
                 {salaryStr} · {v.days_open} days open · {v.applications_count} applications
               </div>
             </div>
             <div className="text-center shrink-0">
-              <div className="text-xl font-bold text-[var(--cs-navy)]">{v.applications_count}</div>
-              <div className="text-[10px] text-[var(--cs-text-muted)]">Applications</div>
+              <div className="text-xl font-bold text-slate-900">{v.applications_count}</div>
+              <div className="text-[10px] text-slate-400">Applications</div>
             </div>
             <div className="flex gap-2 shrink-0">
               <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => router.push(`/recruitment/vacancies/${v.id}`)}>View</Button>
@@ -543,11 +543,11 @@ function VacanciesTab({ vacancies }: { vacancies: import("@/hooks/use-recruitmen
         );
       })}
       {rows.length === 0 && (
-        <div className="rounded-2xl border-2 border-dashed border-[var(--cs-border)] p-10 text-center text-sm text-[var(--cs-text-muted)]">
+        <div className="rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">
           No open vacancies at this time.
         </div>
       )}
-      <Button variant="outline" className="w-full rounded-2xl border-dashed h-12 text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]" disabled title="New vacancies are posted through your recruitment portal. Contact HR to create a new posting.">
+      <Button variant="outline" className="w-full rounded-2xl border-dashed h-12 text-slate-500 hover:text-slate-700" disabled title="New vacancies are posted through your recruitment portal. Contact HR to create a new posting.">
         <Plus className="h-4 w-4 mr-2" />Post New Vacancy
       </Button>
     </div>
@@ -613,7 +613,7 @@ function SaferRecruitmentTab({ candidates, loading }: { candidates: CandidateDet
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="text-sm font-semibold text-[var(--cs-text-secondary)]">Single Central Record (SCR) — Compliance Grid</div>
+        <div className="text-sm font-semibold text-slate-700">Single Central Record (SCR) — Compliance Grid</div>
         <Link href="/recruitment/safer-recruitment/checks">
           <Button size="sm" variant="outline" className="h-8 text-xs">
             <Eye className="h-3 w-3 mr-1" />Full Checks View
@@ -622,17 +622,17 @@ function SaferRecruitmentTab({ candidates, loading }: { candidates: CandidateDet
       </div>
 
       {loading ? (
-        <div className="h-32 rounded-2xl border border-[var(--cs-border)] bg-slate-50 animate-pulse" />
+        <div className="h-32 rounded-2xl border border-slate-200 bg-slate-50 animate-pulse" />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-[var(--cs-border)]">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-slate-50 border-b border-[var(--cs-border)]">
-                <th className="sticky left-0 z-10 bg-slate-50 text-left px-4 py-3 text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider min-w-[180px]">
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="sticky left-0 z-10 bg-slate-50 text-left px-4 py-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider min-w-[180px]">
                   Candidate
                 </th>
                 {CHECK_TYPES.map((ct) => (
-                  <th key={ct} className="text-center px-3 py-3 text-[10px] font-semibold text-[var(--cs-text-muted)] whitespace-nowrap">
+                  <th key={ct} className="text-center px-3 py-3 text-[10px] font-semibold text-slate-500 whitespace-nowrap">
                     {CHECK_LABELS[ct]}
                   </th>
                 ))}
@@ -640,10 +640,10 @@ function SaferRecruitmentTab({ candidates, loading }: { candidates: CandidateDet
             </thead>
             <tbody className="divide-y divide-slate-100">
               {candidates.filter((c) => !["withdrawn", "rejected"].includes(c.stage)).map((c) => (
-                <tr key={c.id} className="hover:bg-[var(--cs-surface)]">
-                  <td className="sticky left-0 z-10 bg-white px-4 py-3 border-r border-[var(--cs-border-subtle)]">
-                    <div className="font-medium text-[var(--cs-navy)] text-xs">{c.first_name} {c.last_name}</div>
-                    <div className="text-[10px] text-[var(--cs-text-muted)]">{c.role_applied}</div>
+                <tr key={c.id} className="hover:bg-slate-50">
+                  <td className="sticky left-0 z-10 bg-white px-4 py-3 border-r border-slate-100">
+                    <div className="font-medium text-slate-900 text-xs">{c.first_name} {c.last_name}</div>
+                    <div className="text-[10px] text-slate-400">{c.role_applied}</div>
                   </td>
                   {CHECK_TYPES.map((ct) => {
                     const key = `${c.id}_${ct}`;
@@ -678,31 +678,31 @@ function SaferRecruitmentTab({ candidates, loading }: { candidates: CandidateDet
 function ReportsTab() {
   return (
     <div className="space-y-4 max-w-lg">
-      <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-6 space-y-4">
-        <div className="text-base font-semibold text-[var(--cs-navy)]">Export Reports</div>
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
+        <div className="text-base font-semibold text-slate-900">Export Reports</div>
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-[var(--cs-border)]">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
             <div>
-              <div className="text-sm font-medium text-[var(--cs-navy)]">Audit Bundle</div>
-              <div className="text-xs text-[var(--cs-text-muted)]">All candidates, checks, and decisions for inspection</div>
+              <div className="text-sm font-medium text-slate-900">Audit Bundle</div>
+              <div className="text-xs text-slate-500">All candidates, checks, and decisions for inspection</div>
             </div>
             <Button size="sm" className="h-8 text-xs" disabled title="Audit bundle export requires the reporting integration. Visit the Audit page to view the full log.">
               <Download className="h-3 w-3 mr-1" />Export
             </Button>
           </div>
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-[var(--cs-border)]">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
             <div>
-              <div className="text-sm font-medium text-[var(--cs-navy)]">Time to Appoint Report</div>
-              <div className="text-xs text-[var(--cs-text-muted)]">Average days per stage and overall pipeline velocity</div>
+              <div className="text-sm font-medium text-slate-900">Time to Appoint Report</div>
+              <div className="text-xs text-slate-500">Average days per stage and overall pipeline velocity</div>
             </div>
             <Button size="sm" variant="outline" className="h-8 text-xs" disabled title="Time to appoint reporting requires the analytics integration to be configured.">
               <BarChart3 className="h-3 w-3 mr-1" />Generate
             </Button>
           </div>
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-[var(--cs-border)]">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
             <div>
-              <div className="text-sm font-medium text-[var(--cs-navy)]">SCR Export (Ofsted)</div>
-              <div className="text-xs text-[var(--cs-text-muted)]">Single Central Record in Ofsted-ready format</div>
+              <div className="text-sm font-medium text-slate-900">SCR Export (Ofsted)</div>
+              <div className="text-xs text-slate-500">Single Central Record in Ofsted-ready format</div>
             </div>
             <Button size="sm" variant="outline" className="h-8 text-xs" disabled title="SCR export is available from the Checks page. Contact your system administrator for the Ofsted-ready format.">
               <FileCheck className="h-3 w-3 mr-1" />Export
@@ -776,6 +776,7 @@ export default function RecruitmentPage() {
     <PageShell
       title="Recruitment"
       subtitle="Safer recruitment command centre — applicants, compliance checks, and SCR"
+      ariaContext={{ pageTitle: "Recruitment", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={candidates} columns={CANDIDATE_EXPORT_COLS} filename="recruitment" />
@@ -787,6 +788,7 @@ export default function RecruitmentPage() {
           <Button size="sm" onClick={() => setShowAddCandidate(true)}>
             <UserPlus className="h-3.5 w-3.5 mr-1" />Add Candidate
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -799,7 +801,7 @@ export default function RecruitmentPage() {
 
       <div id="recruitment-content" className="space-y-6">
         {/* Sticky tab strip */}
-        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm -mx-6 px-6 py-3 border-b border-[var(--cs-border-subtle)]">
+        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm -mx-6 px-6 py-3 border-b border-slate-100">
           <div className="flex gap-1 bg-slate-100 rounded-xl p-1 w-fit">
             {tabs.map(({ id, label, icon: Icon }) => (
               <button
@@ -807,7 +809,7 @@ export default function RecruitmentPage() {
                 onClick={() => setActiveTab(id)}
                 className={cn(
                   "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                  activeTab === id ? "bg-white text-[var(--cs-navy)] shadow-sm" : "text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"
+                  activeTab === id ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -844,25 +846,31 @@ export default function RecruitmentPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
 
     {/* ── Add Candidate Modal ────────────────────────────────────────────────── */}
     {showAddCandidate && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-        <div className="bg-white rounded-2xl shadow-[var(--cs-shadow-elevated)] w-full max-w-md p-6 space-y-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2">
+            <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
               <UserPlus className="h-4 w-4 text-blue-600" /> Add Candidate
             </h2>
-            <button onClick={() => setShowAddCandidate(false)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]">
+            <button onClick={() => setShowAddCandidate(false)} className="text-slate-400 hover:text-slate-600">
               <XCircle className="h-4 w-4" />
             </button>
           </div>
-          <p className="text-xs text-[var(--cs-text-muted)]">A candidate record will be created with 5 standard pre-employment checks auto-assigned.</p>
+          <p className="text-xs text-slate-500">A candidate record will be created with 5 standard pre-employment checks auto-assigned.</p>
           <form onSubmit={handleAddCandidateSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">First name <span className="text-red-500">*</span></label>
+                <label className="text-xs font-medium text-slate-600 block mb-1">First name <span className="text-red-500">*</span></label>
                 <Input
                   value={addCandidateForm.first_name}
                   onChange={(e) => setAddCandidateForm({ ...addCandidateForm, first_name: e.target.value })}
@@ -872,7 +880,7 @@ export default function RecruitmentPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Last name <span className="text-red-500">*</span></label>
+                <label className="text-xs font-medium text-slate-600 block mb-1">Last name <span className="text-red-500">*</span></label>
                 <Input
                   value={addCandidateForm.last_name}
                   onChange={(e) => setAddCandidateForm({ ...addCandidateForm, last_name: e.target.value })}
@@ -883,7 +891,7 @@ export default function RecruitmentPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Email <span className="text-red-500">*</span></label>
+              <label className="text-xs font-medium text-slate-600 block mb-1">Email <span className="text-red-500">*</span></label>
               <Input
                 type="email"
                 value={addCandidateForm.email}
@@ -894,7 +902,7 @@ export default function RecruitmentPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Phone</label>
+              <label className="text-xs font-medium text-slate-600 block mb-1">Phone</label>
               <Input
                 value={addCandidateForm.phone}
                 onChange={(e) => setAddCandidateForm({ ...addCandidateForm, phone: e.target.value })}
@@ -903,7 +911,7 @@ export default function RecruitmentPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Role applied for</label>
+              <label className="text-xs font-medium text-slate-600 block mb-1">Role applied for</label>
               <Input
                 value={addCandidateForm.role_applied}
                 onChange={(e) => setAddCandidateForm({ ...addCandidateForm, role_applied: e.target.value })}
@@ -912,11 +920,11 @@ export default function RecruitmentPage() {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-[var(--cs-text-secondary)] block mb-1">Source</label>
+              <label className="text-xs font-medium text-slate-600 block mb-1">Source</label>
               <select
                 value={addCandidateForm.source}
                 onChange={(e) => setAddCandidateForm({ ...addCandidateForm, source: e.target.value })}
-                className="w-full h-9 rounded-xl border border-[var(--cs-border)] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="w-full h-9 rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
               >
                 <option value="">Select source…</option>
                 <option value="indeed">Indeed</option>

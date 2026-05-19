@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -33,6 +33,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const verdictColour: Record<PolicyReviewVerdict, string> = {
   working_as_intended: "bg-green-100 text-green-800",
@@ -93,10 +96,12 @@ export default function PolicyImpactAnalysisPage() {
     <PageShell
       title="Policy Impact Analysis"
       subtitle="Tracking how policy changes actually land — for children, staff, and the home"
+      ariaContext={{ pageTitle: "Policy Impact Analysis", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="policy-impact-analysis" />
           <PrintButton title="Policy Impact Analysis" />
+          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -306,6 +311,18 @@ export default function PolicyImpactAnalysisPage() {
           improvement principles. Linked to Policies, Child-Friendly Policies, and Lessons Learned Register.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Policy Impact Analysis — policy effectiveness review, evidence of impact, outcomes data, staff feedback, incident trends, compliance gaps, improvement actions, Reg 45 evidence"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

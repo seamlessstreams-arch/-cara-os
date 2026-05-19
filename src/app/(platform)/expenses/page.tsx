@@ -23,6 +23,9 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const CAT_LABELS: Record<string, string> = {
   petty_cash: "Petty Cash", young_person_activities: "YP Activities",
@@ -238,6 +241,7 @@ export default function ExpensesPage() {
     <PageShell
       title="Expenses"
       subtitle="Expense claims, receipts, approvals, and spend reporting"
+      ariaContext={{ pageTitle: "Expenses", sourceType: "general" }}
       quickCreateContext={{ module: "expenses", defaultTaskCategory: "finance" }}
       actions={
         <div className="flex items-center gap-2">
@@ -247,6 +251,7 @@ export default function ExpensesPage() {
           <Button size="sm" onClick={() => setShowNewForm(!showNewForm)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Submit Expense
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -480,6 +485,18 @@ export default function ExpensesPage() {
           </div>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Finance"
+        category="finance"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Expenses — staff expense claims, receipts, petty cash, mileage, child activity spend, reimbursements, financial controls, budget codes, approval workflow, audit trail"
+        recordType="task"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   GraduationCap,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,9 @@ import {
 } from "@/types/extended";
 import { useChildBankAccounts } from "@/hooks/use-child-bank-accounts";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -151,10 +154,12 @@ export default function ChildBankAccountPage() {
     <PageShell
       title="Child Bank Account & Money Management"
       subtitle="QS1 — Child-centred care · financial literacy · transition preparation"
+      ariaContext={{ pageTitle: "Child Bank Account & Money Management", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="child-bank-accounts" />
           <PrintButton title="Child Bank Account & Money Management" />
+          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -368,6 +373,18 @@ export default function ChildBankAccountPage() {
           <strong>Quality Standard 1 — child-centred care &amp; preparation for adulthood.</strong> Children&apos;s homes must support each looked-after child to have their own bank account where appropriate, build financial literacy aligned to their age and stage, and access entitlements such as the Junior ISA government top-up, Setting Up Home Allowance and care leaver bursaries. Money management is reviewed with the child, their views recorded, and the corporate parent acts as a responsible signatory until the young person is ready to act independently. Account credentials and full numbers are <em>never</em> stored in this system — only last-4 identifiers and labelled illustrative balances for review purposes.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Finance"
+        category="finance"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Child Bank Account & Money Management — savings accounts, balance tracking, LAC savings, junior ISA, financial independence, Pathway Plan, transitions to adulthood, benefits"
+        recordType="direct_work"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

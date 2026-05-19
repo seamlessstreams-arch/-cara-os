@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,9 @@ import type { DebriefRecord, ReflectiveDebriefType, DebriefFollowUpAction } from
 import { REFLECTIVE_DEBRIEF_TYPE_LABEL } from "@/types/extended";
 import { useDebriefRecords, useCreateDebriefRecord } from "@/hooks/use-debrief-records";
 import { toast } from "sonner";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const TYPE_META: Record<ReflectiveDebriefType, { label: string; color: string }> = {
   post_incident:   { label: "Post-Incident",    color: "bg-red-100 text-red-800" },
@@ -52,6 +55,17 @@ export default function DebriefsPage() {
   const { data: raw, isLoading } = useDebriefRecords();
   const debriefs = raw?.data ?? [];
   const createDebrief = useCreateDebriefRecord();
+  const [debForm, setDebForm] = useState({ date: new Date().toISOString().slice(0, 10), type: "post_incident" as ReflectiveDebriefType, what_happened: "", what_worked_well: "", what_could_improve: "", lessons_learned: "" });
+  const setDeb = (k: string, v: unknown) => setDebForm((p) => ({ ...p, [k]: v }));
+
+  const handleCreateDebrief = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!debForm.what_happened.trim()) { toast.error("What happened is required."); return; }
+    await createDebrief.mutateAsync({ date: debForm.date, type: debForm.type, linked_incident_id: "", linked_incident_summary: "", child_id: "", staff_involved: [], facilitated_by: "staff_darren", what_happened: debForm.what_happened.trim(), what_worked_well: debForm.what_worked_well.trim(), what_could_improve: debForm.what_could_improve.trim(), staff_wellbeing: "", child_perspective: "", lessons_learned: debForm.lessons_learned.split("\n").filter(Boolean), changes_needed: [], follow_up_actions: [], support_offered: false, support_details: "", created_at: new Date().toISOString() });
+    toast.success("Debrief saved.");
+    setDebForm({ date: new Date().toISOString().slice(0, 10), type: "post_incident", what_happened: "", what_worked_well: "", what_could_improve: "", lessons_learned: "" });
+    setShowNew(false);
+  };
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
@@ -84,10 +98,12 @@ export default function DebriefsPage() {
     <PageShell
       title="Debriefs & Reflections"
       subtitle="Post-incident debriefs, team reflections, and lessons learned"
+      ariaContext={{ pageTitle: "Debriefs & Reflections", sourceType: "pi_debrief" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Debriefs & Reflections" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="debriefs" />
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Debrief</Button>
         </div>
       }
@@ -217,27 +233,39 @@ export default function DebriefsPage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Debrief</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setShowNew(false); }} className="space-y-3">
+          <form onSubmit={handleCreateDebrief} className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <div><label className="text-sm font-medium">Date</label><Input type="date" /></div>
+              <div><label className="text-sm font-medium">Date</label><Input type="date" value={debForm.date} onChange={(e) => setDeb("date", e.target.value)} /></div>
               <div>
                 <label className="text-sm font-medium">Type</label>
-                <Select><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
+                <Select value={debForm.type} onValueChange={(v) => setDeb("type", v)}><SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                   <SelectContent>{Object.entries(TYPE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">What Happened</label><Textarea placeholder="Describe the incident or event…" rows={3} /></div>
-            <div><label className="text-sm font-medium">What Worked Well</label><Textarea placeholder="Positive aspects of the response…" rows={2} /></div>
-            <div><label className="text-sm font-medium">What Could Improve</label><Textarea placeholder="Areas for improvement…" rows={2} /></div>
-            <div><label className="text-sm font-medium">Lessons Learned</label><Textarea placeholder="Key lessons (one per line)" rows={2} /></div>
+            <div><label className="text-sm font-medium">What Happened *</label><Textarea placeholder="Describe the incident or event…" rows={3} value={debForm.what_happened} onChange={(e) => setDeb("what_happened", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">What Worked Well</label><Textarea placeholder="Positive aspects of the response…" rows={2} value={debForm.what_worked_well} onChange={(e) => setDeb("what_worked_well", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">What Could Improve</label><Textarea placeholder="Areas for improvement…" rows={2} value={debForm.what_could_improve} onChange={(e) => setDeb("what_could_improve", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">Lessons Learned</label><Textarea placeholder="Key lessons (one per line)" rows={2} value={debForm.lessons_learned} onChange={(e) => setDeb("lessons_learned", e.target.value)} /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit">Save Debrief</Button>
+              <Button type="submit" disabled={createDebrief.isPending}>{createDebrief.isPending ? "Saving…" : "Save Debrief"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Behaviour"
+        category={["behaviour", "physical_intervention", "restraint"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Debriefs & Reflections — post-incident debriefs, physical intervention reviews, emotional check-ins, team learning, wellbeing, safe practice, culture of openness"
+        recordType="incident"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

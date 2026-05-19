@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,8 +22,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { usePropertyDamageRecords } from "@/hooks/use-property-damage-records";
+import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
+import { toast } from "sonner";
+import { usePropertyDamageRecords, useCreatePropertyDamageRecord } from "@/hooks/use-property-damage-records";
 import type {
   PropertyDamageRecord,
   PropertyDamageType,
@@ -37,6 +38,9 @@ import {
   PROPERTY_REPAIR_STATUS_LABEL,
   PROPERTY_LOCATION_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local colour maps ───────────────────────────────────────────────────── */
 
@@ -55,6 +59,19 @@ export default function PropertyDamagePage() {
   const [sortBy, setSortBy] = useState("date-desc");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+
+  const createRecord = useCreatePropertyDamageRecord();
+  const [pdForm, setPdForm] = useState({ date: new Date().toISOString().slice(0, 10), time: "", location: "bedroom" as PropertyLocation, damage_type: "deliberate" as PropertyDamageType, specific_area: "", description: "", severity: "minor" as PropertyDamageSeverity, estimated_cost: "" });
+  const setPD = (k: string, v: unknown) => setPdForm((p) => ({ ...p, [k]: v }));
+
+  const handleSaveDamage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pdForm.description.trim()) { toast.error("Description is required."); return; }
+    await createRecord.mutateAsync({ date: pdForm.date, time: pdForm.time, reported_by: "staff_darren", location: pdForm.location, specific_area: pdForm.specific_area.trim(), damage_type: pdForm.damage_type, severity: pdForm.severity, status: "reported", responsible_person_id: null, responsible_person_name: "", description: pdForm.description.trim(), photographs_taken: false, estimated_cost: pdForm.estimated_cost ? parseFloat(pdForm.estimated_cost) : 0, actual_cost: null, insurance_claimed: false, insurance_ref: null, repair_details: "", repair_completed_date: null, linked_incident_id: null, behaviour_context: "", risk_assessment_updated: false, notes: "" });
+    toast.success("Property damage record saved.");
+    setPdForm({ date: new Date().toISOString().slice(0, 10), time: "", location: "bedroom", damage_type: "deliberate", specific_area: "", description: "", severity: "minor", estimated_cost: "" });
+    setShowNew(false);
+  };
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -109,7 +126,9 @@ export default function PropertyDamagePage() {
   }
 
   return (
-    <PageShell title="Property Damage Log" subtitle="Asset Management · Insurance Records · Behaviour Context" actions={<div className="flex items-center gap-2"><PrintButton title="Property Damage Log" /><ExportButton data={filtered} columns={exportCols} filename="property-damage" /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Report Damage</Button></div>}>
+    <PageShell title="Property Damage Log" subtitle="Asset Management · Insurance Records · Behaviour Context" 
+      ariaContext={{ pageTitle: "Property Damage Log", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Property Damage Log" /><ExportButton data={filtered} columns={exportCols} filename="property-damage" /><AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Report Damage</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
@@ -190,19 +209,31 @@ export default function PropertyDamagePage() {
       <Dialog open={showNew} onOpenChange={setShowNew}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Report Property Damage</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <div><Label>Date</Label><Input type="date" /></div>
-            <div><Label>Time</Label><Input type="time" /></div>
-            <div><Label>Location</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(PROPERTY_LOCATION_LABEL) as PropertyLocation[]).map((k) => (<SelectItem key={k} value={k}>{PROPERTY_LOCATION_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Damage Type</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(PROPERTY_DAMAGE_TYPE_LABEL) as PropertyDamageType[]).map((k) => (<SelectItem key={k} value={k}>{PROPERTY_DAMAGE_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div className="col-span-2"><Label>Specific Area</Label><Input placeholder="e.g. Alex's bedroom door" /></div>
-            <div className="col-span-2"><Label>Description</Label><Textarea rows={3} placeholder="What was damaged and how?" /></div>
-            <div><Label>Severity</Label><Select><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(PROPERTY_DAMAGE_SEVERITY_LABEL) as PropertyDamageSeverity[]).map((k) => (<SelectItem key={k} value={k}>{PROPERTY_DAMAGE_SEVERITY_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Estimated Cost (£)</Label><Input type="number" placeholder="0" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button onClick={() => setShowNew(false)}>Save Record</Button></DialogFooter>
+          <form onSubmit={handleSaveDamage} className="grid grid-cols-2 gap-4 py-2">
+            <div><Label>Date</Label><Input type="date" className="mt-1" value={pdForm.date} onChange={(e) => setPD("date", e.target.value)} /></div>
+            <div><Label>Time</Label><Input type="time" className="mt-1" value={pdForm.time} onChange={(e) => setPD("time", e.target.value)} /></div>
+            <div><Label>Location</Label><Select value={pdForm.location} onValueChange={(v) => setPD("location", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(PROPERTY_LOCATION_LABEL) as PropertyLocation[]).map((k) => (<SelectItem key={k} value={k}>{PROPERTY_LOCATION_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Damage Type</Label><Select value={pdForm.damage_type} onValueChange={(v) => setPD("damage_type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(PROPERTY_DAMAGE_TYPE_LABEL) as PropertyDamageType[]).map((k) => (<SelectItem key={k} value={k}>{PROPERTY_DAMAGE_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div className="col-span-2"><Label>Specific Area</Label><Input className="mt-1" placeholder="e.g. Alex’s bedroom door" value={pdForm.specific_area} onChange={(e) => setPD("specific_area", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Description *</Label><Textarea className="mt-1" rows={3} placeholder="What was damaged and how?" value={pdForm.description} onChange={(e) => setPD("description", e.target.value)} /></div>
+            <div><Label>Severity</Label><Select value={pdForm.severity} onValueChange={(v) => setPD("severity", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.keys(PROPERTY_DAMAGE_SEVERITY_LABEL) as PropertyDamageSeverity[]).map((k) => (<SelectItem key={k} value={k}>{PROPERTY_DAMAGE_SEVERITY_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
+            <div><Label>Estimated Cost (£)</Label><Input type="number" className="mt-1" placeholder="0" value={pdForm.estimated_cost} onChange={(e) => setPD("estimated_cost", e.target.value)} /></div>
+            <DialogFooter className="col-span-2"><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Save Record"}</Button></DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
+      <CareEventsPanel
+        title="Care Events — Behaviour"
+        category="behaviour"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Property Damage Log — damage caused or found in the home, young person involvement, repair costs, insurance, safeguarding links, behaviour patterns, Reg 40 notification"
+        recordType="incident"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

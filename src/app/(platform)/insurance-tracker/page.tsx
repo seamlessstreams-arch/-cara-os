@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -28,6 +28,9 @@ import {
 import { useInsurancePolicies } from "@/hooks/use-insurance-policies";
 import type { InsurancePolicy, InsurancePolicyStatus } from "@/types/extended";
 import { INSURANCE_POLICY_TYPE_LABEL, INSURANCE_POLICY_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -90,10 +93,12 @@ export default function InsuranceTrackerPage() {
     <PageShell
       title="Insurance Tracker"
       subtitle="All home insurance policies — renewal dates, sums insured, premiums, and claims history"
+      ariaContext={{ pageTitle: "Insurance Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="insurance-tracker" />
           <PrintButton title="Insurance Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -282,6 +287,18 @@ export default function InsuranceTrackerPage() {
           illustrative only.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Insurance Tracker — employer liability, building, vehicle, contents, public liability, professional indemnity, renewal dates, certificates, provider contacts, claims"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

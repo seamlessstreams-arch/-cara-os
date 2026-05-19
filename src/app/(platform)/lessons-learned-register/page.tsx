@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,9 @@ import { getStaffName } from "@/lib/seed-data";
 import { useLessonsLearned } from "@/hooks/use-lessons-learned";
 import type { LessonLearned, LessonSource, LessonThemeArea, LessonStatus } from "@/types/extended";
 import { LESSON_SOURCE_LABEL, LESSON_THEME_AREA_LABEL, LESSON_STATUS_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
@@ -125,10 +128,12 @@ export default function LessonsLearnedRegisterPage() {
     <PageShell
       title="Lessons Learned Register"
       subtitle="Cross-cutting organisational learning · Quality Standard 13 · Reg 45"
+      ariaContext={{ pageTitle: "Lessons Learned Register", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Lessons Learned Register" />
           <ExportButton data={data} columns={exportCols} filename="lessons-learned-register" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -383,6 +388,18 @@ export default function LessonsLearnedRegisterPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Lessons Learned Register — incident reviews, near misses, practice improvements, learning from events, care quality themes, Reg 45 quality improvement evidence, management oversight"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

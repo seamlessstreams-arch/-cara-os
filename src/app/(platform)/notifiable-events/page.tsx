@@ -4,11 +4,13 @@ import { useState, useMemo } from "react";
 import {
   Bell, Plus, Search, ArrowUpDown, Filter,
   AlertTriangle, CheckCircle2, Clock, Send,
-  ChevronDown, ChevronUp, Shield, FileText, Loader2,
+  ChevronDown, ChevronUp, Shield, FileText, Loader2, Save,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -21,12 +23,377 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { getStaffName, getYPName } from "@/lib/seed-data";
-import { useNotifiableEvents } from "@/hooks/use-notifiable-events";
+import { getStaffName, getYPName, STAFF, YOUNG_PEOPLE } from "@/lib/seed-data";
+import { useNotifiableEvents, useCreateNotifiableEvent } from "@/hooks/use-notifiable-events";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NotifiableEventType, NotifiableStatus, NotifiableNotification, NotifiableEvent } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { toast } from "sonner";
 
-/* ── types ───────────────────────────────────────────────────────────── */
+/* ── create form ─────────────────────────────────────────────────────── */
+
+const EMPTY_NOTIFICATION: NotifiableNotification = {
+  body: "",
+  notified_date: null,
+  method: "",
+  reference: null,
+};
+
+function CreateNotifiableEventDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const createMutation = useCreateNotifiableEvent();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [form, setForm] = useState({
+    date: today,
+    event_type: "" as NotifiableEventType | "",
+    child_id: "none",
+    summary: "",
+    detail: "",
+    immediate_action: "",
+    reported_by: "staff_darren",
+    follow_up: "",
+    lesson_learned: "",
+    ofsted_notified: false,
+    ofsted_date: "",
+    ofsted_method: "Phone",
+    ofsted_reference: "",
+    la_notified: false,
+    la_date: "",
+    la_method: "Phone",
+    placing_notified: false,
+    placing_date: "",
+    placing_method: "Phone",
+  });
+
+  const set = (k: keyof typeof form, v: string | boolean) =>
+    setForm((p) => ({ ...p, [k]: v }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.event_type || !form.summary.trim() || !form.detail.trim() || !form.immediate_action.trim()) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    const ofstedStatus: NotifiableStatus =
+      form.ofsted_notified ? "notified_within_24h" : "pending";
+
+    await createMutation.mutateAsync({
+      date: form.date,
+      event_type: form.event_type as NotifiableEventType,
+      child_id: form.child_id === "none" ? null : form.child_id,
+      summary: form.summary.trim(),
+      detail: form.detail.trim(),
+      immediate_action: form.immediate_action.trim(),
+      reported_by: form.reported_by,
+      ofsted_status: ofstedStatus,
+      ofsted: {
+        body: form.detail.trim(),
+        notified_date: form.ofsted_notified ? form.ofsted_date || today : null,
+        method: form.ofsted_method,
+        reference: form.ofsted_reference || null,
+      },
+      local_authority: {
+        body: form.detail.trim(),
+        notified_date: form.la_notified ? form.la_date || today : null,
+        method: form.la_method,
+        reference: null,
+      },
+      placing: {
+        body: form.detail.trim(),
+        notified_date: form.placing_notified ? form.placing_date || today : null,
+        method: form.placing_method,
+        reference: null,
+      },
+      follow_up: form.follow_up.trim(),
+      lesson_learned: form.lesson_learned.trim(),
+    });
+
+    toast.success("Notifiable event recorded. Notification tracking updated.");
+    setForm({
+      date: today,
+      event_type: "",
+      child_id: "none",
+      summary: "",
+      detail: "",
+      immediate_action: "",
+      reported_by: "staff_darren",
+      follow_up: "",
+      lesson_learned: "",
+      ofsted_notified: false,
+      ofsted_date: "",
+      ofsted_method: "Phone",
+      ofsted_reference: "",
+      la_notified: false,
+      la_date: "",
+      la_method: "Phone",
+      placing_notified: false,
+      placing_date: "",
+      placing_method: "Phone",
+    });
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5 text-red-600" />
+            Record Notifiable Event
+          </DialogTitle>
+          <p className="text-xs text-muted-foreground pt-1">
+            Regulation 40 — Ofsted and placing authorities must be notified without delay, and within 24 hours.
+          </p>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-5 py-2">
+          {/* Core details */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="ne-date">Date *</Label>
+              <Input
+                id="ne-date"
+                type="date"
+                value={form.date}
+                max={today}
+                onChange={(e) => set("date", e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="ne-type">Event Type *</Label>
+              <Select value={form.event_type} onValueChange={(v) => set("event_type", v)}>
+                <SelectTrigger id="ne-type">
+                  <SelectValue placeholder="Select event type…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EVENT_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>{EVENT_LABELS[t]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="ne-child">Young Person (if applicable)</Label>
+              <Select value={form.child_id} onValueChange={(v) => set("child_id", v)}>
+                <SelectTrigger id="ne-child">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Not child-specific —</SelectItem>
+                  {YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (
+                    <SelectItem key={y.id} value={y.id}>
+                      {y.first_name} {y.last_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="ne-reporter">Reported By *</Label>
+              <Select value={form.reported_by} onValueChange={(v) => set("reported_by", v)}>
+                <SelectTrigger id="ne-reporter">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STAFF.filter((s) => s.employment_status === "active").map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="ne-summary">Summary *</Label>
+            <Input
+              id="ne-summary"
+              placeholder="One-sentence summary of the event…"
+              value={form.summary}
+              onChange={(e) => set("summary", e.target.value)}
+              required
+              maxLength={250}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="ne-detail">Full Detail *</Label>
+            <Textarea
+              id="ne-detail"
+              placeholder="Full account of what happened, who was involved, where, and when…"
+              value={form.detail}
+              onChange={(e) => set("detail", e.target.value)}
+              rows={4}
+              required
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="ne-action">Immediate Action Taken *</Label>
+            <Textarea
+              id="ne-action"
+              placeholder="What immediate steps were taken to ensure the safety and welfare of the child(ren)?"
+              value={form.immediate_action}
+              onChange={(e) => set("immediate_action", e.target.value)}
+              rows={3}
+              required
+            />
+          </div>
+
+          {/* Notification tracking */}
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-4">
+            <p className="text-sm font-semibold text-amber-800 flex items-center gap-2">
+              <Send className="h-4 w-4" /> Notification Tracker
+            </p>
+
+            {[
+              {
+                label: "Ofsted",
+                notified: form.ofsted_notified,
+                setNotified: (v: boolean) => set("ofsted_notified", v),
+                date: form.ofsted_date,
+                setDate: (v: string) => set("ofsted_date", v),
+                method: form.ofsted_method,
+                setMethod: (v: string) => set("ofsted_method", v),
+                refField: true,
+                ref: form.ofsted_reference,
+                setRef: (v: string) => set("ofsted_reference", v),
+              },
+              {
+                label: "Local Authority / LADO",
+                notified: form.la_notified,
+                setNotified: (v: boolean) => set("la_notified", v),
+                date: form.la_date,
+                setDate: (v: string) => set("la_date", v),
+                method: form.la_method,
+                setMethod: (v: string) => set("la_method", v),
+                refField: false,
+                ref: "",
+                setRef: () => {},
+              },
+              {
+                label: "Placing Authority / Social Worker",
+                notified: form.placing_notified,
+                setNotified: (v: boolean) => set("placing_notified", v),
+                date: form.placing_date,
+                setDate: (v: string) => set("placing_date", v),
+                method: form.placing_method,
+                setMethod: (v: string) => set("placing_method", v),
+                refField: false,
+                ref: "",
+                setRef: () => {},
+              },
+            ].map((n) => (
+              <div key={n.label} className="rounded-md bg-white border p-3 space-y-2">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id={`notified-${n.label}`}
+                    checked={n.notified}
+                    onChange={(e) => n.setNotified(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  <label htmlFor={`notified-${n.label}`} className="text-sm font-medium cursor-pointer">
+                    {n.label} notified
+                  </label>
+                  {n.notified ? (
+                    <Badge className="ml-auto bg-green-100 text-green-800 text-xs">Notified</Badge>
+                  ) : (
+                    <Badge className="ml-auto bg-red-100 text-red-800 text-xs">Pending</Badge>
+                  )}
+                </div>
+                {n.notified && (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Date notified</Label>
+                      <Input
+                        type="date"
+                        value={n.date}
+                        max={today}
+                        onChange={(e) => n.setDate(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Method</Label>
+                      <Select value={n.method} onValueChange={n.setMethod}>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {["Phone", "Email", "Portal", "Letter", "In person"].map((m) => (
+                            <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {n.refField && (
+                      <div className="col-span-2 space-y-1">
+                        <Label className="text-xs">Reference / Case number (optional)</Label>
+                        <Input
+                          value={n.ref}
+                          placeholder="Ofsted reference number…"
+                          onChange={(e) => n.setRef(e.target.value)}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Follow-up and lessons */}
+          <div className="space-y-1">
+            <Label htmlFor="ne-followup">Follow-Up Actions</Label>
+            <Textarea
+              id="ne-followup"
+              placeholder="What follow-up actions are required? Who is responsible? By when?"
+              value={form.follow_up}
+              onChange={(e) => set("follow_up", e.target.value)}
+              rows={2}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="ne-lessons">Lessons Learned</Label>
+            <Textarea
+              id="ne-lessons"
+              placeholder="What have we learned? How can we prevent recurrence or improve response?"
+              value={form.lesson_learned}
+              onChange={(e) => set("lesson_learned", e.target.value)}
+              rows={2}
+            />
+          </div>
+
+          <DialogFooter className="gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={createMutation.isPending} className="bg-red-600 hover:bg-red-700">
+              {createMutation.isPending ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</>
+              ) : (
+                <><Save className="h-4 w-4 mr-2" /> Record Event</>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 const EVENT_TYPES = [
   "death", "serious_illness", "serious_injury", "serious_incident",
   "child_protection", "police_involvement", "absconding",
@@ -119,6 +486,7 @@ export default function NotifiableEventsPage() {
     <PageShell
       title="Notifiable Events"
       subtitle="Regulation 40 — events requiring notification to Ofsted and authorities"
+      ariaContext={{ pageTitle: "Notifiable Events", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Notifiable Events" />
@@ -126,10 +494,12 @@ export default function NotifiableEventsPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Event
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
+        <AriaPanel mode="assist" pageContext="Notifiable Events — Regulation 40 events requiring potential Ofsted notification, serious incidents, missing episodes, injuries" recordType="notifiable_event" userRole="registered_manager" className="mb-2" />
         {/* ── stats ─────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
@@ -325,22 +695,13 @@ export default function NotifiableEventsPage() {
         </div>
       </div>
 
-      {/* ── placeholder dialog ──────────────────────────────────── */}
-      <Dialog open={showNew} onOpenChange={setShowNew}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Record Notifiable Event</DialogTitle>
-          </DialogHeader>
-          <div className="py-6 text-center text-muted-foreground text-sm">
-            <Bell className="h-10 w-10 mx-auto mb-3 text-red-300" />
-            <p>Full form will capture event type, details,</p>
-            <p>notification tracking, and follow-up actions.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNew(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateNotifiableEventDialog open={showNew} onClose={() => setShowNew(false)} />
+      <CareEventsPanel
+        title="Care Events — Safeguarding & Behaviour"
+        category={["safeguarding", "behaviour", "missing_episode", "physical_intervention"]}
+        days={90}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

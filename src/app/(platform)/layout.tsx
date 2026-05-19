@@ -6,9 +6,15 @@ import { BottomNav } from "@/components/layout/bottom-nav";
 import { AuthProvider } from "@/contexts/auth-context";
 import { SidebarProvider, useSidebar } from "@/contexts/sidebar-context";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
-import { AriaGlobalFab } from "@/components/aria/aria-global-fab";
-import { AriaCommandPalette } from "@/components/aria/aria-command-palette";
-import { AriaShortcutsGuide } from "@/components/aria/aria-shortcuts-guide";
+import { useCareEventsRealtime } from "@/hooks/use-care-events-realtime";
+import { useAuthContext } from "@/contexts/auth-context";
+import { AriaGlobalButton } from "@/components/aria/aria-global-button";
+
+function RealtimeSubscriptions() {
+  const { currentUser } = useAuthContext();
+  useCareEventsRealtime(currentUser?.home_id);
+  return null;
+}
 
 function PlatformContent({ children }: { children: React.ReactNode }) {
   const { collapsed, isMobile } = useSidebar();
@@ -30,14 +36,13 @@ export default function PlatformLayout({
   return (
     <AuthProvider>
       <SidebarProvider>
-        <div className="flex min-h-screen" style={{ background: 'var(--cs-bg)' }}>
+        <div className="flex min-h-screen bg-[#f7f8fa]">
           <Sidebar />
           <PlatformContent>{children}</PlatformContent>
           <BottomNav />
           <KeyboardShortcuts />
-          <AriaGlobalFab />
-          <AriaCommandPalette />
-          <AriaShortcutsGuide />
+          <RealtimeSubscriptions />
+          <AriaGlobalButton />
         </div>
       </SidebarProvider>
     </AuthProvider>

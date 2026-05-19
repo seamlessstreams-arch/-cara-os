@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 import { useLocalOfferSections } from "@/hooks/use-local-offer-sections";
 import type { LocalOfferSection, LocalOfferCategory } from "@/types/extended";
 import { LOCAL_OFFER_CATEGORY_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -50,8 +53,13 @@ export default function LocalOfferPage() {
     <PageShell
       title="Local Offer"
       subtitle="What Oak House Offers · Our Strengths · Our Commitments"
-      actions={<PrintButton title="Oak House — Local Offer" />}
-    >
+      ariaContext={{ pageTitle: "Local Offer", sourceType: "child_record" }}
+      actions={
+        <div className="flex items-center gap-2">
+          <PrintButton title="Oak House — Local Offer" />
+          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+        </div>
+      }>
       <div id="print-area">
         {/* intro */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -173,6 +181,18 @@ export default function LocalOfferPage() {
           <p>The Local Offer describes what a children&apos;s home provides for the children in its care. Under the Children and Families Act 2014, local authorities are required to publish a Local Offer for children with SEND, and children&apos;s homes should articulate their own offer clearly. The Statement of Purpose (Reg 16) and Children&apos;s Guide (Reg 19) complement this document. The Local Offer should be shared with placing authorities during the referral process and reviewed annually. Ofsted inspectors use the Statement of Purpose and Local Offer to understand the home&apos;s intended purpose and assess whether practice matches the stated offer.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Activities & Education"
+        category={["activity", "education"]}
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Local Offer — what Oak House provides to children and families, care commitments, education, health, therapeutic services, activities, community links, independence, workforce"
+        recordType="ofsted_evidence"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

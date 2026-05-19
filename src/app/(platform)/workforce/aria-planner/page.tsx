@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import {
   Sparkles, CheckCircle2, Clock, ChevronRight,
   Plus, GitMerge, ArrowRight,
@@ -22,11 +22,11 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 
 const STATUS_CONFIG: Record<DevelopmentPlanStatus, { label: string; colour: string }> = {
-  draft:      { label: "Draft",      colour: "text-[var(--cs-text-secondary)] bg-slate-100 border-[var(--cs-border)]"       },
+  draft:      { label: "Draft",      colour: "text-slate-600 bg-slate-100 border-slate-200"       },
   active:     { label: "Active",     colour: "text-emerald-700 bg-emerald-50 border-emerald-200"  },
   paused:     { label: "Paused",     colour: "text-amber-700 bg-amber-50 border-amber-200"        },
   completed:  { label: "Completed",  colour: "text-blue-700 bg-blue-50 border-blue-200"           },
-  superseded: { label: "Superseded", colour: "text-[var(--cs-text-muted)] bg-slate-50 border-[var(--cs-border)]"        },
+  superseded: { label: "Superseded", colour: "text-slate-400 bg-slate-50 border-slate-200"        },
 };
 
 export default function AriaDevPlannerPage() {
@@ -49,6 +49,7 @@ export default function AriaDevPlannerPage() {
     <PageShell
       title="ARIA Development Planner"
       subtitle="ARIA-generated personalised development plans for every staff member"
+      ariaContext={{ pageTitle: "ARIA Development Planner", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -56,7 +57,7 @@ export default function AriaDevPlannerPage() {
           <SmartUploadButton variant="inline" label="Upload Development Plan" uploadContext="Workforce Intelligence — staff development plan or evidence document upload" />
           <Button
             size="sm"
-            className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
+            className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white"
             onClick={() => setShowAria((p) => !p)}
           >
             <Sparkles className="h-3.5 w-3.5" />
@@ -66,13 +67,14 @@ export default function AriaDevPlannerPage() {
             <Plus className="h-3.5 w-3.5" />
             Manual Plan
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="aria-planner-content" className="space-y-0">
       {showAria && (
         <div className="relative">
-          <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-xs">✕ Close</button>
+          <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs">✕ Close</button>
           <AriaPanel
             mode="staff_development_summary"
             pageContext={`Development planning hub: ${allPlans.length} active plans. Staff with plans: ${staffWithPlans.map(getStaffName).join(", ")}. ARIA can generate a personalised development plan based on competency profile, career pathway target, and practice observations.`}
@@ -96,7 +98,7 @@ export default function AriaDevPlannerPage() {
             </p>
             <Button
               size="sm"
-              className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
+              className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white"
               onClick={() => setShowAria(true)}
             >
               <Sparkles className="h-3.5 w-3.5" />
@@ -113,8 +115,8 @@ export default function AriaDevPlannerPage() {
           className={cn(
             "px-3 py-1 rounded-full text-xs font-medium border transition-all",
             selectedStaff === "all"
-              ? "bg-[var(--cs-navy)] text-white border-[var(--cs-navy)]"
-              : "bg-white text-[var(--cs-text-secondary)] border-[var(--cs-border)] hover:border-indigo-300",
+              ? "bg-indigo-600 text-white border-indigo-600"
+              : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300",
           )}
         >
           All Staff
@@ -126,8 +128,8 @@ export default function AriaDevPlannerPage() {
             className={cn(
               "px-3 py-1 rounded-full text-xs font-medium border transition-all",
               selectedStaff === id
-                ? "bg-[var(--cs-navy)] text-white border-[var(--cs-navy)]"
-                : "bg-white text-[var(--cs-text-secondary)] border-[var(--cs-border)] hover:border-indigo-300",
+                ? "bg-indigo-600 text-white border-indigo-600"
+                : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300",
             )}
           >
             {getStaffName(id).split(" ")[0]}
@@ -137,8 +139,8 @@ export default function AriaDevPlannerPage() {
 
       {/* Development plans */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-[var(--cs-text-muted)]">
-          <GitMerge className="h-8 w-8 mx-auto mb-2 text-[var(--cs-text-gentle)]" />
+        <div className="text-center py-12 text-slate-400">
+          <GitMerge className="h-8 w-8 mx-auto mb-2 text-slate-300" />
           <p className="text-sm">No development plans yet</p>
           <p className="text-xs mt-1">Use ARIA to generate the first plan</p>
         </div>
@@ -151,9 +153,9 @@ export default function AriaDevPlannerPage() {
             const pct = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0;
 
             return (
-              <div key={plan.id} className="rounded-2xl border border-[var(--cs-border)] bg-white overflow-hidden">
+              <div key={plan.id} className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
                 {/* Header */}
-                <div className="flex items-start justify-between gap-3 px-4 py-3 bg-slate-50 border-b border-[var(--cs-border-subtle)]">
+                <div className="flex items-start justify-between gap-3 px-4 py-3 bg-slate-50 border-b border-slate-100">
                   <div className="flex items-start gap-3">
                     {plan.aria_generated && (
                       <div className="p-1.5 rounded-lg bg-indigo-100 shrink-0 mt-0.5">
@@ -161,8 +163,8 @@ export default function AriaDevPlannerPage() {
                       </div>
                     )}
                     <div>
-                      <p className="text-sm font-bold text-[var(--cs-navy)] mb-0.5">{plan.title}</p>
-                      <div className="flex items-center gap-1.5 text-xs text-[var(--cs-text-muted)]">
+                      <p className="text-sm font-bold text-slate-800 mb-0.5">{plan.title}</p>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500">
                         <span>{getStaffName(plan.staff_id)}</span>
                         <span>·</span>
                         <span>{PATHWAY_STAGE_LABELS[plan.from_stage]}</span>
@@ -174,15 +176,14 @@ export default function AriaDevPlannerPage() {
                   <Badge variant="outline" className={cn("text-[10px] border shrink-0", statusCfg.colour)}>
                     {statusCfg.label}
                   </Badge>
-                  <AriaUsageBadge ariaAssisted={(plan as any).aria_assist_used} sourceTable="learning_plans" recordId={plan.id} />
                 </div>
 
                 <div className="p-4 space-y-3">
                   {/* Progress */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-[var(--cs-text-muted)]">Progress</span>
-                      <span className="text-xs font-semibold text-[var(--cs-text-secondary)]">{completedActions}/{totalActions} actions</span>
+                      <span className="text-xs text-slate-500">Progress</span>
+                      <span className="text-xs font-semibold text-slate-700">{completedActions}/{totalActions} actions</span>
                     </div>
                     <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                       <div
@@ -197,30 +198,30 @@ export default function AriaDevPlannerPage() {
                     {plan.actions.map((action) => (
                       <div key={action.id} className={cn(
                         "flex items-start gap-2.5 rounded-xl px-3 py-2.5 border",
-                        action.completed ? "bg-emerald-50/50 border-emerald-100" : "bg-white border-[var(--cs-border-subtle)]",
+                        action.completed ? "bg-emerald-50/50 border-emerald-100" : "bg-white border-slate-100",
                       )}>
                         {action.completed ? (
                           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
                         ) : (
-                          <Clock className="h-3.5 w-3.5 text-[var(--cs-text-muted)] shrink-0 mt-0.5" />
+                          <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0 mt-0.5" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className={cn("text-xs font-medium", action.completed ? "text-emerald-700 line-through" : "text-[var(--cs-navy)]")}>
+                          <p className={cn("text-xs font-medium", action.completed ? "text-emerald-700 line-through" : "text-slate-800")}>
                             {action.title}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-[10px] text-[var(--cs-text-muted)]">
+                            <span className="text-[10px] text-slate-400">
                               {COMPETENCY_DOMAIN_LABELS[action.domain]}
                             </span>
                             {action.target_date && !action.completed && (
-                              <span className="text-[10px] text-[var(--cs-text-muted)]">· Due {action.target_date}</span>
+                              <span className="text-[10px] text-slate-400">· Due {action.target_date}</span>
                             )}
                             {action.completed && action.completed_at && (
                               <span className="text-[10px] text-emerald-600">· Completed {action.completed_at.slice(0, 10)}</span>
                             )}
                           </div>
                           {action.evidence_notes && (
-                            <p className="text-[10px] text-[var(--cs-text-muted)] mt-1 italic">{action.evidence_notes}</p>
+                            <p className="text-[10px] text-slate-500 mt-1 italic">{action.evidence_notes}</p>
                           )}
                         </div>
                       </div>
@@ -237,7 +238,7 @@ export default function AriaDevPlannerPage() {
 
                   {/* Footer */}
                   <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                    <span className="text-[10px] text-[var(--cs-text-muted)]">Created {plan.created_at.slice(0, 10)}</span>
+                    <span className="text-[10px] text-slate-400">Created {plan.created_at.slice(0, 10)}</span>
                     <Link href={`/workforce/staff/${plan.staff_id}`} className="flex items-center gap-1 text-[10px] text-indigo-600 hover:text-indigo-800">
                       View full profile <ChevronRight className="h-3 w-3" />
                     </Link>

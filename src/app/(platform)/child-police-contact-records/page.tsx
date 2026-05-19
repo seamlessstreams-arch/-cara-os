@@ -11,7 +11,7 @@ import {
   Search,
   Phone,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn, formatDate } from "@/lib/utils";
@@ -31,6 +31,9 @@ import {
 } from "@/types/extended";
 import { usePoliceContactRecords } from "@/hooks/use-police-contact-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -154,10 +157,12 @@ export default function ChildPoliceContactRecordsPage() {
     <PageShell
       title="Child Police Contact Records"
       subtitle="Concordat on Children in Care — proportionate response, advocacy, restorative practice"
+      ariaContext={{ pageTitle: "Police Contact Records", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="police-contact-records" />
           <PrintButton title="Police Contact Records" />
+          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -371,6 +376,18 @@ export default function ChildPoliceContactRecordsPage() {
           restorative practice.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Safeguarding"
+        category="safeguarding"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Police Contact Records — police callouts, arrests, voluntary interviews, ABE interviews, charges, cautions, custody records, YOT referral, Reg 40 trigger, Annex A evidence, safeguarding"
+        recordType="safeguarding"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

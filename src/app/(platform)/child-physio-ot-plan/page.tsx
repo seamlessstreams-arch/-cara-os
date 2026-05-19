@@ -11,7 +11,7 @@ import {
   Search,
   CheckCircle,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,9 @@ import {
 } from "@/types/extended";
 import { usePhysioOtPlans } from "@/hooks/use-physio-ot-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── colour maps ──────────────────────────────────────────────────────── */
 
@@ -230,6 +233,7 @@ export default function ChildPhysioOtPlanPage() {
     <PageShell
       title="Physio & OT Plans"
       subtitle="Per-child physiotherapy and occupational therapy plans — physical, sensory, motor and self-care needs (QS 8)"
+      ariaContext={{ pageTitle: "Physio & OT Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Physio & OT Plans" />
@@ -238,6 +242,7 @@ export default function ChildPhysioOtPlanPage() {
             columns={EXPORT_COLS}
             filename="child-physio-ot-plans"
           />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -480,6 +485,18 @@ export default function ChildPhysioOtPlanPage() {
       <div className="rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-sky-800 mb-6">
         <strong>Quality Standard 8 — Children&apos;s Health and Wellbeing:</strong> Children must receive specialist therapy input where assessed need exists, with clear individualised plans, equipment provision, environmental adaptations and shared school-home implementation. Plans here align with NHS Children&apos;s Therapy Services pathways, Royal College of Occupational Therapists guidance, Chartered Society of Physiotherapy paediatric standards, the SEND Code of Practice, and UNCRC Article 23 (the right of disabled children to a full and decent life with active participation in the community). The child&apos;s voice — including their right to refuse a programme that isn&apos;t working — is central.
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Physio & OT Plans — physiotherapy, occupational therapy, gross motor, fine motor, sensory integration, adaptive equipment, home programme, school liaison, EHCP, AHA, Annex A evidence"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

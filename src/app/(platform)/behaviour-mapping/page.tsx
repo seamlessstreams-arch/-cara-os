@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,9 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import type { BehaviourMappingType, BMIntensity, BMTimeOfDay, BehaviourMapEntry } from "@/types/extended";
 import { useBehaviourMapEntries } from "@/hooks/use-behaviour-map-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -121,10 +124,12 @@ export default function BehaviourMappingPage() {
     <PageShell
       title="Behaviour Mapping"
       subtitle="ABC Analysis · Trigger Patterns · De-Escalation · Antecedent–Behaviour–Consequence"
+      ariaContext={{ pageTitle: "Behaviour Mapping", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Behaviour Mapping" />
           <ExportButton data={exportData} columns={exportCols} filename="behaviour-mapping" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -272,6 +277,18 @@ export default function BehaviourMappingPage() {
         </div>
       </div>
       )}
+      <CareEventsPanel
+        title="Care Events — Behaviour"
+        category="behaviour"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Behaviour Mapping — ABC charts, antecedents, triggers, patterns, trauma responses, time-of-day analysis, escalation sequences, de-escalation, PBS, behaviour support plan links"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

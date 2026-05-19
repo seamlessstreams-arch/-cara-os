@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -29,6 +29,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 const severityColour: Record<string, string> = {
   life_threatening: "bg-red-200 text-red-900",
@@ -93,10 +96,12 @@ export default function DietaryRequirementsPage() {
     <PageShell
       title="Dietary Requirements"
       subtitle="Personalised dietary plans — allergies, sensory needs, religious observance, and food relationships"
+      ariaContext={{ pageTitle: "Dietary Requirements", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="dietary-requirements" />
           <PrintButton title="Dietary Requirements" />
+          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -354,6 +359,18 @@ export default function DietaryRequirementsPage() {
           and shared with all staff including agency cover. Linked to Healthcare Plans and Religious Observance Log.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — Food & Nutrition"
+        category="food"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Dietary Requirements — allergies, food preferences, religious restrictions, cultural food needs, medical diets, halal, kosher, vegetarian, safe eating plan, AHA nutrition"
+        recordType="care_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

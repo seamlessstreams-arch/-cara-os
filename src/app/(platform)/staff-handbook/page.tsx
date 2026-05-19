@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,9 @@ import {
   GraduationCap, MessageSquare, Home, Car, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── types ─────────────────────────────────────────────────────────────────── */
 
@@ -181,7 +184,8 @@ export default function StaffHandbookPage() {
     <PageShell
       title="Staff Handbook"
       subtitle="Oak House · Essential Information for All Staff"
-      actions={<PrintButton title="Staff Handbook" />}
+      ariaContext={{ pageTitle: "Staff Handbook", sourceType: "staff" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Staff Handbook" /><AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} /></div>}
     >
       <div id="print-area">
         {/* version banner */}
@@ -254,6 +258,18 @@ export default function StaffHandbookPage() {
           <p>All staff must read this handbook in full during their first week of employment and confirm understanding by signing the acknowledgement form. The handbook is reviewed quarterly by the Registered Manager. Significant updates are communicated to all staff via team meetings and individual supervision. This handbook should be read alongside the home&apos;s Statement of Purpose, Children&apos;s Guide, and full policy library. If any content in this handbook conflicts with a specific policy document, the policy document takes precedence.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Staff Handbook — policies, procedures, code of conduct, safeguarding obligations, reporting requirements, lone working, behaviour support, staff rights, HR procedures"
+        recordType="policy"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

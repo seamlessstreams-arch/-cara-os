@@ -6,7 +6,7 @@ import {
   AlertCircle, ThumbsUp, ChevronDown, ChevronUp, Building2,
   Sparkles, MapPin, ShieldCheck,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,9 @@ import {
   COMMUNITY_FEEDBACK_TYPE_LABEL,
 } from "@/types/extended";
 import { useCommunityFeedbackRecords } from "@/hooks/use-community-feedback-records";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local lookup maps ──────────────────────────────────────────────── */
 const TYPE_COLOURS: Record<CommunityFeedbackType, string> = {
@@ -130,10 +133,12 @@ export default function CommunityFeedbackPage() {
     <PageShell
       title="Community Feedback"
       subtitle="Voices from our neighbours, local businesses, and the wider community"
+      ariaContext={{ pageTitle: "Community Feedback", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Community Feedback" />
           <ExportButton data={filtered} columns={exportCols} filename="community-feedback" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -383,6 +388,18 @@ export default function CommunityFeedbackPage() {
           support self-esteem and a sense of belonging.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Community Feedback — neighbour complaints, positive community contacts, local integration, public concerns, community events, relationship with local area, Reg 44, Reg 45 evidence"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

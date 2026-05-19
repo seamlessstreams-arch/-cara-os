@@ -17,11 +17,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -100,7 +101,7 @@ function priorityColour(p: string) {
   switch (p) {
     case "urgent": return "border-red-300 bg-red-50 text-red-700";
     case "high": return "border-orange-300 bg-orange-50 text-orange-700";
-    default: return "border-[var(--cs-border)] bg-slate-50 text-[var(--cs-text-secondary)]";
+    default: return "border-slate-200 bg-slate-50 text-slate-600";
   }
 }
 
@@ -111,7 +112,7 @@ function ComplianceBar({ pct }: { pct: number }) {
       <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
         <div className={cn("h-full rounded-full transition-all", colour)} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] font-semibold text-[var(--cs-text-secondary)] w-7 text-right">{pct}%</span>
+      <span className="text-[10px] font-semibold text-slate-600 w-7 text-right">{pct}%</span>
     </div>
   );
 }
@@ -123,7 +124,7 @@ function StatTile({
   label,
   value,
   sub,
-  colour = "text-[var(--cs-text-secondary)]",
+  colour = "text-slate-600",
   accent = "bg-slate-50",
 }: {
   icon: React.ElementType;
@@ -134,14 +135,14 @@ function StatTile({
   accent?: string;
 }) {
   return (
-    <div className={cn("rounded-2xl border border-[var(--cs-border-subtle)] p-4 flex items-center gap-4", accent)}>
-      <div className={cn("p-2 rounded-xl bg-white shadow-sm border border-[var(--cs-border-subtle)]")}>
+    <div className={cn("rounded-2xl border border-slate-100 p-4 flex items-center gap-4", accent)}>
+      <div className={cn("p-2 rounded-xl bg-white shadow-sm border border-slate-100")}>
         <Icon className={cn("h-5 w-5", colour)} />
       </div>
       <div>
-        <div className="text-xl font-bold text-[var(--cs-navy)]">{value}</div>
-        <div className="text-xs text-[var(--cs-text-muted)]">{label}</div>
-        {sub && <div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">{sub}</div>}
+        <div className="text-xl font-bold text-slate-900">{value}</div>
+        <div className="text-xs text-slate-500">{label}</div>
+        {sub && <div className="text-[10px] text-slate-400 mt-0.5">{sub}</div>}
       </div>
     </div>
   );
@@ -166,20 +167,19 @@ function StaffCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className={cn("inline-block h-2 w-2 rounded-full shrink-0", sc.dot)} />
-              <h3 className="font-semibold text-[var(--cs-navy)] text-sm truncate">{profile.full_name}</h3>
+              <h3 className="font-semibold text-slate-900 text-sm truncate">{profile.full_name}</h3>
             </div>
-            <p className="text-xs text-[var(--cs-text-muted)] mt-0.5 ml-4">{profile.job_title}</p>
+            <p className="text-xs text-slate-500 mt-0.5 ml-4">{profile.job_title}</p>
           </div>
           <Badge className={cn("text-[10px] rounded-full border shrink-0", sc.colour)}>
             {sc.label}
           </Badge>
-          <AriaUsageBadge ariaAssisted={(profile as any).aria_assist_used} sourceTable="staff_development_records" recordId={profile.staff_id} />
         </div>
 
         {/* Training compliance */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-[var(--cs-text-muted)] flex items-center gap-1">
+            <span className="text-[11px] text-slate-500 flex items-center gap-1">
               <GraduationCap className="h-3 w-3" /> Training compliance
             </span>
           </div>
@@ -188,25 +188,25 @@ function StaffCard({
 
         {/* Metrics row */}
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl bg-slate-50 border border-[var(--cs-border-subtle)] py-2 px-1">
-            <div className={cn("text-base font-bold", profile.urgent_training_needs > 0 ? "text-red-600" : "text-[var(--cs-navy)]")}>
+          <div className="rounded-xl bg-slate-50 border border-slate-100 py-2 px-1">
+            <div className={cn("text-base font-bold", profile.urgent_training_needs > 0 ? "text-red-600" : "text-slate-800")}>
               {profile.open_training_needs}
             </div>
-            <div className="text-[10px] text-[var(--cs-text-muted)] leading-tight mt-0.5">Open needs</div>
+            <div className="text-[10px] text-slate-400 leading-tight mt-0.5">Open needs</div>
           </div>
-          <div className={cn("rounded-xl border py-2 px-1", profile.supervision_overdue ? "bg-red-50 border-red-200" : "bg-slate-50 border-[var(--cs-border-subtle)]")}>
-            <div className={cn("text-base font-bold", profile.supervision_overdue ? "text-red-600" : "text-[var(--cs-navy)]")}>
+          <div className={cn("rounded-xl border py-2 px-1", profile.supervision_overdue ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-100")}>
+            <div className={cn("text-base font-bold", profile.supervision_overdue ? "text-red-600" : "text-slate-800")}>
               {profile.last_supervision_date ? formatDate(profile.last_supervision_date)?.split(" ").slice(0, 2).join(" ") : "None"}
             </div>
-            <div className={cn("text-[10px] leading-tight mt-0.5", profile.supervision_overdue ? "text-red-500" : "text-[var(--cs-text-muted)]")}>
+            <div className={cn("text-[10px] leading-tight mt-0.5", profile.supervision_overdue ? "text-red-500" : "text-slate-400")}>
               {profile.supervision_overdue ? "Supervision overdue" : "Last supervision"}
             </div>
           </div>
-          <div className={cn("rounded-xl border py-2 px-1", profile.wellbeing_score !== null ? "bg-slate-50 border-[var(--cs-border-subtle)]" : "bg-slate-50 border-[var(--cs-border-subtle)]")}>
-            <div className="text-base font-bold text-[var(--cs-navy)]">
+          <div className={cn("rounded-xl border py-2 px-1", profile.wellbeing_score !== null ? "bg-slate-50 border-slate-100" : "bg-slate-50 border-slate-100")}>
+            <div className="text-base font-bold text-slate-800">
               {profile.wellbeing_score !== null ? `${profile.wellbeing_score}/10` : "—"}
             </div>
-            <div className="text-[10px] text-[var(--cs-text-muted)] leading-tight mt-0.5">Wellbeing</div>
+            <div className="text-[10px] text-slate-400 leading-tight mt-0.5">Wellbeing</div>
           </div>
         </div>
 
@@ -339,6 +339,7 @@ export default function StaffDevelopmentPage() {
           <ExportButton data={filtered} columns={STAFF_DEV_EXPORT_COLS} filename="staff-development" />
           <PrintButton title="Staff Development" subtitle="Oak House — Development & CPD" targetId="staff-dev-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Staff Development — training certificate or appraisal upload" />
+          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -348,7 +349,7 @@ export default function StaffDevelopmentPage() {
         <div className="mb-6 relative">
           <button
             onClick={() => setShowAria(false)}
-            className="absolute top-3 right-3 z-10 text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-xs"
+            className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs"
           >
             ✕ Close
           </button>
@@ -403,7 +404,7 @@ export default function StaffDevelopmentPage() {
             icon={MessageSquare}
             label="Supervision overdue"
             value={summary.supervision_overdue}
-            colour={summary.supervision_overdue > 0 ? "text-red-600" : "text-[var(--cs-text-muted)]"}
+            colour={summary.supervision_overdue > 0 ? "text-red-600" : "text-slate-500"}
             accent={summary.supervision_overdue > 0 ? "bg-red-50" : "bg-slate-50"}
           />
         </div>
@@ -412,7 +413,7 @@ export default function StaffDevelopmentPage() {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="relative flex-1 min-w-48 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--cs-text-muted)]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             placeholder="Search staff..."
             value={search}
@@ -420,7 +421,7 @@ export default function StaffDevelopmentPage() {
             className="pl-9 h-9 text-sm rounded-xl"
           />
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-[var(--cs-text-muted)]">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
           <ArrowUpDown className="h-3.5 w-3.5" />
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="bg-white border rounded-md px-2 py-1.5 text-xs">
             <option value="status">Status (at risk first)</option>
@@ -453,7 +454,7 @@ export default function StaffDevelopmentPage() {
           className="gap-1.5 h-9 rounded-xl ml-auto"
           onClick={() => setShowAria((v) => !v)}
         >
-          <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+          <Sparkles className="h-3.5 w-3.5 text-violet-600" />
           ARIA Team Analysis
         </Button>
       </div>
@@ -485,9 +486,9 @@ export default function StaffDevelopmentPage() {
       )}
 
       {/* Learning Studio quick links */}
-      <div className="mt-8 rounded-2xl border border-[var(--cs-border-subtle)] bg-slate-50 p-5">
-        <h3 className="text-sm font-semibold text-[var(--cs-text-secondary)] mb-3 flex items-center gap-2">
-          <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+      <div className="mt-8 rounded-2xl border border-slate-100 bg-slate-50 p-5">
+        <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+          <Brain className="h-4 w-4 text-violet-500" />
           Learning Studio — quick links
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -513,6 +514,12 @@ export default function StaffDevelopmentPage() {
         </div>
       </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

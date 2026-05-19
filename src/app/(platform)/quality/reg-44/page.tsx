@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useReg44Visits, useCreateReg44Visit } from "@/hooks/use-intelligence-layer";
+import { useReg44Visits, useCreateReg44Visit, useReg44Actions } from "@/hooks/use-intelligence-layer";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -99,212 +101,10 @@ const PRIORITY_CLR: Record<Reg44ActionPriority, string> = {
 };
 
 /* ── demo data ─────────────────────────────────────────────────────────────── */
-
-const DEMO_VISITS: Reg44Visit[] = [
-  {
-    id: "v1",
-    homeId: "home_oak",
-    visitDate: d(-12),
-    visitorName: "Margaret Thornton",
-    reportStatus: "submitted",
-    summary:
-      "Monthly unannounced visit conducted. Spoke with three young people and two members of staff. Reviewed daily logs, medication records, and the complaints register. The home presents as warm, personalised, and well-maintained. Young people appeared relaxed and engaged positively with staff.",
-    strengths:
-      "Excellent key-work sessions observed with detailed records. Young people spoke positively about recent activities including a camping trip. Medication administration records are thorough and up to date. Staff morale appeared high with good teamwork evident during the visit.",
-    concerns:
-      "One fire drill was missed in the previous month due to a staffing issue. The privacy lock on Bedroom 3 was reported as faulty by the young person. Wi-Fi filtering records had not been reviewed since last month.",
-    childrenViewsSummary:
-      "All three young people said they feel safe. One young person asked for more variety in evening meals. Another praised the new games room setup. The youngest child shared they enjoy their key-work sessions and feel listened to.",
-    staffViewsSummary:
-      "Staff reported feeling well-supported by the Registered Manager. One staff member raised a concern about the night-shift handover process being too brief. The deputy highlighted positive progress with a complex placement.",
-    managerResponse: undefined,
-    riResponse: undefined,
-    createdBy: "system",
-    createdAt: d(-12),
-    updatedAt: d(-12),
-  },
-  {
-    id: "v2",
-    homeId: "home_oak",
-    visitDate: d(-45),
-    visitorName: "Margaret Thornton",
-    reportStatus: "reviewed",
-    summary:
-      "Scheduled visit. Reviewed safeguarding records, supervision logs, and the Statement of Purpose. Met with all young people individually. The home continues to operate to a high standard with strong management oversight.",
-    strengths:
-      "Supervision records are fully up to date for all staff. The home has implemented a new voice-of-the-child feedback system that young people are engaging with well. Risk assessments have been reviewed following recent incidents and are comprehensive.",
-    concerns:
-      "Minor maintenance issue with the garden fence panel. One young person expressed frustration about contact arrangements with their social worker. Staff training matrix shows one member is overdue for PRICE refresher.",
-    childrenViewsSummary:
-      "Young people feel settled. Two expressed interest in having a say in menu planning. One young person was pleased their room had been redecorated.",
-    staffViewsSummary:
-      "Staff felt well-prepared for the recent Ofsted monitoring visit. The team requested additional training on online safety given emerging concerns across the sector.",
-    managerResponse:
-      "Thank you for the thorough visit. The fence panel has been repaired. I have escalated the contact concern to the placing authority. The overdue PRICE training is booked for next week.",
-    riResponse:
-      "Pleased with the overall quality of care. The manager response addresses all concerns appropriately. I note the proactive approach to online safety training. I will follow up on the contact issue at the next RI visit.",
-    createdBy: "system",
-    createdAt: d(-45),
-    updatedAt: d(-30),
-  },
-  {
-    id: "v3",
-    homeId: "home_oak",
-    visitDate: d(-75),
-    visitorName: "David Henshaw",
-    reportStatus: "closed",
-    summary:
-      "Unannounced visit during evening hours. Observed bedtime routines and evening activities. Reviewed incident logs and restraint records from the previous month.",
-    strengths:
-      "Bedtime routines were calm and well-structured. Staff used excellent de-escalation skills during a minor disagreement between two young people. Evening activities were age-appropriate and enjoyed by all.",
-    concerns:
-      "One restraint record lacked the required debrief notes from the young person. The kitchen deep-clean schedule was one week behind.",
-    childrenViewsSummary:
-      "Young people were relaxed during the visit. One child said evening routines were better since the new rota was introduced. Another asked if they could have later bedtimes at weekends.",
-    staffViewsSummary:
-      "Night staff felt the handover had improved following the manager implementing a structured template. One member asked about career progression opportunities.",
-    managerResponse:
-      "The restraint debrief has now been completed retrospectively. Kitchen deep-clean has been brought up to date. I have reviewed the weekend bedtime request and will discuss with the team.",
-    riResponse:
-      "All actions addressed promptly. Satisfied with the response to the restraint concern. Will monitor kitchen compliance at next visit.",
-    createdBy: "system",
-    createdAt: d(-75),
-    updatedAt: d(-60),
-  },
-  {
-    id: "v4",
-    homeId: "home_oak",
-    visitDate: d(-135),
-    visitorName: "Margaret Thornton",
-    reportStatus: "closed",
-    summary:
-      "Quarterly themed visit focusing on education and health outcomes. Reviewed PEPs, health assessments, and SDQ scores. Met with the designated education lead and health coordinator.",
-    strengths:
-      "All PEPs are up to date. School attendance is above 90% for all young people. Health assessments completed within timescales. One young person achieved a significant academic milestone.",
-    concerns:
-      "No concerns identified during this visit.",
-    childrenViewsSummary:
-      "Young people spoke positively about educational support. One child was proud of their recent school award.",
-    staffViewsSummary:
-      "Staff appreciated the themed approach. The education lead felt the home prioritises education well.",
-    managerResponse:
-      "Pleased with the positive findings. We will continue to prioritise educational attainment and health outcomes.",
-    riResponse: undefined,
-    createdBy: "system",
-    createdAt: d(-135),
-    updatedAt: d(-120),
-  },
-];
-
-const DEMO_ACTIONS: Reg44Action[] = [
-  {
-    id: "a1",
-    visitId: "v1",
-    homeId: "home_oak",
-    title: "Conduct missed fire drill",
-    description:
-      "A fire drill was missed in the previous month. Arrange and complete a fire drill within 7 days, ensuring all young people and staff participate. Record outcomes and any issues identified.",
-    priority: "high",
-    assignedTo: "Darren Laville (RM)",
-    dueDate: d(-5),
-    status: "overdue",
-    managerResponse: undefined,
-    completedAt: undefined,
-    evidenceItemId: undefined,
-    createdBy: "system",
-    createdAt: d(-12),
-    updatedAt: d(-12),
-  },
-  {
-    id: "a2",
-    visitId: "v1",
-    homeId: "home_oak",
-    title: "Repair privacy lock on Bedroom 3",
-    description:
-      "The privacy lock on Bedroom 3 has been reported as faulty by the young person. Arrange for repair or replacement to ensure the young person's right to privacy is upheld.",
-    priority: "medium",
-    assignedTo: "Darren Laville (RM)",
-    dueDate: d(2),
-    status: "in_progress",
-    managerResponse: "Maintenance contractor booked for this week.",
-    completedAt: undefined,
-    evidenceItemId: undefined,
-    createdBy: "system",
-    createdAt: d(-12),
-    updatedAt: d(-5),
-  },
-  {
-    id: "a3",
-    visitId: "v1",
-    homeId: "home_oak",
-    title: "Review Wi-Fi filtering records",
-    description:
-      "Wi-Fi filtering records have not been reviewed since last month. Review and update the filtering logs, ensuring all content restrictions are appropriate and documented.",
-    priority: "medium",
-    assignedTo: "Ryan Mitchell (Deputy)",
-    dueDate: d(5),
-    status: "open",
-    managerResponse: undefined,
-    completedAt: undefined,
-    evidenceItemId: undefined,
-    createdBy: "system",
-    createdAt: d(-12),
-    updatedAt: d(-12),
-  },
-  {
-    id: "a4",
-    visitId: "v2",
-    homeId: "home_oak",
-    title: "Repair garden fence panel",
-    description: "Minor maintenance issue with the garden fence panel identified during visit. Repair or replace to maintain secure boundary.",
-    priority: "low",
-    assignedTo: "Darren Laville (RM)",
-    dueDate: d(-30),
-    status: "completed",
-    managerResponse: "Fence panel repaired by contractor on the day following the visit.",
-    completedAt: d(-40),
-    evidenceItemId: undefined,
-    createdBy: "system",
-    createdAt: d(-45),
-    updatedAt: d(-40),
-  },
-  {
-    id: "a5",
-    visitId: "v2",
-    homeId: "home_oak",
-    title: "Book PRICE refresher training",
-    description:
-      "One staff member is overdue for PRICE refresher training. Book onto the next available course and confirm date.",
-    priority: "high",
-    assignedTo: "Darren Laville (RM)",
-    dueDate: d(-25),
-    status: "completed",
-    managerResponse: "Training booked and completed on target date.",
-    completedAt: d(-28),
-    evidenceItemId: undefined,
-    createdBy: "system",
-    createdAt: d(-45),
-    updatedAt: d(-28),
-  },
-  {
-    id: "a6",
-    visitId: "v3",
-    homeId: "home_oak",
-    title: "Complete retrospective restraint debrief",
-    description:
-      "One restraint record lacked the required debrief notes from the young person. Complete the debrief and update the restraint record.",
-    priority: "urgent",
-    assignedTo: "Darren Laville (RM)",
-    dueDate: d(-70),
-    status: "completed",
-    managerResponse: "Debrief completed with the young person. Record updated with their views and feelings about the incident.",
-    completedAt: d(-72),
-    evidenceItemId: undefined,
-    createdBy: "system",
-    createdAt: d(-75),
-    updatedAt: d(-72),
-  },
-];
+/* Seed data lives in the intelligence-layer fallback store and is served by the
+ * /api/intelligence/reg44 + /api/intelligence/reg44-actions routes when Supabase
+ * is disabled (and from real Supabase tables when enabled). The page consumes
+ * both via the `useReg44Visits` and `useReg44Actions` hooks below. */
 
 /* ── monthly visit timeline ────────────────────────────────────────────────── */
 
@@ -324,35 +124,58 @@ function buildMonthTimeline(visits: Reg44Visit[]) {
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
 export default function Reg44Page() {
-  const [visits, setVisits] = useState<Reg44Visit[]>(DEMO_VISITS);
-  const [actions, setActions] = useState<Reg44Action[]>(DEMO_ACTIONS);
+  const [visits, setVisits] = useState<Reg44Visit[]>([]);
+  const [actions, setActions] = useState<Reg44Action[]>([]);
   const [expandedVisit, setExpandedVisit] = useState<string | null>(null);
 
   /* ── API hooks ─────────────────────────────────────────────────────────── */
   const { data: apiData } = useReg44Visits();
+  const { data: actionsData } = useReg44Actions();
   const createVisit = useCreateReg44Visit();
 
   useEffect(() => {
-    if (apiData?.persisted && apiData.visits.length > 0) {
+    if (apiData?.persisted && Array.isArray(apiData.visits)) {
       setVisits((apiData.visits as Record<string, unknown>[]).map((row) => ({
         id: row.id as string,
         homeId: row.home_id as string,
         visitDate: row.visit_date as string,
         visitorName: row.visitor_name as string,
         reportStatus: row.status as Reg44ReportStatus,
-        summary: (row.findings as string) ?? undefined,
-        strengths: undefined,
-        concerns: undefined,
-        childrenViewsSummary: undefined,
-        staffViewsSummary: undefined,
-        managerResponse: undefined,
-        riResponse: undefined,
+        summary: ((row.summary as string) ?? (row.findings as string)) ?? undefined,
+        strengths: (row.strengths as string) ?? undefined,
+        concerns: (row.concerns as string) ?? undefined,
+        childrenViewsSummary: (row.children_views_summary as string) ?? undefined,
+        staffViewsSummary: (row.staff_views_summary as string) ?? undefined,
+        managerResponse: (row.manager_response as string) ?? undefined,
+        riResponse: (row.ri_response as string) ?? undefined,
         createdBy: (row.created_by as string) ?? undefined,
-        createdAt: row.created_at as string,
-        updatedAt: row.created_at as string,
+        createdAt: (row.created_at as string) ?? "",
+        updatedAt: ((row.updated_at as string) ?? (row.created_at as string)) ?? "",
       })));
     }
   }, [apiData]);
+
+  useEffect(() => {
+    if (actionsData?.persisted && Array.isArray(actionsData.actions)) {
+      setActions((actionsData.actions as Record<string, unknown>[]).map((row) => ({
+        id: row.id as string,
+        visitId: row.visit_id as string,
+        homeId: row.home_id as string,
+        title: row.title as string,
+        description: (row.description as string) ?? "",
+        priority: row.priority as Reg44ActionPriority,
+        assignedTo: (row.assigned_to as string) ?? "",
+        dueDate: (row.due_date as string) ?? "",
+        status: row.status as Reg44ActionStatus,
+        managerResponse: (row.manager_response as string) ?? undefined,
+        completedAt: (row.completed_at as string) ?? undefined,
+        evidenceItemId: (row.evidence_item_id as string) ?? undefined,
+        createdBy: (row.created_by as string) ?? undefined,
+        createdAt: (row.created_at as string) ?? "",
+        updatedAt: ((row.updated_at as string) ?? (row.created_at as string)) ?? "",
+      })));
+    }
+  }, [actionsData]);
   const [tab, setTab] = useState("visits");
   const [actionFilter, setActionFilter] = useState<string>("all");
 
@@ -379,6 +202,7 @@ export default function Reg44Page() {
     <PageShell
       title="Regulation 44 — Independent Visits"
       subtitle="Quality Assurance  ·  Monthly Independent Visitor Reports & Actions"
+      ariaContext={{ pageTitle: "Regulation 44 Reports", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" className="gap-1.5">
@@ -399,6 +223,7 @@ export default function Reg44Page() {
             <Plus className="h-3.5 w-3.5" />
             {createVisit.isPending ? "Creating..." : "Add Visit"}
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -797,7 +622,11 @@ export default function Reg44Page() {
           and prepares a written report. Reports must be provided to Ofsted, the placing authority, and the Responsible
           Individual. The RI must ensure any actions arising are addressed promptly and documented.
         </p>
-      </div>
-    </PageShell>
+      </div>      <AriaPanel
+        mode="assist"
+        pageContext="Regulation 44 Reports — independent visitor reports, monthly visits, children's views, staff interviews, premises inspection, action plans, RI responses, statutory compliance, Ofsted evidence"
+        recordType="reg45"
+        className="mt-6"
+      />    </PageShell>
   );
 }

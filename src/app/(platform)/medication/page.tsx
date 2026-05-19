@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { useMedication, useAdminister } from "@/hooks/use-medication";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -22,11 +22,12 @@ import {
   Pill, Plus, AlertTriangle, CheckCircle2, Clock, Package,
   Shield, FileText, Calendar, TriangleAlert, X, ChevronDown,
   ChevronUp, Sparkles, Eye, ClipboardList, TrendingUp, Filter,
-  Info, RefreshCw, Activity, Brain, Search, ArrowUpDown,
+  Info, RefreshCw, Activity, Brain, Search, ArrowUpDown, ArrowUpRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { PageGuidance } from "@/components/ui/page-guidance";
+import Link from "next/link";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -160,8 +161,8 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 pt-3 border-t border-[var(--cs-border)] space-y-3">
-      <div className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Record Administration</div>
+    <form onSubmit={handleSubmit} className="mt-3 pt-3 border-t border-slate-200 space-y-3">
+      <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Record Administration</div>
 
       {/* Status */}
       <div className="grid grid-cols-3 gap-1.5">
@@ -176,7 +177,7 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
                 ? s === "given"
                   ? "bg-emerald-100 border-emerald-300 text-emerald-700"
                   : "bg-red-100 border-red-300 text-red-700"
-                : "bg-white border-[var(--cs-border)] text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)]"
+                : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
             )}
           >
             {s}
@@ -188,32 +189,32 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
         <>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-[var(--cs-text-muted)] font-medium block mb-1">Time given</label>
+              <label className="text-[10px] text-slate-500 font-medium block mb-1">Time given</label>
               <input
                 type="time"
                 value={formData.actual_time}
                 onChange={(e) => setFormData((f) => ({ ...f, actual_time: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
             <div>
-              <label className="text-[10px] text-[var(--cs-text-muted)] font-medium block mb-1">Dose given</label>
+              <label className="text-[10px] text-slate-500 font-medium block mb-1">Dose given</label>
               <input
                 type="text"
                 value={formData.dose_given}
                 onChange={(e) => setFormData((f) => ({ ...f, dose_given: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-[var(--cs-text-muted)] font-medium block mb-1">Administered by</label>
+              <label className="text-[10px] text-slate-500 font-medium block mb-1">Administered by</label>
               <select
                 value={formData.administered_by}
                 onChange={(e) => setFormData((f) => ({ ...f, administered_by: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="">Select staff…</option>
                 {adminActiveStaff.map((s) => (
@@ -222,11 +223,11 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
               </select>
             </div>
             <div>
-              <label className="text-[10px] text-[var(--cs-text-muted)] font-medium block mb-1">Witnessed by</label>
+              <label className="text-[10px] text-slate-500 font-medium block mb-1">Witnessed by</label>
               <select
                 value={formData.witnessed_by}
                 onChange={(e) => setFormData((f) => ({ ...f, witnessed_by: e.target.value }))}
-                className="w-full rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="">Select witness…</option>
                 {adminActiveStaff.map((s) => (
@@ -239,23 +240,23 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
           {isPRN && (
             <>
               <div>
-                <label className="text-[10px] text-[var(--cs-text-muted)] font-medium block mb-1">Reason for PRN administration</label>
+                <label className="text-[10px] text-slate-500 font-medium block mb-1">Reason for PRN administration</label>
                 <input
                   type="text"
                   value={formData.prn_reason}
                   onChange={(e) => setFormData((f) => ({ ...f, prn_reason: e.target.value }))}
                   placeholder="e.g. Headache, pain, allergic reaction…"
-                  className="w-full rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-[var(--cs-text-muted)] font-medium block mb-1">Effectiveness / outcome</label>
+                <label className="text-[10px] text-slate-500 font-medium block mb-1">Effectiveness / outcome</label>
                 <input
                   type="text"
                   value={formData.prn_effectiveness}
                   onChange={(e) => setFormData((f) => ({ ...f, prn_effectiveness: e.target.value }))}
                   placeholder="e.g. Headache resolved within 30 minutes…"
-                  className="w-full rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </div>
             </>
@@ -263,7 +264,7 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
         </>
       ) : (
         <div>
-          <label className="text-[10px] text-[var(--cs-text-muted)] font-medium block mb-1">
+          <label className="text-[10px] text-slate-500 font-medium block mb-1">
             Reason {formData.status === "refused" ? "for refusal" : "not given"}
           </label>
           <input
@@ -271,19 +272,19 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
             value={formData.reason_not_given}
             onChange={(e) => setFormData((f) => ({ ...f, reason_not_given: e.target.value }))}
             placeholder={formData.status === "refused" ? "e.g. YP declined, distressed…" : "e.g. YP not present…"}
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
       )}
 
       <div>
-        <label className="text-[10px] text-[var(--cs-text-muted)] font-medium block mb-1">Notes</label>
+        <label className="text-[10px] text-slate-500 font-medium block mb-1">Notes</label>
         <textarea
           value={formData.notes}
           onChange={(e) => setFormData((f) => ({ ...f, notes: e.target.value }))}
           placeholder="Any observations, reactions or relevant context…"
           rows={2}
-          className="w-full rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
 
@@ -311,7 +312,7 @@ function MARCell({ admin, isScheduled, dateStr }: MARCellProps) {
   const isFuture = dateStr > today;
 
   if (!admin && !isFuture && !isScheduled) {
-    return <div className="h-8 w-8 rounded-full bg-slate-100 border border-[var(--cs-border)] mx-auto" title="No dose scheduled" />;
+    return <div className="h-8 w-8 rounded-full bg-slate-100 border border-slate-200 mx-auto" title="No dose scheduled" />;
   }
 
   if (isFuture || (isScheduled && !admin)) {
@@ -325,7 +326,7 @@ function MARCell({ admin, isScheduled, dateStr }: MARCellProps) {
   }
 
   if (!admin) {
-    return <div className="h-8 w-8 rounded-full bg-slate-100 border border-[var(--cs-border)] mx-auto" />;
+    return <div className="h-8 w-8 rounded-full bg-slate-100 border border-slate-200 mx-auto" />;
   }
 
   const cfg = (STATUS_CONFIG as unknown as Record<string, typeof STATUS_CONFIG.given>)[admin.status] ?? STATUS_CONFIG.missed;
@@ -361,19 +362,19 @@ function MARCell({ admin, isScheduled, dateStr }: MARCellProps) {
         <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 rounded-xl bg-slate-900 text-white text-[10px] p-3 shadow-xl pointer-events-none">
           <div className="font-bold capitalize mb-1">{admin.status}</div>
           {admin.actual_time && (
-            <div>Given at: <span className="text-[var(--cs-text-gentle)]">{formatTime(admin.actual_time)}</span></div>
+            <div>Given at: <span className="text-slate-300">{formatTime(admin.actual_time)}</span></div>
           )}
           {admin.scheduled_time && (
-            <div>Scheduled: <span className="text-[var(--cs-text-gentle)]">{formatTime(admin.scheduled_time)}</span></div>
+            <div>Scheduled: <span className="text-slate-300">{formatTime(admin.scheduled_time)}</span></div>
           )}
           {admin.administered_by && (
-            <div>By: <span className="text-[var(--cs-text-gentle)]">{getStaffName(admin.administered_by)}</span></div>
+            <div>By: <span className="text-slate-300">{getStaffName(admin.administered_by)}</span></div>
           )}
           {admin.witnessed_by && (
-            <div>Witness: <span className="text-[var(--cs-text-gentle)]">{getStaffName(admin.witnessed_by)}</span></div>
+            <div>Witness: <span className="text-slate-300">{getStaffName(admin.witnessed_by)}</span></div>
           )}
           {admin.notes && (
-            <div className="mt-1 text-[var(--cs-text-muted)] border-t border-slate-700 pt-1">{admin.notes}</div>
+            <div className="mt-1 text-slate-400 border-t border-slate-700 pt-1">{admin.notes}</div>
           )}
           {admin.reason_not_given && (
             <div className="mt-1 text-amber-300">{admin.reason_not_given}</div>
@@ -481,21 +482,21 @@ function TodayScheduleTab({
             label: "Exceptions This Week",
             value: meta.exceptions_this_week ?? exceptions.length,
             sub: "need review",
-            color: exceptions.length > 0 ? "text-red-600" : "text-[var(--cs-text-muted)]",
+            color: exceptions.length > 0 ? "text-red-600" : "text-slate-400",
             bg: exceptions.length > 0 ? "bg-red-50" : "bg-slate-50",
           },
           {
             label: "Stock Alerts",
             value: stockAlerts.length,
             sub: "low stock",
-            color: stockAlerts.length > 0 ? "text-amber-600" : "text-[var(--cs-text-muted)]",
+            color: stockAlerts.length > 0 ? "text-amber-600" : "text-slate-400",
             bg: stockAlerts.length > 0 ? "bg-amber-50" : "bg-slate-50",
           },
         ].map(({ label, value, sub, color, bg }) => (
           <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
             <div className={cn("text-3xl font-bold", color)}>{value}</div>
-            <div className="text-xs font-semibold text-[var(--cs-text-secondary)] mt-0.5">{label}</div>
-            <div className="text-[10px] text-[var(--cs-text-muted)]">{sub}</div>
+            <div className="text-xs font-semibold text-slate-700 mt-0.5">{label}</div>
+            <div className="text-[10px] text-slate-500">{sub}</div>
           </div>
         ))}
       </div>
@@ -529,7 +530,7 @@ function TodayScheduleTab({
 
       {/* Search */}
       <div className="relative max-w-sm">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
         <Input
           placeholder="Search young person or medication…"
           value={schedSearch}
@@ -539,7 +540,7 @@ function TodayScheduleTab({
       </div>
 
       {schedSearch && (
-        <p className="text-xs text-[var(--cs-text-muted)]">
+        <p className="text-xs text-slate-400">
           {byYP.length} result{byYP.length !== 1 ? "s" : ""}
         </p>
       )}
@@ -550,11 +551,11 @@ function TodayScheduleTab({
         return (
           <div key={yp.id} className="rounded-2xl border bg-white overflow-hidden">
             {/* YP header */}
-            <div className="flex items-center gap-3 px-5 py-4 bg-slate-50/80 border-b border-[var(--cs-border-subtle)]">
+            <div className="flex items-center gap-3 px-5 py-4 bg-slate-50/80 border-b border-slate-100">
               <Avatar name={yp.preferred_name || yp.first_name} size="md" />
               <div className="flex-1">
-                <div className="font-bold text-[var(--cs-navy)]">{yp.preferred_name || yp.first_name}</div>
-                <div className="text-xs text-[var(--cs-text-muted)]">{entries.length} medication{entries.length !== 1 ? "s" : ""} active</div>
+                <div className="font-bold text-slate-900">{yp.preferred_name || yp.first_name}</div>
+                <div className="text-xs text-slate-500">{entries.length} medication{entries.length !== 1 ? "s" : ""} active</div>
               </div>
               {ypExceptions.length > 0 && (
                 <Badge variant="destructive" className="gap-1">
@@ -601,8 +602,8 @@ function TodayScheduleTab({
                       {/* Medication info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-[var(--cs-navy)]">{med.name}</span>
-                          <span className="text-sm text-[var(--cs-text-muted)]">{med.dosage}</span>
+                          <span className="font-semibold text-slate-900">{med.name}</span>
+                          <span className="text-sm text-slate-500">{med.dosage}</span>
                           <Badge className={cn("text-[10px] rounded-full border-0 capitalize", TYPE_STYLES[med.type])}>
                             {med.type}
                           </Badge>
@@ -611,10 +612,19 @@ function TodayScheduleTab({
                               {(STATUS_CONFIG as unknown as Record<string, typeof STATUS_CONFIG.given>)[status]?.label ?? status}
                             </Badge>
                           )}
-                          <AriaUsageBadge ariaAssisted={(med as any).aria_assist_used} sourceTable="medications" recordId={med.id} />
+                          {admin && (admin as never as { care_event_id?: string }).care_event_id && (
+                            <Link
+                              href={`/care-events/${(admin as never as { care_event_id: string }).care_event_id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                            >
+                              <ArrowUpRight className="h-3 w-3" />
+                              From Care Event
+                            </Link>
+                          )}
                         </div>
 
-                        <div className="flex items-center gap-4 mt-1 text-xs text-[var(--cs-text-muted)]">
+                        <div className="flex items-center gap-4 mt-1 text-xs text-slate-500">
                           {isPRN ? (
                             <span>As needed — {med.frequency}</span>
                           ) : (
@@ -645,10 +655,10 @@ function TodayScheduleTab({
                               {STATUS_CONFIG[status!]?.label}
                             </span>
                             {admin?.reason_not_given && (
-                              <span className="text-[var(--cs-text-secondary)]"> — {admin.reason_not_given}</span>
+                              <span className="text-slate-600"> — {admin.reason_not_given}</span>
                             )}
                             {admin?.notes && (
-                              <span className="text-[var(--cs-text-muted)]"> · {admin.notes}</span>
+                              <span className="text-slate-500"> · {admin.notes}</span>
                             )}
                           </div>
                         )}
@@ -703,15 +713,15 @@ function TodayScheduleTab({
                           </div>
                         )}
 
-                        {/* ARIA draft button */}
+                        {/* Aria draft button */}
                         {admin && (
                           <div className="mt-2">
                             <button
                               onClick={() => setAriaFor(showAria ? null : formKey)}
-                              className="flex items-center gap-1.5 text-[10px] text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)] font-medium"
+                              className="flex items-center gap-1.5 text-[10px] text-violet-600 hover:text-violet-700 font-medium"
                             >
                               <Sparkles className="h-3 w-3" />
-                              {showAria ? "Close ARIA" : "Draft note with ARIA"}
+                              {showAria ? "Close Aria" : "Draft note with Aria"}
                             </button>
                           </div>
                         )}
@@ -720,7 +730,7 @@ function TodayScheduleTab({
                           <div className="mt-3">
                             <AriaPanel
                               mode="write"
-                              pageContext="Medication administration"
+                              pageContext="Medication Administration — record a medication administration, prescribed dose, time given, staff signature, child response, any errors or near-misses"
                               recordType="medication_note"
                               sourceContent={`${med.name} ${med.dosage} — ${admin.status} at ${formatTime(admin.actual_time ?? admin.scheduled_time)} for ${getYPName(med.child_id)}. ${admin.notes ?? ""} ${admin.reason_not_given ? "Reason: " + admin.reason_not_given : ""}`}
                               defaultStyle="professional_formal"
@@ -763,8 +773,8 @@ function MARChartTab({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-sm font-semibold text-[var(--cs-navy)]">7-Day Medication Administration Record</div>
-          <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">{formatShortDate(days[0])} — {formatShortDate(days[6])}</div>
+          <div className="text-sm font-semibold text-slate-900">7-Day Medication Administration Record</div>
+          <div className="text-xs text-slate-500 mt-0.5">{formatShortDate(days[0])} — {formatShortDate(days[6])}</div>
         </div>
         <Button variant="outline" size="sm" className="text-xs">
           <FileText className="h-3.5 w-3.5" />
@@ -775,9 +785,9 @@ function MARChartTab({
       {byYP.map(({ yp, mar: ypMAR }) => (
         <div key={yp.id} className="rounded-2xl border bg-white overflow-hidden">
           {/* YP header */}
-          <div className="flex items-center gap-3 px-5 py-3 bg-slate-50 border-b border-[var(--cs-border-subtle)]">
+          <div className="flex items-center gap-3 px-5 py-3 bg-slate-50 border-b border-slate-100">
             <Avatar name={yp.preferred_name || yp.first_name} size="sm" />
-            <div className="font-semibold text-[var(--cs-navy)] text-sm">{yp.preferred_name || yp.first_name}</div>
+            <div className="font-semibold text-slate-900 text-sm">{yp.preferred_name || yp.first_name}</div>
             {yp.allergies.length > 0 && (
               <Badge variant="warning" className="text-[10px] ml-1">
                 <Shield className="h-3 w-3" />Allergies: {yp.allergies.join(", ")}
@@ -789,14 +799,14 @@ function MARChartTab({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px]">
               <thead>
-                <tr className="border-b border-[var(--cs-border-subtle)]">
-                  <th className="text-left px-5 py-3 text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider w-48">Medication</th>
+                <tr className="border-b border-slate-100">
+                  <th className="text-left px-5 py-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider w-48">Medication</th>
                   {days.map((d) => (
                     <th
                       key={d}
                       className={cn(
                         "text-center px-2 py-3 text-[10px] font-semibold uppercase tracking-wider min-w-[72px]",
-                        d === today ? "text-blue-600 bg-blue-50/50" : "text-[var(--cs-text-muted)]"
+                        d === today ? "text-blue-600 bg-blue-50/50" : "text-slate-500"
                       )}
                     >
                       <div>{getDayLabel(d)}</div>
@@ -809,10 +819,10 @@ function MARChartTab({
                 {ypMAR.map(({ medication: med, administrations }) => {
                   const isPRN = med.type === "prn";
                   return (
-                    <tr key={med.id} className="hover:bg-[var(--cs-surface)]/50 transition-colors">
+                    <tr key={med.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-5 py-3.5">
-                        <div className="font-medium text-xs text-[var(--cs-navy)]">{med.name}</div>
-                        <div className="text-[10px] text-[var(--cs-text-muted)]">{med.dosage}</div>
+                        <div className="font-medium text-xs text-slate-900">{med.name}</div>
+                        <div className="text-[10px] text-slate-500">{med.dosage}</div>
                         <Badge className={cn("text-[9px] rounded-full border-0 capitalize mt-1", TYPE_STYLES[med.type])}>
                           {med.type}
                         </Badge>
@@ -833,11 +843,11 @@ function MARChartTab({
                                     <MARCell key={i} admin={a} dateStr={d} />
                                   ))}
                                   {dayAdmins.length > 1 && (
-                                    <span className="text-[9px] text-[var(--cs-text-muted)]">{dayAdmins.length}x</span>
+                                    <span className="text-[9px] text-slate-400">{dayAdmins.length}x</span>
                                   )}
                                 </div>
                               ) : (
-                                <div className="h-8 w-8 mx-auto rounded-full border border-dashed border-[var(--cs-border)]" title="PRN — not given" />
+                                <div className="h-8 w-8 mx-auto rounded-full border border-dashed border-slate-200" title="PRN — not given" />
                               )
                             ) : (
                               <MARCell
@@ -860,17 +870,17 @@ function MARChartTab({
 
       {/* Legend */}
       <div className="rounded-2xl border bg-white px-5 py-4">
-        <div className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-3">Legend</div>
+        <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Legend</div>
         <div className="flex flex-wrap items-center gap-5">
           {[
             { el: <div className="h-6 w-6 rounded-full bg-emerald-500 border-2 border-emerald-600 flex items-center justify-center"><CheckCircle2 className="h-3.5 w-3.5 text-white" /></div>, label: "Given" },
             { el: <div className="h-6 w-6 rounded-full bg-amber-400 border-2 border-amber-500 flex items-center justify-center"><Clock className="h-3.5 w-3.5 text-white" /></div>, label: "Late" },
             { el: <div className="h-6 w-6 rounded-full bg-red-500 border-2 border-red-600 flex items-center justify-center"><X className="h-3.5 w-3.5 text-white" /></div>, label: "Refused / Missed" },
             { el: <div className="h-6 w-6 rounded-full bg-blue-200 border-2 border-blue-300 flex items-center justify-center"><div className="h-2 w-2 rounded-full bg-blue-500" /></div>, label: "Scheduled (today)" },
-            { el: <div className="h-6 w-6 rounded-full bg-slate-100 border border-[var(--cs-border)]" />, label: "Not scheduled" },
-            { el: <div className="h-6 w-6 rounded-full border border-dashed border-[var(--cs-border)]" />, label: "PRN — not given" },
+            { el: <div className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200" />, label: "Not scheduled" },
+            { el: <div className="h-6 w-6 rounded-full border border-dashed border-slate-200" />, label: "PRN — not given" },
           ].map(({ el, label }) => (
-            <div key={label} className="flex items-center gap-2 text-xs text-[var(--cs-text-secondary)]">
+            <div key={label} className="flex items-center gap-2 text-xs text-slate-600">
               {el}
               <span>{label}</span>
             </div>
@@ -936,34 +946,34 @@ function PRNLogTab({
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-2xl border bg-white p-4">
           <div className="text-2xl font-bold text-amber-600">{prnAdmins.length}</div>
-          <div className="text-xs font-semibold text-[var(--cs-text-secondary)]">Total PRN administrations</div>
+          <div className="text-xs font-semibold text-slate-700">Total PRN administrations</div>
         </div>
         <div className="rounded-2xl border bg-white p-4">
-          <div className="text-sm font-bold text-[var(--cs-navy)] leading-tight">{topReason ? topReason[0] : "—"}</div>
-          <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">Most common reason</div>
-          {topReason && <div className="text-[10px] text-[var(--cs-text-muted)]">{topReason[1]} time{topReason[1] !== 1 ? "s" : ""}</div>}
+          <div className="text-sm font-bold text-slate-900 leading-tight">{topReason ? topReason[0] : "—"}</div>
+          <div className="text-xs text-slate-500 mt-0.5">Most common reason</div>
+          {topReason && <div className="text-[10px] text-slate-400">{topReason[1]} time{topReason[1] !== 1 ? "s" : ""}</div>}
         </div>
         <div className="rounded-2xl border bg-white p-4">
           <div className="space-y-1">
             {Object.entries(perYP).map(([ypId, count]) => (
               <div key={ypId} className="flex items-center justify-between text-xs">
-                <span className="text-[var(--cs-text-secondary)]">{getYPName(ypId)}</span>
+                <span className="text-slate-700">{getYPName(ypId)}</span>
                 <span className="font-bold text-amber-600">{count}</span>
               </div>
             ))}
           </div>
-          <div className="text-[10px] text-[var(--cs-text-muted)] mt-1">PRN use per young person</div>
+          <div className="text-[10px] text-slate-500 mt-1">PRN use per young person</div>
         </div>
       </div>
 
       {/* Filters + Add */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2 bg-white border rounded-xl px-3 py-2">
-          <Filter className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+          <Filter className="h-3.5 w-3.5 text-slate-400" />
           <select
             value={filterYP}
             onChange={(e) => setFilterYP(e.target.value)}
-            className="text-xs text-[var(--cs-text-secondary)] bg-transparent focus:outline-none"
+            className="text-xs text-slate-700 bg-transparent focus:outline-none"
           >
             <option value="">All young people</option>
             {prnAllYP.map((yp) => (
@@ -972,11 +982,11 @@ function PRNLogTab({
           </select>
         </div>
         <div className="flex items-center gap-2 bg-white border rounded-xl px-3 py-2">
-          <Pill className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
+          <Pill className="h-3.5 w-3.5 text-slate-400" />
           <select
             value={filterMed}
             onChange={(e) => setFilterMed(e.target.value)}
-            className="text-xs text-[var(--cs-text-secondary)] bg-transparent focus:outline-none"
+            className="text-xs text-slate-700 bg-transparent focus:outline-none"
           >
             <option value="">All PRN medications</option>
             {prnMeds.map((m) => (
@@ -999,53 +1009,66 @@ function PRNLogTab({
       {/* PRN table */}
       <div className="rounded-2xl border bg-white overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="p-10 text-center text-[var(--cs-text-muted)] text-sm">
+          <div className="p-10 text-center text-slate-400 text-sm">
             No PRN administrations recorded{filterYP || filterMed ? " for this filter" : ""}.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px]">
-              <thead className="bg-slate-50 border-b border-[var(--cs-border-subtle)]">
+              <thead className="bg-slate-50 border-b border-slate-100">
                 <tr>
-                  {["Date / Time", "Young Person", "Medication", "Reason Given", "Dose", "Administered By", "Outcome"].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">{h}</th>
+                  {["Date / Time", "Young Person", "Medication", "Reason Given", "Dose", "Administered By", "Outcome", "Source"].map((h) => (
+                    <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {filtered.map(({ admin, med }) => (
-                  <tr key={admin.id} className="hover:bg-[var(--cs-surface)]/50 transition-colors">
+                  <tr key={admin.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="text-xs font-medium text-[var(--cs-navy)]">{formatDate(admin.actual_time ?? admin.scheduled_time)}</div>
-                      <div className="text-[10px] text-[var(--cs-text-muted)]">{formatTime(admin.actual_time ?? admin.scheduled_time)}</div>
+                      <div className="text-xs font-medium text-slate-900">{formatDate(admin.actual_time ?? admin.scheduled_time)}</div>
+                      <div className="text-[10px] text-slate-500">{formatTime(admin.actual_time ?? admin.scheduled_time)}</div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Avatar name={getYPName(med.child_id)} size="xs" />
-                        <span className="text-xs text-[var(--cs-navy)]">{getYPName(med.child_id)}</span>
+                        <span className="text-xs text-slate-900">{getYPName(med.child_id)}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-xs font-medium text-[var(--cs-navy)]">{med.name}</div>
-                      <div className="text-[10px] text-[var(--cs-text-muted)]">{med.dosage}</div>
+                      <div className="text-xs font-medium text-slate-900">{med.name}</div>
+                      <div className="text-[10px] text-slate-500">{med.dosage}</div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs text-[var(--cs-text-secondary)]">
-                        {admin.prn_reason || admin.notes || <span className="text-[var(--cs-text-muted)] italic">Not recorded</span>}
+                      <span className="text-xs text-slate-700">
+                        {admin.prn_reason || admin.notes || <span className="text-slate-400 italic">Not recorded</span>}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs text-[var(--cs-text-secondary)]">{admin.dose_given || med.dosage}</span>
+                      <span className="text-xs text-slate-700">{admin.dose_given || med.dosage}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs text-[var(--cs-text-secondary)]">
-                        {admin.administered_by ? getStaffName(admin.administered_by) : <span className="text-[var(--cs-text-muted)] italic">Unknown</span>}
+                      <span className="text-xs text-slate-700">
+                        {admin.administered_by ? getStaffName(admin.administered_by) : <span className="text-slate-400 italic">Unknown</span>}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs text-[var(--cs-text-secondary)]">
-                        {admin.prn_effectiveness || <span className="text-[var(--cs-text-muted)] italic">Not recorded</span>}
+                      <span className="text-xs text-slate-600">
+                        {admin.prn_effectiveness || <span className="text-slate-400 italic">Not recorded</span>}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {(admin as never as { care_event_id?: string }).care_event_id ? (
+                        <Link
+                          href={`/care-events/${(admin as never as { care_event_id: string }).care_event_id}`}
+                          className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                        >
+                          <ArrowUpRight className="h-3 w-3" />
+                          Care Event
+                        </Link>
+                      ) : (
+                        <span className="text-slate-400 text-[10px] italic">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -1079,7 +1102,7 @@ function StockOversightTab({
 
   // Traffic light for stock
   const stockLight = (count: number | null) => {
-    if (count === null) return "bg-slate-100 text-[var(--cs-text-muted)]";
+    if (count === null) return "bg-slate-100 text-slate-500";
     if (count < 5) return "bg-red-100 text-red-700 font-bold";
     if (count < 10) return "bg-amber-100 text-amber-700 font-bold";
     return "bg-emerald-100 text-emerald-700";
@@ -1117,7 +1140,7 @@ function StockOversightTab({
       {/* Stock overview */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-[var(--cs-navy)]">Stock Levels</h3>
+          <h3 className="text-sm font-bold text-slate-900">Stock Levels</h3>
           <Button
             size="sm"
             variant="outline"
@@ -1129,10 +1152,10 @@ function StockOversightTab({
         </div>
         <div className="rounded-2xl border bg-white overflow-hidden">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-[var(--cs-border-subtle)]">
+            <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
                 {["Young Person", "Medication", "Type", "Stock Count", "Last Checked", "Status", "Action"].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -1140,16 +1163,16 @@ function StockOversightTab({
               {activeMeds.map((med) => {
                 const sl = stockLabel(med.stock_count);
                 return (
-                  <tr key={med.id} className="hover:bg-[var(--cs-surface)]/50 transition-colors">
+                  <tr key={med.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Avatar name={getYPName(med.child_id)} size="xs" />
-                        <span className="text-xs text-[var(--cs-navy)]">{getYPName(med.child_id)}</span>
+                        <span className="text-xs text-slate-900">{getYPName(med.child_id)}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-xs font-medium text-[var(--cs-navy)]">{med.name}</div>
-                      <div className="text-[10px] text-[var(--cs-text-muted)]">{med.dosage}</div>
+                      <div className="text-xs font-medium text-slate-900">{med.name}</div>
+                      <div className="text-[10px] text-slate-500">{med.dosage}</div>
                     </td>
                     <td className="px-4 py-3">
                       <Badge className={cn("text-[10px] rounded-full border-0 capitalize", TYPE_STYLES[med.type])}>
@@ -1162,7 +1185,7 @@ function StockOversightTab({
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs text-[var(--cs-text-muted)]">
+                      <span className="text-xs text-slate-500">
                         {med.stock_last_checked ? formatDate(med.stock_last_checked) : "Not checked"}
                       </span>
                     </td>
@@ -1194,13 +1217,13 @@ function StockOversightTab({
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Shield className="h-4 w-4 text-red-600" />
-          <h3 className="text-sm font-bold text-[var(--cs-navy)]">Controlled Drugs Register</h3>
+          <h3 className="text-sm font-bold text-slate-900">Controlled Drugs Register</h3>
         </div>
         {controlledMeds.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--cs-border)] bg-slate-50 p-8 text-center">
-            <Shield className="h-8 w-8 text-[var(--cs-text-gentle)] mx-auto mb-2" />
-            <div className="text-sm text-[var(--cs-text-muted)] font-medium">No controlled drugs currently in use</div>
-            <div className="text-xs text-[var(--cs-text-muted)] mt-1">
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
+            <Shield className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+            <div className="text-sm text-slate-500 font-medium">No controlled drugs currently in use</div>
+            <div className="text-xs text-slate-400 mt-1">
               When controlled medications are added, they will appear here with full CD register tracking.
             </div>
           </div>
@@ -1226,7 +1249,7 @@ function StockOversightTab({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <h3 className="text-sm font-bold text-[var(--cs-navy)]">Medication Exceptions Audit</h3>
+            <h3 className="text-sm font-bold text-slate-900">Medication Exceptions Audit</h3>
           </div>
           <Badge variant={exceptionAdmins.length > 0 ? "warning" : "success"}>
             {exceptionAdmins.length} total exception{exceptionAdmins.length !== 1 ? "s" : ""}
@@ -1234,7 +1257,7 @@ function StockOversightTab({
         </div>
 
         {exceptionAdmins.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--cs-border)] bg-emerald-50 p-8 text-center">
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-emerald-50 p-8 text-center">
             <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
             <div className="text-sm text-emerald-700 font-medium">No exceptions recorded</div>
             <div className="text-xs text-emerald-600 mt-1">All medications administered as prescribed.</div>
@@ -1242,26 +1265,26 @@ function StockOversightTab({
         ) : (
           <div className="rounded-2xl border bg-white overflow-hidden">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-[var(--cs-border-subtle)]">
+              <thead className="bg-slate-50 border-b border-slate-100">
                 <tr>
                   {["Date", "Young Person", "Medication", "Exception", "Reason / Notes", "Oversight Status", "Training"].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {exceptionAdmins.map(({ admin, med }) => (
-                  <tr key={admin.id} className="hover:bg-[var(--cs-surface)]/50 transition-colors">
-                    <td className="px-4 py-3 text-xs text-[var(--cs-text-secondary)]">{formatDate(admin.scheduled_time)}</td>
+                  <tr key={admin.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-4 py-3 text-xs text-slate-700">{formatDate(admin.scheduled_time)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Avatar name={getYPName(med.child_id)} size="xs" />
-                        <span className="text-xs text-[var(--cs-navy)]">{getYPName(med.child_id)}</span>
+                        <span className="text-xs text-slate-900">{getYPName(med.child_id)}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-xs font-medium text-[var(--cs-navy)]">{med.name}</div>
-                      <div className="text-[10px] text-[var(--cs-text-muted)]">{med.dosage}</div>
+                      <div className="text-xs font-medium text-slate-900">{med.name}</div>
+                      <div className="text-[10px] text-slate-500">{med.dosage}</div>
                     </td>
                     <td className="px-4 py-3">
                       <Badge
@@ -1271,8 +1294,8 @@ function StockOversightTab({
                         {admin.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-xs text-[var(--cs-text-secondary)]">
-                      {admin.reason_not_given || admin.notes || <span className="text-[var(--cs-text-muted)] italic">No notes</span>}
+                    <td className="px-4 py-3 text-xs text-slate-600">
+                      {admin.reason_not_given || admin.notes || <span className="text-slate-400 italic">No notes</span>}
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant="secondary" className="text-[10px]">Pending RM review</Badge>
@@ -1286,7 +1309,7 @@ function StockOversightTab({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 px-2 text-[10px] gap-1 text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)]"
+                          className="h-6 px-2 text-[10px] gap-1 text-violet-600 hover:text-violet-700 hover:bg-violet-50"
                           disabled={createNeed.isPending}
                           onClick={() => {
                             createNeed.mutate(
@@ -1316,25 +1339,25 @@ function StockOversightTab({
         )}
       </div>
 
-      {/* RM Oversight with ARIA */}
+      {/* RM Oversight with Aria */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-[var(--cs-aria-gold)]" />
-            <h3 className="text-sm font-bold text-[var(--cs-navy)]">Management Oversight</h3>
+            <Eye className="h-4 w-4 text-violet-600" />
+            <h3 className="text-sm font-bold text-slate-900">Management Oversight</h3>
           </div>
           <button
             onClick={() => setShowAria(!showAria)}
-            className="flex items-center gap-1.5 text-xs text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)] font-medium"
+            className="flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-700 font-medium"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            {showAria ? "Close ARIA" : "Draft oversight with ARIA"}
+            {showAria ? "Close Aria" : "Draft oversight with Aria"}
           </button>
         </div>
 
         <div className="rounded-2xl border bg-amber-50/40 border-amber-200 p-5">
-          <div className="text-sm text-[var(--cs-text-secondary)] mb-3">
-            <span className="font-semibold text-[var(--cs-navy)]">{unreviewedExceptions.length}</span> medication exception{unreviewedExceptions.length !== 1 ? "s" : ""} currently require RM oversight comment. Use ARIA to draft your oversight narrative.
+          <div className="text-sm text-slate-700 mb-3">
+            <span className="font-semibold text-slate-900">{unreviewedExceptions.length}</span> medication exception{unreviewedExceptions.length !== 1 ? "s" : ""} currently require RM oversight comment. Use Aria to draft your oversight narrative.
           </div>
 
           {unreviewedExceptions.length > 0 && (
@@ -1346,9 +1369,9 @@ function StockOversightTab({
                     admin.status === "late" ? "bg-amber-400" : "bg-red-500"
                   )} />
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-medium text-[var(--cs-navy)]">{med.name}</span>
-                    <span className="text-xs text-[var(--cs-text-muted)]"> · {getYPName(med.child_id)}</span>
-                    <span className="text-xs text-[var(--cs-text-muted)]"> · {formatDate(admin.scheduled_time)}</span>
+                    <span className="text-xs font-medium text-slate-900">{med.name}</span>
+                    <span className="text-xs text-slate-500"> · {getYPName(med.child_id)}</span>
+                    <span className="text-xs text-slate-400"> · {formatDate(admin.scheduled_time)}</span>
                   </div>
                   <Badge variant={admin.status === "late" ? "warning" : "destructive"} className="text-[10px] capitalize shrink-0">
                     {admin.status}
@@ -1361,7 +1384,7 @@ function StockOversightTab({
           {showAria && (
             <AriaPanel
               mode="oversee"
-              pageContext="Medication oversight"
+              pageContext="Medication Oversight — MAR chart review, administration accuracy, missed doses, controlled drugs, medication errors, storage checks, prescriptions, GP liaison"
               recordType="medication_exception_oversight"
               sourceContent={exceptionContext}
               linkedRecords="medication_exceptions, MAR, incidents"
@@ -1436,6 +1459,7 @@ export default function MedicationPage() {
     <PageShell
       title="Medication"
       subtitle={`${medications.length} active medications · ${ypCount} young people`}
+      ariaContext={{ pageTitle: "Care Events — Medication", sourceType: "medication" }}
       quickCreateContext={{ module: "medication", defaultTaskCategory: "medication" }}
       actions={
         <div className="flex gap-2">
@@ -1460,21 +1484,14 @@ export default function MedicationPage() {
           >
             <Plus className="h-3.5 w-3.5" />Add Medication
           </Button>
+          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div className="space-y-5 animate-fade-in">
-        <PageGuidance
-          title="Medication administration"
-          description="Track all prescribed medications, record administrations on the MAR chart, and flag missed doses or exceptions. Two-staff verification is required for controlled drugs."
-          evidenceTip="Ofsted assess MAR accuracy closely. Every missed dose needs a clear reason recorded. Audit your MAR weekly against prescriptions."
-          ariaTip="ARIA monitors medication patterns and can flag unusual exception rates or children consistently refusing medication."
-          regulationRef="Children's Homes Regulations 2015, Reg 23 — Health of children"
-          variant="compliance"
-        />
         {/* Loading / Error state */}
         {isLoading && (
-          <div className="flex items-center justify-center py-20 text-[var(--cs-text-muted)]">
+          <div className="flex items-center justify-center py-20 text-slate-400">
             <RefreshCw className="h-6 w-6 animate-spin mr-3" />
             <span className="text-sm">Loading medication records…</span>
           </div>
@@ -1499,8 +1516,8 @@ export default function MedicationPage() {
                   className={cn(
                     "flex-1 flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
                     activeTab === id
-                      ? "bg-white text-[var(--cs-navy)] shadow-sm"
-                      : "text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] hover:bg-white/50"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -1538,6 +1555,14 @@ export default function MedicationPage() {
           </>
         )}
       </div>
+
+      {/* Care Events pipeline — medication events routed here */}
+      <CareEventsPanel
+        title="Care Events — Medication"
+        category="medication"
+        days={28}
+        defaultCollapsed
+      />
     </PageShell>
   );
 }

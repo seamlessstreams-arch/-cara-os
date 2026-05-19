@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,9 @@ import { usePostIncidentChildDebriefs } from "@/hooks/use-post-incident-child-de
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { PostIncidentChildDebrief, ChildDebriefMethod } from "@/types/extended";
 import { CHILD_DEBRIEF_METHOD_LABEL } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -110,10 +113,12 @@ export default function PostIncidentDebriefWithChildPage() {
     <PageShell
       title="Post-Incident Debrief with Child"
       subtitle="Restorative · Child-Led Reflection · Quality Standard 5 · Repair & Forward Planning"
+      ariaContext={{ pageTitle: "Post-Incident Debrief with Child", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Post-Incident Debrief with Child" />
           <ExportButton data={records} columns={exportCols} filename="child-debriefs" />
+          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -394,6 +399,18 @@ export default function PostIncidentDebriefWithChildPage() {
           </p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Behaviour & Safeguarding"
+        category={["behaviour", "safeguarding", "physical_intervention"]}
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Post-Incident Debrief with Child — child's perspective on incident, impact, feelings, understanding, learning, agreement, future support, Regulation 40 evidence, safeguarding evidence"
+        recordType="incident"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

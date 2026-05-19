@@ -13,7 +13,7 @@ import {
   HeartHandshake,
   Loader2,
 } from "lucide-react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,9 @@ import type {
 } from "@/types/extended";
 import { useCamhsReferrals } from "@/hooks/use-camhs-referrals";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── label maps ───────────────────────────────────────────────────────── */
 
@@ -181,10 +184,12 @@ export default function CamhsReferralTrackerPage() {
     <PageShell
       title="CAMHS Referral Tracker"
       subtitle="Quality Standard 7 (Health) — CAMHS referrals from initial concern to ongoing engagement"
+      ariaContext={{ pageTitle: "CAMHS Referral Tracker", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="camhs-referrals" />
           <PrintButton title="CAMHS Referral Tracker" />
+          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -330,6 +335,18 @@ export default function CamhsReferralTrackerPage() {
           <strong>Quality Standard 7 (Health) &amp; Working Together 2023</strong> — Children must be supported to access timely health care, including specialist mental health services. CAMHS referrals must be tracked from initial concern through triage, waiting period, first appointment and ongoing engagement. Where waits are long, the home must agree interim support and clearly documented escalation options. The child&apos;s view of the referral and intervention must be recorded and revisited at every review.
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Health"
+        category="health"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="CAMHS Referral Tracker — CAMHS referrals, waiting times, tier levels, mental health assessment, therapeutic input, psychiatric review, crisis plan, AHA, LAC health"
+        recordType="health"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

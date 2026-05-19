@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,9 @@ import { getStaffName } from "@/lib/seed-data";
 import { useAdoptionRecords } from "@/hooks/use-adoption-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AdoptionStatus, AdoptionIntroductionPhase, AdoptionRecord } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -135,9 +138,11 @@ export default function AdoptionSupportRecordsPage() {
     <PageShell
       title="Adoption Support Records"
       subtitle="Tracking children whose care plan is adoption — preparation, introductions, post-placement support"
+      ariaContext={{ pageTitle: "Adoption Support Records", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Adoption Support Records" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="adoption-support-records" />,
+        <AriaStudioQuickActionButton key="a" context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -345,6 +350,18 @@ export default function AdoptionSupportRecordsPage() {
           <p>Adoption and Children Act 2002 — sets the legal framework for adoption in England, including welfare paramountcy, placement orders, contact and adoption support services. Adoption Support Services Regulations 2005 — entitlement of adopted children and adoptive families to assessment for adoption support. Children&apos;s Homes (England) Regulations 2015 — the home must promote the welfare of each child, support permanence planning and prepare children for transitions in line with their care plan. Adoption Statutory Guidance 2013 — life story work, later life letters and well-planned introductions are core practice expectations. Records must be retained securely; later life information must be available to the child in adulthood.</p>
         </div>
       </div>
+      <CareEventsPanel
+        title="Care Events — Care Planning"
+        category="general"
+        days={28}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Adoption Support Records — post-adoption support, ASF, therapeutic intervention, contact arrangements, adoption breakdown prevention, support plans, court orders, letterbox"
+        recordType="placement_plan"
+        className="mt-6"
+      />
     </PageShell>
   );
 }

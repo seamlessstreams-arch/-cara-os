@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { PageShell } from "@/components/ui/page-shell";
+import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -34,6 +34,9 @@ import {
   SERVICE_IMPROVEMENT_SOURCE_LABEL,
   SERVICE_IMPROVEMENT_RAG_RATING_LABEL,
 } from "@/types/extended";
+import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { AriaPanel } from "@/components/aria/aria-panel";
+import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -116,10 +119,12 @@ export default function ServiceImprovementBoardPage() {
     <PageShell
       title="Service Improvement Board"
       subtitle="Active service improvement initiatives — co-produced, evidence-based, outcome-focused"
+      ariaContext={{ pageTitle: "Service Improvement Board", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="service-improvement-board" />
           <PrintButton title="Service Improvement Board" />
+          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -327,6 +332,18 @@ export default function ServiceImprovementBoardPage() {
           evidence. All initiatives are evidence-based, child-informed, and outcome-measured.
         </p>
       </div>
+      <CareEventsPanel
+        title="Care Events — General"
+        category="general"
+        days={90}
+        defaultCollapsed
+      />
+      <AriaPanel
+        mode="assist"
+        pageContext="Service Improvement Board — service improvement initiatives, quality improvement actions, co-produced improvement plans, evidence-based practice, outcomes-focused improvements, Reg 45 evidence"
+        recordType="management_oversight"
+        className="mt-6"
+      />
     </PageShell>
   );
 }
