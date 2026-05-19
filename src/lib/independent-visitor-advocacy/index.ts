@@ -1,0 +1,33 @@
+export {
+  generateIndependentVisitorAdvocacyIntelligence,
+  evaluateVisitorActivity,
+  evaluateAdvocacyAccess,
+  evaluatePolicyGovernance,
+  evaluateStaffAdvocacyReadiness,
+  buildChildAdvocacyProfiles,
+  pct,
+  getRating,
+  getVisitorStatusLabel,
+  getVisitOutcomeLabel,
+  getAdvocacyTypeLabel,
+  getReferralOutcomeLabel,
+  getRatingLabel,
+} from "./independent-visitor-advocacy-engine";
+
+export type {
+  VisitorStatus,
+  VisitOutcome,
+  AdvocacyType,
+  ReferralOutcome,
+  Rating,
+  IndependentVisit,
+  AdvocacyReferral,
+  AdvocacyPolicy,
+  StaffAdvocacyTraining,
+  VisitorActivityResult,
+  AdvocacyAccessResult,
+  PolicyGovernanceResult,
+  StaffAdvocacyReadinessResult,
+  ChildAdvocacyProfile,
+  IndependentVisitorAdvocacyIntelligence,
+} from "./independent-visitor-advocacy-engine";

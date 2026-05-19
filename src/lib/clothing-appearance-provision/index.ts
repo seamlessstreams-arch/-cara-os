@@ -1,0 +1,31 @@
+export {
+  generateClothingAppearanceProvisionIntelligence,
+  evaluateClothingProvision,
+  evaluateBudgetManagement,
+  evaluateClothingPolicy,
+  evaluateStaffClothingReadiness,
+  buildChildClothingProfiles,
+  pct,
+  getRating,
+  getClothingCategoryLabel,
+  getProvisionStatusLabel,
+  getSeasonalReadinessLabel,
+  getRatingLabel,
+} from "./clothing-appearance-provision-engine";
+
+export type {
+  ClothingCategory,
+  ProvisionStatus,
+  SeasonalReadiness,
+  Rating,
+  ClothingProvisionRecord,
+  ClothingBudgetRecord,
+  ClothingPolicy,
+  StaffClothingTraining,
+  ClothingProvisionResult,
+  BudgetManagementResult,
+  ClothingPolicyResult,
+  StaffClothingReadinessResult,
+  ChildClothingProfile,
+  ClothingAppearanceProvisionIntelligence,
+} from "./clothing-appearance-provision-engine";
