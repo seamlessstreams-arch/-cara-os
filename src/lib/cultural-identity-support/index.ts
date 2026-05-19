@@ -1,38 +1,34 @@
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 // Cornerstone Cultural Identity Support Intelligence — Public API
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 export {
-  evaluateIdentityRecognition,
-  evaluateCulturalProvision,
-  evaluateDietaryRespect,
-  evaluateStaffCompetence,
-  buildChildCulturalProfiles,
+  evaluateNeedsAssessment,
+  evaluateCulturalActivities,
+  evaluateIdentityPlanning,
+  evaluateStaffCulturalReadiness,
   generateCulturalIdentitySupportIntelligence,
   getRating,
-  getIdentityDimensionLabel,
-  getSupportLevelLabel,
-  getDietaryProvisionLabel,
-  getCulturalActivityTypeLabel,
-  getStaffCompetenceLevelLabel,
+  getCulturalNeedTypeLabel,
+  getSupportStatusLabel,
+  getActivityTypeLabel,
+  getEngagementLevelLabel,
   getRatingLabel,
 } from "./cultural-identity-support-engine";
 
 export type {
-  IdentityDimension,
-  SupportLevel,
-  DietaryProvision,
-  CulturalActivityType,
-  StaffCompetenceLevel,
+  CulturalNeedType,
+  SupportStatus,
+  ActivityType,
+  EngagementLevel,
   Rating,
-  IdentityAssessment,
+  CulturalNeedsAssessment,
   CulturalActivity,
-  DietaryNeedRecord,
-  StaffCulturalCompetence,
-  IdentityRecognitionResult,
-  CulturalProvisionResult,
-  DietaryRespectResult,
-  StaffCompetenceResult,
-  ChildCulturalProfile,
+  IdentityPlan,
+  StaffCulturalTraining,
+  NeedsAssessmentResult,
+  CulturalActivitiesResult,
+  IdentityPlanningResult,
+  StaffCulturalReadinessResult,
   CulturalIdentitySupportIntelligence,
 } from "./cultural-identity-support-engine";

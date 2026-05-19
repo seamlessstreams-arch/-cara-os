@@ -1,164 +1,298 @@
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 // Cornerstone Cultural Identity Support Intelligence — Engine Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ==============================================================================
 
 import { describe, it, expect } from "vitest";
 import {
-  evaluateIdentityRecognition,
-  evaluateCulturalProvision,
-  evaluateDietaryRespect,
-  evaluateStaffCompetence,
-  buildChildCulturalProfiles,
+  evaluateNeedsAssessment,
+  evaluateCulturalActivities,
+  evaluateIdentityPlanning,
+  evaluateStaffCulturalReadiness,
   generateCulturalIdentitySupportIntelligence,
   getRating,
-  getIdentityDimensionLabel,
-  getSupportLevelLabel,
-  getDietaryProvisionLabel,
-  getCulturalActivityTypeLabel,
-  getStaffCompetenceLevelLabel,
+  getCulturalNeedTypeLabel,
+  getSupportStatusLabel,
+  getActivityTypeLabel,
+  getEngagementLevelLabel,
   getRatingLabel,
 } from "../cultural-identity-support-engine";
 import type {
-  IdentityAssessment,
+  CulturalNeedsAssessment,
   CulturalActivity,
-  DietaryNeedRecord,
-  StaffCulturalCompetence,
-  IdentityDimension,
-  SupportLevel,
-  DietaryProvision,
-  CulturalActivityType,
-  StaffCompetenceLevel,
+  IdentityPlan,
+  StaffCulturalTraining,
+  CulturalNeedType,
+  SupportStatus,
+  ActivityType,
+  EngagementLevel,
   Rating,
 } from "../cultural-identity-support-engine";
 
-// ── Constants ────────────────────────────────────────────────────────────────
+// -- Constants ----------------------------------------------------------------
 
 const PERIOD_START = "2026-01-01";
-const PERIOD_END = "2026-05-18";
+const PERIOD_END = "2026-05-19";
 
-// ── Factories ────────────────────────────────────────────────────────────────
+// -- Factories ----------------------------------------------------------------
 
-function makeAssessment(overrides: Partial<IdentityAssessment> = {}): IdentityAssessment {
+function makeAssessment(
+  overrides: Partial<CulturalNeedsAssessment> = {},
+): CulturalNeedsAssessment {
   return {
-    id: "ia-001",
+    id: "cna-001",
     childId: "child-alex",
     childName: "Alex",
-    dimension: "ethnicity",
-    supportLevel: "fully_supported",
-    assessedDate: "2026-02-01",
-    assessedBy: "Sarah Thompson",
-    childViewsSought: true,
-    needsIdentified: null,
-    planInPlace: false,
+    needType: "religion",
+    description: "Church of England — wishes to attend Sunday services",
+    supportStatus: "fully_met",
+    assessmentDate: "2026-02-01",
+    reviewDate: "2026-05-01",
+    reviewCurrent: true,
+    childConsulted: true,
+    familyConsulted: true,
     ...overrides,
   };
 }
 
-function makeActivity(overrides: Partial<CulturalActivity> = {}): CulturalActivity {
+function makeActivity(
+  overrides: Partial<CulturalActivity> = {},
+): CulturalActivity {
   return {
     id: "ca-001",
+    date: "2026-02-10",
+    activityType: "religious_observance",
+    description: "Sunday church service",
+    facilitatedBy: "Sarah Thompson",
+    childrenParticipated: ["child-alex"],
+    engagement: "high",
+    resourcesProvided: true,
+    childFeedbackPositive: true,
+    ...overrides,
+  };
+}
+
+function makePlan(overrides: Partial<IdentityPlan> = {}): IdentityPlan {
+  return {
+    id: "ip-001",
     childId: "child-alex",
     childName: "Alex",
-    activityType: "religious_observance",
-    date: "2026-02-10",
-    description: "Sunday church service",
-    childChose: true,
-    childEnjoyedIt: true,
-    staffFacilitated: true,
-    communityLink: true,
+    planInPlace: true,
+    lastReviewDate: "2026-04-01",
+    identityNeedsDocumented: true,
+    lifeStoryWorkActive: true,
+    culturalMentorAssigned: true,
+    communityLinksEstablished: true,
     ...overrides,
   };
 }
 
-function makeDietary(overrides: Partial<DietaryNeedRecord> = {}): DietaryNeedRecord {
+function makeTraining(
+  overrides: Partial<StaffCulturalTraining> = {},
+): StaffCulturalTraining {
   return {
-    id: "dr-001",
-    childId: "child-jordan",
-    childName: "Jordan",
-    dietaryRequirement: "Ital food",
-    provision: "fully_met",
-    reviewDate: "2026-03-01",
-    childSatisfied: true,
-    ...overrides,
-  };
-}
-
-function makeStaff(overrides: Partial<StaffCulturalCompetence> = {}): StaffCulturalCompetence {
-  return {
-    id: "sc-001",
+    id: "sct-001",
     staffId: "staff-sarah",
     staffName: "Sarah Thompson",
-    competenceLevel: "competent",
-    trainingCompleted: ["Cultural Awareness", "Equality & Diversity"],
-    lastTrainingDate: "2026-01-15",
-    canSupportLanguage: false,
-    understandsFaithNeeds: true,
-    antiRacistPractice: true,
+    culturalAwareness: true,
+    antiRacism: true,
+    religiousLiteracy: true,
+    identitySupport: true,
+    lgbtqAwareness: true,
+    communicationDiversity: true,
     ...overrides,
   };
 }
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
-// Alex: White British, Church of England, no dietary needs, heritage activities
-// Jordan: Black Caribbean, Rastafarian, dietary needs for ital food (mostly met), language support
-// Morgan: Mixed heritage White/Asian, Buddhist, vegetarian (fully met), cultural celebrations
-// Staff: Sarah (competent, anti-racist), Tom (developing, needs faith training), Lisa (advanced, language support)
+// -- Oak House Demo Data ------------------------------------------------------
 
-const DEMO_ASSESSMENTS: IdentityAssessment[] = [
-  // Alex
-  makeAssessment({ id: "ia-alex-01", childId: "child-alex", childName: "Alex", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: null, planInPlace: false }),
-  makeAssessment({ id: "ia-alex-02", childId: "child-alex", childName: "Alex", dimension: "religion", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "Wishes to attend church on Sundays", planInPlace: true }),
-  makeAssessment({ id: "ia-alex-03", childId: "child-alex", childName: "Alex", dimension: "heritage", supportLevel: "mostly_supported", childViewsSought: true, needsIdentified: "Wants to learn about family history", planInPlace: true }),
-  makeAssessment({ id: "ia-alex-04", childId: "child-alex", childName: "Alex", dimension: "family_traditions", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: null, planInPlace: false }),
+const DEMO_ASSESSMENTS: CulturalNeedsAssessment[] = [
+  // Alex — White British, Church of England
+  makeAssessment({
+    id: "cna-alex-01", childId: "child-alex", childName: "Alex",
+    needType: "religion", description: "CofE — Sunday services",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: true,
+  }),
+  makeAssessment({
+    id: "cna-alex-02", childId: "child-alex", childName: "Alex",
+    needType: "heritage", description: "Local heritage exploration",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: true,
+  }),
+  makeAssessment({
+    id: "cna-alex-03", childId: "child-alex", childName: "Alex",
+    needType: "festivals", description: "Christmas, Easter celebrations",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: false,
+  }),
 
-  // Jordan
-  makeAssessment({ id: "ia-jordan-01", childId: "child-jordan", childName: "Jordan", dimension: "ethnicity", supportLevel: "mostly_supported", childViewsSought: true, needsIdentified: "Needs access to Black Caribbean community", planInPlace: true }),
-  makeAssessment({ id: "ia-jordan-02", childId: "child-jordan", childName: "Jordan", dimension: "religion", supportLevel: "partially_supported", childViewsSought: true, needsIdentified: "Rastafarian faith needs", planInPlace: true }),
-  makeAssessment({ id: "ia-jordan-03", childId: "child-jordan", childName: "Jordan", dimension: "language", supportLevel: "mostly_supported", childViewsSought: true, needsIdentified: "Jamaican Patois maintenance", planInPlace: true }),
-  makeAssessment({ id: "ia-jordan-04", childId: "child-jordan", childName: "Jordan", dimension: "heritage", supportLevel: "mostly_supported", childViewsSought: true, needsIdentified: "Caribbean heritage exploration", planInPlace: true }),
-  makeAssessment({ id: "ia-jordan-05", childId: "child-jordan", childName: "Jordan", dimension: "nationality", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: null, planInPlace: false }),
+  // Jordan — Black Caribbean, Rastafarian
+  makeAssessment({
+    id: "cna-jordan-01", childId: "child-jordan", childName: "Jordan",
+    needType: "religion", description: "Rastafarian faith — livity, meditation",
+    supportStatus: "partially_met", reviewCurrent: true, childConsulted: true, familyConsulted: true,
+  }),
+  makeAssessment({
+    id: "cna-jordan-02", childId: "child-jordan", childName: "Jordan",
+    needType: "diet", description: "Ital food — natural, unprocessed, plant-based",
+    supportStatus: "partially_met", reviewCurrent: true, childConsulted: true, familyConsulted: true,
+  }),
+  makeAssessment({
+    id: "cna-jordan-03", childId: "child-jordan", childName: "Jordan",
+    needType: "hair_care", description: "Afro-Caribbean hair care products and styling",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: false,
+  }),
+  makeAssessment({
+    id: "cna-jordan-04", childId: "child-jordan", childName: "Jordan",
+    needType: "language", description: "Jamaican Patois maintenance",
+    supportStatus: "partially_met", reviewCurrent: false, childConsulted: true, familyConsulted: true,
+  }),
+  makeAssessment({
+    id: "cna-jordan-05", childId: "child-jordan", childName: "Jordan",
+    needType: "music", description: "Reggae and roots music — cultural connection",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: false,
+  }),
+  makeAssessment({
+    id: "cna-jordan-06", childId: "child-jordan", childName: "Jordan",
+    needType: "community_links", description: "Black Caribbean community centre",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: true,
+  }),
 
-  // Morgan
-  makeAssessment({ id: "ia-morgan-01", childId: "child-morgan", childName: "Morgan", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "Dual heritage support", planInPlace: true }),
-  makeAssessment({ id: "ia-morgan-02", childId: "child-morgan", childName: "Morgan", dimension: "religion", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "Buddhist practice", planInPlace: true }),
-  makeAssessment({ id: "ia-morgan-03", childId: "child-morgan", childName: "Morgan", dimension: "heritage", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "Asian heritage exploration", planInPlace: true }),
-  makeAssessment({ id: "ia-morgan-04", childId: "child-morgan", childName: "Morgan", dimension: "family_traditions", supportLevel: "mostly_supported", childViewsSought: true, needsIdentified: "Maintain family food traditions", planInPlace: true }),
+  // Morgan — Mixed heritage White/Asian, Buddhist
+  makeAssessment({
+    id: "cna-morgan-01", childId: "child-morgan", childName: "Morgan",
+    needType: "religion", description: "Buddhist practice — meditation and mindfulness",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: true,
+  }),
+  makeAssessment({
+    id: "cna-morgan-02", childId: "child-morgan", childName: "Morgan",
+    needType: "diet", description: "Vegetarian — Buddhist practice",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: true,
+  }),
+  makeAssessment({
+    id: "cna-morgan-03", childId: "child-morgan", childName: "Morgan",
+    needType: "heritage", description: "Dual heritage — White and Asian exploration",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: true,
+  }),
+  makeAssessment({
+    id: "cna-morgan-04", childId: "child-morgan", childName: "Morgan",
+    needType: "festivals", description: "Lunar New Year, Vesak celebrations",
+    supportStatus: "fully_met", reviewCurrent: true, childConsulted: true, familyConsulted: true,
+  }),
 ];
 
 const DEMO_ACTIVITIES: CulturalActivity[] = [
   // Alex
-  makeActivity({ id: "ca-alex-01", childId: "child-alex", childName: "Alex", activityType: "religious_observance", description: "Sunday church service", childChose: true, childEnjoyedIt: true, staffFacilitated: true, communityLink: true }),
-  makeActivity({ id: "ca-alex-02", childId: "child-alex", childName: "Alex", activityType: "heritage_exploration", description: "Local history museum visit", childChose: true, childEnjoyedIt: true, staffFacilitated: true, communityLink: true }),
-  makeActivity({ id: "ca-alex-03", childId: "child-alex", childName: "Alex", activityType: "life_story", description: "Life story session exploring heritage", childChose: false, childEnjoyedIt: true, staffFacilitated: true, communityLink: false }),
+  makeActivity({
+    id: "ca-alex-01", activityType: "religious_observance", date: "2026-02-10",
+    description: "Sunday church service at local CofE parish",
+    facilitatedBy: "Sarah Thompson",
+    childrenParticipated: ["child-alex"],
+    engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+  }),
+  makeActivity({
+    id: "ca-alex-02", activityType: "heritage_activity", date: "2026-03-05",
+    description: "Local history museum visit — family tree project",
+    facilitatedBy: "Sarah Thompson",
+    childrenParticipated: ["child-alex", "child-morgan"],
+    engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+  }),
 
   // Jordan
-  makeActivity({ id: "ca-jordan-01", childId: "child-jordan", childName: "Jordan", activityType: "cultural_celebration", description: "Caribbean carnival event", childChose: true, childEnjoyedIt: true, staffFacilitated: true, communityLink: true }),
-  makeActivity({ id: "ca-jordan-02", childId: "child-jordan", childName: "Jordan", activityType: "community_connection", description: "Black Caribbean community centre visit", childChose: true, childEnjoyedIt: true, staffFacilitated: true, communityLink: true }),
-  makeActivity({ id: "ca-jordan-03", childId: "child-jordan", childName: "Jordan", activityType: "food_preparation", description: "Cooking ital food with community volunteer", childChose: true, childEnjoyedIt: true, staffFacilitated: true, communityLink: true }),
-  makeActivity({ id: "ca-jordan-04", childId: "child-jordan", childName: "Jordan", activityType: "language_maintenance", description: "Patois language session", childChose: true, childEnjoyedIt: true, staffFacilitated: true, communityLink: true }),
+  makeActivity({
+    id: "ca-jordan-01", activityType: "cultural_celebration", date: "2026-02-20",
+    description: "Caribbean carnival preparation and community event",
+    facilitatedBy: "Lisa Chen",
+    childrenParticipated: ["child-jordan", "child-alex", "child-morgan"],
+    engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+  }),
+  makeActivity({
+    id: "ca-jordan-02", activityType: "community_visit", date: "2026-03-01",
+    description: "Visit to local Black Caribbean community centre",
+    facilitatedBy: "Lisa Chen",
+    childrenParticipated: ["child-jordan"],
+    engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+  }),
+  makeActivity({
+    id: "ca-jordan-03", activityType: "language_support", date: "2026-03-20",
+    description: "Patois language session with community elder",
+    facilitatedBy: "Lisa Chen",
+    childrenParticipated: ["child-jordan"],
+    engagement: "medium", resourcesProvided: true, childFeedbackPositive: true,
+  }),
+  makeActivity({
+    id: "ca-jordan-04", activityType: "mentoring", date: "2026-04-05",
+    description: "Mentoring session with Black Caribbean role model",
+    facilitatedBy: "Community Volunteer",
+    childrenParticipated: ["child-jordan"],
+    engagement: "high", resourcesProvided: false, childFeedbackPositive: true,
+  }),
 
   // Morgan
-  makeActivity({ id: "ca-morgan-01", childId: "child-morgan", childName: "Morgan", activityType: "religious_observance", description: "Buddhist temple meditation", childChose: true, childEnjoyedIt: true, staffFacilitated: true, communityLink: true }),
-  makeActivity({ id: "ca-morgan-02", childId: "child-morgan", childName: "Morgan", activityType: "cultural_celebration", description: "Lunar New Year celebration", childChose: true, childEnjoyedIt: true, staffFacilitated: true, communityLink: true }),
-  makeActivity({ id: "ca-morgan-03", childId: "child-morgan", childName: "Morgan", activityType: "heritage_exploration", description: "Asian cultural exhibition", childChose: true, childEnjoyedIt: true, staffFacilitated: true, communityLink: true }),
-  makeActivity({ id: "ca-morgan-04", childId: "child-morgan", childName: "Morgan", activityType: "identity_work", description: "Dual heritage identity work", childChose: false, childEnjoyedIt: true, staffFacilitated: true, communityLink: false }),
+  makeActivity({
+    id: "ca-morgan-01", activityType: "religious_observance", date: "2026-02-15",
+    description: "Buddhist temple meditation session",
+    facilitatedBy: "Lisa Chen",
+    childrenParticipated: ["child-morgan"],
+    engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+  }),
+  makeActivity({
+    id: "ca-morgan-02", activityType: "cultural_celebration", date: "2026-02-28",
+    description: "Lunar New Year celebration with Asian community group",
+    facilitatedBy: "Lisa Chen",
+    childrenParticipated: ["child-morgan", "child-alex"],
+    engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+  }),
+  makeActivity({
+    id: "ca-morgan-03", activityType: "identity_workshop", date: "2026-03-25",
+    description: "Dual heritage identity work session with key worker",
+    facilitatedBy: "Sarah Thompson",
+    childrenParticipated: ["child-morgan"],
+    engagement: "medium", resourcesProvided: true, childFeedbackPositive: true,
+  }),
 ];
 
-const DEMO_DIETARY: DietaryNeedRecord[] = [
-  makeDietary({ id: "dr-alex-01", childId: "child-alex", childName: "Alex", dietaryRequirement: "No specific cultural dietary needs", provision: "not_applicable", reviewDate: "2026-02-01", childSatisfied: true }),
-  makeDietary({ id: "dr-jordan-01", childId: "child-jordan", childName: "Jordan", dietaryRequirement: "Ital food", provision: "mostly_met", reviewDate: "2026-03-01", childSatisfied: true }),
-  makeDietary({ id: "dr-morgan-01", childId: "child-morgan", childName: "Morgan", dietaryRequirement: "Vegetarian — Buddhist", provision: "fully_met", reviewDate: "2026-03-01", childSatisfied: true }),
+const DEMO_PLANS: IdentityPlan[] = [
+  makePlan({
+    id: "ip-alex-01", childId: "child-alex", childName: "Alex",
+    planInPlace: true, lastReviewDate: "2026-04-01",
+    identityNeedsDocumented: true, lifeStoryWorkActive: true,
+    culturalMentorAssigned: false, communityLinksEstablished: true,
+  }),
+  makePlan({
+    id: "ip-jordan-01", childId: "child-jordan", childName: "Jordan",
+    planInPlace: true, lastReviewDate: "2026-04-15",
+    identityNeedsDocumented: true, lifeStoryWorkActive: true,
+    culturalMentorAssigned: true, communityLinksEstablished: true,
+  }),
+  makePlan({
+    id: "ip-morgan-01", childId: "child-morgan", childName: "Morgan",
+    planInPlace: true, lastReviewDate: "2026-04-10",
+    identityNeedsDocumented: true, lifeStoryWorkActive: true,
+    culturalMentorAssigned: true, communityLinksEstablished: true,
+  }),
 ];
 
-const DEMO_STAFF: StaffCulturalCompetence[] = [
-  makeStaff({ id: "sc-sarah-01", staffId: "staff-sarah", staffName: "Sarah Thompson", competenceLevel: "competent", trainingCompleted: ["Cultural Awareness", "Equality & Diversity", "Anti-Racist Practice"], canSupportLanguage: false, understandsFaithNeeds: true, antiRacistPractice: true }),
-  makeStaff({ id: "sc-tom-01", staffId: "staff-tom", staffName: "Tom Williams", competenceLevel: "developing", trainingCompleted: ["Equality & Diversity"], canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: true }),
-  makeStaff({ id: "sc-lisa-01", staffId: "staff-lisa", staffName: "Lisa Chen", competenceLevel: "advanced", trainingCompleted: ["Cultural Awareness", "Equality & Diversity", "Anti-Racist Practice", "Faith Awareness", "Language Support"], canSupportLanguage: true, understandsFaithNeeds: true, antiRacistPractice: true }),
+const DEMO_TRAINING: StaffCulturalTraining[] = [
+  makeTraining({
+    id: "sct-sarah-01", staffId: "staff-sarah", staffName: "Sarah Thompson",
+    culturalAwareness: true, antiRacism: true, religiousLiteracy: true,
+    identitySupport: true, lgbtqAwareness: true, communicationDiversity: false,
+  }),
+  makeTraining({
+    id: "sct-tom-01", staffId: "staff-tom", staffName: "Tom Williams",
+    culturalAwareness: true, antiRacism: true, religiousLiteracy: false,
+    identitySupport: false, lgbtqAwareness: false, communicationDiversity: false,
+  }),
+  makeTraining({
+    id: "sct-lisa-01", staffId: "staff-lisa", staffName: "Lisa Chen",
+    culturalAwareness: true, antiRacism: true, religiousLiteracy: true,
+    identitySupport: true, lgbtqAwareness: true, communicationDiversity: true,
+  }),
 ];
 
-// ══════════════════════════════════════════════════════════════════════════════
+const TOTAL_CHILDREN = 3;
+
+// =============================================================================
 // getRating
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
 
 describe("getRating", () => {
   it("returns outstanding for score >= 80", () => {
@@ -186,88 +320,75 @@ describe("getRating", () => {
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
 // Label Functions
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
 
 describe("Label functions", () => {
-  describe("getIdentityDimensionLabel", () => {
-    it("returns correct label for each dimension", () => {
-      const expected: Record<IdentityDimension, string> = {
-        ethnicity: "Ethnicity",
-        religion: "Religion",
+  describe("getCulturalNeedTypeLabel", () => {
+    it("returns correct label for each need type", () => {
+      const expected: Record<CulturalNeedType, string> = {
         language: "Language",
+        religion: "Religion",
+        diet: "Diet",
+        clothing: "Clothing",
+        festivals: "Festivals",
         heritage: "Heritage",
-        disability: "Disability",
-        gender_identity: "Gender Identity",
-        sexual_orientation: "Sexual Orientation",
-        nationality: "Nationality",
-        family_traditions: "Family Traditions",
+        hair_care: "Hair Care",
+        skin_care: "Skin Care",
+        music: "Music",
+        community_links: "Community Links",
+        other: "Other",
       };
       for (const [key, label] of Object.entries(expected)) {
-        expect(getIdentityDimensionLabel(key as IdentityDimension)).toBe(label);
+        expect(getCulturalNeedTypeLabel(key as CulturalNeedType)).toBe(label);
       }
     });
   });
 
-  describe("getSupportLevelLabel", () => {
-    it("returns correct label for each level", () => {
-      const expected: Record<SupportLevel, string> = {
-        fully_supported: "Fully Supported",
-        mostly_supported: "Mostly Supported",
-        partially_supported: "Partially Supported",
-        not_supported: "Not Supported",
+  describe("getSupportStatusLabel", () => {
+    it("returns correct label for each status", () => {
+      const expected: Record<SupportStatus, string> = {
+        fully_met: "Fully Met",
+        partially_met: "Partially Met",
+        not_met: "Not Met",
+        under_review: "Under Review",
         not_assessed: "Not Assessed",
       };
       for (const [key, label] of Object.entries(expected)) {
-        expect(getSupportLevelLabel(key as SupportLevel)).toBe(label);
+        expect(getSupportStatusLabel(key as SupportStatus)).toBe(label);
       }
     });
   });
 
-  describe("getDietaryProvisionLabel", () => {
-    it("returns correct label for each provision", () => {
-      const expected: Record<DietaryProvision, string> = {
-        fully_met: "Fully Met",
-        mostly_met: "Mostly Met",
-        partially_met: "Partially Met",
-        not_met: "Not Met",
-        not_applicable: "Not Applicable",
-      };
-      for (const [key, label] of Object.entries(expected)) {
-        expect(getDietaryProvisionLabel(key as DietaryProvision)).toBe(label);
-      }
-    });
-  });
-
-  describe("getCulturalActivityTypeLabel", () => {
+  describe("getActivityTypeLabel", () => {
     it("returns correct label for each activity type", () => {
-      const expected: Record<CulturalActivityType, string> = {
-        religious_observance: "Religious Observance",
+      const expected: Record<ActivityType, string> = {
         cultural_celebration: "Cultural Celebration",
-        language_maintenance: "Language Maintenance",
-        food_preparation: "Food Preparation",
-        community_connection: "Community Connection",
-        heritage_exploration: "Heritage Exploration",
-        identity_work: "Identity Work",
-        life_story: "Life Story",
+        religious_observance: "Religious Observance",
+        heritage_activity: "Heritage Activity",
+        language_support: "Language Support",
+        community_visit: "Community Visit",
+        identity_workshop: "Identity Workshop",
+        mentoring: "Mentoring",
+        other: "Other",
       };
       for (const [key, label] of Object.entries(expected)) {
-        expect(getCulturalActivityTypeLabel(key as CulturalActivityType)).toBe(label);
+        expect(getActivityTypeLabel(key as ActivityType)).toBe(label);
       }
     });
   });
 
-  describe("getStaffCompetenceLevelLabel", () => {
-    it("returns correct label for each competence level", () => {
-      const expected: Record<StaffCompetenceLevel, string> = {
-        advanced: "Advanced",
-        competent: "Competent",
-        developing: "Developing",
-        needs_training: "Needs Training",
+  describe("getEngagementLevelLabel", () => {
+    it("returns correct label for each engagement level", () => {
+      const expected: Record<EngagementLevel, string> = {
+        high: "High",
+        medium: "Medium",
+        low: "Low",
+        refused: "Refused",
       };
       for (const [key, label] of Object.entries(expected)) {
-        expect(getStaffCompetenceLevelLabel(key as StaffCompetenceLevel)).toBe(label);
+        expect(getEngagementLevelLabel(key as EngagementLevel)).toBe(label);
       }
     });
   });
@@ -287,832 +408,713 @@ describe("Label functions", () => {
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// evaluateIdentityRecognition
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
+// evaluateNeedsAssessment
+// =============================================================================
 
-describe("evaluateIdentityRecognition", () => {
+describe("evaluateNeedsAssessment", () => {
   it("returns zero scores for empty assessments", () => {
-    const result = evaluateIdentityRecognition([]);
+    const result = evaluateNeedsAssessment([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.fullySupportedRate).toBe(0);
-    expect(result.childViewsSoughtRate).toBe(0);
-    expect(result.planInPlaceRate).toBe(0);
-    expect(result.dimensionsCovered).toBe(0);
-    expect(result.notAssessedCount).toBe(0);
+    expect(result.fullyMetRate).toBe(0);
+    expect(result.reviewCurrentRate).toBe(0);
+    expect(result.childConsultedRate).toBe(0);
+    expect(result.familyConsultedRate).toBe(0);
+    expect(result.needTypeCoverage).toBe(0);
   });
 
-  it("scores high for all fully supported with views sought and plans in place", () => {
-    const assessments = [
-      makeAssessment({ id: "a1", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need 1", planInPlace: true }),
-      makeAssessment({ id: "a2", dimension: "religion", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need 2", planInPlace: true }),
-      makeAssessment({ id: "a3", dimension: "language", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need 3", planInPlace: true }),
-      makeAssessment({ id: "a4", dimension: "heritage", supportLevel: "mostly_supported", childViewsSought: true, needsIdentified: "need 4", planInPlace: true }),
-      makeAssessment({ id: "a5", dimension: "disability", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need 5", planInPlace: true }),
-      makeAssessment({ id: "a6", dimension: "gender_identity", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need 6", planInPlace: true }),
-      makeAssessment({ id: "a7", dimension: "nationality", supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need 7", planInPlace: true }),
-    ];
-    const result = evaluateIdentityRecognition(assessments);
+  it("scores maximum for perfect inputs", () => {
+    const assessments = Array.from({ length: 5 }, (_, i) =>
+      makeAssessment({
+        id: `a${i}`,
+        needType: (["language", "religion", "diet", "clothing", "festivals"] as CulturalNeedType[])[i],
+        supportStatus: "fully_met",
+        reviewCurrent: true,
+        childConsulted: true,
+        familyConsulted: true,
+      }),
+    );
+    const result = evaluateNeedsAssessment(assessments);
     expect(result.overallScore).toBe(25);
-    expect(result.fullySupportedRate).toBe(100);
-    expect(result.childViewsSoughtRate).toBe(100);
-    expect(result.planInPlaceRate).toBe(100);
-    expect(result.dimensionsCovered).toBe(7);
+    expect(result.fullyMetRate).toBe(100);
+    expect(result.reviewCurrentRate).toBe(100);
+    expect(result.childConsultedRate).toBe(100);
+    expect(result.familyConsultedRate).toBe(100);
   });
 
-  it("calculates fully supported rate correctly (fully + mostly)", () => {
+  it("calculates fully met rate correctly", () => {
     const assessments = [
-      makeAssessment({ id: "a1", supportLevel: "fully_supported" }),
-      makeAssessment({ id: "a2", supportLevel: "mostly_supported" }),
-      makeAssessment({ id: "a3", supportLevel: "partially_supported" }),
-      makeAssessment({ id: "a4", supportLevel: "not_supported" }),
+      makeAssessment({ id: "a1", supportStatus: "fully_met" }),
+      makeAssessment({ id: "a2", supportStatus: "partially_met" }),
+      makeAssessment({ id: "a3", supportStatus: "not_met" }),
     ];
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.fullySupportedRate).toBe(50);
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.fullyMetRate).toBe(33);
   });
 
-  it("awards 7 points for supported rate >= 80%", () => {
+  it("awards 7 points for fully met rate >= 80%", () => {
     const assessments = [
-      makeAssessment({ id: "a1", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a2", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a3", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a4", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a5", dimension: "ethnicity", supportLevel: "not_supported", childViewsSought: false, needsIdentified: null }),
+      makeAssessment({ id: "a1", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a2", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a3", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a4", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a5", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
     ];
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.fullySupportedRate).toBe(80);
-    // 7 (support) + 0 (views) + 3 (no needs -> mid-range) + 1 (1 dimension) = 11
-    expect(result.overallScore).toBe(11);
-  });
-
-  it("awards 5 points for supported rate >= 60% but < 80%", () => {
-    const assessments = [
-      makeAssessment({ id: "a1", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a2", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a3", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a4", dimension: "ethnicity", supportLevel: "not_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a5", dimension: "ethnicity", supportLevel: "not_supported", childViewsSought: false, needsIdentified: null }),
-    ];
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.fullySupportedRate).toBe(60);
-    // 5 (support) + 0 (views) + 3 (no needs) + 1 (1 dimension) = 9
-    expect(result.overallScore).toBe(9);
-  });
-
-  it("awards 3 points for supported rate >= 40% but < 60%", () => {
-    const assessments = [
-      makeAssessment({ id: "a1", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a2", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a3", dimension: "ethnicity", supportLevel: "not_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a4", dimension: "ethnicity", supportLevel: "not_supported", childViewsSought: false, needsIdentified: null }),
-      makeAssessment({ id: "a5", dimension: "ethnicity", supportLevel: "not_supported", childViewsSought: false, needsIdentified: null }),
-    ];
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.fullySupportedRate).toBe(40);
-    // 3 (support) + 0 (views) + 3 (no needs) + 1 (1 dimension) = 7
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.fullyMetRate).toBe(80);
+    // 7 (fully met) + 0 + 0 + 0 = 7
     expect(result.overallScore).toBe(7);
   });
 
-  it("calculates child views sought rate correctly", () => {
+  it("awards 5 points for fully met rate >= 60% but < 80%", () => {
     const assessments = [
-      makeAssessment({ id: "a1", childViewsSought: true }),
-      makeAssessment({ id: "a2", childViewsSought: true }),
-      makeAssessment({ id: "a3", childViewsSought: false }),
+      makeAssessment({ id: "a1", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a2", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a3", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a4", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a5", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
     ];
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.childViewsSoughtRate).toBe(67);
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.fullyMetRate).toBe(60);
+    expect(result.overallScore).toBe(5);
   });
 
-  it("calculates plan in place rate for assessments with needs", () => {
+  it("awards 3 points for fully met rate >= 40% but < 60%", () => {
     const assessments = [
-      makeAssessment({ id: "a1", needsIdentified: "need 1", planInPlace: true }),
-      makeAssessment({ id: "a2", needsIdentified: "need 2", planInPlace: true }),
-      makeAssessment({ id: "a3", needsIdentified: "need 3", planInPlace: false }),
-      makeAssessment({ id: "a4", needsIdentified: null, planInPlace: false }),
+      makeAssessment({ id: "a1", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a2", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a3", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a4", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a5", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
     ];
-    const result = evaluateIdentityRecognition(assessments);
-    // 3 have needs, 2 have plans = 67%
-    expect(result.planInPlaceRate).toBe(67);
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.fullyMetRate).toBe(40);
+    expect(result.overallScore).toBe(3);
   });
 
-  it("counts dimensions covered correctly", () => {
+  it("awards 1 point for fully met rate >= 20% but < 40%", () => {
     const assessments = [
-      makeAssessment({ id: "a1", dimension: "ethnicity" }),
-      makeAssessment({ id: "a2", dimension: "religion" }),
-      makeAssessment({ id: "a3", dimension: "language" }),
-      makeAssessment({ id: "a4", dimension: "ethnicity" }), // duplicate
+      makeAssessment({ id: "a1", supportStatus: "fully_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a2", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a3", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a4", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
     ];
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.dimensionsCovered).toBe(3);
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.fullyMetRate).toBe(25);
+    expect(result.overallScore).toBe(1);
   });
 
-  it("awards 6 points for dimensions >= 7", () => {
-    const dimensions: IdentityDimension[] = ["ethnicity", "religion", "language", "heritage", "disability", "gender_identity", "nationality"];
-    const assessments = dimensions.map((dim, i) =>
-      makeAssessment({ id: `a${i}`, dimension: dim, supportLevel: "not_supported", childViewsSought: false, needsIdentified: null }),
-    );
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.dimensionsCovered).toBe(7);
-  });
-
-  it("awards 4 points for dimensions >= 5 but < 7", () => {
-    const dimensions: IdentityDimension[] = ["ethnicity", "religion", "language", "heritage", "disability"];
-    const assessments = dimensions.map((dim, i) =>
-      makeAssessment({ id: `a${i}`, dimension: dim, supportLevel: "not_supported", childViewsSought: false, needsIdentified: null }),
-    );
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.dimensionsCovered).toBe(5);
-  });
-
-  it("counts not assessed correctly", () => {
+  it("calculates review current rate correctly", () => {
     const assessments = [
-      makeAssessment({ id: "a1", supportLevel: "not_assessed" }),
-      makeAssessment({ id: "a2", supportLevel: "fully_supported" }),
-      makeAssessment({ id: "a3", supportLevel: "not_assessed" }),
+      makeAssessment({ id: "a1", reviewCurrent: true }),
+      makeAssessment({ id: "a2", reviewCurrent: true }),
+      makeAssessment({ id: "a3", reviewCurrent: false }),
     ];
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.notAssessedCount).toBe(2);
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.reviewCurrentRate).toBe(67);
+  });
+
+  it("calculates child consulted rate correctly", () => {
+    const assessments = [
+      makeAssessment({ id: "a1", childConsulted: true }),
+      makeAssessment({ id: "a2", childConsulted: false }),
+      makeAssessment({ id: "a3", childConsulted: true }),
+      makeAssessment({ id: "a4", childConsulted: false }),
+    ];
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.childConsultedRate).toBe(50);
+  });
+
+  it("calculates family consulted rate correctly", () => {
+    const assessments = [
+      makeAssessment({ id: "a1", familyConsulted: true }),
+      makeAssessment({ id: "a2", familyConsulted: true }),
+      makeAssessment({ id: "a3", familyConsulted: false }),
+    ];
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.familyConsultedRate).toBe(67);
+  });
+
+  it("counts need type coverage correctly", () => {
+    const assessments = [
+      makeAssessment({ id: "a1", needType: "religion" }),
+      makeAssessment({ id: "a2", needType: "diet" }),
+      makeAssessment({ id: "a3", needType: "religion" }), // duplicate
+      makeAssessment({ id: "a4", needType: "hair_care" }),
+    ];
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.needTypeCoverage).toBe(3);
   });
 
   it("caps score at 25", () => {
-    const dimensions: IdentityDimension[] = ["ethnicity", "religion", "language", "heritage", "disability", "gender_identity", "sexual_orientation", "nationality", "family_traditions"];
-    const assessments = dimensions.map((dim, i) =>
-      makeAssessment({ id: `a${i}`, dimension: dim, supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need", planInPlace: true }),
+    const assessments = Array.from({ length: 10 }, (_, i) =>
+      makeAssessment({
+        id: `a${i}`,
+        supportStatus: "fully_met",
+        reviewCurrent: true,
+        childConsulted: true,
+        familyConsulted: true,
+      }),
     );
-    const result = evaluateIdentityRecognition(assessments);
+    const result = evaluateNeedsAssessment(assessments);
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
   it("handles single assessment correctly", () => {
-    const result = evaluateIdentityRecognition([
-      makeAssessment({ supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need", planInPlace: true }),
-    ]);
+    const result = evaluateNeedsAssessment([makeAssessment()]);
     expect(result.totalAssessments).toBe(1);
-    expect(result.fullySupportedRate).toBe(100);
+    expect(result.fullyMetRate).toBe(100);
   });
 
-  it("scores demo data (Oak House) appropriately", () => {
-    const result = evaluateIdentityRecognition(DEMO_ASSESSMENTS);
+  it("scores demo data appropriately", () => {
+    const result = evaluateNeedsAssessment(DEMO_ASSESSMENTS);
     expect(result.totalAssessments).toBe(13);
-    // Most are fully or mostly supported
-    expect(result.fullySupportedRate).toBeGreaterThan(70);
-    // All have child views sought
-    expect(result.childViewsSoughtRate).toBe(100);
-    // Multiple dimensions covered
-    expect(result.dimensionsCovered).toBeGreaterThan(4);
+    expect(result.fullyMetRate).toBeGreaterThan(50);
+    expect(result.childConsultedRate).toBe(100);
+    expect(result.needTypeCoverage).toBeGreaterThan(4);
     expect(result.overallScore).toBeGreaterThan(0);
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
-  it("gives mid-range plan score when no needs identified", () => {
+  it("gives zero for all not_met, no consultation, no review", () => {
     const assessments = [
-      makeAssessment({ id: "a1", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: false, needsIdentified: null }),
+      makeAssessment({ id: "a1", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
+      makeAssessment({ id: "a2", supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
     ];
-    const result = evaluateIdentityRecognition(assessments);
-    // Should get 3 for mid-range (no needs => neutral)
-    // 7 (100% support) + 0 (0% views) + 3 (no needs) + 1 (1 dim) = 11
-    expect(result.overallScore).toBe(11);
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.overallScore).toBe(0);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// evaluateCulturalProvision
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
+// evaluateCulturalActivities
+// =============================================================================
 
-describe("evaluateCulturalProvision", () => {
+describe("evaluateCulturalActivities", () => {
   it("returns zero scores for empty activities", () => {
-    const result = evaluateCulturalProvision([]);
+    const result = evaluateCulturalActivities([], 3);
     expect(result.overallScore).toBe(0);
     expect(result.totalActivities).toBe(0);
-    expect(result.childChoiceRate).toBe(0);
-    expect(result.childEnjoymentRate).toBe(0);
-    expect(result.communityLinkRate).toBe(0);
+    expect(result.engagementRate).toBe(0);
+    expect(result.resourcesRate).toBe(0);
+    expect(result.positiveFeedbackRate).toBe(0);
+    expect(result.childrenReachedRate).toBe(0);
     expect(result.activityVariety).toBe(0);
-    expect(result.staffFacilitatedRate).toBe(0);
   });
 
-  it("scores high for all-positive, diverse, community-linked activities", () => {
-    const activities = [
-      makeActivity({ id: "a1", activityType: "religious_observance", childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
-      makeActivity({ id: "a2", activityType: "cultural_celebration", childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
-      makeActivity({ id: "a3", activityType: "language_maintenance", childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
-      makeActivity({ id: "a4", activityType: "food_preparation", childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
-      makeActivity({ id: "a5", activityType: "community_connection", childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
+  it("scores maximum for perfect inputs", () => {
+    const types: ActivityType[] = [
+      "cultural_celebration", "religious_observance", "heritage_activity",
+      "language_support", "community_visit",
     ];
-    const result = evaluateCulturalProvision(activities);
+    const activities = types.map((type, i) =>
+      makeActivity({
+        id: `a${i}`, activityType: type,
+        childrenParticipated: ["child-alex", "child-jordan", "child-morgan"],
+        engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+      }),
+    );
+    const result = evaluateCulturalActivities(activities, 3);
     expect(result.overallScore).toBe(25);
-    expect(result.childChoiceRate).toBe(100);
-    expect(result.childEnjoymentRate).toBe(100);
-    expect(result.communityLinkRate).toBe(100);
+    expect(result.engagementRate).toBe(100);
+    expect(result.resourcesRate).toBe(100);
+    expect(result.positiveFeedbackRate).toBe(100);
+    expect(result.childrenReachedRate).toBe(100);
     expect(result.activityVariety).toBe(5);
-    expect(result.staffFacilitatedRate).toBe(100);
   });
 
-  it("calculates child choice rate correctly", () => {
+  it("calculates engagement rate correctly (high + medium)", () => {
     const activities = [
-      makeActivity({ id: "a1", childChose: true }),
-      makeActivity({ id: "a2", childChose: true }),
-      makeActivity({ id: "a3", childChose: false }),
+      makeActivity({ id: "a1", engagement: "high" }),
+      makeActivity({ id: "a2", engagement: "medium" }),
+      makeActivity({ id: "a3", engagement: "low" }),
+      makeActivity({ id: "a4", engagement: "refused" }),
     ];
-    const result = evaluateCulturalProvision(activities);
-    expect(result.childChoiceRate).toBe(67);
+    const result = evaluateCulturalActivities(activities, 3);
+    expect(result.engagementRate).toBe(50);
   });
 
-  it("awards 6 points for child choice >= 80%", () => {
-    const activities = [
-      makeActivity({ id: "a1", activityType: "religious_observance", childChose: true, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
-      makeActivity({ id: "a2", activityType: "religious_observance", childChose: true, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
-      makeActivity({ id: "a3", activityType: "religious_observance", childChose: true, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
-      makeActivity({ id: "a4", activityType: "religious_observance", childChose: true, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
-      makeActivity({ id: "a5", activityType: "religious_observance", childChose: true, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
-    ];
-    const result = evaluateCulturalProvision(activities);
-    expect(result.childChoiceRate).toBe(100);
-    // 6 (choice) + 0 (enjoyment) + 0 (community) + 1 (1 type) + 0 (staff) = 7
+  it("awards 6 points for engagement >= 85%", () => {
+    const activities = Array.from({ length: 7 }, (_, i) =>
+      makeActivity({
+        id: `a${i}`, engagement: i < 6 ? "high" : "low",
+        resourcesProvided: false, childFeedbackPositive: false,
+        childrenParticipated: [],
+      }),
+    );
+    const result = evaluateCulturalActivities(activities, 3);
+    expect(result.engagementRate).toBe(86);
+    // 6 (engagement) + 0 + 0 + 0 + 1 (1 type) = 7
     expect(result.overallScore).toBe(7);
   });
 
-  it("awards 4 points for child choice >= 60% but < 80%", () => {
+  it("awards 4 points for engagement >= 65% but < 85%", () => {
     const activities = [
-      makeActivity({ id: "a1", activityType: "religious_observance", childChose: true, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
-      makeActivity({ id: "a2", activityType: "religious_observance", childChose: true, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
-      makeActivity({ id: "a3", activityType: "religious_observance", childChose: true, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
-      makeActivity({ id: "a4", activityType: "religious_observance", childChose: false, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
-      makeActivity({ id: "a5", activityType: "religious_observance", childChose: false, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
+      makeActivity({ id: "a1", engagement: "high", resourcesProvided: false, childFeedbackPositive: false, childrenParticipated: [] }),
+      makeActivity({ id: "a2", engagement: "high", resourcesProvided: false, childFeedbackPositive: false, childrenParticipated: [] }),
+      makeActivity({ id: "a3", engagement: "low", resourcesProvided: false, childFeedbackPositive: false, childrenParticipated: [] }),
     ];
-    const result = evaluateCulturalProvision(activities);
-    expect(result.childChoiceRate).toBe(60);
-    // 4 (choice) + 0 + 0 + 1 + 0 = 5
+    const result = evaluateCulturalActivities(activities, 3);
+    expect(result.engagementRate).toBe(67);
+    // 4 (engagement) + 0 + 0 + 0 + 1 (1 type) = 5
     expect(result.overallScore).toBe(5);
   });
 
-  it("calculates child enjoyment rate correctly", () => {
+  it("calculates resources rate correctly", () => {
     const activities = [
-      makeActivity({ id: "a1", childEnjoyedIt: true }),
-      makeActivity({ id: "a2", childEnjoyedIt: true }),
-      makeActivity({ id: "a3", childEnjoyedIt: false }),
-      makeActivity({ id: "a4", childEnjoyedIt: false }),
+      makeActivity({ id: "a1", resourcesProvided: true }),
+      makeActivity({ id: "a2", resourcesProvided: true }),
+      makeActivity({ id: "a3", resourcesProvided: false }),
     ];
-    const result = evaluateCulturalProvision(activities);
-    expect(result.childEnjoymentRate).toBe(50);
+    const result = evaluateCulturalActivities(activities, 3);
+    expect(result.resourcesRate).toBe(67);
   });
 
-  it("calculates community link rate correctly", () => {
+  it("calculates positive feedback rate correctly", () => {
     const activities = [
-      makeActivity({ id: "a1", communityLink: true }),
-      makeActivity({ id: "a2", communityLink: true }),
-      makeActivity({ id: "a3", communityLink: false }),
+      makeActivity({ id: "a1", childFeedbackPositive: true }),
+      makeActivity({ id: "a2", childFeedbackPositive: false }),
+      makeActivity({ id: "a3", childFeedbackPositive: true }),
+      makeActivity({ id: "a4", childFeedbackPositive: true }),
     ];
-    const result = evaluateCulturalProvision(activities);
-    expect(result.communityLinkRate).toBe(67);
+    const result = evaluateCulturalActivities(activities, 3);
+    expect(result.positiveFeedbackRate).toBe(75);
+  });
+
+  it("calculates children reached rate correctly", () => {
+    const activities = [
+      makeActivity({ id: "a1", childrenParticipated: ["child-alex"] }),
+      makeActivity({ id: "a2", childrenParticipated: ["child-jordan"] }),
+    ];
+    const result = evaluateCulturalActivities(activities, 3);
+    // 2 unique children out of 3 = 67%
+    expect(result.childrenReachedRate).toBe(67);
+  });
+
+  it("handles zero totalChildren for children reached rate", () => {
+    const activities = [
+      makeActivity({ id: "a1", childrenParticipated: ["child-alex"] }),
+    ];
+    const result = evaluateCulturalActivities(activities, 0);
+    expect(result.childrenReachedRate).toBe(0);
+  });
+
+  it("deduplicates children across activities", () => {
+    const activities = [
+      makeActivity({ id: "a1", childrenParticipated: ["child-alex", "child-jordan"] }),
+      makeActivity({ id: "a2", childrenParticipated: ["child-alex", "child-morgan"] }),
+    ];
+    const result = evaluateCulturalActivities(activities, 3);
+    // 3 unique children out of 3 = 100%
+    expect(result.childrenReachedRate).toBe(100);
   });
 
   it("counts activity variety correctly", () => {
     const activities = [
       makeActivity({ id: "a1", activityType: "religious_observance" }),
       makeActivity({ id: "a2", activityType: "cultural_celebration" }),
-      makeActivity({ id: "a3", activityType: "religious_observance" }), // duplicate
-      makeActivity({ id: "a4", activityType: "food_preparation" }),
+      makeActivity({ id: "a3", activityType: "religious_observance" }),
+      makeActivity({ id: "a4", activityType: "heritage_activity" }),
     ];
-    const result = evaluateCulturalProvision(activities);
+    const result = evaluateCulturalActivities(activities, 3);
     expect(result.activityVariety).toBe(3);
   });
 
   it("awards 4 points for variety >= 5", () => {
-    const types: CulturalActivityType[] = ["religious_observance", "cultural_celebration", "language_maintenance", "food_preparation", "community_connection"];
+    const types: ActivityType[] = [
+      "cultural_celebration", "religious_observance", "heritage_activity",
+      "language_support", "community_visit",
+    ];
     const activities = types.map((type, i) =>
-      makeActivity({ id: `a${i}`, activityType: type, childChose: false, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
+      makeActivity({
+        id: `a${i}`, activityType: type,
+        engagement: "low", resourcesProvided: false,
+        childFeedbackPositive: false, childrenParticipated: [],
+      }),
     );
-    const result = evaluateCulturalProvision(activities);
+    const result = evaluateCulturalActivities(activities, 3);
     expect(result.activityVariety).toBe(5);
   });
 
-  it("calculates staff facilitated rate correctly", () => {
-    const activities = [
-      makeActivity({ id: "a1", staffFacilitated: true }),
-      makeActivity({ id: "a2", staffFacilitated: true }),
-      makeActivity({ id: "a3", staffFacilitated: false }),
-      makeActivity({ id: "a4", staffFacilitated: false }),
-    ];
-    const result = evaluateCulturalProvision(activities);
-    expect(result.staffFacilitatedRate).toBe(50);
+  it("awards 3 points for variety >= 3 but < 5", () => {
+    const types: ActivityType[] = ["cultural_celebration", "religious_observance", "heritage_activity"];
+    const activities = types.map((type, i) =>
+      makeActivity({
+        id: `a${i}`, activityType: type,
+        engagement: "low", resourcesProvided: false,
+        childFeedbackPositive: false, childrenParticipated: [],
+      }),
+    );
+    const result = evaluateCulturalActivities(activities, 3);
+    expect(result.activityVariety).toBe(3);
   });
 
   it("caps score at 25", () => {
-    const types: CulturalActivityType[] = ["religious_observance", "cultural_celebration", "language_maintenance", "food_preparation", "community_connection", "heritage_exploration", "identity_work", "life_story"];
+    const types: ActivityType[] = [
+      "cultural_celebration", "religious_observance", "heritage_activity",
+      "language_support", "community_visit", "identity_workshop", "mentoring", "other",
+    ];
     const activities = types.map((type, i) =>
-      makeActivity({ id: `a${i}`, activityType: type, childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
+      makeActivity({
+        id: `a${i}`, activityType: type,
+        childrenParticipated: ["child-alex", "child-jordan", "child-morgan"],
+        engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+      }),
     );
-    const result = evaluateCulturalProvision(activities);
+    const result = evaluateCulturalActivities(activities, 3);
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
   it("handles single activity correctly", () => {
-    const result = evaluateCulturalProvision([
-      makeActivity({ childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
-    ]);
+    const result = evaluateCulturalActivities([makeActivity()], 3);
     expect(result.totalActivities).toBe(1);
-    expect(result.childChoiceRate).toBe(100);
   });
 
-  it("scores demo data (Oak House) appropriately", () => {
-    const result = evaluateCulturalProvision(DEMO_ACTIVITIES);
-    expect(result.totalActivities).toBe(11);
-    // Most activities are child-chosen
-    expect(result.childChoiceRate).toBeGreaterThan(70);
-    // All activities are enjoyed
-    expect(result.childEnjoymentRate).toBe(100);
-    // Most have community links
-    expect(result.communityLinkRate).toBeGreaterThan(70);
-    // Good variety of activity types
+  it("scores demo data appropriately", () => {
+    const result = evaluateCulturalActivities(DEMO_ACTIVITIES, TOTAL_CHILDREN);
+    expect(result.totalActivities).toBe(9);
+    expect(result.engagementRate).toBeGreaterThan(70);
+    expect(result.positiveFeedbackRate).toBe(100);
+    expect(result.childrenReachedRate).toBe(100);
     expect(result.activityVariety).toBeGreaterThan(4);
     expect(result.overallScore).toBeGreaterThan(0);
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// evaluateDietaryRespect
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
+// evaluateIdentityPlanning
+// =============================================================================
 
-describe("evaluateDietaryRespect", () => {
-  it("returns zero scores for empty records", () => {
-    const result = evaluateDietaryRespect([]);
+describe("evaluateIdentityPlanning", () => {
+  it("returns zero scores for empty plans", () => {
+    const result = evaluateIdentityPlanning([]);
     expect(result.overallScore).toBe(0);
-    expect(result.totalRecords).toBe(0);
-    expect(result.fullyMetRate).toBe(0);
-    expect(result.childSatisfiedRate).toBe(0);
-    expect(result.reviewedRate).toBe(0);
+    expect(result.totalPlans).toBe(0);
+    expect(result.planInPlaceRate).toBe(0);
+    expect(result.identityDocumentedRate).toBe(0);
+    expect(result.lifeStoryRate).toBe(0);
+    expect(result.mentorRate).toBe(0);
+    expect(result.communityLinksRate).toBe(0);
   });
 
-  it("returns 25 for all not_applicable records", () => {
-    const records = [
-      makeDietary({ id: "d1", provision: "not_applicable" }),
-      makeDietary({ id: "d2", provision: "not_applicable" }),
-    ];
-    const result = evaluateDietaryRespect(records);
+  it("scores maximum for perfect plans", () => {
+    const plans = Array.from({ length: 3 }, (_, i) =>
+      makePlan({
+        id: `p${i}`,
+        planInPlace: true,
+        identityNeedsDocumented: true,
+        lifeStoryWorkActive: true,
+        culturalMentorAssigned: true,
+        communityLinksEstablished: true,
+      }),
+    );
+    const result = evaluateIdentityPlanning(plans);
     expect(result.overallScore).toBe(25);
-    expect(result.totalRecords).toBe(2);
+    expect(result.planInPlaceRate).toBe(100);
+    expect(result.identityDocumentedRate).toBe(100);
+    expect(result.lifeStoryRate).toBe(100);
+    expect(result.mentorRate).toBe(100);
+    expect(result.communityLinksRate).toBe(100);
   });
 
-  it("scores high for all fully met, satisfied, and reviewed", () => {
-    const records = [
-      makeDietary({ id: "d1", provision: "fully_met", childSatisfied: true, reviewDate: "2026-03-01" }),
-      makeDietary({ id: "d2", provision: "fully_met", childSatisfied: true, reviewDate: "2026-03-01" }),
-      makeDietary({ id: "d3", provision: "fully_met", childSatisfied: true, reviewDate: "2026-03-01" }),
+  it("calculates plan in place rate correctly", () => {
+    const plans = [
+      makePlan({ id: "p1", planInPlace: true }),
+      makePlan({ id: "p2", planInPlace: true }),
+      makePlan({ id: "p3", planInPlace: false }),
     ];
-    const result = evaluateDietaryRespect(records);
-    expect(result.overallScore).toBe(25);
-    expect(result.fullyMetRate).toBe(100);
-    expect(result.childSatisfiedRate).toBe(100);
-    expect(result.reviewedRate).toBe(100);
+    const result = evaluateIdentityPlanning(plans);
+    expect(result.planInPlaceRate).toBe(67);
   });
 
-  it("calculates fully met rate correctly", () => {
-    const records = [
-      makeDietary({ id: "d1", provision: "fully_met" }),
-      makeDietary({ id: "d2", provision: "mostly_met" }),
-      makeDietary({ id: "d3", provision: "not_met" }),
-    ];
-    const result = evaluateDietaryRespect(records);
-    expect(result.fullyMetRate).toBe(33);
+  it("awards 6 points for plan in place >= 90%", () => {
+    const plans = Array.from({ length: 10 }, (_, i) =>
+      makePlan({
+        id: `p${i}`,
+        planInPlace: i < 9 ? true : false,
+        identityNeedsDocumented: false,
+        lifeStoryWorkActive: false,
+        culturalMentorAssigned: false,
+        communityLinksEstablished: false,
+      }),
+    );
+    const result = evaluateIdentityPlanning(plans);
+    expect(result.planInPlaceRate).toBe(90);
+    // 6 (plan) + 0 + 0 + 0 + 0 = 6
+    expect(result.overallScore).toBe(6);
   });
 
-  it("awards 10 points for fully met rate >= 90%", () => {
-    const records = [
-      makeDietary({ id: "d1", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d2", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d3", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d4", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d5", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d6", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d7", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d8", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d9", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d10", provision: "mostly_met", childSatisfied: false, reviewDate: null }),
+  it("awards 4 points for plan in place >= 70% but < 90%", () => {
+    const plans = [
+      makePlan({ id: "p1", planInPlace: true, identityNeedsDocumented: false, lifeStoryWorkActive: false, culturalMentorAssigned: false, communityLinksEstablished: false }),
+      makePlan({ id: "p2", planInPlace: true, identityNeedsDocumented: false, lifeStoryWorkActive: false, culturalMentorAssigned: false, communityLinksEstablished: false }),
+      makePlan({ id: "p3", planInPlace: false, identityNeedsDocumented: false, lifeStoryWorkActive: false, culturalMentorAssigned: false, communityLinksEstablished: false }),
     ];
-    const result = evaluateDietaryRespect(records);
-    expect(result.fullyMetRate).toBe(90);
-    // 10 (fully met) + 0 (satisfied) + 0 (reviewed) = 10
-    expect(result.overallScore).toBe(10);
+    const result = evaluateIdentityPlanning(plans);
+    expect(result.planInPlaceRate).toBe(67);
+    // 2 (plan 50-69%) => but actually 67 >= 50 so score 2
+    expect(result.overallScore).toBe(2);
   });
 
-  it("awards 7 points for fully met rate >= 70% but < 90%", () => {
-    const records = [
-      makeDietary({ id: "d1", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d2", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d3", provision: "fully_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d4", provision: "mostly_met", childSatisfied: false, reviewDate: null }),
+  it("calculates identity documented rate correctly", () => {
+    const plans = [
+      makePlan({ id: "p1", identityNeedsDocumented: true }),
+      makePlan({ id: "p2", identityNeedsDocumented: false }),
+      makePlan({ id: "p3", identityNeedsDocumented: true }),
     ];
-    const result = evaluateDietaryRespect(records);
-    expect(result.fullyMetRate).toBe(75);
-    // 7 (fully met) + 0 + 0 = 7
-    expect(result.overallScore).toBe(7);
+    const result = evaluateIdentityPlanning(plans);
+    expect(result.identityDocumentedRate).toBe(67);
   });
 
-  it("calculates child satisfied rate correctly", () => {
-    const records = [
-      makeDietary({ id: "d1", childSatisfied: true }),
-      makeDietary({ id: "d2", childSatisfied: true }),
-      makeDietary({ id: "d3", childSatisfied: false }),
+  it("calculates life story rate correctly", () => {
+    const plans = [
+      makePlan({ id: "p1", lifeStoryWorkActive: true }),
+      makePlan({ id: "p2", lifeStoryWorkActive: true }),
+      makePlan({ id: "p3", lifeStoryWorkActive: false }),
+      makePlan({ id: "p4", lifeStoryWorkActive: false }),
     ];
-    const result = evaluateDietaryRespect(records);
-    expect(result.childSatisfiedRate).toBe(67);
+    const result = evaluateIdentityPlanning(plans);
+    expect(result.lifeStoryRate).toBe(50);
   });
 
-  it("calculates reviewed rate correctly", () => {
-    const records = [
-      makeDietary({ id: "d1", reviewDate: "2026-03-01" }),
-      makeDietary({ id: "d2", reviewDate: null }),
-      makeDietary({ id: "d3", reviewDate: "2026-02-15" }),
+  it("calculates mentor rate correctly", () => {
+    const plans = [
+      makePlan({ id: "p1", culturalMentorAssigned: true }),
+      makePlan({ id: "p2", culturalMentorAssigned: false }),
+      makePlan({ id: "p3", culturalMentorAssigned: false }),
     ];
-    const result = evaluateDietaryRespect(records);
-    expect(result.reviewedRate).toBe(67);
+    const result = evaluateIdentityPlanning(plans);
+    expect(result.mentorRate).toBe(33);
   });
 
-  it("scores zero for all not met, unsatisfied, unreviewed", () => {
-    const records = [
-      makeDietary({ id: "d1", provision: "not_met", childSatisfied: false, reviewDate: null }),
-      makeDietary({ id: "d2", provision: "not_met", childSatisfied: false, reviewDate: null }),
+  it("calculates community links rate correctly", () => {
+    const plans = [
+      makePlan({ id: "p1", communityLinksEstablished: true }),
+      makePlan({ id: "p2", communityLinksEstablished: true }),
+      makePlan({ id: "p3", communityLinksEstablished: true }),
     ];
-    const result = evaluateDietaryRespect(records);
+    const result = evaluateIdentityPlanning(plans);
+    expect(result.communityLinksRate).toBe(100);
+  });
+
+  it("gives zero for all false across every field", () => {
+    const plans = [
+      makePlan({ id: "p1", planInPlace: false, identityNeedsDocumented: false, lifeStoryWorkActive: false, culturalMentorAssigned: false, communityLinksEstablished: false }),
+      makePlan({ id: "p2", planInPlace: false, identityNeedsDocumented: false, lifeStoryWorkActive: false, culturalMentorAssigned: false, communityLinksEstablished: false }),
+    ];
+    const result = evaluateIdentityPlanning(plans);
     expect(result.overallScore).toBe(0);
   });
 
   it("caps score at 25", () => {
-    const records = Array.from({ length: 10 }, (_, i) =>
-      makeDietary({ id: `d${i}`, provision: "fully_met", childSatisfied: true, reviewDate: "2026-03-01" }),
+    const plans = Array.from({ length: 10 }, (_, i) =>
+      makePlan({ id: `p${i}` }),
     );
-    const result = evaluateDietaryRespect(records);
+    const result = evaluateIdentityPlanning(plans);
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
-  it("handles single record correctly", () => {
-    const result = evaluateDietaryRespect([
-      makeDietary({ provision: "fully_met", childSatisfied: true, reviewDate: "2026-03-01" }),
-    ]);
-    expect(result.totalRecords).toBe(1);
-    expect(result.fullyMetRate).toBe(100);
+  it("handles single plan correctly", () => {
+    const result = evaluateIdentityPlanning([makePlan()]);
+    expect(result.totalPlans).toBe(1);
+    expect(result.planInPlaceRate).toBe(100);
   });
 
-  it("filters out not_applicable for scoring calculations", () => {
-    const records = [
-      makeDietary({ id: "d1", provision: "not_applicable" }),
-      makeDietary({ id: "d2", provision: "fully_met", childSatisfied: true, reviewDate: "2026-03-01" }),
-    ];
-    const result = evaluateDietaryRespect(records);
-    expect(result.totalRecords).toBe(2);
-    // Only 1 applicable record, which is fully met
-    expect(result.fullyMetRate).toBe(100);
-  });
-
-  it("scores demo data (Oak House) appropriately", () => {
-    const result = evaluateDietaryRespect(DEMO_DIETARY);
-    expect(result.totalRecords).toBe(3);
-    // 1 not_applicable (Alex), 1 mostly_met (Jordan), 1 fully_met (Morgan)
-    // Applicable: Jordan (mostly_met) + Morgan (fully_met) = 50% fully met
-    expect(result.fullyMetRate).toBe(50);
-    // Both applicable children are satisfied
-    expect(result.childSatisfiedRate).toBe(100);
-    // Both have review dates
-    expect(result.reviewedRate).toBe(100);
-    expect(result.overallScore).toBeGreaterThan(0);
+  it("scores demo data appropriately", () => {
+    const result = evaluateIdentityPlanning(DEMO_PLANS);
+    expect(result.totalPlans).toBe(3);
+    expect(result.planInPlaceRate).toBe(100);
+    expect(result.identityDocumentedRate).toBe(100);
+    expect(result.lifeStoryRate).toBe(100);
+    expect(result.communityLinksRate).toBe(100);
+    expect(result.mentorRate).toBe(67);
+    expect(result.overallScore).toBeGreaterThan(15);
+    expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// evaluateStaffCompetence
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
+// evaluateStaffCulturalReadiness
+// =============================================================================
 
-describe("evaluateStaffCompetence", () => {
-  it("returns zero scores for empty staff", () => {
-    const result = evaluateStaffCompetence([]);
+describe("evaluateStaffCulturalReadiness", () => {
+  it("returns zero scores for empty training", () => {
+    const result = evaluateStaffCulturalReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.competentAdvancedRate).toBe(0);
-    expect(result.languageSupportRate).toBe(0);
-    expect(result.faithNeedsRate).toBe(0);
-    expect(result.antiRacistRate).toBe(0);
-    expect(result.trainingCompletedRate).toBe(0);
+    expect(result.awarenessRate).toBe(0);
+    expect(result.antiRacismRate).toBe(0);
+    expect(result.religiousLiteracyRate).toBe(0);
+    expect(result.identitySupportRate).toBe(0);
+    expect(result.lgbtqAwarenessRate).toBe(0);
+    expect(result.communicationDiversityRate).toBe(0);
   });
 
-  it("scores high for all advanced, fully competent staff", () => {
-    const staff = [
-      makeStaff({ id: "s1", competenceLevel: "advanced", canSupportLanguage: true, understandsFaithNeeds: true, antiRacistPractice: true, trainingCompleted: ["Training A"] }),
-      makeStaff({ id: "s2", competenceLevel: "competent", canSupportLanguage: true, understandsFaithNeeds: true, antiRacistPractice: true, trainingCompleted: ["Training B"] }),
-      makeStaff({ id: "s3", competenceLevel: "advanced", canSupportLanguage: true, understandsFaithNeeds: true, antiRacistPractice: true, trainingCompleted: ["Training C"] }),
-    ];
-    const result = evaluateStaffCompetence(staff);
+  it("scores maximum for perfect training", () => {
+    const training = Array.from({ length: 3 }, (_, i) =>
+      makeTraining({ id: `t${i}` }),
+    );
+    const result = evaluateStaffCulturalReadiness(training);
     expect(result.overallScore).toBe(25);
-    expect(result.competentAdvancedRate).toBe(100);
-    expect(result.languageSupportRate).toBe(100);
-    expect(result.faithNeedsRate).toBe(100);
-    expect(result.antiRacistRate).toBe(100);
-    expect(result.trainingCompletedRate).toBe(100);
+    expect(result.awarenessRate).toBe(100);
+    expect(result.antiRacismRate).toBe(100);
+    expect(result.religiousLiteracyRate).toBe(100);
+    expect(result.identitySupportRate).toBe(100);
+    expect(result.lgbtqAwarenessRate).toBe(100);
+    expect(result.communicationDiversityRate).toBe(100);
   });
 
-  it("calculates competent/advanced rate correctly", () => {
-    const staff = [
-      makeStaff({ id: "s1", competenceLevel: "advanced" }),
-      makeStaff({ id: "s2", competenceLevel: "competent" }),
-      makeStaff({ id: "s3", competenceLevel: "developing" }),
-      makeStaff({ id: "s4", competenceLevel: "needs_training" }),
+  it("calculates awareness rate correctly", () => {
+    const training = [
+      makeTraining({ id: "t1", culturalAwareness: true }),
+      makeTraining({ id: "t2", culturalAwareness: true }),
+      makeTraining({ id: "t3", culturalAwareness: false }),
     ];
-    const result = evaluateStaffCompetence(staff);
-    expect(result.competentAdvancedRate).toBe(50);
+    const result = evaluateStaffCulturalReadiness(training);
+    expect(result.awarenessRate).toBe(67);
   });
 
-  it("awards 7 points for competent/advanced >= 80%", () => {
-    const staff = [
-      makeStaff({ id: "s1", competenceLevel: "advanced", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
-      makeStaff({ id: "s2", competenceLevel: "competent", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
-      makeStaff({ id: "s3", competenceLevel: "competent", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
-      makeStaff({ id: "s4", competenceLevel: "competent", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
-      makeStaff({ id: "s5", competenceLevel: "developing", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
-    ];
-    const result = evaluateStaffCompetence(staff);
-    expect(result.competentAdvancedRate).toBe(80);
-    // 7 (competence) + 0 + 0 + 0 + 0 = 7
-    expect(result.overallScore).toBe(7);
-  });
-
-  it("awards 5 points for competent/advanced >= 60% but < 80%", () => {
-    const staff = [
-      makeStaff({ id: "s1", competenceLevel: "competent", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
-      makeStaff({ id: "s2", competenceLevel: "competent", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
-      makeStaff({ id: "s3", competenceLevel: "developing", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
-    ];
-    const result = evaluateStaffCompetence(staff);
-    expect(result.competentAdvancedRate).toBe(67);
-    // 5 (competence) + 0 + 0 + 0 + 0 = 5
+  it("awards 5 points for awareness >= 90%", () => {
+    const training = Array.from({ length: 10 }, (_, i) =>
+      makeTraining({
+        id: `t${i}`,
+        culturalAwareness: i < 9 ? true : false,
+        antiRacism: false, religiousLiteracy: false,
+        identitySupport: false, lgbtqAwareness: false, communicationDiversity: false,
+      }),
+    );
+    const result = evaluateStaffCulturalReadiness(training);
+    expect(result.awarenessRate).toBe(90);
+    // 5 (awareness) + 0 + 0 + 0 + 0 + 0 = 5
     expect(result.overallScore).toBe(5);
   });
 
-  it("calculates language support rate correctly", () => {
-    const staff = [
-      makeStaff({ id: "s1", canSupportLanguage: true }),
-      makeStaff({ id: "s2", canSupportLanguage: false }),
-      makeStaff({ id: "s3", canSupportLanguage: false }),
+  it("awards 3 points for awareness >= 70% but < 90%", () => {
+    const training = [
+      makeTraining({ id: "t1", culturalAwareness: true, antiRacism: false, religiousLiteracy: false, identitySupport: false, lgbtqAwareness: false, communicationDiversity: false }),
+      makeTraining({ id: "t2", culturalAwareness: true, antiRacism: false, religiousLiteracy: false, identitySupport: false, lgbtqAwareness: false, communicationDiversity: false }),
+      makeTraining({ id: "t3", culturalAwareness: false, antiRacism: false, religiousLiteracy: false, identitySupport: false, lgbtqAwareness: false, communicationDiversity: false }),
     ];
-    const result = evaluateStaffCompetence(staff);
-    expect(result.languageSupportRate).toBe(33);
+    const result = evaluateStaffCulturalReadiness(training);
+    expect(result.awarenessRate).toBe(67);
+    // 67 < 70 => 1 point for awareness >= 50%
+    expect(result.overallScore).toBe(1);
   });
 
-  it("calculates faith needs rate correctly", () => {
-    const staff = [
-      makeStaff({ id: "s1", understandsFaithNeeds: true }),
-      makeStaff({ id: "s2", understandsFaithNeeds: true }),
-      makeStaff({ id: "s3", understandsFaithNeeds: false }),
+  it("calculates anti-racism rate correctly", () => {
+    const training = [
+      makeTraining({ id: "t1", antiRacism: true }),
+      makeTraining({ id: "t2", antiRacism: false }),
+      makeTraining({ id: "t3", antiRacism: true }),
     ];
-    const result = evaluateStaffCompetence(staff);
-    expect(result.faithNeedsRate).toBe(67);
+    const result = evaluateStaffCulturalReadiness(training);
+    expect(result.antiRacismRate).toBe(67);
   });
 
-  it("calculates anti-racist rate correctly", () => {
-    const staff = [
-      makeStaff({ id: "s1", antiRacistPractice: true }),
-      makeStaff({ id: "s2", antiRacistPractice: true }),
-      makeStaff({ id: "s3", antiRacistPractice: false }),
+  it("calculates religious literacy rate correctly", () => {
+    const training = [
+      makeTraining({ id: "t1", religiousLiteracy: true }),
+      makeTraining({ id: "t2", religiousLiteracy: true }),
+      makeTraining({ id: "t3", religiousLiteracy: false }),
+      makeTraining({ id: "t4", religiousLiteracy: false }),
     ];
-    const result = evaluateStaffCompetence(staff);
-    expect(result.antiRacistRate).toBe(67);
+    const result = evaluateStaffCulturalReadiness(training);
+    expect(result.religiousLiteracyRate).toBe(50);
   });
 
-  it("calculates training completed rate correctly", () => {
-    const staff = [
-      makeStaff({ id: "s1", trainingCompleted: ["Training A"] }),
-      makeStaff({ id: "s2", trainingCompleted: [] }),
-      makeStaff({ id: "s3", trainingCompleted: ["Training B", "Training C"] }),
+  it("calculates identity support rate correctly", () => {
+    const training = [
+      makeTraining({ id: "t1", identitySupport: true }),
+      makeTraining({ id: "t2", identitySupport: true }),
+      makeTraining({ id: "t3", identitySupport: true }),
     ];
-    const result = evaluateStaffCompetence(staff);
-    expect(result.trainingCompletedRate).toBe(67);
+    const result = evaluateStaffCulturalReadiness(training);
+    expect(result.identitySupportRate).toBe(100);
   });
 
-  it("scores zero for all needs_training, no skills", () => {
-    const staff = [
-      makeStaff({ id: "s1", competenceLevel: "needs_training", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
-      makeStaff({ id: "s2", competenceLevel: "needs_training", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
+  it("calculates LGBTQ awareness rate correctly", () => {
+    const training = [
+      makeTraining({ id: "t1", lgbtqAwareness: true }),
+      makeTraining({ id: "t2", lgbtqAwareness: false }),
     ];
-    const result = evaluateStaffCompetence(staff);
+    const result = evaluateStaffCulturalReadiness(training);
+    expect(result.lgbtqAwarenessRate).toBe(50);
+  });
+
+  it("calculates communication diversity rate correctly", () => {
+    const training = [
+      makeTraining({ id: "t1", communicationDiversity: true }),
+      makeTraining({ id: "t2", communicationDiversity: false }),
+      makeTraining({ id: "t3", communicationDiversity: false }),
+    ];
+    const result = evaluateStaffCulturalReadiness(training);
+    expect(result.communicationDiversityRate).toBe(33);
+  });
+
+  it("gives zero for all false across every field", () => {
+    const training = [
+      makeTraining({ id: "t1", culturalAwareness: false, antiRacism: false, religiousLiteracy: false, identitySupport: false, lgbtqAwareness: false, communicationDiversity: false }),
+      makeTraining({ id: "t2", culturalAwareness: false, antiRacism: false, religiousLiteracy: false, identitySupport: false, lgbtqAwareness: false, communicationDiversity: false }),
+    ];
+    const result = evaluateStaffCulturalReadiness(training);
     expect(result.overallScore).toBe(0);
   });
 
   it("caps score at 25", () => {
-    const staff = Array.from({ length: 10 }, (_, i) =>
-      makeStaff({ id: `s${i}`, competenceLevel: "advanced", canSupportLanguage: true, understandsFaithNeeds: true, antiRacistPractice: true, trainingCompleted: ["Training"] }),
+    const training = Array.from({ length: 10 }, (_, i) =>
+      makeTraining({ id: `t${i}` }),
     );
-    const result = evaluateStaffCompetence(staff);
+    const result = evaluateStaffCulturalReadiness(training);
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
   it("handles single staff member correctly", () => {
-    const result = evaluateStaffCompetence([
-      makeStaff({ competenceLevel: "advanced", canSupportLanguage: true, understandsFaithNeeds: true, antiRacistPractice: true, trainingCompleted: ["Training"] }),
-    ]);
+    const result = evaluateStaffCulturalReadiness([makeTraining()]);
     expect(result.totalStaff).toBe(1);
-    expect(result.competentAdvancedRate).toBe(100);
+    expect(result.awarenessRate).toBe(100);
   });
 
-  it("scores demo data (Oak House) appropriately", () => {
-    const result = evaluateStaffCompetence(DEMO_STAFF);
+  it("scores demo data appropriately", () => {
+    const result = evaluateStaffCulturalReadiness(DEMO_TRAINING);
     expect(result.totalStaff).toBe(3);
-    // Sarah (competent) + Lisa (advanced) = 2/3 = 67%
-    expect(result.competentAdvancedRate).toBe(67);
-    // Only Lisa can support language = 1/3 = 33%
-    expect(result.languageSupportRate).toBe(33);
-    // Sarah + Lisa understand faith = 2/3 = 67%
-    expect(result.faithNeedsRate).toBe(67);
-    // All 3 have anti-racist practice
-    expect(result.antiRacistRate).toBe(100);
-    // All 3 have training completed
-    expect(result.trainingCompletedRate).toBe(100);
+    expect(result.awarenessRate).toBe(100);
+    expect(result.antiRacismRate).toBe(100);
+    expect(result.religiousLiteracyRate).toBe(67);
+    expect(result.identitySupportRate).toBe(67);
+    expect(result.lgbtqAwarenessRate).toBe(67);
+    expect(result.communicationDiversityRate).toBe(33);
     expect(result.overallScore).toBeGreaterThan(0);
+    expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// buildChildCulturalProfiles
-// ══════════════════════════════════════════════════════════════════════════════
-
-describe("buildChildCulturalProfiles", () => {
-  it("returns empty array when no data", () => {
-    const profiles = buildChildCulturalProfiles([], [], []);
-    expect(profiles).toHaveLength(0);
-  });
-
-  it("builds profiles from assessments alone", () => {
-    const assessments = [
-      makeAssessment({ id: "a1", childId: "child-alex", childName: "Alex", dimension: "ethnicity", supportLevel: "fully_supported" }),
-      makeAssessment({ id: "a2", childId: "child-alex", childName: "Alex", dimension: "religion", supportLevel: "fully_supported" }),
-    ];
-    const profiles = buildChildCulturalProfiles(assessments, [], []);
-    expect(profiles).toHaveLength(1);
-    expect(profiles[0].childId).toBe("child-alex");
-    expect(profiles[0].dimensionsAssessed).toBe(2);
-    expect(profiles[0].fullySupportedDimensions).toBe(2);
-    expect(profiles[0].activitiesCount).toBe(0);
-  });
-
-  it("builds profiles from activities alone", () => {
-    const activities = [
-      makeActivity({ id: "a1", childId: "child-alex", childName: "Alex" }),
-      makeActivity({ id: "a2", childId: "child-alex", childName: "Alex" }),
-    ];
-    const profiles = buildChildCulturalProfiles([], activities, []);
-    expect(profiles).toHaveLength(1);
-    expect(profiles[0].activitiesCount).toBe(2);
-    expect(profiles[0].dimensionsAssessed).toBe(0);
-  });
-
-  it("builds profiles from dietary records alone", () => {
-    const dietary = [
-      makeDietary({ id: "d1", childId: "child-jordan", childName: "Jordan", provision: "fully_met" }),
-    ];
-    const profiles = buildChildCulturalProfiles([], [], dietary);
-    expect(profiles).toHaveLength(1);
-    expect(profiles[0].dietaryMetRate).toBe(100);
-  });
-
-  it("merges data from all sources for the same child", () => {
-    const assessments = [makeAssessment({ childId: "child-alex", childName: "Alex", dimension: "ethnicity", supportLevel: "fully_supported" })];
-    const activities = [makeActivity({ childId: "child-alex", childName: "Alex" })];
-    const dietary = [makeDietary({ childId: "child-alex", childName: "Alex", provision: "fully_met" })];
-
-    const profiles = buildChildCulturalProfiles(assessments, activities, dietary);
-    expect(profiles).toHaveLength(1);
-    expect(profiles[0].dimensionsAssessed).toBe(1);
-    expect(profiles[0].activitiesCount).toBe(1);
-    expect(profiles[0].dietaryMetRate).toBe(100);
-  });
-
-  it("creates separate profiles for different children", () => {
-    const assessments = [
-      makeAssessment({ id: "a1", childId: "child-alex", childName: "Alex" }),
-      makeAssessment({ id: "a2", childId: "child-jordan", childName: "Jordan" }),
-    ];
-    const profiles = buildChildCulturalProfiles(assessments, [], []);
-    expect(profiles).toHaveLength(2);
-    const alexProfile = profiles.find((p) => p.childId === "child-alex");
-    const jordanProfile = profiles.find((p) => p.childId === "child-jordan");
-    expect(alexProfile).toBeDefined();
-    expect(jordanProfile).toBeDefined();
-  });
-
-  it("calculates profile score correctly for well-supported child", () => {
-    const assessments = [
-      makeAssessment({ id: "a1", childId: "child-alex", childName: "Alex", dimension: "ethnicity", supportLevel: "fully_supported", childViewsSought: true }),
-      makeAssessment({ id: "a2", childId: "child-alex", childName: "Alex", dimension: "religion", supportLevel: "fully_supported", childViewsSought: true }),
-      makeAssessment({ id: "a3", childId: "child-alex", childName: "Alex", dimension: "heritage", supportLevel: "fully_supported", childViewsSought: true }),
-      makeAssessment({ id: "a4", childId: "child-alex", childName: "Alex", dimension: "language", supportLevel: "fully_supported", childViewsSought: true }),
-      makeAssessment({ id: "a5", childId: "child-alex", childName: "Alex", dimension: "family_traditions", supportLevel: "fully_supported", childViewsSought: true }),
-    ];
-    const activities = [
-      makeActivity({ id: "act1", childId: "child-alex", childName: "Alex" }),
-      makeActivity({ id: "act2", childId: "child-alex", childName: "Alex" }),
-      makeActivity({ id: "act3", childId: "child-alex", childName: "Alex" }),
-    ];
-    const dietary = [makeDietary({ childId: "child-alex", childName: "Alex", provision: "fully_met" })];
-
-    const profiles = buildChildCulturalProfiles(assessments, activities, dietary);
-    // 5 dims => 3 pts, 100% fully supported => 2 pts, 3 activities => 2 pts, fully met => 2 pts, 100% views => 1 pt = 10
-    expect(profiles[0].overallScore).toBe(10);
-  });
-
-  it("calculates profile score correctly for poorly supported child", () => {
-    const assessments = [
-      makeAssessment({ id: "a1", childId: "child-jordan", childName: "Jordan", dimension: "ethnicity", supportLevel: "not_supported", childViewsSought: false }),
-    ];
-    const profiles = buildChildCulturalProfiles(assessments, [], []);
-    // 1 dim => 1 pt, 0% fully supported => 0 pts, 0 activities => 0 pts, no dietary => 1 pt, 0% views => 0 pt = 2
-    expect(profiles[0].overallScore).toBe(2);
-  });
-
-  it("caps profile score at 10", () => {
-    const dimensions: IdentityDimension[] = ["ethnicity", "religion", "language", "heritage", "disability", "gender_identity", "nationality"];
-    const assessments = dimensions.map((dim, i) =>
-      makeAssessment({ id: `a${i}`, childId: "child-alex", childName: "Alex", dimension: dim, supportLevel: "fully_supported", childViewsSought: true }),
-    );
-    const activities = Array.from({ length: 10 }, (_, i) =>
-      makeActivity({ id: `act${i}`, childId: "child-alex", childName: "Alex" }),
-    );
-    const dietary = [makeDietary({ childId: "child-alex", childName: "Alex", provision: "fully_met" })];
-
-    const profiles = buildChildCulturalProfiles(assessments, activities, dietary);
-    expect(profiles[0].overallScore).toBeLessThanOrEqual(10);
-  });
-
-  it("gives neutral dietary score for not_applicable records", () => {
-    const dietary = [makeDietary({ childId: "child-alex", childName: "Alex", provision: "not_applicable" })];
-    const profiles = buildChildCulturalProfiles([], [], dietary);
-    // No applicable dietary => 1 point (neutral)
-    expect(profiles[0].dietaryMetRate).toBe(0);
-  });
-
-  it("counts fully supported dimensions correctly", () => {
-    const assessments = [
-      makeAssessment({ id: "a1", childId: "child-alex", childName: "Alex", dimension: "ethnicity", supportLevel: "fully_supported" }),
-      makeAssessment({ id: "a2", childId: "child-alex", childName: "Alex", dimension: "religion", supportLevel: "mostly_supported" }),
-      makeAssessment({ id: "a3", childId: "child-alex", childName: "Alex", dimension: "heritage", supportLevel: "fully_supported" }),
-    ];
-    const profiles = buildChildCulturalProfiles(assessments, [], []);
-    expect(profiles[0].fullySupportedDimensions).toBe(2);
-  });
-
-  it("scores demo data (Oak House) profiles correctly", () => {
-    const profiles = buildChildCulturalProfiles(DEMO_ASSESSMENTS, DEMO_ACTIVITIES, DEMO_DIETARY);
-    expect(profiles).toHaveLength(3);
-
-    const alex = profiles.find((p) => p.childId === "child-alex");
-    expect(alex).toBeDefined();
-    expect(alex!.dimensionsAssessed).toBe(4);
-    expect(alex!.fullySupportedDimensions).toBe(3); // ethnicity, religion, family_traditions
-    expect(alex!.activitiesCount).toBe(3);
-    expect(alex!.overallScore).toBeGreaterThanOrEqual(5);
-
-    const jordan = profiles.find((p) => p.childId === "child-jordan");
-    expect(jordan).toBeDefined();
-    expect(jordan!.dimensionsAssessed).toBe(5);
-    expect(jordan!.activitiesCount).toBe(4);
-    expect(jordan!.overallScore).toBeGreaterThanOrEqual(4);
-
-    const morgan = profiles.find((p) => p.childId === "child-morgan");
-    expect(morgan).toBeDefined();
-    expect(morgan!.dimensionsAssessed).toBe(4);
-    expect(morgan!.fullySupportedDimensions).toBe(3); // ethnicity, religion, heritage
-    expect(morgan!.activitiesCount).toBe(4);
-    expect(morgan!.dietaryMetRate).toBe(100);
-    expect(morgan!.overallScore).toBeGreaterThanOrEqual(6);
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
 // generateCulturalIdentitySupportIntelligence
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
 
 describe("generateCulturalIdentitySupportIntelligence", () => {
   it("returns complete intelligence for empty inputs", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      [], [], [], [],
+      [], [], [], [], 0,
       "oak-house", PERIOD_START, PERIOD_END,
     );
     expect(result.homeId).toBe("oak-house");
     expect(result.periodStart).toBe(PERIOD_START);
     expect(result.periodEnd).toBe(PERIOD_END);
-    // Identity=0, Provision=0, Dietary=0, Staff=0
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
-    expect(result.identityRecognition.overallScore).toBe(0);
-    expect(result.culturalProvision.overallScore).toBe(0);
-    expect(result.dietaryRespect.overallScore).toBe(0);
-    expect(result.staffCompetence.overallScore).toBe(0);
-    expect(result.childProfiles).toHaveLength(0);
+    expect(result.needsAssessment.overallScore).toBe(0);
+    expect(result.culturalActivities.overallScore).toBe(0);
+    expect(result.identityPlanning.overallScore).toBe(0);
+    expect(result.staffReadiness.overallScore).toBe(0);
     expect(result.regulatoryLinks.length).toBeGreaterThan(0);
   });
 
   it("generates correct intelligence for Oak House demo data", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      DEMO_ASSESSMENTS, DEMO_ACTIVITIES, DEMO_DIETARY, DEMO_STAFF,
+      DEMO_ASSESSMENTS, DEMO_ACTIVITIES, DEMO_PLANS, DEMO_TRAINING, TOTAL_CHILDREN,
       "oak-house", PERIOD_START, PERIOD_END,
     );
 
@@ -1121,93 +1123,91 @@ describe("generateCulturalIdentitySupportIntelligence", () => {
     expect(result.overallScore).toBeLessThanOrEqual(100);
     expect(["outstanding", "good", "requires_improvement", "inadequate"]).toContain(result.rating);
 
-    // Sub-scores
-    expect(result.identityRecognition.overallScore).toBeGreaterThan(0);
-    expect(result.identityRecognition.totalAssessments).toBe(13);
-    expect(result.culturalProvision.overallScore).toBeGreaterThan(0);
-    expect(result.culturalProvision.totalActivities).toBe(11);
-    expect(result.dietaryRespect.totalRecords).toBe(3);
-    expect(result.staffCompetence.totalStaff).toBe(3);
-
-    // Child profiles
-    expect(result.childProfiles).toHaveLength(3);
-
-    // Strengths, areas, actions
-    expect(result.strengths.length).toBeGreaterThanOrEqual(0);
-    expect(result.areasForImprovement.length).toBeGreaterThanOrEqual(0);
-    expect(result.actions.length).toBeGreaterThanOrEqual(0);
+    expect(result.needsAssessment.totalAssessments).toBe(13);
+    expect(result.culturalActivities.totalActivities).toBe(9);
+    expect(result.identityPlanning.totalPlans).toBe(3);
+    expect(result.staffReadiness.totalStaff).toBe(3);
   });
 
   it("caps overall score at 100", () => {
-    const dimensions: IdentityDimension[] = ["ethnicity", "religion", "language", "heritage", "disability", "gender_identity", "sexual_orientation", "nationality", "family_traditions"];
-    const assessments = dimensions.map((dim, i) =>
-      makeAssessment({ id: `a${i}`, dimension: dim, supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need", planInPlace: true }),
-    );
-    const types: CulturalActivityType[] = ["religious_observance", "cultural_celebration", "language_maintenance", "food_preparation", "community_connection", "heritage_exploration", "identity_work", "life_story"];
-    const activities = types.map((type, i) =>
-      makeActivity({ id: `act${i}`, activityType: type, childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
-    );
-    const dietary = [
-      makeDietary({ id: "d1", provision: "fully_met", childSatisfied: true, reviewDate: "2026-03-01" }),
+    const types: ActivityType[] = [
+      "cultural_celebration", "religious_observance", "heritage_activity",
+      "language_support", "community_visit",
     ];
-    const staff = Array.from({ length: 5 }, (_, i) =>
-      makeStaff({ id: `s${i}`, competenceLevel: "advanced", canSupportLanguage: true, understandsFaithNeeds: true, antiRacistPractice: true, trainingCompleted: ["Training"] }),
+    const assessments = Array.from({ length: 10 }, (_, i) =>
+      makeAssessment({
+        id: `a${i}`,
+        supportStatus: "fully_met",
+        reviewCurrent: true,
+        childConsulted: true,
+        familyConsulted: true,
+      }),
     );
+    const activities = types.map((type, i) =>
+      makeActivity({
+        id: `act${i}`, activityType: type,
+        childrenParticipated: ["child-alex", "child-jordan", "child-morgan"],
+        engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+      }),
+    );
+    const plans = Array.from({ length: 3 }, (_, i) => makePlan({ id: `p${i}` }));
+    const training = Array.from({ length: 5 }, (_, i) => makeTraining({ id: `t${i}` }));
+
     const result = generateCulturalIdentitySupportIntelligence(
-      assessments, activities, dietary, staff,
+      assessments, activities, plans, training, 3,
       "oak-house", PERIOD_START, PERIOD_END,
     );
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
-  it("includes regulatory links", () => {
+  it("includes all required regulatory links", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      [], [], [], [],
+      [], [], [], [], 0,
       "oak-house", PERIOD_START, PERIOD_END,
     );
-    expect(result.regulatoryLinks).toContain("CHR 2015 Reg 6 — quality of care standard including cultural identity needs");
-    expect(result.regulatoryLinks).toContain("Equality Act 2010 — protection from discrimination and promotion of equality");
-    expect(result.regulatoryLinks).toContain("UNCRC Article 8 — right to preservation of identity");
-    expect(result.regulatoryLinks).toContain("UNCRC Article 30 — right of minority children to enjoy their own culture, religion, and language");
-    expect(result.regulatoryLinks).toContain("CA 1989 s22(5)(c) — due consideration to religious, racial, cultural, and linguistic needs");
-  });
-
-  it("includes SCCIF, NMS 7, and Working Together references", () => {
-    const result = generateCulturalIdentitySupportIntelligence(
-      [], [], [], [],
-      "oak-house", PERIOD_START, PERIOD_END,
-    );
-    const sccif = result.regulatoryLinks.find((r) => r.includes("SCCIF"));
-    expect(sccif).toBeDefined();
-    const nms7 = result.regulatoryLinks.find((r) => r.includes("NMS 7"));
-    expect(nms7).toBeDefined();
-    const wt = result.regulatoryLinks.find((r) => r.includes("Working Together"));
-    expect(wt).toBeDefined();
+    expect(result.regulatoryLinks.some((r) => r.includes("CHR 2015 Reg 10"))).toBe(true);
+    expect(result.regulatoryLinks.some((r) => r.includes("CHR 2015 Reg 14"))).toBe(true);
+    expect(result.regulatoryLinks.some((r) => r.includes("SCCIF"))).toBe(true);
+    expect(result.regulatoryLinks.some((r) => r.includes("UNCRC Article 8"))).toBe(true);
+    expect(result.regulatoryLinks.some((r) => r.includes("UNCRC Article 30"))).toBe(true);
+    expect(result.regulatoryLinks.some((r) => r.includes("Equality Act 2010"))).toBe(true);
+    expect(result.regulatoryLinks.some((r) => r.includes("Children Act 1989"))).toBe(true);
   });
 
   it("generates strengths when performance is high", () => {
-    const dimensions: IdentityDimension[] = ["ethnicity", "religion", "language", "heritage", "disability", "gender_identity", "nationality"];
-    const assessments = dimensions.map((dim, i) =>
-      makeAssessment({ id: `a${i}`, dimension: dim, supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need", planInPlace: true }),
+    const assessments = Array.from({ length: 5 }, (_, i) =>
+      makeAssessment({
+        id: `a${i}`,
+        supportStatus: "fully_met",
+        reviewCurrent: true,
+        childConsulted: true,
+        familyConsulted: true,
+      }),
     );
-    const types: CulturalActivityType[] = ["religious_observance", "cultural_celebration", "language_maintenance", "food_preparation", "community_connection"];
-    const activities = types.map((type, i) =>
-      makeActivity({ id: `act${i}`, activityType: type, childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
-    );
-    const staff = [
-      makeStaff({ id: "s1", competenceLevel: "advanced", canSupportLanguage: true, understandsFaithNeeds: true, antiRacistPractice: true, trainingCompleted: ["Training"] }),
+    const types: ActivityType[] = [
+      "cultural_celebration", "religious_observance", "heritage_activity",
+      "language_support", "community_visit",
     ];
+    const activities = types.map((type, i) =>
+      makeActivity({
+        id: `act${i}`, activityType: type,
+        childrenParticipated: ["child-alex", "child-jordan", "child-morgan"],
+        engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+      }),
+    );
+    const plans = Array.from({ length: 3 }, (_, i) => makePlan({ id: `p${i}` }));
+    const training = Array.from({ length: 3 }, (_, i) => makeTraining({ id: `t${i}` }));
+
     const result = generateCulturalIdentitySupportIntelligence(
-      assessments, activities, [], staff,
+      assessments, activities, plans, training, 3,
       "oak-house", PERIOD_START, PERIOD_END,
     );
     expect(result.strengths.length).toBeGreaterThan(0);
-    expect(result.strengths.some((s) => s.includes("identity support"))).toBe(true);
   });
 
   it("generates areas for improvement when data is missing", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      [], [], [], [],
+      [], [], [], [], 0,
       "oak-house", PERIOD_START, PERIOD_END,
     );
     expect(result.areasForImprovement.length).toBeGreaterThan(0);
@@ -1215,60 +1215,76 @@ describe("generateCulturalIdentitySupportIntelligence", () => {
 
   it("generates urgent actions when no assessments recorded", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      [], [], [], [],
+      [], [], [], [], 0,
       "oak-house", PERIOD_START, PERIOD_END,
     );
     expect(result.actions.some((a) => a.includes("URGENT"))).toBe(true);
-    expect(result.actions.some((a) => a.includes("cultural identity assessments"))).toBe(true);
+    expect(result.actions.some((a) => a.includes("cultural needs assessments"))).toBe(true);
   });
 
   it("generates urgent actions when no activities recorded", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      [makeAssessment()], [], [], [],
+      [makeAssessment()], [], [], [], 0,
       "oak-house", PERIOD_START, PERIOD_END,
     );
     expect(result.actions.some((a) => a.includes("cultural activities programme"))).toBe(true);
   });
 
-  it("generates urgent actions when no staff competence assessed", () => {
+  it("generates urgent actions when no plans recorded", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      [makeAssessment()], [makeActivity()], [], [],
+      [makeAssessment()], [makeActivity()], [], [], 3,
       "oak-house", PERIOD_START, PERIOD_END,
     );
-    expect(result.actions.some((a) => a.includes("staff cultural competence"))).toBe(true);
+    expect(result.actions.some((a) => a.includes("identity plans"))).toBe(true);
+  });
+
+  it("generates urgent actions when no staff training recorded", () => {
+    const result = generateCulturalIdentitySupportIntelligence(
+      [makeAssessment()], [makeActivity()], [makePlan()], [], 3,
+      "oak-house", PERIOD_START, PERIOD_END,
+    );
+    expect(result.actions.some((a) => a.includes("staff cultural training"))).toBe(true);
   });
 
   it("sums all four sub-scores for overall score", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      DEMO_ASSESSMENTS, DEMO_ACTIVITIES, DEMO_DIETARY, DEMO_STAFF,
+      DEMO_ASSESSMENTS, DEMO_ACTIVITIES, DEMO_PLANS, DEMO_TRAINING, TOTAL_CHILDREN,
       "oak-house", PERIOD_START, PERIOD_END,
     );
     const expectedSum =
-      result.identityRecognition.overallScore +
-      result.culturalProvision.overallScore +
-      result.dietaryRespect.overallScore +
-      result.staffCompetence.overallScore;
+      result.needsAssessment.overallScore +
+      result.culturalActivities.overallScore +
+      result.identityPlanning.overallScore +
+      result.staffReadiness.overallScore;
     expect(result.overallScore).toBe(Math.min(expectedSum, 100));
   });
 
-  it("rating matches overall score", () => {
-    // Outstanding
-    const dimensions: IdentityDimension[] = ["ethnicity", "religion", "language", "heritage", "disability", "gender_identity", "nationality"];
-    const assessments = dimensions.map((dim, i) =>
-      makeAssessment({ id: `a${i}`, dimension: dim, supportLevel: "fully_supported", childViewsSought: true, needsIdentified: "need", planInPlace: true }),
+  it("rating matches overall score for outstanding", () => {
+    const assessments = Array.from({ length: 10 }, (_, i) =>
+      makeAssessment({
+        id: `a${i}`,
+        supportStatus: "fully_met",
+        reviewCurrent: true,
+        childConsulted: true,
+        familyConsulted: true,
+      }),
     );
-    const types: CulturalActivityType[] = ["religious_observance", "cultural_celebration", "language_maintenance", "food_preparation", "community_connection"];
+    const types: ActivityType[] = [
+      "cultural_celebration", "religious_observance", "heritage_activity",
+      "language_support", "community_visit",
+    ];
     const activities = types.map((type, i) =>
-      makeActivity({ id: `act${i}`, activityType: type, childChose: true, childEnjoyedIt: true, communityLink: true, staffFacilitated: true }),
+      makeActivity({
+        id: `act${i}`, activityType: type,
+        childrenParticipated: ["child-alex", "child-jordan", "child-morgan"],
+        engagement: "high", resourcesProvided: true, childFeedbackPositive: true,
+      }),
     );
-    const dietary = Array.from({ length: 3 }, (_, i) =>
-      makeDietary({ id: `d${i}`, provision: "fully_met", childSatisfied: true, reviewDate: "2026-03-01" }),
-    );
-    const staff = Array.from({ length: 3 }, (_, i) =>
-      makeStaff({ id: `s${i}`, competenceLevel: "advanced", canSupportLanguage: true, understandsFaithNeeds: true, antiRacistPractice: true, trainingCompleted: ["Training"] }),
-    );
+    const plans = Array.from({ length: 3 }, (_, i) => makePlan({ id: `p${i}` }));
+    const training = Array.from({ length: 3 }, (_, i) => makeTraining({ id: `t${i}` }));
+
     const highResult = generateCulturalIdentitySupportIntelligence(
-      assessments, activities, dietary, staff,
+      assessments, activities, plans, training, 3,
       "oak-house", PERIOD_START, PERIOD_END,
     );
     expect(highResult.rating).toBe("outstanding");
@@ -1276,19 +1292,20 @@ describe("generateCulturalIdentitySupportIntelligence", () => {
 
   it("produces inadequate rating for very low scores", () => {
     const assessments = [
-      makeAssessment({ supportLevel: "not_supported", childViewsSought: false, needsIdentified: "need", planInPlace: false }),
+      makeAssessment({ supportStatus: "not_met", reviewCurrent: false, childConsulted: false, familyConsulted: false }),
     ];
     const activities = [
-      makeActivity({ childChose: false, childEnjoyedIt: false, communityLink: false, staffFacilitated: false }),
+      makeActivity({ engagement: "refused", resourcesProvided: false, childFeedbackPositive: false, childrenParticipated: [] }),
     ];
-    const dietary = [
-      makeDietary({ provision: "not_met", childSatisfied: false, reviewDate: null }),
+    const plans = [
+      makePlan({ planInPlace: false, identityNeedsDocumented: false, lifeStoryWorkActive: false, culturalMentorAssigned: false, communityLinksEstablished: false }),
     ];
-    const staff = [
-      makeStaff({ competenceLevel: "needs_training", canSupportLanguage: false, understandsFaithNeeds: false, antiRacistPractice: false, trainingCompleted: [] }),
+    const training = [
+      makeTraining({ culturalAwareness: false, antiRacism: false, religiousLiteracy: false, identitySupport: false, lgbtqAwareness: false, communicationDiversity: false }),
     ];
+
     const result = generateCulturalIdentitySupportIntelligence(
-      assessments, activities, dietary, staff,
+      assessments, activities, plans, training, 3,
       "oak-house", PERIOD_START, PERIOD_END,
     );
     expect(result.rating).toBe("inadequate");
@@ -1296,27 +1313,45 @@ describe("generateCulturalIdentitySupportIntelligence", () => {
 
   it("handles assessments-only data correctly", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      DEMO_ASSESSMENTS, [], [], [],
+      DEMO_ASSESSMENTS, [], [], [], 0,
       "oak-house", PERIOD_START, PERIOD_END,
     );
-    expect(result.identityRecognition.totalAssessments).toBe(13);
-    expect(result.culturalProvision.totalActivities).toBe(0);
-    expect(result.dietaryRespect.totalRecords).toBe(0);
-    expect(result.staffCompetence.totalStaff).toBe(0);
+    expect(result.needsAssessment.totalAssessments).toBe(13);
+    expect(result.culturalActivities.totalActivities).toBe(0);
+    expect(result.identityPlanning.totalPlans).toBe(0);
+    expect(result.staffReadiness.totalStaff).toBe(0);
   });
 
   it("handles activities-only data correctly", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      [], DEMO_ACTIVITIES, [], [],
+      [], DEMO_ACTIVITIES, [], [], TOTAL_CHILDREN,
       "oak-house", PERIOD_START, PERIOD_END,
     );
-    expect(result.identityRecognition.totalAssessments).toBe(0);
-    expect(result.culturalProvision.totalActivities).toBe(11);
+    expect(result.needsAssessment.totalAssessments).toBe(0);
+    expect(result.culturalActivities.totalActivities).toBe(9);
+  });
+
+  it("handles plans-only data correctly", () => {
+    const result = generateCulturalIdentitySupportIntelligence(
+      [], [], DEMO_PLANS, [], 0,
+      "oak-house", PERIOD_START, PERIOD_END,
+    );
+    expect(result.identityPlanning.totalPlans).toBe(3);
+    expect(result.needsAssessment.totalAssessments).toBe(0);
+  });
+
+  it("handles training-only data correctly", () => {
+    const result = generateCulturalIdentitySupportIntelligence(
+      [], [], [], DEMO_TRAINING, 0,
+      "oak-house", PERIOD_START, PERIOD_END,
+    );
+    expect(result.staffReadiness.totalStaff).toBe(3);
+    expect(result.needsAssessment.totalAssessments).toBe(0);
   });
 
   it("preserves homeId and period in result", () => {
     const result = generateCulturalIdentitySupportIntelligence(
-      [], [], [], [],
+      [], [], [], [], 0,
       "maple-lodge", "2026-03-01", "2026-04-30",
     );
     expect(result.homeId).toBe("maple-lodge");
@@ -1325,104 +1360,96 @@ describe("generateCulturalIdentitySupportIntelligence", () => {
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
 // Edge Cases and Boundary Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// =============================================================================
 
 describe("Edge cases", () => {
-  it("handles many assessments for a single child", () => {
+  it("handles many assessments", () => {
     const assessments = Array.from({ length: 50 }, (_, i) =>
-      makeAssessment({ id: `a${i}`, supportLevel: i % 2 === 0 ? "fully_supported" : "not_supported" }),
+      makeAssessment({ id: `a${i}`, supportStatus: i % 2 === 0 ? "fully_met" : "not_met" }),
     );
-    const result = evaluateIdentityRecognition(assessments);
+    const result = evaluateNeedsAssessment(assessments);
     expect(result.totalAssessments).toBe(50);
-    expect(result.fullySupportedRate).toBe(50);
+    expect(result.fullyMetRate).toBe(50);
   });
 
   it("handles many activities", () => {
     const activities = Array.from({ length: 30 }, (_, i) =>
-      makeActivity({ id: `a${i}`, childChose: i % 3 === 0 }),
+      makeActivity({ id: `a${i}`, engagement: i % 3 === 0 ? "high" : "low" }),
     );
-    const result = evaluateCulturalProvision(activities);
+    const result = evaluateCulturalActivities(activities, 10);
     expect(result.totalActivities).toBe(30);
   });
 
-  it("handles many dietary records", () => {
-    const records = Array.from({ length: 20 }, (_, i) =>
-      makeDietary({ id: `d${i}`, provision: i % 2 === 0 ? "fully_met" : "mostly_met" }),
+  it("handles many plans", () => {
+    const plans = Array.from({ length: 20 }, (_, i) =>
+      makePlan({ id: `p${i}`, planInPlace: i % 2 === 0 }),
     );
-    const result = evaluateDietaryRespect(records);
-    expect(result.totalRecords).toBe(20);
+    const result = evaluateIdentityPlanning(plans);
+    expect(result.totalPlans).toBe(20);
+    expect(result.planInPlaceRate).toBe(50);
   });
 
   it("handles many staff", () => {
-    const staff = Array.from({ length: 15 }, (_, i) =>
-      makeStaff({ id: `s${i}`, competenceLevel: i % 3 === 0 ? "advanced" : "developing" }),
+    const training = Array.from({ length: 15 }, (_, i) =>
+      makeTraining({ id: `t${i}`, culturalAwareness: i % 3 === 0 }),
     );
-    const result = evaluateStaffCompetence(staff);
+    const result = evaluateStaffCulturalReadiness(training);
     expect(result.totalStaff).toBe(15);
   });
 
-  it("handles all identity dimensions", () => {
-    const dims: IdentityDimension[] = ["ethnicity", "religion", "language", "heritage", "disability", "gender_identity", "sexual_orientation", "nationality", "family_traditions"];
-    const assessments = dims.map((dim, i) =>
-      makeAssessment({ id: `a${i}`, dimension: dim }),
+  it("handles all cultural need types", () => {
+    const types: CulturalNeedType[] = [
+      "language", "religion", "diet", "clothing", "festivals",
+      "heritage", "hair_care", "skin_care", "music", "community_links", "other",
+    ];
+    const assessments = types.map((type, i) =>
+      makeAssessment({ id: `a${i}`, needType: type }),
     );
-    const result = evaluateIdentityRecognition(assessments);
-    expect(result.dimensionsCovered).toBe(9);
+    const result = evaluateNeedsAssessment(assessments);
+    expect(result.needTypeCoverage).toBe(11);
   });
 
-  it("handles all support levels", () => {
-    const levels: SupportLevel[] = ["fully_supported", "mostly_supported", "partially_supported", "not_supported", "not_assessed"];
-    const assessments = levels.map((level, i) =>
-      makeAssessment({ id: `a${i}`, supportLevel: level }),
+  it("handles all support statuses", () => {
+    const statuses: SupportStatus[] = ["fully_met", "partially_met", "not_met", "under_review", "not_assessed"];
+    const assessments = statuses.map((status, i) =>
+      makeAssessment({ id: `a${i}`, supportStatus: status }),
     );
-    const result = evaluateIdentityRecognition(assessments);
+    const result = evaluateNeedsAssessment(assessments);
     expect(result.totalAssessments).toBe(5);
-    // fully + mostly = 2/5 = 40%
-    expect(result.fullySupportedRate).toBe(40);
-    expect(result.notAssessedCount).toBe(1);
-  });
-
-  it("handles all dietary provisions", () => {
-    const provisions: DietaryProvision[] = ["fully_met", "mostly_met", "partially_met", "not_met", "not_applicable"];
-    const records = provisions.map((prov, i) =>
-      makeDietary({ id: `d${i}`, provision: prov }),
-    );
-    const result = evaluateDietaryRespect(records);
-    expect(result.totalRecords).toBe(5);
-    // 4 applicable, 1 fully met = 25%
-    expect(result.fullyMetRate).toBe(25);
+    expect(result.fullyMetRate).toBe(20);
   });
 
   it("handles all activity types", () => {
-    const types: CulturalActivityType[] = ["religious_observance", "cultural_celebration", "language_maintenance", "food_preparation", "community_connection", "heritage_exploration", "identity_work", "life_story"];
+    const types: ActivityType[] = [
+      "cultural_celebration", "religious_observance", "heritage_activity",
+      "language_support", "community_visit", "identity_workshop", "mentoring", "other",
+    ];
     const activities = types.map((type, i) =>
       makeActivity({ id: `a${i}`, activityType: type }),
     );
-    const result = evaluateCulturalProvision(activities);
+    const result = evaluateCulturalActivities(activities, 3);
     expect(result.activityVariety).toBe(8);
   });
 
-  it("handles all competence levels", () => {
-    const levels: StaffCompetenceLevel[] = ["advanced", "competent", "developing", "needs_training"];
-    const staff = levels.map((level, i) =>
-      makeStaff({ id: `s${i}`, competenceLevel: level }),
+  it("handles all engagement levels", () => {
+    const levels: EngagementLevel[] = ["high", "medium", "low", "refused"];
+    const activities = levels.map((level, i) =>
+      makeActivity({ id: `a${i}`, engagement: level }),
     );
-    const result = evaluateStaffCompetence(staff);
-    expect(result.totalStaff).toBe(4);
-    expect(result.competentAdvancedRate).toBe(50);
+    const result = evaluateCulturalActivities(activities, 3);
+    expect(result.totalActivities).toBe(4);
+    // high + medium = 2/4 = 50%
+    expect(result.engagementRate).toBe(50);
   });
 
-  it("handles mixed not_applicable and real dietary records", () => {
-    const records = [
-      makeDietary({ id: "d1", provision: "not_applicable" }),
-      makeDietary({ id: "d2", provision: "not_applicable" }),
-      makeDietary({ id: "d3", provision: "fully_met", childSatisfied: true, reviewDate: "2026-03-01" }),
+  it("handles empty childrenParticipated arrays", () => {
+    const activities = [
+      makeActivity({ id: "a1", childrenParticipated: [] }),
+      makeActivity({ id: "a2", childrenParticipated: [] }),
     ];
-    const result = evaluateDietaryRespect(records);
-    expect(result.totalRecords).toBe(3);
-    // Only 1 applicable, which is fully met
-    expect(result.fullyMetRate).toBe(100);
+    const result = evaluateCulturalActivities(activities, 3);
+    expect(result.childrenReachedRate).toBe(0);
   });
 });
