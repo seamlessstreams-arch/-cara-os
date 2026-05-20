@@ -1,1 +1,1 @@
-export { IndependenceDashboardWidget } from "./IndependenceDashboardWidget";
+export { default as IndependenceDashboardWidget } from "./IndependenceDashboardWidget";

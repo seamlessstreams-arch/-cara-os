@@ -1,227 +1,318 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// IndependenceDashboardWidget — Independence & Life Skills dashboard card
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
 import { useEffect, useState } from "react";
 
-interface ChildResult {
+// -- Local types (mirror engine result shape) ----------------------------------
+
+interface IndependenceQualityResult {
+  overallScore: number;
+  totalRecords: number;
+  individualPlanRate: number;
+  ageAppropriateRate: number;
+  childEngagedRate: number;
+  progressRecordedRate: number;
+}
+
+interface IndependenceComplianceResult {
+  overallScore: number;
+  totalRecords: number;
+  documentationCompleteRate: number;
+  pathwayPlanAlignedRate: number;
+  positiveOutcomeRate: number;
+  categoryDiversityRate: number;
+}
+
+interface IndependencePolicyResult {
+  overallScore: number;
+  independencePolicyMet: boolean;
+  pathwayPlanningGuidanceMet: boolean;
+  lifeSkillsFrameworkMet: boolean;
+  transitionProtocolMet: boolean;
+  leavingCarePreparationMet: boolean;
+  partnershipWorkingPolicyMet: boolean;
+  reviewScheduleMet: boolean;
+}
+
+interface StaffIndependenceReadinessResult {
+  overallScore: number;
+  totalStaff: number;
+  independencePlanningRate: number;
+  lifeSkillsTeachingRate: number;
+  pathwayKnowledgeRate: number;
+  motivationalSkillsRate: number;
+  communityResourcesRate: number;
+  transitionSupportRate: number;
+}
+
+interface ChildProfile {
   childId: string;
   childName: string;
-  ageYears: number;
-  overallReadiness: number;
-  pathwayPlanCompliant: boolean;
-  pathwayPlanStatus: string;
-  milestonesAchieved: number;
-  milestonesActive: number;
-  documentReadiness: number;
-  readinessForAge: string;
-  issues: string[];
+  totalRecords: number;
+  individualPlanRate: number;
+  childEngagedRate: number;
+  uniqueCategories: number;
+  overallScore: number;
 }
 
-interface Metrics {
-  childCount: number;
-  averageReadiness: number;
-  pathwayPlanComplianceRate: number;
-  activitiesPerChildPerMonth: number;
-  averageDocumentReadiness: number;
-  milestoneAchievementRate: number;
-  childrenRequiringPathwayPlan: number;
-  childrenWithPathwayPlan: number;
-  domainAverages: { domain: string; average: number }[];
-  behindChildren: { childName: string; readiness: number }[];
-  strongestDomains: string[];
-  weakestDomains: string[];
+interface IndependenceData {
+  homeId: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: string;
+  independenceQuality: IndependenceQualityResult;
+  independenceCompliance: IndependenceComplianceResult;
+  independencePolicy: IndependencePolicyResult;
+  staffIndependenceReadiness: StaffIndependenceReadinessResult;
+  childProfiles: ChildProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-interface DashboardData {
-  metrics: Metrics;
-  children: ChildResult[];
-}
+// -- Inline helpers ------------------------------------------------------------
 
-interface Props {
-  homeId?: string;
-}
-
-const DOMAIN_SHORT: Record<string, string> = {
-  daily_living: "Daily Living",
-  cooking_nutrition: "Cooking",
-  money_management: "Money",
-  health_self_care: "Health",
-  education_employment: "Education",
-  relationships_social: "Social",
-  housing_tenancy: "Housing",
-  digital_skills: "Digital",
-  identity_documents: "Identity",
-  travel_transport: "Travel",
+const ratingColour: Record<string, string> = {
+  outstanding: "bg-green-100 text-green-800 border-green-300",
+  good: "bg-blue-100 text-blue-800 border-blue-300",
+  requires_improvement: "bg-amber-100 text-amber-800 border-amber-300",
+  inadequate: "bg-red-100 text-red-800 border-red-300",
 };
 
-const READINESS_STYLES: Record<string, string> = {
-  ahead: "text-emerald-600 dark:text-emerald-400",
-  on_track: "text-blue-600 dark:text-blue-400",
-  behind: "text-amber-600 dark:text-amber-400",
-  significantly_behind: "text-red-600 dark:text-red-400",
+const ratingLabel: Record<string, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
 };
 
-const READINESS_LABELS: Record<string, string> = {
-  ahead: "Ahead",
-  on_track: "On Track",
-  behind: "Behind",
-  significantly_behind: "Behind",
-};
+function boolBadge(value: boolean): string {
+  return value ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50";
+}
 
-export function IndependenceDashboardWidget({ homeId = "home-oak" }: Props) {
-  const [data, setData] = useState<DashboardData | null>(null);
+// -- Inline components ---------------------------------------------------------
+
+function ScoreBar({ score, label, maxScore = 100 }: { score: number; label: string; maxScore?: number }) {
+  const pctVal = (score / maxScore) * 100;
+  const color = pctVal >= 80 ? "bg-green-500" : pctVal >= 60 ? "bg-blue-500" : pctVal >= 40 ? "bg-amber-500" : "bg-red-500";
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-sm text-gray-600 w-44 shrink-0">{label}</span>
+      <div className="flex-1 bg-gray-100 rounded-full h-2.5">
+        <div className={`h-2.5 rounded-full ${color}`} style={{ width: `${Math.min(pctVal, 100)}%` }} />
+      </div>
+      <span className="text-sm font-medium w-12 text-right">{score}</span>
+    </div>
+  );
+}
+
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+        <span className="font-medium text-gray-900">{title}</span>
+        <span className="text-gray-400">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && <div className="p-4 space-y-3">{children}</div>}
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div>
+      <span className="text-gray-500">{label}:</span> <span className="font-medium">{value}</span>
+    </div>
+  );
+}
+
+// -- Main widget ---------------------------------------------------------------
+
+export default function IndependenceDashboardWidget() {
+  const [data, setData] = useState<IndependenceData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/independence?homeId=${homeId}&mode=dashboard`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
+    fetch("/api/independence")
+      .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+      .then((json) => setData(json.data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   if (loading) {
     return (
-      <div className="rounded-lg border border-border bg-card p-6 animate-pulse">
-        <div className="h-4 w-36 bg-muted rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-muted rounded" />
-          <div className="h-3 w-3/4 bg-muted rounded" />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-2/3" />
+          <div className="h-4 bg-gray-200 rounded w-1/2" />
+          <div className="grid grid-cols-4 gap-4">{[1, 2, 3, 4].map((i) => <div key={i} className="h-20 bg-gray-200 rounded" />)}</div>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
+        <h3 className="text-lg font-semibold text-red-800">Independence</h3>
+        <p className="text-red-600 mt-2">Failed to load: {error}</p>
       </div>
     );
   }
 
   if (!data) return null;
 
-  const { metrics, children } = data;
-  const behindCount = children.filter(c => c.readinessForAge === "behind" || c.readinessForAge === "significantly_behind").length;
-
   return (
-    <div className="rounded-lg border border-border bg-card">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-lime-500 to-lime-700 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">Independence & Life Skills</h3>
-              <p className="text-xs text-muted-foreground">Preparing for adulthood</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-lg font-bold">{metrics.averageReadiness}%</p>
-            <p className="text-[10px] text-muted-foreground">readiness</p>
-          </div>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Independence</h3>
+          <p className="text-sm text-gray-500 mt-1">{data.periodStart} to {data.periodEnd}</p>
+        </div>
+        <div className="text-right">
+          <div className="text-3xl font-bold text-gray-900">{data.overallScore}</div>
+          <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${ratingColour[data.rating] || ""}`}>
+            {ratingLabel[data.rating] || data.rating}
+          </span>
         </div>
       </div>
 
-      {/* Behind children alert */}
-      {behindCount > 0 && (
-        <div className="px-4 py-2.5 border-b border-border bg-amber-50/50 dark:bg-amber-900/10">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-            <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
-              {behindCount} child{behindCount > 1 ? "ren" : ""} below age expectations
-            </span>
-          </div>
-          {metrics.behindChildren[0] && (
-            <p className="text-[10px] text-amber-600 dark:text-amber-400">
-              {metrics.behindChildren[0].childName} — {metrics.behindChildren[0].readiness}% readiness
-            </p>
-          )}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-gray-900">{data.independenceQuality.totalRecords}</div>
+          <div className="text-xs text-gray-500 mt-1">Assessments</div>
         </div>
-      )}
-
-      {/* Key stats */}
-      <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
-        <div className="p-3 text-center">
-          <p className="text-lg font-bold">{metrics.milestoneAchievementRate}%</p>
-          <p className="text-[10px] text-muted-foreground">Milestones</p>
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-gray-900">{data.independenceQuality.childEngagedRate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Engagement</div>
         </div>
-        <div className="p-3 text-center">
-          <p className="text-lg font-bold">{metrics.activitiesPerChildPerMonth}</p>
-          <p className="text-[10px] text-muted-foreground">Activities/child</p>
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-gray-900">{data.independenceCompliance.positiveOutcomeRate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Positive Outcomes</div>
         </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.averageDocumentReadiness >= 75 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {metrics.averageDocumentReadiness}%
-          </p>
-          <p className="text-[10px] text-muted-foreground">Documents</p>
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-gray-900">{data.staffIndependenceReadiness.totalStaff}</div>
+          <div className="text-xs text-gray-500 mt-1">Staff Trained</div>
         </div>
       </div>
 
-      {/* Per-child readiness */}
-      <div className="border-b border-border">
-        <div className="px-4 py-2 bg-muted/30">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Children</p>
-        </div>
-        <div className="divide-y divide-border">
-          {children.map(child => (
-            <div key={child.childId} className="px-4 py-2">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-xs font-medium">{child.childName}</p>
-                  <span className="text-[9px] text-muted-foreground">({child.ageYears}y)</span>
+      <div className="space-y-2">
+        <ScoreBar score={data.independenceQuality.overallScore} label="Independence Quality" maxScore={25} />
+        <ScoreBar score={data.independenceCompliance.overallScore} label="Independence Compliance" maxScore={25} />
+        <ScoreBar score={data.independencePolicy.overallScore} label="Independence Policy" maxScore={25} />
+        <ScoreBar score={data.staffIndependenceReadiness.overallScore} label="Staff Readiness" maxScore={25} />
+      </div>
+
+      <div className="space-y-3">
+        {data.childProfiles.length > 0 && (
+          <Section title="Child Independence Profiles" defaultOpen>
+            <div className="space-y-3">
+              {data.childProfiles.map((child) => (
+                <div key={child.childId} className="border border-gray-100 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-900">{child.childName}</span>
+                    <span className="text-sm font-medium text-gray-600">{child.overallScore}/10</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                    <div>Records: <span className="font-medium">{child.totalRecords}</span></div>
+                    <div>Plan Rate: <span className="font-medium">{child.individualPlanRate}%</span></div>
+                    <div>Engaged: <span className="font-medium">{child.childEngagedRate}%</span></div>
+                    <div>Categories: <span className="font-medium">{child.uniqueCategories}</span></div>
+                  </div>
                 </div>
-                <span className={`text-[10px] font-medium ${READINESS_STYLES[child.readinessForAge] ?? ""}`}>
-                  {READINESS_LABELS[child.readinessForAge] ?? child.readinessForAge}
-                </span>
-              </div>
-              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${
-                    child.overallReadiness >= 60 ? "bg-emerald-500" :
-                    child.overallReadiness >= 40 ? "bg-amber-500" : "bg-red-500"
-                  }`}
-                  style={{ width: `${child.overallReadiness}%` }}
-                />
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Pathway Plan + domains */}
-      <div className="px-4 py-2.5 border-b border-border">
-        {metrics.childrenRequiringPathwayPlan > 0 && (
-          <div className="flex justify-between text-[10px] mb-1">
-            <span className="text-muted-foreground">Pathway Plans</span>
-            <span className={`font-medium ${metrics.pathwayPlanComplianceRate >= 100 ? "text-emerald-600" : "text-amber-600"}`}>
-              {metrics.childrenWithPathwayPlan}/{metrics.childrenRequiringPathwayPlan}
-            </span>
-          </div>
+          </Section>
         )}
-        {metrics.weakestDomains.length > 0 && (
-          <div className="flex justify-between text-[10px]">
-            <span className="text-muted-foreground">Weakest areas</span>
-            <span className="font-medium text-foreground">
-              {metrics.weakestDomains.slice(0, 2).map(d => DOMAIN_SHORT[d] ?? d).join(", ")}
-            </span>
-          </div>
-        )}
-      </div>
 
-      {/* Footer */}
-      <div className="p-3 text-center">
-        <a href="/independence" className="text-xs text-primary font-medium hover:underline">
-          View independence dashboard →
-        </a>
+        <Section title="Independence Quality">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <Stat label="Assessments" value={data.independenceQuality.totalRecords} />
+            <Stat label="Individual Plans" value={`${data.independenceQuality.individualPlanRate}%`} />
+            <Stat label="Age Appropriate" value={`${data.independenceQuality.ageAppropriateRate}%`} />
+            <Stat label="Child Engaged" value={`${data.independenceQuality.childEngagedRate}%`} />
+            <Stat label="Progress Recorded" value={`${data.independenceQuality.progressRecordedRate}%`} />
+          </div>
+        </Section>
+
+        <Section title="Independence Compliance">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <Stat label="Documentation" value={`${data.independenceCompliance.documentationCompleteRate}%`} />
+            <Stat label="Pathway Aligned" value={`${data.independenceCompliance.pathwayPlanAlignedRate}%`} />
+            <Stat label="Positive Outcomes" value={`${data.independenceCompliance.positiveOutcomeRate}%`} />
+            <Stat label="Category Diversity" value={`${data.independenceCompliance.categoryDiversityRate}%`} />
+          </div>
+        </Section>
+
+        <Section title="Independence Policy">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div><span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${boolBadge(data.independencePolicy.independencePolicyMet)}`}>{data.independencePolicy.independencePolicyMet ? "Yes" : "No"}</span> Independence Policy</div>
+            <div><span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${boolBadge(data.independencePolicy.pathwayPlanningGuidanceMet)}`}>{data.independencePolicy.pathwayPlanningGuidanceMet ? "Yes" : "No"}</span> Pathway Planning</div>
+            <div><span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${boolBadge(data.independencePolicy.lifeSkillsFrameworkMet)}`}>{data.independencePolicy.lifeSkillsFrameworkMet ? "Yes" : "No"}</span> Life Skills Framework</div>
+            <div><span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${boolBadge(data.independencePolicy.transitionProtocolMet)}`}>{data.independencePolicy.transitionProtocolMet ? "Yes" : "No"}</span> Transition Protocol</div>
+            <div><span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${boolBadge(data.independencePolicy.leavingCarePreparationMet)}`}>{data.independencePolicy.leavingCarePreparationMet ? "Yes" : "No"}</span> Leaving Care Prep</div>
+            <div><span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${boolBadge(data.independencePolicy.partnershipWorkingPolicyMet)}`}>{data.independencePolicy.partnershipWorkingPolicyMet ? "Yes" : "No"}</span> Partnership Working</div>
+            <div><span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${boolBadge(data.independencePolicy.reviewScheduleMet)}`}>{data.independencePolicy.reviewScheduleMet ? "Yes" : "No"}</span> Review Schedule</div>
+          </div>
+        </Section>
+
+        <Section title="Staff Independence Readiness">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <Stat label="Staff" value={data.staffIndependenceReadiness.totalStaff} />
+            <Stat label="Independence Planning" value={`${data.staffIndependenceReadiness.independencePlanningRate}%`} />
+            <Stat label="Life Skills Teaching" value={`${data.staffIndependenceReadiness.lifeSkillsTeachingRate}%`} />
+            <Stat label="Pathway Knowledge" value={`${data.staffIndependenceReadiness.pathwayKnowledgeRate}%`} />
+            <Stat label="Motivational Skills" value={`${data.staffIndependenceReadiness.motivationalSkillsRate}%`} />
+            <Stat label="Community Resources" value={`${data.staffIndependenceReadiness.communityResourcesRate}%`} />
+            <Stat label="Transition Support" value={`${data.staffIndependenceReadiness.transitionSupportRate}%`} />
+          </div>
+        </Section>
+
+        <Section title="Strengths, Areas & Actions">
+          {data.strengths.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-green-700 mb-1">Strengths</h4>
+              <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                {data.strengths.map((s, i) => <li key={i}>{s}</li>)}
+              </ul>
+            </div>
+          )}
+          {data.areasForImprovement.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-amber-700 mb-1">Areas for Improvement</h4>
+              <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                {data.areasForImprovement.map((a, i) => <li key={i}>{a}</li>)}
+              </ul>
+            </div>
+          )}
+          {data.actions.length > 0 && (
+            <div>
+              <h4 className="text-sm font-medium text-blue-700 mb-1">Recommended Actions</h4>
+              <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                {data.actions.map((a, i) => (
+                  <li key={i} className={a.startsWith("URGENT") ? "text-red-700 font-medium" : ""}>
+                    {a}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Section>
+
+        <Section title="Regulatory Framework">
+          <ul className="text-sm text-gray-600 space-y-1">
+            {data.regulatoryLinks.map((link, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="text-blue-400 mt-0.5">&sect;</span>
+                <span>{link}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
       </div>
     </div>
   );

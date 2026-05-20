@@ -1,479 +1,396 @@
-// ═════��════════════════════════════════════════════════════════════════════════
-// Cornerstone Location Assessment Engine
-//
-// Deterministic engine for evaluating children's home location risk
-// assessments, Annex A requirements, community safety mapping, and
-// environmental suitability checks.
-//
-// Aligned to:
-//   - CHR 2015 Reg 46 — Location assessment (Schedule 4)
-//   - CHR 2015 Schedule 4 (Annex A) — Matters to consider
-//   - CHR 2015 Reg 12 — Protection of children (area-based risks)
-//   - SCCIF — Location and community assessment
-//   - DfE Guide: Location assessments for children's homes
-//
-// Annex A considerations (Schedule 4):
-//   - Area profile and demographics
-//   - Local services (GP, dentist, CAMHS, education)
-//   - Transport links
-//   - Local risks (crime, exploitation, substances)
-//   - Neighbourhood relationships
-//   - Emergency services proximity
-//   - Suitability of local area for children placed
-//   - Review frequency (annual minimum, or after significant change)
-//
-// No AI. No external calls. Pure input → output.
-// ══════════════════════════════════════════════════════════════════════════════
+// Location Assessment Intelligence Engine
+// Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ── Type unions ──────────────────────────────────────────────────────────────
 
-export type RiskLevel = "low" | "medium" | "high" | "very_high";
+export type AssessmentCategory =
+  | "transport_links"
+  | "education_access"
+  | "health_services"
+  | "community_safety"
+  | "recreational_facilities"
+  | "cultural_diversity"
+  | "environmental_quality"
+  | "emergency_services";
 
-export type AssessmentStatus = "current" | "due_review" | "overdue" | "draft";
+export type AssessmentOutcome =
+  | "fully_adequate"
+  | "mostly_adequate"
+  | "partially_adequate"
+  | "inadequate"
+  | "not_assessed";
 
-export type ServiceCategory =
-  | "gp_surgery"
-  | "dentist"
-  | "hospital_ae"
-  | "camhs"
-  | "school_primary"
-  | "school_secondary"
-  | "college"
-  | "police_station"
-  | "fire_station"
-  | "pharmacy"
-  | "public_transport"
-  | "leisure_facilities"
-  | "library"
-  | "social_services";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-export type AreaRiskCategory =
-  | "crime_general"
-  | "drug_activity"
-  | "county_lines"
-  | "cse_risk"
-  | "gang_activity"
-  | "antisocial_behaviour"
-  | "road_safety"
-  | "environmental_hazards"
-  | "extremism"
-  | "missing_from_home_hotspot";
+// ── Label maps ───────────────────────────────────────────────────────────────
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
+const CATEGORY_LABELS: Record<AssessmentCategory, string> = {
+  transport_links: "Transport Links",
+  education_access: "Education Access",
+  health_services: "Health Services",
+  community_safety: "Community Safety",
+  recreational_facilities: "Recreational Facilities",
+  cultural_diversity: "Cultural Diversity",
+  environmental_quality: "Environmental Quality",
+  emergency_services: "Emergency Services",
+};
 
-export interface LocalService {
-  category: ServiceCategory;
-  name: string;
-  distanceMiles: number;
-  accessibleByPublicTransport: boolean;
-  waitingTimeWeeks?: number;
-  notes?: string;
-}
+const OUTCOME_LABELS: Record<AssessmentOutcome, string> = {
+  fully_adequate: "Fully Adequate",
+  mostly_adequate: "Mostly Adequate",
+  partially_adequate: "Partially Adequate",
+  inadequate: "Inadequate",
+  not_assessed: "Not Assessed",
+};
 
-export interface AreaRisk {
-  category: AreaRiskCategory;
-  level: RiskLevel;
-  description: string;
-  source: string;                          // e.g. "Police data Q1 2026", "Ofsted area profile"
-  dateAssessed: string;
-  mitigations: string[];
-}
+const RATING_LABELS: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
 
-export interface NeighbourRelationship {
-  description: string;
-  quality: "positive" | "neutral" | "negative" | "unknown";
-  dateLastAssessed: string;
-  notes?: string;
-}
+export function getCategoryLabel(v: AssessmentCategory): string { return CATEGORY_LABELS[v]; }
+export function getOutcomeLabel(v: AssessmentOutcome): string { return OUTCOME_LABELS[v]; }
+export function getRatingLabel(v: Rating): string { return RATING_LABELS[v]; }
 
-export interface LocationAssessment {
-  id: string;
-  homeId: string;
-  homeName: string;
-  address: string;
-  assessmentDate: string;
-  reviewDueDate: string;
-  assessedBy: string;
-  approvedBy?: string;
-  status: AssessmentStatus;
-  // Annex A areas
-  localServices: LocalService[];
-  areaRisks: AreaRisk[];
-  neighbourRelationships: NeighbourRelationship[];
-  // Transport
-  nearestBusStopMiles: number;
-  nearestTrainStationMiles: number;
-  publicTransportAdequate: boolean;
-  // Environment
-  outdoorSpaceAvailable: boolean;
-  safePlayAreaNearby: boolean;
-  communityActivitiesAvailable: boolean;
-  // Children's views
-  childrenConsulted: boolean;
-  childrenViewsOnArea: string[];
-  // Overall
-  overallRiskLevel: RiskLevel;
-  overallSuitability: "suitable" | "suitable_with_mitigations" | "unsuitable";
-  keyStrengths: string[];
-  keyRisks: string[];
-  actionPlan: ActionPlanItem[];
-  // Metadata
-  lastReviewDate?: string;
-  significantChangeSinceLastReview: boolean;
-  triggerForReview?: string;
-}
+// ── All categories constant ─────────────────────────────────────────────────
 
-export interface ActionPlanItem {
-  id: string;
-  description: string;
-  assignedTo: string;
-  dueDate: string;
-  status: "open" | "in_progress" | "completed" | "overdue";
-  completedDate?: string;
-}
-
-// ── Result Interfaces ──────────────────────────────────────────────────────
-
-export interface LocationComplianceResult {
-  homeId: string;
-  homeName: string;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  // Status
-  assessmentStatus: AssessmentStatus;
-  daysSinceAssessment: number;
-  daysUntilReviewDue: number;
-  overdue: boolean;
-  // Annex A coverage
-  annexACoverage: number;                  // % of required areas assessed
-  servicesAccessScore: number;             // 0-100
-  areaRiskScore: number;                   // 0-100 (lower = more risk)
-  // Specific checks
-  gpAccessible: boolean;
-  educationAccessible: boolean;
-  camhsAccessible: boolean;
-  emergencyServicesNearby: boolean;
-  publicTransportAdequate: boolean;
-  childrenConsulted: boolean;
-  // Risks
-  highRiskAreas: string[];
-  mitigationsInPlace: number;
-  outstandingActions: number;
-  overdueActions: number;
-  // Suitability
-  overallSuitability: string;
-  overallRiskLevel: string;
-}
-
-export interface HomeLocationMetrics {
-  homeId: string;
-  // Assessment state
-  assessmentCurrent: boolean;
-  daysSinceLastAssessment: number;
-  daysUntilNextReview: number;
-  reviewOverdue: boolean;
-  // Scores
-  servicesAccessScore: number;
-  areaRiskScore: number;
-  overallLocationScore: number;
-  // Breakdown
-  totalServicesAssessed: number;
-  servicesWithinReach: number;
-  totalAreaRisks: number;
-  highRisks: number;
-  mediumRisks: number;
-  mitigationsInPlace: number;
-  // Actions
-  totalActions: number;
-  completedActions: number;
-  outstandingActions: number;
-  overdueActions: number;
-  actionCompletionRate: number;
-  // Community
-  neighbourRelationshipsPositive: number;
-  neighbourRelationshipsNegative: number;
-  childrenConsulted: boolean;
-  // Compliance
-  complianceIssues: string[];
-}
-
-// ── Configuration ───��──────────────────────────────────────────────────────
-
-const REVIEW_OVERDUE_DAYS = 0;             // Past review date = overdue
-const MAX_ACCEPTABLE_GP_DISTANCE = 3;      // miles
-const MAX_ACCEPTABLE_SCHOOL_DISTANCE = 5;
-const MAX_ACCEPTABLE_AE_DISTANCE = 15;
-const REQUIRED_SERVICE_CATEGORIES: ServiceCategory[] = [
-  "gp_surgery",
-  "hospital_ae",
-  "school_secondary",
-  "police_station",
-  "public_transport",
+const ALL_CATEGORIES: AssessmentCategory[] = [
+  "transport_links",
+  "education_access",
+  "health_services",
+  "community_safety",
+  "recreational_facilities",
+  "cultural_diversity",
+  "environmental_quality",
+  "emergency_services",
 ];
 
-// ── Core: Evaluate Location Compliance ────────────────────────────────────
+// ── Input interfaces ─────────────────────────────────────────────────────────
 
-export function evaluateLocationCompliance(
-  assessment: LocationAssessment,
-  now?: string,
-): LocationComplianceResult {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const issues: string[] = [];
-  const warnings: string[] = [];
+export interface LocationAssessmentRecord {
+  id: string;
+  childId: string;
+  childName: string;
+  assessmentDate: string;
+  category: AssessmentCategory;
+  thoroughAssessment: boolean;
+  childViewIncorporated: boolean;
+  riskIdentified: boolean;
+  mitigationsDocumented: boolean;
+  documentationComplete: boolean;
+  regulatoryAligned: boolean;
+}
 
-  // Days calculations
-  const daysSinceAssessment = Math.round(
-    (currentTime - new Date(assessment.assessmentDate).getTime()) / (24 * 60 * 60 * 1000)
-  );
-  const daysUntilReviewDue = Math.round(
-    (new Date(assessment.reviewDueDate).getTime() - currentTime) / (24 * 60 * 60 * 1000)
-  );
-  const overdue = daysUntilReviewDue < REVIEW_OVERDUE_DAYS;
+export interface LocationPolicy {
+  id: string;
+  locationAssessmentPolicy: boolean;
+  communityRiskFramework: boolean;
+  transportAccessPlan: boolean;
+  serviceProximityGuidelines: boolean;
+  environmentalSafetyProtocol: boolean;
+  annualReviewSchedule: boolean;
+  stakeholderConsultation: boolean;
+}
 
-  if (overdue) {
-    issues.push(`Location assessment review overdue by ${Math.abs(daysUntilReviewDue)} day(s)`);
+export interface StaffLocationTraining {
+  id: string;
+  staffId: string;
+  staffName: string;
+  riskAssessmentSkills: boolean;
+  communityMapping: boolean;
+  safeguardingAwareness: boolean;
+  regulatoryKnowledge: boolean;
+  childConsultation: boolean;
+  reportWriting: boolean;
+}
+
+// ── Result interfaces ────────────────────────────────────────────────────────
+
+export interface AssessmentQualityResult {
+  overallScore: number;
+  totalRecords: number;
+  thoroughRate: number;
+  childViewRate: number;
+  riskIdentifiedRate: number;
+  mitigationsRate: number;
+}
+
+export interface AssessmentComplianceResult {
+  overallScore: number;
+  documentationRate: number;
+  regulatoryRate: number;
+  mitigationsRate: number;
+  categoryDiversityRatio: number;
+}
+
+export interface LocationPolicyResult {
+  overallScore: number;
+  locationAssessmentPolicy: boolean;
+  communityRiskFramework: boolean;
+  transportAccessPlan: boolean;
+  serviceProximityGuidelines: boolean;
+  environmentalSafetyProtocol: boolean;
+  annualReviewSchedule: boolean;
+  stakeholderConsultation: boolean;
+}
+
+export interface StaffLocationReadinessResult {
+  overallScore: number;
+  totalStaff: number;
+  riskAssessmentRate: number;
+  communityMappingRate: number;
+  safeguardingRate: number;
+  regulatoryRate: number;
+  childConsultationRate: number;
+  reportWritingRate: number;
+}
+
+export interface ChildLocationProfile {
+  childId: string;
+  childName: string;
+  totalAssessments: number;
+  thoroughRate: number;
+  childViewRate: number;
+  overallScore: number;
+}
+
+export interface LocationAssessmentIntelligence {
+  homeId: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  assessmentQuality: AssessmentQualityResult;
+  assessmentCompliance: AssessmentComplianceResult;
+  locationPolicy: LocationPolicyResult;
+  staffLocationReadiness: StaffLocationReadinessResult;
+  childProfiles: ChildLocationProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
+
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
+
+// ── Evaluators ───────────────────────────────────────────────────────────────
+
+export function evaluateAssessmentQuality(records: LocationAssessmentRecord[]): AssessmentQualityResult {
+  if (records.length === 0) {
+    return { overallScore: 0, totalRecords: 0, thoroughRate: 0, childViewRate: 0, riskIdentifiedRate: 0, mitigationsRate: 0 };
   }
 
-  // Annex A coverage — check required service categories present
-  const assessedCategories = new Set(assessment.localServices.map(s => s.category));
-  const requiredCovered = REQUIRED_SERVICE_CATEGORIES.filter(c => assessedCategories.has(c));
-  const annexACoverage = Math.round((requiredCovered.length / REQUIRED_SERVICE_CATEGORIES.length) * 100);
+  const total = records.length;
+  const thoroughCount = records.filter((r) => r.thoroughAssessment).length;
+  const childViewCount = records.filter((r) => r.childViewIncorporated).length;
+  const riskCount = records.filter((r) => r.riskIdentified).length;
+  const mitigationsCount = records.filter((r) => r.mitigationsDocumented).length;
 
-  if (annexACoverage < 100) {
-    const missing = REQUIRED_SERVICE_CATEGORIES.filter(c => !assessedCategories.has(c));
-    issues.push(`Annex A: missing assessment of ${missing.map(getServiceLabel).join(", ")}`);
+  const thoroughRate = pct(thoroughCount, total);
+  const childViewRate = pct(childViewCount, total);
+  const riskIdentifiedRate = pct(riskCount, total);
+  const mitigationsRate = pct(mitigationsCount, total);
+
+  const s1 = Math.round((thoroughRate / 100) * 7);
+  const s2 = Math.round((childViewRate / 100) * 6);
+  const s3 = Math.round((riskIdentifiedRate / 100) * 6);
+  const s4 = Math.round((mitigationsRate / 100) * 6);
+
+  const overallScore = Math.min(25, s1 + s2 + s3 + s4);
+
+  return { overallScore, totalRecords: total, thoroughRate, childViewRate, riskIdentifiedRate, mitigationsRate };
+}
+
+export function evaluateAssessmentCompliance(records: LocationAssessmentRecord[]): AssessmentComplianceResult {
+  if (records.length === 0) {
+    return { overallScore: 0, documentationRate: 0, regulatoryRate: 0, mitigationsRate: 0, categoryDiversityRatio: 0 };
   }
 
-  // Services access score
-  const serviceScores = assessment.localServices.map(s => {
-    let score = 100;
-    if (s.category === "gp_surgery" && s.distanceMiles > MAX_ACCEPTABLE_GP_DISTANCE) score -= 30;
-    if (s.category === "hospital_ae" && s.distanceMiles > MAX_ACCEPTABLE_AE_DISTANCE) score -= 40;
-    if ((s.category === "school_primary" || s.category === "school_secondary") && s.distanceMiles > MAX_ACCEPTABLE_SCHOOL_DISTANCE) score -= 30;
-    if (!s.accessibleByPublicTransport) score -= 20;
-    return Math.max(score, 0);
-  });
-  const servicesAccessScore = serviceScores.length > 0
-    ? Math.round(serviceScores.reduce((a, b) => a + b, 0) / serviceScores.length)
-    : 0;
+  const total = records.length;
+  const documentedCount = records.filter((r) => r.documentationComplete).length;
+  const regulatoryCount = records.filter((r) => r.regulatoryAligned).length;
+  const mitigationsCount = records.filter((r) => r.mitigationsDocumented).length;
+  const uniqueCategories = new Set(records.map((r) => r.category)).size;
+  const diversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
 
-  // Specific access checks
-  const gpService = assessment.localServices.find(s => s.category === "gp_surgery");
-  const gpAccessible = !!gpService && gpService.distanceMiles <= MAX_ACCEPTABLE_GP_DISTANCE;
+  const documentationRate = pct(documentedCount, total);
+  const regulatoryRate = pct(regulatoryCount, total);
+  const mitigationsRate = pct(mitigationsCount, total);
 
-  const educationService = assessment.localServices.find(
-    s => s.category === "school_secondary" || s.category === "school_primary"
-  );
-  const educationAccessible = !!educationService && educationService.distanceMiles <= MAX_ACCEPTABLE_SCHOOL_DISTANCE;
+  const s1 = Math.round((documentationRate / 100) * 8);
+  const s2 = Math.round((regulatoryRate / 100) * 7);
+  const s3 = Math.round((mitigationsRate / 100) * 5);
+  const s4 = Math.round((diversityRatio / 100) * 5);
 
-  const camhsService = assessment.localServices.find(s => s.category === "camhs");
-  const camhsAccessible = !!camhsService;
+  const overallScore = Math.min(25, s1 + s2 + s3 + s4);
 
-  const emergencyServices = assessment.localServices.filter(
-    s => s.category === "hospital_ae" || s.category === "police_station" || s.category === "fire_station"
-  );
-  const emergencyServicesNearby = emergencyServices.length >= 2;
+  return { overallScore, documentationRate, regulatoryRate, mitigationsRate, categoryDiversityRatio: diversityRatio };
+}
 
-  if (!gpAccessible) warnings.push("GP surgery not within acceptable distance (3 miles)");
-  if (!educationAccessible) warnings.push("Education provision not within acceptable distance (5 miles)");
-  if (!camhsAccessible) warnings.push("CAMHS service not assessed or not available locally");
-  if (!emergencyServicesNearby) warnings.push("Insufficient emergency services assessed nearby");
-
-  // Area risk score (100 = no risk, 0 = maximum risk)
-  const riskScoreMap: Record<RiskLevel, number> = { low: 90, medium: 60, high: 30, very_high: 10 };
-  const riskScores = assessment.areaRisks.map(r => riskScoreMap[r.level]);
-  const areaRiskScore = riskScores.length > 0
-    ? Math.round(riskScores.reduce((a, b) => a + b, 0) / riskScores.length)
-    : 100;
-
-  // High risk areas
-  const highRiskAreas = assessment.areaRisks
-    .filter(r => r.level === "high" || r.level === "very_high")
-    .map(r => getAreaRiskLabel(r.category));
-
-  if (highRiskAreas.length > 0) {
-    warnings.push(`High/very high risk identified: ${highRiskAreas.join(", ")}`);
+export function evaluateLocationPolicy(policy: LocationPolicy | null): LocationPolicyResult {
+  if (!policy) {
+    return { overallScore: 0, locationAssessmentPolicy: false, communityRiskFramework: false, transportAccessPlan: false, serviceProximityGuidelines: false, environmentalSafetyProtocol: false, annualReviewSchedule: false, stakeholderConsultation: false };
   }
 
-  // Mitigations
-  const totalMitigations = assessment.areaRisks.reduce((sum, r) => sum + r.mitigations.length, 0);
-  const highRisksWithoutMitigations = assessment.areaRisks.filter(
-    r => (r.level === "high" || r.level === "very_high") && r.mitigations.length === 0
-  );
-  if (highRisksWithoutMitigations.length > 0) {
-    issues.push(`${highRisksWithoutMitigations.length} high-risk area(s) without mitigations`);
-  }
-
-  // Actions
-  const outstandingActions = assessment.actionPlan.filter(
-    a => a.status === "open" || a.status === "in_progress"
-  ).length;
-  const overdueActions = assessment.actionPlan.filter(a => a.status === "overdue").length;
-  if (overdueActions > 0) {
-    warnings.push(`${overdueActions} overdue action(s) in location action plan`);
-  }
-
-  // Children consulted
-  if (!assessment.childrenConsulted) {
-    issues.push("Children not consulted about local area in assessment");
-  }
-
-  // Public transport
-  const publicTransportAdequate = assessment.publicTransportAdequate;
-  if (!publicTransportAdequate) {
-    warnings.push("Public transport assessed as inadequate");
-  }
-
-  // Approval
-  if (!assessment.approvedBy) {
-    warnings.push("Location assessment not yet approved by senior manager");
-  }
+  let score = 0;
+  if (policy.locationAssessmentPolicy) score += 4;
+  if (policy.communityRiskFramework) score += 4;
+  if (policy.transportAccessPlan) score += 4;
+  if (policy.serviceProximityGuidelines) score += 4;
+  if (policy.environmentalSafetyProtocol) score += 3;
+  if (policy.annualReviewSchedule) score += 3;
+  if (policy.stakeholderConsultation) score += 3;
 
   return {
-    homeId: assessment.homeId,
-    homeName: assessment.homeName,
-    isCompliant: issues.length === 0,
-    issues,
-    warnings,
-    assessmentStatus: assessment.status,
-    daysSinceAssessment,
-    daysUntilReviewDue,
-    overdue,
-    annexACoverage,
-    servicesAccessScore,
-    areaRiskScore,
-    gpAccessible,
-    educationAccessible,
-    camhsAccessible,
-    emergencyServicesNearby,
-    publicTransportAdequate,
-    childrenConsulted: assessment.childrenConsulted,
-    highRiskAreas,
-    mitigationsInPlace: totalMitigations,
-    outstandingActions,
-    overdueActions,
-    overallSuitability: assessment.overallSuitability,
-    overallRiskLevel: assessment.overallRiskLevel,
+    overallScore: Math.min(25, score),
+    locationAssessmentPolicy: policy.locationAssessmentPolicy, communityRiskFramework: policy.communityRiskFramework,
+    transportAccessPlan: policy.transportAccessPlan, serviceProximityGuidelines: policy.serviceProximityGuidelines,
+    environmentalSafetyProtocol: policy.environmentalSafetyProtocol, annualReviewSchedule: policy.annualReviewSchedule,
+    stakeholderConsultation: policy.stakeholderConsultation,
   };
 }
 
-// ── Core: Calculate Home Location Metrics ─────────────────────────────────
+export function evaluateStaffLocationReadiness(training: StaffLocationTraining[]): StaffLocationReadinessResult {
+  if (training.length === 0) {
+    return { overallScore: 0, totalStaff: 0, riskAssessmentRate: 0, communityMappingRate: 0, safeguardingRate: 0, regulatoryRate: 0, childConsultationRate: 0, reportWritingRate: 0 };
+  }
 
-export function calculateHomeLocationMetrics(
-  assessment: LocationAssessment,
-  now?: string,
-): HomeLocationMetrics {
-  const compliance = evaluateLocationCompliance(assessment, now);
+  const total = training.length;
+  const raRate = pct(training.filter((t) => t.riskAssessmentSkills).length, total);
+  const cmRate = pct(training.filter((t) => t.communityMapping).length, total);
+  const saRate = pct(training.filter((t) => t.safeguardingAwareness).length, total);
+  const rkRate = pct(training.filter((t) => t.regulatoryKnowledge).length, total);
+  const ccRate = pct(training.filter((t) => t.childConsultation).length, total);
+  const rwRate = pct(training.filter((t) => t.reportWriting).length, total);
 
-  const totalServicesAssessed = assessment.localServices.length;
-  const servicesWithinReach = assessment.localServices.filter(s => {
-    if (s.category === "gp_surgery") return s.distanceMiles <= MAX_ACCEPTABLE_GP_DISTANCE;
-    if (s.category === "hospital_ae") return s.distanceMiles <= MAX_ACCEPTABLE_AE_DISTANCE;
-    if (s.category === "school_secondary" || s.category === "school_primary") return s.distanceMiles <= MAX_ACCEPTABLE_SCHOOL_DISTANCE;
-    return s.distanceMiles <= 5; // default 5 mile threshold
-  }).length;
+  const s1 = Math.round((raRate / 100) * 6);
+  const s2 = Math.round((cmRate / 100) * 5);
+  const s3 = Math.round((saRate / 100) * 5);
+  const s4 = Math.round((rkRate / 100) * 4);
+  const s5 = Math.round((ccRate / 100) * 3);
+  const s6 = Math.round((rwRate / 100) * 2);
 
-  const totalAreaRisks = assessment.areaRisks.length;
-  const highRisks = assessment.areaRisks.filter(r => r.level === "high" || r.level === "very_high").length;
-  const mediumRisks = assessment.areaRisks.filter(r => r.level === "medium").length;
-  const mitigationsInPlace = assessment.areaRisks.reduce((s, r) => s + r.mitigations.length, 0);
+  const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
-  const totalActions = assessment.actionPlan.length;
-  const completedActions = assessment.actionPlan.filter(a => a.status === "completed").length;
-  const outstandingActions = assessment.actionPlan.filter(
-    a => a.status === "open" || a.status === "in_progress"
-  ).length;
-  const overdueActions = assessment.actionPlan.filter(a => a.status === "overdue").length;
-  const actionCompletionRate = totalActions > 0
-    ? Math.round((completedActions / totalActions) * 100)
-    : 100;
+  return { overallScore, totalStaff: total, riskAssessmentRate: raRate, communityMappingRate: cmRate, safeguardingRate: saRate, regulatoryRate: rkRate, childConsultationRate: ccRate, reportWritingRate: rwRate };
+}
 
-  const neighbourRelationshipsPositive = assessment.neighbourRelationships.filter(
-    n => n.quality === "positive"
-  ).length;
-  const neighbourRelationshipsNegative = assessment.neighbourRelationships.filter(
-    n => n.quality === "negative"
-  ).length;
+// ── Child profiles ───────────────────────────────────────────────────────────
 
-  // Overall location score (weighted average)
-  const overallLocationScore = Math.round(
-    compliance.servicesAccessScore * 0.4 +
-    compliance.areaRiskScore * 0.4 +
-    (compliance.annexACoverage) * 0.2
-  );
+export function buildChildLocationProfiles(records: LocationAssessmentRecord[]): ChildLocationProfile[] {
+  if (records.length === 0) return [];
+
+  const grouped = new Map<string, LocationAssessmentRecord[]>();
+  for (const r of records) {
+    if (!grouped.has(r.childId)) grouped.set(r.childId, []);
+    grouped.get(r.childId)!.push(r);
+  }
+
+  const profiles: ChildLocationProfile[] = [];
+
+  for (const [childId, recs] of grouped) {
+    const childName = recs[0].childName;
+    const total = recs.length;
+    const thoroughCount = recs.filter((r) => r.thoroughAssessment).length;
+    const childViewCount = recs.filter((r) => r.childViewIncorporated).length;
+
+    const thoroughRate = pct(thoroughCount, total);
+    const childViewRate = pct(childViewCount, total);
+
+    let freqScore = 0;
+    if (total >= 10) freqScore = 2;
+    else if (total >= 5) freqScore = 1;
+
+    let thScore = 0;
+    if (thoroughRate >= 80) thScore = 3;
+    else if (thoroughRate >= 60) thScore = 2;
+    else if (thoroughRate >= 40) thScore = 1;
+
+    let cvScore = 0;
+    if (childViewRate >= 80) cvScore = 3;
+    else if (childViewRate >= 60) cvScore = 2;
+    else if (childViewRate >= 40) cvScore = 1;
+
+    const uniqueCategories = new Set(recs.map((r) => r.category)).size;
+    let divScore = 0;
+    if (uniqueCategories >= 4) divScore = 2;
+    else if (uniqueCategories >= 2) divScore = 1;
+
+    const overallScore = Math.min(10, freqScore + thScore + cvScore + divScore);
+
+    profiles.push({ childId, childName, totalAssessments: total, thoroughRate, childViewRate, overallScore });
+  }
+
+  return profiles;
+}
+
+// ── Orchestrator ─────────────────────────────────────────────────────────────
+
+export function generateLocationAssessmentIntelligence(
+  records: LocationAssessmentRecord[],
+  policy: LocationPolicy | null,
+  staff: StaffLocationTraining[],
+  homeId: string,
+  periodStart: string,
+  periodEnd: string,
+): LocationAssessmentIntelligence {
+  const assessmentQuality = evaluateAssessmentQuality(records);
+  const assessmentCompliance = evaluateAssessmentCompliance(records);
+  const locationPolicy = evaluateLocationPolicy(policy);
+  const staffLocationReadiness = evaluateStaffLocationReadiness(staff);
+
+  const overallScore = Math.min(100, assessmentQuality.overallScore + assessmentCompliance.overallScore + locationPolicy.overallScore + staffLocationReadiness.overallScore);
+  const rating = getRating(overallScore);
+
+  const childProfiles = buildChildLocationProfiles(records);
+
+  const strengths: string[] = [];
+  const areasForImprovement: string[] = [];
+  const actions: string[] = [];
+
+  if (assessmentQuality.thoroughRate >= 80) strengths.push("Location assessments are thorough and comprehensive across all areas");
+  if (assessmentQuality.childViewRate >= 80) strengths.push("Children's views are consistently incorporated into location assessments");
+  if (assessmentQuality.riskIdentifiedRate >= 80) strengths.push("Strong risk identification practice ensures location hazards are documented");
+  if (assessmentCompliance.documentationRate >= 80) strengths.push("Assessment documentation is complete and well-maintained");
+
+  if (records.length > 0 && assessmentQuality.thoroughRate < 60) areasForImprovement.push("Assessment thoroughness needs improvement — ensure all Annex A areas are covered");
+  if (records.length > 0 && assessmentQuality.childViewRate < 60) areasForImprovement.push("Children's views are not sufficiently incorporated into location assessments");
+  if (records.length > 0 && assessmentQuality.mitigationsRate < 60) areasForImprovement.push("Mitigations documentation is below expected levels — ensure all identified risks have recorded mitigations");
+  if (records.length > 0 && assessmentCompliance.regulatoryRate < 60) areasForImprovement.push("Regulatory alignment needs strengthening across location assessments");
+
+  if (records.length === 0) actions.push("No location assessment records found — begin tracking location assessments immediately");
+  if (!policy) actions.push("URGENT: No location assessment policy in place — develop and implement immediately");
+  if (staff.length === 0) actions.push("URGENT: No staff location training recorded — arrange training for all staff");
+  if (records.length > 0 && assessmentQuality.riskIdentifiedRate < 50) actions.push("Improve risk identification processes in location assessments");
+  if (records.length > 0 && assessmentCompliance.documentationRate < 50) actions.push("Strengthen documentation completeness for location assessment records");
+
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Reg 12 — The protection of children standard (location risk)",
+    "CHR 2015 Reg 13 — The leadership and management standard",
+    "SCCIF — Location and environment assessment",
+    "CHR 2015 Reg 46 — Review of quality of care (includes location)",
+    "Children Act 1989 — Welfare considerations",
+    "National Minimum Standards for Children's Homes",
+    "DfE Guide to Children's Homes Regulations",
+  ];
 
   return {
-    homeId: assessment.homeId,
-    assessmentCurrent: !compliance.overdue,
-    daysSinceLastAssessment: compliance.daysSinceAssessment,
-    daysUntilNextReview: compliance.daysUntilReviewDue,
-    reviewOverdue: compliance.overdue,
-    servicesAccessScore: compliance.servicesAccessScore,
-    areaRiskScore: compliance.areaRiskScore,
-    overallLocationScore,
-    totalServicesAssessed,
-    servicesWithinReach,
-    totalAreaRisks,
-    highRisks,
-    mediumRisks,
-    mitigationsInPlace,
-    totalActions,
-    completedActions,
-    outstandingActions,
-    overdueActions,
-    actionCompletionRate,
-    neighbourRelationshipsPositive,
-    neighbourRelationshipsNegative,
-    childrenConsulted: assessment.childrenConsulted,
-    complianceIssues: compliance.issues,
+    homeId, periodStart, periodEnd, overallScore, rating,
+    assessmentQuality, assessmentCompliance, locationPolicy, staffLocationReadiness,
+    childProfiles, strengths, areasForImprovement, actions, regulatoryLinks,
   };
-}
-
-// ── Label Helpers ────────��───────────────────────────────────────────────
-
-export function getServiceLabel(category: ServiceCategory): string {
-  const labels: Record<ServiceCategory, string> = {
-    gp_surgery: "GP Surgery",
-    dentist: "Dentist",
-    hospital_ae: "Hospital A&E",
-    camhs: "CAMHS",
-    school_primary: "Primary School",
-    school_secondary: "Secondary School",
-    college: "College",
-    police_station: "Police Station",
-    fire_station: "Fire Station",
-    pharmacy: "Pharmacy",
-    public_transport: "Public Transport Hub",
-    leisure_facilities: "Leisure Facilities",
-    library: "Library",
-    social_services: "Social Services Office",
-  };
-  return labels[category] ?? category;
-}
-
-export function getAreaRiskLabel(category: AreaRiskCategory): string {
-  const labels: Record<AreaRiskCategory, string> = {
-    crime_general: "General Crime",
-    drug_activity: "Drug Activity",
-    county_lines: "County Lines",
-    cse_risk: "CSE Risk",
-    gang_activity: "Gang Activity",
-    antisocial_behaviour: "Antisocial Behaviour",
-    road_safety: "Road Safety",
-    environmental_hazards: "Environmental Hazards",
-    extremism: "Extremism",
-    missing_from_home_hotspot: "Missing from Home Hotspot",
-  };
-  return labels[category] ?? category;
-}
-
-export function getRiskLevelLabel(level: RiskLevel): string {
-  const labels: Record<RiskLevel, string> = {
-    low: "Low",
-    medium: "Medium",
-    high: "High",
-    very_high: "Very High",
-  };
-  return labels[level] ?? level;
 }

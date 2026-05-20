@@ -1,447 +1,687 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Independence & Life Skills Engine
+// ==============================================================================
+// Independence Intelligence Engine
 //
-// Deterministic engine for tracking children's progress toward independence,
-// life skills development, and preparation for adulthood/leaving care.
+// Pure deterministic engine — no AI, no external calls, no randomness.
+// Evaluates how well a children's residential home prepares looked-after
+// children for independent living — life skills, self-care, money management,
+// cooking, travel, health, social skills, and education/employment readiness.
 //
-// Aligned to:
-//   - CHR 2015 Reg 9 — Quality of care (promoting independence)
-//   - CHR 2015 Reg 12 — Contact arrangements (maintaining relationships)
-//   - Children Act 1989 s.23C — Continuing functions (leaving care)
-//   - Children & Social Work Act 2017 — Local offer for care leavers
-//   - SCCIF — Children develop skills for independence
-//   - Pathway Plan requirements (from age 16)
+//   1. Independence Quality     (quality of independence assessments)
+//   2. Independence Compliance  (documentation, pathway alignment, diversity)
+//   3. Independence Policy      (7 boolean policy dimensions)
+//   4. Staff Independence Readiness (6 training competencies)
 //
-// Key areas:
-//   - Daily living skills (cooking, cleaning, laundry, budgeting)
-//   - Social & emotional skills (relationships, conflict resolution)
-//   - Education & employment readiness
-//   - Health management (booking appointments, medication)
-//   - Financial literacy (banking, budgeting, benefits)
-//   - Housing readiness (tenancy skills, utilities)
-//   - Digital skills & online safety
-//   - Identity & documentation (passport, NI number, birth cert)
-//
-// No AI. No external calls. Pure input → output.
-// ══════════════════════════════════════════════════════════════════════════════
+// Regulatory: CHR 2015 Reg 5, CHR 2015 Reg 9, Children (Leaving Care) Act 2000,
+//             SCCIF, Care Leavers Strategy 2013, Children Act 1989 s.23C,
+//             DfE Guide to Children's Homes Regulations: Independence
+// ==============================================================================
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// -- Type unions ---------------------------------------------------------------
 
-export type SkillDomain =
-  | "daily_living"
+export type IndependenceCategory =
   | "cooking_nutrition"
   | "money_management"
-  | "health_self_care"
-  | "education_employment"
-  | "relationships_social"
-  | "housing_tenancy"
-  | "digital_skills"
-  | "identity_documents"
-  | "travel_transport";
+  | "personal_hygiene"
+  | "household_tasks"
+  | "travel_skills"
+  | "health_management"
+  | "social_skills"
+  | "education_employment";
 
-export type SkillLevel = 1 | 2 | 3 | 4 | 5;
-// 1 = Not yet started, 2 = Aware/Learning, 3 = Practising with support,
-// 4 = Mostly independent, 5 = Fully independent
+export type IndependenceOutcome =
+  | "mastered"
+  | "progressing"
+  | "developing"
+  | "not_started"
+  | "regressed";
 
-export type PathwayPlanStatus = "not_required" | "due" | "in_progress" | "current" | "overdue";
+export type Rating =
+  | "outstanding"
+  | "good"
+  | "requires_improvement"
+  | "inadequate";
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
+// -- Constants -----------------------------------------------------------------
+
+const ALL_CATEGORIES: IndependenceCategory[] = [
+  "cooking_nutrition",
+  "money_management",
+  "personal_hygiene",
+  "household_tasks",
+  "travel_skills",
+  "health_management",
+  "social_skills",
+  "education_employment",
+];
+
+// -- Label maps ----------------------------------------------------------------
+
+const categoryLabels: Record<IndependenceCategory, string> = {
+  cooking_nutrition: "Cooking & Nutrition",
+  money_management: "Money Management",
+  personal_hygiene: "Personal Hygiene",
+  household_tasks: "Household Tasks",
+  travel_skills: "Travel Skills",
+  health_management: "Health Management",
+  social_skills: "Social Skills",
+  education_employment: "Education & Employment",
+};
+
+const outcomeLabels: Record<IndependenceOutcome, string> = {
+  mastered: "Mastered",
+  progressing: "Progressing",
+  developing: "Developing",
+  not_started: "Not Started",
+  regressed: "Regressed",
+};
+
+const ratingLabels: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
+
+// -- Label getters -------------------------------------------------------------
+
+export function getCategoryLabel(cat: IndependenceCategory): string {
+  return categoryLabels[cat] ?? cat;
+}
+export function getOutcomeLabel(outcome: IndependenceOutcome): string {
+  return outcomeLabels[outcome] ?? outcome;
+}
+export function getRatingLabel(r: Rating): string {
+  return ratingLabels[r] ?? r;
+}
+
+// -- Input interfaces ----------------------------------------------------------
+
+export interface IndependenceRecord {
+  id: string;
+  childId: string;
+  childName: string;
+  assessmentDate: string;
+  category: IndependenceCategory;
+  outcome: IndependenceOutcome;
+  individualPlanInPlace: boolean;
+  ageAppropriate: boolean;
+  childEngaged: boolean;
+  progressRecorded: boolean;
+  documentationComplete: boolean;
+  pathwayPlanAligned: boolean;
+}
+
+export interface IndependencePolicy {
+  id: string;
+  independencePolicy: boolean;
+  pathwayPlanningGuidance: boolean;
+  lifeSkillsFramework: boolean;
+  transitionProtocol: boolean;
+  leavingCarePreparation: boolean;
+  partnershipWorkingPolicy: boolean;
+  reviewSchedule: boolean;
+}
+
+export interface StaffIndependenceTraining {
+  id: string;
+  staffId: string;
+  staffName: string;
+  independencePlanning: boolean;
+  lifeSkillsTeaching: boolean;
+  pathwayKnowledge: boolean;
+  motivationalSkills: boolean;
+  communityResources: boolean;
+  transitionSupport: boolean;
+}
+
+// -- Result interfaces ---------------------------------------------------------
+
+export interface IndependenceQualityResult {
+  overallScore: number;
+  totalRecords: number;
+  individualPlanRate: number;
+  ageAppropriateRate: number;
+  childEngagedRate: number;
+  progressRecordedRate: number;
+}
+
+export interface IndependenceComplianceResult {
+  overallScore: number;
+  totalRecords: number;
+  documentationCompleteRate: number;
+  pathwayPlanAlignedRate: number;
+  positiveOutcomeRate: number;
+  categoryDiversityRate: number;
+}
+
+export interface IndependencePolicyResult {
+  overallScore: number;
+  independencePolicyMet: boolean;
+  pathwayPlanningGuidanceMet: boolean;
+  lifeSkillsFrameworkMet: boolean;
+  transitionProtocolMet: boolean;
+  leavingCarePreparationMet: boolean;
+  partnershipWorkingPolicyMet: boolean;
+  reviewScheduleMet: boolean;
+}
+
+export interface StaffIndependenceReadinessResult {
+  overallScore: number;
+  totalStaff: number;
+  independencePlanningRate: number;
+  lifeSkillsTeachingRate: number;
+  pathwayKnowledgeRate: number;
+  motivationalSkillsRate: number;
+  communityResourcesRate: number;
+  transitionSupportRate: number;
+}
 
 export interface ChildIndependenceProfile {
   childId: string;
   childName: string;
+  totalRecords: number;
+  individualPlanRate: number;
+  childEngagedRate: number;
+  uniqueCategories: number;
+  overallScore: number;
+}
+
+export interface IndependenceIntelligence {
   homeId: string;
-  dateOfBirth: string;
-  placementStartDate: string;
-  expectedLeavingDate?: string;         // planned move-on date
-  hasPathwayPlan: boolean;
-  pathwayPlanDate?: string;
-  pathwayPlanReviewDate?: string;
-  personalAdvisorAssigned: boolean;
-  personalAdvisorName?: string;
-  skillAssessments: SkillAssessment[];
-  milestones: IndependenceMilestone[];
-  activities: IndependenceActivity[];
-  documents: DocumentStatus[];
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  independenceQuality: IndependenceQualityResult;
+  independenceCompliance: IndependenceComplianceResult;
+  independencePolicy: IndependencePolicyResult;
+  staffIndependenceReadiness: StaffIndependenceReadinessResult;
+  childProfiles: ChildIndependenceProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-export interface SkillAssessment {
-  domain: SkillDomain;
-  level: SkillLevel;
-  assessedAt: string;
-  assessedBy: string;
-  targets: string[];
-  evidence: string[];
-  childSelfRating?: SkillLevel;         // child's own view
-  nextReviewDate: string;
+// -- Helpers -------------------------------------------------------------------
+
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
 }
 
-export interface IndependenceMilestone {
-  id: string;
-  domain: SkillDomain;
-  description: string;
-  targetDate: string;
-  achievedDate?: string;
-  status: "active" | "achieved" | "deferred" | "not_achieved";
-  supportNeeded: string;
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
 }
 
-export interface IndependenceActivity {
-  id: string;
-  domain: SkillDomain;
-  description: string;
-  date: string;
-  duration: number;                     // minutes
-  childEngaged: boolean;
-  outcomeNotes: string;
-  facilitatedBy: string;
-}
+// -- Evaluators ----------------------------------------------------------------
 
-export interface DocumentStatus {
-  type: "passport" | "birth_certificate" | "ni_number" | "bank_account" | "provisional_licence" | "proof_of_address" | "nhs_card";
-  obtained: boolean;
-  obtainedDate?: string;
-  expiryDate?: string;
-  notes?: string;
-}
-
-// ── Result Interfaces ──────────────────────────────────────────────────────
-
-export interface ChildIndependenceResult {
-  childId: string;
-  childName: string;
-  ageYears: number;
-  overallReadiness: number;             // 0-100
-  domainScores: DomainScore[];
-  pathwayPlanCompliant: boolean;
-  pathwayPlanStatus: PathwayPlanStatus;
-  milestonesAchieved: number;
-  milestonesActive: number;
-  milestoneAchievementRate: number;     // %
-  activitiesLast30Days: number;
-  documentReadiness: number;            // % of key documents obtained
-  issues: string[];
-  recommendations: string[];
-  monthsUntilLeaving?: number;
-  readinessForAge: "ahead" | "on_track" | "behind" | "significantly_behind";
-}
-
-export interface DomainScore {
-  domain: SkillDomain;
-  label: string;
-  level: SkillLevel;
-  levelLabel: string;
-  childSelfRating?: SkillLevel;
-  targetCount: number;
-  activitiesCount: number;
-}
-
-export interface HomeIndependenceMetrics {
-  homeId: string;
-  childCount: number;
-  averageReadiness: number;             // 0-100
-  pathwayPlanComplianceRate: number;    // %
-  activitiesPerChildPerMonth: number;
-  averageDocumentReadiness: number;     // %
-  milestoneAchievementRate: number;     // %
-  childrenRequiringPathwayPlan: number;
-  childrenWithPathwayPlan: number;
-  domainAverages: { domain: SkillDomain; average: number }[];
-  behindChildren: { childId: string; childName: string; readiness: number }[];
-  strongestDomains: SkillDomain[];
-  weakestDomains: SkillDomain[];
-}
-
-// ── Configuration ──────────────────────────────────────────────────────────
-
-const PATHWAY_PLAN_AGE = 16;              // required from age 16
-const PATHWAY_PLAN_REVIEW_MONTHS = 6;     // review every 6 months
-const DOCUMENT_TYPES_REQUIRED: DocumentStatus["type"][] = [
-  "passport", "birth_certificate", "ni_number", "bank_account",
-];
-
-const DOMAIN_LABELS: Record<SkillDomain, string> = {
-  daily_living: "Daily Living",
-  cooking_nutrition: "Cooking & Nutrition",
-  money_management: "Money Management",
-  health_self_care: "Health & Self-Care",
-  education_employment: "Education & Employment",
-  relationships_social: "Relationships & Social",
-  housing_tenancy: "Housing & Tenancy",
-  digital_skills: "Digital Skills",
-  identity_documents: "Identity & Documents",
-  travel_transport: "Travel & Transport",
-};
-
-const LEVEL_LABELS: Record<SkillLevel, string> = {
-  1: "Not Started",
-  2: "Learning",
-  3: "Practising",
-  4: "Mostly Independent",
-  5: "Fully Independent",
-};
-
-// Age-based expectations (minimum level by age)
-const AGE_EXPECTATIONS: Record<number, number> = {
-  12: 1.5, 13: 2.0, 14: 2.5, 15: 3.0, 16: 3.5, 17: 4.0, 18: 4.5,
-};
-
-// ── Core: Evaluate Child Independence ──────────────────────────────────────
-
-export function evaluateChildIndependence(
-  profile: ChildIndependenceProfile,
-  now?: string,
-): ChildIndependenceResult {
-  const currentDate = now ? new Date(now) : new Date();
-  const currentTime = currentDate.getTime();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-
-  const ageYears = Math.floor(
-    (currentTime - new Date(profile.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000)
-  );
-
-  const issues: string[] = [];
-  const recommendations: string[] = [];
-
-  // Domain scores
-  const domainScores: DomainScore[] = profile.skillAssessments.map(sa => ({
-    domain: sa.domain,
-    label: DOMAIN_LABELS[sa.domain] ?? sa.domain,
-    level: sa.level,
-    levelLabel: LEVEL_LABELS[sa.level] ?? `Level ${sa.level}`,
-    childSelfRating: sa.childSelfRating,
-    targetCount: sa.targets.length,
-    activitiesCount: profile.activities.filter(a => a.domain === sa.domain).length,
-  }));
-
-  // Overall readiness (0-100 based on average skill level mapped to %)
-  const avgLevel = domainScores.length > 0
-    ? domainScores.reduce((sum, d) => sum + d.level, 0) / domainScores.length
-    : 1;
-  const overallReadiness = Math.round(((avgLevel - 1) / 4) * 100);
-
-  // Pathway Plan compliance
-  let pathwayPlanStatus: PathwayPlanStatus = "not_required";
-  let pathwayPlanCompliant = true;
-
-  if (ageYears >= PATHWAY_PLAN_AGE) {
-    if (!profile.hasPathwayPlan) {
-      pathwayPlanStatus = "overdue";
-      pathwayPlanCompliant = false;
-      issues.push("Pathway Plan required (age 16+) but not in place");
-    } else if (profile.pathwayPlanReviewDate) {
-      const reviewTime = new Date(profile.pathwayPlanReviewDate).getTime();
-      if (reviewTime < currentTime) {
-        pathwayPlanStatus = "overdue";
-        pathwayPlanCompliant = false;
-        issues.push("Pathway Plan overdue for review");
-      } else {
-        pathwayPlanStatus = "current";
-      }
-    } else {
-      pathwayPlanStatus = "current";
-    }
+/**
+ * Evaluates independence quality across all assessment records.
+ * Empty = 0 (no records = no evidence of quality).
+ *
+ *   Individual plan in place rate        -> 0-7
+ *   Age appropriate rate                 -> 0-6
+ *   Child engaged rate                   -> 0-6
+ *   Progress recorded rate               -> 0-6
+ */
+export function evaluateIndependenceQuality(
+  records: IndependenceRecord[],
+): IndependenceQualityResult {
+  if (records.length === 0) {
+    return {
+      overallScore: 0,
+      totalRecords: 0,
+      individualPlanRate: 0,
+      ageAppropriateRate: 0,
+      childEngagedRate: 0,
+      progressRecordedRate: 0,
+    };
   }
 
-  // Milestones
-  const achieved = profile.milestones.filter(m => m.status === "achieved");
-  const active = profile.milestones.filter(m => m.status === "active");
-  const milestoneAchievementRate = profile.milestones.length > 0
-    ? Math.round((achieved.length / profile.milestones.length) * 100)
-    : 0;
+  let score = 0;
 
-  // Activities last 30 days
-  const activitiesLast30Days = profile.activities.filter(
-    a => new Date(a.date).getTime() > thirtyDaysAgo
+  const planCount = records.filter((r) => r.individualPlanInPlace).length;
+  const individualPlanRate = pct(planCount, records.length);
+  if (individualPlanRate >= 90) score += 7;
+  else if (individualPlanRate >= 70) score += 5;
+  else if (individualPlanRate >= 50) score += 3;
+  else if (individualPlanRate > 0) score += 1;
+
+  const ageCount = records.filter((r) => r.ageAppropriate).length;
+  const ageAppropriateRate = pct(ageCount, records.length);
+  if (ageAppropriateRate >= 90) score += 6;
+  else if (ageAppropriateRate >= 70) score += 4;
+  else if (ageAppropriateRate >= 50) score += 3;
+  else if (ageAppropriateRate > 0) score += 1;
+
+  const engagedCount = records.filter((r) => r.childEngaged).length;
+  const childEngagedRate = pct(engagedCount, records.length);
+  if (childEngagedRate >= 90) score += 6;
+  else if (childEngagedRate >= 70) score += 4;
+  else if (childEngagedRate >= 50) score += 3;
+  else if (childEngagedRate > 0) score += 1;
+
+  const progressCount = records.filter((r) => r.progressRecorded).length;
+  const progressRecordedRate = pct(progressCount, records.length);
+  if (progressRecordedRate >= 90) score += 6;
+  else if (progressRecordedRate >= 70) score += 4;
+  else if (progressRecordedRate >= 50) score += 3;
+  else if (progressRecordedRate > 0) score += 1;
+
+  return {
+    overallScore: Math.min(score, 25),
+    totalRecords: records.length,
+    individualPlanRate,
+    ageAppropriateRate,
+    childEngagedRate,
+    progressRecordedRate,
+  };
+}
+
+/**
+ * Evaluates independence compliance across all assessment records.
+ * Empty = 0 (no records = no evidence of compliance).
+ *
+ *   Documentation complete rate           -> 0-8
+ *   Pathway plan aligned rate             -> 0-7
+ *   Positive outcome rate (mastered/progressing) -> 0-5
+ *   Category diversity (unique / 8)       -> 0-5
+ */
+export function evaluateIndependenceCompliance(
+  records: IndependenceRecord[],
+): IndependenceComplianceResult {
+  if (records.length === 0) {
+    return {
+      overallScore: 0,
+      totalRecords: 0,
+      documentationCompleteRate: 0,
+      pathwayPlanAlignedRate: 0,
+      positiveOutcomeRate: 0,
+      categoryDiversityRate: 0,
+    };
+  }
+
+  let score = 0;
+
+  const docCount = records.filter((r) => r.documentationComplete).length;
+  const documentationCompleteRate = pct(docCount, records.length);
+  if (documentationCompleteRate >= 90) score += 8;
+  else if (documentationCompleteRate >= 70) score += 6;
+  else if (documentationCompleteRate >= 50) score += 4;
+  else if (documentationCompleteRate > 0) score += 2;
+
+  const pathwayCount = records.filter((r) => r.pathwayPlanAligned).length;
+  const pathwayPlanAlignedRate = pct(pathwayCount, records.length);
+  if (pathwayPlanAlignedRate >= 90) score += 7;
+  else if (pathwayPlanAlignedRate >= 70) score += 5;
+  else if (pathwayPlanAlignedRate >= 50) score += 3;
+  else if (pathwayPlanAlignedRate > 0) score += 1;
+
+  const positiveCount = records.filter(
+    (r) => r.outcome === "mastered" || r.outcome === "progressing",
   ).length;
+  const positiveOutcomeRate = pct(positiveCount, records.length);
+  if (positiveOutcomeRate >= 90) score += 5;
+  else if (positiveOutcomeRate >= 70) score += 4;
+  else if (positiveOutcomeRate >= 50) score += 3;
+  else if (positiveOutcomeRate > 0) score += 1;
 
-  // Document readiness
-  const requiredDocs = profile.documents.filter(d => DOCUMENT_TYPES_REQUIRED.includes(d.type));
-  const obtainedDocs = requiredDocs.filter(d => d.obtained);
-  const documentReadiness = requiredDocs.length > 0
-    ? Math.round((obtainedDocs.length / requiredDocs.length) * 100)
-    : 0;
-
-  // Readiness for age
-  const expectedLevel = AGE_EXPECTATIONS[ageYears] ?? (ageYears < 12 ? 1 : 4.5);
-  let readinessForAge: "ahead" | "on_track" | "behind" | "significantly_behind" = "on_track";
-  if (avgLevel > expectedLevel + 0.5) readinessForAge = "ahead";
-  else if (avgLevel < expectedLevel - 1) readinessForAge = "significantly_behind";
-  else if (avgLevel < expectedLevel - 0.5) readinessForAge = "behind";
-
-  // Months until leaving
-  let monthsUntilLeaving: number | undefined;
-  if (profile.expectedLeavingDate) {
-    const leavingTime = new Date(profile.expectedLeavingDate).getTime();
-    monthsUntilLeaving = Math.max(0, Math.round((leavingTime - currentTime) / (30.44 * 24 * 60 * 60 * 1000)));
-  }
-
-  // Generate issues & recommendations
-  if (readinessForAge === "behind" || readinessForAge === "significantly_behind") {
-    issues.push(`Independence skills ${readinessForAge === "significantly_behind" ? "significantly " : ""}below age expectations`);
-    recommendations.push("Increase independence activities frequency");
-  }
-
-  if (ageYears >= 16 && documentReadiness < 75) {
-    issues.push(`Key documents only ${documentReadiness}% complete (age 16+)`);
-    recommendations.push("Prioritise obtaining missing identity documents");
-  }
-
-  if (activitiesLast30Days < 2) {
-    recommendations.push("Schedule at least 2 independence activities per month");
-  }
-
-  if (ageYears >= PATHWAY_PLAN_AGE && !profile.personalAdvisorAssigned) {
-    issues.push("No Personal Advisor assigned (required from 16)");
-    recommendations.push("Allocate Personal Advisor urgently");
-  }
-
-  if (monthsUntilLeaving !== undefined && monthsUntilLeaving < 6 && overallReadiness < 60) {
-    issues.push(`Leaving in ${monthsUntilLeaving} months but readiness only ${overallReadiness}%`);
-    recommendations.push("Intensive independence preparation needed — consider extending placement");
-  }
-
-  // Check for domains with no activities
-  const domainsWithoutActivity = domainScores.filter(d => d.activitiesCount === 0 && d.level < 4);
-  if (domainsWithoutActivity.length > 0) {
-    recommendations.push(`Plan activities for: ${domainsWithoutActivity.map(d => d.label).join(", ")}`);
-  }
+  const uniqueCategories = new Set(records.map((r) => r.category));
+  const categoryDiversityRate = pct(uniqueCategories.size, ALL_CATEGORIES.length);
+  if (categoryDiversityRate >= 90) score += 5;
+  else if (categoryDiversityRate >= 70) score += 4;
+  else if (categoryDiversityRate >= 50) score += 3;
+  else if (categoryDiversityRate > 0) score += 1;
 
   return {
-    childId: profile.childId,
-    childName: profile.childName,
-    ageYears,
-    overallReadiness,
-    domainScores,
-    pathwayPlanCompliant,
-    pathwayPlanStatus,
-    milestonesAchieved: achieved.length,
-    milestonesActive: active.length,
-    milestoneAchievementRate,
-    activitiesLast30Days,
-    documentReadiness,
-    issues,
-    recommendations,
-    monthsUntilLeaving,
-    readinessForAge,
+    overallScore: Math.min(score, 25),
+    totalRecords: records.length,
+    documentationCompleteRate,
+    pathwayPlanAlignedRate,
+    positiveOutcomeRate,
+    categoryDiversityRate,
   };
 }
 
-// ── Core: Calculate Home Metrics ────────────────────────────────────────────
+/**
+ * Evaluates independence policy compliance.
+ * null = 0 (no policy = no evidence of governance).
+ *
+ *   independencePolicy         -> 0-4
+ *   pathwayPlanningGuidance    -> 0-4
+ *   lifeSkillsFramework       -> 0-4
+ *   transitionProtocol        -> 0-4
+ *   leavingCarePreparation    -> 0-3
+ *   partnershipWorkingPolicy  -> 0-3
+ *   reviewSchedule            -> 0-3
+ */
+export function evaluateIndependencePolicy(
+  policy: IndependencePolicy | null,
+): IndependencePolicyResult {
+  if (policy === null) {
+    return {
+      overallScore: 0,
+      independencePolicyMet: false,
+      pathwayPlanningGuidanceMet: false,
+      lifeSkillsFrameworkMet: false,
+      transitionProtocolMet: false,
+      leavingCarePreparationMet: false,
+      partnershipWorkingPolicyMet: false,
+      reviewScheduleMet: false,
+    };
+  }
 
-export function calculateHomeIndependenceMetrics(
-  profiles: ChildIndependenceProfile[],
+  let score = 0;
+
+  if (policy.independencePolicy) score += 4;
+  if (policy.pathwayPlanningGuidance) score += 4;
+  if (policy.lifeSkillsFramework) score += 4;
+  if (policy.transitionProtocol) score += 4;
+  if (policy.leavingCarePreparation) score += 3;
+  if (policy.partnershipWorkingPolicy) score += 3;
+  if (policy.reviewSchedule) score += 3;
+
+  return {
+    overallScore: Math.min(score, 25),
+    independencePolicyMet: policy.independencePolicy,
+    pathwayPlanningGuidanceMet: policy.pathwayPlanningGuidance,
+    lifeSkillsFrameworkMet: policy.lifeSkillsFramework,
+    transitionProtocolMet: policy.transitionProtocol,
+    leavingCarePreparationMet: policy.leavingCarePreparation,
+    partnershipWorkingPolicyMet: policy.partnershipWorkingPolicy,
+    reviewScheduleMet: policy.reviewSchedule,
+  };
+}
+
+/**
+ * Evaluates staff independence readiness from training records.
+ * Empty = 0 (no training = no evidence of competence).
+ *
+ *   independencePlanning  -> 0-6
+ *   lifeSkillsTeaching    -> 0-5
+ *   pathwayKnowledge      -> 0-5
+ *   motivationalSkills    -> 0-4
+ *   communityResources    -> 0-3
+ *   transitionSupport     -> 0-2
+ */
+export function evaluateStaffIndependenceReadiness(
+  staff: StaffIndependenceTraining[],
+): StaffIndependenceReadinessResult {
+  if (staff.length === 0) {
+    return {
+      overallScore: 0,
+      totalStaff: 0,
+      independencePlanningRate: 0,
+      lifeSkillsTeachingRate: 0,
+      pathwayKnowledgeRate: 0,
+      motivationalSkillsRate: 0,
+      communityResourcesRate: 0,
+      transitionSupportRate: 0,
+    };
+  }
+
+  let score = 0;
+
+  const planningCount = staff.filter((s) => s.independencePlanning).length;
+  const independencePlanningRate = pct(planningCount, staff.length);
+  if (independencePlanningRate >= 90) score += 6;
+  else if (independencePlanningRate >= 70) score += 4;
+  else if (independencePlanningRate >= 50) score += 3;
+  else if (independencePlanningRate > 0) score += 1;
+
+  const teachingCount = staff.filter((s) => s.lifeSkillsTeaching).length;
+  const lifeSkillsTeachingRate = pct(teachingCount, staff.length);
+  if (lifeSkillsTeachingRate >= 90) score += 5;
+  else if (lifeSkillsTeachingRate >= 70) score += 3;
+  else if (lifeSkillsTeachingRate >= 50) score += 2;
+  else if (lifeSkillsTeachingRate > 0) score += 1;
+
+  const pathwayCount = staff.filter((s) => s.pathwayKnowledge).length;
+  const pathwayKnowledgeRate = pct(pathwayCount, staff.length);
+  if (pathwayKnowledgeRate >= 90) score += 5;
+  else if (pathwayKnowledgeRate >= 70) score += 3;
+  else if (pathwayKnowledgeRate >= 50) score += 2;
+  else if (pathwayKnowledgeRate > 0) score += 1;
+
+  const motivationalCount = staff.filter((s) => s.motivationalSkills).length;
+  const motivationalSkillsRate = pct(motivationalCount, staff.length);
+  if (motivationalSkillsRate >= 90) score += 4;
+  else if (motivationalSkillsRate >= 70) score += 3;
+  else if (motivationalSkillsRate >= 50) score += 2;
+  else if (motivationalSkillsRate > 0) score += 1;
+
+  const communityCount = staff.filter((s) => s.communityResources).length;
+  const communityResourcesRate = pct(communityCount, staff.length);
+  if (communityResourcesRate >= 90) score += 3;
+  else if (communityResourcesRate >= 70) score += 2;
+  else if (communityResourcesRate >= 50) score += 1;
+
+  const transitionCount = staff.filter((s) => s.transitionSupport).length;
+  const transitionSupportRate = pct(transitionCount, staff.length);
+  if (transitionSupportRate >= 90) score += 2;
+  else if (transitionSupportRate >= 70) score += 1;
+
+  return {
+    overallScore: Math.min(score, 25),
+    totalStaff: staff.length,
+    independencePlanningRate,
+    lifeSkillsTeachingRate,
+    pathwayKnowledgeRate,
+    motivationalSkillsRate,
+    communityResourcesRate,
+    transitionSupportRate,
+  };
+}
+
+// -- Child Profiles ------------------------------------------------------------
+
+export function buildChildIndependenceProfiles(
+  records: IndependenceRecord[],
+): ChildIndependenceProfile[] {
+  const childIds = new Set<string>();
+  const childNames = new Map<string, string>();
+
+  for (const r of records) {
+    childIds.add(r.childId);
+    childNames.set(r.childId, r.childName);
+  }
+
+  return Array.from(childIds).map((childId) => {
+    const childRecords = records.filter((r) => r.childId === childId);
+    const childName = childNames.get(childId) ?? childId;
+
+    const planCount = childRecords.filter((r) => r.individualPlanInPlace).length;
+    const individualPlanRate = pct(planCount, childRecords.length);
+
+    const engagedCount = childRecords.filter((r) => r.childEngaged).length;
+    const childEngagedRate = pct(engagedCount, childRecords.length);
+
+    const uniqueCategories = new Set(childRecords.map((r) => r.category)).size;
+
+    // Score 0-10
+    let score = 0;
+
+    // Frequency (0-2): >=10 records -> 2, >=5 -> 1
+    if (childRecords.length >= 10) score += 2;
+    else if (childRecords.length >= 5) score += 1;
+
+    // Individual plan rate (0-3)
+    if (individualPlanRate >= 80) score += 3;
+    else if (individualPlanRate >= 60) score += 2;
+    else if (individualPlanRate > 0) score += 1;
+
+    // Child engaged rate (0-3)
+    if (childEngagedRate >= 80) score += 3;
+    else if (childEngagedRate >= 60) score += 2;
+    else if (childEngagedRate > 0) score += 1;
+
+    // Diversity (0-2): >=4 unique categories -> 2, >=2 -> 1
+    if (uniqueCategories >= 4) score += 2;
+    else if (uniqueCategories >= 2) score += 1;
+
+    return {
+      childId,
+      childName,
+      totalRecords: childRecords.length,
+      individualPlanRate,
+      childEngagedRate,
+      uniqueCategories,
+      overallScore: Math.min(Math.max(score, 0), 10),
+    };
+  });
+}
+
+// -- Main generator ------------------------------------------------------------
+
+export function generateIndependenceIntelligence(
+  records: IndependenceRecord[],
+  policy: IndependencePolicy | null,
+  staff: StaffIndependenceTraining[],
   homeId: string,
-  now?: string,
-): HomeIndependenceMetrics {
-  const currentDate = now ? new Date(now) : new Date();
-  const currentTime = currentDate.getTime();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
+  periodStart: string,
+  periodEnd: string,
+): IndependenceIntelligence {
+  const independenceQuality = evaluateIndependenceQuality(records);
+  const independenceCompliance = evaluateIndependenceCompliance(records);
+  const independencePolicy = evaluateIndependencePolicy(policy);
+  const staffIndependenceReadiness = evaluateStaffIndependenceReadiness(staff);
 
-  const homeProfiles = profiles.filter(p => p.homeId === homeId);
+  const rawScore =
+    independenceQuality.overallScore +
+    independenceCompliance.overallScore +
+    independencePolicy.overallScore +
+    staffIndependenceReadiness.overallScore;
+  const overallScore = Math.min(rawScore, 100);
+  const rating = getRating(overallScore);
 
-  if (homeProfiles.length === 0) {
-    return emptyMetrics(homeId);
+  const childProfiles = buildChildIndependenceProfiles(records);
+
+  // -- Strengths ---------------------------------------------------------------
+  const strengths: string[] = [];
+
+  if (independenceQuality.individualPlanRate >= 80) {
+    strengths.push(
+      "Strong individual independence planning — children consistently have personalised plans in place",
+    );
+  }
+  if (independenceQuality.childEngagedRate >= 80) {
+    strengths.push(
+      "Excellent child engagement — children are actively participating in their independence development",
+    );
+  }
+  if (independenceQuality.ageAppropriateRate >= 80) {
+    strengths.push(
+      "Independence activities are consistently age-appropriate and tailored to individual needs",
+    );
+  }
+  if (independenceCompliance.documentationCompleteRate >= 80) {
+    strengths.push(
+      "Documentation standards are high — independence assessments are thoroughly recorded",
+    );
+  }
+  if (independenceCompliance.pathwayPlanAlignedRate >= 80) {
+    strengths.push(
+      "Independence work is well-aligned with pathway planning and transition goals",
+    );
+  }
+  if (independencePolicy.overallScore >= 22) {
+    strengths.push(
+      "Comprehensive independence policies in place supporting preparation for adulthood",
+    );
+  }
+  if (staffIndependenceReadiness.overallScore >= 22) {
+    strengths.push(
+      "Staff team well-trained across independence planning, life skills teaching, and transition support",
+    );
   }
 
-  const results = homeProfiles.map(p => evaluateChildIndependence(p, now));
+  // -- Areas for improvement ---------------------------------------------------
+  const areasForImprovement: string[] = [];
 
-  // Average readiness
-  const averageReadiness = Math.round(
-    results.reduce((sum, r) => sum + r.overallReadiness, 0) / results.length
-  );
-
-  // Pathway plan compliance
-  const requirePlan = results.filter(r => r.ageYears >= PATHWAY_PLAN_AGE);
-  const havePlan = requirePlan.filter(r => r.pathwayPlanCompliant);
-  const pathwayPlanComplianceRate = requirePlan.length > 0
-    ? Math.round((havePlan.length / requirePlan.length) * 100)
-    : 100;
-
-  // Activities per child per month
-  const totalActivities30 = homeProfiles.reduce((sum, p) =>
-    sum + p.activities.filter(a => new Date(a.date).getTime() > thirtyDaysAgo).length, 0
-  );
-  const activitiesPerChildPerMonth = homeProfiles.length > 0
-    ? Math.round((totalActivities30 / homeProfiles.length) * 10) / 10
-    : 0;
-
-  // Document readiness
-  const avgDocReadiness = Math.round(
-    results.reduce((sum, r) => sum + r.documentReadiness, 0) / results.length
-  );
-
-  // Milestone achievement
-  const totalMilestones = homeProfiles.reduce((sum, p) => sum + p.milestones.length, 0);
-  const achievedMilestones = homeProfiles.reduce((sum, p) =>
-    sum + p.milestones.filter(m => m.status === "achieved").length, 0
-  );
-  const milestoneAchievementRate = totalMilestones > 0
-    ? Math.round((achievedMilestones / totalMilestones) * 100)
-    : 0;
-
-  // Domain averages
-  const domainTotals = new Map<SkillDomain, { sum: number; count: number }>();
-  for (const p of homeProfiles) {
-    for (const sa of p.skillAssessments) {
-      const current = domainTotals.get(sa.domain) ?? { sum: 0, count: 0 };
-      domainTotals.set(sa.domain, { sum: current.sum + sa.level, count: current.count + 1 });
-    }
+  if (independenceQuality.childEngagedRate < 60 && records.length > 0) {
+    areasForImprovement.push(
+      "Child engagement in independence activities is below expectations — review how activities are structured and whether children have meaningful choice",
+    );
   }
-  const domainAverages = Array.from(domainTotals.entries())
-    .map(([domain, { sum, count }]) => ({ domain, average: Math.round((sum / count) * 10) / 10 }))
-    .sort((a, b) => b.average - a.average);
+  if (independenceCompliance.documentationCompleteRate < 60 && records.length > 0) {
+    areasForImprovement.push(
+      "Documentation of independence assessments needs strengthening — ensure all assessments are fully recorded",
+    );
+  }
+  if (independenceCompliance.pathwayPlanAlignedRate < 60 && records.length > 0) {
+    areasForImprovement.push(
+      "Independence work is insufficiently aligned with pathway plans — strengthen links between daily activities and transition goals",
+    );
+  }
+  if (independenceCompliance.categoryDiversityRate < 60 && records.length > 0) {
+    areasForImprovement.push(
+      "Limited range of independence categories covered — broaden activities to include cooking, money, hygiene, travel, health, social, and education skills",
+    );
+  }
+  if (staffIndependenceReadiness.motivationalSkillsRate < 60 && staff.length > 0) {
+    areasForImprovement.push(
+      "Motivational skills training needs improvement across the staff team to better support children's independence journey",
+    );
+  }
 
-  const strongestDomains = domainAverages.slice(0, 3).map(d => d.domain);
-  const weakestDomains = domainAverages.slice(-3).reverse().map(d => d.domain);
+  // -- Actions -----------------------------------------------------------------
+  const actions: string[] = [];
 
-  // Behind children
-  const behindChildren = results
-    .filter(r => r.readinessForAge === "behind" || r.readinessForAge === "significantly_behind")
-    .map(r => ({ childId: r.childId, childName: r.childName, readiness: r.overallReadiness }))
-    .sort((a, b) => a.readiness - b.readiness);
+  if (records.length === 0) {
+    actions.push(
+      "No independence assessment records found — begin recording independence skill assessments for all children",
+    );
+  }
+  if (policy === null || independencePolicy.overallScore === 0) {
+    actions.push(
+      "URGENT: No independence policy in place — develop and implement a comprehensive independence preparation and leaving care policy",
+    );
+  }
+  if (staff.length === 0 || staffIndependenceReadiness.overallScore === 0) {
+    actions.push(
+      "URGENT: No staff independence training records — deliver independence planning, life skills teaching, and transition support training to all staff",
+    );
+  }
+  if (independenceQuality.individualPlanRate < 50 && records.length > 0) {
+    actions.push(
+      "Review individual independence plans — too few children have personalised plans in place for their independence journey",
+    );
+  }
+  if (independenceCompliance.positiveOutcomeRate < 50 && records.length > 0) {
+    actions.push(
+      "Positive outcome rate is low — review independence teaching methods and consider additional support or alternative approaches",
+    );
+  }
+
+  // -- Regulatory links --------------------------------------------------------
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Regulation 5 — Quality and purpose of care (preparing for independence)",
+    "CHR 2015 Regulation 9 — Promoting independence",
+    "Children (Leaving Care) Act 2000 — Pathway planning",
+    "SCCIF — Preparation for independence",
+    "Care Leavers Strategy 2013",
+    "Children Act 1989 s.23C — Continuing functions",
+    "DfE Guide to Children's Homes Regulations: Independence",
+  ];
 
   return {
     homeId,
-    childCount: homeProfiles.length,
-    averageReadiness,
-    pathwayPlanComplianceRate,
-    activitiesPerChildPerMonth,
-    averageDocumentReadiness: avgDocReadiness,
-    milestoneAchievementRate,
-    childrenRequiringPathwayPlan: requirePlan.length,
-    childrenWithPathwayPlan: havePlan.length,
-    domainAverages,
-    behindChildren,
-    strongestDomains,
-    weakestDomains,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    independenceQuality,
+    independenceCompliance,
+    independencePolicy,
+    staffIndependenceReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
   };
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────
-
-function emptyMetrics(homeId: string): HomeIndependenceMetrics {
-  return {
-    homeId,
-    childCount: 0,
-    averageReadiness: 0,
-    pathwayPlanComplianceRate: 0,
-    activitiesPerChildPerMonth: 0,
-    averageDocumentReadiness: 0,
-    milestoneAchievementRate: 0,
-    childrenRequiringPathwayPlan: 0,
-    childrenWithPathwayPlan: 0,
-    domainAverages: [],
-    behindChildren: [],
-    strongestDomains: [],
-    weakestDomains: [],
-  };
-}
-
-export function getDomainLabel(domain: SkillDomain): string {
-  return DOMAIN_LABELS[domain] ?? domain.replace(/_/g, " ");
-}
-
-export function getLevelLabel(level: SkillLevel): string {
-  return LEVEL_LABELS[level] ?? `Level ${level}`;
 }

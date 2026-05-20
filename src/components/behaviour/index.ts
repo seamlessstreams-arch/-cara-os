@@ -1,1 +1,1 @@
-export { BehaviourDashboardWidget } from "./BehaviourDashboardWidget";
+export { default as BehaviourDashboardWidget } from "./BehaviourDashboardWidget";

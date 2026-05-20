@@ -1,26 +1,32 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Contact & Family Time — Public API
+// Cornerstone Contact Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
+  pct,
+  getRating,
+  getCategoryLabel,
+  getOutcomeLabel,
+  getRatingLabel,
+  evaluateContactQuality,
   evaluateContactCompliance,
-  calculateHomeContactMetrics,
-  getRelationshipLabel,
-  getContactTypeLabel,
-  getSessionStatusLabel,
+  evaluateContactPolicy,
+  evaluateStaffContactReadiness,
+  buildChildContactProfiles,
+  generateContactIntelligence,
 } from "./contact-engine";
 
 export type {
-  ContactType,
-  ContactVenue,
+  ContactCategory,
   ContactOutcome,
-  SessionStatus,
-  RelationshipType,
-  RiskLevel,
-  ContactArrangement,
-  ContactSession,
-  ChildMood,
-  ContactFrequency,
+  Rating,
+  ContactRecord,
+  ContactPolicy,
+  StaffContactTraining,
+  ContactQualityResult,
   ContactComplianceResult,
-  HomeContactMetrics,
+  ContactPolicyResult,
+  StaffContactReadinessResult,
+  ChildContactProfile,
+  ContactIntelligence,
 } from "./contact-engine";

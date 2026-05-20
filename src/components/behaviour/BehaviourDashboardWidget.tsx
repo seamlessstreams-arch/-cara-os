@@ -1,217 +1,139 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// BehaviourDashboardWidget — Behaviour & Positive Relationships card
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
 import { useEffect, useState } from "react";
 
-interface ChildAnalysis {
-  childId: string;
-  childName: string;
-  totalIncidents: number;
-  incidentsLast30Days: number;
-  incidentTrend: string;
-  deEscalationRate: number;
-  restraintCountLast30Days: number;
-  positiveToNegativeRatio: number;
-  hasSupportPlan: boolean;
-  supportPlanCurrent: boolean;
-  issues: string[];
+interface ChildBehaviourProfile { childId: string; childName: string; totalRecords: number; positiveApproachRate: number; childViewRate: number; categoriesCovered: string[]; overallScore: number; }
+
+interface BehaviourData {
+  homeId: string; periodStart: string; periodEnd: string; overallScore: number; rating: string;
+  behaviourQuality: { overallScore: number; totalRecords: number; positiveApproachRate: number; deEscalationRate: number; childViewRate: number; supportPlanRate: number; };
+  behaviourCompliance: { overallScore: number; documentationRate: number; timelyRecordingRate: number; supportPlanFollowedRate: number; categoryDiversityRatio: number; };
+  behaviourPolicy: { overallScore: number; behaviourManagementPolicy: boolean; positiveReinforcementFramework: boolean; deEscalationProtocol: boolean; restraintReductionPlan: boolean; childParticipationGuidance: boolean; debriefingProcedure: boolean; reviewSchedule: boolean; };
+  staffReadiness: { overallScore: number; totalStaff: number; positiveApproachesRate: number; deEscalationSkillsRate: number; traumaInformedRate: number; restorativePracticeRate: number; riskAssessmentRate: number; recordKeepingRate: number; };
+  childProfiles: ChildBehaviourProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
 }
 
-interface Metrics {
-  childCount: number;
-  totalIncidents: number;
-  incidentsLast30Days: number;
-  incidentTrend: string;
-  deEscalationSuccessRate: number;
-  restraintCount: number;
-  restraintCountLast30Days: number;
-  restraintReductionTrend: boolean;
-  totalPositiveEvents: number;
-  positiveEventsLast30Days: number;
-  overallPositiveRatio: number;
-  supportPlanComplianceRate: number;
-  childVoiceInPlans: number;
-  debriefComplianceRate: number;
-  childrenOfConcern: { childName: string; reason: string }[];
-  commonTriggers: string[];
+function ratingColour(r: string) {
+  if (r === "outstanding") return "text-green-700 bg-green-50 border-green-200";
+  if (r === "good") return "text-blue-700 bg-blue-50 border-blue-200";
+  if (r === "requires_improvement") return "text-amber-700 bg-amber-50 border-amber-200";
+  return "text-red-700 bg-red-50 border-red-200";
+}
+function ratingLabel(r: string) { return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()); }
+function boolBadge(v: boolean) { return v ? "text-green-700 bg-green-50 border-green-200" : "text-red-700 bg-red-50 border-red-200"; }
+
+function ScoreBar({ label, score, max = 25 }: { label: string; score: number; max?: number }) {
+  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+  const fill = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
+  return (<div className="mb-3"><div className="flex justify-between text-sm mb-1"><span className="font-medium text-gray-700">{label}</span><span className="text-gray-500">{score}/{max}</span></div><div className="h-2 rounded-full bg-gray-100 overflow-hidden"><div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} /></div></div>);
 }
 
-interface DashboardData {
-  metrics: Metrics;
-  children: ChildAnalysis[];
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (<div className="border border-gray-200 rounded-lg overflow-hidden mb-4"><button onClick={() => setOpen(!open)} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 flex justify-between items-center"><span className="font-semibold text-gray-800">{title}</span><span className="text-gray-400 text-lg">{open ? "−" : "+"}</span></button>{open && <div className="px-4 py-3">{children}</div>}</div>);
 }
 
-interface Props {
-  homeId?: string;
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (<div className="bg-gray-50 rounded-lg px-3 py-2 text-center"><div className="text-lg font-bold text-gray-800">{value}</div><div className="text-xs text-gray-500">{label}</div></div>);
 }
 
-const TREND_STYLES: Record<string, { icon: string; color: string }> = {
-  increasing: { icon: "↑", color: "text-red-600 dark:text-red-400" },
-  stable: { icon: "→", color: "text-muted-foreground" },
-  decreasing: { icon: "↓", color: "text-emerald-600 dark:text-emerald-400" },
-};
-
-export function BehaviourDashboardWidget({ homeId = "home-oak" }: Props) {
-  const [data, setData] = useState<DashboardData | null>(null);
+export default function BehaviourDashboardWidget() {
+  const [data, setData] = useState<BehaviourData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [homeId]);
+    fetch("/api/behaviour")
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((json) => setData(json.data))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/behaviour?homeId=${homeId}&mode=dashboard`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="rounded-lg border border-border bg-card p-6 animate-pulse">
-        <div className="h-4 w-36 bg-muted rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-muted rounded" />
-          <div className="h-3 w-3/4 bg-muted rounded" />
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return (<div className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse"><div className="h-6 bg-gray-200 rounded w-3/4 mb-4" /><div className="h-4 bg-gray-100 rounded w-1/2 mb-3" /><div className="h-4 bg-gray-100 rounded w-2/3 mb-3" /><div className="h-4 bg-gray-100 rounded w-1/3" /></div>);
+  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">Behaviour</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
   if (!data) return null;
 
-  const { metrics } = data;
-  const trendInfo = TREND_STYLES[metrics.incidentTrend] ?? TREND_STYLES.stable;
+  const rc = ratingColour(data.rating);
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">Behaviour & Relationships</h3>
-              <p className="text-xs text-muted-foreground">Reg 19/20 — Positive strategies</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className={`text-sm ${trendInfo.color}`}>{trendInfo.icon}</span>
-            <span className="text-xs text-muted-foreground">{metrics.incidentsLast30Days} / 30d</span>
-          </div>
-        </div>
+    <div className="rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+        <div><h2 className="text-lg font-bold text-gray-900">Behaviour</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold ${rc}`}><span className="text-xl font-bold">{data.overallScore}</span><span>/100</span><span className="ml-1">{ratingLabel(data.rating)}</span></div>
       </div>
 
-      {/* Children of concern alert */}
-      {metrics.childrenOfConcern.length > 0 && (
-        <div className="px-4 py-2.5 border-b border-border bg-red-50/50 dark:bg-red-900/10">
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-medium text-red-700 dark:text-red-400">
-              {metrics.childrenOfConcern.length} child{metrics.childrenOfConcern.length > 1 ? "ren" : ""} of concern
-            </span>
-          </div>
-          <p className="text-[10px] text-red-600 dark:text-red-400 line-clamp-1">
-            {metrics.childrenOfConcern[0].childName}: {metrics.childrenOfConcern[0].reason}
-          </p>
-        </div>
-      )}
-
-      {/* Key metrics */}
-      <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.deEscalationSuccessRate >= 70 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {metrics.deEscalationSuccessRate}%
-          </p>
-          <p className="text-[10px] text-muted-foreground">De-escalation</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.restraintReductionTrend ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-            {metrics.restraintCountLast30Days}
-          </p>
-          <p className="text-[10px] text-muted-foreground">Restraints 30d</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.overallPositiveRatio >= 5 ? "text-emerald-600 dark:text-emerald-400" : metrics.overallPositiveRatio >= 3 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
-            {metrics.overallPositiveRatio}:1
-          </p>
-          <p className="text-[10px] text-muted-foreground">Positive ratio</p>
-        </div>
+      <div className="mb-6">
+        <ScoreBar label="Behaviour Quality" score={data.behaviourQuality.overallScore} />
+        <ScoreBar label="Behaviour Compliance" score={data.behaviourCompliance.overallScore} />
+        <ScoreBar label="Policy & Governance" score={data.behaviourPolicy.overallScore} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} />
       </div>
 
-      {/* Positive events highlight */}
-      <div className="px-4 py-3 border-b border-border bg-emerald-50/30 dark:bg-emerald-900/5">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
-            Positive Events (30d)
-          </span>
-          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-            {metrics.positiveEventsLast30Days}
-          </span>
+      <Section title="Behaviour Quality" defaultOpen>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Records" value={data.behaviourQuality.totalRecords} />
+          <Stat label="Positive Approach" value={`${data.behaviourQuality.positiveApproachRate}%`} />
+          <Stat label="De-escalation" value={`${data.behaviourQuality.deEscalationRate}%`} />
+          <Stat label="Child View" value={`${data.behaviourQuality.childViewRate}%`} />
+          <Stat label="Support Plan" value={`${data.behaviourQuality.supportPlanRate}%`} />
         </div>
-        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full bg-emerald-500"
-            style={{ width: `${Math.min(100, (metrics.positiveEventsLast30Days / Math.max(1, metrics.incidentsLast30Days * 5)) * 100)}%` }}
-          />
-        </div>
-        <p className="text-[9px] text-muted-foreground mt-0.5">Target: 5x incidents ({metrics.incidentsLast30Days * 5} events)</p>
-      </div>
+      </Section>
 
-      {/* Compliance */}
-      <div className="px-4 py-3 border-b border-border space-y-2">
-        <div className="flex justify-between text-[10px]">
-          <span className="text-muted-foreground">BSP compliance</span>
-          <span className={`font-medium ${metrics.supportPlanComplianceRate >= 90 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.supportPlanComplianceRate}%
-          </span>
+      <Section title="Behaviour Compliance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Documentation" value={`${data.behaviourCompliance.documentationRate}%`} />
+          <Stat label="Timely Recording" value={`${data.behaviourCompliance.timelyRecordingRate}%`} />
+          <Stat label="Support Plan Followed" value={`${data.behaviourCompliance.supportPlanFollowedRate}%`} />
+          <Stat label="Category Coverage" value={`${data.behaviourCompliance.categoryDiversityRatio}%`} />
         </div>
-        <div className="flex justify-between text-[10px]">
-          <span className="text-muted-foreground">Child voice in plans</span>
-          <span className={`font-medium ${metrics.childVoiceInPlans >= 90 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.childVoiceInPlans}%
-          </span>
-        </div>
-        <div className="flex justify-between text-[10px]">
-          <span className="text-muted-foreground">Restraint debriefs</span>
-          <span className={`font-medium ${metrics.debriefComplianceRate >= 95 ? "text-emerald-600" : "text-red-600"}`}>
-            {metrics.debriefComplianceRate}%
-          </span>
-        </div>
-      </div>
+      </Section>
 
-      {/* Common triggers */}
-      {metrics.commonTriggers.length > 0 && (
-        <div className="px-4 py-2.5 border-b border-border">
-          <p className="text-[10px] font-medium text-muted-foreground mb-1">Common triggers:</p>
-          <div className="flex flex-wrap gap-1">
-            {metrics.commonTriggers.slice(0, 4).map(t => (
-              <span key={t} className="inline-flex px-1.5 py-0.5 rounded bg-muted text-[9px] font-medium">
-                {t.replace(/_/g, " ")}
-              </span>
+      <Section title="Policy & Governance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {([
+            ["Behaviour Policy", data.behaviourPolicy.behaviourManagementPolicy],
+            ["Positive Framework", data.behaviourPolicy.positiveReinforcementFramework],
+            ["De-escalation Protocol", data.behaviourPolicy.deEscalationProtocol],
+            ["Restraint Reduction", data.behaviourPolicy.restraintReductionPlan],
+            ["Child Participation", data.behaviourPolicy.childParticipationGuidance],
+            ["Debriefing Procedure", data.behaviourPolicy.debriefingProcedure],
+            ["Review Schedule", data.behaviourPolicy.reviewSchedule],
+          ] as [string, boolean][]).map(([label, val]) => (
+            <div key={label} className={`rounded-lg px-3 py-2 text-center border ${boolBadge(val)}`}><div className="text-sm font-semibold">{val ? "Yes" : "No"}</div><div className="text-xs">{label}</div></div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Staff Readiness">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
+          <Stat label="Positive Approaches" value={`${data.staffReadiness.positiveApproachesRate}%`} />
+          <Stat label="De-escalation Skills" value={`${data.staffReadiness.deEscalationSkillsRate}%`} />
+          <Stat label="Trauma-Informed" value={`${data.staffReadiness.traumaInformedRate}%`} />
+          <Stat label="Restorative Practice" value={`${data.staffReadiness.restorativePracticeRate}%`} />
+          <Stat label="Risk Assessment" value={`${data.staffReadiness.riskAssessmentRate}%`} />
+          <Stat label="Record Keeping" value={`${data.staffReadiness.recordKeepingRate}%`} />
+        </div>
+      </Section>
+
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Behaviour Profiles">
+          <div className="space-y-3">
+            {data.childProfiles.map((cp) => (
+              <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
+                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Positive: {cp.positiveApproachRate}%</span><span>Child View: {cp.childViewRate}%</span></div>
+              </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Footer */}
-      <div className="p-3 text-center">
-        <a href="/behaviour" className="text-xs text-primary font-medium hover:underline">
-          View behaviour dashboard →
-        </a>
-      </div>
+      {data.strengths.length > 0 && (<Section title="Strengths"><ul className="space-y-1">{data.strengths.map((s, i) => (<li key={i} className="text-sm text-green-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-green-500" />{s}</li>))}</ul></Section>)}
+      {data.areasForImprovement.length > 0 && (<Section title="Areas for Improvement"><ul className="space-y-1">{data.areasForImprovement.map((a, i) => (<li key={i} className="text-sm text-amber-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />{a}</li>))}</ul></Section>)}
+      {data.actions.length > 0 && (<Section title="Actions" defaultOpen><ul className="space-y-1">{data.actions.map((a, i) => (<li key={i} className={`text-sm flex gap-2 ${a.startsWith("URGENT") ? "text-red-800 font-semibold" : "text-gray-700"}`}><span className={`shrink-0 mt-1 h-1.5 w-1.5 rounded-full ${a.startsWith("URGENT") ? "bg-red-500" : "bg-gray-400"}`} />{a}</li>))}</ul></Section>)}
+      <Section title="Regulatory Links"><ul className="space-y-1">{data.regulatoryLinks.map((l, i) => (<li key={i} className="text-sm text-gray-600 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-gray-400" />{l}</li>))}</ul></Section>
     </div>
   );
 }
