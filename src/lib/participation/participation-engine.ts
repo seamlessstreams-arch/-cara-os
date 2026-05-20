@@ -1,418 +1,420 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Children's Participation & Advocacy Engine
+// Cornerstone Participation Intelligence Engine  (v2 — standardised)
 //
-// Deterministic engine for tracking children's voice, participation in
-// decisions, advocacy access, house meetings, complaints awareness,
-// and Article 12 UNCRC compliance.
+// Deterministic engine for evaluating children's participation quality,
+// compliance, advocacy/voice policies, staff readiness, and per-child
+// participation profiles.
 //
 // Aligned to:
-//   - CHR 2015 Reg 7 — Children's wishes and feelings
+//   - CHR 2015 Reg 7  — Children's wishes and feelings
 //   - CHR 2015 Reg 16 — Statement of purpose (child-centred)
 //   - UNCRC Article 12 — Right to be heard
 //   - SCCIF — Overall experiences: voice of the child
-//   - Children Act 1989 s.20 & s.22 — Ascertain wishes/feelings
+//   - Children Act 1989 s.22 — Ascertain wishes/feelings
 //   - Advocacy Services and Representations Procedure Regs 2004
+//   - Quality Standards 2015 — Standard 3 (aspirations, views, wishes)
 //
-// Key requirements:
-//   - Children consulted on decisions affecting them
-//   - Regular house meetings with recorded actions
-//   - Independent advocacy access explained and available
-//   - Children's views recorded in care plans / reviews
-//   - Complaints process explained and accessible
-//   - Feedback mechanisms in place (suggestion box, surveys)
-//   - Key decisions evidence child's voice
-//   - Children involved in matching for new admissions
-//   - Children know their rights and how to raise concerns
-//
-// No AI. No external calls. Pure input → output.
+// No AI. No external calls. Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ── Enums / Literal Unions ────────────────────────────────────────────────
 
-export type ParticipationMethod =
-  | "verbal"
-  | "written"
-  | "picture"
-  | "advocate"
-  | "keyworker"
-  | "survey"
-  | "house_meeting"
-  | "review_meeting"
-  | "informal";
+export type ParticipationCategory =
+  | "care_plan_voice"
+  | "advocacy_access"
+  | "complaints_awareness"
+  | "house_meeting_input"
+  | "review_participation"
+  | "daily_decisions"
+  | "feedback_mechanism"
+  | "rights_education";
 
-export type DecisionArea =
-  | "care_plan"
-  | "placement"
-  | "education"
-  | "health"
-  | "contact"
-  | "daily_routine"
-  | "activities"
-  | "room_decoration"
-  | "food_menu"
-  | "house_rules"
-  | "complaints"
-  | "matching_new_child";
+export type ParticipationOutcome =
+  | "views_acted_upon"
+  | "views_recorded"
+  | "views_partially_acted"
+  | "child_declined"
+  | "not_applicable";
 
-export type MeetingType =
-  | "house_meeting"
-  | "children_committee"
-  | "review_meeting"
-  | "key_work_session"
-  | "feedback_session";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
+// ── Record ────────────────────────────────────────────────────────────────
+
+export interface ParticipationRecord {
+  id: string;
+  homeId: string;
+  date: string;
+  childId: string;
+  childName: string;
+  category: ParticipationCategory;
+  outcome: ParticipationOutcome;
+  // Quality flags
+  childViewRecorded: boolean;
+  viewsActedUpon: boolean;
+  advocacyOffered: boolean;
+  feedbackProvided: boolean;
+  // Compliance flags
+  documentationComplete: boolean;
+  timelyRecording: boolean;
+}
+
+// ── Policy (7 booleans) ───────────────────────────────────────────────────
+
+export interface ParticipationPolicy {
+  participationPolicy: boolean;
+  advocacyAccessPolicy: boolean;
+  complaintsAwarenessFramework: boolean;
+  childVoiceInCarePlanning: boolean;
+  feedbackMechanismPolicy: boolean;
+  rightsEducationPolicy: boolean;
+  independentVisitorScheme: boolean;
+}
+
+// ── Staff Training (6 skills) ─────────────────────────────────────────────
+
+export interface StaffParticipationTraining {
+  staffId: string;
+  childVoiceCapture: boolean;
+  advocacyKnowledge: boolean;
+  participationFacilitation: boolean;
+  complaintsAwareness: boolean;
+  rightsBasedPractice: boolean;
+  feedbackResponsiveness: boolean;
+}
+
+// ── Result interfaces ─────────────────────────────────────────────────────
+
+export interface ParticipationQualityResult {
+  overallScore: number;
+  totalRecords: number;
+  childViewRecordedRate: number;
+  viewsActedUponRate: number;
+  advocacyOfferedRate: number;
+  feedbackProvidedRate: number;
+}
+
+export interface ParticipationComplianceResult {
+  overallScore: number;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  viewsActedUponRate: number;
+  categoryDiversityRatio: number;
+}
+
+export interface ParticipationPolicyResult {
+  overallScore: number;
+  participationPolicy: boolean;
+  advocacyAccessPolicy: boolean;
+  complaintsAwarenessFramework: boolean;
+  childVoiceInCarePlanning: boolean;
+  feedbackMechanismPolicy: boolean;
+  rightsEducationPolicy: boolean;
+  independentVisitorScheme: boolean;
+}
+
+export interface StaffParticipationReadinessResult {
+  overallScore: number;
+  totalStaff: number;
+  childVoiceCaptureRate: number;
+  advocacyKnowledgeRate: number;
+  participationFacilitationRate: number;
+  complaintsAwarenessRate: number;
+  rightsBasedPracticeRate: number;
+  feedbackResponsivenessRate: number;
+}
 
 export interface ChildParticipationProfile {
   childId: string;
   childName: string;
-  homeId: string;
-  advocateOffered: boolean;
-  advocateAccepted: boolean;
-  advocateName?: string;
-  advocateLastVisit?: string;
-  complaintsProcessExplained: boolean;
-  complaintsProcessDate?: string;
-  rightsExplained: boolean;
-  rightsExplainedDate?: string;
-  childrenGuideGiven: boolean;
-  preferredCommunicationMethod?: ParticipationMethod;
-  participationEntries: ParticipationEntry[];
-}
-
-export interface ParticipationEntry {
-  id: string;
-  date: string;
-  decisionArea: DecisionArea;
-  method: ParticipationMethod;
-  childViews: string;
-  viewsActedUpon: boolean;
-  outcome?: string;
-  reasonIfNotActedUpon?: string;
-  recordedBy: string;
-}
-
-export interface HouseMeeting {
-  id: string;
-  homeId: string;
-  date: string;
-  type: MeetingType;
-  attendees: string[];
-  childAttendees: string[];
-  totalChildrenInHome: number;
-  agendaItems: string[];
-  childSuggestedItems: string[];
-  actionsAgreed: { action: string; assignedTo: string; dueDate: string; completed: boolean }[];
-  minutesRecorded: boolean;
-  chairPerson: string;
-  followUpFromPrevious: boolean;
-}
-
-export interface FeedbackRecord {
-  id: string;
-  homeId: string;
-  childId?: string;
-  date: string;
-  type: "suggestion" | "compliment" | "concern" | "survey_response";
-  content: string;
-  acknowledged: boolean;
-  actionTaken?: string;
-  anonymous: boolean;
-}
-
-// ── Result Interfaces ──────────────────────────────────────────────────────
-
-export interface ChildParticipationResult {
-  childId: string;
-  childName: string;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  advocacyAccessible: boolean;
-  complaintsAware: boolean;
-  rightsExplained: boolean;
-  participationScore: number;        // 0-100
-  totalEntries: number;
-  entriesLast30Days: number;
-  viewsActedUponRate: number;        // %
-  decisionsInvolved: DecisionArea[];
-  areasNotCovered: DecisionArea[];
-}
-
-export interface HomeParticipationMetrics {
-  homeId: string;
-  childCount: number;
-  overallParticipationScore: number;
-  advocacyAccessRate: number;        // % offered and explained
-  complaintsAwarenessRate: number;
-  rightsExplainedRate: number;
-  houseMeetingFrequency: number;     // meetings per month (last 3 months)
-  houseMeetingAttendanceRate: number;
-  actionCompletionRate: number;      // % of meeting actions completed
-  childSuggestedItemsRate: number;   // % meetings with child-suggested items
+  totalRecords: number;
+  childViewRecordedRate: number;
   viewsActedUponRate: number;
-  feedbackCount30Days: number;
-  feedbackAcknowledgedRate: number;
-  childrenWithIssues: { childName: string; issues: string[] }[];
-  complianceIssues: string[];
+  categoriesCovered: string[];
+  overallScore: number;
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+export interface ParticipationIntelligence {
+  homeId: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  participationQuality: ParticipationQualityResult;
+  participationCompliance: ParticipationComplianceResult;
+  participationPolicy: ParticipationPolicyResult;
+  staffReadiness: StaffParticipationReadinessResult;
+  childProfiles: ChildParticipationProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
+}
 
-const HOUSE_MEETING_TARGET_PER_MONTH = 2;    // at least fortnightly
-const ADVOCATE_VISIT_MAX_DAYS = 90;           // advocate should visit quarterly
-const MINIMUM_DECISION_AREAS = 4;             // child should be involved in at least 4 areas
-const VIEWS_ACTED_UPON_TARGET = 70;           // at least 70% of views should be acted on
+// ── Helpers ───────────────────────────────────────────────────────────────
 
-const KEY_DECISION_AREAS: DecisionArea[] = [
-  "care_plan",
-  "education",
-  "health",
-  "contact",
-  "daily_routine",
-  "activities",
-];
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
 
-// ── Core: Evaluate Child Participation ─────────────────────────────────────
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
 
-export function evaluateChildParticipation(
-  profile: ChildParticipationProfile,
-  now?: string,
-): ChildParticipationResult {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-  const issues: string[] = [];
-  const warnings: string[] = [];
+export function getParticipationCategoryLabel(cat: ParticipationCategory): string {
+  const map: Record<ParticipationCategory, string> = {
+    care_plan_voice: "Care Plan Voice",
+    advocacy_access: "Advocacy Access",
+    complaints_awareness: "Complaints Awareness",
+    house_meeting_input: "House Meeting Input",
+    review_participation: "Review Participation",
+    daily_decisions: "Daily Decisions",
+    feedback_mechanism: "Feedback Mechanism",
+    rights_education: "Rights Education",
+  };
+  return map[cat] ?? cat;
+}
 
-  // Advocacy
-  const advocacyAccessible = profile.advocateOffered;
-  if (!advocacyAccessible) {
-    issues.push("Independent advocacy not offered to child");
-  }
-  if (profile.advocateAccepted && profile.advocateLastVisit) {
-    const daysSinceVisit = (currentTime - new Date(profile.advocateLastVisit).getTime()) / (24 * 60 * 60 * 1000);
-    if (daysSinceVisit > ADVOCATE_VISIT_MAX_DAYS) {
-      warnings.push(`Advocate not visited in ${Math.round(daysSinceVisit)} days`);
-    }
-  }
+export function getParticipationOutcomeLabel(o: ParticipationOutcome): string {
+  const map: Record<ParticipationOutcome, string> = {
+    views_acted_upon: "Views Acted Upon",
+    views_recorded: "Views Recorded",
+    views_partially_acted: "Partially Acted Upon",
+    child_declined: "Child Declined",
+    not_applicable: "Not Applicable",
+  };
+  return map[o] ?? o;
+}
 
-  // Complaints awareness
-  if (!profile.complaintsProcessExplained) {
-    issues.push("Complaints process not explained to child");
-  }
+export function getRatingLabel(r: Rating): string {
+  const map: Record<Rating, string> = {
+    outstanding: "Outstanding",
+    good: "Good",
+    requires_improvement: "Requires Improvement",
+    inadequate: "Inadequate",
+  };
+  return map[r] ?? r;
+}
 
-  // Rights
-  if (!profile.rightsExplained) {
-    issues.push("Children's rights not explained to child");
-  }
+// ── Evaluator 1: Quality (0-25) ───────────────────────────────────────────
+// childViewRecordedRate(7) + viewsActedUponRate(6) + advocacyOfferedRate(6) + feedbackProvidedRate(6) = 25
 
-  // Children's guide
-  if (!profile.childrenGuideGiven) {
-    warnings.push("Children's guide not provided");
-  }
+export function evaluateParticipationQuality(records: ParticipationRecord[]): ParticipationQualityResult {
+  const total = records.length;
+  const childViewRecordedRate = pct(records.filter(r => r.childViewRecorded).length, total);
+  const viewsActedUponRate = pct(records.filter(r => r.viewsActedUpon).length, total);
+  const advocacyOfferedRate = pct(records.filter(r => r.advocacyOffered).length, total);
+  const feedbackProvidedRate = pct(records.filter(r => r.feedbackProvided).length, total);
 
-  // Participation entries
-  const recentEntries = profile.participationEntries.filter(e =>
-    new Date(e.date).getTime() > thirtyDaysAgo
-  );
+  const raw =
+    (childViewRecordedRate / 100) * 7 +
+    (viewsActedUponRate / 100) * 6 +
+    (advocacyOfferedRate / 100) * 6 +
+    (feedbackProvidedRate / 100) * 6;
 
-  if (recentEntries.length === 0 && profile.participationEntries.length === 0) {
-    issues.push("No recorded participation — child's voice not evidenced");
-  } else if (recentEntries.length === 0) {
-    warnings.push("No participation recorded in last 30 days");
-  }
+  const overallScore = Math.min(25, Math.round(raw));
 
-  // Views acted upon
-  const withAction = profile.participationEntries.filter(e => e.viewsActedUpon);
-  const viewsActedUponRate = profile.participationEntries.length > 0
-    ? Math.round((withAction.length / profile.participationEntries.length) * 100)
-    : 0;
+  return { overallScore, totalRecords: total, childViewRecordedRate, viewsActedUponRate, advocacyOfferedRate, feedbackProvidedRate };
+}
 
-  if (profile.participationEntries.length >= 3 && viewsActedUponRate < VIEWS_ACTED_UPON_TARGET) {
-    warnings.push(`Low views-acted-upon rate (${viewsActedUponRate}%) — review if child feels heard`);
-  }
+// ── Evaluator 2: Compliance (0-25) ────────────────────────────────────────
+// documentationRate(8) + timelyRecordingRate(7) + viewsActedUponRate(5) + categoryDiversityRatio(5) = 25
 
-  // Decision areas covered
-  const areasInvolved = [...new Set(profile.participationEntries.map(e => e.decisionArea))];
-  const areasNotCovered = KEY_DECISION_AREAS.filter(a => !areasInvolved.includes(a));
+export function evaluateParticipationCompliance(records: ParticipationRecord[]): ParticipationComplianceResult {
+  const total = records.length;
+  const documentationRate = pct(records.filter(r => r.documentationComplete).length, total);
+  const timelyRecordingRate = pct(records.filter(r => r.timelyRecording).length, total);
+  const viewsActedUponRate = pct(records.filter(r => r.viewsActedUpon).length, total);
 
-  if (areasNotCovered.length > KEY_DECISION_AREAS.length - MINIMUM_DECISION_AREAS) {
-    warnings.push(`Child not consulted in key areas: ${areasNotCovered.slice(0, 3).join(", ")}`);
-  }
-
-  // Participation score
-  const scoringFactors = [
-    profile.advocateOffered ? 15 : 0,
-    profile.complaintsProcessExplained ? 15 : 0,
-    profile.rightsExplained ? 10 : 0,
-    profile.childrenGuideGiven ? 5 : 0,
-    recentEntries.length >= 3 ? 20 : recentEntries.length >= 1 ? 10 : 0,
-    viewsActedUponRate >= 70 ? 15 : viewsActedUponRate >= 50 ? 8 : 0,
-    areasInvolved.length >= 4 ? 15 : areasInvolved.length >= 2 ? 8 : 0,
-    profile.preferredCommunicationMethod ? 5 : 0,
+  const ALL_CATEGORIES: ParticipationCategory[] = [
+    "care_plan_voice", "advocacy_access", "complaints_awareness", "house_meeting_input",
+    "review_participation", "daily_decisions", "feedback_mechanism", "rights_education",
   ];
-  const participationScore = scoringFactors.reduce((a, b) => a + b, 0);
+  const usedCategories = new Set(records.map(r => r.category));
+  const categoryDiversityRatio = pct(usedCategories.size, ALL_CATEGORIES.length);
+
+  const raw =
+    (documentationRate / 100) * 8 +
+    (timelyRecordingRate / 100) * 7 +
+    (viewsActedUponRate / 100) * 5 +
+    (categoryDiversityRatio / 100) * 5;
+
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, documentationRate, timelyRecordingRate, viewsActedUponRate, categoryDiversityRatio };
+}
+
+// ── Evaluator 3: Policy (0-25) ────────────────────────────────────────────
+// 7 booleans weighted 4+4+4+4+3+3+3 = 25
+
+export function evaluateParticipationPolicy(policy: ParticipationPolicy | null): ParticipationPolicyResult {
+  if (!policy) {
+    return {
+      overallScore: 0,
+      participationPolicy: false,
+      advocacyAccessPolicy: false,
+      complaintsAwarenessFramework: false,
+      childVoiceInCarePlanning: false,
+      feedbackMechanismPolicy: false,
+      rightsEducationPolicy: false,
+      independentVisitorScheme: false,
+    };
+  }
+
+  const score =
+    (policy.participationPolicy ? 4 : 0) +
+    (policy.advocacyAccessPolicy ? 4 : 0) +
+    (policy.complaintsAwarenessFramework ? 4 : 0) +
+    (policy.childVoiceInCarePlanning ? 4 : 0) +
+    (policy.feedbackMechanismPolicy ? 3 : 0) +
+    (policy.rightsEducationPolicy ? 3 : 0) +
+    (policy.independentVisitorScheme ? 3 : 0);
 
   return {
-    childId: profile.childId,
-    childName: profile.childName,
-    isCompliant: issues.length === 0,
-    issues,
-    warnings,
-    advocacyAccessible,
-    complaintsAware: profile.complaintsProcessExplained,
-    rightsExplained: profile.rightsExplained,
-    participationScore,
-    totalEntries: profile.participationEntries.length,
-    entriesLast30Days: recentEntries.length,
-    viewsActedUponRate,
-    decisionsInvolved: areasInvolved,
-    areasNotCovered,
+    overallScore: Math.min(25, score),
+    participationPolicy: policy.participationPolicy,
+    advocacyAccessPolicy: policy.advocacyAccessPolicy,
+    complaintsAwarenessFramework: policy.complaintsAwarenessFramework,
+    childVoiceInCarePlanning: policy.childVoiceInCarePlanning,
+    feedbackMechanismPolicy: policy.feedbackMechanismPolicy,
+    rightsEducationPolicy: policy.rightsEducationPolicy,
+    independentVisitorScheme: policy.independentVisitorScheme,
   };
 }
 
-// ── Core: Calculate Home Participation Metrics ─────────────────────────────
+// ── Evaluator 4: Staff Readiness (0-25) ───────────────────────────────────
+// 6 skills weighted 6+5+5+4+3+2 = 25
 
-export function calculateHomeParticipationMetrics(
-  profiles: ChildParticipationProfile[],
-  meetings: HouseMeeting[],
-  feedback: FeedbackRecord[],
-  homeId: string,
-  now?: string,
-): HomeParticipationMetrics {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-  const ninetyDaysAgo = currentTime - 90 * 24 * 60 * 60 * 1000;
+export function evaluateStaffParticipationReadiness(staff: StaffParticipationTraining[]): StaffParticipationReadinessResult {
+  const total = staff.length;
+  const childVoiceCaptureRate = pct(staff.filter(s => s.childVoiceCapture).length, total);
+  const advocacyKnowledgeRate = pct(staff.filter(s => s.advocacyKnowledge).length, total);
+  const participationFacilitationRate = pct(staff.filter(s => s.participationFacilitation).length, total);
+  const complaintsAwarenessRate = pct(staff.filter(s => s.complaintsAwareness).length, total);
+  const rightsBasedPracticeRate = pct(staff.filter(s => s.rightsBasedPractice).length, total);
+  const feedbackResponsivenessRate = pct(staff.filter(s => s.feedbackResponsiveness).length, total);
 
-  const homeProfiles = profiles.filter(p => p.homeId === homeId);
-  const homeMeetings = meetings.filter(m => m.homeId === homeId);
-  const homeFeedback = feedback.filter(f => f.homeId === homeId);
+  const raw =
+    (childVoiceCaptureRate / 100) * 6 +
+    (advocacyKnowledgeRate / 100) * 5 +
+    (participationFacilitationRate / 100) * 5 +
+    (complaintsAwarenessRate / 100) * 4 +
+    (rightsBasedPracticeRate / 100) * 3 +
+    (feedbackResponsivenessRate / 100) * 2;
 
-  const results = homeProfiles.map(p => evaluateChildParticipation(p, now));
-  const childCount = homeProfiles.length;
+  const overallScore = Math.min(25, Math.round(raw));
 
-  // Participation score
-  const overallParticipationScore = results.length > 0
-    ? Math.round(results.reduce((s, r) => s + r.participationScore, 0) / results.length)
-    : 0;
+  return { overallScore, totalStaff: total, childVoiceCaptureRate, advocacyKnowledgeRate, participationFacilitationRate, complaintsAwarenessRate, rightsBasedPracticeRate, feedbackResponsivenessRate };
+}
 
-  // Advocacy
-  const advocacyOffered = homeProfiles.filter(p => p.advocateOffered).length;
-  const advocacyAccessRate = childCount > 0
-    ? Math.round((advocacyOffered / childCount) * 100)
-    : 100;
+// ── Child Participation Profiles (0-10) ───────────────────────────────────
 
-  // Complaints awareness
-  const complaintsAware = homeProfiles.filter(p => p.complaintsProcessExplained).length;
-  const complaintsAwarenessRate = childCount > 0
-    ? Math.round((complaintsAware / childCount) * 100)
-    : 100;
+export function buildChildParticipationProfiles(records: ParticipationRecord[]): ChildParticipationProfile[] {
+  const byChild = new Map<string, ParticipationRecord[]>();
+  for (const r of records) {
+    const arr = byChild.get(r.childId) ?? [];
+    arr.push(r);
+    byChild.set(r.childId, arr);
+  }
 
-  // Rights explained
-  const rightsExplained = homeProfiles.filter(p => p.rightsExplained).length;
-  const rightsExplainedRate = childCount > 0
-    ? Math.round((rightsExplained / childCount) * 100)
-    : 100;
+  const profiles: ChildParticipationProfile[] = [];
 
-  // House meetings (last 3 months)
-  const recentMeetings = homeMeetings.filter(m =>
-    m.type === "house_meeting" && new Date(m.date).getTime() > ninetyDaysAgo
+  for (const [childId, recs] of byChild) {
+    const childName = recs[0].childName;
+    const totalRecords = recs.length;
+    const childViewRecordedRate = pct(recs.filter(r => r.childViewRecorded).length, totalRecords);
+    const viewsActedUponRate = pct(recs.filter(r => r.viewsActedUpon).length, totalRecords);
+    const categoriesCovered = [...new Set(recs.map(r => r.category))];
+
+    let score = 0;
+    if (totalRecords >= 10) score += 2;
+    else if (totalRecords >= 5) score += 1;
+    if (childViewRecordedRate >= 80) score += 3;
+    else if (childViewRecordedRate >= 60) score += 2;
+    else if (childViewRecordedRate >= 40) score += 1;
+    if (viewsActedUponRate >= 80) score += 3;
+    else if (viewsActedUponRate >= 60) score += 2;
+    else if (viewsActedUponRate >= 40) score += 1;
+    if (categoriesCovered.length >= 4) score += 2;
+    else if (categoriesCovered.length >= 2) score += 1;
+
+    profiles.push({ childId, childName, totalRecords, childViewRecordedRate, viewsActedUponRate, categoriesCovered, overallScore: Math.min(10, score) });
+  }
+
+  return profiles.sort((a, b) => b.overallScore - a.overallScore);
+}
+
+// ── Orchestrator ──────────────────────────────────────────────────────────
+
+export function generateParticipationIntelligence(input: {
+  homeId: string;
+  periodStart: string;
+  periodEnd: string;
+  records: ParticipationRecord[];
+  policy: ParticipationPolicy | null;
+  staff: StaffParticipationTraining[];
+}): ParticipationIntelligence {
+  const { homeId, periodStart, periodEnd, records, policy, staff } = input;
+
+  const participationQuality = evaluateParticipationQuality(records);
+  const participationCompliance = evaluateParticipationCompliance(records);
+  const participationPolicy = evaluateParticipationPolicy(policy);
+  const staffReadiness = evaluateStaffParticipationReadiness(staff);
+  const childProfiles = buildChildParticipationProfiles(records);
+
+  const overallScore = Math.min(100,
+    participationQuality.overallScore +
+    participationCompliance.overallScore +
+    participationPolicy.overallScore +
+    staffReadiness.overallScore,
   );
-  const houseMeetingFrequency = recentMeetings.length > 0
-    ? Math.round((recentMeetings.length / 3) * 10) / 10
-    : 0;
+  const rating = getRating(overallScore);
 
-  // Meeting attendance
-  const totalAttendance = recentMeetings.reduce((s, m) => s + m.childAttendees.length, 0);
-  const totalPossible = recentMeetings.reduce((s, m) => s + m.totalChildrenInHome, 0);
-  const houseMeetingAttendanceRate = totalPossible > 0
-    ? Math.round((totalAttendance / totalPossible) * 100)
-    : 0;
+  const strengths: string[] = [];
+  if (participationQuality.childViewRecordedRate >= 80) strengths.push("Excellent child voice capture in participation records");
+  if (participationQuality.viewsActedUponRate >= 80) strengths.push("Children's views consistently acted upon");
+  if (participationQuality.advocacyOfferedRate >= 90) strengths.push("Advocacy consistently offered to all children");
+  if (participationQuality.feedbackProvidedRate >= 80) strengths.push("Strong feedback provision to children");
+  if (participationCompliance.documentationRate >= 90) strengths.push("Excellent participation documentation practices");
+  if (participationCompliance.categoryDiversityRatio >= 75) strengths.push("Good variety of participation methods used");
+  if (participationPolicy.overallScore >= 22) strengths.push("Comprehensive participation and advocacy policies in place");
+  if (staffReadiness.childVoiceCaptureRate >= 80) strengths.push("Staff well-trained in child voice capture");
+  if (staffReadiness.advocacyKnowledgeRate >= 80) strengths.push("Staff knowledgeable about advocacy services");
 
-  // Action completion
-  const allActions = recentMeetings.flatMap(m => m.actionsAgreed);
-  const completedActions = allActions.filter(a => a.completed);
-  const actionCompletionRate = allActions.length > 0
-    ? Math.round((completedActions.length / allActions.length) * 100)
-    : 100;
+  const areasForImprovement: string[] = [];
+  if (participationQuality.childViewRecordedRate < 60) areasForImprovement.push("Children's views not consistently recorded");
+  if (participationQuality.viewsActedUponRate < 60) areasForImprovement.push("Low rate of acting on children's expressed views");
+  if (participationQuality.advocacyOfferedRate < 60) areasForImprovement.push("Advocacy not consistently offered to children");
+  if (participationCompliance.timelyRecordingRate < 70) areasForImprovement.push("Participation records not completed in a timely manner");
+  if (participationCompliance.categoryDiversityRatio < 50) areasForImprovement.push("Limited variety in participation methods");
+  if (staffReadiness.rightsBasedPracticeRate < 60) areasForImprovement.push("Staff rights-based practice training needs attention");
+  if (staffReadiness.complaintsAwarenessRate < 60) areasForImprovement.push("Staff complaints awareness needs development");
 
-  // Child-suggested items
-  const meetingsWithChildItems = recentMeetings.filter(m => m.childSuggestedItems.length > 0);
-  const childSuggestedItemsRate = recentMeetings.length > 0
-    ? Math.round((meetingsWithChildItems.length / recentMeetings.length) * 100)
-    : 0;
+  const actions: string[] = [];
+  if (participationQuality.childViewRecordedRate < 40) actions.push("URGENT: Implement systematic child voice recording in all decisions");
+  if (participationQuality.advocacyOfferedRate < 40) actions.push("URGENT: Ensure independent advocacy is offered to every child");
+  if (participationCompliance.documentationRate < 60) actions.push("URGENT: Ensure all participation activities are properly documented");
+  if (!policy || participationPolicy.overallScore < 16) actions.push("Review and update participation and advocacy policies");
+  if (staffReadiness.overallScore < 15) actions.push("Prioritise staff training in child voice and participation skills");
+  if (participationQuality.viewsActedUponRate < 50) actions.push("Review barriers to acting on children's expressed views");
+  if (records.length === 0) actions.push("URGENT: No participation records found — establish child voice mechanisms immediately");
 
-  // Views acted upon
-  const allEntries = homeProfiles.flatMap(p => p.participationEntries);
-  const allActedUpon = allEntries.filter(e => e.viewsActedUpon);
-  const viewsActedUponRate = allEntries.length > 0
-    ? Math.round((allActedUpon.length / allEntries.length) * 100)
-    : 0;
-
-  // Feedback
-  const recentFeedback = homeFeedback.filter(f => new Date(f.date).getTime() > thirtyDaysAgo);
-  const acknowledgedFeedback = recentFeedback.filter(f => f.acknowledged);
-  const feedbackAcknowledgedRate = recentFeedback.length > 0
-    ? Math.round((acknowledgedFeedback.length / recentFeedback.length) * 100)
-    : 100;
-
-  // Children with issues
-  const childrenWithIssues = results
-    .filter(r => r.issues.length > 0)
-    .map(r => ({ childName: r.childName, issues: r.issues }));
-
-  const complianceIssues = [...new Set(results.flatMap(r => r.issues))];
+  const regulatoryLinks = [
+    "CHR 2015 Reg 7 — Children's wishes and feelings",
+    "CHR 2015 Reg 16 — Statement of purpose (child-centred)",
+    "UNCRC Article 12 — Right to be heard",
+    "SCCIF — Overall experiences: voice of the child",
+    "Children Act 1989 s.22 — Ascertain wishes/feelings",
+    "Advocacy Services and Representations Procedure Regs 2004",
+    "Quality Standards 2015 — Standard 3 (aspirations, views, wishes)",
+  ];
 
   return {
-    homeId,
-    childCount,
-    overallParticipationScore,
-    advocacyAccessRate,
-    complaintsAwarenessRate,
-    rightsExplainedRate,
-    houseMeetingFrequency,
-    houseMeetingAttendanceRate,
-    actionCompletionRate,
-    childSuggestedItemsRate,
-    viewsActedUponRate,
-    feedbackCount30Days: recentFeedback.length,
-    feedbackAcknowledgedRate,
-    childrenWithIssues,
-    complianceIssues,
+    homeId, periodStart, periodEnd, overallScore, rating,
+    participationQuality, participationCompliance, participationPolicy, staffReadiness,
+    childProfiles, strengths, areasForImprovement, actions, regulatoryLinks,
   };
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────
-
-export function getDecisionAreaLabel(area: DecisionArea): string {
-  const labels: Record<DecisionArea, string> = {
-    care_plan: "Care Plan",
-    placement: "Placement",
-    education: "Education",
-    health: "Health",
-    contact: "Contact",
-    daily_routine: "Daily Routine",
-    activities: "Activities",
-    room_decoration: "Room & Space",
-    food_menu: "Food & Menus",
-    house_rules: "House Rules",
-    complaints: "Complaints",
-    matching_new_child: "New Admissions",
-  };
-  return labels[area] ?? area;
-}
-
-export function getParticipationMethodLabel(method: ParticipationMethod): string {
-  const labels: Record<ParticipationMethod, string> = {
-    verbal: "Verbal",
-    written: "Written",
-    picture: "Picture/Drawing",
-    advocate: "Via Advocate",
-    keyworker: "Via Keyworker",
-    survey: "Survey",
-    house_meeting: "House Meeting",
-    review_meeting: "Review Meeting",
-    informal: "Informal Chat",
-  };
-  return labels[method] ?? method;
 }

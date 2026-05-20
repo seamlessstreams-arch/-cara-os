@@ -1,25 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Training & Development — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
-  evaluateStaffTrainingCompliance,
-  calculateHomeTrainingMetrics,
+  generateTrainingIntelligence,
+  evaluateTrainingQuality,
+  evaluateTrainingCompliance,
+  evaluateTrainingPolicy,
+  evaluateStaffTrainingReadiness,
+  buildStaffTrainingProfiles,
+  pct,
+  getRating,
   getTrainingCategoryLabel,
-  getTrainingStatusLabel,
-  getQualificationStatusLabel,
-  MANDATORY_TRAINING,
+  getTrainingOutcomeLabel,
+  getRatingLabel,
 } from "./training-engine";
 
 export type {
   TrainingCategory,
-  TrainingStatus,
-  QualificationLevel,
-  QualificationStatus,
-  StaffTrainingRecord,
-  TrainingCompletion,
-  Qualification,
-  MandatoryTrainingItem,
-  StaffTrainingComplianceResult,
-  HomeTrainingMetrics,
+  TrainingOutcome,
+  Rating,
+  TrainingRecord,
+  TrainingPolicy,
+  StaffTrainingCompetency,
+  TrainingQualityResult,
+  TrainingComplianceResult,
+  TrainingPolicyResult,
+  StaffTrainingReadinessResult,
+  StaffTrainingProfile,
+  TrainingIntelligence,
 } from "./training-engine";

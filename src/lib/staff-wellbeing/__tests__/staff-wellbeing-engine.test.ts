@@ -1,347 +1,649 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Staff Wellbeing & Resilience Engine — Tests
-// ══════════════════════════════════════════════════════════════════════════════
-
 import { describe, it, expect } from "vitest";
 import {
-  assessStaffWellbeing,
-  calculateHomeWellbeingMetrics,
-  getBurnoutRiskLabel,
+  pct,
+  getRating,
+  getStaffWellbeingCategoryLabel,
+  getStaffWellbeingOutcomeLabel,
+  getRatingLabel,
+  evaluateWellbeingQuality,
+  evaluateWellbeingCompliance,
+  evaluateWellbeingPolicy,
+  evaluateStaffWellbeingReadiness,
+  buildStaffWellbeingProfiles,
+  generateStaffWellbeingIntelligence,
 } from "../staff-wellbeing-engine";
-import type { StaffWellbeingRecord, WellbeingCheckin, AbsenceRecord } from "../staff-wellbeing-engine";
+import type {
+  StaffWellbeingRecord,
+  StaffWellbeingPolicy,
+  StaffWellbeingTraining,
+} from "../staff-wellbeing-engine";
 
-// ── Fixtures ──────────────────────────────────────────────────────────────
-
-const NOW = "2026-05-17T12:00:00Z";
-
-function makeCheckin(overrides: Partial<WellbeingCheckin> = {}): WellbeingCheckin {
-  return {
-    date: "2026-05-10T10:00:00Z",
-    overallRating: 4,
-    workloadManageable: true,
-    feelingSupported: true,
-    sleepQuality: 4,
-    workLifeBalance: 3,
-    teamRelationships: 4,
-    recordedBy: "staff-rm-01",
-    ...overrides,
-  };
-}
-
-function makeAbsence(overrides: Partial<AbsenceRecord> = {}): AbsenceRecord {
-  return {
-    id: "abs-001",
-    type: "sick_short_term",
-    startDate: "2026-04-01T00:00:00Z",
-    endDate: "2026-04-03T00:00:00Z",
-    totalDays: 3,
-    returnToWorkDone: true,
-    fitNote: false,
-    ...overrides,
-  };
-}
+// ── Factories ──────────────────────────────────────────────────────────────
 
 function makeRecord(overrides: Partial<StaffWellbeingRecord> = {}): StaffWellbeingRecord {
   return {
-    staffId: "staff-001",
-    staffName: "Sarah Johnson",
-    homeId: "home-oak",
-    role: "Senior Residential Worker",
-    startDate: "2023-03-15T00:00:00Z",
-    contractedHours: 37.5,
-    isAgency: false,
-    wellbeingCheckins: [
-      makeCheckin({ date: "2026-04-10T10:00:00Z", overallRating: 3 }),
-      makeCheckin({ date: "2026-04-25T10:00:00Z", overallRating: 4 }),
-      makeCheckin({ date: "2026-05-10T10:00:00Z", overallRating: 4 }),
-    ],
-    absences: [makeAbsence()],
-    supervisionAttendance: 92,
-    lastSupervisionDate: "2026-05-05T10:00:00Z",
-    reflectivePracticeEngagement: 75,
-    overtimeHoursLast30Days: 8,
-    consecutiveShiftsMax: 4,
-    sleepInCountLast30Days: 3,
-    restrictedPracticeInvolvement: 1,
-    activeSupport: [],
+    id: "rec-1",
+    homeId: "oak-house",
+    date: "2026-03-15",
+    staffId: "staff-1",
+    staffName: "Test Staff",
+    category: "supervision_support",
+    outcome: "thriving",
+    supervisionReceived: true,
+    wellbeingChecked: true,
+    debriefOffered: true,
+    supportAccessed: true,
+    documentationComplete: true,
+    timelyRecording: true,
     ...overrides,
   };
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Individual Assessment Tests
-// ══════════════════════════════════════════════════════════════════════════════
+function makePolicy(overrides: Partial<StaffWellbeingPolicy> = {}): StaffWellbeingPolicy {
+  return {
+    staffWellbeingPolicy: true,
+    supervisionFramework: true,
+    debriefingProtocol: true,
+    employeeAssistanceProgramme: true,
+    workloadManagementPolicy: true,
+    sicknessAbsencePolicy: true,
+    recognitionScheme: true,
+    ...overrides,
+  };
+}
 
-describe("assessStaffWellbeing", () => {
-  it("marks healthy staff as low burnout risk", () => {
-    const result = assessStaffWellbeing(makeRecord(), NOW);
-    expect(result.burnoutRiskLevel).toBe("low");
-    expect(result.burnoutScore).toBeLessThan(30);
-    expect(result.issues).toHaveLength(0);
-  });
+function makeTraining(overrides: Partial<StaffWellbeingTraining> = {}): StaffWellbeingTraining {
+  return {
+    staffId: "staff-1",
+    supervisionDelivery: true,
+    wellbeingAssessment: true,
+    debriefingSkills: true,
+    stressManagement: true,
+    teamBuilding: true,
+    conflictMediation: true,
+    ...overrides,
+  };
+}
 
-  it("detects high absence pattern", () => {
-    const record = makeRecord({
-      absences: [
-        makeAbsence({ id: "a1", startDate: "2025-06-01T00:00:00Z", totalDays: 5 }),
-        makeAbsence({ id: "a2", startDate: "2025-09-01T00:00:00Z", totalDays: 4 }),
-        makeAbsence({ id: "a3", startDate: "2026-01-10T00:00:00Z", totalDays: 3 }),
-        makeAbsence({ id: "a4", startDate: "2026-03-20T00:00:00Z", totalDays: 5 }),
-      ],
-    });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.absenceDaysLast12Months).toBe(17);
-    expect(result.issues.some(i => i.includes("High absence"))).toBe(true);
-  });
+// ── pct ────────────────────────────────────────────────────────────────────
 
-  it("calculates Bradford Factor correctly", () => {
-    // 3 spells, 9 total days → 3^2 * 9 = 81
-    const record = makeRecord({
-      absences: [
-        makeAbsence({ id: "a1", startDate: "2026-01-10T00:00:00Z", totalDays: 3, type: "sick_short_term" }),
-        makeAbsence({ id: "a2", startDate: "2026-02-15T00:00:00Z", totalDays: 3, type: "sick_short_term" }),
-        makeAbsence({ id: "a3", startDate: "2026-04-01T00:00:00Z", totalDays: 3, type: "sick_short_term" }),
-      ],
-    });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.bradfordFactor).toBe(81); // 3^2 * 9
-  });
-
-  it("flags Bradford Factor concern at threshold", () => {
-    // 5 spells, 10 days → 5^2 * 10 = 250
-    const record = makeRecord({
-      absences: [
-        makeAbsence({ id: "a1", startDate: "2025-08-01T00:00:00Z", totalDays: 2, type: "sick_short_term" }),
-        makeAbsence({ id: "a2", startDate: "2025-10-01T00:00:00Z", totalDays: 2, type: "sick_short_term" }),
-        makeAbsence({ id: "a3", startDate: "2026-01-01T00:00:00Z", totalDays: 2, type: "sick_short_term" }),
-        makeAbsence({ id: "a4", startDate: "2026-03-01T00:00:00Z", totalDays: 2, type: "sick_short_term" }),
-        makeAbsence({ id: "a5", startDate: "2026-04-15T00:00:00Z", totalDays: 2, type: "sick_short_term" }),
-      ],
-    });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.bradfordFactor).toBe(250);
-    expect(result.issues.some(i => i.includes("Bradford Factor"))).toBe(true);
-  });
-
-  it("flags excessive overtime", () => {
-    const record = makeRecord({ overtimeHoursLast30Days: 25 });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.overtimeConcern).toBe(true);
-    expect(result.issues.some(i => i.includes("overtime"))).toBe(true);
-    expect(result.recommendations.some(r => r.includes("workload review"))).toBe(true);
-  });
-
-  it("flags consecutive shifts concern", () => {
-    const record = makeRecord({ consecutiveShiftsMax: 7 });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.consecutiveShiftsConcern).toBe(true);
-    expect(result.issues.some(i => i.includes("consecutive"))).toBe(true);
-  });
-
-  it("flags overdue supervision", () => {
-    const record = makeRecord({ lastSupervisionDate: "2026-03-01T10:00:00Z" }); // > 42 days ago
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.supervisionOverdue).toBe(true);
-    expect(result.issues.some(i => i.includes("Supervision overdue"))).toBe(true);
-  });
-
-  it("does not flag recent supervision", () => {
-    const record = makeRecord({ lastSupervisionDate: "2026-05-10T10:00:00Z" });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.supervisionOverdue).toBe(false);
-  });
-
-  it("detects declining wellbeing trend", () => {
-    const record = makeRecord({
-      wellbeingCheckins: [
-        makeCheckin({ date: "2026-04-01T10:00:00Z", overallRating: 5 }),
-        makeCheckin({ date: "2026-04-15T10:00:00Z", overallRating: 4 }),
-        makeCheckin({ date: "2026-05-01T10:00:00Z", overallRating: 3 }),
-      ],
-    });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.wellbeingTrend).toBe("declining");
-  });
-
-  it("detects improving wellbeing trend", () => {
-    const record = makeRecord({
-      wellbeingCheckins: [
-        makeCheckin({ date: "2026-04-01T10:00:00Z", overallRating: 2 }),
-        makeCheckin({ date: "2026-04-15T10:00:00Z", overallRating: 3 }),
-        makeCheckin({ date: "2026-05-01T10:00:00Z", overallRating: 4 }),
-      ],
-    });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.wellbeingTrend).toBe("improving");
-  });
-
-  it("flags high restraint involvement", () => {
-    const record = makeRecord({ restrictedPracticeInvolvement: 5 });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.issues.some(i => i.includes("restraints"))).toBe(true);
-    expect(result.recommendations.some(r => r.includes("debrief"))).toBe(true);
-  });
-
-  it("identifies critical burnout risk with multiple factors", () => {
-    const record = makeRecord({
-      wellbeingCheckins: [
-        makeCheckin({ date: "2026-04-01T10:00:00Z", overallRating: 2, workloadManageable: false, feelingSupported: false, sleepQuality: 1, workLifeBalance: 1, teamRelationships: 2 }),
-        makeCheckin({ date: "2026-04-15T10:00:00Z", overallRating: 2, workloadManageable: false, feelingSupported: false, sleepQuality: 1, workLifeBalance: 1, teamRelationships: 2 }),
-        makeCheckin({ date: "2026-05-01T10:00:00Z", overallRating: 1, workloadManageable: false, feelingSupported: false, sleepQuality: 1, workLifeBalance: 1, teamRelationships: 1 }),
-      ],
-      absences: [
-        makeAbsence({ id: "a1", startDate: "2025-08-01T00:00:00Z", totalDays: 5, type: "stress_related" }),
-        makeAbsence({ id: "a2", startDate: "2026-02-01T00:00:00Z", totalDays: 10, type: "stress_related" }),
-      ],
-      overtimeHoursLast30Days: 28,
-      consecutiveShiftsMax: 8,
-      lastSupervisionDate: "2026-03-01T10:00:00Z",
-    });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.burnoutRiskLevel).toBe("critical");
-    expect(result.burnoutScore).toBeGreaterThanOrEqual(70);
-  });
-
-  it("flags stress-related absence", () => {
-    const record = makeRecord({
-      absences: [
-        makeAbsence({ id: "a1", startDate: "2026-03-01T00:00:00Z", totalDays: 7, type: "stress_related" }),
-      ],
-    });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.issues.some(i => i.includes("stress-related"))).toBe(true);
-  });
-
-  it("recommends counselling for low wellbeing without existing support", () => {
-    const record = makeRecord({
-      wellbeingCheckins: [
-        makeCheckin({ date: "2026-05-10T10:00:00Z", overallRating: 1, sleepQuality: 1, workLifeBalance: 1, teamRelationships: 2, workloadManageable: false, feelingSupported: false }),
-      ],
-      activeSupport: [],
-    });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.recommendations.some(r => r.includes("counselling"))).toBe(true);
-  });
-
-  it("does not recommend counselling if already in place", () => {
-    const record = makeRecord({
-      wellbeingCheckins: [
-        makeCheckin({ date: "2026-05-10T10:00:00Z", overallRating: 1, sleepQuality: 1, workLifeBalance: 1, teamRelationships: 2, workloadManageable: false, feelingSupported: false }),
-      ],
-      activeSupport: ["counselling_referral"],
-    });
-    const result = assessStaffWellbeing(record, NOW);
-    expect(result.recommendations.some(r => r.includes("counselling"))).toBe(false);
-  });
+describe("pct", () => {
+  it("returns 0 when denominator is 0", () => { expect(pct(5, 0)).toBe(0); });
+  it("returns 100 for equal num and den", () => { expect(pct(10, 10)).toBe(100); });
+  it("returns 50 for half", () => { expect(pct(5, 10)).toBe(50); });
+  it("rounds to nearest integer", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
+  it("returns 0 for 0 numerator", () => { expect(pct(0, 10)).toBe(0); });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Home Metrics Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── getRating ──────────────────────────────────────────────────────────────
 
-describe("calculateHomeWellbeingMetrics", () => {
-  it("calculates basic metrics for a team", () => {
-    const records = [
-      makeRecord({ staffId: "s1", staffName: "Alice" }),
-      makeRecord({ staffId: "s2", staffName: "Bob" }),
-    ];
-    const result = calculateHomeWellbeingMetrics(records, "home-oak", NOW);
-    expect(result.staffCount).toBe(2);
-    expect(result.averageWellbeingScore).toBeGreaterThan(0);
-    expect(result.supervisionComplianceRate).toBe(100);
-  });
-
-  it("calculates burnout risk breakdown", () => {
-    const records = [
-      makeRecord({ staffId: "s1" }),
-      makeRecord({ staffId: "s2", overtimeHoursLast30Days: 30, consecutiveShiftsMax: 8, lastSupervisionDate: "2026-03-01T00:00:00Z" }),
-    ];
-    const result = calculateHomeWellbeingMetrics(records, "home-oak", NOW);
-    expect(result.burnoutRiskBreakdown.low).toBe(1);
-    expect(result.burnoutRiskBreakdown.high + result.burnoutRiskBreakdown.moderate).toBeGreaterThanOrEqual(1);
-  });
-
-  it("calculates agency reliance", () => {
-    const records = [
-      makeRecord({ staffId: "s1", isAgency: false }),
-      makeRecord({ staffId: "s2", isAgency: true }),
-      makeRecord({ staffId: "s3", isAgency: false }),
-      makeRecord({ staffId: "s4", isAgency: true }),
-    ];
-    const result = calculateHomeWellbeingMetrics(records, "home-oak", NOW);
-    expect(result.agencyReliance).toBe(50);
-  });
-
-  it("calculates overtime rate", () => {
-    const records = [
-      makeRecord({ staffId: "s1", overtimeHoursLast30Days: 5 }),
-      makeRecord({ staffId: "s2", overtimeHoursLast30Days: 25 }),
-      makeRecord({ staffId: "s3", overtimeHoursLast30Days: 30 }),
-    ];
-    const result = calculateHomeWellbeingMetrics(records, "home-oak", NOW);
-    expect(result.overtimeRate).toBe(67); // 2 of 3
-  });
-
-  it("filters by homeId", () => {
-    const records = [
-      makeRecord({ staffId: "s1", homeId: "home-oak" }),
-      makeRecord({ staffId: "s2", homeId: "home-other" }),
-    ];
-    const result = calculateHomeWellbeingMetrics(records, "home-oak", NOW);
-    expect(result.staffCount).toBe(1);
-  });
-
-  it("returns empty metrics for no staff", () => {
-    const result = calculateHomeWellbeingMetrics([], "home-oak", NOW);
-    expect(result.staffCount).toBe(0);
-    expect(result.averageWellbeingScore).toBe(0);
-  });
-
-  it("identifies high risk staff", () => {
-    const records = [
-      makeRecord({ staffId: "s1", staffName: "Alice" }),
-      makeRecord({
-        staffId: "s2",
-        staffName: "Bob",
-        overtimeHoursLast30Days: 30,
-        consecutiveShiftsMax: 8,
-        lastSupervisionDate: "2026-03-01T00:00:00Z",
-        wellbeingCheckins: [
-          makeCheckin({ date: "2026-04-01T10:00:00Z", overallRating: 2 }),
-          makeCheckin({ date: "2026-04-15T10:00:00Z", overallRating: 2 }),
-          makeCheckin({ date: "2026-05-01T10:00:00Z", overallRating: 1 }),
-        ],
-      }),
-    ];
-    const result = calculateHomeWellbeingMetrics(records, "home-oak", NOW);
-    expect(result.highRiskStaff.length).toBeGreaterThanOrEqual(1);
-    expect(result.highRiskStaff[0].staffName).toBe("Bob");
-  });
-
-  it("calculates stress-related absence rate", () => {
-    const records = [
-      makeRecord({
-        staffId: "s1",
-        absences: [
-          makeAbsence({ id: "a1", type: "stress_related", startDate: "2026-03-01T00:00:00Z", totalDays: 5 }),
-          makeAbsence({ id: "a2", type: "sick_short_term", startDate: "2026-04-01T00:00:00Z", totalDays: 2 }),
-        ],
-      }),
-    ];
-    const result = calculateHomeWellbeingMetrics(records, "home-oak", NOW);
-    expect(result.stressRelatedAbsenceRate).toBe(50); // 1 of 2 absences
-  });
+describe("getRating", () => {
+  it("returns outstanding for >= 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(100)).toBe("outstanding"); });
+  it("returns good for >= 60", () => { expect(getRating(60)).toBe("good"); expect(getRating(79)).toBe("good"); });
+  it("returns requires_improvement for >= 40", () => { expect(getRating(40)).toBe("requires_improvement"); expect(getRating(59)).toBe("requires_improvement"); });
+  it("returns inadequate for < 40", () => { expect(getRating(39)).toBe("inadequate"); expect(getRating(0)).toBe("inadequate"); });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Helper Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Label Helpers ──────────────────────────────────────────────────────────
 
-describe("getBurnoutRiskLabel", () => {
+describe("getStaffWellbeingCategoryLabel", () => {
   it("returns human-readable labels", () => {
-    expect(getBurnoutRiskLabel("low")).toBe("Low Risk");
-    expect(getBurnoutRiskLabel("moderate")).toBe("Moderate Risk");
-    expect(getBurnoutRiskLabel("high")).toBe("High Risk");
-    expect(getBurnoutRiskLabel("critical")).toBe("Critical Risk");
+    expect(getStaffWellbeingCategoryLabel("supervision_support")).toBe("Supervision Support");
+    expect(getStaffWellbeingCategoryLabel("workload_management")).toBe("Workload Management");
+    expect(getStaffWellbeingCategoryLabel("emotional_wellbeing")).toBe("Emotional Wellbeing");
+    expect(getStaffWellbeingCategoryLabel("professional_development")).toBe("Professional Development");
+    expect(getStaffWellbeingCategoryLabel("team_cohesion")).toBe("Team Cohesion");
+    expect(getStaffWellbeingCategoryLabel("work_life_balance")).toBe("Work Life Balance");
+    expect(getStaffWellbeingCategoryLabel("resilience_support")).toBe("Resilience Support");
+    expect(getStaffWellbeingCategoryLabel("recognition_reward")).toBe("Recognition Reward");
+  });
+});
+
+describe("getStaffWellbeingOutcomeLabel", () => {
+  it("returns human-readable labels", () => {
+    expect(getStaffWellbeingOutcomeLabel("thriving")).toBe("Thriving");
+    expect(getStaffWellbeingOutcomeLabel("managing")).toBe("Managing");
+    expect(getStaffWellbeingOutcomeLabel("struggling")).toBe("Struggling");
+    expect(getStaffWellbeingOutcomeLabel("at_risk")).toBe("At Risk");
+    expect(getStaffWellbeingOutcomeLabel("on_leave")).toBe("On Leave");
+  });
+});
+
+describe("getRatingLabel", () => {
+  it("formats rating labels", () => {
+    expect(getRatingLabel("outstanding")).toBe("Outstanding");
+    expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement");
+  });
+});
+
+// ── Evaluator 1: Wellbeing Quality ─────────────────────────────────────────
+
+describe("evaluateWellbeingQuality", () => {
+  it("returns zeros for empty records", () => {
+    const result = evaluateWellbeingQuality([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.totalRecords).toBe(0);
+    expect(result.supervisionReceivedRate).toBe(0);
+  });
+
+  it("returns max score for all-true records", () => {
+    const records = [makeRecord(), makeRecord({ id: "rec-2" })];
+    const result = evaluateWellbeingQuality(records);
+    expect(result.overallScore).toBe(25);
+    expect(result.rating).toBe("outstanding");
+    expect(result.totalRecords).toBe(2);
+    expect(result.supervisionReceivedRate).toBe(100);
+    expect(result.wellbeingCheckedRate).toBe(100);
+  });
+
+  it("returns 0 for all-false records", () => {
+    const records = [makeRecord({ supervisionReceived: false, wellbeingChecked: false, debriefOffered: false, supportAccessed: false })];
+    const result = evaluateWellbeingQuality(records);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("calculates mixed rates correctly", () => {
+    const records = [
+      makeRecord({ id: "r1", supervisionReceived: true, wellbeingChecked: false, debriefOffered: true, supportAccessed: false }),
+      makeRecord({ id: "r2", supervisionReceived: true, wellbeingChecked: true, debriefOffered: false, supportAccessed: false }),
+    ];
+    const result = evaluateWellbeingQuality(records);
+    expect(result.supervisionReceivedRate).toBe(100);
+    expect(result.wellbeingCheckedRate).toBe(50);
+    expect(result.debriefOfferedRate).toBe(50);
+    expect(result.supportAccessedRate).toBe(0);
+  });
+
+  it("applies correct weights (7+6+6+6=25)", () => {
+    const records = [makeRecord({ wellbeingChecked: false, debriefOffered: false, supportAccessed: false })];
+    const result = evaluateWellbeingQuality(records);
+    expect(result.overallScore).toBe(7);
+  });
+
+  it("caps score at 25", () => {
+    const result = evaluateWellbeingQuality([makeRecord()]);
+    expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+});
+
+// ── Evaluator 2: Wellbeing Compliance ──────────────────────────────────────
+
+describe("evaluateWellbeingCompliance", () => {
+  it("returns zeros for empty records", () => {
+    const result = evaluateWellbeingCompliance([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.documentationRate).toBe(0);
+  });
+
+  it("calculates documentation and timely rates", () => {
+    const records = [
+      makeRecord({ id: "r1", documentationComplete: true, timelyRecording: true }),
+      makeRecord({ id: "r2", documentationComplete: true, timelyRecording: false }),
+      makeRecord({ id: "r3", documentationComplete: false, timelyRecording: false }),
+    ];
+    const result = evaluateWellbeingCompliance(records);
+    expect(result.documentationRate).toBe(67);
+    expect(result.timelyRecordingRate).toBe(33);
+  });
+
+  it("calculates category diversity correctly", () => {
+    const records = [makeRecord({ category: "supervision_support" })];
+    const result = evaluateWellbeingCompliance(records);
+    expect(result.categoryDiversityRatio).toBe(13);
+  });
+
+  it("returns high diversity for many categories", () => {
+    const categories: Array<StaffWellbeingRecord["category"]> = [
+      "supervision_support", "workload_management", "emotional_wellbeing", "professional_development",
+      "team_cohesion", "work_life_balance", "resilience_support", "recognition_reward",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = evaluateWellbeingCompliance(records);
+    expect(result.categoryDiversityRatio).toBe(100);
+  });
+
+  it("applies correct weights (8+7+5+5=25)", () => {
+    const categories: Array<StaffWellbeingRecord["category"]> = [
+      "supervision_support", "workload_management", "emotional_wellbeing", "professional_development",
+      "team_cohesion", "work_life_balance", "resilience_support", "recognition_reward",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = evaluateWellbeingCompliance(records);
+    expect(result.overallScore).toBe(25);
+  });
+});
+
+// ── Evaluator 3: Wellbeing Policy ──────────────────────────────────────────
+
+describe("evaluateWellbeingPolicy", () => {
+  it("returns zeros for null policy", () => {
+    const result = evaluateWellbeingPolicy(null);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.staffWellbeingPolicy).toBe(false);
+  });
+
+  it("returns 25 for all-true policy", () => {
+    const result = evaluateWellbeingPolicy(makePolicy());
+    expect(result.overallScore).toBe(25);
+    expect(result.rating).toBe("outstanding");
+  });
+
+  it("returns 0 for all-false policy", () => {
+    const result = evaluateWellbeingPolicy(makePolicy({
+      staffWellbeingPolicy: false, supervisionFramework: false, debriefingProtocol: false,
+      employeeAssistanceProgramme: false, workloadManagementPolicy: false, sicknessAbsencePolicy: false, recognitionScheme: false,
+    }));
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("weights first 4 at 4 points each", () => {
+    const result = evaluateWellbeingPolicy(makePolicy({
+      staffWellbeingPolicy: true, supervisionFramework: false, debriefingProtocol: false,
+      employeeAssistanceProgramme: false, workloadManagementPolicy: false, sicknessAbsencePolicy: false, recognitionScheme: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("weights last 3 at 3 points each", () => {
+    const result = evaluateWellbeingPolicy(makePolicy({
+      staffWellbeingPolicy: false, supervisionFramework: false, debriefingProtocol: false,
+      employeeAssistanceProgramme: false, workloadManagementPolicy: true, sicknessAbsencePolicy: true, recognitionScheme: true,
+    }));
+    expect(result.overallScore).toBe(9);
+  });
+
+  it("handles partial policy (first 4 only = 16)", () => {
+    const result = evaluateWellbeingPolicy(makePolicy({
+      workloadManagementPolicy: false, sicknessAbsencePolicy: false, recognitionScheme: false,
+    }));
+    expect(result.overallScore).toBe(16);
+    expect(result.rating).toBe("good");
+  });
+
+  it("preserves boolean values in result", () => {
+    const result = evaluateWellbeingPolicy(makePolicy({ staffWellbeingPolicy: true, supervisionFramework: false }));
+    expect(result.staffWellbeingPolicy).toBe(true);
+    expect(result.supervisionFramework).toBe(false);
+  });
+});
+
+// ── Evaluator 4: Staff Readiness ───────────────────────────────────────────
+
+describe("evaluateStaffWellbeingReadiness", () => {
+  it("returns zeros for empty staff", () => {
+    const result = evaluateStaffWellbeingReadiness([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.totalStaff).toBe(0);
+  });
+
+  it("returns max score for all-true staff", () => {
+    const staff = [makeTraining(), makeTraining({ staffId: "staff-2" })];
+    const result = evaluateStaffWellbeingReadiness(staff);
+    expect(result.overallScore).toBe(25);
+    expect(result.rating).toBe("outstanding");
+    expect(result.totalStaff).toBe(2);
+  });
+
+  it("returns 0 for all-false staff", () => {
+    const staff = [makeTraining({
+      supervisionDelivery: false, wellbeingAssessment: false, debriefingSkills: false,
+      stressManagement: false, teamBuilding: false, conflictMediation: false,
+    })];
+    const result = evaluateStaffWellbeingReadiness(staff);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("applies correct weights (6+5+5+4+3+2=25)", () => {
+    const staff = [makeTraining({
+      wellbeingAssessment: false, debriefingSkills: false, stressManagement: false,
+      teamBuilding: false, conflictMediation: false,
+    })];
+    const result = evaluateStaffWellbeingReadiness(staff);
+    expect(result.overallScore).toBe(6);
+  });
+
+  it("only conflictMediation true gives weight-2 score", () => {
+    const staff = [makeTraining({
+      supervisionDelivery: false, wellbeingAssessment: false, debriefingSkills: false,
+      stressManagement: false, teamBuilding: false, conflictMediation: true,
+    })];
+    const result = evaluateStaffWellbeingReadiness(staff);
+    expect(result.overallScore).toBe(2);
+  });
+
+  it("calculates mixed rates correctly", () => {
+    const staff = [
+      makeTraining({ staffId: "s1", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: false, stressManagement: false, teamBuilding: false, conflictMediation: false }),
+      makeTraining({ staffId: "s2", supervisionDelivery: true, wellbeingAssessment: false, debriefingSkills: true, stressManagement: false, teamBuilding: false, conflictMediation: false }),
+    ];
+    const result = evaluateStaffWellbeingReadiness(staff);
+    expect(result.supervisionDeliveryRate).toBe(100);
+    expect(result.wellbeingAssessmentRate).toBe(50);
+    expect(result.debriefingSkillsRate).toBe(50);
+  });
+});
+
+// ── Staff Profiles ─────────────────────────────────────────────────────────
+
+describe("buildStaffWellbeingProfiles", () => {
+  it("returns empty array for no records", () => {
+    expect(buildStaffWellbeingProfiles([])).toEqual([]);
+  });
+
+  it("groups by staffId", () => {
+    const records = [
+      makeRecord({ id: "r1", staffId: "s1", staffName: "Sarah" }),
+      makeRecord({ id: "r2", staffId: "s2", staffName: "Tom" }),
+      makeRecord({ id: "r3", staffId: "s1", staffName: "Sarah" }),
+    ];
+    const profiles = buildStaffWellbeingProfiles(records);
+    expect(profiles).toHaveLength(2);
+    expect(profiles.find((p) => p.staffId === "s1")?.totalRecords).toBe(2);
+  });
+
+  it("scores frequency: >=10 gives 2, >=5 gives 1, <5 gives 0", () => {
+    const recs = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", supervisionReceived: false, wellbeingChecked: false }),
+    );
+    const profiles = buildStaffWellbeingProfiles(recs);
+    expect(profiles[0].overallScore).toBe(2);
+  });
+
+  it("scores rate1 (supervisionReceivedRate): >=80 gives 3", () => {
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", supervisionReceived: i < 4, wellbeingChecked: false }),
+    );
+    const profiles = buildStaffWellbeingProfiles(recs);
+    // freq=1, rate1(80%)=3, rate2(0%)=0, diversity(1)=0 -> 4
+    expect(profiles[0].overallScore).toBe(4);
+  });
+
+  it("scores diversity: >=4 gives 2, >=2 gives 1", () => {
+    const categories: Array<StaffWellbeingRecord["category"]> = [
+      "supervision_support", "workload_management", "emotional_wellbeing", "professional_development",
+    ];
+    const recs = categories.map((cat, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", category: cat, supervisionReceived: false, wellbeingChecked: false }),
+    );
+    const profiles = buildStaffWellbeingProfiles(recs);
+    expect(profiles[0].overallScore).toBe(2);
+  });
+
+  it("caps at 10", () => {
+    const categories: Array<StaffWellbeingRecord["category"]> = [
+      "supervision_support", "workload_management", "emotional_wellbeing", "professional_development",
+    ];
+    const recs = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", category: categories[i % 4] }),
+    );
+    const profiles = buildStaffWellbeingProfiles(recs);
+    expect(profiles[0].overallScore).toBe(10);
+  });
+
+  it("2 categories gives diversity 1", () => {
+    const recs = [
+      makeRecord({ id: "r1", staffId: "s1", category: "supervision_support", supervisionReceived: false, wellbeingChecked: false }),
+      makeRecord({ id: "r2", staffId: "s1", category: "workload_management", supervisionReceived: false, wellbeingChecked: false }),
+    ];
+    const profiles = buildStaffWellbeingProfiles(recs);
+    expect(profiles[0].overallScore).toBe(1);
+    expect(profiles[0].categoriesCovered).toHaveLength(2);
+  });
+});
+
+// ── Additional Quality Edge Cases ──────────────────────────────────────────
+
+describe("evaluateWellbeingQuality — additional", () => {
+  it("single record with only supervisionReceived true gives weight-7 score", () => {
+    const records = [makeRecord({ wellbeingChecked: false, debriefOffered: false, supportAccessed: false })];
+    const result = evaluateWellbeingQuality(records);
+    expect(result.overallScore).toBe(7);
+  });
+
+  it("handles large record sets", () => {
+    const records = Array.from({ length: 100 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, supervisionReceived: i % 2 === 0 }),
+    );
+    const result = evaluateWellbeingQuality(records);
+    expect(result.supervisionReceivedRate).toBe(50);
+    expect(result.totalRecords).toBe(100);
+  });
+
+  it("rating maps correctly for low score", () => {
+    const records = [makeRecord({ supervisionReceived: false, wellbeingChecked: false, debriefOffered: false, supportAccessed: false })];
+    const result = evaluateWellbeingQuality(records);
+    expect(result.rating).toBe("inadequate");
+  });
+});
+
+// ── Additional Compliance Edge Cases ───────────────────────────────────────
+
+describe("evaluateWellbeingCompliance — additional", () => {
+  it("two categories gives 25% diversity", () => {
+    const records = [
+      makeRecord({ id: "r1", category: "supervision_support" }),
+      makeRecord({ id: "r2", category: "workload_management" }),
+    ];
+    const result = evaluateWellbeingCompliance(records);
+    expect(result.categoryDiversityRatio).toBe(25);
+  });
+
+  it("all compliance false with single category", () => {
+    const records = [makeRecord({ documentationComplete: false, timelyRecording: false, supervisionReceived: false })];
+    const result = evaluateWellbeingCompliance(records);
+    expect(result.documentationRate).toBe(0);
+    expect(result.timelyRecordingRate).toBe(0);
+    expect(result.overallScore).toBe(1); // only diversity 13% x 5 = 0.65 -> 1
+  });
+});
+
+// ── Additional Policy Edge Cases ───────────────────────────────────────────
+
+describe("evaluateWellbeingPolicy — additional", () => {
+  it("single middle policy gives 4 points", () => {
+    const result = evaluateWellbeingPolicy(makePolicy({
+      staffWellbeingPolicy: false, supervisionFramework: false, debriefingProtocol: true,
+      employeeAssistanceProgramme: false, workloadManagementPolicy: false, sicknessAbsencePolicy: false, recognitionScheme: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("rating for score 9 -> 36 -> inadequate", () => {
+    const result = evaluateWellbeingPolicy(makePolicy({
+      staffWellbeingPolicy: false, supervisionFramework: false, debriefingProtocol: false,
+      employeeAssistanceProgramme: false, workloadManagementPolicy: true, sicknessAbsencePolicy: true, recognitionScheme: true,
+    }));
+    expect(result.overallScore).toBe(9);
+    expect(result.rating).toBe("inadequate");
+  });
+});
+
+// ── Additional Staff Readiness Edge Cases ──────────────────────────────────
+
+describe("evaluateStaffWellbeingReadiness — additional", () => {
+  it("3 staff with mixed skills", () => {
+    const staff = [
+      makeTraining({ staffId: "s1" }),
+      makeTraining({ staffId: "s2", supervisionDelivery: false, wellbeingAssessment: false }),
+      makeTraining({ staffId: "s3", debriefingSkills: false, stressManagement: false, teamBuilding: false, conflictMediation: false }),
+    ];
+    const result = evaluateStaffWellbeingReadiness(staff);
+    expect(result.totalStaff).toBe(3);
+    expect(result.supervisionDeliveryRate).toBe(67);
+  });
+});
+
+// ── Additional Staff Profile Edge Cases ────────────────────────────────────
+
+describe("buildStaffWellbeingProfiles — additional", () => {
+  it("rate2 wellbeingCheckedRate 60% gives 2 points", () => {
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", supervisionReceived: false, wellbeingChecked: i < 3 }),
+    );
+    const profiles = buildStaffWellbeingProfiles(recs);
+    // freq=1, rate1(0%)=0, rate2(60%)=2, diversity(1)=0 -> 3
+    expect(profiles[0].overallScore).toBe(3);
+  });
+
+  it("preserves staff name from first record", () => {
+    const recs = [
+      makeRecord({ id: "r1", staffId: "s1", staffName: "Sarah" }),
+      makeRecord({ id: "r2", staffId: "s1", staffName: "Sarah Updated" }),
+    ];
+    const profiles = buildStaffWellbeingProfiles(recs);
+    expect(profiles[0].staffName).toBe("Sarah");
+  });
+
+  it("rate1 40% gives 1 point", () => {
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", supervisionReceived: i < 2, wellbeingChecked: false }),
+    );
+    const profiles = buildStaffWellbeingProfiles(recs);
+    // freq=1, rate1(40%)=1, rate2(0%)=0, diversity(1)=0 -> 2
+    expect(profiles[0].overallScore).toBe(2);
+  });
+});
+
+// ── Master Generator ───────────────────────────────────────────────────────
+
+describe("generateStaffWellbeingIntelligence", () => {
+  it("returns correct structure with all data", () => {
+    const result = generateStaffWellbeingIntelligence([makeRecord()], makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-05-20");
+    expect(result.homeId).toBe("oak-house");
+    expect(result.periodStart).toBe("2026-01-01");
+    expect(result.periodEnd).toBe("2026-05-20");
+    expect(result.overallScore).toBeGreaterThan(0);
+    expect(result.wellbeingQuality).toBeDefined();
+    expect(result.wellbeingCompliance).toBeDefined();
+    expect(result.wellbeingPolicy).toBeDefined();
+    expect(result.staffReadiness).toBeDefined();
+    expect(result.staffProfiles).toBeDefined();
+    expect(result.regulatoryLinks).toHaveLength(7);
+  });
+
+  it("sums 4 evaluator scores", () => {
+    const result = generateStaffWellbeingIntelligence([makeRecord()], makePolicy(), [makeTraining()], "h", "s", "e");
+    const expectedTotal = result.wellbeingQuality.overallScore + result.wellbeingCompliance.overallScore + result.wellbeingPolicy.overallScore + result.staffReadiness.overallScore;
+    expect(result.overallScore).toBe(Math.min(100, expectedTotal));
+  });
+
+  it("caps overall score at 100", () => {
+    const result = generateStaffWellbeingIntelligence([makeRecord()], makePolicy(), [makeTraining()], "h", "s", "e");
+    expect(result.overallScore).toBeLessThanOrEqual(100);
+  });
+
+  it("returns inadequate for empty data", () => {
+    const result = generateStaffWellbeingIntelligence([], null, [], "h", "s", "e");
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+  });
+
+  it("generates strengths for metrics >= 80%", () => {
+    const categories: Array<StaffWellbeingRecord["category"]> = [
+      "supervision_support", "workload_management", "emotional_wellbeing", "professional_development",
+      "team_cohesion", "work_life_balance", "resilience_support", "recognition_reward",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = generateStaffWellbeingIntelligence(records, makePolicy(), [makeTraining()], "h", "s", "e");
+    expect(result.strengths.length).toBeGreaterThan(0);
+  });
+
+  it("generates areas for improvement for low metrics", () => {
+    const records = [makeRecord({
+      supervisionReceived: false, wellbeingChecked: false, debriefOffered: false,
+      supportAccessed: false, documentationComplete: false, timelyRecording: false,
+    })];
+    const result = generateStaffWellbeingIntelligence(records, makePolicy(), [makeTraining()], "h", "s", "e");
+    expect(result.areasForImprovement.length).toBeGreaterThan(0);
+  });
+
+  it("generates URGENT actions when policy is null", () => {
+    const result = generateStaffWellbeingIntelligence([makeRecord()], null, [makeTraining()], "h", "s", "e");
+    expect(result.actions.some((a) => a.startsWith("URGENT"))).toBe(true);
+  });
+
+  it("generates URGENT actions when staff is empty", () => {
+    const result = generateStaffWellbeingIntelligence([makeRecord()], makePolicy(), [], "h", "s", "e");
+    expect(result.actions.some((a) => a.startsWith("URGENT"))).toBe(true);
+  });
+
+  it("builds staff profiles from records", () => {
+    const records = [
+      makeRecord({ id: "r1", staffId: "s1", staffName: "Sarah" }),
+      makeRecord({ id: "r2", staffId: "s2", staffName: "Tom" }),
+    ];
+    const result = generateStaffWellbeingIntelligence(records, makePolicy(), [makeTraining()], "h", "s", "e");
+    expect(result.staffProfiles).toHaveLength(2);
+  });
+
+  it("includes all 7 regulatory links", () => {
+    const result = generateStaffWellbeingIntelligence([], null, [], "h", "s", "e");
+    expect(result.regulatoryLinks).toHaveLength(7);
+    expect(result.regulatoryLinks[0]).toContain("Reg 31");
+  });
+
+  it("no areas for improvement when all metrics high", () => {
+    const categories: Array<StaffWellbeingRecord["category"]> = [
+      "supervision_support", "workload_management", "emotional_wellbeing", "professional_development",
+      "team_cohesion", "work_life_balance", "resilience_support", "recognition_reward",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = generateStaffWellbeingIntelligence(records, makePolicy(), [makeTraining()], "h", "s", "e");
+    expect(result.areasForImprovement).toHaveLength(0);
+  });
+
+  it("empty staffProfiles when no records", () => {
+    const result = generateStaffWellbeingIntelligence([], makePolicy(), [makeTraining()], "h", "s", "e");
+    expect(result.staffProfiles).toHaveLength(0);
+  });
+
+  it("returns outstanding for fully compliant data", () => {
+    const categories: Array<StaffWellbeingRecord["category"]> = [
+      "supervision_support", "workload_management", "emotional_wellbeing", "professional_development",
+      "team_cohesion", "work_life_balance", "resilience_support", "recognition_reward",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = generateStaffWellbeingIntelligence(records, makePolicy(), [makeTraining()], "h", "s", "e");
+    expect(result.rating).toBe("outstanding");
+    expect(result.overallScore).toBe(100);
+  });
+
+  it("generates actions for low metrics (<50%)", () => {
+    const records = [makeRecord({
+      supervisionReceived: false, wellbeingChecked: false, debriefOffered: false,
+      documentationComplete: false, timelyRecording: false,
+    })];
+    const staff = [makeTraining({ debriefingSkills: false })];
+    const result = generateStaffWellbeingIntelligence(records, makePolicy(), staff, "h", "s", "e");
+    expect(result.actions.length).toBeGreaterThan(0);
+  });
+
+  it("no strengths when all metrics are low", () => {
+    const records = [makeRecord({
+      supervisionReceived: false, wellbeingChecked: false, debriefOffered: false,
+      supportAccessed: false, documentationComplete: false, timelyRecording: false,
+    })];
+    const staff = [makeTraining({
+      supervisionDelivery: false, wellbeingAssessment: false, debriefingSkills: false,
+      stressManagement: false, teamBuilding: false, conflictMediation: false,
+    })];
+    const result = generateStaffWellbeingIntelligence(records, null, staff, "h", "s", "e");
+    expect(result.strengths).toHaveLength(0);
+  });
+
+  it("handles mixed staff and categories in profiles", () => {
+    const records = [
+      makeRecord({ id: "r1", staffId: "s1", staffName: "Sarah", category: "supervision_support" }),
+      makeRecord({ id: "r2", staffId: "s1", staffName: "Sarah", category: "workload_management" }),
+      makeRecord({ id: "r3", staffId: "s2", staffName: "Tom", category: "emotional_wellbeing" }),
+    ];
+    const result = generateStaffWellbeingIntelligence(records, makePolicy(), [makeTraining()], "h", "s", "e");
+    expect(result.staffProfiles).toHaveLength(2);
+    const sarah = result.staffProfiles.find(p => p.staffId === "s1");
+    expect(sarah?.categoriesCovered).toHaveLength(2);
   });
 });

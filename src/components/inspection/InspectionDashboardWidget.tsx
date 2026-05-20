@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-interface StaffWellbeingProfile { staffId: string; staffName: string; totalRecords: number; supervisionReceivedRate: number; wellbeingCheckedRate: number; categoriesCovered: string[]; overallScore: number; }
+interface ChildInspectionProfile { childId: string; childName: string; totalRecords: number; evidenceDocumentedRate: number; childViewIncludedRate: number; categoriesCovered: string[]; overallScore: number; }
 
-interface StaffWellbeingData {
+interface InspectionData {
   homeId: string; periodStart: string; periodEnd: string; overallScore: number; rating: string;
-  wellbeingQuality: { overallScore: number; totalRecords: number; supervisionReceivedRate: number; wellbeingCheckedRate: number; debriefOfferedRate: number; supportAccessedRate: number; };
-  wellbeingCompliance: { overallScore: number; documentationRate: number; timelyRecordingRate: number; supervisionReceivedRate: number; categoryDiversityRatio: number; };
-  wellbeingPolicy: { overallScore: number; staffWellbeingPolicy: boolean; supervisionFramework: boolean; debriefingProtocol: boolean; employeeAssistanceProgramme: boolean; workloadManagementPolicy: boolean; sicknessAbsencePolicy: boolean; recognitionScheme: boolean; };
-  staffReadiness: { overallScore: number; totalStaff: number; supervisionDeliveryRate: number; wellbeingAssessmentRate: number; debriefingSkillsRate: number; stressManagementRate: number; teamBuildingRate: number; conflictMediationRate: number; };
-  staffProfiles: StaffWellbeingProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
+  inspectionQuality: { overallScore: number; totalRecords: number; evidenceDocumentedRate: number; actionPlanCreatedRate: number; staffPreparedRate: number; childViewIncludedRate: number; };
+  inspectionCompliance: { overallScore: number; documentationRate: number; timelyRecordingRate: number; childViewIncludedRate: number; categoryDiversityRatio: number; };
+  inspectionPolicy: { overallScore: number; inspectionReadinessPolicy: boolean; selfAssessmentFramework: boolean; actionPlanningProcedure: boolean; evidenceCollectionPolicy: boolean; notificationProtocol: boolean; staffPreparationGuidance: boolean; continuousImprovementPolicy: boolean; };
+  staffReadiness: { overallScore: number; totalStaff: number; inspectionReadinessRate: number; evidencePresentationRate: number; regulatoryKnowledgeRate: number; selfAssessmentRate: number; actionPlanDevelopmentRate: number; qualityAssuranceRate: number; };
+  childProfiles: ChildInspectionProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
 }
 
 function ratingColour(r: string) {
@@ -37,13 +37,13 @@ function Stat({ label, value }: { label: string; value: string | number }) {
   return (<div className="bg-gray-50 rounded-lg px-3 py-2 text-center"><div className="text-lg font-bold text-gray-800">{value}</div><div className="text-xs text-gray-500">{label}</div></div>);
 }
 
-export default function StaffWellbeingDashboardWidget() {
-  const [data, setData] = useState<StaffWellbeingData | null>(null);
+export default function InspectionDashboardWidget() {
+  const [data, setData] = useState<InspectionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/staff-wellbeing")
+    fetch("/api/inspection")
       .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then((json) => setData(json.data))
       .catch((e) => setError(e.message))
@@ -51,7 +51,7 @@ export default function StaffWellbeingDashboardWidget() {
   }, []);
 
   if (loading) return (<div className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse"><div className="h-6 bg-gray-200 rounded w-3/4 mb-4" /><div className="h-4 bg-gray-100 rounded w-1/2 mb-3" /><div className="h-4 bg-gray-100 rounded w-2/3 mb-3" /><div className="h-4 bg-gray-100 rounded w-1/3" /></div>);
-  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">Staff Wellbeing</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
+  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">Inspection</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
   if (!data) return null;
 
   const rc = ratingColour(data.rating);
@@ -59,46 +59,46 @@ export default function StaffWellbeingDashboardWidget() {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
-        <div><h2 className="text-lg font-bold text-gray-900">Staff Wellbeing</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
+        <div><h2 className="text-lg font-bold text-gray-900">Inspection</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold ${rc}`}><span className="text-xl font-bold">{data.overallScore}</span><span>/100</span><span className="ml-1">{ratingLabel(data.rating)}</span></div>
       </div>
 
       <div className="mb-6">
-        <ScoreBar label="Wellbeing Quality" score={data.wellbeingQuality.overallScore} />
-        <ScoreBar label="Wellbeing Compliance" score={data.wellbeingCompliance.overallScore} />
-        <ScoreBar label="Policy & Governance" score={data.wellbeingPolicy.overallScore} />
+        <ScoreBar label="Inspection Quality" score={data.inspectionQuality.overallScore} />
+        <ScoreBar label="Inspection Compliance" score={data.inspectionCompliance.overallScore} />
+        <ScoreBar label="Policy & Governance" score={data.inspectionPolicy.overallScore} />
         <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} />
       </div>
 
-      <Section title="Wellbeing Quality" defaultOpen>
+      <Section title="Inspection Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Total Records" value={data.wellbeingQuality.totalRecords} />
-          <Stat label="Supervision Received" value={`${data.wellbeingQuality.supervisionReceivedRate}%`} />
-          <Stat label="Wellbeing Checked" value={`${data.wellbeingQuality.wellbeingCheckedRate}%`} />
-          <Stat label="Debrief Offered" value={`${data.wellbeingQuality.debriefOfferedRate}%`} />
-          <Stat label="Support Accessed" value={`${data.wellbeingQuality.supportAccessedRate}%`} />
+          <Stat label="Total Records" value={data.inspectionQuality.totalRecords} />
+          <Stat label="Evidence Documented" value={`${data.inspectionQuality.evidenceDocumentedRate}%`} />
+          <Stat label="Action Plans" value={`${data.inspectionQuality.actionPlanCreatedRate}%`} />
+          <Stat label="Staff Prepared" value={`${data.inspectionQuality.staffPreparedRate}%`} />
+          <Stat label="Child Views" value={`${data.inspectionQuality.childViewIncludedRate}%`} />
         </div>
       </Section>
 
-      <Section title="Wellbeing Compliance">
+      <Section title="Inspection Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.wellbeingCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.wellbeingCompliance.timelyRecordingRate}%`} />
-          <Stat label="Supervision Received" value={`${data.wellbeingCompliance.supervisionReceivedRate}%`} />
-          <Stat label="Category Coverage" value={`${data.wellbeingCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${data.inspectionCompliance.documentationRate}%`} />
+          <Stat label="Timely Recording" value={`${data.inspectionCompliance.timelyRecordingRate}%`} />
+          <Stat label="Child Views" value={`${data.inspectionCompliance.childViewIncludedRate}%`} />
+          <Stat label="Category Coverage" value={`${data.inspectionCompliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
 
       <Section title="Policy & Governance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {([
-            ["Wellbeing Policy", data.wellbeingPolicy.staffWellbeingPolicy],
-            ["Supervision Framework", data.wellbeingPolicy.supervisionFramework],
-            ["Debriefing Protocol", data.wellbeingPolicy.debriefingProtocol],
-            ["EAP", data.wellbeingPolicy.employeeAssistanceProgramme],
-            ["Workload Management", data.wellbeingPolicy.workloadManagementPolicy],
-            ["Sickness Absence", data.wellbeingPolicy.sicknessAbsencePolicy],
-            ["Recognition Scheme", data.wellbeingPolicy.recognitionScheme],
+            ["Readiness Policy", data.inspectionPolicy.inspectionReadinessPolicy],
+            ["Self-Assessment", data.inspectionPolicy.selfAssessmentFramework],
+            ["Action Planning", data.inspectionPolicy.actionPlanningProcedure],
+            ["Evidence Collection", data.inspectionPolicy.evidenceCollectionPolicy],
+            ["Notification Protocol", data.inspectionPolicy.notificationProtocol],
+            ["Staff Preparation", data.inspectionPolicy.staffPreparationGuidance],
+            ["Continuous Improvement", data.inspectionPolicy.continuousImprovementPolicy],
           ] as [string, boolean][]).map(([label, val]) => (
             <div key={label} className={`rounded-lg px-3 py-2 text-center border ${boolBadge(val)}`}><div className="text-sm font-semibold">{val ? "Yes" : "No"}</div><div className="text-xs">{label}</div></div>
           ))}
@@ -108,22 +108,22 @@ export default function StaffWellbeingDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Supervision Delivery" value={`${data.staffReadiness.supervisionDeliveryRate}%`} />
-          <Stat label="Wellbeing Assessment" value={`${data.staffReadiness.wellbeingAssessmentRate}%`} />
-          <Stat label="Debriefing Skills" value={`${data.staffReadiness.debriefingSkillsRate}%`} />
-          <Stat label="Stress Management" value={`${data.staffReadiness.stressManagementRate}%`} />
-          <Stat label="Team Building" value={`${data.staffReadiness.teamBuildingRate}%`} />
-          <Stat label="Conflict Mediation" value={`${data.staffReadiness.conflictMediationRate}%`} />
+          <Stat label="Inspection Readiness" value={`${data.staffReadiness.inspectionReadinessRate}%`} />
+          <Stat label="Evidence Presentation" value={`${data.staffReadiness.evidencePresentationRate}%`} />
+          <Stat label="Regulatory Knowledge" value={`${data.staffReadiness.regulatoryKnowledgeRate}%`} />
+          <Stat label="Self-Assessment" value={`${data.staffReadiness.selfAssessmentRate}%`} />
+          <Stat label="Action Plan Dev." value={`${data.staffReadiness.actionPlanDevelopmentRate}%`} />
+          <Stat label="Quality Assurance" value={`${data.staffReadiness.qualityAssuranceRate}%`} />
         </div>
       </Section>
 
-      {data.staffProfiles.length > 0 && (
-        <Section title="Staff Wellbeing Profiles">
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Inspection Profiles">
           <div className="space-y-3">
-            {data.staffProfiles.map((sp) => (
-              <div key={sp.staffId} className="border border-gray-100 rounded-lg p-3">
-                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{sp.staffName}</span><span className="text-sm font-semibold text-gray-600">{sp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {sp.totalRecords}</span><span>Supervision: {sp.supervisionReceivedRate}%</span><span>Wellbeing: {sp.wellbeingCheckedRate}%</span></div>
+            {data.childProfiles.map((cp) => (
+              <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
+                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Evidence: {cp.evidenceDocumentedRate}%</span><span>Child Views: {cp.childViewIncludedRate}%</span></div>
               </div>
             ))}
           </div>

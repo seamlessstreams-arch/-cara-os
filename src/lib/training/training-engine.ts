@@ -1,27 +1,18 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Training & Development Engine
+// Cornerstone Training Intelligence Engine
 //
-// Deterministic engine for managing mandatory training compliance,
-// qualifications, CPD tracking, and staff development in children's homes.
+// Deterministic engine for evaluating training management quality in
+// children's homes — completion rates, assessment outcomes, policy
+// governance, and HR/training manager competency.
 //
 // Aligned to:
-//   - CHR 2015 Reg 33 — Employment of staff (fitness & qualifications)
-//   - CHR 2015 Schedule 2 — Fitness of workers
-//   - SCCIF — Leadership & management (training & qualifications)
-//   - Working Together 2023 — Safeguarding training requirements
-//   - Level 3 Diploma requirement (within 2 years of start)
-//   - Restraint training (BILD-certified, annual refresh)
-//   - First Aid at Work (3-year renewal)
-//   - Safeguarding levels (refreshed at prescribed intervals)
-//
-// Key requirements:
-//   - All staff trained in core competencies before lone working
-//   - Mandatory training matrix with expiry tracking
-//   - Level 3 Diploma completion tracked (2-year deadline)
-//   - CPD logged and evidenced (minimum hours per year)
-//   - Induction programme completed within probation
-//   - Specialist training for specific needs of children placed
-//   - Training compliance reported to Reg 44 visitor
+//   - CHR 2015 Reg 31 — Fitness of workers
+//   - CHR 2015 Reg 32 — Employment of staff (training requirements)
+//   - CHR 2015 Reg 33 — Fitness of premises (staff competency)
+//   - SCCIF — Leadership and management (workforce development)
+//   - DfE Guide to CRH — Training requirements
+//   - Working Together to Safeguard Children 2023 — Multi-agency training
+//   - Keeping Children Safe in Education 2024 — Safeguarding training
 //
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
@@ -31,465 +22,414 @@
 export type TrainingCategory =
   | "safeguarding"
   | "first_aid"
-  | "medication"
-  | "restraint"
+  | "restraint_techniques"
+  | "medication_management"
   | "fire_safety"
-  | "food_hygiene"
-  | "health_safety"
-  | "data_protection"
+  | "health_and_safety"
   | "equality_diversity"
-  | "mental_health"
-  | "attachment_trauma"
-  | "csea"            // child sexual exploitation & abuse
-  | "county_lines"
-  | "missing_children"
-  | "self_harm_suicide"
-  | "de_escalation"
-  | "record_keeping"
-  | "complaints_handling"
-  | "whistle_blowing"
-  | "lone_working"
-  | "specialist";     // home-specific
+  | "therapeutic_care";
 
-export type TrainingStatus =
-  | "current"
-  | "expiring_soon"   // within 30 days
+export type TrainingOutcome =
+  | "completed"
+  | "in_progress"
   | "expired"
   | "not_started"
-  | "in_progress"
-  | "booked";
+  | "exempt";
 
-export type QualificationLevel =
-  | "level_3_diploma"
-  | "level_4_diploma"
-  | "level_5_diploma"
-  | "degree"
-  | "masters"
-  | "social_work_qualification"
-  | "management_qualification"
-  | "other";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-export type QualificationStatus =
-  | "achieved"
-  | "in_progress"
-  | "not_started"
-  | "overdue";
+// ── Input Records ──────────────────────────────────────────────────────────
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
-
-export interface StaffTrainingRecord {
+export interface TrainingRecord {
+  id: string;
+  homeId: string;
+  date: string;
   staffId: string;
   staffName: string;
-  role: string;
-  startDate: string;
-  inductionCompleted: boolean;
-  inductionCompletedDate?: string;
-  canWorkAlone: boolean;
-  trainings: TrainingCompletion[];
-  qualifications: Qualification[];
-  cpdHoursThisYear: number;
-  cpdTarget: number;
-  supervisionUpToDate: boolean;
-}
-
-export interface TrainingCompletion {
   category: TrainingCategory;
-  courseName: string;
-  completedDate?: string;
-  expiryDate?: string;
-  provider?: string;
-  certificateRef?: string;
-  status: TrainingStatus;
-  mandatory: boolean;
-  bookedDate?: string;
+  outcome: TrainingOutcome;
+  completedOnTime: boolean;          // quality rate 1, weight 7
+  assessmentPassed: boolean;         // quality rate 2, weight 6
+  practicalComponentDone: boolean;   // quality rate 3, weight 6
+  certificateObtained: boolean;      // quality rate 4, weight 6
+  documentationComplete: boolean;
+  timelyRecording: boolean;
 }
 
-export interface Qualification {
-  type: QualificationLevel;
-  title: string;
-  status: QualificationStatus;
-  startDate?: string;
-  achievedDate?: string;
-  deadline?: string;        // 2 years from employment start for L3
-  provider?: string;
-  percentComplete?: number;
+export interface TrainingPolicy {
+  mandatoryTrainingPolicy: boolean;       // 4
+  trainingNeedsAnalysis: boolean;         // 4
+  refresherSchedulePolicy: boolean;       // 4
+  inductionTrainingFramework: boolean;    // 4
+  trainingRecordKeeping: boolean;         // 3
+  externalTrainingApproval: boolean;      // 3
+  trainingBudgetPolicy: boolean;          // 3
 }
 
-export interface MandatoryTrainingItem {
-  category: TrainingCategory;
-  name: string;
-  refreshPeriodMonths: number;     // 0 = one-off (no refresh)
-  requiredBeforeLoneWorking: boolean;
-  requiredForAllStaff: boolean;
-  requiredForRoles?: string[];     // if not all staff
+export interface StaffTrainingCompetency {
+  staffId: string;
+  trainingNeedsAssessment: boolean;  // 6
+  deliverySkills: boolean;           // 5
+  complianceMonitoring: boolean;     // 5
+  recordManagement: boolean;         // 4
+  qualityAssurance: boolean;         // 3
+  budgetManagement: boolean;         // 2
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
-export interface StaffTrainingComplianceResult {
+export interface TrainingQualityResult {
+  overallScore: number;
+  rating: Rating;
+  totalRecords: number;
+  completedOnTimeRate: number;
+  assessmentPassedRate: number;
+  practicalComponentDoneRate: number;
+  certificateObtainedRate: number;
+}
+
+export interface TrainingComplianceResult {
+  overallScore: number;
+  rating: Rating;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  completedOnTimeRate: number;
+  categoryDiversityRatio: number;
+}
+
+export interface TrainingPolicyResult {
+  overallScore: number;
+  rating: Rating;
+  mandatoryTrainingPolicy: boolean;
+  trainingNeedsAnalysis: boolean;
+  refresherSchedulePolicy: boolean;
+  inductionTrainingFramework: boolean;
+  trainingRecordKeeping: boolean;
+  externalTrainingApproval: boolean;
+  trainingBudgetPolicy: boolean;
+}
+
+export interface StaffTrainingReadinessResult {
+  overallScore: number;
+  rating: Rating;
+  totalStaff: number;
+  trainingNeedsAssessmentRate: number;
+  deliverySkillsRate: number;
+  complianceMonitoringRate: number;
+  recordManagementRate: number;
+  qualityAssuranceRate: number;
+  budgetManagementRate: number;
+}
+
+export interface StaffTrainingProfile {
   staffId: string;
   staffName: string;
-  role: string;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  overallComplianceRate: number;   // % of mandatory training current
-  mandatoryTrainingCurrent: number;
-  mandatoryTrainingTotal: number;
-  expiredCount: number;
-  expiringSoonCount: number;
-  inductionComplete: boolean;
-  qualificationOnTrack: boolean;
-  cpdOnTrack: boolean;
-  canWorkAlone: boolean;
-  loneWorkingRequirementsMet: boolean;
+  totalRecords: number;
+  completedOnTimeRate: number;
+  assessmentPassedRate: number;
+  categoriesCovered: string[];
+  overallScore: number;
 }
 
-export interface HomeTrainingMetrics {
+export interface TrainingIntelligence {
   homeId: string;
-  staffCount: number;
-  overallComplianceRate: number;
-  fullyCompliantStaff: number;
-  staffWithExpiredTraining: number;
-  staffWithExpiringSoon: number;
-  inductionCompletionRate: number;
-  qualificationRate: number;        // % with L3+ or on track
-  averageCpdHours: number;
-  cpdComplianceRate: number;        // % meeting target
-  loneWorkingAuthorised: number;
-  restraintTrainingCurrent: number;
-  safeguardingCurrent: number;
-  firstAidCurrent: number;
-  categoryCompliance: { category: string; currentCount: number; totalRequired: number; rate: number }[];
-  staffNeedingAttention: { staffName: string; expiredCount: number; issues: string[] }[];
-  upcomingExpiries: { staffName: string; category: string; expiryDate: string }[];
-  complianceIssues: string[];
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  trainingQuality: TrainingQualityResult;
+  trainingCompliance: TrainingComplianceResult;
+  trainingPolicy: TrainingPolicyResult;
+  staffReadiness: StaffTrainingReadinessResult;
+  staffProfiles: StaffTrainingProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const EXPIRY_WARNING_DAYS = 30;
-const CPD_MINIMUM_HOURS = 20;         // minimum CPD hours per year
-const INDUCTION_DEADLINE_DAYS = 90;   // 3 months (probation period)
-const LEVEL_3_DEADLINE_MONTHS = 24;   // 2 years from start
-
-export const MANDATORY_TRAINING: MandatoryTrainingItem[] = [
-  { category: "safeguarding", name: "Safeguarding Children (Level 3)", refreshPeriodMonths: 12, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-  { category: "first_aid", name: "First Aid at Work", refreshPeriodMonths: 36, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-  { category: "medication", name: "Medication Administration", refreshPeriodMonths: 12, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-  { category: "restraint", name: "Physical Intervention (BILD)", refreshPeriodMonths: 12, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-  { category: "fire_safety", name: "Fire Safety Awareness", refreshPeriodMonths: 12, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-  { category: "food_hygiene", name: "Food Hygiene Level 2", refreshPeriodMonths: 36, requiredBeforeLoneWorking: false, requiredForAllStaff: true },
-  { category: "health_safety", name: "Health & Safety", refreshPeriodMonths: 12, requiredBeforeLoneWorking: false, requiredForAllStaff: true },
-  { category: "data_protection", name: "Data Protection & GDPR", refreshPeriodMonths: 12, requiredBeforeLoneWorking: false, requiredForAllStaff: true },
-  { category: "equality_diversity", name: "Equality, Diversity & Inclusion", refreshPeriodMonths: 24, requiredBeforeLoneWorking: false, requiredForAllStaff: true },
-  { category: "mental_health", name: "Mental Health Awareness", refreshPeriodMonths: 24, requiredBeforeLoneWorking: false, requiredForAllStaff: true },
-  { category: "attachment_trauma", name: "Attachment & Trauma-Informed Care", refreshPeriodMonths: 24, requiredBeforeLoneWorking: false, requiredForAllStaff: true },
-  { category: "csea", name: "CSE & Online Safety", refreshPeriodMonths: 12, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-  { category: "county_lines", name: "County Lines & Criminal Exploitation", refreshPeriodMonths: 12, requiredBeforeLoneWorking: false, requiredForAllStaff: true },
-  { category: "missing_children", name: "Missing from Care Procedures", refreshPeriodMonths: 12, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-  { category: "self_harm_suicide", name: "Self-Harm & Suicide Prevention", refreshPeriodMonths: 12, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-  { category: "de_escalation", name: "De-escalation & Conflict Resolution", refreshPeriodMonths: 12, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-  { category: "record_keeping", name: "Record Keeping & Report Writing", refreshPeriodMonths: 0, requiredBeforeLoneWorking: false, requiredForAllStaff: true },
-  { category: "lone_working", name: "Lone Working Procedures", refreshPeriodMonths: 12, requiredBeforeLoneWorking: true, requiredForAllStaff: true },
-];
-
-// ── Core: Evaluate Staff Training Compliance ──────────────────────────────
-
-export function evaluateStaffTrainingCompliance(
-  record: StaffTrainingRecord,
-  now?: string,
-): StaffTrainingComplianceResult {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const warningThreshold = currentTime + EXPIRY_WARNING_DAYS * 24 * 60 * 60 * 1000;
-  const issues: string[] = [];
-  const warnings: string[] = [];
-
-  // Determine which mandatory trainings apply
-  const applicableTraining = MANDATORY_TRAINING.filter(mt =>
-    mt.requiredForAllStaff || (mt.requiredForRoles?.includes(record.role))
-  );
-
-  // Check each mandatory training
-  let currentCount = 0;
-  let expiredCount = 0;
-  let expiringSoonCount = 0;
-
-  for (const required of applicableTraining) {
-    const completion = record.trainings.find(t => t.category === required.category);
-
-    if (!completion || completion.status === "not_started") {
-      issues.push(`${required.name} — not completed`);
-      continue;
-    }
-
-    if (completion.status === "expired") {
-      expiredCount++;
-      issues.push(`${required.name} — expired`);
-      continue;
-    }
-
-    if (completion.status === "expiring_soon") {
-      expiringSoonCount++;
-      warnings.push(`${required.name} — expiring soon`);
-      currentCount++;
-      continue;
-    }
-
-    if (completion.status === "current" || completion.status === "booked") {
-      currentCount++;
-      continue;
-    }
-
-    if (completion.status === "in_progress") {
-      // Count as partially meeting requirement
-      warnings.push(`${required.name} — in progress`);
-    }
-  }
-
-  const mandatoryTrainingTotal = applicableTraining.length;
-  const overallComplianceRate = mandatoryTrainingTotal > 0
-    ? Math.round((currentCount / mandatoryTrainingTotal) * 100)
-    : 100;
-
-  // Induction
-  const inductionComplete = record.inductionCompleted;
-  if (!inductionComplete) {
-    const daysSinceStart = (currentTime - new Date(record.startDate).getTime()) / (24 * 60 * 60 * 1000);
-    if (daysSinceStart > INDUCTION_DEADLINE_DAYS) {
-      issues.push("Induction not completed within probation period");
-    } else {
-      warnings.push(`Induction in progress (${Math.round(INDUCTION_DEADLINE_DAYS - daysSinceStart)} days remaining)`);
-    }
-  }
-
-  // Qualification (Level 3 minimum)
-  const hasLevel3Plus = record.qualifications.some(q =>
-    (q.type === "level_3_diploma" || q.type === "level_4_diploma" || q.type === "level_5_diploma" || q.type === "degree" || q.type === "masters" || q.type === "social_work_qualification") &&
-    q.status === "achieved"
-  );
-  const level3InProgress = record.qualifications.some(q =>
-    q.type === "level_3_diploma" && q.status === "in_progress"
-  );
-  const level3Overdue = record.qualifications.some(q =>
-    q.type === "level_3_diploma" && q.status === "overdue"
-  );
-
-  let qualificationOnTrack = hasLevel3Plus || level3InProgress;
-  if (level3Overdue) {
-    qualificationOnTrack = false;
-    issues.push("Level 3 Diploma overdue (must achieve within 2 years)");
-  } else if (!hasLevel3Plus && !level3InProgress) {
-    const monthsSinceStart = (currentTime - new Date(record.startDate).getTime()) / (30.44 * 24 * 60 * 60 * 1000);
-    if (monthsSinceStart > 6) {
-      warnings.push("Level 3 Diploma not yet started (required within 2 years)");
-    }
-  }
-
-  // CPD
-  const cpdOnTrack = record.cpdHoursThisYear >= record.cpdTarget * 0.5; // on track if at least 50% by mid-year
-  if (record.cpdHoursThisYear < record.cpdTarget * 0.25) {
-    warnings.push(`Low CPD hours (${record.cpdHoursThisYear}/${record.cpdTarget}h target)`);
-  }
-
-  // Lone working authorisation
-  const loneWorkingRequirements = MANDATORY_TRAINING.filter(mt => mt.requiredBeforeLoneWorking);
-  const loneWorkingMet = loneWorkingRequirements.every(req => {
-    const completion = record.trainings.find(t => t.category === req.category);
-    return completion && (completion.status === "current" || completion.status === "expiring_soon");
-  });
-
-  if (record.canWorkAlone && !loneWorkingMet) {
-    issues.push("Lone working authorised but required training not current");
-  }
-
-  return {
-    staffId: record.staffId,
-    staffName: record.staffName,
-    role: record.role,
-    isCompliant: issues.length === 0,
-    issues,
-    warnings,
-    overallComplianceRate,
-    mandatoryTrainingCurrent: currentCount,
-    mandatoryTrainingTotal,
-    expiredCount,
-    expiringSoonCount,
-    inductionComplete,
-    qualificationOnTrack,
-    cpdOnTrack,
-    canWorkAlone: record.canWorkAlone,
-    loneWorkingRequirementsMet: loneWorkingMet,
-  };
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
 }
 
-// ── Core: Calculate Home Training Metrics ────────────────────────────────
-
-export function calculateHomeTrainingMetrics(
-  staffRecords: StaffTrainingRecord[],
-  homeId: string,
-  now?: string,
-): HomeTrainingMetrics {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-
-  const results = staffRecords.map(r => evaluateStaffTrainingCompliance(r, now));
-
-  const staffCount = staffRecords.length;
-  const fullyCompliantStaff = results.filter(r => r.isCompliant).length;
-  const overallComplianceRate = staffCount > 0
-    ? Math.round((fullyCompliantStaff / staffCount) * 100)
-    : 100;
-
-  const staffWithExpiredTraining = results.filter(r => r.expiredCount > 0).length;
-  const staffWithExpiringSoon = results.filter(r => r.expiringSoonCount > 0).length;
-
-  // Induction rate
-  const inductionComplete = staffRecords.filter(r => r.inductionCompleted).length;
-  const inductionCompletionRate = staffCount > 0
-    ? Math.round((inductionComplete / staffCount) * 100)
-    : 100;
-
-  // Qualification rate (L3+ achieved or on track)
-  const qualifiedOrOnTrack = results.filter(r => r.qualificationOnTrack).length;
-  const qualificationRate = staffCount > 0
-    ? Math.round((qualifiedOrOnTrack / staffCount) * 100)
-    : 100;
-
-  // CPD
-  const totalCpdHours = staffRecords.reduce((s, r) => s + r.cpdHoursThisYear, 0);
-  const averageCpdHours = staffCount > 0 ? Math.round((totalCpdHours / staffCount) * 10) / 10 : 0;
-  const cpdCompliant = results.filter(r => r.cpdOnTrack).length;
-  const cpdComplianceRate = staffCount > 0
-    ? Math.round((cpdCompliant / staffCount) * 100)
-    : 100;
-
-  // Specific category counts
-  const loneWorkingAuthorised = results.filter(r => r.canWorkAlone && r.loneWorkingRequirementsMet).length;
-
-  const restraintTrainingCurrent = staffRecords.filter(r =>
-    r.trainings.some(t => t.category === "restraint" && t.status === "current")
-  ).length;
-
-  const safeguardingCurrent = staffRecords.filter(r =>
-    r.trainings.some(t => t.category === "safeguarding" && t.status === "current")
-  ).length;
-
-  const firstAidCurrent = staffRecords.filter(r =>
-    r.trainings.some(t => t.category === "first_aid" && t.status === "current")
-  ).length;
-
-  // Category compliance breakdown
-  const categoryCompliance = MANDATORY_TRAINING
-    .filter(mt => mt.requiredForAllStaff)
-    .map(mt => {
-      const currentCount = staffRecords.filter(r =>
-        r.trainings.some(t => t.category === mt.category && (t.status === "current" || t.status === "expiring_soon"))
-      ).length;
-      return {
-        category: mt.name,
-        currentCount,
-        totalRequired: staffCount,
-        rate: staffCount > 0 ? Math.round((currentCount / staffCount) * 100) : 100,
-      };
-    })
-    .sort((a, b) => a.rate - b.rate);
-
-  // Staff needing attention
-  const staffNeedingAttention = results
-    .filter(r => r.expiredCount > 0 || r.issues.length > 0)
-    .map(r => ({ staffName: r.staffName, expiredCount: r.expiredCount, issues: r.issues }))
-    .sort((a, b) => b.expiredCount - a.expiredCount)
-    .slice(0, 5);
-
-  // Upcoming expiries (next 30 days)
-  const warningThreshold = currentTime + EXPIRY_WARNING_DAYS * 24 * 60 * 60 * 1000;
-  const upcomingExpiries: { staffName: string; category: string; expiryDate: string }[] = [];
-  for (const record of staffRecords) {
-    for (const training of record.trainings) {
-      if (training.expiryDate && training.status === "expiring_soon") {
-        upcomingExpiries.push({
-          staffName: record.staffName,
-          category: training.courseName,
-          expiryDate: training.expiryDate,
-        });
-      }
-    }
-  }
-  upcomingExpiries.sort((a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime());
-
-  // Compliance issues
-  const allIssues = results.flatMap(r => r.issues);
-  const complianceIssues = [...new Set(allIssues)];
-
-  return {
-    homeId,
-    staffCount,
-    overallComplianceRate,
-    fullyCompliantStaff,
-    staffWithExpiredTraining,
-    staffWithExpiringSoon,
-    inductionCompletionRate,
-    qualificationRate,
-    averageCpdHours,
-    cpdComplianceRate,
-    loneWorkingAuthorised,
-    restraintTrainingCurrent,
-    safeguardingCurrent,
-    firstAidCurrent,
-    categoryCompliance,
-    staffNeedingAttention,
-    upcomingExpiries: upcomingExpiries.slice(0, 10),
-    complianceIssues,
-  };
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────
-
-export function getTrainingCategoryLabel(category: TrainingCategory): string {
+export function getTrainingCategoryLabel(cat: TrainingCategory): string {
   const labels: Record<TrainingCategory, string> = {
     safeguarding: "Safeguarding",
     first_aid: "First Aid",
-    medication: "Medication",
-    restraint: "Restraint (PI)",
+    restraint_techniques: "Restraint Techniques",
+    medication_management: "Medication Management",
     fire_safety: "Fire Safety",
-    food_hygiene: "Food Hygiene",
-    health_safety: "Health & Safety",
-    data_protection: "Data Protection",
-    equality_diversity: "Equality & Diversity",
-    mental_health: "Mental Health",
-    attachment_trauma: "Attachment & Trauma",
-    csea: "CSE & Online Safety",
-    county_lines: "County Lines",
-    missing_children: "Missing Children",
-    self_harm_suicide: "Self-Harm Prevention",
-    de_escalation: "De-escalation",
-    record_keeping: "Record Keeping",
-    complaints_handling: "Complaints",
-    whistle_blowing: "Whistleblowing",
-    lone_working: "Lone Working",
-    specialist: "Specialist",
+    health_and_safety: "Health and Safety",
+    equality_diversity: "Equality Diversity",
+    therapeutic_care: "Therapeutic Care",
   };
-  return labels[category] ?? category;
+  return labels[cat] ?? cat;
 }
 
-export function getTrainingStatusLabel(status: TrainingStatus): string {
-  const labels: Record<TrainingStatus, string> = {
-    current: "Current",
-    expiring_soon: "Expiring Soon",
+export function getTrainingOutcomeLabel(outcome: TrainingOutcome): string {
+  const labels: Record<TrainingOutcome, string> = {
+    completed: "Completed",
+    in_progress: "In Progress",
     expired: "Expired",
     not_started: "Not Started",
-    in_progress: "In Progress",
-    booked: "Booked",
+    exempt: "Exempt",
   };
-  return labels[status] ?? status;
+  return labels[outcome] ?? outcome;
 }
 
-export function getQualificationStatusLabel(status: QualificationStatus): string {
-  const labels: Record<QualificationStatus, string> = {
-    achieved: "Achieved",
-    in_progress: "In Progress",
-    not_started: "Not Started",
-    overdue: "Overdue",
+export function getRatingLabel(r: Rating): string {
+  return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// ── Constants ──────────────────────────────────────────────────────────────
+
+const ALL_CATEGORIES: TrainingCategory[] = [
+  "safeguarding", "first_aid", "restraint_techniques", "medication_management",
+  "fire_safety", "health_and_safety", "equality_diversity", "therapeutic_care",
+];
+
+// ── Evaluator 1: Training Quality (0-25) ──────────────────────────────────
+
+export function evaluateTrainingQuality(records: TrainingRecord[]): TrainingQualityResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", totalRecords: 0, completedOnTimeRate: 0, assessmentPassedRate: 0, practicalComponentDoneRate: 0, certificateObtainedRate: 0 };
+  }
+
+  const completedOnTimeRate = pct(records.filter((r) => r.completedOnTime).length, total);
+  const assessmentPassedRate = pct(records.filter((r) => r.assessmentPassed).length, total);
+  const practicalComponentDoneRate = pct(records.filter((r) => r.practicalComponentDone).length, total);
+  const certificateObtainedRate = pct(records.filter((r) => r.certificateObtained).length, total);
+
+  // Weighted: completedOnTimeRate 7 + assessmentPassedRate 6 + practicalComponentDoneRate 6 + certificateObtainedRate 6 = 25
+  const raw = (completedOnTimeRate / 100) * 7 + (assessmentPassedRate / 100) * 6 + (practicalComponentDoneRate / 100) * 6 + (certificateObtainedRate / 100) * 6;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalRecords: total, completedOnTimeRate, assessmentPassedRate, practicalComponentDoneRate, certificateObtainedRate };
+}
+
+// ── Evaluator 2: Training Compliance (0-25) ───────────────────────────────
+
+export function evaluateTrainingCompliance(records: TrainingRecord[]): TrainingComplianceResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyRecordingRate: 0, completedOnTimeRate: 0, categoryDiversityRatio: 0 };
+  }
+
+  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, total);
+  const completedOnTimeRate = pct(records.filter((r) => r.completedOnTime).length, total);
+
+  const uniqueCategories = new Set(records.map((r) => r.category)).size;
+  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+
+  // Weighted: documentationRate 8 + timelyRecordingRate 7 + completedOnTimeRate 5 + categoryDiversityRatio 5 = 25
+  const raw = (documentationRate / 100) * 8 + (timelyRecordingRate / 100) * 7 + (completedOnTimeRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyRecordingRate, completedOnTimeRate, categoryDiversityRatio };
+}
+
+// ── Evaluator 3: Training Policy & Governance (0-25) ──────────────────────
+
+export function evaluateTrainingPolicy(policy: TrainingPolicy | null): TrainingPolicyResult {
+  if (!policy) {
+    return { overallScore: 0, rating: "inadequate", mandatoryTrainingPolicy: false, trainingNeedsAnalysis: false, refresherSchedulePolicy: false, inductionTrainingFramework: false, trainingRecordKeeping: false, externalTrainingApproval: false, trainingBudgetPolicy: false };
+  }
+
+  // First 4 at 4 points, last 3 at 3 points = 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.mandatoryTrainingPolicy) score += 4;
+  if (policy.trainingNeedsAnalysis) score += 4;
+  if (policy.refresherSchedulePolicy) score += 4;
+  if (policy.inductionTrainingFramework) score += 4;
+  if (policy.trainingRecordKeeping) score += 3;
+  if (policy.externalTrainingApproval) score += 3;
+  if (policy.trainingBudgetPolicy) score += 3;
+
+  return {
+    overallScore: score,
+    rating: getRating(score * 4),
+    mandatoryTrainingPolicy: policy.mandatoryTrainingPolicy,
+    trainingNeedsAnalysis: policy.trainingNeedsAnalysis,
+    refresherSchedulePolicy: policy.refresherSchedulePolicy,
+    inductionTrainingFramework: policy.inductionTrainingFramework,
+    trainingRecordKeeping: policy.trainingRecordKeeping,
+    externalTrainingApproval: policy.externalTrainingApproval,
+    trainingBudgetPolicy: policy.trainingBudgetPolicy,
   };
-  return labels[status] ?? status;
+}
+
+// ── Evaluator 4: Staff Training Readiness (0-25) ──────────────────────────
+
+export function evaluateStaffTrainingReadiness(staff: StaffTrainingCompetency[]): StaffTrainingReadinessResult {
+  const count = staff.length;
+  if (count === 0) {
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, trainingNeedsAssessmentRate: 0, deliverySkillsRate: 0, complianceMonitoringRate: 0, recordManagementRate: 0, qualityAssuranceRate: 0, budgetManagementRate: 0 };
+  }
+
+  const trainingNeedsAssessmentRate = pct(staff.filter((s) => s.trainingNeedsAssessment).length, count);
+  const deliverySkillsRate = pct(staff.filter((s) => s.deliverySkills).length, count);
+  const complianceMonitoringRate = pct(staff.filter((s) => s.complianceMonitoring).length, count);
+  const recordManagementRate = pct(staff.filter((s) => s.recordManagement).length, count);
+  const qualityAssuranceRate = pct(staff.filter((s) => s.qualityAssurance).length, count);
+  const budgetManagementRate = pct(staff.filter((s) => s.budgetManagement).length, count);
+
+  // Weighted: 6+5+5+4+3+2 = 25
+  const raw =
+    (trainingNeedsAssessmentRate / 100) * 6 +
+    (deliverySkillsRate / 100) * 5 +
+    (complianceMonitoringRate / 100) * 5 +
+    (recordManagementRate / 100) * 4 +
+    (qualityAssuranceRate / 100) * 3 +
+    (budgetManagementRate / 100) * 2;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, trainingNeedsAssessmentRate, deliverySkillsRate, complianceMonitoringRate, recordManagementRate, qualityAssuranceRate, budgetManagementRate };
+}
+
+// ── Staff Profiles (0-10) ─────────────────────────────────────────────────
+
+export function buildStaffTrainingProfiles(records: TrainingRecord[]): StaffTrainingProfile[] {
+  const grouped = new Map<string, TrainingRecord[]>();
+  for (const r of records) {
+    const arr = grouped.get(r.staffId) || [];
+    arr.push(r);
+    grouped.set(r.staffId, arr);
+  }
+
+  const profiles: StaffTrainingProfile[] = [];
+  for (const [staffId, recs] of grouped) {
+    const staffName = recs[0].staffName;
+    const totalRecords = recs.length;
+
+    const completedOnTimeRate = pct(recs.filter((r) => r.completedOnTime).length, totalRecords);
+    const assessmentPassedRate = pct(recs.filter((r) => r.assessmentPassed).length, totalRecords);
+
+    const catsSet = new Set(recs.map((r) => r.category));
+    const categoriesCovered = [...catsSet];
+
+    // Scoring: freq [>=10->2, >=5->1] + rate1 completedOnTimeRate [>=80->3, >=60->2, >=40->1] + rate2 assessmentPassedRate [same] + diversity [>=4->2, >=2->1]
+    let score = 0;
+
+    if (totalRecords >= 10) score += 2;
+    else if (totalRecords >= 5) score += 1;
+
+    if (completedOnTimeRate >= 80) score += 3;
+    else if (completedOnTimeRate >= 60) score += 2;
+    else if (completedOnTimeRate >= 40) score += 1;
+
+    if (assessmentPassedRate >= 80) score += 3;
+    else if (assessmentPassedRate >= 60) score += 2;
+    else if (assessmentPassedRate >= 40) score += 1;
+
+    const catCount = categoriesCovered.length;
+    if (catCount >= 4) score += 2;
+    else if (catCount >= 2) score += 1;
+
+    profiles.push({
+      staffId,
+      staffName,
+      totalRecords,
+      completedOnTimeRate,
+      assessmentPassedRate,
+      categoriesCovered,
+      overallScore: Math.min(10, score),
+    });
+  }
+
+  return profiles;
+}
+
+// ── Master Intelligence Generator ─────────────────────────────────────────
+
+export function generateTrainingIntelligence(
+  records: TrainingRecord[],
+  policy: TrainingPolicy | null,
+  staff: StaffTrainingCompetency[],
+  homeId: string,
+  periodStart: string,
+  periodEnd: string,
+): TrainingIntelligence {
+  const trainingQuality = evaluateTrainingQuality(records);
+  const trainingCompliance = evaluateTrainingCompliance(records);
+  const trainingPolicy = evaluateTrainingPolicy(policy);
+  const staffReadiness = evaluateStaffTrainingReadiness(staff);
+  const staffProfiles = buildStaffTrainingProfiles(records);
+
+  const overallScore = Math.min(
+    100,
+    trainingQuality.overallScore + trainingCompliance.overallScore + trainingPolicy.overallScore + staffReadiness.overallScore,
+  );
+  const rating = getRating(overallScore);
+
+  // Strengths (>=80%)
+  const strengths: string[] = [];
+  if (trainingQuality.completedOnTimeRate >= 80) strengths.push("Training is consistently completed on time across the home");
+  if (trainingQuality.assessmentPassedRate >= 80) strengths.push("Assessment pass rates are strong across training programmes");
+  if (trainingQuality.practicalComponentDoneRate >= 80) strengths.push("Practical training components are routinely completed");
+  if (trainingQuality.certificateObtainedRate >= 80) strengths.push("Training certificates are consistently obtained and recorded");
+  if (trainingCompliance.documentationRate >= 80) strengths.push("Training documentation is thorough and complete");
+  if (trainingCompliance.timelyRecordingRate >= 80) strengths.push("Training records are kept up to date in a timely manner");
+  if (staffReadiness.trainingNeedsAssessmentRate >= 80) strengths.push("Staff have strong training needs assessment capabilities");
+  if (staffReadiness.deliverySkillsRate >= 80) strengths.push("Training delivery skills are well developed across the team");
+
+  // Areas for improvement (<60%)
+  const areasForImprovement: string[] = [];
+  if (trainingQuality.completedOnTimeRate < 60) areasForImprovement.push("Training completion timelines are not being met consistently");
+  if (trainingQuality.assessmentPassedRate < 60) areasForImprovement.push("Assessment pass rates need improvement across training programmes");
+  if (trainingQuality.practicalComponentDoneRate < 60) areasForImprovement.push("Practical training components are not being completed consistently");
+  if (trainingQuality.certificateObtainedRate < 60) areasForImprovement.push("Certificate acquisition needs to be improved");
+  if (trainingCompliance.documentationRate < 60) areasForImprovement.push("Training documentation is incomplete or inconsistent");
+  if (trainingCompliance.timelyRecordingRate < 60) areasForImprovement.push("Training records are not being updated in a timely manner");
+  if (staffReadiness.trainingNeedsAssessmentRate < 60) areasForImprovement.push("Staff training needs assessment capability needs development");
+  if (staffReadiness.deliverySkillsRate < 60) areasForImprovement.push("Training delivery skills need improvement across the team");
+
+  // Actions
+  const actions: string[] = [];
+  if (trainingPolicy.overallScore === 0) actions.push("URGENT: Establish a mandatory training policy — CHR 2015 Reg 32 requires documented training procedures for all staff");
+  if (staffReadiness.overallScore === 0) actions.push("URGENT: Develop training management competencies — effective training delivery depends on skilled coordinators");
+  if (trainingQuality.completedOnTimeRate < 50) actions.push("Ensure all mandatory training is completed within required timescales — CHR 2015 Reg 31 requires staff fitness");
+  if (trainingQuality.assessmentPassedRate < 50) actions.push("Review training assessment processes — staff must demonstrate competency through assessment");
+  if (trainingCompliance.documentationRate < 50) actions.push("Improve training documentation — all training must be fully recorded and evidenced");
+  if (trainingCompliance.timelyRecordingRate < 50) actions.push("Implement systematic recording of training — timely records support Reg 44 reporting");
+  if (trainingQuality.certificateObtainedRate < 50) actions.push("Ensure all training certifications are obtained and filed appropriately");
+  if (staffReadiness.complianceMonitoringRate < 50) actions.push("Strengthen compliance monitoring — regular audits ensure training requirements are met");
+
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Reg 31 — Fitness of workers",
+    "CHR 2015 Reg 32 — Employment of staff (training requirements)",
+    "CHR 2015 Reg 33 — Fitness of premises (staff competency)",
+    "SCCIF — Leadership and management (workforce development)",
+    "DfE Guide to CRH — Training requirements",
+    "Working Together to Safeguard Children 2023 — Multi-agency training",
+    "Keeping Children Safe in Education 2024 — Safeguarding training",
+  ];
+
+  return {
+    homeId,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    trainingQuality,
+    trainingCompliance,
+    trainingPolicy,
+    staffReadiness,
+    staffProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
+  };
 }

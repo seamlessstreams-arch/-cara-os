@@ -1,243 +1,139 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// TrainingDashboardWidget — Training & Development dashboard card
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
 import { useEffect, useState } from "react";
 
-interface StaffSummary {
-  staffId: string;
-  staffName: string;
-  role: string;
-  isCompliant: boolean;
-  overallComplianceRate: number;
-  expiredCount: number;
-  expiringSoonCount: number;
-  inductionComplete: boolean;
-  qualificationOnTrack: boolean;
-  issueCount: number;
+interface StaffTrainingProfile { staffId: string; staffName: string; totalRecords: number; completedOnTimeRate: number; assessmentPassedRate: number; categoriesCovered: string[]; overallScore: number; }
+
+interface TrainingData {
+  homeId: string; periodStart: string; periodEnd: string; overallScore: number; rating: string;
+  trainingQuality: { overallScore: number; totalRecords: number; completedOnTimeRate: number; assessmentPassedRate: number; practicalComponentDoneRate: number; certificateObtainedRate: number; };
+  trainingCompliance: { overallScore: number; documentationRate: number; timelyRecordingRate: number; completedOnTimeRate: number; categoryDiversityRatio: number; };
+  trainingPolicy: { overallScore: number; mandatoryTrainingPolicy: boolean; trainingNeedsAnalysis: boolean; refresherSchedulePolicy: boolean; inductionTrainingFramework: boolean; trainingRecordKeeping: boolean; externalTrainingApproval: boolean; trainingBudgetPolicy: boolean; };
+  staffReadiness: { overallScore: number; totalStaff: number; trainingNeedsAssessmentRate: number; deliverySkillsRate: number; complianceMonitoringRate: number; recordManagementRate: number; qualityAssuranceRate: number; budgetManagementRate: number; };
+  staffProfiles: StaffTrainingProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
 }
 
-interface UpcomingExpiry {
-  staffName: string;
-  category: string;
-  expiryDate: string;
+function ratingColour(r: string) {
+  if (r === "outstanding") return "text-green-700 bg-green-50 border-green-200";
+  if (r === "good") return "text-blue-700 bg-blue-50 border-blue-200";
+  if (r === "requires_improvement") return "text-amber-700 bg-amber-50 border-amber-200";
+  return "text-red-700 bg-red-50 border-red-200";
+}
+function ratingLabel(r: string) { return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()); }
+function boolBadge(v: boolean) { return v ? "text-green-700 bg-green-50 border-green-200" : "text-red-700 bg-red-50 border-red-200"; }
+
+function ScoreBar({ label, score, max = 25 }: { label: string; score: number; max?: number }) {
+  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+  const fill = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
+  return (<div className="mb-3"><div className="flex justify-between text-sm mb-1"><span className="font-medium text-gray-700">{label}</span><span className="text-gray-500">{score}/{max}</span></div><div className="h-2 rounded-full bg-gray-100 overflow-hidden"><div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} /></div></div>);
 }
 
-interface Metrics {
-  staffCount: number;
-  overallComplianceRate: number;
-  fullyCompliantStaff: number;
-  staffWithExpiredTraining: number;
-  staffWithExpiringSoon: number;
-  inductionCompletionRate: number;
-  qualificationRate: number;
-  averageCpdHours: number;
-  cpdComplianceRate: number;
-  restraintTrainingCurrent: number;
-  safeguardingCurrent: number;
-  firstAidCurrent: number;
-  loneWorkingAuthorised: number;
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (<div className="border border-gray-200 rounded-lg overflow-hidden mb-4"><button onClick={() => setOpen(!open)} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 flex justify-between items-center"><span className="font-semibold text-gray-800">{title}</span><span className="text-gray-400 text-lg">{open ? "−" : "+"}</span></button>{open && <div className="px-4 py-3">{children}</div>}</div>);
 }
 
-interface DashboardData {
-  metrics: Metrics;
-  staff: StaffSummary[];
-  upcomingExpiries: UpcomingExpiry[];
-  complianceIssues: string[];
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (<div className="bg-gray-50 rounded-lg px-3 py-2 text-center"><div className="text-lg font-bold text-gray-800">{value}</div><div className="text-xs text-gray-500">{label}</div></div>);
 }
 
-interface Props {
-  homeId?: string;
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  registered_manager: "RM",
-  deputy_manager: "DM",
-  senior_worker: "Senior",
-  residential_worker: "RCW",
-  waking_night: "Night",
-};
-
-export function TrainingDashboardWidget({ homeId = "home-oak" }: Props) {
-  const [data, setData] = useState<DashboardData | null>(null);
+export default function TrainingDashboardWidget() {
+  const [data, setData] = useState<TrainingData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [homeId]);
+    fetch("/api/training")
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((json) => setData(json.data))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/training?homeId=${homeId}&mode=dashboard`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="rounded-lg border border-border bg-card p-6 animate-pulse">
-        <div className="h-4 w-36 bg-muted rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-muted rounded" />
-          <div className="h-3 w-3/4 bg-muted rounded" />
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return (<div className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse"><div className="h-6 bg-gray-200 rounded w-3/4 mb-4" /><div className="h-4 bg-gray-100 rounded w-1/2 mb-3" /><div className="h-4 bg-gray-100 rounded w-2/3 mb-3" /><div className="h-4 bg-gray-100 rounded w-1/3" /></div>);
+  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">Training</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
   if (!data) return null;
 
-  const { metrics, staff, upcomingExpiries, complianceIssues } = data;
+  const rc = ratingColour(data.rating);
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">Training & Development</h3>
-              <p className="text-xs text-muted-foreground">Mandatory training matrix</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className={`text-lg font-bold ${metrics.overallComplianceRate >= 80 ? "text-emerald-600 dark:text-emerald-400" : metrics.overallComplianceRate >= 60 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
-              {metrics.overallComplianceRate}%
-            </p>
-            <p className="text-[10px] text-muted-foreground">compliance</p>
-          </div>
-        </div>
+    <div className="rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+        <div><h2 className="text-lg font-bold text-gray-900">Training</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold ${rc}`}><span className="text-xl font-bold">{data.overallScore}</span><span>/100</span><span className="ml-1">{ratingLabel(data.rating)}</span></div>
       </div>
 
-      {/* Expired training alert */}
-      {metrics.staffWithExpiredTraining > 0 && (
-        <div className="px-4 py-2.5 border-b border-border bg-red-50/50 dark:bg-red-900/10">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="w-2 h-2 rounded-full bg-red-500" />
-            <span className="text-xs font-medium text-red-700 dark:text-red-400">
-              {metrics.staffWithExpiredTraining} staff with expired training
-            </span>
-          </div>
-          {complianceIssues[0] && (
-            <p className="text-[10px] text-red-600 dark:text-red-400 line-clamp-1">
-              {complianceIssues[0]}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Key stats */}
-      <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
-        <div className="p-3 text-center">
-          <p className="text-lg font-bold">{metrics.fullyCompliantStaff}/{metrics.staffCount}</p>
-          <p className="text-[10px] text-muted-foreground">Compliant</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.qualificationRate >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {metrics.qualificationRate}%
-          </p>
-          <p className="text-[10px] text-muted-foreground">Qualified</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className="text-lg font-bold">{metrics.averageCpdHours}h</p>
-          <p className="text-[10px] text-muted-foreground">Avg CPD</p>
-        </div>
+      <div className="mb-6">
+        <ScoreBar label="Training Quality" score={data.trainingQuality.overallScore} />
+        <ScoreBar label="Training Compliance" score={data.trainingCompliance.overallScore} />
+        <ScoreBar label="Policy & Governance" score={data.trainingPolicy.overallScore} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} />
       </div>
 
-      {/* Staff list */}
-      <div className="border-b border-border">
-        <div className="px-4 py-2 bg-muted/30">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Staff</p>
+      <Section title="Training Quality" defaultOpen>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Records" value={data.trainingQuality.totalRecords} />
+          <Stat label="Completed On Time" value={`${data.trainingQuality.completedOnTimeRate}%`} />
+          <Stat label="Assessment Passed" value={`${data.trainingQuality.assessmentPassedRate}%`} />
+          <Stat label="Practical Done" value={`${data.trainingQuality.practicalComponentDoneRate}%`} />
+          <Stat label="Certificate Obtained" value={`${data.trainingQuality.certificateObtainedRate}%`} />
         </div>
-        <div className="divide-y divide-border">
-          {staff.map(s => (
-            <div key={s.staffId} className="px-4 py-2">
-              <div className="flex items-center justify-between mb-0.5">
-                <div className="flex items-center gap-2">
-                  <p className="text-xs font-medium">{s.staffName}</p>
-                  <span className="text-[9px] text-muted-foreground">{ROLE_LABELS[s.role] ?? s.role}</span>
-                </div>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                  s.isCompliant
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
-                    : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                }`}>
-                  {s.isCompliant ? `${s.overallComplianceRate}%` : `${s.issueCount} issue${s.issueCount > 1 ? "s" : ""}`}
-                </span>
-              </div>
-              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${
-                    s.overallComplianceRate >= 90 ? "bg-emerald-500" :
-                    s.overallComplianceRate >= 70 ? "bg-amber-500" : "bg-red-500"
-                  }`}
-                  style={{ width: `${s.overallComplianceRate}%` }}
-                />
-              </div>
-            </div>
+      </Section>
+
+      <Section title="Training Compliance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Documentation" value={`${data.trainingCompliance.documentationRate}%`} />
+          <Stat label="Timely Recording" value={`${data.trainingCompliance.timelyRecordingRate}%`} />
+          <Stat label="Completed On Time" value={`${data.trainingCompliance.completedOnTimeRate}%`} />
+          <Stat label="Category Coverage" value={`${data.trainingCompliance.categoryDiversityRatio}%`} />
+        </div>
+      </Section>
+
+      <Section title="Policy & Governance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {([
+            ["Mandatory Training", data.trainingPolicy.mandatoryTrainingPolicy],
+            ["Needs Analysis", data.trainingPolicy.trainingNeedsAnalysis],
+            ["Refresher Schedule", data.trainingPolicy.refresherSchedulePolicy],
+            ["Induction Framework", data.trainingPolicy.inductionTrainingFramework],
+            ["Record Keeping", data.trainingPolicy.trainingRecordKeeping],
+            ["External Approval", data.trainingPolicy.externalTrainingApproval],
+            ["Budget Policy", data.trainingPolicy.trainingBudgetPolicy],
+          ] as [string, boolean][]).map(([label, val]) => (
+            <div key={label} className={`rounded-lg px-3 py-2 text-center border ${boolBadge(val)}`}><div className="text-sm font-semibold">{val ? "Yes" : "No"}</div><div className="text-xs">{label}</div></div>
           ))}
         </div>
-      </div>
+      </Section>
 
-      {/* Upcoming expiries */}
-      {upcomingExpiries.length > 0 && (
-        <div className="border-b border-border">
-          <div className="px-4 py-2 bg-muted/30">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Expiring Soon</p>
-          </div>
-          <div className="px-4 py-2 space-y-1">
-            {upcomingExpiries.slice(0, 3).map((exp, i) => (
-              <div key={i} className="flex justify-between text-[10px]">
-                <span className="text-muted-foreground">{exp.staffName} — {exp.category}</span>
-                <span className="font-medium text-amber-600 dark:text-amber-400">
-                  {new Date(exp.expiryDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                </span>
+      <Section title="Staff Readiness">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
+          <Stat label="Needs Assessment" value={`${data.staffReadiness.trainingNeedsAssessmentRate}%`} />
+          <Stat label="Delivery Skills" value={`${data.staffReadiness.deliverySkillsRate}%`} />
+          <Stat label="Compliance Monitoring" value={`${data.staffReadiness.complianceMonitoringRate}%`} />
+          <Stat label="Record Management" value={`${data.staffReadiness.recordManagementRate}%`} />
+          <Stat label="Quality Assurance" value={`${data.staffReadiness.qualityAssuranceRate}%`} />
+          <Stat label="Budget Management" value={`${data.staffReadiness.budgetManagementRate}%`} />
+        </div>
+      </Section>
+
+      {data.staffProfiles.length > 0 && (
+        <Section title="Staff Training Profiles">
+          <div className="space-y-3">
+            {data.staffProfiles.map((sp) => (
+              <div key={sp.staffId} className="border border-gray-100 rounded-lg p-3">
+                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{sp.staffName}</span><span className="text-sm font-semibold text-gray-600">{sp.overallScore}/10</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {sp.totalRecords}</span><span>On Time: {sp.completedOnTimeRate}%</span><span>Assessed: {sp.assessmentPassedRate}%</span></div>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Key training counts */}
-      <div className="px-4 py-2.5 border-b border-border">
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Safeguarding current</span>
-          <span className={`font-medium ${metrics.safeguardingCurrent === metrics.staffCount ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.safeguardingCurrent}/{metrics.staffCount}
-          </span>
-        </div>
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Restraint (PI) current</span>
-          <span className={`font-medium ${metrics.restraintTrainingCurrent === metrics.staffCount ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.restraintTrainingCurrent}/{metrics.staffCount}
-          </span>
-        </div>
-        <div className="flex justify-between text-[10px]">
-          <span className="text-muted-foreground">First Aid current</span>
-          <span className={`font-medium ${metrics.firstAidCurrent === metrics.staffCount ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.firstAidCurrent}/{metrics.staffCount}
-          </span>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="p-3 text-center">
-        <a href="/training" className="text-xs text-primary font-medium hover:underline">
-          View training matrix →
-        </a>
-      </div>
+      {data.strengths.length > 0 && (<Section title="Strengths"><ul className="space-y-1">{data.strengths.map((s, i) => (<li key={i} className="text-sm text-green-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-green-500" />{s}</li>))}</ul></Section>)}
+      {data.areasForImprovement.length > 0 && (<Section title="Areas for Improvement"><ul className="space-y-1">{data.areasForImprovement.map((a, i) => (<li key={i} className="text-sm text-amber-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />{a}</li>))}</ul></Section>)}
+      {data.actions.length > 0 && (<Section title="Actions" defaultOpen><ul className="space-y-1">{data.actions.map((a, i) => (<li key={i} className={`text-sm flex gap-2 ${a.startsWith("URGENT") ? "text-red-800 font-semibold" : "text-gray-700"}`}><span className={`shrink-0 mt-1 h-1.5 w-1.5 rounded-full ${a.startsWith("URGENT") ? "bg-red-500" : "bg-gray-400"}`} />{a}</li>))}</ul></Section>)}
+      <Section title="Regulatory Links"><ul className="space-y-1">{data.regulatoryLinks.map((l, i) => (<li key={i} className="text-sm text-gray-600 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-gray-400" />{l}</li>))}</ul></Section>
     </div>
   );
 }

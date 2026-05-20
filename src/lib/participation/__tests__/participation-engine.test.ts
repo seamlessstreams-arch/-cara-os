@@ -1,260 +1,537 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Children's Participation & Advocacy Engine — Tests
-// ══════════════════════════════════════════════════════════════════════════════
-
 import { describe, it, expect } from "vitest";
 import {
-  evaluateChildParticipation,
-  calculateHomeParticipationMetrics,
-  getDecisionAreaLabel,
-  getParticipationMethodLabel,
+  evaluateParticipationQuality,
+  evaluateParticipationCompliance,
+  evaluateParticipationPolicy,
+  evaluateStaffParticipationReadiness,
+  buildChildParticipationProfiles,
+  generateParticipationIntelligence,
+  pct,
+  getRating,
+  getParticipationCategoryLabel,
+  getParticipationOutcomeLabel,
+  getRatingLabel,
 } from "../participation-engine";
-import type { ChildParticipationProfile, HouseMeeting, FeedbackRecord, ParticipationEntry } from "../participation-engine";
+import type {
+  ParticipationRecord,
+  ParticipationPolicy,
+  StaffParticipationTraining,
+} from "../participation-engine";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────
 
-const NOW = "2026-05-17T12:00:00Z";
-
-function makeEntries(): ParticipationEntry[] {
-  return [
-    { id: "pe-1", date: "2026-05-10T10:00:00Z", decisionArea: "care_plan", method: "review_meeting", childViews: "Wants more contact with mum", viewsActedUpon: true, outcome: "Extra weekly call arranged", recordedBy: "staff-rm-01" },
-    { id: "pe-2", date: "2026-05-05T14:00:00Z", decisionArea: "activities", method: "verbal", childViews: "Would like to join football club", viewsActedUpon: true, outcome: "Signed up for local team", recordedBy: "staff-sw-01" },
-    { id: "pe-3", date: "2026-04-28T10:00:00Z", decisionArea: "food_menu", method: "house_meeting", childViews: "Wants Friday pizza night", viewsActedUpon: true, outcome: "Added to menu rota", recordedBy: "staff-sw-02" },
-    { id: "pe-4", date: "2026-04-20T14:00:00Z", decisionArea: "education", method: "keyworker", childViews: "Struggling with maths homework", viewsActedUpon: true, outcome: "Tutor referral made", recordedBy: "staff-sw-01" },
-    { id: "pe-5", date: "2026-04-10T10:00:00Z", decisionArea: "daily_routine", method: "informal", childViews: "Wants later bedtime at weekends", viewsActedUpon: false, reasonIfNotActedUpon: "Risk assessment — current routine supports sleep needs", recordedBy: "staff-rm-01" },
-  ];
-}
-
-function makeProfile(overrides: Partial<ChildParticipationProfile> = {}): ChildParticipationProfile {
+function makeRecord(overrides: Partial<ParticipationRecord> = {}): ParticipationRecord {
   return {
+    id: "pr-001",
+    homeId: "home-oak",
+    date: "2026-05-10",
     childId: "child-alex",
-    childName: "Alex Turner",
-    homeId: "home-oak",
-    advocateOffered: true,
-    advocateAccepted: true,
-    advocateName: "Sue Peters (NYAS)",
-    advocateLastVisit: "2026-04-15T10:00:00Z",
-    complaintsProcessExplained: true,
-    complaintsProcessDate: "2026-01-10T10:00:00Z",
-    rightsExplained: true,
-    rightsExplainedDate: "2026-01-10T10:00:00Z",
-    childrenGuideGiven: true,
-    preferredCommunicationMethod: "verbal",
-    participationEntries: makeEntries(),
+    childName: "Alex",
+    category: "care_plan_voice",
+    outcome: "views_acted_upon",
+    childViewRecorded: true,
+    viewsActedUpon: true,
+    advocacyOffered: true,
+    feedbackProvided: true,
+    documentationComplete: true,
+    timelyRecording: true,
     ...overrides,
   };
 }
 
-function makeMeeting(overrides: Partial<HouseMeeting> = {}): HouseMeeting {
+function makeAllCategoryRecords(): ParticipationRecord[] {
+  const cats: ParticipationRecord["category"][] = [
+    "care_plan_voice", "advocacy_access", "complaints_awareness", "house_meeting_input",
+    "review_participation", "daily_decisions", "feedback_mechanism", "rights_education",
+  ];
+  return cats.map((category, i) => makeRecord({ id: `pr-${i}`, category }));
+}
+
+const ALL_TRUE_POLICY: ParticipationPolicy = {
+  participationPolicy: true,
+  advocacyAccessPolicy: true,
+  complaintsAwarenessFramework: true,
+  childVoiceInCarePlanning: true,
+  feedbackMechanismPolicy: true,
+  rightsEducationPolicy: true,
+  independentVisitorScheme: true,
+};
+
+const ALL_FALSE_POLICY: ParticipationPolicy = {
+  participationPolicy: false,
+  advocacyAccessPolicy: false,
+  complaintsAwarenessFramework: false,
+  childVoiceInCarePlanning: false,
+  feedbackMechanismPolicy: false,
+  rightsEducationPolicy: false,
+  independentVisitorScheme: false,
+};
+
+function makeStaff(overrides: Partial<StaffParticipationTraining> = {}): StaffParticipationTraining {
   return {
-    id: "hm-001",
-    homeId: "home-oak",
-    date: "2026-05-06T17:00:00Z",
-    type: "house_meeting",
-    attendees: ["Alex", "Jordan", "Sam", "staff-rm-01", "staff-sw-01"],
-    childAttendees: ["Alex", "Jordan", "Sam"],
-    totalChildrenInHome: 3,
-    agendaItems: ["Weekend activities", "Food preferences", "House rules update"],
-    childSuggestedItems: ["Movie night budget", "Garden trampoline"],
-    actionsAgreed: [
-      { action: "Research trampoline costs", assignedTo: "staff-rm-01", dueDate: "2026-05-13T10:00:00Z", completed: true },
-      { action: "Plan movie night for Saturday", assignedTo: "staff-sw-01", dueDate: "2026-05-10T10:00:00Z", completed: true },
-    ],
-    minutesRecorded: true,
-    chairPerson: "staff-rm-01",
-    followUpFromPrevious: true,
+    staffId: "staff-sarah",
+    childVoiceCapture: true,
+    advocacyKnowledge: true,
+    participationFacilitation: true,
+    complaintsAwareness: true,
+    rightsBasedPractice: true,
+    feedbackResponsiveness: true,
     ...overrides,
   };
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Child Participation Tests
+// pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("evaluateChildParticipation", () => {
-  it("marks compliant child with good participation", () => {
-    const result = evaluateChildParticipation(makeProfile(), NOW);
-    expect(result.isCompliant).toBe(true);
-    expect(result.issues).toHaveLength(0);
-    expect(result.advocacyAccessible).toBe(true);
-    expect(result.complaintsAware).toBe(true);
-    expect(result.rightsExplained).toBe(true);
-    expect(result.participationScore).toBeGreaterThan(70);
+describe("pct", () => {
+  it("returns percentage", () => expect(pct(3, 4)).toBe(75));
+  it("returns 0 when den is 0", () => expect(pct(5, 0)).toBe(0));
+  it("returns 100 for equal values", () => expect(pct(10, 10)).toBe(100));
+  it("returns 0 for zero numerator", () => expect(pct(0, 10)).toBe(0));
+  it("rounds correctly", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// getRating
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("getRating", () => {
+  it("outstanding at 80", () => expect(getRating(80)).toBe("outstanding"));
+  it("outstanding at 100", () => expect(getRating(100)).toBe("outstanding"));
+  it("good at 60", () => expect(getRating(60)).toBe("good"));
+  it("good at 79", () => expect(getRating(79)).toBe("good"));
+  it("requires_improvement at 40", () => expect(getRating(40)).toBe("requires_improvement"));
+  it("requires_improvement at 59", () => expect(getRating(59)).toBe("requires_improvement"));
+  it("inadequate at 39", () => expect(getRating(39)).toBe("inadequate"));
+  it("inadequate at 0", () => expect(getRating(0)).toBe("inadequate"));
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Label helpers
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("getParticipationCategoryLabel", () => {
+  it("care_plan_voice", () => expect(getParticipationCategoryLabel("care_plan_voice")).toBe("Care Plan Voice"));
+  it("advocacy_access", () => expect(getParticipationCategoryLabel("advocacy_access")).toBe("Advocacy Access"));
+  it("rights_education", () => expect(getParticipationCategoryLabel("rights_education")).toBe("Rights Education"));
+});
+
+describe("getParticipationOutcomeLabel", () => {
+  it("views_acted_upon", () => expect(getParticipationOutcomeLabel("views_acted_upon")).toBe("Views Acted Upon"));
+  it("child_declined", () => expect(getParticipationOutcomeLabel("child_declined")).toBe("Child Declined"));
+});
+
+describe("getRatingLabel", () => {
+  it("Outstanding", () => expect(getRatingLabel("outstanding")).toBe("Outstanding"));
+  it("Requires Improvement", () => expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement"));
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Quality
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("evaluateParticipationQuality", () => {
+  it("returns 25 for perfect records", () => {
+    const result = evaluateParticipationQuality(Array.from({ length: 10 }, (_, i) => makeRecord({ id: `pr-${i}` })));
+    expect(result.overallScore).toBe(25);
+    expect(result.childViewRecordedRate).toBe(100);
+    expect(result.viewsActedUponRate).toBe(100);
+    expect(result.advocacyOfferedRate).toBe(100);
+    expect(result.feedbackProvidedRate).toBe(100);
   });
 
-  it("flags advocacy not offered", () => {
-    const profile = makeProfile({ advocateOffered: false });
-    const result = evaluateChildParticipation(profile, NOW);
-    expect(result.advocacyAccessible).toBe(false);
-    expect(result.issues.some(i => i.includes("advocacy not offered"))).toBe(true);
+  it("returns 0 for empty", () => {
+    const result = evaluateParticipationQuality([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.totalRecords).toBe(0);
   });
 
-  it("flags complaints process not explained", () => {
-    const profile = makeProfile({ complaintsProcessExplained: false });
-    const result = evaluateChildParticipation(profile, NOW);
-    expect(result.complaintsAware).toBe(false);
-    expect(result.issues.some(i => i.includes("Complaints process"))).toBe(true);
+  it("returns 0 when all flags false", () => {
+    const result = evaluateParticipationQuality([makeRecord({ childViewRecorded: false, viewsActedUpon: false, advocacyOffered: false, feedbackProvided: false })]);
+    expect(result.overallScore).toBe(0);
   });
 
-  it("flags rights not explained", () => {
-    const profile = makeProfile({ rightsExplained: false });
-    const result = evaluateChildParticipation(profile, NOW);
-    expect(result.rightsExplained).toBe(false);
-    expect(result.issues.some(i => i.includes("rights not explained"))).toBe(true);
+  it("weights childViewRecordedRate at 7", () => {
+    const result = evaluateParticipationQuality([makeRecord({ viewsActedUpon: false, advocacyOffered: false, feedbackProvided: false })]);
+    expect(result.overallScore).toBe(7);
   });
 
-  it("flags no participation entries", () => {
-    const profile = makeProfile({ participationEntries: [] });
-    const result = evaluateChildParticipation(profile, NOW);
-    expect(result.issues.some(i => i.includes("No recorded participation"))).toBe(true);
+  it("weights viewsActedUponRate at 6", () => {
+    const result = evaluateParticipationQuality([makeRecord({ childViewRecorded: false, advocacyOffered: false, feedbackProvided: false })]);
+    expect(result.overallScore).toBe(6);
   });
 
-  it("warns when no recent participation", () => {
-    const profile = makeProfile({
-      participationEntries: [
-        { id: "pe-1", date: "2026-03-01T10:00:00Z", decisionArea: "care_plan", method: "verbal", childViews: "Test", viewsActedUpon: true, recordedBy: "staff-01" },
-      ],
-    });
-    const result = evaluateChildParticipation(profile, NOW);
-    expect(result.entriesLast30Days).toBe(0);
-    expect(result.warnings.some(w => w.includes("No participation recorded in last 30 days"))).toBe(true);
+  it("weights advocacyOfferedRate at 6", () => {
+    const result = evaluateParticipationQuality([makeRecord({ childViewRecorded: false, viewsActedUpon: false, feedbackProvided: false })]);
+    expect(result.overallScore).toBe(6);
   });
 
-  it("calculates views acted upon rate", () => {
-    const result = evaluateChildParticipation(makeProfile(), NOW);
-    // 4 of 5 acted upon = 80%
-    expect(result.viewsActedUponRate).toBe(80);
+  it("weights feedbackProvidedRate at 6", () => {
+    const result = evaluateParticipationQuality([makeRecord({ childViewRecorded: false, viewsActedUpon: false, advocacyOffered: false })]);
+    expect(result.overallScore).toBe(6);
   });
 
-  it("warns about low views-acted-upon rate", () => {
-    const entries: ParticipationEntry[] = [
-      { id: "pe-1", date: "2026-05-01T10:00:00Z", decisionArea: "care_plan", method: "verbal", childViews: "A", viewsActedUpon: false, recordedBy: "staff-01" },
-      { id: "pe-2", date: "2026-05-02T10:00:00Z", decisionArea: "education", method: "verbal", childViews: "B", viewsActedUpon: false, recordedBy: "staff-01" },
-      { id: "pe-3", date: "2026-05-03T10:00:00Z", decisionArea: "health", method: "verbal", childViews: "C", viewsActedUpon: true, recordedBy: "staff-01" },
-    ];
-    const profile = makeProfile({ participationEntries: entries });
-    const result = evaluateChildParticipation(profile, NOW);
-    expect(result.viewsActedUponRate).toBe(33);
-    expect(result.warnings.some(w => w.includes("Low views-acted-upon rate"))).toBe(true);
+  it("handles partial data", () => {
+    const records = [makeRecord({ id: "pr-1" }), makeRecord({ id: "pr-2", childViewRecorded: false, viewsActedUpon: false })];
+    const result = evaluateParticipationQuality(records);
+    expect(result.childViewRecordedRate).toBe(50);
+    expect(result.viewsActedUponRate).toBe(50);
+    expect(result.advocacyOfferedRate).toBe(100);
   });
 
-  it("identifies decision areas covered", () => {
-    const result = evaluateChildParticipation(makeProfile(), NOW);
-    expect(result.decisionsInvolved).toContain("care_plan");
-    expect(result.decisionsInvolved).toContain("activities");
-    expect(result.decisionsInvolved).toContain("education");
-  });
-
-  it("warns about children's guide not given", () => {
-    const profile = makeProfile({ childrenGuideGiven: false });
-    const result = evaluateChildParticipation(profile, NOW);
-    expect(result.warnings.some(w => w.includes("Children's guide"))).toBe(true);
-  });
-
-  it("warns about advocate not visiting", () => {
-    const profile = makeProfile({ advocateLastVisit: "2026-01-01T10:00:00Z" }); // >90 days
-    const result = evaluateChildParticipation(profile, NOW);
-    expect(result.warnings.some(w => w.includes("Advocate not visited"))).toBe(true);
-  });
-
-  it("calculates participation score correctly", () => {
-    // Full score profile
-    const result = evaluateChildParticipation(makeProfile(), NOW);
-    expect(result.participationScore).toBe(100); // all factors met
-
-    // Minimal profile
-    const minimal = makeProfile({
-      advocateOffered: false,
-      complaintsProcessExplained: false,
-      rightsExplained: false,
-      childrenGuideGiven: false,
-      preferredCommunicationMethod: undefined,
-      participationEntries: [],
-    });
-    const minResult = evaluateChildParticipation(minimal, NOW);
-    expect(minResult.participationScore).toBe(0);
+  it("caps at 25", () => {
+    const result = evaluateParticipationQuality(Array.from({ length: 100 }, (_, i) => makeRecord({ id: `pr-${i}` })));
+    expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Metrics Tests
+// Compliance
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("calculateHomeParticipationMetrics", () => {
-  it("calculates metrics for well-performing home", () => {
-    const profiles = [
-      makeProfile({ childId: "c1", childName: "Alex" }),
-      makeProfile({ childId: "c2", childName: "Jordan" }),
-    ];
-    const meetings = [
-      makeMeeting({ id: "m1", date: "2026-05-06T17:00:00Z" }),
-      makeMeeting({ id: "m2", date: "2026-04-22T17:00:00Z" }),
-      makeMeeting({ id: "m3", date: "2026-04-08T17:00:00Z" }),
-      makeMeeting({ id: "m4", date: "2026-03-25T17:00:00Z" }),
-    ];
-    const result = calculateHomeParticipationMetrics(profiles, meetings, [], "home-oak", NOW);
-    expect(result.childCount).toBe(2);
-    expect(result.overallParticipationScore).toBe(100);
-    expect(result.advocacyAccessRate).toBe(100);
-    expect(result.houseMeetingFrequency).toBeGreaterThan(1);
+describe("evaluateParticipationCompliance", () => {
+  it("returns 25 for perfect records with all categories", () => {
+    const result = evaluateParticipationCompliance(makeAllCategoryRecords());
+    expect(result.overallScore).toBe(25);
+    expect(result.categoryDiversityRatio).toBe(100);
   });
 
-  it("calculates meeting attendance rate", () => {
-    const meetings = [
-      makeMeeting({ id: "m1", childAttendees: ["Alex", "Jordan"], totalChildrenInHome: 3 }), // 2/3
-      makeMeeting({ id: "m2", childAttendees: ["Alex", "Jordan", "Sam"], totalChildrenInHome: 3 }), // 3/3
-    ];
-    const result = calculateHomeParticipationMetrics([makeProfile()], meetings, [], "home-oak", NOW);
-    expect(result.houseMeetingAttendanceRate).toBe(83); // 5/6
+  it("returns 0 for empty", () => {
+    const result = evaluateParticipationCompliance([]);
+    expect(result.overallScore).toBe(0);
   });
 
-  it("calculates action completion rate", () => {
-    const meetings = [
-      makeMeeting({
-        id: "m1",
-        actionsAgreed: [
-          { action: "A", assignedTo: "staff", dueDate: "2026-05-10", completed: true },
-          { action: "B", assignedTo: "staff", dueDate: "2026-05-10", completed: false },
-        ],
-      }),
-    ];
-    const result = calculateHomeParticipationMetrics([makeProfile()], meetings, [], "home-oak", NOW);
-    expect(result.actionCompletionRate).toBe(50);
+  it("weights documentationRate at 8", () => {
+    const result = evaluateParticipationCompliance([makeRecord({ timelyRecording: false, viewsActedUpon: false })]);
+    expect(result.documentationRate).toBe(100);
   });
 
-  it("calculates feedback acknowledgement rate", () => {
-    const feedback: FeedbackRecord[] = [
-      { id: "f1", homeId: "home-oak", childId: "c1", date: "2026-05-10T10:00:00Z", type: "suggestion", content: "More trips", acknowledged: true, anonymous: false },
-      { id: "f2", homeId: "home-oak", childId: "c2", date: "2026-05-08T10:00:00Z", type: "concern", content: "WiFi slow", acknowledged: false, anonymous: true },
-    ];
-    const result = calculateHomeParticipationMetrics([makeProfile()], [], feedback, "home-oak", NOW);
-    expect(result.feedbackCount30Days).toBe(2);
-    expect(result.feedbackAcknowledgedRate).toBe(50);
+  it("calculates diversity for single category", () => {
+    const result = evaluateParticipationCompliance([makeRecord()]);
+    expect(result.categoryDiversityRatio).toBe(13);
   });
 
-  it("identifies children with issues", () => {
-    const profiles = [
-      makeProfile({ childId: "c1", childName: "Alex" }),
-      makeProfile({ childId: "c2", childName: "Jordan", advocateOffered: false, complaintsProcessExplained: false }),
-    ];
-    const result = calculateHomeParticipationMetrics(profiles, [], [], "home-oak", NOW);
-    expect(result.childrenWithIssues.length).toBe(1);
-    expect(result.childrenWithIssues[0].childName).toBe("Jordan");
+  it("handles all 8 categories", () => {
+    const result = evaluateParticipationCompliance(makeAllCategoryRecords());
+    expect(result.categoryDiversityRatio).toBe(100);
+  });
+
+  it("caps at 25", () => {
+    const result = evaluateParticipationCompliance(makeAllCategoryRecords());
+    expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+
+  it("handles partial compliance flags", () => {
+    const records = [makeRecord({ id: "pr-1" }), makeRecord({ id: "pr-2", documentationComplete: false })];
+    const result = evaluateParticipationCompliance(records);
+    expect(result.documentationRate).toBe(50);
+    expect(result.timelyRecordingRate).toBe(100);
   });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Helper Tests
+// Policy
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Helper functions", () => {
-  it("getDecisionAreaLabel returns readable labels", () => {
-    expect(getDecisionAreaLabel("care_plan")).toBe("Care Plan");
-    expect(getDecisionAreaLabel("matching_new_child")).toBe("New Admissions");
+describe("evaluateParticipationPolicy", () => {
+  it("returns 25 when all true", () => expect(evaluateParticipationPolicy(ALL_TRUE_POLICY).overallScore).toBe(25));
+  it("returns 0 when all false", () => expect(evaluateParticipationPolicy(ALL_FALSE_POLICY).overallScore).toBe(0));
+  it("returns 0 when null", () => {
+    const result = evaluateParticipationPolicy(null);
+    expect(result.overallScore).toBe(0);
+    expect(result.participationPolicy).toBe(false);
   });
 
-  it("getParticipationMethodLabel returns readable labels", () => {
-    expect(getParticipationMethodLabel("house_meeting")).toBe("House Meeting");
-    expect(getParticipationMethodLabel("advocate")).toBe("Via Advocate");
+  it("weights first 4 at 4 each", () => {
+    const result = evaluateParticipationPolicy({ ...ALL_FALSE_POLICY, participationPolicy: true });
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("weights last 3 at 3 each", () => {
+    const result = evaluateParticipationPolicy({ ...ALL_FALSE_POLICY, feedbackMechanismPolicy: true });
+    expect(result.overallScore).toBe(3);
+  });
+
+  it("handles mixed booleans", () => {
+    const result = evaluateParticipationPolicy({ ...ALL_FALSE_POLICY, participationPolicy: true, advocacyAccessPolicy: true, feedbackMechanismPolicy: true });
+    expect(result.overallScore).toBe(11);
+  });
+
+  it("returns all flags in result", () => {
+    const result = evaluateParticipationPolicy(ALL_TRUE_POLICY);
+    expect(result.participationPolicy).toBe(true);
+    expect(result.independentVisitorScheme).toBe(true);
+  });
+
+  it("caps at 25", () => {
+    expect(evaluateParticipationPolicy(ALL_TRUE_POLICY).overallScore).toBeLessThanOrEqual(25);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Staff Readiness
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("evaluateStaffParticipationReadiness", () => {
+  it("returns 25 when all staff have all skills", () => {
+    const result = evaluateStaffParticipationReadiness([makeStaff({ staffId: "s1" }), makeStaff({ staffId: "s2" })]);
+    expect(result.overallScore).toBe(25);
+  });
+
+  it("returns 0 for empty staff", () => {
+    const result = evaluateStaffParticipationReadiness([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.totalStaff).toBe(0);
+  });
+
+  it("returns 0 when no skills", () => {
+    const result = evaluateStaffParticipationReadiness([makeStaff({ childVoiceCapture: false, advocacyKnowledge: false, participationFacilitation: false, complaintsAwareness: false, rightsBasedPractice: false, feedbackResponsiveness: false })]);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("weights childVoiceCapture at 6", () => {
+    const result = evaluateStaffParticipationReadiness([makeStaff({ advocacyKnowledge: false, participationFacilitation: false, complaintsAwareness: false, rightsBasedPractice: false, feedbackResponsiveness: false })]);
+    expect(result.overallScore).toBe(6);
+  });
+
+  it("weights feedbackResponsiveness at 2", () => {
+    const result = evaluateStaffParticipationReadiness([makeStaff({ childVoiceCapture: false, advocacyKnowledge: false, participationFacilitation: false, complaintsAwareness: false, rightsBasedPractice: false })]);
+    expect(result.overallScore).toBe(2);
+  });
+
+  it("calculates mixed rates", () => {
+    const staff = [makeStaff({ staffId: "s1" }), makeStaff({ staffId: "s2", childVoiceCapture: false, advocacyKnowledge: false })];
+    const result = evaluateStaffParticipationReadiness(staff);
+    expect(result.childVoiceCaptureRate).toBe(50);
+    expect(result.advocacyKnowledgeRate).toBe(50);
+    expect(result.participationFacilitationRate).toBe(100);
+  });
+
+  it("caps at 25", () => {
+    const result = evaluateStaffParticipationReadiness(Array.from({ length: 20 }, (_, i) => makeStaff({ staffId: `s-${i}` })));
+    expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Child Profiles
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("buildChildParticipationProfiles", () => {
+  it("groups by child", () => {
+    const records = [
+      makeRecord({ id: "pr-1", childId: "child-alex", childName: "Alex" }),
+      makeRecord({ id: "pr-2", childId: "child-jordan", childName: "Jordan" }),
+      makeRecord({ id: "pr-3", childId: "child-alex", childName: "Alex" }),
+    ];
+    const profiles = buildChildParticipationProfiles(records);
+    expect(profiles).toHaveLength(2);
+    expect(profiles.find(p => p.childId === "child-alex")!.totalRecords).toBe(2);
+  });
+
+  it("empty for no records", () => expect(buildChildParticipationProfiles([])).toHaveLength(0));
+
+  it("scores 10 for max profile", () => {
+    const cats: ParticipationRecord["category"][] = [
+      "care_plan_voice", "advocacy_access", "complaints_awareness", "house_meeting_input",
+      "review_participation", "daily_decisions", "feedback_mechanism", "rights_education",
+      "care_plan_voice", "advocacy_access",
+    ];
+    const records = cats.map((category, i) => makeRecord({ id: `pr-${i}`, childId: "child-alex", childName: "Alex", category }));
+    expect(buildChildParticipationProfiles(records)[0].overallScore).toBe(10);
+  });
+
+  it("scores 0 for minimal failing profile", () => {
+    const records = [makeRecord({ childViewRecorded: false, viewsActedUpon: false })];
+    expect(buildChildParticipationProfiles(records)[0].overallScore).toBe(0);
+  });
+
+  it("freq score 1 at 5 records", () => {
+    const records = Array.from({ length: 5 }, (_, i) => makeRecord({ id: `pr-${i}`, childViewRecorded: false, viewsActedUpon: false }));
+    expect(buildChildParticipationProfiles(records)[0].overallScore).toBe(1);
+  });
+
+  it("rate1 score 1 at 40%", () => {
+    const records = [
+      makeRecord({ id: "pr-1", childViewRecorded: true, viewsActedUpon: false }),
+      makeRecord({ id: "pr-2", childViewRecorded: true, viewsActedUpon: false }),
+      makeRecord({ id: "pr-3", childViewRecorded: false, viewsActedUpon: false }),
+      makeRecord({ id: "pr-4", childViewRecorded: false, viewsActedUpon: false }),
+      makeRecord({ id: "pr-5", childViewRecorded: false, viewsActedUpon: false }),
+    ];
+    const profiles = buildChildParticipationProfiles(records);
+    expect(profiles[0].childViewRecordedRate).toBe(40);
+    expect(profiles[0].overallScore).toBe(2);
+  });
+
+  it("diversity score 1 at 2 categories", () => {
+    const records = [
+      makeRecord({ id: "pr-1", category: "care_plan_voice", childViewRecorded: false, viewsActedUpon: false }),
+      makeRecord({ id: "pr-2", category: "advocacy_access", childViewRecorded: false, viewsActedUpon: false }),
+    ];
+    expect(buildChildParticipationProfiles(records)[0].overallScore).toBe(1);
+  });
+
+  it("sorts by score descending", () => {
+    const records = [
+      ...Array.from({ length: 10 }, (_, i) => makeRecord({ id: `a-${i}`, childId: "child-alex", childName: "Alex" })),
+      makeRecord({ id: "j-1", childId: "child-jordan", childName: "Jordan", childViewRecorded: false, viewsActedUpon: false }),
+    ];
+    const profiles = buildChildParticipationProfiles(records);
+    expect(profiles[0].childId).toBe("child-alex");
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Orchestrator
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("generateParticipationIntelligence", () => {
+  const fullInput = {
+    homeId: "home-oak",
+    periodStart: "2026-01-01",
+    periodEnd: "2026-05-20",
+    records: makeAllCategoryRecords(),
+    policy: ALL_TRUE_POLICY,
+    staff: [makeStaff({ staffId: "s1" }), makeStaff({ staffId: "s2" }), makeStaff({ staffId: "s3" })],
+  };
+
+  it("outstanding for perfect input", () => {
+    const result = generateParticipationIntelligence(fullInput);
+    expect(result.overallScore).toBe(100);
+    expect(result.rating).toBe("outstanding");
+  });
+
+  it("inadequate for empty", () => {
+    const result = generateParticipationIntelligence({ homeId: "h", periodStart: "s", periodEnd: "e", records: [], policy: null, staff: [] });
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+  });
+
+  it("good for decent data", () => {
+    const records = [
+      makeRecord({ id: "pr-1", category: "care_plan_voice" }),
+      makeRecord({ id: "pr-2", category: "advocacy_access", childViewRecorded: false, feedbackProvided: false, documentationComplete: false }),
+      makeRecord({ id: "pr-3", category: "complaints_awareness", viewsActedUpon: false, advocacyOffered: false, timelyRecording: false }),
+      makeRecord({ id: "pr-4", category: "house_meeting_input", childViewRecorded: false, viewsActedUpon: false }),
+    ];
+    const result = generateParticipationIntelligence({
+      ...fullInput,
+      records,
+      policy: { ...ALL_FALSE_POLICY, participationPolicy: true, advocacyAccessPolicy: true, complaintsAwarenessFramework: true, childVoiceInCarePlanning: true },
+      staff: [makeStaff({ staffId: "s1", rightsBasedPractice: false, feedbackResponsiveness: false }), makeStaff({ staffId: "s2", childVoiceCapture: false, advocacyKnowledge: false, participationFacilitation: false, complaintsAwareness: false })],
+    });
+    expect(result.rating).toBe("good");
+    expect(result.overallScore).toBeGreaterThanOrEqual(60);
+    expect(result.overallScore).toBeLessThan(80);
+  });
+
+  it("caps at 100", () => expect(generateParticipationIntelligence(fullInput).overallScore).toBeLessThanOrEqual(100));
+
+  it("includes child profiles", () => expect(generateParticipationIntelligence(fullInput).childProfiles.length).toBeGreaterThan(0));
+
+  it("includes 7 regulatory links", () => {
+    const result = generateParticipationIntelligence(fullInput);
+    expect(result.regulatoryLinks).toHaveLength(7);
+    expect(result.regulatoryLinks[0]).toContain("CHR 2015 Reg 7");
+  });
+
+  it("generates strengths for high scores", () => expect(generateParticipationIntelligence(fullInput).strengths.length).toBeGreaterThan(0));
+
+  it("generates areas for improvement for low scores", () => {
+    const result = generateParticipationIntelligence({
+      ...fullInput,
+      records: [makeRecord({ childViewRecorded: false, viewsActedUpon: false, advocacyOffered: false, feedbackProvided: false, documentationComplete: false, timelyRecording: false })],
+      policy: null,
+      staff: [makeStaff({ staffId: "s1", childVoiceCapture: false, advocacyKnowledge: false, participationFacilitation: false, complaintsAwareness: false, rightsBasedPractice: false, feedbackResponsiveness: false })],
+    });
+    expect(result.areasForImprovement.length).toBeGreaterThan(0);
+  });
+
+  it("generates URGENT actions for empty records", () => {
+    const result = generateParticipationIntelligence({ ...fullInput, records: [], policy: null, staff: [] });
+    expect(result.actions.some(a => a.startsWith("URGENT"))).toBe(true);
+  });
+
+  it("all 4 evaluators contribute", () => {
+    const result = generateParticipationIntelligence(fullInput);
+    expect(result.participationQuality.overallScore).toBe(25);
+    expect(result.participationCompliance.overallScore).toBe(25);
+    expect(result.participationPolicy.overallScore).toBe(25);
+    expect(result.staffReadiness.overallScore).toBe(25);
+  });
+
+  it("no actions when perfect", () => expect(generateParticipationIntelligence(fullInput).actions).toHaveLength(0));
+
+  it("no strengths when all low", () => {
+    const result = generateParticipationIntelligence({
+      ...fullInput,
+      records: [makeRecord({ childViewRecorded: false, viewsActedUpon: false, advocacyOffered: false, feedbackProvided: false, documentationComplete: false, timelyRecording: false })],
+      policy: ALL_FALSE_POLICY,
+      staff: [makeStaff({ staffId: "s1", childVoiceCapture: false, advocacyKnowledge: false, participationFacilitation: false, complaintsAwareness: false, rightsBasedPractice: false, feedbackResponsiveness: false })],
+    });
+    expect(result.strengths).toHaveLength(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Additional edge cases
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("edge cases", () => {
+  it("quality: two flags true", () => {
+    const result = evaluateParticipationQuality([makeRecord({ viewsActedUpon: false, feedbackProvided: false })]);
+    expect(result.overallScore).toBe(13);
+  });
+
+  it("compliance: 4 categories = 50% diversity", () => {
+    const records = [
+      makeRecord({ id: "pr-1", category: "care_plan_voice" }),
+      makeRecord({ id: "pr-2", category: "advocacy_access" }),
+      makeRecord({ id: "pr-3", category: "complaints_awareness" }),
+      makeRecord({ id: "pr-4", category: "house_meeting_input" }),
+    ];
+    expect(evaluateParticipationCompliance(records).categoryDiversityRatio).toBe(50);
+  });
+
+  it("policy: only weight-3 policies", () => {
+    expect(evaluateParticipationPolicy({ ...ALL_FALSE_POLICY, feedbackMechanismPolicy: true, rightsEducationPolicy: true, independentVisitorScheme: true }).overallScore).toBe(9);
+  });
+
+  it("staff: half staff half skills", () => {
+    const staff = [
+      makeStaff({ staffId: "s1" }),
+      makeStaff({ staffId: "s2", childVoiceCapture: false, advocacyKnowledge: false, participationFacilitation: false, complaintsAwareness: false, rightsBasedPractice: false, feedbackResponsiveness: false }),
+    ];
+    const result = evaluateStaffParticipationReadiness(staff);
+    expect(result.childVoiceCaptureRate).toBe(50);
+    expect(result.overallScore).toBe(13);
+  });
+
+  it("child profile: rate2 at exactly 60%", () => {
+    const records = [
+      makeRecord({ id: "pr-1", viewsActedUpon: true, childViewRecorded: false }),
+      makeRecord({ id: "pr-2", viewsActedUpon: true, childViewRecorded: false }),
+      makeRecord({ id: "pr-3", viewsActedUpon: true, childViewRecorded: false }),
+      makeRecord({ id: "pr-4", viewsActedUpon: false, childViewRecorded: false }),
+      makeRecord({ id: "pr-5", viewsActedUpon: false, childViewRecorded: false }),
+    ];
+    const profiles = buildChildParticipationProfiles(records);
+    expect(profiles[0].viewsActedUponRate).toBe(60);
+    expect(profiles[0].overallScore).toBe(3);
+  });
+
+  it("child profile: rate1 at exactly 80%", () => {
+    const records = [
+      makeRecord({ id: "pr-1", childViewRecorded: true, viewsActedUpon: false }),
+      makeRecord({ id: "pr-2", childViewRecorded: true, viewsActedUpon: false }),
+      makeRecord({ id: "pr-3", childViewRecorded: true, viewsActedUpon: false }),
+      makeRecord({ id: "pr-4", childViewRecorded: true, viewsActedUpon: false }),
+      makeRecord({ id: "pr-5", childViewRecorded: false, viewsActedUpon: false }),
+    ];
+    const profiles = buildChildParticipationProfiles(records);
+    expect(profiles[0].childViewRecordedRate).toBe(80);
+    expect(profiles[0].overallScore).toBe(4);
   });
 });

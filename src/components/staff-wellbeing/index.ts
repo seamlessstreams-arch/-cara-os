@@ -1,1 +1,1 @@
-export { StaffWellbeingDashboardWidget } from "./StaffWellbeingDashboardWidget";
+export { default as StaffWellbeingDashboardWidget } from "./StaffWellbeingDashboardWidget";

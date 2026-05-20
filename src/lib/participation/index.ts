@@ -1,22 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Children's Participation & Advocacy — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
-  evaluateChildParticipation,
-  calculateHomeParticipationMetrics,
-  getDecisionAreaLabel,
-  getParticipationMethodLabel,
+  generateParticipationIntelligence,
+  evaluateParticipationQuality,
+  evaluateParticipationCompliance,
+  evaluateParticipationPolicy,
+  evaluateStaffParticipationReadiness,
+  buildChildParticipationProfiles,
+  pct,
+  getRating,
+  getParticipationCategoryLabel,
+  getParticipationOutcomeLabel,
+  getRatingLabel,
 } from "./participation-engine";
 
 export type {
-  ParticipationMethod,
-  DecisionArea,
-  MeetingType,
+  ParticipationCategory,
+  ParticipationOutcome,
+  Rating,
+  ParticipationRecord,
+  ParticipationPolicy,
+  StaffParticipationTraining,
+  ParticipationQualityResult,
+  ParticipationComplianceResult,
+  ParticipationPolicyResult,
+  StaffParticipationReadinessResult,
   ChildParticipationProfile,
-  ParticipationEntry,
-  HouseMeeting,
-  FeedbackRecord,
-  ChildParticipationResult,
-  HomeParticipationMetrics,
+  ParticipationIntelligence,
 } from "./participation-engine";

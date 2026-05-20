@@ -1,1 +1,1 @@
-export { TrainingDashboardWidget } from "./TrainingDashboardWidget";
+export { default as TrainingDashboardWidget } from "./TrainingDashboardWidget";

@@ -1,278 +1,649 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Training & Development Engine — Tests
-// ══════════════════════════════════════════════════════════════════════════════
-
 import { describe, it, expect } from "vitest";
 import {
-  evaluateStaffTrainingCompliance,
-  calculateHomeTrainingMetrics,
+  pct,
+  getRating,
   getTrainingCategoryLabel,
-  getTrainingStatusLabel,
-  getQualificationStatusLabel,
-  MANDATORY_TRAINING,
+  getTrainingOutcomeLabel,
+  getRatingLabel,
+  evaluateTrainingQuality,
+  evaluateTrainingCompliance,
+  evaluateTrainingPolicy,
+  evaluateStaffTrainingReadiness,
+  buildStaffTrainingProfiles,
+  generateTrainingIntelligence,
 } from "../training-engine";
-import type { StaffTrainingRecord, TrainingCompletion } from "../training-engine";
+import type {
+  TrainingRecord,
+  TrainingPolicy,
+  StaffTrainingCompetency,
+} from "../training-engine";
 
-// ── Fixtures ──────────────────────────────────────────────────────────────
+// ── Factories ──────────────────────────────────────────────────────────────
 
-const NOW = "2026-05-17T12:00:00Z";
-
-function makeAllTrainingCurrent(): TrainingCompletion[] {
-  return MANDATORY_TRAINING.map(mt => ({
-    category: mt.category,
-    courseName: mt.name,
-    completedDate: "2026-01-15T10:00:00Z",
-    expiryDate: mt.refreshPeriodMonths > 0 ? "2027-01-15T10:00:00Z" : undefined,
-    status: "current" as const,
-    mandatory: true,
-  }));
-}
-
-function makeStaffRecord(overrides: Partial<StaffTrainingRecord> = {}): StaffTrainingRecord {
+function makeRecord(overrides: Partial<TrainingRecord> = {}): TrainingRecord {
   return {
-    staffId: "staff-01",
-    staffName: "Sarah Williams",
-    role: "residential_worker",
-    startDate: "2024-06-01T10:00:00Z",
-    inductionCompleted: true,
-    inductionCompletedDate: "2024-08-15T10:00:00Z",
-    canWorkAlone: true,
-    trainings: makeAllTrainingCurrent(),
-    qualifications: [
-      { type: "level_3_diploma", title: "Level 3 Diploma in Residential Childcare", status: "achieved", achievedDate: "2025-09-01T10:00:00Z" },
-    ],
-    cpdHoursThisYear: 15,
-    cpdTarget: 20,
-    supervisionUpToDate: true,
+    id: "rec-1",
+    homeId: "oak-house",
+    date: "2026-03-15",
+    staffId: "staff-1",
+    staffName: "Test Staff",
+    category: "safeguarding",
+    outcome: "completed",
+    completedOnTime: true,
+    assessmentPassed: true,
+    practicalComponentDone: true,
+    certificateObtained: true,
+    documentationComplete: true,
+    timelyRecording: true,
     ...overrides,
   };
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Staff Compliance Tests
-// ══════════════════════════════════════════════════════════════════════════════
+function makePolicy(overrides: Partial<TrainingPolicy> = {}): TrainingPolicy {
+  return {
+    mandatoryTrainingPolicy: true,
+    trainingNeedsAnalysis: true,
+    refresherSchedulePolicy: true,
+    inductionTrainingFramework: true,
+    trainingRecordKeeping: true,
+    externalTrainingApproval: true,
+    trainingBudgetPolicy: true,
+    ...overrides,
+  };
+}
 
-describe("evaluateStaffTrainingCompliance", () => {
-  it("marks fully compliant staff member", () => {
-    const result = evaluateStaffTrainingCompliance(makeStaffRecord(), NOW);
-    expect(result.isCompliant).toBe(true);
-    expect(result.issues).toHaveLength(0);
-    expect(result.overallComplianceRate).toBe(100);
-    expect(result.inductionComplete).toBe(true);
-    expect(result.qualificationOnTrack).toBe(true);
-  });
+function makeCompetency(overrides: Partial<StaffTrainingCompetency> = {}): StaffTrainingCompetency {
+  return {
+    staffId: "staff-1",
+    trainingNeedsAssessment: true,
+    deliverySkills: true,
+    complianceMonitoring: true,
+    recordManagement: true,
+    qualityAssurance: true,
+    budgetManagement: true,
+    ...overrides,
+  };
+}
 
-  it("flags expired training", () => {
-    const trainings = makeAllTrainingCurrent();
-    trainings[0] = { ...trainings[0], status: "expired" }; // safeguarding expired
-    const record = makeStaffRecord({ trainings });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.isCompliant).toBe(false);
-    expect(result.expiredCount).toBe(1);
-    expect(result.issues.some(i => i.includes("Safeguarding") && i.includes("expired"))).toBe(true);
-  });
+// ── pct ────────────────────────────────────────────────────────────────────
 
-  it("warns about expiring soon training", () => {
-    const trainings = makeAllTrainingCurrent();
-    trainings[1] = { ...trainings[1], status: "expiring_soon", expiryDate: "2026-06-01T10:00:00Z" }; // first aid expiring
-    const record = makeStaffRecord({ trainings });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.expiringSoonCount).toBe(1);
-    expect(result.warnings.some(w => w.includes("First Aid") && w.includes("expiring"))).toBe(true);
-    // Still compliant because expiring_soon is counted as current
-    expect(result.mandatoryTrainingCurrent).toBe(MANDATORY_TRAINING.length);
-  });
-
-  it("flags not started mandatory training", () => {
-    const trainings = makeAllTrainingCurrent();
-    trainings[2] = { ...trainings[2], status: "not_started", completedDate: undefined }; // medication not started
-    const record = makeStaffRecord({ trainings });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.isCompliant).toBe(false);
-    expect(result.issues.some(i => i.includes("Medication") && i.includes("not completed"))).toBe(true);
-  });
-
-  it("flags induction not completed past deadline", () => {
-    const record = makeStaffRecord({
-      inductionCompleted: false,
-      startDate: "2025-01-01T10:00:00Z", // well past 90 days
-    });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.inductionComplete).toBe(false);
-    expect(result.issues.some(i => i.includes("Induction"))).toBe(true);
-  });
-
-  it("warns about induction in progress within deadline", () => {
-    const record = makeStaffRecord({
-      inductionCompleted: false,
-      startDate: "2026-04-01T10:00:00Z", // within 90 days
-    });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.inductionComplete).toBe(false);
-    expect(result.warnings.some(w => w.includes("Induction in progress"))).toBe(true);
-    // Should NOT be in issues since still within deadline
-    expect(result.issues.some(i => i.includes("Induction"))).toBe(false);
-  });
-
-  it("flags Level 3 diploma overdue", () => {
-    const record = makeStaffRecord({
-      qualifications: [
-        { type: "level_3_diploma", title: "Level 3 Diploma", status: "overdue" },
-      ],
-    });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.qualificationOnTrack).toBe(false);
-    expect(result.issues.some(i => i.includes("Level 3 Diploma overdue"))).toBe(true);
-  });
-
-  it("passes with Level 3 in progress", () => {
-    const record = makeStaffRecord({
-      qualifications: [
-        { type: "level_3_diploma", title: "Level 3 Diploma", status: "in_progress", startDate: "2025-06-01T10:00:00Z", percentComplete: 40 },
-      ],
-    });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.qualificationOnTrack).toBe(true);
-  });
-
-  it("recognises higher qualifications", () => {
-    const record = makeStaffRecord({
-      qualifications: [
-        { type: "degree", title: "BSc Social Work", status: "achieved", achievedDate: "2020-07-01T10:00:00Z" },
-      ],
-    });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.qualificationOnTrack).toBe(true);
-  });
-
-  it("warns about low CPD hours", () => {
-    const record = makeStaffRecord({ cpdHoursThisYear: 3, cpdTarget: 20 });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.cpdOnTrack).toBe(false);
-    expect(result.warnings.some(w => w.includes("CPD"))).toBe(true);
-  });
-
-  it("flags lone working without required training", () => {
-    const trainings = makeAllTrainingCurrent();
-    // Expire safeguarding (required before lone working)
-    trainings[0] = { ...trainings[0], status: "expired" };
-    const record = makeStaffRecord({ trainings, canWorkAlone: true });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    expect(result.loneWorkingRequirementsMet).toBe(false);
-    expect(result.issues.some(i => i.includes("Lone working authorised but required training not current"))).toBe(true);
-  });
-
-  it("calculates overall compliance rate correctly", () => {
-    const trainings = makeAllTrainingCurrent();
-    // Make 2 expired out of 18 mandatory
-    trainings[0] = { ...trainings[0], status: "expired" };
-    trainings[1] = { ...trainings[1], status: "expired" };
-    const record = makeStaffRecord({ trainings });
-    const result = evaluateStaffTrainingCompliance(record, NOW);
-    const expected = Math.round(((MANDATORY_TRAINING.length - 2) / MANDATORY_TRAINING.length) * 100);
-    expect(result.overallComplianceRate).toBe(expected);
-  });
+describe("pct", () => {
+  it("returns 0 when denominator is 0", () => { expect(pct(5, 0)).toBe(0); });
+  it("returns 100 for equal num and den", () => { expect(pct(10, 10)).toBe(100); });
+  it("returns 50 for half", () => { expect(pct(5, 10)).toBe(50); });
+  it("rounds to nearest integer", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
+  it("returns 0 for 0 numerator", () => { expect(pct(0, 10)).toBe(0); });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Home Metrics Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── getRating ──────────────────────────────────────────────────────────────
 
-describe("calculateHomeTrainingMetrics", () => {
-  it("calculates overall metrics for compliant team", () => {
-    const staff = [
-      makeStaffRecord({ staffId: "s1", staffName: "Sarah" }),
-      makeStaffRecord({ staffId: "s2", staffName: "James" }),
-    ];
-    const result = calculateHomeTrainingMetrics(staff, "home-oak", NOW);
-    expect(result.staffCount).toBe(2);
-    expect(result.fullyCompliantStaff).toBe(2);
-    expect(result.overallComplianceRate).toBe(100);
-    expect(result.staffWithExpiredTraining).toBe(0);
-  });
-
-  it("identifies staff needing attention", () => {
-    const trainings = makeAllTrainingCurrent();
-    trainings[0] = { ...trainings[0], status: "expired" };
-    const staff = [
-      makeStaffRecord({ staffId: "s1", staffName: "Sarah" }),
-      makeStaffRecord({ staffId: "s2", staffName: "James", trainings }),
-    ];
-    const result = calculateHomeTrainingMetrics(staff, "home-oak", NOW);
-    expect(result.staffWithExpiredTraining).toBe(1);
-    expect(result.staffNeedingAttention.length).toBe(1);
-    expect(result.staffNeedingAttention[0].staffName).toBe("James");
-  });
-
-  it("calculates category compliance", () => {
-    const staff = [
-      makeStaffRecord({ staffId: "s1" }),
-      makeStaffRecord({ staffId: "s2" }),
-    ];
-    const result = calculateHomeTrainingMetrics(staff, "home-oak", NOW);
-    expect(result.categoryCompliance.length).toBe(MANDATORY_TRAINING.length);
-    // All should be 100% for compliant team
-    expect(result.categoryCompliance.every(c => c.rate === 100)).toBe(true);
-  });
-
-  it("tracks upcoming expiries", () => {
-    const trainings = makeAllTrainingCurrent();
-    trainings[3] = { ...trainings[3], status: "expiring_soon", expiryDate: "2026-06-10T10:00:00Z" };
-    const staff = [makeStaffRecord({ staffId: "s1", staffName: "Sarah", trainings })];
-    const result = calculateHomeTrainingMetrics(staff, "home-oak", NOW);
-    expect(result.upcomingExpiries.length).toBe(1);
-    expect(result.upcomingExpiries[0].staffName).toBe("Sarah");
-  });
-
-  it("calculates qualification rate", () => {
-    const staff = [
-      makeStaffRecord({ staffId: "s1", qualifications: [{ type: "level_3_diploma", title: "L3", status: "achieved", achievedDate: "2025-01-01" }] }),
-      makeStaffRecord({ staffId: "s2", qualifications: [{ type: "level_3_diploma", title: "L3", status: "overdue" }] }),
-    ];
-    const result = calculateHomeTrainingMetrics(staff, "home-oak", NOW);
-    expect(result.qualificationRate).toBe(50);
-  });
-
-  it("calculates CPD compliance", () => {
-    const staff = [
-      makeStaffRecord({ staffId: "s1", cpdHoursThisYear: 15, cpdTarget: 20 }), // on track (>50%)
-      makeStaffRecord({ staffId: "s2", cpdHoursThisYear: 3, cpdTarget: 20 }),  // not on track
-    ];
-    const result = calculateHomeTrainingMetrics(staff, "home-oak", NOW);
-    expect(result.cpdComplianceRate).toBe(50);
-  });
-
-  it("counts specific training categories", () => {
-    const staff = [
-      makeStaffRecord({ staffId: "s1" }),
-      makeStaffRecord({ staffId: "s2" }),
-    ];
-    const result = calculateHomeTrainingMetrics(staff, "home-oak", NOW);
-    expect(result.restraintTrainingCurrent).toBe(2);
-    expect(result.safeguardingCurrent).toBe(2);
-    expect(result.firstAidCurrent).toBe(2);
-  });
+describe("getRating", () => {
+  it("returns outstanding for >= 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(100)).toBe("outstanding"); });
+  it("returns good for >= 60", () => { expect(getRating(60)).toBe("good"); expect(getRating(79)).toBe("good"); });
+  it("returns requires_improvement for >= 40", () => { expect(getRating(40)).toBe("requires_improvement"); expect(getRating(59)).toBe("requires_improvement"); });
+  it("returns inadequate for < 40", () => { expect(getRating(39)).toBe("inadequate"); expect(getRating(0)).toBe("inadequate"); });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Helper Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Label Helpers ──────────────────────────────────────────────────────────
 
-describe("Helper functions", () => {
-  it("getTrainingCategoryLabel returns readable labels", () => {
+describe("getTrainingCategoryLabel", () => {
+  it("returns human-readable labels", () => {
     expect(getTrainingCategoryLabel("safeguarding")).toBe("Safeguarding");
-    expect(getTrainingCategoryLabel("restraint")).toBe("Restraint (PI)");
-    expect(getTrainingCategoryLabel("csea")).toBe("CSE & Online Safety");
+    expect(getTrainingCategoryLabel("first_aid")).toBe("First Aid");
+    expect(getTrainingCategoryLabel("restraint_techniques")).toBe("Restraint Techniques");
+    expect(getTrainingCategoryLabel("medication_management")).toBe("Medication Management");
+    expect(getTrainingCategoryLabel("fire_safety")).toBe("Fire Safety");
+    expect(getTrainingCategoryLabel("health_and_safety")).toBe("Health and Safety");
+    expect(getTrainingCategoryLabel("equality_diversity")).toBe("Equality Diversity");
+    expect(getTrainingCategoryLabel("therapeutic_care")).toBe("Therapeutic Care");
+  });
+});
+
+describe("getTrainingOutcomeLabel", () => {
+  it("returns human-readable labels", () => {
+    expect(getTrainingOutcomeLabel("completed")).toBe("Completed");
+    expect(getTrainingOutcomeLabel("in_progress")).toBe("In Progress");
+    expect(getTrainingOutcomeLabel("expired")).toBe("Expired");
+    expect(getTrainingOutcomeLabel("not_started")).toBe("Not Started");
+    expect(getTrainingOutcomeLabel("exempt")).toBe("Exempt");
+  });
+});
+
+describe("getRatingLabel", () => {
+  it("formats rating labels", () => {
+    expect(getRatingLabel("outstanding")).toBe("Outstanding");
+    expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement");
+  });
+});
+
+// ── Evaluator 1: Training Quality ──────────────────────────────────────────
+
+describe("evaluateTrainingQuality", () => {
+  it("returns zeros for empty records", () => {
+    const result = evaluateTrainingQuality([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.totalRecords).toBe(0);
+    expect(result.completedOnTimeRate).toBe(0);
   });
 
-  it("getTrainingStatusLabel returns readable labels", () => {
-    expect(getTrainingStatusLabel("current")).toBe("Current");
-    expect(getTrainingStatusLabel("expiring_soon")).toBe("Expiring Soon");
-    expect(getTrainingStatusLabel("expired")).toBe("Expired");
+  it("returns max score for all-true records", () => {
+    const records = [makeRecord(), makeRecord({ id: "rec-2" })];
+    const result = evaluateTrainingQuality(records);
+    expect(result.overallScore).toBe(25);
+    expect(result.rating).toBe("outstanding");
+    expect(result.totalRecords).toBe(2);
+    expect(result.completedOnTimeRate).toBe(100);
+    expect(result.assessmentPassedRate).toBe(100);
   });
 
-  it("getQualificationStatusLabel returns readable labels", () => {
-    expect(getQualificationStatusLabel("achieved")).toBe("Achieved");
-    expect(getQualificationStatusLabel("overdue")).toBe("Overdue");
+  it("returns 0 for all-false records", () => {
+    const records = [makeRecord({ completedOnTime: false, assessmentPassed: false, practicalComponentDone: false, certificateObtained: false })];
+    const result = evaluateTrainingQuality(records);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("calculates mixed rates correctly", () => {
+    const records = [
+      makeRecord({ id: "r1", completedOnTime: true, assessmentPassed: false, practicalComponentDone: true, certificateObtained: false }),
+      makeRecord({ id: "r2", completedOnTime: true, assessmentPassed: true, practicalComponentDone: false, certificateObtained: false }),
+    ];
+    const result = evaluateTrainingQuality(records);
+    expect(result.completedOnTimeRate).toBe(100);
+    expect(result.assessmentPassedRate).toBe(50);
+    expect(result.practicalComponentDoneRate).toBe(50);
+    expect(result.certificateObtainedRate).toBe(0);
+  });
+
+  it("applies correct weights (7+6+6+6=25)", () => {
+    const records = [makeRecord({ assessmentPassed: false, practicalComponentDone: false, certificateObtained: false })];
+    const result = evaluateTrainingQuality(records);
+    expect(result.overallScore).toBe(7);
+  });
+
+  it("caps score at 25", () => {
+    const result = evaluateTrainingQuality([makeRecord()]);
+    expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+});
+
+// ── Evaluator 2: Training Compliance ───────────────────────────────────────
+
+describe("evaluateTrainingCompliance", () => {
+  it("returns zeros for empty records", () => {
+    const result = evaluateTrainingCompliance([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.documentationRate).toBe(0);
+  });
+
+  it("calculates documentation and timely rates", () => {
+    const records = [
+      makeRecord({ id: "r1", documentationComplete: true, timelyRecording: true }),
+      makeRecord({ id: "r2", documentationComplete: true, timelyRecording: false }),
+      makeRecord({ id: "r3", documentationComplete: false, timelyRecording: false }),
+    ];
+    const result = evaluateTrainingCompliance(records);
+    expect(result.documentationRate).toBe(67);
+    expect(result.timelyRecordingRate).toBe(33);
+  });
+
+  it("calculates category diversity correctly", () => {
+    const records = [makeRecord({ category: "safeguarding" })];
+    const result = evaluateTrainingCompliance(records);
+    expect(result.categoryDiversityRatio).toBe(13);
+  });
+
+  it("returns high diversity for many categories", () => {
+    const categories: Array<TrainingRecord["category"]> = [
+      "safeguarding", "first_aid", "restraint_techniques", "medication_management",
+      "fire_safety", "health_and_safety", "equality_diversity", "therapeutic_care",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = evaluateTrainingCompliance(records);
+    expect(result.categoryDiversityRatio).toBe(100);
+  });
+
+  it("applies correct weights (8+7+5+5=25)", () => {
+    const categories: Array<TrainingRecord["category"]> = [
+      "safeguarding", "first_aid", "restraint_techniques", "medication_management",
+      "fire_safety", "health_and_safety", "equality_diversity", "therapeutic_care",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = evaluateTrainingCompliance(records);
+    expect(result.overallScore).toBe(25);
+  });
+});
+
+// ── Evaluator 3: Training Policy ───────────────────────────────────────────
+
+describe("evaluateTrainingPolicy", () => {
+  it("returns zeros for null policy", () => {
+    const result = evaluateTrainingPolicy(null);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.mandatoryTrainingPolicy).toBe(false);
+  });
+
+  it("returns 25 for all-true policy", () => {
+    const result = evaluateTrainingPolicy(makePolicy());
+    expect(result.overallScore).toBe(25);
+    expect(result.rating).toBe("outstanding");
+  });
+
+  it("returns 0 for all-false policy", () => {
+    const result = evaluateTrainingPolicy(makePolicy({
+      mandatoryTrainingPolicy: false, trainingNeedsAnalysis: false, refresherSchedulePolicy: false,
+      inductionTrainingFramework: false, trainingRecordKeeping: false, externalTrainingApproval: false, trainingBudgetPolicy: false,
+    }));
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("weights first 4 at 4 points each", () => {
+    const result = evaluateTrainingPolicy(makePolicy({
+      mandatoryTrainingPolicy: true, trainingNeedsAnalysis: false, refresherSchedulePolicy: false,
+      inductionTrainingFramework: false, trainingRecordKeeping: false, externalTrainingApproval: false, trainingBudgetPolicy: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("weights last 3 at 3 points each", () => {
+    const result = evaluateTrainingPolicy(makePolicy({
+      mandatoryTrainingPolicy: false, trainingNeedsAnalysis: false, refresherSchedulePolicy: false,
+      inductionTrainingFramework: false, trainingRecordKeeping: true, externalTrainingApproval: true, trainingBudgetPolicy: true,
+    }));
+    expect(result.overallScore).toBe(9);
+  });
+
+  it("handles partial policy (first 4 only = 16)", () => {
+    const result = evaluateTrainingPolicy(makePolicy({
+      trainingRecordKeeping: false, externalTrainingApproval: false, trainingBudgetPolicy: false,
+    }));
+    expect(result.overallScore).toBe(16);
+    expect(result.rating).toBe("good");
+  });
+
+  it("preserves boolean values in result", () => {
+    const result = evaluateTrainingPolicy(makePolicy({ mandatoryTrainingPolicy: true, trainingNeedsAnalysis: false }));
+    expect(result.mandatoryTrainingPolicy).toBe(true);
+    expect(result.trainingNeedsAnalysis).toBe(false);
+  });
+});
+
+// ── Evaluator 4: Staff Training Readiness ──────────────────────────────────
+
+describe("evaluateStaffTrainingReadiness", () => {
+  it("returns zeros for empty staff", () => {
+    const result = evaluateStaffTrainingReadiness([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.totalStaff).toBe(0);
+  });
+
+  it("returns max score for all-true staff", () => {
+    const staff = [makeCompetency(), makeCompetency({ staffId: "staff-2" })];
+    const result = evaluateStaffTrainingReadiness(staff);
+    expect(result.overallScore).toBe(25);
+    expect(result.rating).toBe("outstanding");
+    expect(result.totalStaff).toBe(2);
+  });
+
+  it("returns 0 for all-false staff", () => {
+    const staff = [makeCompetency({
+      trainingNeedsAssessment: false, deliverySkills: false, complianceMonitoring: false,
+      recordManagement: false, qualityAssurance: false, budgetManagement: false,
+    })];
+    const result = evaluateStaffTrainingReadiness(staff);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("applies correct weights (6+5+5+4+3+2=25)", () => {
+    const staff = [makeCompetency({
+      deliverySkills: false, complianceMonitoring: false, recordManagement: false,
+      qualityAssurance: false, budgetManagement: false,
+    })];
+    const result = evaluateStaffTrainingReadiness(staff);
+    expect(result.overallScore).toBe(6);
+  });
+
+  it("only budgetManagement true gives weight-2 score", () => {
+    const staff = [makeCompetency({
+      trainingNeedsAssessment: false, deliverySkills: false, complianceMonitoring: false,
+      recordManagement: false, qualityAssurance: false, budgetManagement: true,
+    })];
+    const result = evaluateStaffTrainingReadiness(staff);
+    expect(result.overallScore).toBe(2);
+  });
+
+  it("calculates mixed rates correctly", () => {
+    const staff = [
+      makeCompetency({ staffId: "s1", trainingNeedsAssessment: true, deliverySkills: true, complianceMonitoring: false, recordManagement: false, qualityAssurance: false, budgetManagement: false }),
+      makeCompetency({ staffId: "s2", trainingNeedsAssessment: true, deliverySkills: false, complianceMonitoring: true, recordManagement: false, qualityAssurance: false, budgetManagement: false }),
+    ];
+    const result = evaluateStaffTrainingReadiness(staff);
+    expect(result.trainingNeedsAssessmentRate).toBe(100);
+    expect(result.deliverySkillsRate).toBe(50);
+    expect(result.complianceMonitoringRate).toBe(50);
+  });
+});
+
+// ── Staff Profiles ─────────────────────────────────────────────────────────
+
+describe("buildStaffTrainingProfiles", () => {
+  it("returns empty array for no records", () => {
+    expect(buildStaffTrainingProfiles([])).toEqual([]);
+  });
+
+  it("groups by staffId", () => {
+    const records = [
+      makeRecord({ id: "r1", staffId: "s1", staffName: "Sarah" }),
+      makeRecord({ id: "r2", staffId: "s2", staffName: "Tom" }),
+      makeRecord({ id: "r3", staffId: "s1", staffName: "Sarah" }),
+    ];
+    const profiles = buildStaffTrainingProfiles(records);
+    expect(profiles).toHaveLength(2);
+    expect(profiles.find((p) => p.staffId === "s1")?.totalRecords).toBe(2);
+  });
+
+  it("scores frequency: >=10 gives 2, >=5 gives 1, <5 gives 0", () => {
+    const recs = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", completedOnTime: false, assessmentPassed: false }),
+    );
+    const profiles = buildStaffTrainingProfiles(recs);
+    expect(profiles[0].overallScore).toBe(2);
+  });
+
+  it("scores rate1 (completedOnTimeRate): >=80 gives 3", () => {
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", completedOnTime: i < 4, assessmentPassed: false }),
+    );
+    const profiles = buildStaffTrainingProfiles(recs);
+    // freq=1, rate1(80%)=3, rate2(0%)=0, diversity(1)=0 = 4
+    expect(profiles[0].overallScore).toBe(4);
+  });
+
+  it("scores diversity: >=4 gives 2, >=2 gives 1", () => {
+    const categories: Array<TrainingRecord["category"]> = [
+      "safeguarding", "first_aid", "restraint_techniques", "medication_management",
+    ];
+    const recs = categories.map((cat, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", category: cat, completedOnTime: false, assessmentPassed: false }),
+    );
+    const profiles = buildStaffTrainingProfiles(recs);
+    expect(profiles[0].overallScore).toBe(2);
+  });
+
+  it("caps at 10", () => {
+    const categories: Array<TrainingRecord["category"]> = [
+      "safeguarding", "first_aid", "restraint_techniques", "medication_management",
+    ];
+    const recs = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", category: categories[i % 4] }),
+    );
+    const profiles = buildStaffTrainingProfiles(recs);
+    expect(profiles[0].overallScore).toBe(10);
+  });
+
+  it("2 categories gives diversity 1", () => {
+    const recs = [
+      makeRecord({ id: "r1", staffId: "s1", category: "safeguarding", completedOnTime: false, assessmentPassed: false }),
+      makeRecord({ id: "r2", staffId: "s1", category: "first_aid", completedOnTime: false, assessmentPassed: false }),
+    ];
+    const profiles = buildStaffTrainingProfiles(recs);
+    expect(profiles[0].overallScore).toBe(1);
+    expect(profiles[0].categoriesCovered).toHaveLength(2);
+  });
+});
+
+// ── Additional Quality Edge Cases ──────────────────────────────────────────
+
+describe("evaluateTrainingQuality — additional", () => {
+  it("single record with only completedOnTime true gives weight-7 score", () => {
+    const records = [makeRecord({ assessmentPassed: false, practicalComponentDone: false, certificateObtained: false })];
+    const result = evaluateTrainingQuality(records);
+    expect(result.overallScore).toBe(7);
+  });
+
+  it("handles large record sets", () => {
+    const records = Array.from({ length: 100 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, completedOnTime: i % 2 === 0 }),
+    );
+    const result = evaluateTrainingQuality(records);
+    expect(result.completedOnTimeRate).toBe(50);
+    expect(result.totalRecords).toBe(100);
+  });
+
+  it("rating maps correctly for low score", () => {
+    const records = [makeRecord({ completedOnTime: false, assessmentPassed: false, practicalComponentDone: false, certificateObtained: false })];
+    const result = evaluateTrainingQuality(records);
+    expect(result.rating).toBe("inadequate");
+  });
+});
+
+// ── Additional Compliance Edge Cases ──────────────────────────────────────
+
+describe("evaluateTrainingCompliance — additional", () => {
+  it("two categories gives 25% diversity", () => {
+    const records = [
+      makeRecord({ id: "r1", category: "safeguarding" }),
+      makeRecord({ id: "r2", category: "first_aid" }),
+    ];
+    const result = evaluateTrainingCompliance(records);
+    expect(result.categoryDiversityRatio).toBe(25);
+  });
+
+  it("all compliance false with single category", () => {
+    const records = [makeRecord({ documentationComplete: false, timelyRecording: false, completedOnTime: false })];
+    const result = evaluateTrainingCompliance(records);
+    expect(result.documentationRate).toBe(0);
+    expect(result.timelyRecordingRate).toBe(0);
+    expect(result.overallScore).toBe(1); // only diversity 13% x 5 = 0.65 -> 1
+  });
+});
+
+// ── Additional Policy Edge Cases ──────────────────────────────────────────
+
+describe("evaluateTrainingPolicy — additional", () => {
+  it("single middle policy gives 4 points", () => {
+    const result = evaluateTrainingPolicy(makePolicy({
+      mandatoryTrainingPolicy: false, trainingNeedsAnalysis: false, refresherSchedulePolicy: true,
+      inductionTrainingFramework: false, trainingRecordKeeping: false, externalTrainingApproval: false, trainingBudgetPolicy: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("rating for score 9 -> 36 -> inadequate", () => {
+    const result = evaluateTrainingPolicy(makePolicy({
+      mandatoryTrainingPolicy: false, trainingNeedsAnalysis: false, refresherSchedulePolicy: false,
+      inductionTrainingFramework: false, trainingRecordKeeping: true, externalTrainingApproval: true, trainingBudgetPolicy: true,
+    }));
+    expect(result.overallScore).toBe(9);
+    expect(result.rating).toBe("inadequate");
+  });
+});
+
+// ── Additional Staff Readiness Edge Cases ─────────────────────────────────
+
+describe("evaluateStaffTrainingReadiness — additional", () => {
+  it("3 staff with mixed skills", () => {
+    const staff = [
+      makeCompetency({ staffId: "s1" }),
+      makeCompetency({ staffId: "s2", trainingNeedsAssessment: false, deliverySkills: false }),
+      makeCompetency({ staffId: "s3", complianceMonitoring: false, recordManagement: false, qualityAssurance: false, budgetManagement: false }),
+    ];
+    const result = evaluateStaffTrainingReadiness(staff);
+    expect(result.totalStaff).toBe(3);
+    expect(result.trainingNeedsAssessmentRate).toBe(67);
+  });
+});
+
+// ── Additional Staff Profile Edge Cases ───────────────────────────────────
+
+describe("buildStaffTrainingProfiles — additional", () => {
+  it("rate2 assessmentPassedRate 60% gives 2 points", () => {
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", completedOnTime: false, assessmentPassed: i < 3 }),
+    );
+    const profiles = buildStaffTrainingProfiles(recs);
+    // freq=1, rate1(0%)=0, rate2(60%)=2, diversity(1)=0 = 3
+    expect(profiles[0].overallScore).toBe(3);
+  });
+
+  it("preserves staff name from first record", () => {
+    const recs = [
+      makeRecord({ id: "r1", staffId: "s1", staffName: "Sarah" }),
+      makeRecord({ id: "r2", staffId: "s1", staffName: "Sarah Updated" }),
+    ];
+    const profiles = buildStaffTrainingProfiles(recs);
+    expect(profiles[0].staffName).toBe("Sarah");
+  });
+
+  it("rate1 40% gives 1 point", () => {
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, staffId: "s1", completedOnTime: i < 2, assessmentPassed: false }),
+    );
+    const profiles = buildStaffTrainingProfiles(recs);
+    // freq=1, rate1(40%)=1, rate2(0%)=0, diversity(1)=0 = 2
+    expect(profiles[0].overallScore).toBe(2);
+  });
+});
+
+// ── Master Generator ───────────────────────────────────────────────────────
+
+describe("generateTrainingIntelligence", () => {
+  it("returns correct structure with all data", () => {
+    const result = generateTrainingIntelligence([makeRecord()], makePolicy(), [makeCompetency()], "oak-house", "2026-01-01", "2026-05-20");
+    expect(result.homeId).toBe("oak-house");
+    expect(result.periodStart).toBe("2026-01-01");
+    expect(result.periodEnd).toBe("2026-05-20");
+    expect(result.overallScore).toBeGreaterThan(0);
+    expect(result.trainingQuality).toBeDefined();
+    expect(result.trainingCompliance).toBeDefined();
+    expect(result.trainingPolicy).toBeDefined();
+    expect(result.staffReadiness).toBeDefined();
+    expect(result.staffProfiles).toBeDefined();
+    expect(result.regulatoryLinks).toHaveLength(7);
+  });
+
+  it("sums 4 evaluator scores", () => {
+    const result = generateTrainingIntelligence([makeRecord()], makePolicy(), [makeCompetency()], "h", "s", "e");
+    const expectedTotal = result.trainingQuality.overallScore + result.trainingCompliance.overallScore + result.trainingPolicy.overallScore + result.staffReadiness.overallScore;
+    expect(result.overallScore).toBe(Math.min(100, expectedTotal));
+  });
+
+  it("caps overall score at 100", () => {
+    const result = generateTrainingIntelligence([makeRecord()], makePolicy(), [makeCompetency()], "h", "s", "e");
+    expect(result.overallScore).toBeLessThanOrEqual(100);
+  });
+
+  it("returns inadequate for empty data", () => {
+    const result = generateTrainingIntelligence([], null, [], "h", "s", "e");
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+  });
+
+  it("generates strengths for metrics >= 80%", () => {
+    const categories: Array<TrainingRecord["category"]> = [
+      "safeguarding", "first_aid", "restraint_techniques", "medication_management",
+      "fire_safety", "health_and_safety", "equality_diversity", "therapeutic_care",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = generateTrainingIntelligence(records, makePolicy(), [makeCompetency()], "h", "s", "e");
+    expect(result.strengths.length).toBeGreaterThan(0);
+  });
+
+  it("generates areas for improvement for low metrics", () => {
+    const records = [makeRecord({
+      completedOnTime: false, assessmentPassed: false, practicalComponentDone: false,
+      certificateObtained: false, documentationComplete: false, timelyRecording: false,
+    })];
+    const result = generateTrainingIntelligence(records, makePolicy(), [makeCompetency()], "h", "s", "e");
+    expect(result.areasForImprovement.length).toBeGreaterThan(0);
+  });
+
+  it("generates URGENT actions when policy is null", () => {
+    const result = generateTrainingIntelligence([makeRecord()], null, [makeCompetency()], "h", "s", "e");
+    expect(result.actions.some((a) => a.startsWith("URGENT"))).toBe(true);
+  });
+
+  it("generates URGENT actions when staff is empty", () => {
+    const result = generateTrainingIntelligence([makeRecord()], makePolicy(), [], "h", "s", "e");
+    expect(result.actions.some((a) => a.startsWith("URGENT"))).toBe(true);
+  });
+
+  it("builds staff profiles from records", () => {
+    const records = [
+      makeRecord({ id: "r1", staffId: "s1", staffName: "Sarah" }),
+      makeRecord({ id: "r2", staffId: "s2", staffName: "Tom" }),
+    ];
+    const result = generateTrainingIntelligence(records, makePolicy(), [makeCompetency()], "h", "s", "e");
+    expect(result.staffProfiles).toHaveLength(2);
+  });
+
+  it("includes all 7 regulatory links", () => {
+    const result = generateTrainingIntelligence([], null, [], "h", "s", "e");
+    expect(result.regulatoryLinks).toHaveLength(7);
+    expect(result.regulatoryLinks[0]).toContain("Reg 31");
+  });
+
+  it("no areas for improvement when all metrics high", () => {
+    const categories: Array<TrainingRecord["category"]> = [
+      "safeguarding", "first_aid", "restraint_techniques", "medication_management",
+      "fire_safety", "health_and_safety", "equality_diversity", "therapeutic_care",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = generateTrainingIntelligence(records, makePolicy(), [makeCompetency()], "h", "s", "e");
+    expect(result.areasForImprovement).toHaveLength(0);
+  });
+
+  it("empty staffProfiles when no records", () => {
+    const result = generateTrainingIntelligence([], makePolicy(), [makeCompetency()], "h", "s", "e");
+    expect(result.staffProfiles).toHaveLength(0);
+  });
+
+  it("returns outstanding for fully compliant data", () => {
+    const categories: Array<TrainingRecord["category"]> = [
+      "safeguarding", "first_aid", "restraint_techniques", "medication_management",
+      "fire_safety", "health_and_safety", "equality_diversity", "therapeutic_care",
+    ];
+    const records = categories.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = generateTrainingIntelligence(records, makePolicy(), [makeCompetency()], "h", "s", "e");
+    expect(result.rating).toBe("outstanding");
+    expect(result.overallScore).toBe(100);
+  });
+
+  it("generates actions for low metrics (<50%)", () => {
+    const records = [makeRecord({
+      completedOnTime: false, assessmentPassed: false, certificateObtained: false,
+      documentationComplete: false, timelyRecording: false,
+    })];
+    const staff = [makeCompetency({ complianceMonitoring: false })];
+    const result = generateTrainingIntelligence(records, makePolicy(), staff, "h", "s", "e");
+    expect(result.actions.length).toBeGreaterThan(0);
+  });
+
+  it("no strengths when all metrics are low", () => {
+    const records = [makeRecord({
+      completedOnTime: false, assessmentPassed: false, practicalComponentDone: false,
+      certificateObtained: false, documentationComplete: false, timelyRecording: false,
+    })];
+    const staff = [makeCompetency({
+      trainingNeedsAssessment: false, deliverySkills: false, complianceMonitoring: false,
+      recordManagement: false, qualityAssurance: false, budgetManagement: false,
+    })];
+    const result = generateTrainingIntelligence(records, null, staff, "h", "s", "e");
+    expect(result.strengths).toHaveLength(0);
+  });
+
+  it("handles mixed staff and categories in profiles", () => {
+    const records = [
+      makeRecord({ id: "r1", staffId: "s1", staffName: "Sarah", category: "safeguarding" }),
+      makeRecord({ id: "r2", staffId: "s1", staffName: "Sarah", category: "first_aid" }),
+      makeRecord({ id: "r3", staffId: "s2", staffName: "Tom", category: "fire_safety" }),
+    ];
+    const result = generateTrainingIntelligence(records, makePolicy(), [makeCompetency()], "h", "s", "e");
+    expect(result.staffProfiles).toHaveLength(2);
+    const sarah = result.staffProfiles.find(p => p.staffId === "s1");
+    expect(sarah?.categoriesCovered).toHaveLength(2);
   });
 });

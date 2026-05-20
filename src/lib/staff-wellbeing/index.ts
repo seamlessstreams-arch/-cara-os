@@ -1,21 +1,32 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Staff Wellbeing & Resilience — Public API
+// Cornerstone Staff Wellbeing Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  assessStaffWellbeing,
-  calculateHomeWellbeingMetrics,
-  getBurnoutRiskLabel,
+  pct,
+  getRating,
+  getStaffWellbeingCategoryLabel,
+  getStaffWellbeingOutcomeLabel,
+  getRatingLabel,
+  evaluateWellbeingQuality,
+  evaluateWellbeingCompliance,
+  evaluateWellbeingPolicy,
+  evaluateStaffWellbeingReadiness,
+  buildStaffWellbeingProfiles,
+  generateStaffWellbeingIntelligence,
 } from "./staff-wellbeing-engine";
 
 export type {
-  WellbeingRating,
-  BurnoutRiskLevel,
-  AbsenceType,
-  SupportIntervention,
+  StaffWellbeingCategory,
+  StaffWellbeingOutcome,
+  Rating,
   StaffWellbeingRecord,
-  WellbeingCheckin,
-  AbsenceRecord,
-  StaffWellbeingAssessment,
-  HomeWellbeingMetrics,
+  StaffWellbeingPolicy,
+  StaffWellbeingTraining,
+  StaffWellbeingQualityResult,
+  StaffWellbeingComplianceResult,
+  StaffWellbeingPolicyResult,
+  StaffWellbeingReadinessResult,
+  StaffWellbeingProfile,
+  StaffWellbeingIntelligence,
 } from "./staff-wellbeing-engine";

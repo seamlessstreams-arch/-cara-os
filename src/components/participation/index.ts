@@ -1,1 +1,1 @@
-export { ParticipationDashboardWidget } from "./ParticipationDashboardWidget";
+export { default as ParticipationDashboardWidget } from "./ParticipationDashboardWidget";

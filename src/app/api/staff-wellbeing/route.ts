@@ -1,198 +1,66 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// API: /api/staff-wellbeing — Staff Wellbeing & Resilience
-//
-// GET  — returns home metrics, individual assessments, or dashboard data
-// POST — assess individual staff member or calculate custom metrics
-//
-// CHR 2015 Reg 33 — Employment of staff
-// SCCIF — Workforce stability and wellbeing
-// H&S at Work Act 1974 — Employer duty of care
-// ══════════════════════════════════════════════════════════════════════════════
-
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import {
-  assessStaffWellbeing,
-  calculateHomeWellbeingMetrics,
+  generateStaffWellbeingIntelligence,
 } from "@/lib/staff-wellbeing";
-import type { StaffWellbeingRecord } from "@/lib/staff-wellbeing";
+import type { StaffWellbeingRecord, StaffWellbeingPolicy, StaffWellbeingTraining } from "@/lib/staff-wellbeing";
 
-// ── GET Handler ───────────────────────────────────────────────────────────
+// ── Demo Data ──────────────────────────────────────────────────────────────
 
-export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const homeId = url.searchParams.get("homeId") ?? "home-oak";
-  const mode = url.searchParams.get("mode") ?? "dashboard";
-  const now = new Date().toISOString();
+const demoRecords: StaffWellbeingRecord[] = [
+  // Sarah Johnson — well-supported, strong supervision
+  { id: "sw-1", homeId: "oak-house", date: "2026-02-10", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "supervision_support", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-2", homeId: "oak-house", date: "2026-03-14", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "emotional_wellbeing", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-3", homeId: "oak-house", date: "2026-04-18", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "work_life_balance", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: false, documentationComplete: true, timelyRecording: true },
 
-  const records = getDemoRecords(homeId);
+  // Tom Richards — some gaps in support access
+  { id: "sw-4", homeId: "oak-house", date: "2026-02-20", staffId: "staff-tom", staffName: "Tom Richards", category: "workload_management", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: false, supportAccessed: false, documentationComplete: true, timelyRecording: true },
+  { id: "sw-5", homeId: "oak-house", date: "2026-03-22", staffId: "staff-tom", staffName: "Tom Richards", category: "resilience_support", outcome: "struggling", supervisionReceived: true, wellbeingChecked: false, debriefOffered: true, supportAccessed: true, documentationComplete: false, timelyRecording: true },
+  { id: "sw-6", homeId: "oak-house", date: "2026-05-01", staffId: "staff-tom", staffName: "Tom Richards", category: "team_cohesion", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: false },
 
-  if (mode === "metrics") {
-    return NextResponse.json(calculateHomeWellbeingMetrics(records, homeId, now));
-  }
+  // Lisa Williams — newer, fewer records, good engagement
+  { id: "sw-7", homeId: "oak-house", date: "2026-03-05", staffId: "staff-lisa", staffName: "Lisa Williams", category: "professional_development", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-8", homeId: "oak-house", date: "2026-04-10", staffId: "staff-lisa", staffName: "Lisa Williams", category: "recognition_reward", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: false, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-9", homeId: "oak-house", date: "2026-05-12", staffId: "staff-lisa", staffName: "Lisa Williams", category: "emotional_wellbeing", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: false },
 
-  if (mode === "assessments") {
-    const assessments = records.map(r => assessStaffWellbeing(r, now));
-    return NextResponse.json({ assessments });
-  }
+  // Darren Laville — RM, strong across the board
+  { id: "sw-10", homeId: "oak-house", date: "2026-02-15", staffId: "staff-darren", staffName: "Darren Laville", category: "supervision_support", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-11", homeId: "oak-house", date: "2026-03-28", staffId: "staff-darren", staffName: "Darren Laville", category: "workload_management", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-12", homeId: "oak-house", date: "2026-05-08", staffId: "staff-darren", staffName: "Darren Laville", category: "team_cohesion", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+];
 
-  // Default: dashboard — metrics + individual summaries
-  const metrics = calculateHomeWellbeingMetrics(records, homeId, now);
-  const assessments = records.map(r => assessStaffWellbeing(r, now));
+const demoPolicy: StaffWellbeingPolicy = {
+  staffWellbeingPolicy: true,
+  supervisionFramework: true,
+  debriefingProtocol: true,
+  employeeAssistanceProgramme: true,
+  workloadManagementPolicy: true,
+  sicknessAbsencePolicy: true,
+  recognitionScheme: true,
+};
+
+const demoStaff: StaffWellbeingTraining[] = [
+  { staffId: "staff-sarah", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: true, stressManagement: true, teamBuilding: true, conflictMediation: true },
+  { staffId: "staff-tom", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: true, stressManagement: false, teamBuilding: false, conflictMediation: true },
+  { staffId: "staff-lisa", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: false, stressManagement: true, teamBuilding: true, conflictMediation: false },
+  { staffId: "staff-darren", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: true, stressManagement: true, teamBuilding: true, conflictMediation: true },
+];
+
+// ── Handler ────────────────────────────────────────────────────────────────
+
+export async function GET() {
+  const result = generateStaffWellbeingIntelligence(
+    demoRecords,
+    demoPolicy,
+    demoStaff,
+    "oak-house",
+    "2026-01-01",
+    "2026-05-20",
+  );
 
   return NextResponse.json({
-    metrics,
-    assessments,
+    data: {
+      ...result,
+      meta: { generatedAt: new Date().toISOString(), engine: "staff-wellbeing", version: "2.0.0" },
+    },
   });
-}
-
-// ── POST Handler ──────────────────────────────────────────────────────────
-
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { action } = body;
-
-  if (action === "assess") {
-    const { record, now } = body;
-    if (!record) {
-      return NextResponse.json({ error: "record required" }, { status: 400 });
-    }
-    return NextResponse.json(assessStaffWellbeing(record as StaffWellbeingRecord, now));
-  }
-
-  if (action === "metrics") {
-    const { records, homeId, now } = body;
-    if (!records || !homeId) {
-      return NextResponse.json({ error: "records and homeId required" }, { status: 400 });
-    }
-    return NextResponse.json(calculateHomeWellbeingMetrics(records as StaffWellbeingRecord[], homeId, now));
-  }
-
-  return NextResponse.json({ error: "Invalid action. Use 'assess' or 'metrics'" }, { status: 400 });
-}
-
-// ── Demo Data ─────────────────────────────────────────────────────────────
-
-function getDemoRecords(homeId: string): StaffWellbeingRecord[] {
-  return [
-    {
-      staffId: "staff-rm-01",
-      staffName: "Claire Edwards",
-      homeId,
-      role: "Registered Manager",
-      startDate: "2021-06-01T00:00:00Z",
-      contractedHours: 40,
-      isAgency: false,
-      wellbeingCheckins: [
-        { date: "2026-04-05T10:00:00Z", overallRating: 3, workloadManageable: false, feelingSupported: true, sleepQuality: 3, workLifeBalance: 2, teamRelationships: 4, recordedBy: "staff-ri-01" },
-        { date: "2026-04-20T10:00:00Z", overallRating: 3, workloadManageable: false, feelingSupported: true, sleepQuality: 3, workLifeBalance: 3, teamRelationships: 4, recordedBy: "staff-ri-01" },
-        { date: "2026-05-05T10:00:00Z", overallRating: 4, workloadManageable: true, feelingSupported: true, sleepQuality: 4, workLifeBalance: 3, teamRelationships: 4, recordedBy: "staff-ri-01" },
-      ],
-      absences: [
-        { id: "abs-rm-1", type: "annual_leave", startDate: "2026-03-15T00:00:00Z", endDate: "2026-03-21T00:00:00Z", totalDays: 5, returnToWorkDone: false, fitNote: false },
-      ],
-      supervisionAttendance: 100,
-      lastSupervisionDate: "2026-05-08T10:00:00Z",
-      reflectivePracticeEngagement: 85,
-      overtimeHoursLast30Days: 12,
-      consecutiveShiftsMax: 5,
-      sleepInCountLast30Days: 0,
-      restrictedPracticeInvolvement: 0,
-      activeSupport: [],
-    },
-    {
-      staffId: "staff-sw-01",
-      staffName: "Marcus Campbell",
-      homeId,
-      role: "Senior Residential Worker",
-      startDate: "2022-09-01T00:00:00Z",
-      contractedHours: 37.5,
-      isAgency: false,
-      wellbeingCheckins: [
-        { date: "2026-04-08T10:00:00Z", overallRating: 4, workloadManageable: true, feelingSupported: true, sleepQuality: 4, workLifeBalance: 4, teamRelationships: 5, recordedBy: "staff-rm-01" },
-        { date: "2026-04-22T10:00:00Z", overallRating: 4, workloadManageable: true, feelingSupported: true, sleepQuality: 3, workLifeBalance: 4, teamRelationships: 5, recordedBy: "staff-rm-01" },
-        { date: "2026-05-06T10:00:00Z", overallRating: 4, workloadManageable: true, feelingSupported: true, sleepQuality: 4, workLifeBalance: 4, teamRelationships: 5, recordedBy: "staff-rm-01" },
-      ],
-      absences: [
-        { id: "abs-sw-1", type: "sick_short_term", startDate: "2026-02-10T00:00:00Z", endDate: "2026-02-11T00:00:00Z", totalDays: 2, returnToWorkDone: true, fitNote: false },
-      ],
-      supervisionAttendance: 95,
-      lastSupervisionDate: "2026-05-02T10:00:00Z",
-      reflectivePracticeEngagement: 80,
-      overtimeHoursLast30Days: 6,
-      consecutiveShiftsMax: 4,
-      sleepInCountLast30Days: 4,
-      restrictedPracticeInvolvement: 2,
-      activeSupport: [],
-    },
-    {
-      staffId: "staff-rw-01",
-      staffName: "Priya Sharma",
-      homeId,
-      role: "Residential Worker",
-      startDate: "2024-01-15T00:00:00Z",
-      contractedHours: 37.5,
-      isAgency: false,
-      wellbeingCheckins: [
-        { date: "2026-04-10T10:00:00Z", overallRating: 3, workloadManageable: true, feelingSupported: false, sleepQuality: 2, workLifeBalance: 3, teamRelationships: 4, recordedBy: "staff-rm-01" },
-        { date: "2026-04-24T10:00:00Z", overallRating: 2, workloadManageable: false, feelingSupported: false, sleepQuality: 2, workLifeBalance: 2, teamRelationships: 3, recordedBy: "staff-rm-01" },
-        { date: "2026-05-08T10:00:00Z", overallRating: 2, workloadManageable: false, feelingSupported: false, sleepQuality: 2, workLifeBalance: 2, teamRelationships: 3, recordedBy: "staff-rm-01" },
-      ],
-      absences: [
-        { id: "abs-rw-1", type: "stress_related", startDate: "2026-03-01T00:00:00Z", endDate: "2026-03-07T00:00:00Z", totalDays: 5, reason: "Anxiety", returnToWorkDone: true, fitNote: true },
-        { id: "abs-rw-2", type: "sick_short_term", startDate: "2026-04-15T00:00:00Z", endDate: "2026-04-16T00:00:00Z", totalDays: 2, returnToWorkDone: true, fitNote: false },
-      ],
-      supervisionAttendance: 75,
-      lastSupervisionDate: "2026-04-28T10:00:00Z",
-      reflectivePracticeEngagement: 45,
-      overtimeHoursLast30Days: 18,
-      consecutiveShiftsMax: 5,
-      sleepInCountLast30Days: 6,
-      restrictedPracticeInvolvement: 4,
-      activeSupport: ["counselling_referral", "supervision_increase"],
-    },
-    {
-      staffId: "staff-rw-02",
-      staffName: "Jake Turner",
-      homeId,
-      role: "Residential Worker",
-      startDate: "2025-04-01T00:00:00Z",
-      contractedHours: 37.5,
-      isAgency: false,
-      wellbeingCheckins: [
-        { date: "2026-04-12T10:00:00Z", overallRating: 4, workloadManageable: true, feelingSupported: true, sleepQuality: 4, workLifeBalance: 4, teamRelationships: 4, recordedBy: "staff-sw-01" },
-        { date: "2026-04-26T10:00:00Z", overallRating: 4, workloadManageable: true, feelingSupported: true, sleepQuality: 4, workLifeBalance: 3, teamRelationships: 4, recordedBy: "staff-sw-01" },
-        { date: "2026-05-10T10:00:00Z", overallRating: 4, workloadManageable: true, feelingSupported: true, sleepQuality: 4, workLifeBalance: 4, teamRelationships: 5, recordedBy: "staff-sw-01" },
-      ],
-      absences: [],
-      supervisionAttendance: 100,
-      lastSupervisionDate: "2026-05-03T10:00:00Z",
-      reflectivePracticeEngagement: 70,
-      overtimeHoursLast30Days: 4,
-      consecutiveShiftsMax: 3,
-      sleepInCountLast30Days: 3,
-      restrictedPracticeInvolvement: 1,
-      activeSupport: [],
-    },
-    {
-      staffId: "staff-ag-01",
-      staffName: "Daniel Okonkwo",
-      homeId,
-      role: "Agency Worker",
-      startDate: "2026-04-01T00:00:00Z",
-      contractedHours: 37.5,
-      isAgency: true,
-      wellbeingCheckins: [
-        { date: "2026-05-01T10:00:00Z", overallRating: 3, workloadManageable: true, feelingSupported: true, sleepQuality: 3, workLifeBalance: 3, teamRelationships: 3, recordedBy: "staff-rm-01" },
-      ],
-      absences: [],
-      supervisionAttendance: 50,
-      lastSupervisionDate: "2026-05-01T10:00:00Z",
-      reflectivePracticeEngagement: 30,
-      overtimeHoursLast30Days: 8,
-      consecutiveShiftsMax: 4,
-      sleepInCountLast30Days: 2,
-      restrictedPracticeInvolvement: 1,
-      activeSupport: [],
-    },
-  ];
 }

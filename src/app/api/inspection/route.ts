@@ -1,204 +1,64 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// API: /api/inspection — Ofsted Inspection Readiness Assessment
-//
-// Aggregates all compliance domains into a single inspection readiness view.
-// Returns SCCIF-aligned domain assessments, risk factors, and action priorities.
-//
-// Powers the RM/RI "Inspection Mode" dashboard showing live readiness status.
-// ══════════════════════════════════════════════════════════════════════════════
-
-import { NextRequest, NextResponse } from "next/server";
-import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
-import { calculateInspectionReadiness } from "@/lib/inspection";
-import type { InspectionInputs } from "@/lib/inspection";
-
-type SB = any;
-
-export async function GET(req: NextRequest) {
-  try {
-    const url = new URL(req.url);
-    const homeId = url.searchParams.get("homeId") ?? "home-oak";
-
-    const sb = createServerClient();
-
-    if (sb && isSupabaseEnabled()) {
-      return await handleLiveData(sb, homeId);
-    }
-
-    return NextResponse.json(getDemoData(homeId));
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
-  }
-}
-
-// ── Live Data ──────────────────────────────────────────────────────────────
-
-async function handleLiveData(sb: any, homeId: string) {
-  // Aggregate metrics from all tables
-  const [
-    qualityRes,
-    staffRes,
-    reg44Res,
-    reg45Res,
-    notificationsRes,
-    recruitmentRes,
-    documentsRes,
-  ] = await Promise.all([
-    (sb.from("scheduled_occurrences") as SB).select("status, qa_score").eq("home_id", homeId),
-    (sb.from("staff_profiles") as SB).select("*, staff_training(*)").eq("home_id", homeId),
-    (sb.from("reg44_reports") as SB).select("status, action_points").eq("home_id", homeId),
-    (sb.from("reg45_reviews") as SB).select("status, submitted_at").eq("home_id", homeId).order("due_date", { ascending: false }).limit(1),
-    (sb.from("statutory_notifications") as SB).select("is_overdue").eq("home_id", homeId),
-    (sb.from("recruitment_candidates") as SB).select("stage, recruitment_checks(status)").eq("home_id", homeId),
-    (sb.from("filed_documents") as SB).select("status, retention_years, category").eq("home_id", homeId),
-  ]);
-
-  // Build inputs from live data (simplified aggregation)
-  const inputs: InspectionInputs = buildInputsFromLiveData(
-    homeId,
-    qualityRes.data ?? [],
-    staffRes.data ?? [],
-    reg44Res.data ?? [],
-    reg45Res.data ?? [],
-    notificationsRes.data ?? [],
-    recruitmentRes.data ?? [],
-    documentsRes.data ?? [],
-  );
-
-  const result = calculateInspectionReadiness(inputs);
-  return NextResponse.json(result);
-}
-
-function buildInputsFromLiveData(
-  homeId: string,
-  quality: any[],
-  staff: any[],
-  reg44: any[],
-  reg45: any[],
-  notifications: any[],
-  recruitment: any[],
-  documents: any[],
-): InspectionInputs {
-  // Quality metrics
-  const completedStatuses = ["approved", "filed", "locked"];
-  const qualityTotal = quality.length;
-  const qualityDone = quality.filter((q: any) => completedStatuses.includes(q.status)).length;
-  const qaScores = quality.filter((q: any) => q.qa_score).map((q: any) => q.qa_score);
-  const avgQA = qaScores.length > 0 ? qaScores.reduce((a: number, b: number) => a + b, 0) / qaScores.length : 4.0;
-
-  // Staff metrics
-  const totalStaff = staff.length;
-  const expiredTraining = staff.filter((s: any) =>
-    (s.staff_training ?? []).some((t: any) => t.status === "expired"),
-  ).length;
-
-  return {
-    homeId,
-    lastInspectionDate: "2025-11-15T00:00:00Z", // Would come from home config
-    qualityCompliance: qualityTotal > 0 ? Math.round((qualityDone / qualityTotal) * 100) : 95,
-    overdueRecords: quality.filter((q: any) => q.status === "overdue").length,
-    filedRecords: quality.filter((q: any) => q.status === "filed").length,
-    averageQAScore: avgQA,
-    returnRate: 8,
-    safeguardingIncidents: 2,
-    safeguardingReferrals: 1,
-    disclosuresHandled: 1,
-    missingEpisodes: 2,
-    returnInterviewsCompleted: 2,
-    returnInterviewsRequired: 2,
-    trainingComplianceRate: totalStaff > 0 ? Math.round(((totalStaff - expiredTraining) / totalStaff) * 100) : 90,
-    supervisionComplianceRate: 85,
-    vacancyRate: 10,
-    agencyUsageRate: staff.filter((s: any) => s.is_agency).length / Math.max(totalStaff, 1) * 100,
-    turnoverRate: 15,
-    qualificationRate: 80,
-    staffWithExpiredTraining: expiredTraining,
-    reg44CompletedThisYear: reg44.filter((r: any) => r.status === "published" || r.status === "submitted").length,
-    reg44Expected: 5,
-    reg44OverdueActions: 0,
-    reg45UpToDate: reg45.length > 0 && reg45[0]?.submitted_at != null,
-    notificationComplianceRate: notifications.length > 0
-      ? Math.round((notifications.filter((n: any) => !n.is_overdue).length / notifications.length) * 100)
-      : 100,
-    recruitmentBlockers: 0,
-    dbsExpired: 0,
-    dbsExpiringSoon: 1,
-    schedule2ComplianceRate: 95,
-    retentionComplianceRate: 95,
-    documentsOnHold: documents.filter((d: any) => d.status === "hold").length,
-    pendingDestruction: documents.filter((d: any) => d.status === "pending_destruction").length,
-    recordCompleteness: 92,
-    childrenViews: "positive",
-    complaintsInPeriod: 1,
-    complaintsResolvedOnTime: 1,
-    childProgressRating: 4.0,
-    activitiesPerWeek: 6,
-    keyworkerSessionsCompliance: 90,
-  };
-}
+import { NextResponse } from "next/server";
+import {
+  generateInspectionIntelligence,
+} from "@/lib/inspection";
+import type { InspectionRecord, InspectionPolicy, StaffInspectionTraining } from "@/lib/inspection";
 
 // ── Demo Data ──────────────────────────────────────────────────────────────
 
-function getDemoData(homeId: string) {
-  const inputs: InspectionInputs = {
-    homeId,
-    lastInspectionDate: "2025-11-15T00:00:00Z",
+const demoRecords: InspectionRecord[] = [
+  // Alex — strong evidence and preparation
+  { id: "insp-1", homeId: "oak-house", date: "2026-02-05", childId: "child-alex", childName: "Alex", category: "overall_effectiveness", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-2", homeId: "oak-house", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "quality_of_care", outcome: "outstanding", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-3", homeId: "oak-house", date: "2026-04-08", childId: "child-alex", childName: "Alex", category: "safety_of_children", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: false },
+  { id: "insp-4", homeId: "oak-house", date: "2026-05-01", childId: "child-alex", childName: "Alex", category: "leadership_management", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: false, documentationComplete: true, timelyRecording: true },
 
-    // Quality Ecology — strong
-    qualityCompliance: 94,
-    overdueRecords: 2,
-    filedRecords: 486,
-    averageQAScore: 4.1,
-    returnRate: 9,
+  // Jordan — some gaps in process
+  { id: "insp-5", homeId: "oak-house", date: "2026-02-20", childId: "child-jordan", childName: "Jordan", category: "outcomes_for_children", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-6", homeId: "oak-house", date: "2026-03-18", childId: "child-jordan", childName: "Jordan", category: "education_achievement", outcome: "requires_improvement", evidenceDocumented: true, actionPlanCreated: false, staffPrepared: true, childViewIncluded: true, documentationComplete: false, timelyRecording: true },
+  { id: "insp-7", homeId: "oak-house", date: "2026-04-22", childId: "child-jordan", childName: "Jordan", category: "health_wellbeing", outcome: "good", evidenceDocumented: false, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-8", homeId: "oak-house", date: "2026-05-10", childId: "child-jordan", childName: "Jordan", category: "transitions_planning", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
 
-    // Safeguarding — good
-    safeguardingIncidents: 3,
-    safeguardingReferrals: 1,
-    disclosuresHandled: 1,
-    missingEpisodes: 2,
-    returnInterviewsCompleted: 2,
-    returnInterviewsRequired: 2,
+  // Morgan — newer, fewer records
+  { id: "insp-9", homeId: "oak-house", date: "2026-03-25", childId: "child-morgan", childName: "Morgan", category: "overall_effectiveness", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-10", homeId: "oak-house", date: "2026-04-15", childId: "child-morgan", childName: "Morgan", category: "quality_of_care", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: false, childViewIncluded: true, documentationComplete: true, timelyRecording: false },
+  { id: "insp-11", homeId: "oak-house", date: "2026-05-02", childId: "child-morgan", childName: "Morgan", category: "safety_of_children", outcome: "good", evidenceDocumented: true, actionPlanCreated: false, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-12", homeId: "oak-house", date: "2026-05-15", childId: "child-morgan", childName: "Morgan", category: "leadership_management", outcome: "outstanding", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: false, timelyRecording: true },
+];
 
-    // Workforce — good with minor concerns
-    trainingComplianceRate: 87,
-    supervisionComplianceRate: 83,
-    vacancyRate: 17,
-    agencyUsageRate: 20,
-    turnoverRate: 22,
-    qualificationRate: 75,
-    staffWithExpiredTraining: 1,
+const demoPolicy: InspectionPolicy = {
+  inspectionReadinessPolicy: true,
+  selfAssessmentFramework: true,
+  actionPlanningProcedure: true,
+  evidenceCollectionPolicy: true,
+  notificationProtocol: true,
+  staffPreparationGuidance: true,
+  continuousImprovementPolicy: true,
+};
 
-    // Regulatory — good
-    reg44CompletedThisYear: 5,
-    reg44Expected: 5,
-    reg44OverdueActions: 1,
-    reg45UpToDate: true,
-    notificationComplianceRate: 100,
-    lastReg44Judgement: "good",
+const demoStaff: StaffInspectionTraining[] = [
+  { staffId: "staff-sarah", inspectionReadiness: true, evidencePresentation: true, regulatoryKnowledge: true, selfAssessment: true, actionPlanDevelopment: true, qualityAssurance: true },
+  { staffId: "staff-tom", inspectionReadiness: true, evidencePresentation: true, regulatoryKnowledge: true, selfAssessment: false, actionPlanDevelopment: false, qualityAssurance: true },
+  { staffId: "staff-lisa", inspectionReadiness: true, evidencePresentation: true, regulatoryKnowledge: false, selfAssessment: true, actionPlanDevelopment: true, qualityAssurance: false },
+  { staffId: "staff-darren", inspectionReadiness: true, evidencePresentation: true, regulatoryKnowledge: true, selfAssessment: true, actionPlanDevelopment: true, qualityAssurance: true },
+];
 
-    // Safer Recruitment — good
-    recruitmentBlockers: 1,
-    dbsExpired: 0,
-    dbsExpiringSoon: 2,
-    schedule2ComplianceRate: 88,
+// ── Handler ────────────────────────────────────────────────────────────────
 
-    // Records — good
-    retentionComplianceRate: 93,
-    documentsOnHold: 1,
-    pendingDestruction: 0,
-    recordCompleteness: 90,
+export async function GET() {
+  const result = generateInspectionIntelligence(
+    demoRecords,
+    demoPolicy,
+    demoStaff,
+    "oak-house",
+    "2026-01-01",
+    "2026-05-20",
+  );
 
-    // Children — good
-    childrenViews: "positive",
-    complaintsInPeriod: 2,
-    complaintsResolvedOnTime: 2,
-    childProgressRating: 3.8,
-    activitiesPerWeek: 5,
-    keyworkerSessionsCompliance: 85,
-  };
-
-  return calculateInspectionReadiness(inputs);
+  return NextResponse.json({
+    data: {
+      ...result,
+      meta: { generatedAt: new Date().toISOString(), engine: "inspection", version: "2.0.0" },
+    },
+  });
 }
