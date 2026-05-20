@@ -1,23 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Complaints & Compliments — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
+  generateComplaintsIntelligence,
+  evaluateComplaintQuality,
   evaluateComplaintCompliance,
-  calculateComplaintsMetrics,
-  getCategoryLabel,
-  getStageLabel,
-  getOutcomeLabel,
+  evaluateComplaintPolicy,
+  evaluateStaffComplaintReadiness,
+  buildChildComplaintProfiles,
+  pct,
+  getRating,
+  getComplaintCategoryLabel,
+  getComplaintOutcomeLabel,
+  getRatingLabel,
 } from "./complaints-engine";
 
 export type {
-  ComplaintStatus,
-  ComplaintStage,
   ComplaintCategory,
-  ComplainantType,
-  ResolutionOutcome,
-  Complaint,
-  Compliment,
+  ComplaintOutcome,
+  Rating,
+  ComplaintRecord,
+  ComplaintPolicy,
+  StaffComplaintTraining,
+  ComplaintQualityResult,
   ComplaintComplianceResult,
-  ComplaintsMetrics,
+  ComplaintPolicyResult,
+  StaffComplaintReadinessResult,
+  ChildComplaintProfile,
+  ComplaintsIntelligence,
 } from "./complaints-engine";

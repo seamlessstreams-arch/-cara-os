@@ -1,1 +1,1 @@
-export { KeyworkDashboardWidget } from "./KeyworkDashboardWidget";
+export { default as KeyWorkingDashboardWidget } from "./KeyWorkingDashboardWidget";

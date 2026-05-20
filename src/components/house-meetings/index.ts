@@ -1,1 +1,1 @@
-export { HouseMeetingsDashboardWidget } from "./HouseMeetingsDashboardWidget";
+export { default as HouseMeetingsDashboardWidget } from "./HouseMeetingsDashboardWidget";

@@ -1,1 +1,1 @@
-export { ComplaintsDashboardWidget } from "./ComplaintsDashboardWidget";
+export { default as ComplaintsDashboardWidget } from "./ComplaintsDashboardWidget";

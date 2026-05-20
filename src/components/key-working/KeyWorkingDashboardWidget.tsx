@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-interface StaffWorkforceProfile { staffId: string; staffName: string; totalRecords: number; dbsCurrentRate: number; qualificationMetRate: number; categoriesCovered: string[]; overallScore: number; }
+interface ChildKeyWorkingProfile { childId: string; childName: string; totalRecords: number; childEngagedRate: number; childViewRecordedRate: number; categoriesCovered: string[]; overallScore: number; }
 
-interface WorkforceData {
+interface KeyWorkingData {
   homeId: string; periodStart: string; periodEnd: string; overallScore: number; rating: string;
-  workforceQuality: { overallScore: number; totalRecords: number; dbsCurrentRate: number; qualificationMetRate: number; trainingUpToDateRate: number; supervisionCurrentRate: number; };
-  workforceCompliance: { overallScore: number; documentationRate: number; timelyRecordingRate: number; supervisionCurrentRate: number; categoryDiversityRatio: number; };
-  workforcePolicy: { overallScore: number; saferRecruitmentPolicy: boolean; dbsRenewalPolicy: boolean; qualificationFramework: boolean; mandatoryTrainingPolicy: boolean; supervisionPolicy: boolean; agencyStaffPolicy: boolean; workforceDevStrategy: boolean; };
-  staffReadiness: { overallScore: number; totalStaff: number; saferRecruitmentRate: number; dbsProcessKnowledgeRate: number; qualificationAssessmentRate: number; supervisionSkillsRate: number; trainingCoordinationRate: number; regulatoryComplianceRate: number; };
-  staffProfiles: StaffWorkforceProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
+  keyWorkingQuality: { overallScore: number; totalRecords: number; childEngagedRate: number; childViewRecordedRate: number; goalsAddressedRate: number; moodImprovedRate: number; };
+  keyWorkingCompliance: { overallScore: number; documentationRate: number; timelyRecordingRate: number; childViewRecordedRate: number; categoryDiversityRatio: number; };
+  keyWorkingPolicy: { overallScore: number; keyWorkingPolicy: boolean; sessionFrequencyGuidance: boolean; childParticipationFramework: boolean; carePlanLinkagePolicy: boolean; supervisionOfKeywork: boolean; keyworkerAllocationPolicy: boolean; recordKeepingStandard: boolean; };
+  staffReadiness: { overallScore: number; totalStaff: number; relationshipBuildingRate: number; therapeuticApproachesRate: number; childVoiceCaptureRate: number; carePlanKnowledgeRate: number; recordKeepingRate: number; crisisSupportRate: number; };
+  childProfiles: ChildKeyWorkingProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
 }
 
 function ratingColour(r: string) {
@@ -37,13 +37,13 @@ function Stat({ label, value }: { label: string; value: string | number }) {
   return (<div className="bg-gray-50 rounded-lg px-3 py-2 text-center"><div className="text-lg font-bold text-gray-800">{value}</div><div className="text-xs text-gray-500">{label}</div></div>);
 }
 
-export default function WorkforceDashboardWidget() {
-  const [data, setData] = useState<WorkforceData | null>(null);
+export default function KeyWorkingDashboardWidget() {
+  const [data, setData] = useState<KeyWorkingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/workforce")
+    fetch("/api/key-working")
       .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then((json) => setData(json.data))
       .catch((e) => setError(e.message))
@@ -51,7 +51,7 @@ export default function WorkforceDashboardWidget() {
   }, []);
 
   if (loading) return (<div className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse"><div className="h-6 bg-gray-200 rounded w-3/4 mb-4" /><div className="h-4 bg-gray-100 rounded w-1/2 mb-3" /><div className="h-4 bg-gray-100 rounded w-2/3 mb-3" /><div className="h-4 bg-gray-100 rounded w-1/3" /></div>);
-  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">Workforce</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
+  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">Key-Working</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
   if (!data) return null;
 
   const rc = ratingColour(data.rating);
@@ -59,46 +59,46 @@ export default function WorkforceDashboardWidget() {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
-        <div><h2 className="text-lg font-bold text-gray-900">Workforce</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
+        <div><h2 className="text-lg font-bold text-gray-900">Key-Working</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
         <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold ${rc}`}><span className="text-xl font-bold">{data.overallScore}</span><span>/100</span><span className="ml-1">{ratingLabel(data.rating)}</span></div>
       </div>
 
       <div className="mb-6">
-        <ScoreBar label="Workforce Quality" score={data.workforceQuality.overallScore} />
-        <ScoreBar label="Workforce Compliance" score={data.workforceCompliance.overallScore} />
-        <ScoreBar label="Policy & Governance" score={data.workforcePolicy.overallScore} />
+        <ScoreBar label="Key-Working Quality" score={data.keyWorkingQuality.overallScore} />
+        <ScoreBar label="Key-Working Compliance" score={data.keyWorkingCompliance.overallScore} />
+        <ScoreBar label="Policy & Governance" score={data.keyWorkingPolicy.overallScore} />
         <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} />
       </div>
 
-      <Section title="Workforce Quality" defaultOpen>
+      <Section title="Key-Working Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Total Records" value={data.workforceQuality.totalRecords} />
-          <Stat label="DBS Current" value={`${data.workforceQuality.dbsCurrentRate}%`} />
-          <Stat label="Qualification Met" value={`${data.workforceQuality.qualificationMetRate}%`} />
-          <Stat label="Training Up To Date" value={`${data.workforceQuality.trainingUpToDateRate}%`} />
-          <Stat label="Supervision Current" value={`${data.workforceQuality.supervisionCurrentRate}%`} />
+          <Stat label="Total Records" value={data.keyWorkingQuality.totalRecords} />
+          <Stat label="Child Engaged" value={`${data.keyWorkingQuality.childEngagedRate}%`} />
+          <Stat label="Child View Recorded" value={`${data.keyWorkingQuality.childViewRecordedRate}%`} />
+          <Stat label="Goals Addressed" value={`${data.keyWorkingQuality.goalsAddressedRate}%`} />
+          <Stat label="Mood Improved" value={`${data.keyWorkingQuality.moodImprovedRate}%`} />
         </div>
       </Section>
 
-      <Section title="Workforce Compliance">
+      <Section title="Key-Working Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.workforceCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.workforceCompliance.timelyRecordingRate}%`} />
-          <Stat label="Supervision Current" value={`${data.workforceCompliance.supervisionCurrentRate}%`} />
-          <Stat label="Category Coverage" value={`${data.workforceCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${data.keyWorkingCompliance.documentationRate}%`} />
+          <Stat label="Timely Recording" value={`${data.keyWorkingCompliance.timelyRecordingRate}%`} />
+          <Stat label="Child View Recorded" value={`${data.keyWorkingCompliance.childViewRecordedRate}%`} />
+          <Stat label="Category Coverage" value={`${data.keyWorkingCompliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
 
       <Section title="Policy & Governance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {([
-            ["Safer Recruitment", data.workforcePolicy.saferRecruitmentPolicy],
-            ["DBS Renewal", data.workforcePolicy.dbsRenewalPolicy],
-            ["Qualification Framework", data.workforcePolicy.qualificationFramework],
-            ["Mandatory Training", data.workforcePolicy.mandatoryTrainingPolicy],
-            ["Supervision Policy", data.workforcePolicy.supervisionPolicy],
-            ["Agency Staff", data.workforcePolicy.agencyStaffPolicy],
-            ["Workforce Dev", data.workforcePolicy.workforceDevStrategy],
+            ["Key-Working Policy", data.keyWorkingPolicy.keyWorkingPolicy],
+            ["Session Frequency", data.keyWorkingPolicy.sessionFrequencyGuidance],
+            ["Child Participation", data.keyWorkingPolicy.childParticipationFramework],
+            ["Care Plan Linkage", data.keyWorkingPolicy.carePlanLinkagePolicy],
+            ["Supervision of Keywork", data.keyWorkingPolicy.supervisionOfKeywork],
+            ["Keyworker Allocation", data.keyWorkingPolicy.keyworkerAllocationPolicy],
+            ["Record Keeping", data.keyWorkingPolicy.recordKeepingStandard],
           ] as [string, boolean][]).map(([label, val]) => (
             <div key={label} className={`rounded-lg px-3 py-2 text-center border ${boolBadge(val)}`}><div className="text-sm font-semibold">{val ? "Yes" : "No"}</div><div className="text-xs">{label}</div></div>
           ))}
@@ -108,22 +108,22 @@ export default function WorkforceDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Safer Recruitment" value={`${data.staffReadiness.saferRecruitmentRate}%`} />
-          <Stat label="DBS Process" value={`${data.staffReadiness.dbsProcessKnowledgeRate}%`} />
-          <Stat label="Qualification Assessment" value={`${data.staffReadiness.qualificationAssessmentRate}%`} />
-          <Stat label="Supervision Skills" value={`${data.staffReadiness.supervisionSkillsRate}%`} />
-          <Stat label="Training Coordination" value={`${data.staffReadiness.trainingCoordinationRate}%`} />
-          <Stat label="Regulatory Compliance" value={`${data.staffReadiness.regulatoryComplianceRate}%`} />
+          <Stat label="Relationship Building" value={`${data.staffReadiness.relationshipBuildingRate}%`} />
+          <Stat label="Therapeutic Approaches" value={`${data.staffReadiness.therapeuticApproachesRate}%`} />
+          <Stat label="Child Voice Capture" value={`${data.staffReadiness.childVoiceCaptureRate}%`} />
+          <Stat label="Care Plan Knowledge" value={`${data.staffReadiness.carePlanKnowledgeRate}%`} />
+          <Stat label="Record Keeping" value={`${data.staffReadiness.recordKeepingRate}%`} />
+          <Stat label="Crisis Support" value={`${data.staffReadiness.crisisSupportRate}%`} />
         </div>
       </Section>
 
-      {data.staffProfiles.length > 0 && (
-        <Section title="Staff Workforce Profiles">
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Key-Working Profiles">
           <div className="space-y-3">
-            {data.staffProfiles.map((sp) => (
-              <div key={sp.staffId} className="border border-gray-100 rounded-lg p-3">
-                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{sp.staffName}</span><span className="text-sm font-semibold text-gray-600">{sp.overallScore}/10</span></div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {sp.totalRecords}</span><span>DBS: {sp.dbsCurrentRate}%</span><span>Quals: {sp.qualificationMetRate}%</span></div>
+            {data.childProfiles.map((cp) => (
+              <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
+                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Engaged: {cp.childEngagedRate}%</span><span>View Recorded: {cp.childViewRecordedRate}%</span></div>
               </div>
             ))}
           </div>

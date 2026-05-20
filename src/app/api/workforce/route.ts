@@ -1,149 +1,66 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// API: /api/workforce — Workforce & rota intelligence
-//
-// GET  — returns metrics, compliance, shift coverage
-// POST — analyse shift safety or check individual compliance
-// ══════════════════════════════════════════════════════════════════════════════
-
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import {
-  analyzeShiftSafety,
-  evaluateWorkforceCompliance,
-  calculateWorkforceMetrics,
+  generateWorkforceIntelligence,
 } from "@/lib/workforce";
-import type { StaffMember, Shift, ChildOnShift, ShiftRequirement } from "@/lib/workforce";
+import type { WorkforceRecord, WorkforcePolicy, StaffWorkforceTraining } from "@/lib/workforce";
 
-// ── Demo Data ─────────────────────────────────────────────────────────────
+// ── Demo Data ──────────────────────────────────────────────────────────────
 
-const DEMO_STAFF: StaffMember[] = [
-  {
-    id: "staff-rm-01", name: "Sarah Johnson", role: "registered_manager", homeId: "home-001",
-    startDate: "2020-03-01T00:00:00Z", contractedHours: 40, isAgency: false,
-    dbsCheckDate: "2025-08-15T00:00:00Z", dbsClearanceLevel: "enhanced_barred", dbsOnUpdateService: true,
-    qualificationLevel: 5, qualificationStatus: "achieved",
-    mandatoryTraining: [
-      { courseName: "Fire Safety", category: "mandatory", completedDate: "2026-02-01T00:00:00Z", expiryDate: "2027-02-01T00:00:00Z", status: "current" },
-      { courseName: "Health & Safety", category: "mandatory", completedDate: "2026-01-15T00:00:00Z", expiryDate: "2027-01-15T00:00:00Z", status: "current" },
-      { courseName: "Food Hygiene", category: "mandatory", completedDate: "2025-11-01T00:00:00Z", expiryDate: "2026-11-01T00:00:00Z", status: "current" },
-    ],
-    supervisionDue: "2026-06-01T00:00:00Z", lastSupervision: "2026-04-25T00:00:00Z",
-    firstAidCurrent: true, safeguardingTrainingDate: "2026-03-01T00:00:00Z",
-    restraintTrainingDate: "2026-02-15T00:00:00Z", medicationTrainingDate: "2026-01-10T00:00:00Z",
-  },
-  {
-    id: "staff-sw-01", name: "Emma Thompson", role: "senior_support_worker", homeId: "home-001",
-    startDate: "2021-09-01T00:00:00Z", contractedHours: 37.5, isAgency: false,
-    dbsCheckDate: "2025-05-01T00:00:00Z", dbsClearanceLevel: "enhanced_barred", dbsOnUpdateService: true,
-    qualificationLevel: 3, qualificationStatus: "achieved",
-    mandatoryTraining: [
-      { courseName: "Fire Safety", category: "mandatory", completedDate: "2026-01-10T00:00:00Z", expiryDate: "2027-01-10T00:00:00Z", status: "current" },
-      { courseName: "Health & Safety", category: "mandatory", completedDate: "2025-12-01T00:00:00Z", expiryDate: "2026-12-01T00:00:00Z", status: "current" },
-    ],
-    supervisionDue: "2026-05-30T00:00:00Z", lastSupervision: "2026-04-18T00:00:00Z",
-    firstAidCurrent: true, safeguardingTrainingDate: "2026-01-20T00:00:00Z",
-    restraintTrainingDate: "2026-03-10T00:00:00Z", medicationTrainingDate: "2025-11-15T00:00:00Z",
-  },
-  {
-    id: "staff-sw-02", name: "Mike Davis", role: "support_worker", homeId: "home-001",
-    startDate: "2023-06-01T00:00:00Z", contractedHours: 37.5, isAgency: false,
-    dbsCheckDate: "2025-04-01T00:00:00Z", dbsClearanceLevel: "enhanced_barred", dbsOnUpdateService: false,
-    qualificationLevel: 3, qualificationStatus: "achieved",
-    mandatoryTraining: [
-      { courseName: "Fire Safety", category: "mandatory", completedDate: "2025-06-01T00:00:00Z", expiryDate: "2026-06-01T00:00:00Z", status: "current" },
-      { courseName: "Health & Safety", category: "mandatory", completedDate: "2025-03-01T00:00:00Z", expiryDate: "2026-03-01T00:00:00Z", status: "overdue" },
-    ],
-    supervisionDue: "2026-05-20T00:00:00Z", lastSupervision: "2026-04-10T00:00:00Z",
-    firstAidCurrent: true, safeguardingTrainingDate: "2025-09-01T00:00:00Z",
-    restraintTrainingDate: "2026-01-15T00:00:00Z", medicationTrainingDate: "2025-10-01T00:00:00Z",
-  },
-  {
-    id: "staff-sw-03", name: "Lisa Brown", role: "support_worker", homeId: "home-001",
-    startDate: "2024-11-01T00:00:00Z", contractedHours: 37.5, isAgency: false,
-    dbsCheckDate: "2024-10-15T00:00:00Z", dbsClearanceLevel: "enhanced_barred", dbsOnUpdateService: true,
-    qualificationLevel: 2, qualificationStatus: "enrolled", qualificationDeadline: "2026-11-01T00:00:00Z",
-    mandatoryTraining: [
-      { courseName: "Fire Safety", category: "mandatory", completedDate: "2025-11-15T00:00:00Z", expiryDate: "2026-11-15T00:00:00Z", status: "current" },
-      { courseName: "Health & Safety", category: "mandatory", completedDate: "2025-11-15T00:00:00Z", expiryDate: "2026-11-15T00:00:00Z", status: "current" },
-    ],
-    supervisionDue: "2026-05-25T00:00:00Z", lastSupervision: "2026-04-12T00:00:00Z",
-    firstAidCurrent: false, safeguardingTrainingDate: "2025-11-20T00:00:00Z",
-    restraintTrainingDate: "2025-12-01T00:00:00Z", medicationTrainingDate: "2025-11-20T00:00:00Z",
-  },
-  {
-    id: "staff-ag-01", name: "Agency Worker A", role: "agency_staff", homeId: "home-001",
-    startDate: "2026-05-01T00:00:00Z", contractedHours: 0, isAgency: true,
-    dbsCheckDate: "2025-12-01T00:00:00Z", dbsClearanceLevel: "enhanced_barred", dbsOnUpdateService: false,
-    qualificationLevel: 3, qualificationStatus: "achieved",
-    mandatoryTraining: [],
-    supervisionDue: "2026-06-01T00:00:00Z",
-    firstAidCurrent: false, safeguardingTrainingDate: "2025-10-01T00:00:00Z",
-    restraintTrainingDate: "2025-09-01T00:00:00Z",
-  },
+const demoRecords: WorkforceRecord[] = [
+  // Sarah Johnson — fully compliant across multiple categories
+  { id: "wf-1", homeId: "home-oak", date: "2026-02-05", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "dbs_compliance", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-2", homeId: "home-oak", date: "2026-03-12", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "qualification_level", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-3", homeId: "home-oak", date: "2026-04-08", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "mandatory_training", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: false },
+
+  // Tom Richards — some gaps in compliance
+  { id: "wf-4", homeId: "home-oak", date: "2026-02-20", staffId: "staff-tom", staffName: "Tom Richards", category: "safeguarding_training", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-5", homeId: "home-oak", date: "2026-03-18", staffId: "staff-tom", staffName: "Tom Richards", category: "supervision_record", outcome: "action_needed", dbsCurrent: true, qualificationMet: true, trainingUpToDate: false, supervisionCurrent: false, documentationComplete: false, timelyRecording: true },
+  { id: "wf-6", homeId: "home-oak", date: "2026-04-22", staffId: "staff-tom", staffName: "Tom Richards", category: "restraint_training", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+
+  // Lisa Williams — newer staff member, mixed compliance
+  { id: "wf-7", homeId: "home-oak", date: "2026-03-25", staffId: "staff-lisa", staffName: "Lisa Williams", category: "first_aid_certification", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-8", homeId: "home-oak", date: "2026-04-15", staffId: "staff-lisa", staffName: "Lisa Williams", category: "medication_competency", outcome: "action_needed", dbsCurrent: true, qualificationMet: false, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: false },
+  { id: "wf-9", homeId: "home-oak", date: "2026-05-02", staffId: "staff-lisa", staffName: "Lisa Williams", category: "dbs_compliance", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+
+  // Darren Laville — management oversight records
+  { id: "wf-10", homeId: "home-oak", date: "2026-03-01", staffId: "staff-darren", staffName: "Darren Laville", category: "qualification_level", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-11", homeId: "home-oak", date: "2026-04-10", staffId: "staff-darren", staffName: "Darren Laville", category: "safeguarding_training", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-12", homeId: "home-oak", date: "2026-05-15", staffId: "staff-darren", staffName: "Darren Laville", category: "supervision_record", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: false, documentationComplete: false, timelyRecording: true },
 ];
 
-// ── GET Handler ───────────────────────────────────────────────────────────
+const demoPolicy: WorkforcePolicy = {
+  saferRecruitmentPolicy: true,
+  dbsRenewalPolicy: true,
+  qualificationFramework: true,
+  mandatoryTrainingPolicy: true,
+  supervisionPolicy: true,
+  agencyStaffPolicy: true,
+  workforceDevStrategy: true,
+};
 
-export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const homeId = url.searchParams.get("homeId") ?? "home-001";
+const demoStaff: StaffWorkforceTraining[] = [
+  { staffId: "staff-sarah", saferRecruitment: true, dbsProcessKnowledge: true, qualificationAssessment: true, supervisionSkills: true, trainingCoordination: true, regulatoryCompliance: true },
+  { staffId: "staff-tom", saferRecruitment: true, dbsProcessKnowledge: true, qualificationAssessment: true, supervisionSkills: false, trainingCoordination: false, regulatoryCompliance: true },
+  { staffId: "staff-lisa", saferRecruitment: true, dbsProcessKnowledge: true, qualificationAssessment: false, supervisionSkills: true, trainingCoordination: true, regulatoryCompliance: false },
+  { staffId: "staff-darren", saferRecruitment: true, dbsProcessKnowledge: true, qualificationAssessment: true, supervisionSkills: true, trainingCoordination: true, regulatoryCompliance: true },
+];
 
-  const metrics = calculateWorkforceMetrics(DEMO_STAFF, [], homeId);
-  const compliance = evaluateWorkforceCompliance(DEMO_STAFF, homeId);
+// ── Handler ────────────────────────────────────────────────────────────────
+
+export async function GET() {
+  const result = generateWorkforceIntelligence({
+    homeId: "home-oak",
+    periodStart: "2026-01-01",
+    periodEnd: "2026-05-20",
+    records: demoRecords,
+    policy: demoPolicy,
+    staff: demoStaff,
+  });
 
   return NextResponse.json({
-    metrics,
-    compliance,
-    staffCount: DEMO_STAFF.filter(s => s.homeId === homeId).length,
+    data: {
+      ...result,
+      meta: { generatedAt: new Date().toISOString(), engine: "workforce", version: "2.0.0" },
+    },
   });
-}
-
-// ── POST Handler ──────────────────────────────────────────────────────────
-
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { action } = body;
-
-  if (action === "shift_safety") {
-    const { shiftType, homeId, children } = body;
-
-    const todayShifts: Shift[] = DEMO_STAFF
-      .filter(s => s.homeId === (homeId ?? "home-001"))
-      .slice(0, body.staffCount ?? 2)
-      .map((s, i) => ({
-        id: `shift-${i}`,
-        date: new Date().toISOString().split("T")[0],
-        shiftType: shiftType ?? "day",
-        startTime: "07:00",
-        endTime: "15:00",
-        staffId: s.id,
-        staffName: s.name,
-        staffRole: s.role,
-        homeId: s.homeId,
-        isAgency: s.isAgency,
-        isSleepIn: false,
-        hoursWorked: 8,
-      }));
-
-    const childrenOnShift: ChildOnShift[] = (children ?? [
-      { childId: "c1", childName: "Child A", riskLevel: "medium", requiresOneToOne: false, medicalNeedsOnShift: false },
-      { childId: "c2", childName: "Child B", riskLevel: "low", requiresOneToOne: false, medicalNeedsOnShift: false },
-      { childId: "c3", childName: "Child C", riskLevel: "high", requiresOneToOne: false, medicalNeedsOnShift: true },
-    ]) as ChildOnShift[];
-
-    const requirement: ShiftRequirement = {
-      homeId: homeId ?? "home-001",
-      shiftType: shiftType ?? "day",
-      minimumStaff: 2,
-      minimumSenior: 1,
-      childrenExpected: childrenOnShift.length,
-      highRiskChildren: childrenOnShift.filter(c => c.riskLevel === "high" || c.riskLevel === "very_high").length,
-      oneToOneRequired: childrenOnShift.filter(c => c.requiresOneToOne).length,
-      sleepInRequired: shiftType === "night",
-    };
-
-    const result = analyzeShiftSafety(todayShifts, childrenOnShift, requirement);
-    return NextResponse.json({ shiftSafety: result });
-  }
-
-  return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }

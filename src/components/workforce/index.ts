@@ -1,1 +1,1 @@
-export { WorkforceDashboardWidget } from "./WorkforceDashboardWidget";
+export { default as WorkforceDashboardWidget } from "./WorkforceDashboardWidget";

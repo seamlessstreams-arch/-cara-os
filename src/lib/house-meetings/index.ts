@@ -1,24 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone House Meetings & Children's Council — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
-  evaluateMeetingsCompliance,
-  calculateHomeMeetingsMetrics,
-  getMeetingTypeLabel,
-  getActionStatusLabel,
+  generateHouseMeetingsIntelligence,
+  evaluateHouseMeetingQuality,
+  evaluateHouseMeetingCompliance,
+  evaluateHouseMeetingPolicy,
+  evaluateStaffHouseMeetingReadiness,
+  buildChildHouseMeetingProfiles,
+  pct,
+  getRating,
+  getHouseMeetingCategoryLabel,
+  getHouseMeetingOutcomeLabel,
+  getRatingLabel,
 } from "./house-meetings-engine";
 
 export type {
-  MeetingType,
-  AgendaSource,
-  ActionStatus,
-  AttendanceStatus,
-  AgendaItem,
-  MeetingAction,
-  MeetingAttendance,
-  HouseMeeting,
-  HomeMeetingsProfile,
-  MeetingsComplianceResult,
-  HomeMeetingsMetrics,
+  HouseMeetingCategory,
+  HouseMeetingOutcome,
+  Rating,
+  HouseMeetingRecord,
+  HouseMeetingPolicy,
+  StaffHouseMeetingTraining,
+  HouseMeetingQualityResult,
+  HouseMeetingComplianceResult,
+  HouseMeetingPolicyResult,
+  StaffHouseMeetingReadinessResult,
+  ChildHouseMeetingProfile,
+  HouseMeetingsIntelligence,
 } from "./house-meetings-engine";

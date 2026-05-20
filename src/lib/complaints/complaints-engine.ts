@@ -1,401 +1,439 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Complaints & Compliments Engine
+// Cornerstone Complaints Intelligence Engine
 //
-// Deterministic engine for tracking, evaluating, and reporting complaints and
-// compliments in children's residential homes.
+// Deterministic engine for evaluating complaints management quality in
+// children's homes — complaint handling quality, investigation compliance,
+// policy governance, and staff training readiness.
 //
 // Aligned to:
 //   - CHR 2015 Reg 39 — Complaints and representations
 //   - CHR 2015 Reg 40(2)(q) — Complaints records
-//   - Ofsted: Guide to children's homes regulations (complaints handling)
-//   - SCCIF — Children know how to complain and feel their views are heard
 //   - Children Act 1989 — Representations procedure
-//
-// Key statutory requirements:
-//   - Response within 10 working days (28 days if complex)
-//   - Written outcome provided to complainant
-//   - Independent investigation available at Stage 2
-//   - Young people must know how to complain (children's guide)
-//   - Ofsted notified of Stage 2+ complaints
+//   - SCCIF — Children know how to complain
+//   - Ofsted Guide to CHR — Complaints handling
+//   - UNCRC Article 12 — Right to be heard
+//   - Quality Standards 2015 — Standard 1 (child-focused)
 //
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type ComplaintStatus = "open" | "investigating" | "resolved" | "escalated" | "withdrawn";
-
-export type ComplaintStage = "informal" | "stage_1" | "stage_2" | "stage_3_panel" | "ombudsman";
-
 export type ComplaintCategory =
   | "care_quality"
   | "staff_conduct"
   | "food_nutrition"
-  | "environment"
-  | "privacy"
-  | "contact_family"
-  | "education"
-  | "health"
-  | "activities"
-  | "safety"
-  | "bullying"
-  | "restraint"
-  | "medication"
-  | "property"
-  | "discrimination"
-  | "other";
+  | "environmental"
+  | "privacy_dignity"
+  | "family_contact"
+  | "health_medication"
+  | "safeguarding_concern";
 
-export type ComplainantType = "child" | "parent_carer" | "social_worker" | "advocate" | "staff" | "external";
+export type ComplaintOutcome =
+  | "resolved_upheld"
+  | "resolved_not_upheld"
+  | "resolved_partially"
+  | "withdrawn"
+  | "ongoing";
 
-export type ResolutionOutcome = "upheld" | "partially_upheld" | "not_upheld" | "withdrawn" | "ongoing";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
+// ── Input Records ──────────────────────────────────────────────────────────
 
-export interface Complaint {
+export interface ComplaintRecord {
   id: string;
   homeId: string;
-  title: string;
-  description: string;
+  date: string;
+  childId: string;
+  childName: string;
   category: ComplaintCategory;
-  stage: ComplaintStage;
-  status: ComplaintStatus;
-  complainantType: ComplainantType;
-  complainantName?: string;
-  childId?: string;
-  childName?: string;
-  receivedAt: string;
-  acknowledgedAt?: string;
-  investigatorAssigned?: string;
-  targetResponseDate: string;
-  resolvedAt?: string;
-  outcome?: ResolutionOutcome;
-  outcomeDescription?: string;
-  actionsTaken: string[];
-  lessonsLearned?: string;
-  complainantSatisfied?: boolean;
-  ofstedNotified: boolean;
-  escalatedTo?: ComplaintStage;
-  escalatedAt?: string;
-  loggedBy: string;
+  outcome: ComplaintOutcome;
+  // Quality flags (4)
+  acknowledgedWithinTarget: boolean;   // quality rate 1, weight 7
+  investigationThorough: boolean;      // quality rate 2, weight 6
+  childViewCaptured: boolean;          // quality rate 3, weight 6
+  outcomeExplainedToChild: boolean;    // quality rate 4, weight 6
+  // Compliance flags (2 — other 2 are computed)
+  documentationComplete: boolean;
+  timelyResolution: boolean;
 }
 
-export interface Compliment {
-  id: string;
-  homeId: string;
-  source: ComplainantType;
-  sourceName?: string;
-  childId?: string;
-  childName?: string;
-  description: string;
-  category: ComplaintCategory;
-  receivedAt: string;
-  sharedWithTeam: boolean;
-  loggedBy: string;
+export interface ComplaintPolicy {
+  complaintsPolicy: boolean;              // 4
+  investigationProcedure: boolean;        // 4
+  childComplaintsGuide: boolean;          // 4
+  independentAdvocacyAccess: boolean;     // 4
+  escalationFramework: boolean;           // 3
+  lessonLearnedProcess: boolean;          // 3
+  ofstedNotificationProtocol: boolean;    // 3
+}
+
+export interface StaffComplaintTraining {
+  staffId: string;
+  complaintHandling: boolean;        // 6
+  childAdvocacy: boolean;            // 5
+  investigationSkills: boolean;      // 5
+  recordKeeping: boolean;            // 4
+  conflictResolution: boolean;       // 3
+  regulatoryKnowledge: boolean;      // 2
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
-export interface ComplaintComplianceResult {
-  complaintId: string;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  acknowledgedOnTime: boolean;
-  respondedOnTime: boolean;
-  investigatorAssigned: boolean;
-  outcomeRecorded: boolean;
-  ofstedNotifiedIfRequired: boolean;
-  daysToResolve?: number;
-}
-
-export interface ComplaintsMetrics {
-  homeId: string;
+export interface ComplaintQualityResult {
+  overallScore: number;
+  rating: Rating;
   totalComplaints: number;
-  complaintsThisMonth: number;
-  complaintsThisQuarter: number;
-  openComplaints: number;
-  overdueComplaints: number;
-  averageDaysToResolve: number;
-  responseWithinTarget: number;       // %
-  complaintsUpheld: number;
-  complaintsPartiallyUpheld: number;
-  complaintsNotUpheld: number;
-  byCategory: { category: ComplaintCategory; count: number }[];
-  bySource: { source: ComplainantType; count: number }[];
-  byStage: { stage: ComplaintStage; count: number }[];
-  childComplaintsRate: number;        // % from children directly
-  satisfactionRate: number;           // % satisfied with outcome
-  totalCompliments: number;
-  complimentsThisMonth: number;
-  complaintToComplimentRatio: number;
-  lessonsLearnedRate: number;         // % of resolved with lessons captured
-  escalationRate: number;             // % escalated beyond stage 1
+  acknowledgedWithinTargetRate: number;
+  investigationThoroughRate: number;
+  childViewCapturedRate: number;
+  outcomeExplainedRate: number;
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+export interface ComplaintComplianceResult {
+  overallScore: number;
+  rating: Rating;
+  documentationRate: number;
+  timelyResolutionRate: number;
+  childViewCapturedRate: number;
+  categoryDiversityRatio: number;
+}
 
-const ACKNOWLEDGEMENT_DAYS = 3;       // Must acknowledge within 3 working days
-const STAGE_1_RESPONSE_DAYS = 10;     // Respond within 10 working days
-const COMPLEX_RESPONSE_DAYS = 28;     // Complex complaints: 28 working days
-const OFSTED_NOTIFICATION_STAGES: ComplaintStage[] = ["stage_2", "stage_3_panel", "ombudsman"];
+export interface ComplaintPolicyResult {
+  overallScore: number;
+  rating: Rating;
+  complaintsPolicy: boolean;
+  investigationProcedure: boolean;
+  childComplaintsGuide: boolean;
+  independentAdvocacyAccess: boolean;
+  escalationFramework: boolean;
+  lessonLearnedProcess: boolean;
+  ofstedNotificationProtocol: boolean;
+}
 
-const CATEGORY_LABELS: Record<ComplaintCategory, string> = {
-  care_quality: "Quality of Care",
-  staff_conduct: "Staff Conduct",
-  food_nutrition: "Food & Nutrition",
-  environment: "Environment",
-  privacy: "Privacy",
-  contact_family: "Family Contact",
-  education: "Education",
-  health: "Health",
-  activities: "Activities",
-  safety: "Safety",
-  bullying: "Bullying",
-  restraint: "Restraint/PI",
-  medication: "Medication",
-  property: "Property/Belongings",
-  discrimination: "Discrimination",
-  other: "Other",
-};
+export interface StaffComplaintReadinessResult {
+  overallScore: number;
+  rating: Rating;
+  totalStaff: number;
+  complaintHandlingRate: number;
+  childAdvocacyRate: number;
+  investigationSkillsRate: number;
+  recordKeepingRate: number;
+  conflictResolutionRate: number;
+  regulatoryKnowledgeRate: number;
+}
 
-// ── Core: Evaluate Complaint Compliance ──────────────────────────────────
+export interface ChildComplaintProfile {
+  childId: string;
+  childName: string;
+  totalRecords: number;
+  acknowledgedWithinTargetRate: number;
+  childViewCapturedRate: number;
+  categoriesCovered: string[];
+  overallScore: number;
+}
 
-export function evaluateComplaintCompliance(
-  complaint: Complaint,
-  now?: string,
-): ComplaintComplianceResult {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const issues: string[] = [];
-  const warnings: string[] = [];
+export interface ComplaintsIntelligence {
+  homeId: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  complaintQuality: ComplaintQualityResult;
+  complaintCompliance: ComplaintComplianceResult;
+  complaintPolicy: ComplaintPolicyResult;
+  staffReadiness: StaffComplaintReadinessResult;
+  childProfiles: ChildComplaintProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
+}
 
-  // 1. Acknowledgement within 3 working days
-  const receivedTime = new Date(complaint.receivedAt).getTime();
-  const ackDeadline = receivedTime + ACKNOWLEDGEMENT_DAYS * 24 * 60 * 60 * 1000;
-  let acknowledgedOnTime = true;
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-  if (complaint.acknowledgedAt) {
-    const ackTime = new Date(complaint.acknowledgedAt).getTime();
-    if (ackTime > ackDeadline) {
-      acknowledgedOnTime = false;
-      warnings.push("Acknowledgement sent after 3-day target");
-    }
-  } else if (currentTime > ackDeadline) {
-    acknowledgedOnTime = false;
-    issues.push("Complaint not acknowledged within 3 working days");
-  }
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
 
-  // 2. Response within target
-  const targetTime = new Date(complaint.targetResponseDate).getTime();
-  let respondedOnTime = true;
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
 
-  if (complaint.resolvedAt) {
-    const resolvedTime = new Date(complaint.resolvedAt).getTime();
-    if (resolvedTime > targetTime) {
-      respondedOnTime = false;
-      warnings.push("Resolution exceeded target response date");
-    }
-  } else if (currentTime > targetTime && complaint.status !== "resolved" && complaint.status !== "withdrawn") {
-    respondedOnTime = false;
-    issues.push("Complaint response overdue — past target date");
-  }
-
-  // 3. Investigator assigned
-  const investigatorAssigned = !!complaint.investigatorAssigned;
-  if (!investigatorAssigned && complaint.stage !== "informal") {
-    warnings.push("No investigator assigned for formal complaint");
-  }
-
-  // 4. Outcome recorded
-  const outcomeRecorded = complaint.status === "resolved" ? !!complaint.outcome : true;
-  if (complaint.status === "resolved" && !complaint.outcome) {
-    issues.push("Complaint marked resolved but no outcome recorded");
-  }
-
-  // 5. Ofsted notification
-  const ofstedRequired = OFSTED_NOTIFICATION_STAGES.includes(complaint.stage);
-  const ofstedNotifiedIfRequired = !ofstedRequired || complaint.ofstedNotified;
-  if (ofstedRequired && !complaint.ofstedNotified) {
-    issues.push(`Stage ${complaint.stage} complaint requires Ofsted notification`);
-  }
-
-  // Days to resolve
-  let daysToResolve: number | undefined;
-  if (complaint.resolvedAt) {
-    daysToResolve = Math.round(
-      (new Date(complaint.resolvedAt).getTime() - receivedTime) / (24 * 60 * 60 * 1000)
-    );
-  }
-
-  const isCompliant = issues.length === 0;
-
-  return {
-    complaintId: complaint.id,
-    isCompliant,
-    issues,
-    warnings,
-    acknowledgedOnTime,
-    respondedOnTime,
-    investigatorAssigned,
-    outcomeRecorded,
-    ofstedNotifiedIfRequired,
-    daysToResolve,
+export function getComplaintCategoryLabel(cat: ComplaintCategory): string {
+  const labels: Record<ComplaintCategory, string> = {
+    care_quality: "Care Quality",
+    staff_conduct: "Staff Conduct",
+    food_nutrition: "Food & Nutrition",
+    environmental: "Environmental",
+    privacy_dignity: "Privacy & Dignity",
+    family_contact: "Family Contact",
+    health_medication: "Health & Medication",
+    safeguarding_concern: "Safeguarding Concern",
   };
+  return labels[cat] ?? cat;
 }
 
-// ── Core: Calculate Metrics ──────────────────────────────────────────────
-
-export function calculateComplaintsMetrics(
-  complaints: Complaint[],
-  compliments: Compliment[],
-  homeId: string,
-  now?: string,
-): ComplaintsMetrics {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const homeComplaints = complaints.filter(c => c.homeId === homeId);
-  const homeCompliments = compliments.filter(c => c.homeId === homeId);
-
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-  const ninetyDaysAgo = currentTime - 90 * 24 * 60 * 60 * 1000;
-
-  const thisMonth = homeComplaints.filter(c => new Date(c.receivedAt).getTime() > thirtyDaysAgo);
-  const thisQuarter = homeComplaints.filter(c => new Date(c.receivedAt).getTime() > ninetyDaysAgo);
-
-  const openComplaints = homeComplaints.filter(c => c.status === "open" || c.status === "investigating");
-  const overdueComplaints = openComplaints.filter(c => new Date(c.targetResponseDate).getTime() < currentTime);
-
-  // Resolution stats
-  const resolved = homeComplaints.filter(c => c.status === "resolved");
-  const totalResolveDays = resolved.reduce((sum, c) => {
-    if (!c.resolvedAt) return sum;
-    return sum + Math.round(
-      (new Date(c.resolvedAt).getTime() - new Date(c.receivedAt).getTime()) / (24 * 60 * 60 * 1000)
-    );
-  }, 0);
-  const averageDaysToResolve = resolved.length > 0 ? Math.round(totalResolveDays / resolved.length) : 0;
-
-  // Response within target
-  const complianceResults = homeComplaints.map(c => evaluateComplaintCompliance(c, now));
-  const respondedOnTime = complianceResults.filter(r => r.respondedOnTime).length;
-  const responseWithinTarget = homeComplaints.length > 0
-    ? Math.round((respondedOnTime / homeComplaints.length) * 100)
-    : 100;
-
-  // Outcomes
-  const upheld = resolved.filter(c => c.outcome === "upheld").length;
-  const partiallyUpheld = resolved.filter(c => c.outcome === "partially_upheld").length;
-  const notUpheld = resolved.filter(c => c.outcome === "not_upheld").length;
-
-  // By category
-  const categoryMap = new Map<ComplaintCategory, number>();
-  for (const c of homeComplaints) {
-    categoryMap.set(c.category, (categoryMap.get(c.category) ?? 0) + 1);
-  }
-  const byCategory = Array.from(categoryMap.entries())
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count);
-
-  // By source
-  const sourceMap = new Map<ComplainantType, number>();
-  for (const c of homeComplaints) {
-    sourceMap.set(c.complainantType, (sourceMap.get(c.complainantType) ?? 0) + 1);
-  }
-  const bySource = Array.from(sourceMap.entries())
-    .map(([source, count]) => ({ source, count }));
-
-  // By stage
-  const stageMap = new Map<ComplaintStage, number>();
-  for (const c of homeComplaints) {
-    stageMap.set(c.stage, (stageMap.get(c.stage) ?? 0) + 1);
-  }
-  const byStage = Array.from(stageMap.entries())
-    .map(([stage, count]) => ({ stage, count }));
-
-  // Child complaints rate
-  const childComplaints = homeComplaints.filter(c => c.complainantType === "child").length;
-  const childComplaintsRate = homeComplaints.length > 0
-    ? Math.round((childComplaints / homeComplaints.length) * 100)
-    : 0;
-
-  // Satisfaction
-  const withSatisfaction = resolved.filter(c => c.complainantSatisfied !== undefined);
-  const satisfied = withSatisfaction.filter(c => c.complainantSatisfied).length;
-  const satisfactionRate = withSatisfaction.length > 0
-    ? Math.round((satisfied / withSatisfaction.length) * 100)
-    : 0;
-
-  // Lessons learned
-  const withLessons = resolved.filter(c => c.lessonsLearned && c.lessonsLearned.length > 0).length;
-  const lessonsLearnedRate = resolved.length > 0
-    ? Math.round((withLessons / resolved.length) * 100)
-    : 0;
-
-  // Escalation rate
-  const escalated = homeComplaints.filter(c =>
-    c.stage === "stage_2" || c.stage === "stage_3_panel" || c.stage === "ombudsman"
-  ).length;
-  const escalationRate = homeComplaints.length > 0
-    ? Math.round((escalated / homeComplaints.length) * 100)
-    : 0;
-
-  // Compliments this month
-  const complimentsThisMonth = homeCompliments.filter(
-    c => new Date(c.receivedAt).getTime() > thirtyDaysAgo
-  ).length;
-
-  // Ratio
-  const complaintToComplimentRatio = homeCompliments.length > 0
-    ? Math.round((homeComplaints.length / homeCompliments.length) * 100) / 100
-    : homeComplaints.length > 0 ? homeComplaints.length : 0;
-
-  return {
-    homeId,
-    totalComplaints: homeComplaints.length,
-    complaintsThisMonth: thisMonth.length,
-    complaintsThisQuarter: thisQuarter.length,
-    openComplaints: openComplaints.length,
-    overdueComplaints: overdueComplaints.length,
-    averageDaysToResolve,
-    responseWithinTarget,
-    complaintsUpheld: upheld,
-    complaintsPartiallyUpheld: partiallyUpheld,
-    complaintsNotUpheld: notUpheld,
-    byCategory,
-    bySource,
-    byStage,
-    childComplaintsRate,
-    satisfactionRate,
-    totalCompliments: homeCompliments.length,
-    complimentsThisMonth,
-    complaintToComplimentRatio,
-    lessonsLearnedRate,
-    escalationRate,
-  };
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────
-
-export function getCategoryLabel(category: ComplaintCategory): string {
-  return CATEGORY_LABELS[category] ?? category.replace(/_/g, " ");
-}
-
-export function getStageLabel(stage: ComplaintStage): string {
-  const labels: Record<ComplaintStage, string> = {
-    informal: "Informal",
-    stage_1: "Stage 1 (Formal)",
-    stage_2: "Stage 2 (Independent)",
-    stage_3_panel: "Stage 3 (Panel)",
-    ombudsman: "Ombudsman",
-  };
-  return labels[stage] ?? stage;
-}
-
-export function getOutcomeLabel(outcome: ResolutionOutcome): string {
-  const labels: Record<ResolutionOutcome, string> = {
-    upheld: "Upheld",
-    partially_upheld: "Partially Upheld",
-    not_upheld: "Not Upheld",
+export function getComplaintOutcomeLabel(o: ComplaintOutcome): string {
+  const labels: Record<ComplaintOutcome, string> = {
+    resolved_upheld: "Resolved (Upheld)",
+    resolved_not_upheld: "Resolved (Not Upheld)",
+    resolved_partially: "Resolved (Partially)",
     withdrawn: "Withdrawn",
     ongoing: "Ongoing",
   };
-  return labels[outcome] ?? outcome;
+  return labels[o] ?? o;
+}
+
+export function getRatingLabel(r: Rating): string {
+  return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// ── Constants ──────────────────────────────────────────────────────────────
+
+const ALL_CATEGORIES: ComplaintCategory[] = [
+  "care_quality", "staff_conduct", "food_nutrition", "environmental",
+  "privacy_dignity", "family_contact", "health_medication", "safeguarding_concern",
+];
+
+// ── Evaluator 1: Complaint Quality (0-25) ─────────────────────────────────
+
+export function evaluateComplaintQuality(records: ComplaintRecord[]): ComplaintQualityResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", totalComplaints: 0, acknowledgedWithinTargetRate: 0, investigationThoroughRate: 0, childViewCapturedRate: 0, outcomeExplainedRate: 0 };
+  }
+
+  const acknowledgedWithinTargetRate = pct(records.filter((r) => r.acknowledgedWithinTarget).length, total);
+  const investigationThoroughRate = pct(records.filter((r) => r.investigationThorough).length, total);
+  const childViewCapturedRate = pct(records.filter((r) => r.childViewCaptured).length, total);
+  const outcomeExplainedRate = pct(records.filter((r) => r.outcomeExplainedToChild).length, total);
+
+  // Weighted: acknowledgedWithinTargetRate 7 + investigationThoroughRate 6 + childViewCapturedRate 6 + outcomeExplainedRate 6 = 25
+  const raw = (acknowledgedWithinTargetRate / 100) * 7 + (investigationThoroughRate / 100) * 6 + (childViewCapturedRate / 100) * 6 + (outcomeExplainedRate / 100) * 6;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalComplaints: total, acknowledgedWithinTargetRate, investigationThoroughRate, childViewCapturedRate, outcomeExplainedRate };
+}
+
+// ── Evaluator 2: Complaint Compliance (0-25) ──────────────────────────────
+
+export function evaluateComplaintCompliance(records: ComplaintRecord[]): ComplaintComplianceResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyResolutionRate: 0, childViewCapturedRate: 0, categoryDiversityRatio: 0 };
+  }
+
+  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
+  const timelyResolutionRate = pct(records.filter((r) => r.timelyResolution).length, total);
+  const childViewCapturedRate = pct(records.filter((r) => r.childViewCaptured).length, total);
+
+  const uniqueCategories = new Set(records.map((r) => r.category)).size;
+  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+
+  // Weighted: documentationRate 8 + timelyResolutionRate 7 + childViewCapturedRate 5 + categoryDiversityRatio 5 = 25
+  const raw = (documentationRate / 100) * 8 + (timelyResolutionRate / 100) * 7 + (childViewCapturedRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyResolutionRate, childViewCapturedRate, categoryDiversityRatio };
+}
+
+// ── Evaluator 3: Policy & Governance (0-25) ────────────────────────────────
+
+export function evaluateComplaintPolicy(policy: ComplaintPolicy | null): ComplaintPolicyResult {
+  if (!policy) {
+    return { overallScore: 0, rating: "inadequate", complaintsPolicy: false, investigationProcedure: false, childComplaintsGuide: false, independentAdvocacyAccess: false, escalationFramework: false, lessonLearnedProcess: false, ofstedNotificationProtocol: false };
+  }
+
+  // First 4 at 4 points, last 3 at 3 points = 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.complaintsPolicy) score += 4;
+  if (policy.investigationProcedure) score += 4;
+  if (policy.childComplaintsGuide) score += 4;
+  if (policy.independentAdvocacyAccess) score += 4;
+  if (policy.escalationFramework) score += 3;
+  if (policy.lessonLearnedProcess) score += 3;
+  if (policy.ofstedNotificationProtocol) score += 3;
+
+  return {
+    overallScore: score,
+    rating: getRating(score * 4),
+    complaintsPolicy: policy.complaintsPolicy,
+    investigationProcedure: policy.investigationProcedure,
+    childComplaintsGuide: policy.childComplaintsGuide,
+    independentAdvocacyAccess: policy.independentAdvocacyAccess,
+    escalationFramework: policy.escalationFramework,
+    lessonLearnedProcess: policy.lessonLearnedProcess,
+    ofstedNotificationProtocol: policy.ofstedNotificationProtocol,
+  };
+}
+
+// ── Evaluator 4: Staff Readiness (0-25) ────────────────────────────────────
+
+export function evaluateStaffComplaintReadiness(staff: StaffComplaintTraining[]): StaffComplaintReadinessResult {
+  const count = staff.length;
+  if (count === 0) {
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, complaintHandlingRate: 0, childAdvocacyRate: 0, investigationSkillsRate: 0, recordKeepingRate: 0, conflictResolutionRate: 0, regulatoryKnowledgeRate: 0 };
+  }
+
+  const complaintHandlingRate = pct(staff.filter((s) => s.complaintHandling).length, count);
+  const childAdvocacyRate = pct(staff.filter((s) => s.childAdvocacy).length, count);
+  const investigationSkillsRate = pct(staff.filter((s) => s.investigationSkills).length, count);
+  const recordKeepingRate = pct(staff.filter((s) => s.recordKeeping).length, count);
+  const conflictResolutionRate = pct(staff.filter((s) => s.conflictResolution).length, count);
+  const regulatoryKnowledgeRate = pct(staff.filter((s) => s.regulatoryKnowledge).length, count);
+
+  // Weighted: 6+5+5+4+3+2 = 25
+  const raw =
+    (complaintHandlingRate / 100) * 6 +
+    (childAdvocacyRate / 100) * 5 +
+    (investigationSkillsRate / 100) * 5 +
+    (recordKeepingRate / 100) * 4 +
+    (conflictResolutionRate / 100) * 3 +
+    (regulatoryKnowledgeRate / 100) * 2;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, complaintHandlingRate, childAdvocacyRate, investigationSkillsRate, recordKeepingRate, conflictResolutionRate, regulatoryKnowledgeRate };
+}
+
+// ── Child Profiles (0-10) ──────────────────────────────────────────────────
+
+export function buildChildComplaintProfiles(records: ComplaintRecord[]): ChildComplaintProfile[] {
+  const grouped = new Map<string, ComplaintRecord[]>();
+  for (const r of records) {
+    const arr = grouped.get(r.childId) || [];
+    arr.push(r);
+    grouped.set(r.childId, arr);
+  }
+
+  const profiles: ChildComplaintProfile[] = [];
+  for (const [childId, recs] of grouped) {
+    const childName = recs[0].childName;
+    const totalRecords = recs.length;
+
+    const acknowledgedWithinTargetRate = pct(recs.filter((r) => r.acknowledgedWithinTarget).length, totalRecords);
+    const childViewCapturedRate = pct(recs.filter((r) => r.childViewCaptured).length, totalRecords);
+
+    const catsSet = new Set(recs.map((r) => r.category));
+    const categoriesCovered = [...catsSet];
+
+    // Scoring: freq [>=10->2, >=5->1] + rate1 acknowledgedWithinTargetRate [>=80->3, >=60->2, >=40->1] + rate2 childViewCapturedRate [same] + diversity [>=4->2, >=2->1]
+    let score = 0;
+
+    if (totalRecords >= 10) score += 2;
+    else if (totalRecords >= 5) score += 1;
+
+    if (acknowledgedWithinTargetRate >= 80) score += 3;
+    else if (acknowledgedWithinTargetRate >= 60) score += 2;
+    else if (acknowledgedWithinTargetRate >= 40) score += 1;
+
+    if (childViewCapturedRate >= 80) score += 3;
+    else if (childViewCapturedRate >= 60) score += 2;
+    else if (childViewCapturedRate >= 40) score += 1;
+
+    const catCount = categoriesCovered.length;
+    if (catCount >= 4) score += 2;
+    else if (catCount >= 2) score += 1;
+
+    profiles.push({
+      childId,
+      childName,
+      totalRecords,
+      acknowledgedWithinTargetRate,
+      childViewCapturedRate,
+      categoriesCovered,
+      overallScore: Math.min(10, score),
+    });
+  }
+
+  return profiles;
+}
+
+// ── Master Intelligence Generator ──────────────────────────────────────────
+
+export function generateComplaintsIntelligence(input: {
+  homeId: string;
+  periodStart: string;
+  periodEnd: string;
+  records: ComplaintRecord[];
+  policy: ComplaintPolicy | null;
+  staff: StaffComplaintTraining[];
+}): ComplaintsIntelligence {
+  const { homeId, periodStart, periodEnd, records, policy, staff } = input;
+
+  const complaintQuality = evaluateComplaintQuality(records);
+  const complaintCompliance = evaluateComplaintCompliance(records);
+  const complaintPolicy = evaluateComplaintPolicy(policy);
+  const staffReadiness = evaluateStaffComplaintReadiness(staff);
+  const childProfiles = buildChildComplaintProfiles(records);
+
+  const overallScore = Math.min(
+    100,
+    complaintQuality.overallScore + complaintCompliance.overallScore + complaintPolicy.overallScore + staffReadiness.overallScore,
+  );
+  const rating = getRating(overallScore);
+
+  // Strengths (>=80%)
+  const strengths: string[] = [];
+  if (complaintQuality.acknowledgedWithinTargetRate >= 80) strengths.push("Complaints are consistently acknowledged within the target timeframe");
+  if (complaintQuality.investigationThoroughRate >= 80) strengths.push("Investigations are thorough and well-conducted");
+  if (complaintQuality.childViewCapturedRate >= 80) strengths.push("Children's views are consistently captured during the complaints process");
+  if (complaintQuality.outcomeExplainedRate >= 80) strengths.push("Outcomes are routinely explained to children in an age-appropriate manner");
+  if (complaintCompliance.documentationRate >= 80) strengths.push("Complaints documentation is thorough and complete");
+  if (complaintCompliance.timelyResolutionRate >= 80) strengths.push("Complaints are resolved within required timescales");
+  if (staffReadiness.complaintHandlingRate >= 80) strengths.push("Staff are well trained in complaint handling procedures");
+  if (staffReadiness.childAdvocacyRate >= 80) strengths.push("Staff demonstrate strong child advocacy skills");
+
+  // Areas for improvement (<60%)
+  const areasForImprovement: string[] = [];
+  if (complaintQuality.acknowledgedWithinTargetRate < 60) areasForImprovement.push("Complaints are not being acknowledged within the target timeframe");
+  if (complaintQuality.investigationThoroughRate < 60) areasForImprovement.push("Investigation thoroughness needs improvement");
+  if (complaintQuality.childViewCapturedRate < 60) areasForImprovement.push("Children's views are not being consistently captured during complaints");
+  if (complaintQuality.outcomeExplainedRate < 60) areasForImprovement.push("Outcomes are not being explained to children effectively");
+  if (complaintCompliance.documentationRate < 60) areasForImprovement.push("Complaints documentation is incomplete or inconsistent");
+  if (complaintCompliance.timelyResolutionRate < 60) areasForImprovement.push("Complaints are not being resolved within required timescales");
+  if (staffReadiness.complaintHandlingRate < 60) areasForImprovement.push("Staff need more training in complaint handling procedures");
+  if (staffReadiness.childAdvocacyRate < 60) areasForImprovement.push("Staff child advocacy skills need development");
+
+  // Actions
+  const actions: string[] = [];
+  if (complaintPolicy.overallScore === 0) actions.push("URGENT: Establish a complaints policy — CHR 2015 Reg 39 requires documented procedures for handling complaints and representations");
+  if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide complaint handling and child advocacy training to all staff — effective complaints management depends on skilled practitioners");
+  if (complaintQuality.acknowledgedWithinTargetRate < 50) actions.push("Ensure all complaints are acknowledged within the target timeframe — CHR 2015 Reg 39 requires timely acknowledgement");
+  if (complaintQuality.investigationThoroughRate < 50) actions.push("Improve investigation thoroughness — all complaints must be properly investigated and documented");
+  if (complaintCompliance.documentationRate < 50) actions.push("Improve complaints documentation — CHR 2015 Reg 40(2)(q) requires complete records");
+  if (complaintCompliance.timelyResolutionRate < 50) actions.push("Review resolution timescales — complaints should be resolved promptly");
+  if (complaintQuality.childViewCapturedRate < 50) actions.push("Ensure children's views are captured in every complaint — UNCRC Article 12 upholds the right to be heard");
+  if (staffReadiness.childAdvocacyRate < 50) actions.push("Train staff in child advocacy — children must be supported to express their views");
+
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Reg 39 — Complaints and representations",
+    "CHR 2015 Reg 40(2)(q) — Complaints records",
+    "Children Act 1989 — Representations procedure",
+    "SCCIF — Children know how to complain",
+    "Ofsted Guide to CHR — Complaints handling",
+    "UNCRC Article 12 — Right to be heard",
+    "Quality Standards 2015 — Standard 1 (child-focused)",
+  ];
+
+  return {
+    homeId,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    complaintQuality,
+    complaintCompliance,
+    complaintPolicy,
+    staffReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
+  };
 }

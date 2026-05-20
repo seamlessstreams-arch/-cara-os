@@ -1,303 +1,139 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// HouseMeetingsDashboardWidget — House Meetings & Children's Council card
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
 import { useEffect, useState } from "react";
 
-interface RecentMeeting {
-  id: string;
-  date: string;
-  type: string;
-  duration: number;
-  attendance: number;
-  totalChildren: number;
-  childrenChaired: boolean;
-  actionsCount: number;
-  childAgendaItems: number;
-  totalAgendaItems: number;
+interface ChildHouseMeetingProfile { childId: string; childName: string; totalRecords: number; childAgendaContributionRate: number; childAttendanceRate: number; categoriesCovered: string[]; overallScore: number; }
+
+interface HouseMeetingsData {
+  homeId: string; periodStart: string; periodEnd: string; overallScore: number; rating: string;
+  houseMeetingQuality: { overallScore: number; totalMeetings: number; childAgendaContributionRate: number; minutesRecordedRate: number; childAttendanceRate: number; actionsReviewedRate: number; };
+  houseMeetingCompliance: { overallScore: number; documentationRate: number; timelyRecordingRate: number; childAttendanceRate: number; categoryDiversityRatio: number; };
+  houseMeetingPolicy: { overallScore: number; houseMeetingPolicy: boolean; meetingFrequencyGuidance: boolean; childParticipationFramework: boolean; minutesAccessibilityPolicy: boolean; actionTrackingProcedure: boolean; suggestionBoxPolicy: boolean; councilGovernanceFramework: boolean; };
+  staffReadiness: { overallScore: number; totalStaff: number; meetingFacilitationRate: number; childParticipationRate: number; minutesTakingRate: number; actionTrackingRate: number; conflictResolutionRate: number; inclusivePracticeRate: number; };
+  childProfiles: ChildHouseMeetingProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
 }
 
-interface Compliance {
-  isCompliant: boolean;
-  frequencyAdequate: boolean;
-  daysSinceLastMeeting: number;
-  averageAttendanceRate: number;
-  childAgendaRate: number;
-  childrenChairedRate: number;
-  actionsCompletedRate: number;
-  actionsOverdue: number;
-  minutesRecordedRate: number;
-  childrenNeverAttending: string[];
-  issues: string[];
-  warnings: string[];
+function ratingColour(r: string) {
+  if (r === "outstanding") return "text-green-700 bg-green-50 border-green-200";
+  if (r === "good") return "text-blue-700 bg-blue-50 border-blue-200";
+  if (r === "requires_improvement") return "text-amber-700 bg-amber-50 border-amber-200";
+  return "text-red-700 bg-red-50 border-red-200";
+}
+function ratingLabel(r: string) { return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()); }
+function boolBadge(v: boolean) { return v ? "text-green-700 bg-green-50 border-green-200" : "text-red-700 bg-red-50 border-red-200"; }
+
+function ScoreBar({ label, score, max = 25 }: { label: string; score: number; max?: number }) {
+  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+  const fill = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
+  return (<div className="mb-3"><div className="flex justify-between text-sm mb-1"><span className="font-medium text-gray-700">{label}</span><span className="text-gray-500">{score}/{max}</span></div><div className="h-2 rounded-full bg-gray-100 overflow-hidden"><div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} /></div></div>);
 }
 
-interface Metrics {
-  overallScore: number;
-  participationScore: number;
-  governanceScore: number;
-  actionFollowThroughScore: number;
-  totalMeetingsLast90Days: number;
-  nextMeetingDue: string;
-  overdueActions: number;
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (<div className="border border-gray-200 rounded-lg overflow-hidden mb-4"><button onClick={() => setOpen(!open)} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 flex justify-between items-center"><span className="font-semibold text-gray-800">{title}</span><span className="text-gray-400 text-lg">{open ? "−" : "+"}</span></button>{open && <div className="px-4 py-3">{children}</div>}</div>);
 }
 
-interface Governance {
-  childrenCouncilActive: boolean;
-  childrenCouncilReps: string[];
-  suggestionsBoxAvailable: boolean;
-  meetingFrequencyTarget: string;
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (<div className="bg-gray-50 rounded-lg px-3 py-2 text-center"><div className="text-lg font-bold text-gray-800">{value}</div><div className="text-xs text-gray-500">{label}</div></div>);
 }
 
-interface DashboardData {
-  compliance: Compliance;
-  metrics: Metrics;
-  recentMeetings: RecentMeeting[];
-  governance: Governance;
-}
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
-
-function getMeetingTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    house_meeting: "House Meeting",
-    childrens_council: "Children's Council",
-    menu_planning: "Menu Planning",
-    activity_planning: "Activity Planning",
-    rules_review: "Rules Review",
-    special_topic: "Special Topic",
-  };
-  return labels[type] ?? type;
-}
-
-function getScoreColour(score: number): string {
-  if (score >= 75) return "text-green-600";
-  if (score >= 50) return "text-amber-600";
-  return "text-red-600";
-}
-
-// ── Component ────────────────────────────────────────────────────────────────
-
-export function HouseMeetingsDashboardWidget() {
-  const [data, setData] = useState<DashboardData | null>(null);
+export default function HouseMeetingsDashboardWidget() {
+  const [data, setData] = useState<HouseMeetingsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/house-meetings?homeId=home-oak&mode=dashboard")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch meetings data");
-        return res.json();
-      })
-      .then((json) => setData(json))
-      .catch((err) => setError(err.message))
+    fetch("/api/house-meetings")
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((json) => setData(json.data))
+      .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm animate-pulse">
-        <div className="h-6 w-48 bg-slate-200 rounded mb-4" />
-        <div className="space-y-3">
-          <div className="h-4 w-full bg-slate-100 rounded" />
-          <div className="h-4 w-3/4 bg-slate-100 rounded" />
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (<div className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse"><div className="h-6 bg-gray-200 rounded w-3/4 mb-4" /><div className="h-4 bg-gray-100 rounded w-1/2 mb-3" /><div className="h-4 bg-gray-100 rounded w-2/3 mb-3" /><div className="h-4 bg-gray-100 rounded w-1/3" /></div>);
+  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">House Meetings</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
+  if (!data) return null;
 
-  if (error || !data) {
-    return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-        <p className="text-red-700 text-sm">Error loading meetings data: {error}</p>
-      </div>
-    );
-  }
-
-  const { compliance, metrics, recentMeetings, governance } = data;
+  const rc = ratingColour(data.rating);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-900">
-            House Meetings & Children's Voice
-          </h3>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Collective voice, agenda ownership, action tracking
-          </p>
-        </div>
-        <div className="text-right">
-          <p className={`text-2xl font-bold ${getScoreColour(metrics.overallScore)}`}>
-            {metrics.overallScore}%
-          </p>
-          <p className="text-xs text-slate-400">overall score</p>
-        </div>
+    <div className="rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+        <div><h2 className="text-lg font-bold text-gray-900">House Meetings</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold ${rc}`}><span className="text-xl font-bold">{data.overallScore}</span><span>/100</span><span className="ml-1">{ratingLabel(data.rating)}</span></div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MetricCard
-          label="Participation"
-          value={`${metrics.participationScore}%`}
-          sub={`${compliance.averageAttendanceRate}% attendance`}
-          score={metrics.participationScore}
-        />
-        <MetricCard
-          label="Child Agenda"
-          value={`${compliance.childAgendaRate}%`}
-          sub="items from children"
-          score={compliance.childAgendaRate}
-        />
-        <MetricCard
-          label="Actions Done"
-          value={`${compliance.actionsCompletedRate}%`}
-          sub={`${compliance.actionsOverdue} overdue`}
-          score={compliance.actionsCompletedRate}
-        />
-        <MetricCard
-          label="Governance"
-          value={`${metrics.governanceScore}%`}
-          sub={governance.childrenCouncilActive ? "Council active" : "No council"}
-          score={metrics.governanceScore}
-        />
+      <div className="mb-6">
+        <ScoreBar label="Meeting Quality" score={data.houseMeetingQuality.overallScore} />
+        <ScoreBar label="Meeting Compliance" score={data.houseMeetingCompliance.overallScore} />
+        <ScoreBar label="Policy & Governance" score={data.houseMeetingPolicy.overallScore} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} />
       </div>
 
-      {/* Frequency Status */}
-      <div className={`flex items-center justify-between p-3 rounded-lg ${compliance.frequencyAdequate ? "bg-green-50" : "bg-red-50"}`}>
-        <div className="flex items-center gap-2">
-          <span className={`text-sm ${compliance.frequencyAdequate ? "text-green-600" : "text-red-600"}`}>
-            {compliance.frequencyAdequate ? "✓" : "!"}
-          </span>
-          <span className="text-sm text-slate-700">
-            {compliance.daysSinceLastMeeting === 999
-              ? "No meetings recorded"
-              : `Last meeting ${compliance.daysSinceLastMeeting} day(s) ago`}
-          </span>
+      <Section title="Meeting Quality" defaultOpen>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Meetings" value={data.houseMeetingQuality.totalMeetings} />
+          <Stat label="Child Agenda" value={`${data.houseMeetingQuality.childAgendaContributionRate}%`} />
+          <Stat label="Minutes Recorded" value={`${data.houseMeetingQuality.minutesRecordedRate}%`} />
+          <Stat label="Child Attendance" value={`${data.houseMeetingQuality.childAttendanceRate}%`} />
+          <Stat label="Actions Reviewed" value={`${data.houseMeetingQuality.actionsReviewedRate}%`} />
         </div>
-        <span className="text-xs text-slate-500">
-          Target: {governance.meetingFrequencyTarget} &middot; Next due: {formatDate(metrics.nextMeetingDue)}
-        </span>
-      </div>
+      </Section>
 
-      {/* Recent Meetings */}
-      <div>
-        <h4 className="text-sm font-medium text-slate-700 mb-3">Recent Meetings</h4>
-        <div className="space-y-2">
-          {recentMeetings.map((meeting) => (
-            <div
-              key={meeting.id}
-              className="flex items-center justify-between p-3 rounded-lg border border-slate-100"
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-400 w-12">{formatDate(meeting.date)}</span>
-                <div>
-                  <p className="text-sm font-medium text-slate-800">
-                    {getMeetingTypeLabel(meeting.type)}
-                    {meeting.childrenChaired && (
-                      <span className="ml-2 text-xs bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">
-                        Child-chaired
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {meeting.attendance}/{meeting.totalChildren} attended &middot;{" "}
-                    {meeting.childAgendaItems}/{meeting.totalAgendaItems} child agenda items &middot;{" "}
-                    {meeting.actionsCount} actions
-                  </p>
-                </div>
-              </div>
-              <span className="text-xs text-slate-400">{meeting.duration}min</span>
-            </div>
+      <Section title="Meeting Compliance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Documentation" value={`${data.houseMeetingCompliance.documentationRate}%`} />
+          <Stat label="Timely Recording" value={`${data.houseMeetingCompliance.timelyRecordingRate}%`} />
+          <Stat label="Child Attendance" value={`${data.houseMeetingCompliance.childAttendanceRate}%`} />
+          <Stat label="Category Coverage" value={`${data.houseMeetingCompliance.categoryDiversityRatio}%`} />
+        </div>
+      </Section>
+
+      <Section title="Policy & Governance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {([
+            ["Meeting Policy", data.houseMeetingPolicy.houseMeetingPolicy],
+            ["Frequency Guidance", data.houseMeetingPolicy.meetingFrequencyGuidance],
+            ["Child Participation", data.houseMeetingPolicy.childParticipationFramework],
+            ["Minutes Accessibility", data.houseMeetingPolicy.minutesAccessibilityPolicy],
+            ["Action Tracking", data.houseMeetingPolicy.actionTrackingProcedure],
+            ["Suggestion Box", data.houseMeetingPolicy.suggestionBoxPolicy],
+            ["Council Governance", data.houseMeetingPolicy.councilGovernanceFramework],
+          ] as [string, boolean][]).map(([label, val]) => (
+            <div key={label} className={`rounded-lg px-3 py-2 text-center border ${boolBadge(val)}`}><div className="text-sm font-semibold">{val ? "Yes" : "No"}</div><div className="text-xs">{label}</div></div>
           ))}
         </div>
-      </div>
+      </Section>
 
-      {/* Engagement Alerts */}
-      {compliance.childrenNeverAttending.length > 0 && (
-        <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-amber-800 mb-1">Engagement Concern</h4>
-          <p className="text-xs text-amber-700">
-            {compliance.childrenNeverAttending.join(", ")} not attending meetings — explore barriers and alternative ways to participate
-          </p>
+      <Section title="Staff Readiness">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
+          <Stat label="Facilitation" value={`${data.staffReadiness.meetingFacilitationRate}%`} />
+          <Stat label="Child Participation" value={`${data.staffReadiness.childParticipationRate}%`} />
+          <Stat label="Minutes Taking" value={`${data.staffReadiness.minutesTakingRate}%`} />
+          <Stat label="Action Tracking" value={`${data.staffReadiness.actionTrackingRate}%`} />
+          <Stat label="Conflict Resolution" value={`${data.staffReadiness.conflictResolutionRate}%`} />
+          <Stat label="Inclusive Practice" value={`${data.staffReadiness.inclusivePracticeRate}%`} />
         </div>
-      )}
+      </Section>
 
-      {/* Compliance Issues */}
-      {compliance.issues.length > 0 && (
-        <div className="bg-red-50 border border-red-100 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-red-800 mb-2">Issues ({compliance.issues.length})</h4>
-          <ul className="space-y-1">
-            {compliance.issues.map((issue, i) => (
-              <li key={i} className="text-xs text-red-700 flex items-start gap-1.5">
-                <span className="mt-0.5 shrink-0">•</span>
-                <span>{issue}</span>
-              </li>
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Meeting Profiles">
+          <div className="space-y-3">
+            {data.childProfiles.map((cp) => (
+              <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
+                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Agenda: {cp.childAgendaContributionRate}%</span><span>Attendance: {cp.childAttendanceRate}%</span></div>
+              </div>
             ))}
-          </ul>
-        </div>
+          </div>
+        </Section>
       )}
 
-      {/* Footer */}
-      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-        <div className="flex items-center gap-4">
-          <MiniStat
-            label="Children chaired"
-            value={`${compliance.childrenChairedRate}%`}
-          />
-          <MiniStat
-            label="Meetings (90d)"
-            value={String(metrics.totalMeetingsLast90Days)}
-          />
-          {governance.childrenCouncilActive && (
-            <MiniStat
-              label="Council reps"
-              value={governance.childrenCouncilReps?.join(", ") || "None"}
-            />
-          )}
-        </div>
-        <span className="text-xs text-slate-400">
-          Reg 7 &middot; UNCRC Art 12/15
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function MetricCard({
-  label,
-  value,
-  sub,
-  score,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  score: number;
-}) {
-  return (
-    <div className="bg-slate-50 rounded-lg p-3">
-      <p className="text-xs text-slate-500 mb-1">{label}</p>
-      <p className={`text-lg font-semibold ${getScoreColour(score)}`}>{value}</p>
-      <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
-    </div>
-  );
-}
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-xs text-slate-500">{label}:</span>
-      <span className="text-xs font-semibold text-slate-700">{value}</span>
+      {data.strengths.length > 0 && (<Section title="Strengths"><ul className="space-y-1">{data.strengths.map((s, i) => (<li key={i} className="text-sm text-green-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-green-500" />{s}</li>))}</ul></Section>)}
+      {data.areasForImprovement.length > 0 && (<Section title="Areas for Improvement"><ul className="space-y-1">{data.areasForImprovement.map((a, i) => (<li key={i} className="text-sm text-amber-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />{a}</li>))}</ul></Section>)}
+      {data.actions.length > 0 && (<Section title="Actions" defaultOpen><ul className="space-y-1">{data.actions.map((a, i) => (<li key={i} className={`text-sm flex gap-2 ${a.startsWith("URGENT") ? "text-red-800 font-semibold" : "text-gray-700"}`}><span className={`shrink-0 mt-1 h-1.5 w-1.5 rounded-full ${a.startsWith("URGENT") ? "bg-red-500" : "bg-gray-400"}`} />{a}</li>))}</ul></Section>)}
+      <Section title="Regulatory Links"><ul className="space-y-1">{data.regulatoryLinks.map((l, i) => (<li key={i} className="text-sm text-gray-600 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-gray-400" />{l}</li>))}</ul></Section>
     </div>
   );
 }
