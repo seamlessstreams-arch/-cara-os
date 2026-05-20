@@ -1,23 +1,32 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Environmental Safety & Maintenance — Public API
+// Cornerstone Environment Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
+  pct,
+  getRating,
+  getEnvironmentCategoryLabel,
+  getEnvironmentOutcomeLabel,
+  getRatingLabel,
+  evaluateEnvironmentQuality,
   evaluateEnvironmentCompliance,
-  calculateHomeEnvironmentMetrics,
-  getCheckCategoryLabel,
-  getMaintenancePriorityLabel,
-  getMaintenanceStatusLabel,
+  evaluateEnvironmentPolicy,
+  evaluateStaffEnvironmentReadiness,
+  buildChildEnvironmentProfiles,
+  generateEnvironmentIntelligence,
 } from "./environment-engine";
 
 export type {
-  CheckCategory,
-  CheckStatus,
-  MaintenancePriority,
-  MaintenanceStatus,
-  SafetyCheck,
-  FireDrill,
-  MaintenanceRequest,
+  EnvironmentCategory,
+  EnvironmentOutcome,
+  Rating,
+  EnvironmentRecord,
+  EnvironmentPolicy,
+  StaffEnvironmentTraining,
+  EnvironmentQualityResult,
   EnvironmentComplianceResult,
-  HomeEnvironmentMetrics,
+  EnvironmentPolicyResult,
+  StaffEnvironmentReadinessResult,
+  ChildEnvironmentProfile,
+  EnvironmentIntelligence,
 } from "./environment-engine";

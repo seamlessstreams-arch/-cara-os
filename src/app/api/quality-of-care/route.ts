@@ -1,127 +1,65 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// API: /api/quality-of-care — Regulation 45 Quality of Care Review
-//
-// GET  — returns current quality review with domain assessments
-// POST — generate review with custom input data
-//
-// CHR 2015 Reg 45 — Review of quality of care (6-monthly).
-// SCCIF — Social Care Common Inspection Framework judgement areas.
-// ══════════════════════════════════════════════════════════════════════════════
+import { NextResponse } from "next/server";
+import {
+  generateQualityOfCareIntelligence,
+} from "@/lib/quality-of-care";
+import type { QualityReviewRecord, QualityPolicy, StaffQualityTraining } from "@/lib/quality-of-care";
 
-import { NextRequest, NextResponse } from "next/server";
-import { generateQualityOfCareReview } from "@/lib/quality-of-care";
-import type { QualityInputData } from "@/lib/quality-of-care";
+// ── Demo Data ──────────────────────────────────────────────────────────────
 
-// ── GET Handler ───────────────────────────────────────────────────────────
+const demoRecords: QualityReviewRecord[] = [
+  // Alex — strong quality reviews across domains
+  { id: "qr-1", childId: "child-alex", childName: "Alex", reviewDate: "2026-02-15", domain: "safety_welfare", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-2", childId: "child-alex", childName: "Alex", reviewDate: "2026-03-10", domain: "education_learning", outcome: "exceeds_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: false },
+  { id: "qr-3", childId: "child-alex", childName: "Alex", reviewDate: "2026-03-25", domain: "health_wellbeing", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: false, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-4", childId: "child-alex", childName: "Alex", reviewDate: "2026-04-15", domain: "positive_relationships", outcome: "exceeds_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-5", childId: "child-alex", childName: "Alex", reviewDate: "2026-05-01", domain: "outcomes_progress", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: false, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
 
-export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const homeId = url.searchParams.get("homeId") ?? "home-oak";
+  // Jordan — mixed results
+  { id: "qr-6", childId: "child-jordan", childName: "Jordan", reviewDate: "2026-02-20", domain: "safety_welfare", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-7", childId: "child-jordan", childName: "Jordan", reviewDate: "2026-03-15", domain: "protection_children", outcome: "partially_meets", evidenceDocumented: true, childViewCaptured: false, actionPlanCreated: true, followUpCompleted: false, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-8", childId: "child-jordan", childName: "Jordan", reviewDate: "2026-04-10", domain: "leadership_management", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: false, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: false },
+  { id: "qr-9", childId: "child-jordan", childName: "Jordan", reviewDate: "2026-05-05", domain: "child_voice", outcome: "meets_standard", evidenceDocumented: false, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: false, improvementIdentified: true },
 
-  const input = getDemoInput(homeId);
-  const review = generateQualityOfCareReview(input, 72); // previous score = 72
+  // Morgan — newer, fewer reviews
+  { id: "qr-10", childId: "child-morgan", childName: "Morgan", reviewDate: "2026-03-20", domain: "health_wellbeing", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-11", childId: "child-morgan", childName: "Morgan", reviewDate: "2026-04-18", domain: "education_learning", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: false, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-12", childId: "child-morgan", childName: "Morgan", reviewDate: "2026-05-10", domain: "positive_relationships", outcome: "exceeds_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: false },
+];
 
-  return NextResponse.json(review);
-}
+const demoPolicy: QualityPolicy = {
+  id: "pol-qoc-1",
+  qualityAssuranceFramework: true,
+  reg45ReviewSchedule: true,
+  continuousImprovementPlan: true,
+  outcomesMeasurementPolicy: true,
+  childParticipationStrategy: true,
+  auditSchedule: true,
+  feedbackMechanism: true,
+};
 
-// ── POST Handler ──────────────────────────────────────────────────────────
+const demoStaff: StaffQualityTraining[] = [
+  { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: true, dataAnalysis: true, childParticipation: true },
+  { id: "t-2", staffId: "staff-tom", staffName: "Tom Richards", qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: false, dataAnalysis: false, childParticipation: true },
+  { id: "t-3", staffId: "staff-lisa", staffName: "Lisa Williams", qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: true, dataAnalysis: true, childParticipation: false },
+  { id: "t-4", staffId: "staff-darren", staffName: "Darren Laville", qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: true, dataAnalysis: true, childParticipation: true },
+];
 
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { input, previousScore } = body;
+// ── Handler ────────────────────────────────────────────────────────────────
 
-  if (!input) {
-    return NextResponse.json({ error: "input required" }, { status: 400 });
-  }
+export async function GET() {
+  const result = generateQualityOfCareIntelligence(
+    demoRecords,
+    demoPolicy,
+    demoStaff,
+    "oak-house",
+    "2026-01-01",
+    "2026-05-20",
+  );
 
-  const review = generateQualityOfCareReview(input as QualityInputData, previousScore);
-  return NextResponse.json(review);
-}
-
-// ── Demo Data ─────────────────────────────────────────────────────────────
-
-function getDemoInput(homeId: string): QualityInputData {
-  return {
-    homeId,
-    homeName: "Oak House",
-    reviewPeriodStart: "2025-11-01T00:00:00Z",
-    reviewPeriodEnd: "2026-05-01T00:00:00Z",
-    registeredManager: "Claire Edwards",
-    registeredCapacity: 4,
-    currentOccupancy: 3,
-
-    safety: {
-      totalIncidents: 14,
-      restraintCount: 5,
-      restraintReductionTrend: "reducing",
-      missingEpisodes: 3,
-      missingRepeatChildren: 1,
-      bullyingIncidents: 1,
-      environmentalRiskAssessmentsComplete: true,
-      fireDrillsCompliant: true,
-      medicationErrorCount: 1,
-      deEscalationRate: 82,
-      childrenFeelSafe: 88,
+  return NextResponse.json({
+    data: {
+      ...result,
+      meta: { generatedAt: new Date().toISOString(), engine: "quality-of-care", version: "2.0.0" },
     },
-
-    education: {
-      averageAttendance: 92,
-      pepCompliance: 100,
-      exclusionDays: 3,
-      childrenInEducation: 100,
-      ppSpendRate: 78,
-      progressingTowardsTargets: 75,
-      enrichmentActivitiesPerWeek: 3,
-    },
-
-    health: {
-      ihaComplianceRate: 100,
-      rhaComplianceRate: 100,
-      sdqCompletionRate: 100,
-      dentalCheckRate: 85,
-      immunisationRate: 100,
-      camhsReferralsMade: 2,
-      camhsWaitingList: 1,
-      healthyEatingScore: 75,
-      physicalActivityHoursPerWeek: 3,
-    },
-
-    relationships: {
-      keyworkComplianceRate: 88,
-      keyworkEngagementScore: 3.8,
-      childVoiceRate: 80,
-      familyContactRate: 85,
-      childrensMeetingsHeld: 5,
-      complaintsCount: 3,
-      complimentsCount: 7,
-      staffTurnoverRate: 18,
-      agencyUsageRate: 20,
-    },
-
-    protection: {
-      safeguardingReferralsMade: 2,
-      safeguardingConcernsOpen: 1,
-      dbsComplianceRate: 100,
-      saferRecruitmentCompliant: true,
-      trainingComplianceRate: 88,
-      supervisionComplianceRate: 90,
-      allegationsThisPeriod: 1,
-      notifiableEvents: 4,
-      notifiableEventsCompliant: 4,
-      whistleblowingCulture: 72,
-    },
-
-    leadership: {
-      reg44VisitsCompliant: true,
-      reg44ActionsClosed: 85,
-      staffSupervisionRate: 90,
-      staffQualificationRate: 80,
-      policyReviewsCurrent: true,
-      statementOfPurposeCurrent: true,
-      complaintResponseRate: 90,
-      ofstedActionsComplete: 85,
-      improvementPlanProgress: 75,
-      staffMorale: 72,
-    },
-  };
+  });
 }

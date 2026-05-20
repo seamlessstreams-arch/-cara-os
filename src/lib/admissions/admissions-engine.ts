@@ -1,448 +1,437 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Admissions & Impact Assessment Engine
+// Cornerstone Admissions Intelligence Engine
 //
-// Deterministic engine for evaluating new placement referrals, matching
-// suitability, impact assessments on existing children, and admission
-// decision compliance.
+// Deterministic engine for evaluating the quality of the admissions process
+// in children's homes — matching, planning, pre-admission assessments,
+// transition planning, child participation, and impact assessment.
 //
 // Aligned to:
-//   - CHR 2015 Reg 5 — Quality and purpose of care
-//   - CHR 2015 Reg 12 — Protection of children (matching)
-//   - CHR 2015 Reg 14 — Care planning
-//   - CHR 2015 Reg 16 — Statement of purpose (child compatibility)
+//   - CHR 2015 Reg 12 — The protection of children standard (matching)
+//   - CHR 2015 Reg 14 — Placement plan
+//   - CHR 2015 Reg 20 — Matching (placed children)
 //   - SCCIF — Impact of other children, matching decisions
+//   - Children Act 1989 — Welfare of the child
+//   - Care Planning Regulations 2010
 //   - DfE Guide to Children's Homes Regulations: Matching
-//   - Children Act 1989 s.22C — Placement decisions
-//
-// Key requirements:
-//   - Impact assessment completed for every potential admission
-//   - Existing children's views sought before admission
-//   - Matching criteria: age, gender, needs, risks, dynamics
-//   - Statement of purpose compatibility checked
-//   - Staff capacity and skill-mix considered
-//   - Emergency/unplanned admissions still require assessment (within 72 hrs)
-//   - Decision rationale recorded and signed off
-//   - Post-admission review scheduled (within 72 hours)
-//   - Children involved in welcoming new placements
 //
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type ReferralStatus =
-  | "received"
-  | "under_assessment"
-  | "impact_assessment_complete"
-  | "approved"
-  | "declined"
-  | "withdrawn"
-  | "admitted";
+export type AdmissionCategory =
+  | "pre_admission_assessment"
+  | "matching_process"
+  | "transition_planning"
+  | "child_participation"
+  | "impact_assessment"
+  | "placement_planning"
+  | "family_consultation"
+  | "information_gathering";
 
-export type AdmissionType =
-  | "planned"
-  | "emergency"
-  | "respite"
-  | "step_down";
+export type AdmissionOutcome =
+  | "fully_completed"
+  | "partially_completed"
+  | "not_completed"
+  | "deferred"
+  | "emergency_override";
 
-export type MatchingFactor =
-  | "age_compatibility"
-  | "gender_mix"
-  | "risk_compatibility"
-  | "needs_compatibility"
-  | "peer_dynamics"
-  | "statement_of_purpose"
-  | "staff_skills"
-  | "capacity"
-  | "location_suitability"
-  | "education_provision"
-  | "cultural_needs"
-  | "sibling_connection";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-export type ImpactLevel = "positive" | "neutral" | "low_concern" | "significant_concern" | "incompatible";
+// ── Input Records ──────────────────────────────────────────────────────────
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
-
-export interface AdmissionReferral {
+export interface AdmissionRecord {
   id: string;
-  homeId: string;
-  referralDate: string;
-  childName: string;
-  childAge: number;
-  childGender: string;
-  placingAuthority: string;
-  admissionType: AdmissionType;
-  status: ReferralStatus;
-  // Assessment
-  impactAssessment?: ImpactAssessment;
-  matchingScores: MatchingScore[];
-  // Decision
-  decisionDate?: string;
-  decisionBy?: string;
-  decisionRationale?: string;
-  approvedByRI?: boolean;
-  // Post-admission
-  admissionDate?: string;
-  postAdmissionReviewDate?: string;
-  postAdmissionReviewCompleted?: boolean;
-  welcomePlanInPlace?: boolean;
-  existingChildrenInformed?: boolean;
-}
-
-export interface ImpactAssessment {
-  id: string;
-  completedDate: string;
-  completedBy: string;
-  overallImpactLevel: ImpactLevel;
-  existingChildrenConsulted: boolean;
-  childrenConsulted: string[];
-  staffConsulted: boolean;
-  riskAssessmentCompleted: boolean;
-  // Impact on each existing child
-  childImpacts: ChildImpact[];
-  // Factors
-  staffingAdequate: boolean;
-  environmentSuitable: boolean;
-  educationArranged: boolean;
-  healthNeedsAssessable: boolean;
-  // Mitigations if concerns
-  mitigations: string[];
-  conditions: string[];
-}
-
-export interface ChildImpact {
-  childName: string;
   childId: string;
-  impactLevel: ImpactLevel;
-  considerations: string[];
-  childView?: string;
-  mitigations: string[];
+  childName: string;
+  admissionDate: string;
+  category: AdmissionCategory;
+  thoroughAssessment: boolean;
+  childConsulted: boolean;
+  impactOnResidentsConsidered: boolean;
+  transitionPlanInPlace: boolean;
+  documentationComplete: boolean;
+  timelyProcess: boolean;
 }
 
-export interface MatchingScore {
-  factor: MatchingFactor;
-  score: number;                           // 1-5 (1=poor, 5=excellent)
-  rationale: string;
+export interface AdmissionPolicy {
+  id: string;
+  admissionsPolicy: boolean;
+  matchingCriteria: boolean;
+  transitionProtocol: boolean;
+  impactAssessmentFramework: boolean;
+  childParticipationGuidance: boolean;
+  emergencyAdmissionProcedure: boolean;
+  reviewSchedule: boolean;
+}
+
+export interface StaffAdmissionTraining {
+  id: string;
+  staffId: string;
+  staffName: string;
+  assessmentSkills: boolean;
+  matchingExpertise: boolean;
+  transitionPlanning: boolean;
+  childParticipationSkills: boolean;
+  riskAssessment: boolean;
+  familyEngagement: boolean;
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
-export interface ReferralComplianceResult {
-  referralId: string;
+export interface AdmissionQualityResult {
+  overallScore: number;
+  rating: Rating;
+  totalAdmissions: number;
+  thoroughAssessmentRate: number;
+  childConsultedRate: number;
+  impactConsideredRate: number;
+  transitionPlanRate: number;
+}
+
+export interface AdmissionComplianceResult {
+  overallScore: number;
+  rating: Rating;
+  documentationRate: number;
+  timelyRate: number;
+  impactAssessmentRate: number;
+  categoryDiversityRatio: number;
+}
+
+export interface AdmissionPolicyResult {
+  overallScore: number;
+  rating: Rating;
+  admissionsPolicy: boolean;
+  matchingCriteria: boolean;
+  transitionProtocol: boolean;
+  impactAssessmentFramework: boolean;
+  childParticipationGuidance: boolean;
+  emergencyAdmissionProcedure: boolean;
+  reviewSchedule: boolean;
+}
+
+export interface StaffAdmissionReadinessResult {
+  overallScore: number;
+  rating: Rating;
+  totalStaff: number;
+  assessmentSkillsRate: number;
+  matchingExpertiseRate: number;
+  transitionPlanningRate: number;
+  childParticipationRate: number;
+  riskAssessmentRate: number;
+  familyEngagementRate: number;
+}
+
+export interface ChildAdmissionProfile {
+  childId: string;
   childName: string;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  // Compliance checks
-  impactAssessmentCompleted: boolean;
-  existingChildrenConsulted: boolean;
-  matchingScoreAvailable: boolean;
-  overallMatchScore: number;               // avg of matching scores (1-5)
-  decisionRecorded: boolean;
-  riApproval: boolean;
-  postAdmissionReviewDone: boolean;
-  welcomePlanExists: boolean;
-  // Timing
-  daysToDecision: number;
-  assessmentTimely: boolean;               // emergency: 72hrs, planned: before admission
+  totalRecords: number;
+  thoroughRate: number;
+  childConsultedRate: number;
+  categoriesCovered: string[];
+  overallScore: number;
 }
 
-export interface HomeAdmissionsMetrics {
+export interface AdmissionsIntelligence {
   homeId: string;
-  // Volume
-  totalReferralsLast12Months: number;
-  admittedCount: number;
-  declinedCount: number;
-  withdrawnCount: number;
-  pendingCount: number;
-  // Quality
-  impactAssessmentRate: number;            // % with completed assessment
-  childConsultationRate: number;           // % where existing children consulted
-  averageMatchScore: number;               // avg across all admitted
-  riApprovalRate: number;
-  postAdmissionReviewRate: number;
-  welcomePlanRate: number;
-  // Timing
-  averageDaysToDecision: number;
-  emergencyAssessmentTimelyRate: number;
-  // Current state
-  currentOccupancy: number;
-  maxCapacity: number;
-  occupancyRate: number;
-  // Issues
-  complianceIssues: string[];
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  admissionQuality: AdmissionQualityResult;
+  admissionCompliance: AdmissionComplianceResult;
+  admissionPolicy: AdmissionPolicyResult;
+  staffReadiness: StaffAdmissionReadinessResult;
+  childProfiles: ChildAdmissionProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const EMERGENCY_ASSESSMENT_HOURS = 72;
-const POST_ADMISSION_REVIEW_HOURS = 72;
-const MINIMUM_MATCH_SCORE = 3;             // avg score below 3 is a concern
-const MAX_DAYS_TO_DECISION_PLANNED = 5;
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
 
-// ── Core: Evaluate Referral Compliance ──────────────────────────────────
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
 
-export function evaluateReferralCompliance(
-  referral: AdmissionReferral,
-  now?: string,
-): ReferralComplianceResult {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const issues: string[] = [];
-  const warnings: string[] = [];
+export function getAdmissionCategoryLabel(cat: AdmissionCategory): string {
+  const labels: Record<AdmissionCategory, string> = {
+    pre_admission_assessment: "Pre-Admission Assessment",
+    matching_process: "Matching Process",
+    transition_planning: "Transition Planning",
+    child_participation: "Child Participation",
+    impact_assessment: "Impact Assessment",
+    placement_planning: "Placement Planning",
+    family_consultation: "Family Consultation",
+    information_gathering: "Information Gathering",
+  };
+  return labels[cat] ?? cat;
+}
 
-  // Impact assessment
-  const impactAssessmentCompleted = !!referral.impactAssessment;
-  if (!impactAssessmentCompleted && referral.status !== "received" && referral.status !== "withdrawn") {
-    issues.push("Impact assessment not completed");
+export function getAdmissionOutcomeLabel(outcome: AdmissionOutcome): string {
+  const labels: Record<AdmissionOutcome, string> = {
+    fully_completed: "Fully Completed",
+    partially_completed: "Partially Completed",
+    not_completed: "Not Completed",
+    deferred: "Deferred",
+    emergency_override: "Emergency Override",
+  };
+  return labels[outcome] ?? outcome;
+}
+
+export function getRatingLabel(r: Rating): string {
+  return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// ── Constants ──────────────────────────────────────────────────────────────
+
+const ALL_CATEGORIES: AdmissionCategory[] = [
+  "pre_admission_assessment", "matching_process", "transition_planning",
+  "child_participation", "impact_assessment", "placement_planning",
+  "family_consultation", "information_gathering",
+];
+
+// ── Evaluator 1: Admission Quality (0-25) ──────────────────────────────────
+
+export function evaluateAdmissionQuality(records: AdmissionRecord[]): AdmissionQualityResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", totalAdmissions: 0, thoroughAssessmentRate: 0, childConsultedRate: 0, impactConsideredRate: 0, transitionPlanRate: 0 };
   }
 
-  // Existing children consulted
-  const existingChildrenConsulted = referral.impactAssessment?.existingChildrenConsulted ?? false;
-  if (impactAssessmentCompleted && !existingChildrenConsulted) {
-    issues.push("Existing children not consulted about new admission");
+  const thoroughAssessmentRate = pct(records.filter((r) => r.thoroughAssessment).length, total);
+  const childConsultedRate = pct(records.filter((r) => r.childConsulted).length, total);
+  const impactConsideredRate = pct(records.filter((r) => r.impactOnResidentsConsidered).length, total);
+  const transitionPlanRate = pct(records.filter((r) => r.transitionPlanInPlace).length, total);
+
+  // Weighted: thoroughAssessmentRate 7 + childConsultedRate 6 + impactConsideredRate 6 + transitionPlanRate 6 = 25
+  const raw = (thoroughAssessmentRate / 100) * 7 + (childConsultedRate / 100) * 6 + (impactConsideredRate / 100) * 6 + (transitionPlanRate / 100) * 6;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalAdmissions: total, thoroughAssessmentRate, childConsultedRate, impactConsideredRate, transitionPlanRate };
+}
+
+// ── Evaluator 2: Admission Compliance (0-25) ──────────────────────────────
+
+export function evaluateAdmissionCompliance(records: AdmissionRecord[]): AdmissionComplianceResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyRate: 0, impactAssessmentRate: 0, categoryDiversityRatio: 0 };
   }
 
-  // Matching scores
-  const matchingScoreAvailable = referral.matchingScores.length > 0;
-  const overallMatchScore = referral.matchingScores.length > 0
-    ? Math.round(referral.matchingScores.reduce((s, m) => s + m.score, 0) / referral.matchingScores.length * 10) / 10
-    : 0;
+  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRate = pct(records.filter((r) => r.timelyProcess).length, total);
+  const impactAssessmentRate = pct(records.filter((r) => r.impactOnResidentsConsidered).length, total);
 
-  if (matchingScoreAvailable && overallMatchScore < MINIMUM_MATCH_SCORE) {
-    warnings.push(`Low overall match score (${overallMatchScore}/5) — review suitability`);
+  const uniqueCategories = new Set(records.map((r) => r.category)).size;
+  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+
+  // Weighted: documentationRate 8 + timelyRate 7 + impactAssessmentRate 5 + categoryDiversityRatio 5 = 25
+  const raw = (documentationRate / 100) * 8 + (timelyRate / 100) * 7 + (impactAssessmentRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyRate, impactAssessmentRate, categoryDiversityRatio };
+}
+
+// ── Evaluator 3: Policy & Governance (0-25) ────────────────────────────────
+
+export function evaluateAdmissionPolicy(policy: AdmissionPolicy | null): AdmissionPolicyResult {
+  if (!policy) {
+    return { overallScore: 0, rating: "inadequate", admissionsPolicy: false, matchingCriteria: false, transitionProtocol: false, impactAssessmentFramework: false, childParticipationGuidance: false, emergencyAdmissionProcedure: false, reviewSchedule: false };
   }
 
-  if (!matchingScoreAvailable && referral.status !== "received" && referral.status !== "withdrawn") {
-    warnings.push("Matching scores not recorded");
-  }
-
-  // Decision recorded
-  const decisionRecorded = !!referral.decisionDate && !!referral.decisionRationale;
-  if ((referral.status === "approved" || referral.status === "admitted" || referral.status === "declined") && !decisionRecorded) {
-    issues.push("Decision not properly recorded with rationale");
-  }
-
-  // RI approval
-  const riApproval = referral.approvedByRI ?? false;
-  if ((referral.status === "approved" || referral.status === "admitted") && !riApproval) {
-    issues.push("Responsible Individual approval not obtained");
-  }
-
-  // Post-admission review
-  let postAdmissionReviewDone = false;
-  if (referral.status === "admitted") {
-    postAdmissionReviewDone = referral.postAdmissionReviewCompleted ?? false;
-    if (referral.admissionDate) {
-      const hoursSinceAdmission = (currentTime - new Date(referral.admissionDate).getTime()) / (60 * 60 * 1000);
-      if (hoursSinceAdmission > POST_ADMISSION_REVIEW_HOURS && !postAdmissionReviewDone) {
-        issues.push("Post-admission review not completed within 72 hours");
-      }
-    }
-  }
-
-  // Welcome plan
-  const welcomePlanExists = referral.welcomePlanInPlace ?? false;
-  if (referral.status === "admitted" && !welcomePlanExists) {
-    warnings.push("Welcome plan not in place for new admission");
-  }
-
-  // Existing children informed
-  if (referral.status === "admitted" && !referral.existingChildrenInformed) {
-    warnings.push("Existing children not informed about new admission");
-  }
-
-  // Timing
-  let daysToDecision = 0;
-  let assessmentTimely = true;
-
-  if (referral.decisionDate) {
-    daysToDecision = Math.round(
-      (new Date(referral.decisionDate).getTime() - new Date(referral.referralDate).getTime()) / (24 * 60 * 60 * 1000)
-    );
-  }
-
-  if (referral.admissionType === "emergency" && impactAssessmentCompleted && referral.impactAssessment) {
-    const hoursToAssessment = (new Date(referral.impactAssessment.completedDate).getTime() - new Date(referral.referralDate).getTime()) / (60 * 60 * 1000);
-    assessmentTimely = hoursToAssessment <= EMERGENCY_ASSESSMENT_HOURS;
-    if (!assessmentTimely) {
-      warnings.push("Emergency impact assessment not completed within 72 hours");
-    }
-  } else if (referral.admissionType === "planned" && daysToDecision > MAX_DAYS_TO_DECISION_PLANNED) {
-    warnings.push(`Decision took ${daysToDecision} days (target: ${MAX_DAYS_TO_DECISION_PLANNED} days)`);
-  }
-
-  // Significant concerns in impact
-  if (referral.impactAssessment) {
-    const significantImpacts = referral.impactAssessment.childImpacts.filter(
-      c => c.impactLevel === "significant_concern" || c.impactLevel === "incompatible"
-    );
-    if (significantImpacts.length > 0 && referral.status === "admitted") {
-      warnings.push(`Admitted despite ${significantImpacts.length} significant concern(s) in impact assessment`);
-    }
-  }
+  // First 4 at 4 points, last 3 at 3 points = 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.admissionsPolicy) score += 4;
+  if (policy.matchingCriteria) score += 4;
+  if (policy.transitionProtocol) score += 4;
+  if (policy.impactAssessmentFramework) score += 4;
+  if (policy.childParticipationGuidance) score += 3;
+  if (policy.emergencyAdmissionProcedure) score += 3;
+  if (policy.reviewSchedule) score += 3;
 
   return {
-    referralId: referral.id,
-    childName: referral.childName,
-    isCompliant: issues.length === 0,
-    issues,
-    warnings,
-    impactAssessmentCompleted,
-    existingChildrenConsulted,
-    matchingScoreAvailable,
-    overallMatchScore,
-    decisionRecorded,
-    riApproval,
-    postAdmissionReviewDone,
-    welcomePlanExists,
-    daysToDecision,
-    assessmentTimely,
+    overallScore: score,
+    rating: getRating(score * 4),
+    admissionsPolicy: policy.admissionsPolicy,
+    matchingCriteria: policy.matchingCriteria,
+    transitionProtocol: policy.transitionProtocol,
+    impactAssessmentFramework: policy.impactAssessmentFramework,
+    childParticipationGuidance: policy.childParticipationGuidance,
+    emergencyAdmissionProcedure: policy.emergencyAdmissionProcedure,
+    reviewSchedule: policy.reviewSchedule,
   };
 }
 
-// ── Core: Calculate Home Admissions Metrics ─────────────────────────────
+// ── Evaluator 4: Staff Readiness (0-25) ────────────────────────────────────
 
-export function calculateHomeAdmissionsMetrics(
-  referrals: AdmissionReferral[],
+export function evaluateStaffAdmissionReadiness(staff: StaffAdmissionTraining[]): StaffAdmissionReadinessResult {
+  const count = staff.length;
+  if (count === 0) {
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, assessmentSkillsRate: 0, matchingExpertiseRate: 0, transitionPlanningRate: 0, childParticipationRate: 0, riskAssessmentRate: 0, familyEngagementRate: 0 };
+  }
+
+  const assessmentSkillsRate = pct(staff.filter((s) => s.assessmentSkills).length, count);
+  const matchingExpertiseRate = pct(staff.filter((s) => s.matchingExpertise).length, count);
+  const transitionPlanningRate = pct(staff.filter((s) => s.transitionPlanning).length, count);
+  const childParticipationRate = pct(staff.filter((s) => s.childParticipationSkills).length, count);
+  const riskAssessmentRate = pct(staff.filter((s) => s.riskAssessment).length, count);
+  const familyEngagementRate = pct(staff.filter((s) => s.familyEngagement).length, count);
+
+  // Weighted: 6+5+5+4+3+2 = 25
+  const raw =
+    (assessmentSkillsRate / 100) * 6 +
+    (matchingExpertiseRate / 100) * 5 +
+    (transitionPlanningRate / 100) * 5 +
+    (childParticipationRate / 100) * 4 +
+    (riskAssessmentRate / 100) * 3 +
+    (familyEngagementRate / 100) * 2;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, assessmentSkillsRate, matchingExpertiseRate, transitionPlanningRate, childParticipationRate, riskAssessmentRate, familyEngagementRate };
+}
+
+// ── Child Profiles (0-10) ──────────────────────────────────────────────────
+
+export function buildChildAdmissionProfiles(records: AdmissionRecord[]): ChildAdmissionProfile[] {
+  const grouped = new Map<string, AdmissionRecord[]>();
+  for (const r of records) {
+    const arr = grouped.get(r.childId) || [];
+    arr.push(r);
+    grouped.set(r.childId, arr);
+  }
+
+  const profiles: ChildAdmissionProfile[] = [];
+  for (const [childId, recs] of grouped) {
+    const childName = recs[0].childName;
+    const totalRecords = recs.length;
+
+    const thoroughRate = pct(recs.filter((r) => r.thoroughAssessment).length, totalRecords);
+    const childConsultedRate = pct(recs.filter((r) => r.childConsulted).length, totalRecords);
+
+    const catsSet = new Set(recs.map((r) => r.category));
+    const categoriesCovered = [...catsSet];
+
+    // Scoring: freq [>=10→2, >=5→1] + rate1 thoroughRate [>=80→3, >=60→2, >=40→1] + rate2 childConsultedRate [same] + diversity [>=4→2, >=2→1]
+    let score = 0;
+
+    if (totalRecords >= 10) score += 2;
+    else if (totalRecords >= 5) score += 1;
+
+    if (thoroughRate >= 80) score += 3;
+    else if (thoroughRate >= 60) score += 2;
+    else if (thoroughRate >= 40) score += 1;
+
+    if (childConsultedRate >= 80) score += 3;
+    else if (childConsultedRate >= 60) score += 2;
+    else if (childConsultedRate >= 40) score += 1;
+
+    const catCount = categoriesCovered.length;
+    if (catCount >= 4) score += 2;
+    else if (catCount >= 2) score += 1;
+
+    profiles.push({
+      childId,
+      childName,
+      totalRecords,
+      thoroughRate,
+      childConsultedRate,
+      categoriesCovered,
+      overallScore: Math.min(10, score),
+    });
+  }
+
+  return profiles;
+}
+
+// ── Master Intelligence Generator ──────────────────────────────────────────
+
+export function generateAdmissionsIntelligence(
+  records: AdmissionRecord[],
+  policy: AdmissionPolicy | null,
+  staff: StaffAdmissionTraining[],
   homeId: string,
-  maxCapacity: number,
-  currentOccupancy: number,
-  now?: string,
-): HomeAdmissionsMetrics {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const oneYearAgo = currentTime - 365 * 24 * 60 * 60 * 1000;
+  periodStart: string,
+  periodEnd: string,
+): AdmissionsIntelligence {
+  const admissionQuality = evaluateAdmissionQuality(records);
+  const admissionCompliance = evaluateAdmissionCompliance(records);
+  const admissionPolicy = evaluateAdmissionPolicy(policy);
+  const staffReadiness = evaluateStaffAdmissionReadiness(staff);
+  const childProfiles = buildChildAdmissionProfiles(records);
 
-  const homeReferrals = referrals.filter(
-    r => r.homeId === homeId && new Date(r.referralDate).getTime() > oneYearAgo
+  const overallScore = Math.min(
+    100,
+    admissionQuality.overallScore + admissionCompliance.overallScore + admissionPolicy.overallScore + staffReadiness.overallScore,
   );
+  const rating = getRating(overallScore);
 
-  const totalReferralsLast12Months = homeReferrals.length;
-  const admittedCount = homeReferrals.filter(r => r.status === "admitted").length;
-  const declinedCount = homeReferrals.filter(r => r.status === "declined").length;
-  const withdrawnCount = homeReferrals.filter(r => r.status === "withdrawn").length;
-  const pendingCount = homeReferrals.filter(
-    r => r.status === "received" || r.status === "under_assessment" || r.status === "impact_assessment_complete" || r.status === "approved"
-  ).length;
+  // Strengths (>=80%)
+  const strengths: string[] = [];
+  if (admissionQuality.thoroughAssessmentRate >= 80) strengths.push("Thorough pre-admission assessments consistently completed");
+  if (admissionQuality.childConsultedRate >= 80) strengths.push("Children are consistently consulted during the admissions process");
+  if (admissionQuality.impactConsideredRate >= 80) strengths.push("Impact on existing residents is systematically assessed before admission");
+  if (admissionQuality.transitionPlanRate >= 80) strengths.push("Transition plans are routinely in place for new admissions");
+  if (admissionCompliance.documentationRate >= 80) strengths.push("Admissions documentation is thorough and complete");
+  if (admissionCompliance.timelyRate >= 80) strengths.push("Admissions processes are completed within required timescales");
+  if (staffReadiness.assessmentSkillsRate >= 80) strengths.push("Staff are well trained in assessment skills for admissions");
+  if (staffReadiness.matchingExpertiseRate >= 80) strengths.push("Strong matching expertise across the team");
 
-  // Quality metrics (on decided referrals)
-  const decidedReferrals = homeReferrals.filter(
-    r => r.status === "admitted" || r.status === "declined" || r.status === "approved"
-  );
-  const results = decidedReferrals.map(r => evaluateReferralCompliance(r, now));
+  // Areas for improvement (<60%)
+  const areasForImprovement: string[] = [];
+  if (admissionQuality.thoroughAssessmentRate < 60) areasForImprovement.push("Pre-admission assessments are not consistently thorough");
+  if (admissionQuality.childConsultedRate < 60) areasForImprovement.push("Children are not being adequately consulted during admissions");
+  if (admissionQuality.impactConsideredRate < 60) areasForImprovement.push("Impact on existing children is not being systematically considered");
+  if (admissionQuality.transitionPlanRate < 60) areasForImprovement.push("Transition planning needs to be more consistently applied");
+  if (admissionCompliance.documentationRate < 60) areasForImprovement.push("Admissions documentation is incomplete or inconsistent");
+  if (admissionCompliance.timelyRate < 60) areasForImprovement.push("Admissions processes are taking too long to complete");
+  if (staffReadiness.assessmentSkillsRate < 60) areasForImprovement.push("Staff assessment skills training needs improvement");
+  if (staffReadiness.matchingExpertiseRate < 60) areasForImprovement.push("Staff matching expertise requires development");
 
-  const withImpact = decidedReferrals.filter(r => r.impactAssessment).length;
-  const impactAssessmentRate = decidedReferrals.length > 0
-    ? Math.round((withImpact / decidedReferrals.length) * 100)
-    : 100;
+  // Actions
+  const actions: string[] = [];
+  if (admissionPolicy.overallScore === 0) actions.push("URGENT: Establish a formal admissions policy — CHR 2015 Reg 12/14/20 require documented matching and placement processes");
+  if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide admissions and matching training to all staff — proper assessments depend on skilled practitioners");
+  if (admissionQuality.childConsultedRate < 50) actions.push("Implement systematic child consultation in all admissions — existing children's views must be sought (SCCIF)");
+  if (admissionQuality.impactConsideredRate < 50) actions.push("Ensure impact assessments are completed for every admission — CHR 2015 Reg 20 requires matching consideration");
+  if (admissionCompliance.documentationRate < 50) actions.push("Improve admissions documentation — placement plans must be comprehensive (Reg 14)");
+  if (admissionCompliance.timelyRate < 50) actions.push("Review admissions timescales — assessments should be completed before or within 72 hours of emergency placement");
+  if (admissionQuality.transitionPlanRate < 50) actions.push("Develop transition plans for all new admissions to support settling-in");
+  if (staffReadiness.familyEngagementRate < 50) actions.push("Train staff in family engagement during admissions — families should be involved from the start");
 
-  const withConsultation = decidedReferrals.filter(r => r.impactAssessment?.existingChildrenConsulted).length;
-  const childConsultationRate = decidedReferrals.length > 0
-    ? Math.round((withConsultation / decidedReferrals.length) * 100)
-    : 100;
-
-  // Average match score (admitted only)
-  const admittedReferrals = homeReferrals.filter(r => r.status === "admitted");
-  const matchScores = admittedReferrals
-    .filter(r => r.matchingScores.length > 0)
-    .map(r => r.matchingScores.reduce((s, m) => s + m.score, 0) / r.matchingScores.length);
-  const averageMatchScore = matchScores.length > 0
-    ? Math.round(matchScores.reduce((a, b) => a + b, 0) / matchScores.length * 10) / 10
-    : 0;
-
-  // RI approval
-  const needingApproval = decidedReferrals.filter(r => r.status === "admitted" || r.status === "approved");
-  const withApproval = needingApproval.filter(r => r.approvedByRI);
-  const riApprovalRate = needingApproval.length > 0
-    ? Math.round((withApproval.length / needingApproval.length) * 100)
-    : 100;
-
-  // Post-admission review
-  const admittedWithReview = admittedReferrals.filter(r => r.postAdmissionReviewCompleted);
-  const postAdmissionReviewRate = admittedReferrals.length > 0
-    ? Math.round((admittedWithReview.length / admittedReferrals.length) * 100)
-    : 100;
-
-  // Welcome plan
-  const withWelcomePlan = admittedReferrals.filter(r => r.welcomePlanInPlace);
-  const welcomePlanRate = admittedReferrals.length > 0
-    ? Math.round((withWelcomePlan.length / admittedReferrals.length) * 100)
-    : 100;
-
-  // Timing
-  const daysToDecisions = decidedReferrals
-    .filter(r => r.decisionDate)
-    .map(r => Math.round((new Date(r.decisionDate!).getTime() - new Date(r.referralDate).getTime()) / (24 * 60 * 60 * 1000)));
-  const averageDaysToDecision = daysToDecisions.length > 0
-    ? Math.round(daysToDecisions.reduce((a, b) => a + b, 0) / daysToDecisions.length)
-    : 0;
-
-  const emergencyReferrals = decidedReferrals.filter(r => r.admissionType === "emergency");
-  const emergencyTimely = emergencyReferrals.filter(r => {
-    if (!r.impactAssessment) return false;
-    const hours = (new Date(r.impactAssessment.completedDate).getTime() - new Date(r.referralDate).getTime()) / (60 * 60 * 1000);
-    return hours <= EMERGENCY_ASSESSMENT_HOURS;
-  });
-  const emergencyAssessmentTimelyRate = emergencyReferrals.length > 0
-    ? Math.round((emergencyTimely.length / emergencyReferrals.length) * 100)
-    : 100;
-
-  // Occupancy
-  const occupancyRate = maxCapacity > 0
-    ? Math.round((currentOccupancy / maxCapacity) * 100)
-    : 0;
-
-  // Compliance issues
-  const complianceIssues = [...new Set(results.flatMap(r => r.issues))];
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Reg 12 — The protection of children standard (matching)",
+    "CHR 2015 Reg 14 — Care planning (placement plan)",
+    "CHR 2015 Reg 20 — Matching (placed children)",
+    "SCCIF — Impact of other children, matching decisions",
+    "Children Act 1989 — Welfare of the child",
+    "Care Planning Regulations 2010",
+    "DfE Guide to Children's Homes Regulations: Matching",
+  ];
 
   return {
     homeId,
-    totalReferralsLast12Months,
-    admittedCount,
-    declinedCount,
-    withdrawnCount,
-    pendingCount,
-    impactAssessmentRate,
-    childConsultationRate,
-    averageMatchScore,
-    riApprovalRate,
-    postAdmissionReviewRate,
-    welcomePlanRate,
-    averageDaysToDecision,
-    emergencyAssessmentTimelyRate,
-    currentOccupancy,
-    maxCapacity,
-    occupancyRate,
-    complianceIssues,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    admissionQuality,
+    admissionCompliance,
+    admissionPolicy,
+    staffReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
   };
-}
-
-// ── Label Helpers ────────────────────────────────────────────────────────
-
-export function getMatchingFactorLabel(factor: MatchingFactor): string {
-  const labels: Record<MatchingFactor, string> = {
-    age_compatibility: "Age Compatibility",
-    gender_mix: "Gender Mix",
-    risk_compatibility: "Risk Compatibility",
-    needs_compatibility: "Needs Compatibility",
-    peer_dynamics: "Peer Dynamics",
-    statement_of_purpose: "Statement of Purpose",
-    staff_skills: "Staff Skills",
-    capacity: "Capacity",
-    location_suitability: "Location",
-    education_provision: "Education Provision",
-    cultural_needs: "Cultural Needs",
-    sibling_connection: "Sibling Connection",
-  };
-  return labels[factor] ?? factor;
-}
-
-export function getImpactLevelLabel(level: ImpactLevel): string {
-  const labels: Record<ImpactLevel, string> = {
-    positive: "Positive",
-    neutral: "Neutral",
-    low_concern: "Low Concern",
-    significant_concern: "Significant Concern",
-    incompatible: "Incompatible",
-  };
-  return labels[level] ?? level;
 }

@@ -1,27 +1,32 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Management Oversight AI Layer — Public API
+// Cornerstone — Management Oversight Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
+  pct,
+  getRating,
+  getOversightCategoryLabel,
+  getOversightOutcomeLabel,
+  getRatingLabel,
+  evaluateOversightQuality,
   evaluateOversightCompliance,
-  calculateHomeOversightMetrics,
-  routeOversightTask,
-  getOversightDomainLabel,
-  getProviderLabel,
-  getDefaultRouting,
+  evaluateOversightPolicy,
+  evaluateStaffReadiness,
+  buildChildOversightProfiles,
+  generateManagementOversightIntelligence,
 } from "./management-oversight-engine";
 
 export type {
-  AIProvider,
-  OversightDomain,
-  TaskPriority,
-  ProviderDecision,
-  ValidationOutcome,
-  OversightTask,
-  ProviderCapability,
-  CrossValidationResult,
-  ManagementOversightConfig,
-  RoutingRule,
+  OversightCategory,
+  OversightOutcome,
+  Rating,
+  OversightRecord,
+  OversightPolicy,
+  StaffOversightTraining,
+  OversightQualityResult,
   OversightComplianceResult,
-  HomeOversightMetrics,
+  OversightPolicyResult,
+  StaffReadinessResult,
+  ChildOversightProfile,
+  ManagementOversightIntelligence,
 } from "./management-oversight-engine";

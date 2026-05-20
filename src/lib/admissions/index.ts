@@ -1,23 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Admissions & Impact Assessment — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
-  evaluateReferralCompliance,
-  calculateHomeAdmissionsMetrics,
-  getMatchingFactorLabel,
-  getImpactLevelLabel,
+  generateAdmissionsIntelligence,
+  evaluateAdmissionQuality,
+  evaluateAdmissionCompliance,
+  evaluateAdmissionPolicy,
+  evaluateStaffAdmissionReadiness,
+  buildChildAdmissionProfiles,
+  pct,
+  getRating,
+  getAdmissionCategoryLabel,
+  getAdmissionOutcomeLabel,
+  getRatingLabel,
 } from "./admissions-engine";
 
 export type {
-  ReferralStatus,
-  AdmissionType,
-  MatchingFactor,
-  ImpactLevel,
-  AdmissionReferral,
-  ImpactAssessment,
-  ChildImpact,
-  MatchingScore,
-  ReferralComplianceResult,
-  HomeAdmissionsMetrics,
+  AdmissionCategory,
+  AdmissionOutcome,
+  Rating,
+  AdmissionRecord,
+  AdmissionPolicy,
+  StaffAdmissionTraining,
+  AdmissionQualityResult,
+  AdmissionComplianceResult,
+  AdmissionPolicyResult,
+  StaffAdmissionReadinessResult,
+  ChildAdmissionProfile,
+  AdmissionsIntelligence,
 } from "./admissions-engine";

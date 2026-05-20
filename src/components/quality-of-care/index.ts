@@ -1,1 +1,1 @@
-export { QualityOfCareDashboardWidget } from "./QualityOfCareDashboardWidget";
+export { default as QualityOfCareDashboardWidget } from "./QualityOfCareDashboardWidget";

@@ -1,514 +1,758 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Management Oversight AI Layer
+// Cornerstone — Management Oversight Intelligence Engine
 //
-// Dual-provider AI architecture: ARIA (Anthropic Claude) handles operational
-// intelligence, while OpenAI handles management-level oversight — creating
-// independent verification, separation of concerns, and cross-validation.
+// Pure deterministic engine — no AI, no external calls.
+// Evaluates quality of management oversight in children's homes:
+// registered manager's monitoring, auditing, Reg 44/45 visits,
+// scrutiny of records, decision-making quality, and leadership.
 //
-// Architecture:
-//   - ARIA (Claude) → Operational layer: daily workflows, compliance checks,
-//     report drafting, therapeutic guidance, communication
-//   - OpenAI → Management oversight: RI-level quality auditing, pattern
-//     detection across the home, Ofsted readiness scoring, governance
-//     verification, ARIA output validation
+// Regulatory framework:
+//   CHR 2015 Reg 13  — Leadership and management
+//   CHR 2015 Reg 44  — Independent person: visits
+//   CHR 2015 Reg 45  — Review of quality of care
+//   SCCIF            — Social Care Common Inspection Framework
+//   Ofsted SCCIF     — Impact of leaders on outcomes
+//   Children Act 1989 — Welfare of looked-after children
+//   Children's Homes (England) Regulations 2015
 //
-// Aligned to:
-//   - CHR 2015 Reg 45 — Review of quality of care
-//   - CHR 2015 Reg 13 — Leadership and management
-//   - SCCIF — Impact of leaders on outcomes
-//   - Ofsted ILACS Framework — Management oversight expectations
-//
-// Key principles:
-//   - Independent oversight: OpenAI validates ARIA's operational outputs
-//   - Cross-validation: Neither AI trusts itself — both are checked
-//   - Human-in-the-loop: All high-stakes decisions require manager approval
-//   - Cost optimisation: Route tasks to cheapest capable provider
-//   - Audit trail: Every AI decision logged with provider, model, confidence
-//   - Escalation: Disagreements between providers escalate to human
-//
-// ARIA Learning integration:
-//   - OpenAI oversight outputs feed into ARIA's learning layer
-//   - ARIA observes OpenAI's management patterns over time
-//   - Goal: progressively reduce dependency on paid oversight calls
-//     as internal models learn management-level reasoning
-//
-// No AI calls in this engine. Pure deterministic routing and evaluation.
+// Scoring breakdown (0-100):
+//   Oversight quality:    25  — Thoroughness, action plans, follow-up, documentation
+//   Compliance:           25  — Frequency, coverage, timeliness, diversity
+//   Policy framework:     25  — 7 governance policies in place
+//   Staff readiness:      25  — Staff skills for oversight activities
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────
 
-export type AIProvider = "anthropic_claude" | "openai" | "cornerstone_internal";
+export type OversightCategory =
+  | "case_file_audit"
+  | "practice_observation"
+  | "reg44_monitoring"
+  | "reg45_monitoring"
+  | "incident_review"
+  | "staff_supervision_audit"
+  | "quality_assurance_check"
+  | "outcomes_tracking";
 
-export type OversightDomain =
-  | "quality_of_care_review"      // Reg 45 monthly reviews
-  | "compliance_audit"            // regulatory compliance checking
-  | "pattern_detection"           // cross-home incident/behaviour patterns
-  | "ofsted_readiness"            // inspection preparedness scoring
-  | "staff_practice_quality"      // supervision/practice audit
-  | "governance_verification"     // policy adherence, decision governance
-  | "outcome_tracking"            // children's outcomes trajectory
-  | "risk_escalation"            // risk level changes, threshold breaches
-  | "financial_oversight"         // budget compliance, value for money
-  | "safeguarding_audit"          // s.11 audit, safeguarding quality
-  | "aria_output_validation"      // cross-checking ARIA's operational outputs
-  | "regulatory_interpretation";  // interpreting ambiguous regulations
+export type OversightOutcome =
+  | "compliant"
+  | "partially_compliant"
+  | "non_compliant"
+  | "not_assessed";
 
-export type TaskPriority = "routine" | "elevated" | "urgent" | "critical";
+export type Rating =
+  | "outstanding"
+  | "good"
+  | "requires_improvement"
+  | "inadequate";
 
-export type ProviderDecision = "routed" | "escalated_to_human" | "cross_validated" | "deferred";
+// ── Input Interfaces ────────────────────────────────────────────────────────
 
-export type ValidationOutcome = "agreed" | "disagreed" | "partially_agreed" | "inconclusive";
-
-// ── Core Interfaces ────────────────────────────────────────────────────────
-
-export interface OversightTask {
+export interface OversightRecord {
   id: string;
-  domain: OversightDomain;
-  title: string;
-  description: string;
-  priority: TaskPriority;
-  createdAt: string;
-  dueDate: string;
-  // Routing
-  assignedProvider: AIProvider;
-  routingReason: string;
-  // Execution
-  status: "pending" | "in_progress" | "completed" | "escalated" | "failed";
-  completedAt?: string;
-  // Output
-  confidence: number;               // 0-100
-  output?: string;
-  recommendations?: string[];
-  // Validation
-  crossValidated: boolean;
-  validationProvider?: AIProvider;
-  validationOutcome?: ValidationOutcome;
-  validationNotes?: string;
-  // Human review
-  humanReviewRequired: boolean;
-  humanReviewedBy?: string;
-  humanApproved?: boolean;
-  humanNotes?: string;
-  // Cost
-  estimatedCost: number;             // £
-  actualCost?: number;
-  // ARIA learning
-  feedsIntoAriaLearning: boolean;
-  ariaLearningCategory?: string;
+  childId: string;
+  childName: string;
+  date: string;
+  category: OversightCategory;
+  completedThoroughly: boolean;
+  actionPlanCreated: boolean;
+  followUpCompleted: boolean;
+  childImpactAssessed: boolean;
+  staffFeedbackGiven: boolean;
+  documentedProperly: boolean;
 }
 
-export interface ProviderCapability {
-  provider: AIProvider;
-  domain: OversightDomain;
-  enabled: boolean;
-  confidenceLevel: number;           // historical confidence 0-100
-  costPerTask: number;               // £
-  averageLatencyMs: number;
-  successRate: number;               // 0-100%
-  lastUsed: string;
-  tasksCompleted: number;
-  tasksEscalated: number;
-  humanOverrideRate: number;         // % where human changed output
-}
-
-export interface CrossValidationResult {
+export interface OversightPolicy {
   id: string;
-  taskId: string;
-  primaryProvider: AIProvider;
-  validatingProvider: AIProvider;
-  outcome: ValidationOutcome;
-  primaryConfidence: number;
-  validatorConfidence: number;
-  agreementScore: number;            // 0-100
-  discrepancies: string[];
-  escalatedToHuman: boolean;
-  resolvedBy?: string;
-  resolution?: string;
+  oversightFramework: boolean;
+  auditSchedule: boolean;
+  qualityAssurancePlan: boolean;
+  incidentReviewProtocol: boolean;
+  performanceMonitoring: boolean;
+  regulatoryCompliancePlan: boolean;
+  continuousImprovementPolicy: boolean;
 }
 
-export interface ManagementOversightConfig {
-  organisationId: string;
-  homeId: string;
-  // Provider routing rules
-  routingRules: RoutingRule[];
-  // Thresholds
-  crossValidationThreshold: number;  // confidence below this triggers cross-validation
-  humanEscalationThreshold: number;  // confidence below this escalates to human
-  disagreementEscalation: boolean;   // auto-escalate when providers disagree
-  // Cost controls
-  monthlyBudgetOpenAI: number;       // £
-  monthlyBudgetClaude: number;       // £
-  monthlySpendOpenAI: number;
-  monthlySpendClaude: number;
-  // Schedule
-  qualityReviewFrequency: string;    // e.g. "monthly"
-  patternDetectionFrequency: string; // e.g. "weekly"
-  complianceAuditFrequency: string;  // e.g. "quarterly"
+export interface StaffOversightTraining {
+  id: string;
+  staffId: string;
+  staffName: string;
+  auditSkills: boolean;
+  qualityAssuranceKnowledge: boolean;
+  regulatoryAwareness: boolean;
+  leadershipCapability: boolean;
+  dataAnalysis: boolean;
+  reflectivePractice: boolean;
 }
 
-export interface RoutingRule {
-  domain: OversightDomain;
-  primaryProvider: AIProvider;
-  fallbackProvider: AIProvider;
-  crossValidationRequired: boolean;
-  humanApprovalRequired: boolean;
-  maxCostPerTask: number;
-  minConfidence: number;
-}
+// ── Result Interfaces ───────────────────────────────────────────────────────
 
-// ── Result Interfaces ──────────────────────────────────────────────────────
+export interface OversightQualityResult {
+  overallScore: number; // 0-25
+  totalRecords: number;
+  thoroughRate: number;
+  actionPlanRate: number;
+  followUpRate: number;
+  childImpactRate: number;
+  staffFeedbackRate: number;
+  documentationRate: number;
+}
 
 export interface OversightComplianceResult {
-  homeId: string;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  // Task coverage
-  totalTasks: number;
-  completedTasks: number;
-  pendingTasks: number;
-  overdueTasks: number;
-  escalatedTasks: number;
-  completionRate: number;
-  // Provider performance
-  providerMetrics: {
-    provider: AIProvider;
-    tasksHandled: number;
-    averageConfidence: number;
-    successRate: number;
-    humanOverrideRate: number;
-    totalCost: number;
-  }[];
-  // Cross-validation
-  crossValidationRate: number;       // % of tasks cross-validated
-  agreementRate: number;             // % where providers agreed
-  disagreements: number;
-  // Cost
-  totalMonthlyCost: number;
-  budgetUtilisation: number;         // %
-  costPerCompletedTask: number;
-  // Oversight quality
-  qualityReviewCurrent: boolean;
-  patternDetectionCurrent: boolean;
-  complianceAuditCurrent: boolean;
-  overallOversightScore: number;     // 0-100
+  overallScore: number; // 0-25
+  totalRecords: number;
+  frequencyRate: number;
+  coverageRate: number;
+  timelinessRate: number;
+  categoryDiversityRate: number;
 }
 
-export interface HomeOversightMetrics {
-  homeId: string;
-  // Summary
-  overallScore: number;
-  tasksThisMonth: number;
-  completionRate: number;
-  // Providers
-  openaiTasksThisMonth: number;
-  claudeTasksThisMonth: number;
-  internalTasksThisMonth: number;
-  // Cross-validation
-  crossValidationsThisMonth: number;
-  agreementRate: number;
-  escalationsThisMonth: number;
-  // Cost
-  openaiSpendThisMonth: number;
-  claudeSpendThisMonth: number;
-  totalSpendThisMonth: number;
-  projectedMonthlyCost: number;
-  // Quality
-  qualityReviewsDone: number;
-  qualityReviewsDue: number;
-  patternsDetected: number;
-  riskEscalations: number;
-  // ARIA learning
-  ariaLearningInputsThisMonth: number;
-  ariaInternalCapableRate: number;   // % tasks ARIA could handle internally
-  // Issues
-  issues: string[];
-  warnings: string[];
+export interface OversightPolicyResult {
+  overallScore: number; // 0-25
+  oversightFramework: boolean;
+  auditSchedule: boolean;
+  qualityAssurancePlan: boolean;
+  incidentReviewProtocol: boolean;
+  performanceMonitoring: boolean;
+  regulatoryCompliancePlan: boolean;
+  continuousImprovementPolicy: boolean;
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+export interface StaffReadinessResult {
+  overallScore: number; // 0-25
+  totalStaff: number;
+  auditSkillsRate: number;
+  qualityAssuranceRate: number;
+  regulatoryAwarenessRate: number;
+  leadershipRate: number;
+  dataAnalysisRate: number;
+  reflectivePracticeRate: number;
+}
 
-const DEFAULT_ROUTING: RoutingRule[] = [
-  // OpenAI handles management oversight (independent from ARIA)
-  { domain: "quality_of_care_review", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: true, humanApprovalRequired: true, maxCostPerTask: 0.50, minConfidence: 80 },
-  { domain: "compliance_audit", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: true, humanApprovalRequired: true, maxCostPerTask: 0.40, minConfidence: 85 },
-  { domain: "pattern_detection", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: false, humanApprovalRequired: false, maxCostPerTask: 0.20, minConfidence: 75 },
-  { domain: "ofsted_readiness", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: true, humanApprovalRequired: true, maxCostPerTask: 0.60, minConfidence: 85 },
-  { domain: "staff_practice_quality", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: false, humanApprovalRequired: true, maxCostPerTask: 0.30, minConfidence: 80 },
-  { domain: "governance_verification", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: true, humanApprovalRequired: false, maxCostPerTask: 0.25, minConfidence: 80 },
-  { domain: "outcome_tracking", primaryProvider: "openai", fallbackProvider: "cornerstone_internal", crossValidationRequired: false, humanApprovalRequired: false, maxCostPerTask: 0.15, minConfidence: 75 },
-  { domain: "risk_escalation", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: true, humanApprovalRequired: true, maxCostPerTask: 0.35, minConfidence: 90 },
-  { domain: "financial_oversight", primaryProvider: "openai", fallbackProvider: "cornerstone_internal", crossValidationRequired: false, humanApprovalRequired: true, maxCostPerTask: 0.20, minConfidence: 80 },
-  { domain: "safeguarding_audit", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: true, humanApprovalRequired: true, maxCostPerTask: 0.50, minConfidence: 90 },
-  // ARIA validates OpenAI's outputs (mutual oversight)
-  { domain: "aria_output_validation", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: true, humanApprovalRequired: false, maxCostPerTask: 0.15, minConfidence: 80 },
-  // Regulatory interpretation needs both + human
-  { domain: "regulatory_interpretation", primaryProvider: "openai", fallbackProvider: "anthropic_claude", crossValidationRequired: true, humanApprovalRequired: true, maxCostPerTask: 0.40, minConfidence: 85 },
-];
+export interface ChildOversightProfile {
+  childId: string;
+  childName: string;
+  totalRecords: number;
+  overallScore: number; // 0-10
+  frequencyScore: number;
+  thoroughnessScore: number;
+  followUpScore: number;
+  diversityScore: number;
+}
 
-// ── Core: Evaluate Oversight Compliance ─────────────────────────────────────
+export interface ManagementOversightIntelligence {
+  overallScore: number; // 0-100, capped
+  rating: Rating;
+  oversightQuality: OversightQualityResult;
+  compliance: OversightComplianceResult;
+  policyFramework: OversightPolicyResult;
+  staffReadiness: StaffReadinessResult;
+  childProfiles: ChildOversightProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
+}
 
-export function evaluateOversightCompliance(
-  tasks: OversightTask[],
-  config: ManagementOversightConfig,
-  now?: string,
-): OversightComplianceResult {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const issues: string[] = [];
-  const warnings: string[] = [];
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
-  // Task status
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status === "completed").length;
-  const pendingTasks = tasks.filter(t => t.status === "pending" || t.status === "in_progress").length;
-  const overdueTasks = tasks.filter(t => {
-    if (t.status === "completed" || t.status === "failed") return false;
-    return new Date(t.dueDate).getTime() < currentTime;
-  }).length;
-  const escalatedTasks = tasks.filter(t => t.status === "escalated").length;
-  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 100;
+/** Calculate percentage, returning 0 if denominator is 0. */
+export function pct(numerator: number, denominator: number): number {
+  if (denominator === 0) return 0;
+  return Math.round((numerator / denominator) * 100);
+}
 
-  if (overdueTasks > 0) {
-    issues.push(`${overdueTasks} oversight task(s) overdue`);
-  }
-  if (completionRate < 80) {
-    warnings.push(`Low oversight completion rate: ${completionRate}%`);
-  }
+/** Map overall score (0-100) to Ofsted-style rating. */
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
 
-  // Provider metrics
-  const providers: AIProvider[] = ["openai", "anthropic_claude", "cornerstone_internal"];
-  const providerMetrics = providers.map(provider => {
-    const providerTasks = tasks.filter(t => t.assignedProvider === provider);
-    const completed = providerTasks.filter(t => t.status === "completed");
-    const confidences = completed.map(t => t.confidence);
-    const costs = completed.map(t => t.actualCost ?? t.estimatedCost);
-    const overridden = completed.filter(t => t.humanApproved === false);
+// ── Label Functions ─────────────────────────────────────────────────────────
 
+export function getOversightCategoryLabel(category: OversightCategory): string {
+  const labels: Record<OversightCategory, string> = {
+    case_file_audit: "Case File Audit",
+    practice_observation: "Practice Observation",
+    reg44_monitoring: "Reg 44 Monitoring",
+    reg45_monitoring: "Reg 45 Monitoring",
+    incident_review: "Incident Review",
+    staff_supervision_audit: "Staff Supervision Audit",
+    quality_assurance_check: "Quality Assurance Check",
+    outcomes_tracking: "Outcomes Tracking",
+  };
+  return labels[category] || category;
+}
+
+export function getOversightOutcomeLabel(outcome: OversightOutcome): string {
+  const labels: Record<OversightOutcome, string> = {
+    compliant: "Compliant",
+    partially_compliant: "Partially Compliant",
+    non_compliant: "Non-Compliant",
+    not_assessed: "Not Assessed",
+  };
+  return labels[outcome] || outcome;
+}
+
+export function getRatingLabel(rating: Rating): string {
+  const labels: Record<Rating, string> = {
+    outstanding: "Outstanding",
+    good: "Good",
+    requires_improvement: "Requires Improvement",
+    inadequate: "Inadequate",
+  };
+  return labels[rating] || rating;
+}
+
+// ── Evaluator 1: Oversight Quality (0-25) ───────────────────────────────────
+
+/**
+ * Evaluates the quality of oversight activities.
+ *
+ * 4 rates weighted:
+ *   thoroughRate     → 0-7
+ *   actionPlanRate   → 0-6
+ *   followUpRate     → 0-6
+ *   documentationRate → 0-6
+ *
+ * Total: 7+6+6+6 = 25
+ * Empty data = 0.
+ */
+export function evaluateOversightQuality(
+  records: OversightRecord[],
+): OversightQualityResult {
+  if (records.length === 0) {
     return {
-      provider,
-      tasksHandled: providerTasks.length,
-      averageConfidence: confidences.length > 0
-        ? Math.round(confidences.reduce((a, b) => a + b, 0) / confidences.length)
-        : 0,
-      successRate: providerTasks.length > 0
-        ? Math.round((completed.length / providerTasks.length) * 100)
-        : 0,
-      humanOverrideRate: completed.length > 0
-        ? Math.round((overridden.length / completed.length) * 100)
-        : 0,
-      totalCost: costs.reduce((a, b) => a + b, 0),
+      overallScore: 0,
+      totalRecords: 0,
+      thoroughRate: 0,
+      actionPlanRate: 0,
+      followUpRate: 0,
+      childImpactRate: 0,
+      staffFeedbackRate: 0,
+      documentationRate: 0,
     };
-  });
-
-  // Cross-validation
-  const crossValidated = tasks.filter(t => t.crossValidated);
-  const crossValidationRate = totalTasks > 0
-    ? Math.round((crossValidated.length / totalTasks) * 100)
-    : 0;
-  const agreed = crossValidated.filter(t => t.validationOutcome === "agreed" || t.validationOutcome === "partially_agreed");
-  const agreementRate = crossValidated.length > 0
-    ? Math.round((agreed.length / crossValidated.length) * 100)
-    : 100;
-  const disagreements = crossValidated.filter(t => t.validationOutcome === "disagreed").length;
-
-  if (disagreements > 2) {
-    warnings.push(`${disagreements} provider disagreements this period — review needed`);
   }
 
-  // Cost
-  const totalMonthlyCost = config.monthlySpendOpenAI + config.monthlySpendClaude;
-  const totalBudget = config.monthlyBudgetOpenAI + config.monthlyBudgetClaude;
-  const budgetUtilisation = totalBudget > 0 ? Math.round((totalMonthlyCost / totalBudget) * 100) : 0;
-  const costPerCompletedTask = completedTasks > 0 ? Math.round((totalMonthlyCost / completedTasks) * 100) / 100 : 0;
+  const n = records.length;
+  const thoroughRate = pct(records.filter((r) => r.completedThoroughly).length, n);
+  const actionPlanRate = pct(records.filter((r) => r.actionPlanCreated).length, n);
+  const followUpRate = pct(records.filter((r) => r.followUpCompleted).length, n);
+  const childImpactRate = pct(records.filter((r) => r.childImpactAssessed).length, n);
+  const staffFeedbackRate = pct(records.filter((r) => r.staffFeedbackGiven).length, n);
+  const documentationRate = pct(records.filter((r) => r.documentedProperly).length, n);
 
-  if (budgetUtilisation > 90) {
-    warnings.push(`AI oversight budget at ${budgetUtilisation}% utilisation`);
-  }
-  if (config.monthlySpendOpenAI > config.monthlyBudgetOpenAI) {
-    issues.push("OpenAI monthly budget exceeded");
-  }
+  // Scoring
+  const thoroughScore = Math.round((thoroughRate / 100) * 7);
+  const actionPlanScore = Math.round((actionPlanRate / 100) * 6);
+  const followUpScore = Math.round((followUpRate / 100) * 6);
+  const documentationScore = Math.round((documentationRate / 100) * 6);
 
-  // Review currency
-  const qualityTasks = tasks.filter(t => t.domain === "quality_of_care_review" && t.status === "completed");
-  const patternTasks = tasks.filter(t => t.domain === "pattern_detection" && t.status === "completed");
-  const complianceTasks = tasks.filter(t => t.domain === "compliance_audit" && t.status === "completed");
-
-  const qualityReviewCurrent = qualityTasks.length > 0;
-  const patternDetectionCurrent = patternTasks.length > 0;
-  const complianceAuditCurrent = complianceTasks.length > 0;
-
-  if (!qualityReviewCurrent) {
-    issues.push("No quality of care review completed this period");
-  }
-  if (!patternDetectionCurrent) {
-    warnings.push("Pattern detection not run this period");
-  }
-
-  // Overall score
-  const taskScore = completionRate;
-  const crossValScore = crossValidationRate;
-  const agreementScore = agreementRate;
-  const reviewScore = [qualityReviewCurrent, patternDetectionCurrent, complianceAuditCurrent]
-    .filter(Boolean).length / 3 * 100;
-  const overallOversightScore = Math.round(
-    (taskScore * 0.3) + (crossValScore * 0.2) + (agreementScore * 0.2) + (reviewScore * 0.3)
+  const overallScore = Math.min(
+    25,
+    Math.max(0, thoroughScore + actionPlanScore + followUpScore + documentationScore),
   );
 
   return {
-    homeId: config.homeId,
-    isCompliant: issues.length === 0,
-    issues,
-    warnings,
-    totalTasks,
-    completedTasks,
-    pendingTasks,
-    overdueTasks,
-    escalatedTasks,
-    completionRate,
-    providerMetrics,
-    crossValidationRate,
-    agreementRate,
-    disagreements,
-    totalMonthlyCost,
-    budgetUtilisation,
-    costPerCompletedTask,
-    qualityReviewCurrent,
-    patternDetectionCurrent,
-    complianceAuditCurrent,
-    overallOversightScore,
+    overallScore,
+    totalRecords: n,
+    thoroughRate,
+    actionPlanRate,
+    followUpRate,
+    childImpactRate,
+    staffFeedbackRate,
+    documentationRate,
   };
 }
 
-// ── Core: Calculate Home Oversight Metrics ───────────────────────────────────
+// ── Evaluator 2: Compliance (0-25) ──────────────────────────────────────────
 
-export function calculateHomeOversightMetrics(
-  tasks: OversightTask[],
-  validations: CrossValidationResult[],
-  config: ManagementOversightConfig,
-  now?: string,
-): HomeOversightMetrics {
-  const result = evaluateOversightCompliance(tasks, config, now);
-  const issues: string[] = [...result.issues];
-  const warnings: string[] = [...result.warnings];
-
-  // Provider task counts
-  const openaiTasks = tasks.filter(t => t.assignedProvider === "openai");
-  const claudeTasks = tasks.filter(t => t.assignedProvider === "anthropic_claude");
-  const internalTasks = tasks.filter(t => t.assignedProvider === "cornerstone_internal");
-
-  // ARIA learning
-  const ariaLearningInputs = tasks.filter(t => t.feedsIntoAriaLearning && t.status === "completed").length;
-  const internalCapable = tasks.filter(t => t.confidence >= 90 && t.status === "completed").length;
-  const ariaInternalCapableRate = result.completedTasks > 0
-    ? Math.round((internalCapable / result.completedTasks) * 100)
-    : 0;
-
-  // Patterns and risks
-  const patternsDetected = tasks
-    .filter(t => t.domain === "pattern_detection" && t.status === "completed")
-    .reduce((s, t) => s + (t.recommendations?.length ?? 0), 0);
-  const riskEscalations = tasks
-    .filter(t => t.domain === "risk_escalation" && t.status === "completed").length;
-
-  // Quality reviews
-  const qualityReviewsDone = tasks.filter(t => t.domain === "quality_of_care_review" && t.status === "completed").length;
-  const qualityReviewsDue = tasks.filter(t => t.domain === "quality_of_care_review" && t.status !== "completed").length;
-
-  return {
-    homeId: config.homeId,
-    overallScore: result.overallOversightScore,
-    tasksThisMonth: result.totalTasks,
-    completionRate: result.completionRate,
-    openaiTasksThisMonth: openaiTasks.length,
-    claudeTasksThisMonth: claudeTasks.length,
-    internalTasksThisMonth: internalTasks.length,
-    crossValidationsThisMonth: validations.length,
-    agreementRate: result.agreementRate,
-    escalationsThisMonth: result.escalatedTasks,
-    openaiSpendThisMonth: config.monthlySpendOpenAI,
-    claudeSpendThisMonth: config.monthlySpendClaude,
-    totalSpendThisMonth: config.monthlySpendOpenAI + config.monthlySpendClaude,
-    projectedMonthlyCost: result.totalMonthlyCost,
-    qualityReviewsDone,
-    qualityReviewsDue,
-    patternsDetected,
-    riskEscalations,
-    ariaLearningInputsThisMonth: ariaLearningInputs,
-    ariaInternalCapableRate,
-    issues,
-    warnings,
-  };
-}
-
-// ── Routing: Determine Provider for Task ─────────────────────────────────────
-
-export function routeOversightTask(
-  domain: OversightDomain,
-  priority: TaskPriority,
-  config: ManagementOversightConfig,
-): { provider: AIProvider; crossValidationRequired: boolean; humanApprovalRequired: boolean; reason: string } {
-  const rule = config.routingRules.find(r => r.domain === domain) ?? DEFAULT_ROUTING.find(r => r.domain === domain);
-
-  if (!rule) {
+/**
+ * Evaluates oversight compliance against expected standards.
+ *
+ * 4 rates weighted:
+ *   frequencyRate        → 0-8   (records per month target)
+ *   coverageRate         → 0-7   (children covered / total children)
+ *   timelinessRate       → 0-5   (% completed with follow-up on time)
+ *   categoryDiversityRate → 0-5  (unique categories / total categories * 100)
+ *
+ * Total: 8+7+5+5 = 25
+ * Empty data = 0.
+ */
+export function evaluateOversightCompliance(
+  records: OversightRecord[],
+  totalChildren: number,
+): OversightComplianceResult {
+  if (records.length === 0) {
     return {
-      provider: "openai",
-      crossValidationRequired: true,
-      humanApprovalRequired: true,
-      reason: "No routing rule found — defaulting to OpenAI with full oversight",
+      overallScore: 0,
+      totalRecords: 0,
+      frequencyRate: 0,
+      coverageRate: 0,
+      timelinessRate: 0,
+      categoryDiversityRate: 0,
     };
   }
 
-  // Budget check
-  if (rule.primaryProvider === "openai" && config.monthlySpendOpenAI >= config.monthlyBudgetOpenAI) {
+  const n = records.length;
+
+  // Frequency: treat 10+ records as 100%, 5+ as 50%, below as proportional
+  const frequencyRate = n >= 10 ? 100 : n >= 5 ? 50 + Math.round(((n - 5) / 5) * 50) : Math.round((n / 5) * 50);
+
+  // Coverage: unique children with records / total children expected
+  const uniqueChildren = new Set(records.map((r) => r.childId)).size;
+  const coverageRate = totalChildren > 0 ? pct(uniqueChildren, totalChildren) : (uniqueChildren > 0 ? 100 : 0);
+
+  // Timeliness: % of records where follow-up was completed (proxy for timely completion)
+  const timelinessRate = pct(records.filter((r) => r.followUpCompleted).length, n);
+
+  // Category diversity: unique categories used / total possible categories * 100
+  const ALL_CATEGORIES: OversightCategory[] = [
+    "case_file_audit",
+    "practice_observation",
+    "reg44_monitoring",
+    "reg45_monitoring",
+    "incident_review",
+    "staff_supervision_audit",
+    "quality_assurance_check",
+    "outcomes_tracking",
+  ];
+  const uniqueCategories = new Set(records.map((r) => r.category)).size;
+  const categoryDiversityRate = pct(uniqueCategories, ALL_CATEGORIES.length);
+
+  // Scoring
+  const frequencyScore = Math.round((frequencyRate / 100) * 8);
+  const coverageScore = Math.round((coverageRate / 100) * 7);
+  const timelinessScore = Math.round((timelinessRate / 100) * 5);
+  const diversityScore = Math.round((categoryDiversityRate / 100) * 5);
+
+  const overallScore = Math.min(
+    25,
+    Math.max(0, frequencyScore + coverageScore + timelinessScore + diversityScore),
+  );
+
+  return {
+    overallScore,
+    totalRecords: n,
+    frequencyRate,
+    coverageRate,
+    timelinessRate,
+    categoryDiversityRate,
+  };
+}
+
+// ── Evaluator 3: Policy Framework (0-25) ────────────────────────────────────
+
+/**
+ * Evaluates the policy framework supporting oversight.
+ *
+ * 7 booleans weighted:
+ *   oversightFramework         → 4
+ *   auditSchedule              → 4
+ *   qualityAssurancePlan       → 4
+ *   incidentReviewProtocol     → 4
+ *   performanceMonitoring      → 3
+ *   regulatoryCompliancePlan   → 3
+ *   continuousImprovementPolicy → 3
+ *
+ * Total: 4+4+4+4+3+3+3 = 25
+ * Null policy = all false, score 0.
+ */
+export function evaluateOversightPolicy(
+  policy: OversightPolicy | null,
+): OversightPolicyResult {
+  if (policy === null) {
     return {
-      provider: rule.fallbackProvider,
-      crossValidationRequired: rule.crossValidationRequired,
-      humanApprovalRequired: true,
-      reason: "OpenAI budget exceeded — routed to fallback provider",
+      overallScore: 0,
+      oversightFramework: false,
+      auditSchedule: false,
+      qualityAssurancePlan: false,
+      incidentReviewProtocol: false,
+      performanceMonitoring: false,
+      regulatoryCompliancePlan: false,
+      continuousImprovementPolicy: false,
     };
   }
 
-  // Critical priority always gets cross-validation
-  const crossValidationRequired = priority === "critical" ? true : rule.crossValidationRequired;
-  const humanApprovalRequired = priority === "critical" ? true : rule.humanApprovalRequired;
+  let score = 0;
+  if (policy.oversightFramework) score += 4;
+  if (policy.auditSchedule) score += 4;
+  if (policy.qualityAssurancePlan) score += 4;
+  if (policy.incidentReviewProtocol) score += 4;
+  if (policy.performanceMonitoring) score += 3;
+  if (policy.regulatoryCompliancePlan) score += 3;
+  if (policy.continuousImprovementPolicy) score += 3;
 
   return {
-    provider: rule.primaryProvider,
-    crossValidationRequired,
-    humanApprovalRequired,
-    reason: `Routed per policy: ${domain} → ${rule.primaryProvider}`,
+    overallScore: Math.min(25, Math.max(0, score)),
+    oversightFramework: policy.oversightFramework,
+    auditSchedule: policy.auditSchedule,
+    qualityAssurancePlan: policy.qualityAssurancePlan,
+    incidentReviewProtocol: policy.incidentReviewProtocol,
+    performanceMonitoring: policy.performanceMonitoring,
+    regulatoryCompliancePlan: policy.regulatoryCompliancePlan,
+    continuousImprovementPolicy: policy.continuousImprovementPolicy,
   };
 }
 
-// ── Label Helpers ────────────────────────────────────────────────────────
+// ── Evaluator 4: Staff Readiness (0-25) ─────────────────────────────────────
 
-export function getOversightDomainLabel(domain: OversightDomain): string {
-  const labels: Record<OversightDomain, string> = {
-    quality_of_care_review: "Quality of Care Review",
-    compliance_audit: "Compliance Audit",
-    pattern_detection: "Pattern Detection",
-    ofsted_readiness: "Ofsted Readiness",
-    staff_practice_quality: "Staff Practice Quality",
-    governance_verification: "Governance Verification",
-    outcome_tracking: "Outcome Tracking",
-    risk_escalation: "Risk Escalation",
-    financial_oversight: "Financial Oversight",
-    safeguarding_audit: "Safeguarding Audit",
-    aria_output_validation: "ARIA Output Validation",
-    regulatory_interpretation: "Regulatory Interpretation",
+/**
+ * Evaluates staff readiness for oversight activities.
+ *
+ * 6 skills weighted:
+ *   auditSkills              → 6
+ *   qualityAssuranceKnowledge → 5
+ *   regulatoryAwareness      → 5
+ *   leadershipCapability     → 4
+ *   dataAnalysis             → 3
+ *   reflectivePractice       → 2
+ *
+ * Total: 6+5+5+4+3+2 = 25
+ * Empty array = 0.
+ */
+export function evaluateStaffReadiness(
+  staff: StaffOversightTraining[],
+): StaffReadinessResult {
+  if (staff.length === 0) {
+    return {
+      overallScore: 0,
+      totalStaff: 0,
+      auditSkillsRate: 0,
+      qualityAssuranceRate: 0,
+      regulatoryAwarenessRate: 0,
+      leadershipRate: 0,
+      dataAnalysisRate: 0,
+      reflectivePracticeRate: 0,
+    };
+  }
+
+  const n = staff.length;
+  const auditSkillsRate = pct(staff.filter((s) => s.auditSkills).length, n);
+  const qualityAssuranceRate = pct(staff.filter((s) => s.qualityAssuranceKnowledge).length, n);
+  const regulatoryAwarenessRate = pct(staff.filter((s) => s.regulatoryAwareness).length, n);
+  const leadershipRate = pct(staff.filter((s) => s.leadershipCapability).length, n);
+  const dataAnalysisRate = pct(staff.filter((s) => s.dataAnalysis).length, n);
+  const reflectivePracticeRate = pct(staff.filter((s) => s.reflectivePractice).length, n);
+
+  // Scoring
+  const auditScore = Math.round((auditSkillsRate / 100) * 6);
+  const qaScore = Math.round((qualityAssuranceRate / 100) * 5);
+  const regScore = Math.round((regulatoryAwarenessRate / 100) * 5);
+  const leaderScore = Math.round((leadershipRate / 100) * 4);
+  const dataScore = Math.round((dataAnalysisRate / 100) * 3);
+  const reflectiveScore = Math.round((reflectivePracticeRate / 100) * 2);
+
+  const overallScore = Math.min(
+    25,
+    Math.max(0, auditScore + qaScore + regScore + leaderScore + dataScore + reflectiveScore),
+  );
+
+  return {
+    overallScore,
+    totalStaff: n,
+    auditSkillsRate,
+    qualityAssuranceRate,
+    regulatoryAwarenessRate,
+    leadershipRate,
+    dataAnalysisRate,
+    reflectivePracticeRate,
   };
-  return labels[domain] ?? domain;
 }
 
-export function getProviderLabel(provider: AIProvider): string {
-  const labels: Record<AIProvider, string> = {
-    openai: "OpenAI (Management Oversight)",
-    anthropic_claude: "ARIA (Anthropic Claude)",
-    cornerstone_internal: "Cornerstone Internal",
-  };
-  return labels[provider] ?? provider;
+// ── Child Profiles ──────────────────────────────────────────────────────────
+
+/**
+ * Build per-child oversight profiles.
+ *
+ * Score 0-10:
+ *   freq: >=10 → 2, >=5 → 1, else 0
+ *   thoroughnessScore (completedThoroughly rate): >=80 → 3, >=60 → 2, >=40 → 1, else 0
+ *   followUpScore (followUpCompleted rate): >=80 → 3, >=60 → 2, >=40 → 1, else 0
+ *   diversityScore (unique categories): >=4 → 2, >=2 → 1, else 0
+ *   Cap at 10.
+ */
+export function buildChildOversightProfiles(
+  records: OversightRecord[],
+): ChildOversightProfile[] {
+  const childMap = new Map<string, OversightRecord[]>();
+  for (const r of records) {
+    const existing = childMap.get(r.childId) ?? [];
+    existing.push(r);
+    childMap.set(r.childId, existing);
+  }
+
+  const profiles: ChildOversightProfile[] = [];
+
+  for (const [childId, childRecords] of childMap) {
+    const childName = childRecords[0].childName;
+    const totalRecords = childRecords.length;
+
+    // Frequency score
+    let freq = 0;
+    if (totalRecords >= 10) freq = 2;
+    else if (totalRecords >= 5) freq = 1;
+
+    // Thoroughness score
+    const thoroughRate = pct(childRecords.filter((r) => r.completedThoroughly).length, totalRecords);
+    let thoroughnessScore = 0;
+    if (thoroughRate >= 80) thoroughnessScore = 3;
+    else if (thoroughRate >= 60) thoroughnessScore = 2;
+    else if (thoroughRate >= 40) thoroughnessScore = 1;
+
+    // Follow-up score
+    const followUpRate = pct(childRecords.filter((r) => r.followUpCompleted).length, totalRecords);
+    let followUpScore = 0;
+    if (followUpRate >= 80) followUpScore = 3;
+    else if (followUpRate >= 60) followUpScore = 2;
+    else if (followUpRate >= 40) followUpScore = 1;
+
+    // Diversity score
+    const uniqueCategories = new Set(childRecords.map((r) => r.category)).size;
+    let diversityScore = 0;
+    if (uniqueCategories >= 4) diversityScore = 2;
+    else if (uniqueCategories >= 2) diversityScore = 1;
+
+    const overallScore = Math.min(10, freq + thoroughnessScore + followUpScore + diversityScore);
+
+    profiles.push({
+      childId,
+      childName,
+      totalRecords,
+      overallScore,
+      frequencyScore: freq,
+      thoroughnessScore,
+      followUpScore,
+      diversityScore,
+    });
+  }
+
+  // Sort by total records descending
+  profiles.sort((a, b) => b.totalRecords - a.totalRecords);
+
+  return profiles;
 }
 
-export function getDefaultRouting(): RoutingRule[] {
-  return [...DEFAULT_ROUTING];
+// ── Master Generator ────────────────────────────────────────────────────────
+
+export function generateManagementOversightIntelligence(
+  records: OversightRecord[],
+  policy: OversightPolicy | null,
+  staff: StaffOversightTraining[],
+  totalChildren: number,
+): ManagementOversightIntelligence {
+  const oversightQuality = evaluateOversightQuality(records);
+  const compliance = evaluateOversightCompliance(records, totalChildren);
+  const policyFramework = evaluateOversightPolicy(policy);
+  const staffReadiness = evaluateStaffReadiness(staff);
+  const childProfiles = buildChildOversightProfiles(records);
+
+  // Overall score: sum of 4 evaluators (each 0-25) = 0-100
+  const overallScore = Math.min(
+    100,
+    Math.max(
+      0,
+      oversightQuality.overallScore +
+        compliance.overallScore +
+        policyFramework.overallScore +
+        staffReadiness.overallScore,
+    ),
+  );
+
+  const rating = getRating(overallScore);
+
+  // ── Strengths ──
+  const strengths: string[] = [];
+
+  if (oversightQuality.thoroughRate >= 80 && oversightQuality.totalRecords > 0) {
+    strengths.push(
+      "Oversight activities are consistently thorough, demonstrating robust management scrutiny",
+    );
+  }
+  if (oversightQuality.actionPlanRate >= 80 && oversightQuality.totalRecords > 0) {
+    strengths.push(
+      "Action plans are routinely created following oversight activities, ensuring issues are tracked to resolution",
+    );
+  }
+  if (oversightQuality.followUpRate >= 80 && oversightQuality.totalRecords > 0) {
+    strengths.push(
+      "Follow-up completion is strong, showing management accountability and drive for improvement",
+    );
+  }
+  if (oversightQuality.documentationRate >= 80 && oversightQuality.totalRecords > 0) {
+    strengths.push(
+      "Oversight activities are well-documented, providing a clear audit trail for Ofsted inspection",
+    );
+  }
+  if (compliance.coverageRate >= 80) {
+    strengths.push(
+      "Oversight covers the majority of children in the home, ensuring no child is overlooked",
+    );
+  }
+  if (compliance.categoryDiversityRate >= 80) {
+    strengths.push(
+      "A diverse range of oversight activities is undertaken, reflecting comprehensive management monitoring",
+    );
+  }
+  if (policyFramework.overallScore >= 20) {
+    strengths.push(
+      "The policy framework for oversight is robust with key governance documents in place",
+    );
+  }
+  if (staffReadiness.overallScore >= 20) {
+    strengths.push(
+      "Staff demonstrate strong readiness for oversight activities with good skills coverage",
+    );
+  }
+  if (staffReadiness.auditSkillsRate >= 80 && staffReadiness.totalStaff > 0) {
+    strengths.push(
+      "Audit skills are well-developed across the staff team, supporting effective quality monitoring",
+    );
+  }
+  if (staffReadiness.regulatoryAwarenessRate >= 80 && staffReadiness.totalStaff > 0) {
+    strengths.push(
+      "Staff have strong regulatory awareness, enabling informed oversight of compliance requirements",
+    );
+  }
+
+  if (strengths.length === 0) {
+    strengths.push(
+      "No significant strengths identified — management oversight requires development",
+    );
+  }
+
+  // ── Areas for Improvement ──
+  const areasForImprovement: string[] = [];
+
+  if (oversightQuality.thoroughRate < 60 && oversightQuality.totalRecords > 0) {
+    areasForImprovement.push(
+      `Only ${oversightQuality.thoroughRate}% of oversight activities completed thoroughly — rigour must improve`,
+    );
+  }
+  if (oversightQuality.actionPlanRate < 60 && oversightQuality.totalRecords > 0) {
+    areasForImprovement.push(
+      `Action plans created in only ${oversightQuality.actionPlanRate}% of oversight activities — improvement actions must be documented`,
+    );
+  }
+  if (oversightQuality.followUpRate < 60 && oversightQuality.totalRecords > 0) {
+    areasForImprovement.push(
+      `Follow-up completed in only ${oversightQuality.followUpRate}% of cases — management must ensure actions are tracked to completion`,
+    );
+  }
+  if (oversightQuality.documentationRate < 60 && oversightQuality.totalRecords > 0) {
+    areasForImprovement.push(
+      `Documentation rate at ${oversightQuality.documentationRate}% — all oversight must be properly recorded for regulatory evidence`,
+    );
+  }
+  if (compliance.coverageRate < 60) {
+    areasForImprovement.push(
+      `Oversight coverage of children at ${compliance.coverageRate}% — all children must be included in management monitoring`,
+    );
+  }
+  if (compliance.categoryDiversityRate < 60) {
+    areasForImprovement.push(
+      `Category diversity at ${compliance.categoryDiversityRate}% — oversight should span all monitoring types including Reg 44/45`,
+    );
+  }
+  if (staffReadiness.auditSkillsRate < 60 && staffReadiness.totalStaff > 0) {
+    areasForImprovement.push(
+      `Only ${staffReadiness.auditSkillsRate}% of staff have audit skills — training is needed to support effective oversight`,
+    );
+  }
+  if (staffReadiness.regulatoryAwarenessRate < 60 && staffReadiness.totalStaff > 0) {
+    areasForImprovement.push(
+      `Regulatory awareness at ${staffReadiness.regulatoryAwarenessRate}% — staff need better understanding of CHR 2015 requirements`,
+    );
+  }
+
+  if (areasForImprovement.length === 0) {
+    areasForImprovement.push("No significant areas for improvement identified");
+  }
+
+  // ── Actions ──
+  const actions: string[] = [];
+
+  if (policyFramework.overallScore === 0) {
+    actions.push(
+      "URGENT: No oversight policy framework in place — develop and implement governance policies immediately",
+    );
+  }
+  if (staffReadiness.overallScore === 0) {
+    actions.push(
+      "URGENT: No staff trained in oversight skills — commission management oversight training programme immediately",
+    );
+  }
+  if (oversightQuality.overallScore < 13 && oversightQuality.totalRecords > 0) {
+    actions.push(
+      "Review and improve oversight quality — implement standardised templates and quality expectations for all monitoring activities",
+    );
+  }
+  if (compliance.overallScore < 13) {
+    actions.push(
+      "Increase oversight frequency and coverage — develop a monthly monitoring schedule covering all children and activity types",
+    );
+  }
+  if (compliance.frequencyRate < 50) {
+    actions.push(
+      "Oversight frequency is below expected levels — ensure minimum monthly monitoring activities are completed",
+    );
+  }
+  if (compliance.categoryDiversityRate < 50) {
+    actions.push(
+      "Diversify oversight activities — ensure Reg 44 visits, Reg 45 reviews, case file audits and practice observations are all undertaken",
+    );
+  }
+  if (!policyFramework.oversightFramework && policy !== null) {
+    actions.push(
+      "Develop an oversight framework policy setting out the registered manager's monitoring responsibilities",
+    );
+  }
+  if (!policyFramework.auditSchedule && policy !== null) {
+    actions.push(
+      "Create an audit schedule with planned dates for all oversight activities across the year",
+    );
+  }
+  if (staffReadiness.leadershipRate < 50 && staffReadiness.totalStaff > 0) {
+    actions.push(
+      "Invest in leadership development for oversight staff to strengthen management capability",
+    );
+  }
+  if (records.length === 0) {
+    actions.push(
+      "URGENT: No oversight records found — begin systematic management monitoring immediately",
+    );
+  }
+
+  if (actions.length === 0) {
+    actions.push(
+      "Continue embedding robust management oversight practices across the home",
+    );
+  }
+
+  // ── Regulatory Links ──
+  const regulatoryLinks = [
+    "CHR 2015 Reg 13 — Leadership and management: the registered person must manage the home to consistently promote children's welfare",
+    "CHR 2015 Reg 44 — Independent person: visits to monitor the home's operation and report to Ofsted",
+    "CHR 2015 Reg 45 — Review of quality of care: the registered person must review and improve quality of care at least every 6 months",
+    "SCCIF — Social Care Common Inspection Framework: effectiveness of leaders and managers",
+    "Ofsted SCCIF — Impact of leaders on outcomes for children and young people",
+    "Children Act 1989 — Duty to safeguard and promote the welfare of looked-after children",
+    "Children's Homes (England) Regulations 2015 — Overarching regulatory framework for children's residential care",
+  ];
+
+  return {
+    overallScore,
+    rating,
+    oversightQuality,
+    compliance,
+    policyFramework,
+    staffReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
+  };
 }

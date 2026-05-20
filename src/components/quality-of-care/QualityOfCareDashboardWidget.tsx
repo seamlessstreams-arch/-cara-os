@@ -1,226 +1,139 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// QualityOfCareDashboardWidget — Reg 45 quality review summary
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
 import { useEffect, useState } from "react";
 
-interface DomainSummary {
-  domain: string;
-  score: number;
-  grade: string;
-  strengths: string[];
-  areasForImprovement: string[];
+interface ChildQualityProfile { childId: string; childName: string; totalReviews: number; meetsStandardRate: number; childViewRate: number; domainsCovered: string[]; overallScore: number; }
+
+interface QOCData {
+  homeId: string; periodStart: string; periodEnd: string; overallScore: number; rating: string;
+  reviewQuality: { overallScore: number; totalReviews: number; meetsStandardRate: number; evidenceDocumentedRate: number; childViewRate: number; actionPlanRate: number; };
+  reviewCompliance: { overallScore: number; followUpRate: number; regulatoryAlignedRate: number; improvementRate: number; domainDiversityRatio: number; };
+  qualityPolicy: { overallScore: number; qualityAssuranceFramework: boolean; reg45ReviewSchedule: boolean; continuousImprovementPlan: boolean; outcomesMeasurementPolicy: boolean; childParticipationStrategy: boolean; auditSchedule: boolean; feedbackMechanism: boolean; };
+  staffReadiness: { overallScore: number; totalStaff: number; qualityAssuranceRate: number; outcomesMonitoringRate: number; regulatoryKnowledgeRate: number; reflectivePracticeRate: number; dataAnalysisRate: number; childParticipationRate: number; };
+  childProfiles: ChildQualityProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
 }
 
-interface QualityReview {
-  homeId: string;
-  homeName: string;
-  overallGrade: string;
-  overallScore: number;
-  domains: DomainSummary[];
-  topStrengths: string[];
-  priorityActions: string[];
-  regulatoryCompliance: {
-    reg44Compliant: boolean;
-    notifiableEventsCompliant: boolean;
-    statementOfPurposeCurrent: boolean;
-    staffingAdequate: boolean;
-    recordKeepingAdequate: boolean;
-  };
-  previousReviewComparison?: {
-    previousScore: number;
-    trend: string;
-  };
+function ratingColour(r: string) {
+  if (r === "outstanding") return "text-green-700 bg-green-50 border-green-200";
+  if (r === "good") return "text-blue-700 bg-blue-50 border-blue-200";
+  if (r === "requires_improvement") return "text-amber-700 bg-amber-50 border-amber-200";
+  return "text-red-700 bg-red-50 border-red-200";
+}
+function ratingLabel(r: string) { return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()); }
+function boolBadge(v: boolean) { return v ? "text-green-700 bg-green-50 border-green-200" : "text-red-700 bg-red-50 border-red-200"; }
+
+function ScoreBar({ label, score, max = 25 }: { label: string; score: number; max?: number }) {
+  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+  const fill = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
+  return (<div className="mb-3"><div className="flex justify-between text-sm mb-1"><span className="font-medium text-gray-700">{label}</span><span className="text-gray-500">{score}/{max}</span></div><div className="h-2 rounded-full bg-gray-100 overflow-hidden"><div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} /></div></div>);
 }
 
-interface Props {
-  homeId?: string;
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (<div className="border border-gray-200 rounded-lg overflow-hidden mb-4"><button onClick={() => setOpen(!open)} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 flex justify-between items-center"><span className="font-semibold text-gray-800">{title}</span><span className="text-gray-400 text-lg">{open ? "−" : "+"}</span></button>{open && <div className="px-4 py-3">{children}</div>}</div>);
 }
 
-const GRADE_STYLES: Record<string, string> = {
-  outstanding: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
-  good: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  requires_improvement: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  inadequate: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-};
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (<div className="bg-gray-50 rounded-lg px-3 py-2 text-center"><div className="text-lg font-bold text-gray-800">{value}</div><div className="text-xs text-gray-500">{label}</div></div>);
+}
 
-const GRADE_LABELS: Record<string, string> = {
-  outstanding: "Outstanding",
-  good: "Good",
-  requires_improvement: "RI",
-  inadequate: "Inadequate",
-};
-
-const DOMAIN_SHORT: Record<string, string> = {
-  overall_experiences: "Overall",
-  safety: "Safety",
-  education_and_learning: "Education",
-  health_and_wellbeing: "Health",
-  positive_relationships: "Relationships",
-  protection_of_children: "Protection",
-  leadership_and_management: "Leadership",
-};
-
-const TREND_ICONS: Record<string, string> = {
-  improving: "↑",
-  stable: "→",
-  declining: "↓",
-};
-
-export function QualityOfCareDashboardWidget({ homeId = "home-oak" }: Props) {
-  const [data, setData] = useState<QualityReview | null>(null);
+export default function QualityOfCareDashboardWidget() {
+  const [data, setData] = useState<QOCData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [homeId]);
+    fetch("/api/quality-of-care")
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((json) => setData(json.data))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/quality-of-care?homeId=${homeId}`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="rounded-lg border border-border bg-card p-6 animate-pulse">
-        <div className="h-4 w-32 bg-muted rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-muted rounded" />
-          <div className="h-3 w-3/4 bg-muted rounded" />
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return (<div className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse"><div className="h-6 bg-gray-200 rounded w-3/4 mb-4" /><div className="h-4 bg-gray-100 rounded w-1/2 mb-3" /><div className="h-4 bg-gray-100 rounded w-2/3 mb-3" /><div className="h-4 bg-gray-100 rounded w-1/3" /></div>);
+  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">Quality of Care</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
   if (!data) return null;
 
-  const domainScores = data.domains.filter(d => d.domain !== "overall_experiences");
+  const rc = ratingColour(data.rating);
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">Quality of Care (Reg 45)</h3>
-              <p className="text-xs text-muted-foreground">
-                SCCIF self-assessment
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {data.previousReviewComparison && (
-              <span className={`text-xs font-medium ${
-                data.previousReviewComparison.trend === "improving" ? "text-emerald-600" :
-                data.previousReviewComparison.trend === "declining" ? "text-red-600" : "text-gray-500"
-              }`}>
-                {TREND_ICONS[data.previousReviewComparison.trend]}
-              </span>
-            )}
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${GRADE_STYLES[data.overallGrade] ?? ""}`}>
-              {GRADE_LABELS[data.overallGrade] ?? data.overallGrade}
-            </span>
-          </div>
-        </div>
+    <div className="rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+        <div><h2 className="text-lg font-bold text-gray-900">Quality of Care</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold ${rc}`}><span className="text-xl font-bold">{data.overallScore}</span><span>/100</span><span className="ml-1">{ratingLabel(data.rating)}</span></div>
       </div>
 
-      {/* Overall Score */}
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">Overall quality score</span>
-        <div className="flex items-center gap-2">
-          <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full ${
-                data.overallScore >= 85 ? "bg-emerald-500" :
-                data.overallScore >= 65 ? "bg-blue-500" :
-                data.overallScore >= 40 ? "bg-amber-500" : "bg-red-500"
-              }`}
-              style={{ width: `${data.overallScore}%` }}
-            />
-          </div>
-          <span className="text-sm font-bold">{data.overallScore}%</span>
-        </div>
+      <div className="mb-6">
+        <ScoreBar label="Review Quality" score={data.reviewQuality.overallScore} />
+        <ScoreBar label="Review Compliance" score={data.reviewCompliance.overallScore} />
+        <ScoreBar label="Policy & Governance" score={data.qualityPolicy.overallScore} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} />
       </div>
 
-      {/* Domain Scores */}
-      <div className="divide-y divide-border">
-        {domainScores.map(domain => (
-          <div key={domain.domain} className="px-4 py-2 flex items-center justify-between">
-            <span className="text-xs font-medium">{DOMAIN_SHORT[domain.domain] ?? domain.domain}</span>
-            <div className="flex items-center gap-2">
-              <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${
-                    domain.score >= 85 ? "bg-emerald-500" :
-                    domain.score >= 65 ? "bg-blue-500" :
-                    domain.score >= 40 ? "bg-amber-500" : "bg-red-500"
-                  }`}
-                  style={{ width: `${domain.score}%` }}
-                />
+      <Section title="Review Quality" defaultOpen>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Reviews" value={data.reviewQuality.totalReviews} />
+          <Stat label="Meets Standard" value={`${data.reviewQuality.meetsStandardRate}%`} />
+          <Stat label="Evidence Documented" value={`${data.reviewQuality.evidenceDocumentedRate}%`} />
+          <Stat label="Child View Captured" value={`${data.reviewQuality.childViewRate}%`} />
+          <Stat label="Action Plans" value={`${data.reviewQuality.actionPlanRate}%`} />
+        </div>
+      </Section>
+
+      <Section title="Review Compliance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Follow-Up" value={`${data.reviewCompliance.followUpRate}%`} />
+          <Stat label="Regulatory Aligned" value={`${data.reviewCompliance.regulatoryAlignedRate}%`} />
+          <Stat label="Improvements" value={`${data.reviewCompliance.improvementRate}%`} />
+          <Stat label="Domain Coverage" value={`${data.reviewCompliance.domainDiversityRatio}%`} />
+        </div>
+      </Section>
+
+      <Section title="Policy & Governance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {([
+            ["QA Framework", data.qualityPolicy.qualityAssuranceFramework],
+            ["Reg 45 Schedule", data.qualityPolicy.reg45ReviewSchedule],
+            ["Improvement Plan", data.qualityPolicy.continuousImprovementPlan],
+            ["Outcomes Policy", data.qualityPolicy.outcomesMeasurementPolicy],
+            ["Child Participation", data.qualityPolicy.childParticipationStrategy],
+            ["Audit Schedule", data.qualityPolicy.auditSchedule],
+            ["Feedback Mechanism", data.qualityPolicy.feedbackMechanism],
+          ] as [string, boolean][]).map(([label, val]) => (
+            <div key={label} className={`rounded-lg px-3 py-2 text-center border ${boolBadge(val)}`}><div className="text-sm font-semibold">{val ? "Yes" : "No"}</div><div className="text-xs">{label}</div></div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Staff Readiness">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
+          <Stat label="Quality Assurance" value={`${data.staffReadiness.qualityAssuranceRate}%`} />
+          <Stat label="Outcomes Monitoring" value={`${data.staffReadiness.outcomesMonitoringRate}%`} />
+          <Stat label="Regulatory Knowledge" value={`${data.staffReadiness.regulatoryKnowledgeRate}%`} />
+          <Stat label="Reflective Practice" value={`${data.staffReadiness.reflectivePracticeRate}%`} />
+          <Stat label="Data Analysis" value={`${data.staffReadiness.dataAnalysisRate}%`} />
+          <Stat label="Child Participation" value={`${data.staffReadiness.childParticipationRate}%`} />
+        </div>
+      </Section>
+
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Quality Profiles">
+          <div className="space-y-3">
+            {data.childProfiles.map((cp) => (
+              <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
+                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Reviews: {cp.totalReviews}</span><span>Meets Standard: {cp.meetsStandardRate}%</span><span>Child View: {cp.childViewRate}%</span></div>
               </div>
-              <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${GRADE_STYLES[domain.grade] ?? ""}`}>
-                {GRADE_LABELS[domain.grade] ?? domain.grade}
-              </span>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
-
-      {/* Regulatory Compliance */}
-      <div className="px-4 py-3 border-t border-border">
-        <p className="text-xs text-muted-foreground mb-1.5">Regulatory compliance</p>
-        <div className="flex flex-wrap gap-1.5">
-          <ComplianceChip label="Reg 44" ok={data.regulatoryCompliance.reg44Compliant} />
-          <ComplianceChip label="Notifications" ok={data.regulatoryCompliance.notifiableEventsCompliant} />
-          <ComplianceChip label="SoP" ok={data.regulatoryCompliance.statementOfPurposeCurrent} />
-          <ComplianceChip label="Staffing" ok={data.regulatoryCompliance.staffingAdequate} />
-          <ComplianceChip label="Records" ok={data.regulatoryCompliance.recordKeepingAdequate} />
-        </div>
-      </div>
-
-      {/* Priority Actions */}
-      {data.priorityActions.length > 0 && (
-        <div className="border-t border-border bg-amber-50/50 dark:bg-amber-900/10 p-3">
-          <p className="text-[10px] font-medium text-amber-700 dark:text-amber-400 mb-1">Priority actions:</p>
-          <p className="text-xs text-amber-700 dark:text-amber-400 line-clamp-2">
-            {data.priorityActions[0]}
-          </p>
-        </div>
+        </Section>
       )}
 
-      {/* Footer */}
-      <div className="p-3 border-t border-border text-center">
-        <a href="/quality-of-care" className="text-xs text-primary font-medium hover:underline">
-          View full Reg 45 review →
-        </a>
-      </div>
+      {data.strengths.length > 0 && (<Section title="Strengths"><ul className="space-y-1">{data.strengths.map((s, i) => (<li key={i} className="text-sm text-green-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-green-500" />{s}</li>))}</ul></Section>)}
+      {data.areasForImprovement.length > 0 && (<Section title="Areas for Improvement"><ul className="space-y-1">{data.areasForImprovement.map((a, i) => (<li key={i} className="text-sm text-amber-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />{a}</li>))}</ul></Section>)}
+      {data.actions.length > 0 && (<Section title="Actions" defaultOpen><ul className="space-y-1">{data.actions.map((a, i) => (<li key={i} className={`text-sm flex gap-2 ${a.startsWith("URGENT") ? "text-red-800 font-semibold" : "text-gray-700"}`}><span className={`shrink-0 mt-1 h-1.5 w-1.5 rounded-full ${a.startsWith("URGENT") ? "bg-red-500" : "bg-gray-400"}`} />{a}</li>))}</ul></Section>)}
+      <Section title="Regulatory Links"><ul className="space-y-1">{data.regulatoryLinks.map((l, i) => (<li key={i} className="text-sm text-gray-600 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-gray-400" />{l}</li>))}</ul></Section>
     </div>
-  );
-}
-
-function ComplianceChip({ label, ok }: { label: string; ok: boolean }) {
-  return (
-    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${
-      ok
-        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-    }`}>
-      {ok ? "✓" : "✗"} {label}
-    </span>
   );
 }

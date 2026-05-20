@@ -1,379 +1,371 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Quality of Care Review (Reg 45) Engine — Tests
-//
-// Covers: domain scoring, grade assignment, strength/improvement detection,
-// overall weighted calculation, regulatory compliance, comparison to previous.
-// ══════════════════════════════════════════════════════════════════════════════
-
 import { describe, it, expect } from "vitest";
 import {
-  generateQualityOfCareReview,
-  getDomainLabel,
-  getGradeLabel,
-  getGradeColor,
+  pct, getRating, getQualityDomainLabel, getReviewOutcomeLabel, getRatingLabel,
+  evaluateReviewQuality, evaluateReviewCompliance, evaluateQualityPolicy,
+  evaluateStaffQualityReadiness, buildChildQualityProfiles,
+  generateQualityOfCareIntelligence,
 } from "../quality-of-care-engine";
-import type { QualityInputData } from "../quality-of-care-engine";
+import type { QualityReviewRecord, QualityPolicy, StaffQualityTraining, QualityDomain } from "../quality-of-care-engine";
 
-// ── Test Fixtures ──────────────────────────────────────────────────────────
-
-function makeInput(overrides: Partial<QualityInputData> = {}): QualityInputData {
-  return {
-    homeId: "home-oak",
-    homeName: "Oak House",
-    reviewPeriodStart: "2025-11-01T00:00:00Z",
-    reviewPeriodEnd: "2026-05-01T00:00:00Z",
-    registeredManager: "Claire Edwards",
-    registeredCapacity: 4,
-    currentOccupancy: 3,
-
-    safety: {
-      totalIncidents: 12,
-      restraintCount: 4,
-      restraintReductionTrend: "reducing",
-      missingEpisodes: 2,
-      missingRepeatChildren: 0,
-      bullyingIncidents: 1,
-      environmentalRiskAssessmentsComplete: true,
-      fireDrillsCompliant: true,
-      medicationErrorCount: 1,
-      deEscalationRate: 85,
-      childrenFeelSafe: 92,
-    },
-
-    education: {
-      averageAttendance: 94,
-      pepCompliance: 100,
-      exclusionDays: 2,
-      childrenInEducation: 100,
-      ppSpendRate: 75,
-      progressingTowardsTargets: 80,
-      enrichmentActivitiesPerWeek: 4,
-    },
-
-    health: {
-      ihaComplianceRate: 100,
-      rhaComplianceRate: 100,
-      sdqCompletionRate: 100,
-      dentalCheckRate: 90,
-      immunisationRate: 100,
-      camhsReferralsMade: 1,
-      camhsWaitingList: 0,
-      healthyEatingScore: 80,
-      physicalActivityHoursPerWeek: 4,
-    },
-
-    relationships: {
-      keyworkComplianceRate: 92,
-      keyworkEngagementScore: 4.2,
-      childVoiceRate: 85,
-      familyContactRate: 90,
-      childrensMeetingsHeld: 6,
-      complaintsCount: 2,
-      complimentsCount: 8,
-      staffTurnoverRate: 10,
-      agencyUsageRate: 15,
-    },
-
-    protection: {
-      safeguardingReferralsMade: 2,
-      safeguardingConcernsOpen: 1,
-      dbsComplianceRate: 100,
-      saferRecruitmentCompliant: true,
-      trainingComplianceRate: 92,
-      supervisionComplianceRate: 95,
-      allegationsThisPeriod: 0,
-      notifiableEvents: 3,
-      notifiableEventsCompliant: 3,
-      whistleblowingCulture: 80,
-    },
-
-    leadership: {
-      reg44VisitsCompliant: true,
-      reg44ActionsClosed: 90,
-      staffSupervisionRate: 95,
-      staffQualificationRate: 85,
-      policyReviewsCurrent: true,
-      statementOfPurposeCurrent: true,
-      complaintResponseRate: 100,
-      ofstedActionsComplete: 90,
-      improvementPlanProgress: 82,
-      staffMorale: 78,
-    },
-
-    ...overrides,
-  };
+let _sid = 0;
+function makeRecord(o: Partial<QualityReviewRecord> = {}): QualityReviewRecord {
+  _sid++;
+  return { id: `qr-${_sid}`, childId: "child-1", childName: "Alex", reviewDate: "2026-03-01", domain: "safety_welfare", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true, ...o };
+}
+function makePolicy(o: Partial<QualityPolicy> = {}): QualityPolicy {
+  return { id: "p-1", qualityAssuranceFramework: true, reg45ReviewSchedule: true, continuousImprovementPlan: true, outcomesMeasurementPolicy: true, childParticipationStrategy: true, auditSchedule: true, feedbackMechanism: true, ...o };
+}
+let _tid = 0;
+function makeTraining(o: Partial<StaffQualityTraining> = {}): StaffQualityTraining {
+  _tid++;
+  return { id: `t-${_tid}`, staffId: `staff-${_tid}`, staffName: `Staff ${_tid}`, qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: true, dataAnalysis: true, childParticipation: true, ...o };
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Review Generation Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── pct ────────────────────────────────────────────────────────────────────
 
-describe("generateQualityOfCareReview", () => {
-  it("generates a complete review with all domains", () => {
-    const input = makeInput();
-    const review = generateQualityOfCareReview(input);
+describe("pct", () => {
+  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
+  it("correct pct", () => { expect(pct(3, 4)).toBe(75); });
+  it("rounds", () => { expect(pct(1, 3)).toBe(33); });
+  it("100 for equal", () => { expect(pct(10, 10)).toBe(100); });
+  it("0 for num=0", () => { expect(pct(0, 5)).toBe(0); });
+});
 
-    expect(review.homeId).toBe("home-oak");
-    expect(review.homeName).toBe("Oak House");
-    expect(review.domains).toHaveLength(7); // 6 + overall
-    expect(review.overallScore).toBeGreaterThan(0);
-    expect(review.overallGrade).toBeDefined();
-    expect(review.topStrengths.length).toBeGreaterThan(0);
+// ── getRating ──────────────────────────────────────────────────────────────
+
+describe("getRating", () => {
+  it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); });
+  it("outstanding at 100", () => { expect(getRating(100)).toBe("outstanding"); });
+  it("good >= 60", () => { expect(getRating(60)).toBe("good"); });
+  it("good at 79", () => { expect(getRating(79)).toBe("good"); });
+  it("requires_improvement >= 40", () => { expect(getRating(40)).toBe("requires_improvement"); });
+  it("inadequate < 40", () => { expect(getRating(0)).toBe("inadequate"); });
+  it("inadequate at 39", () => { expect(getRating(39)).toBe("inadequate"); });
+});
+
+// ── labels ─────────────────────────────────────────────────────────────────
+
+describe("labels", () => {
+  it("domain labels", () => {
+    expect(getQualityDomainLabel("safety_welfare")).toBe("Safety & Welfare");
+    expect(getQualityDomainLabel("education_learning")).toBe("Education & Learning");
+    expect(getQualityDomainLabel("health_wellbeing")).toBe("Health & Wellbeing");
+    expect(getQualityDomainLabel("positive_relationships")).toBe("Positive Relationships");
+    expect(getQualityDomainLabel("protection_children")).toBe("Protection of Children");
+    expect(getQualityDomainLabel("leadership_management")).toBe("Leadership & Management");
+    expect(getQualityDomainLabel("outcomes_progress")).toBe("Outcomes & Progress");
+    expect(getQualityDomainLabel("child_voice")).toBe("Child Voice");
   });
-
-  it("grades outstanding for high-scoring home", () => {
-    const input = makeInput({
-      safety: {
-        totalIncidents: 3,
-        restraintCount: 1,
-        restraintReductionTrend: "reducing",
-        missingEpisodes: 0,
-        missingRepeatChildren: 0,
-        bullyingIncidents: 0,
-        environmentalRiskAssessmentsComplete: true,
-        fireDrillsCompliant: true,
-        medicationErrorCount: 0,
-        deEscalationRate: 95,
-        childrenFeelSafe: 100,
-      },
-      education: {
-        averageAttendance: 98,
-        pepCompliance: 100,
-        exclusionDays: 0,
-        childrenInEducation: 100,
-        ppSpendRate: 90,
-        progressingTowardsTargets: 90,
-        enrichmentActivitiesPerWeek: 5,
-      },
-    });
-
-    const review = generateQualityOfCareReview(input);
-    expect(review.overallScore).toBeGreaterThanOrEqual(80);
-    expect(["outstanding", "good"]).toContain(review.overallGrade);
+  it("outcome labels", () => {
+    expect(getReviewOutcomeLabel("exceeds_standard")).toBe("Exceeds Standard");
+    expect(getReviewOutcomeLabel("meets_standard")).toBe("Meets Standard");
+    expect(getReviewOutcomeLabel("partially_meets")).toBe("Partially Meets");
+    expect(getReviewOutcomeLabel("does_not_meet")).toBe("Does Not Meet");
+    expect(getReviewOutcomeLabel("not_assessed")).toBe("Not Assessed");
   });
-
-  it("grades inadequate for poorly performing home", () => {
-    const input = makeInput({
-      safety: {
-        totalIncidents: 30,
-        restraintCount: 15,
-        restraintReductionTrend: "increasing",
-        missingEpisodes: 10,
-        missingRepeatChildren: 3,
-        bullyingIncidents: 5,
-        environmentalRiskAssessmentsComplete: false,
-        fireDrillsCompliant: false,
-        medicationErrorCount: 8,
-        deEscalationRate: 30,
-        childrenFeelSafe: 50,
-      },
-      protection: {
-        safeguardingReferralsMade: 5,
-        safeguardingConcernsOpen: 4,
-        dbsComplianceRate: 70,
-        saferRecruitmentCompliant: false,
-        trainingComplianceRate: 50,
-        supervisionComplianceRate: 40,
-        allegationsThisPeriod: 2,
-        notifiableEvents: 5,
-        notifiableEventsCompliant: 2,
-        whistleblowingCulture: 30,
-      },
-      leadership: {
-        reg44VisitsCompliant: false,
-        reg44ActionsClosed: 30,
-        staffSupervisionRate: 40,
-        staffQualificationRate: 40,
-        policyReviewsCurrent: false,
-        statementOfPurposeCurrent: false,
-        complaintResponseRate: 50,
-        ofstedActionsComplete: 20,
-        improvementPlanProgress: 20,
-        staffMorale: 30,
-      },
-    });
-
-    const review = generateQualityOfCareReview(input);
-    expect(review.overallScore).toBeLessThan(55);
-    expect(["requires_improvement", "inadequate"]).toContain(review.overallGrade);
-  });
-
-  it("detects strengths correctly in safety domain", () => {
-    const input = makeInput();
-    const review = generateQualityOfCareReview(input);
-    const safety = review.domains.find(d => d.domain === "safety");
-
-    expect(safety).toBeDefined();
-    expect(safety!.strengths.length).toBeGreaterThan(0);
-    expect(safety!.strengths.some(s => s.includes("de-escalation"))).toBe(true);
-  });
-
-  it("detects areas for improvement", () => {
-    const input = makeInput({
-      education: {
-        averageAttendance: 80,
-        pepCompliance: 60,
-        exclusionDays: 10,
-        childrenInEducation: 80,
-        ppSpendRate: 30,
-        progressingTowardsTargets: 50,
-        enrichmentActivitiesPerWeek: 1,
-      },
-    });
-
-    const review = generateQualityOfCareReview(input);
-    const education = review.domains.find(d => d.domain === "education_and_learning");
-
-    expect(education!.areasForImprovement.length).toBeGreaterThan(0);
-    expect(education!.areasForImprovement.some(a => a.includes("attendance"))).toBe(true);
-  });
-
-  it("sets regulatory compliance flags correctly", () => {
-    const input = makeInput();
-    const review = generateQualityOfCareReview(input);
-
-    expect(review.regulatoryCompliance.reg44Compliant).toBe(true);
-    expect(review.regulatoryCompliance.notifiableEventsCompliant).toBe(true);
-    expect(review.regulatoryCompliance.statementOfPurposeCurrent).toBe(true);
-    expect(review.regulatoryCompliance.staffingAdequate).toBe(true);
-  });
-
-  it("flags non-compliant regulatory areas", () => {
-    const input = makeInput({
-      leadership: {
-        reg44VisitsCompliant: false,
-        reg44ActionsClosed: 30,
-        staffSupervisionRate: 40,
-        staffQualificationRate: 40,
-        policyReviewsCurrent: false,
-        statementOfPurposeCurrent: false,
-        complaintResponseRate: 50,
-        ofstedActionsComplete: 20,
-        improvementPlanProgress: 20,
-        staffMorale: 30,
-      },
-    });
-
-    const review = generateQualityOfCareReview(input);
-    expect(review.regulatoryCompliance.reg44Compliant).toBe(false);
-    expect(review.regulatoryCompliance.statementOfPurposeCurrent).toBe(false);
-  });
-
-  it("compares with previous score", () => {
-    const input = makeInput();
-    const review = generateQualityOfCareReview(input, 60);
-
-    expect(review.previousReviewComparison).toBeDefined();
-    expect(review.previousReviewComparison!.previousScore).toBe(60);
-    expect(review.previousReviewComparison!.trend).toBe("improving");
-  });
-
-  it("marks declining trend when score drops", () => {
-    const input = makeInput({
-      safety: {
-        totalIncidents: 20,
-        restraintCount: 10,
-        restraintReductionTrend: "increasing",
-        missingEpisodes: 5,
-        missingRepeatChildren: 2,
-        bullyingIncidents: 3,
-        environmentalRiskAssessmentsComplete: false,
-        fireDrillsCompliant: false,
-        medicationErrorCount: 5,
-        deEscalationRate: 40,
-        childrenFeelSafe: 60,
-      },
-    });
-
-    const review = generateQualityOfCareReview(input, 90);
-    expect(review.previousReviewComparison!.trend).toBe("declining");
-  });
-
-  it("includes key metrics in each domain", () => {
-    const input = makeInput();
-    const review = generateQualityOfCareReview(input);
-
-    const education = review.domains.find(d => d.domain === "education_and_learning");
-    expect(education!.keyMetrics.length).toBeGreaterThan(0);
-    expect(education!.keyMetrics.some(m => m.label === "Attendance")).toBe(true);
-  });
-
-  it("handles children summary", () => {
-    const input = makeInput();
-    const review = generateQualityOfCareReview(input);
-
-    expect(review.childrenSummary.capacity).toBe(4);
-    expect(review.childrenSummary.occupancy).toBe(3);
+  it("rating labels", () => {
+    expect(getRatingLabel("outstanding")).toBe("Outstanding");
+    expect(getRatingLabel("good")).toBe("Good");
+    expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement");
+    expect(getRatingLabel("inadequate")).toBe("Inadequate");
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Domain Scoring Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── evaluateReviewQuality ──────────────────────────────────────────────────
 
-describe("Domain scoring", () => {
-  it("safety domain scores higher with reducing restraints", () => {
-    const inputReducing = makeInput({ safety: { ...makeInput().safety, restraintReductionTrend: "reducing" } });
-    const inputIncreasing = makeInput({ safety: { ...makeInput().safety, restraintReductionTrend: "increasing" } });
-
-    const reviewR = generateQualityOfCareReview(inputReducing);
-    const reviewI = generateQualityOfCareReview(inputIncreasing);
-
-    const safetyR = reviewR.domains.find(d => d.domain === "safety")!.score;
-    const safetyI = reviewI.domains.find(d => d.domain === "safety")!.score;
-
-    expect(safetyR).toBeGreaterThan(safetyI);
+describe("evaluateReviewQuality", () => {
+  it("zeros for empty", () => {
+    const r = evaluateReviewQuality([]);
+    expect(r.overallScore).toBe(0);
+    expect(r.totalReviews).toBe(0);
+    expect(r.rating).toBe("inadequate");
   });
-
-  it("relationships domain penalises high agency usage", () => {
-    const lowAgency = makeInput({ relationships: { ...makeInput().relationships, agencyUsageRate: 10, staffTurnoverRate: 5 } });
-    const highAgency = makeInput({ relationships: { ...makeInput().relationships, agencyUsageRate: 40, staffTurnoverRate: 35 } });
-
-    const reviewL = generateQualityOfCareReview(lowAgency);
-    const reviewH = generateQualityOfCareReview(highAgency);
-
-    const relL = reviewL.domains.find(d => d.domain === "positive_relationships")!.score;
-    const relH = reviewH.domains.find(d => d.domain === "positive_relationships")!.score;
-
-    expect(relL).toBeGreaterThan(relH);
+  it("max 25 with perfect records", () => {
+    const r = evaluateReviewQuality(Array.from({ length: 10 }, () => makeRecord()));
+    expect(r.overallScore).toBe(25);
+    expect(r.meetsStandardRate).toBe(100);
+    expect(r.evidenceDocumentedRate).toBe(100);
+    expect(r.childViewRate).toBe(100);
+    expect(r.actionPlanRate).toBe(100);
   });
-
-  it("protection domain flags DBS non-compliance severely", () => {
-    const compliant = makeInput({ protection: { ...makeInput().protection, dbsComplianceRate: 100 } });
-    const nonCompliant = makeInput({ protection: { ...makeInput().protection, dbsComplianceRate: 70 } });
-
-    const reviewC = generateQualityOfCareReview(compliant);
-    const reviewN = generateQualityOfCareReview(nonCompliant);
-
-    const protC = reviewC.domains.find(d => d.domain === "protection_of_children")!.score;
-    const protN = reviewN.domains.find(d => d.domain === "protection_of_children")!.score;
-
-    expect(protC - protN).toBeGreaterThanOrEqual(20);
+  it("meetsStandard counts exceeds and meets", () => {
+    const s = [
+      makeRecord({ outcome: "exceeds_standard" }),
+      makeRecord({ outcome: "meets_standard" }),
+      makeRecord({ outcome: "partially_meets" }),
+      makeRecord({ outcome: "does_not_meet" }),
+    ];
+    expect(evaluateReviewQuality(s).meetsStandardRate).toBe(50);
+  });
+  it("evidence documented rate", () => {
+    const s = [makeRecord({ evidenceDocumented: true }), makeRecord({ evidenceDocumented: false })];
+    expect(evaluateReviewQuality(s).evidenceDocumentedRate).toBe(50);
+  });
+  it("child view rate", () => {
+    const s = [makeRecord({ childViewCaptured: true }), makeRecord({ childViewCaptured: false }), makeRecord({ childViewCaptured: false })];
+    expect(evaluateReviewQuality(s).childViewRate).toBe(33);
+  });
+  it("action plan rate", () => {
+    const s = [makeRecord({ actionPlanCreated: true }), makeRecord({ actionPlanCreated: true }), makeRecord({ actionPlanCreated: false })];
+    expect(evaluateReviewQuality(s).actionPlanRate).toBe(67);
+  });
+  it("caps at 25", () => {
+    expect(evaluateReviewQuality(Array.from({ length: 20 }, () => makeRecord())).overallScore).toBeLessThanOrEqual(25);
+  });
+  it("rating outstanding when score 25", () => {
+    expect(evaluateReviewQuality(Array.from({ length: 5 }, () => makeRecord())).rating).toBe("outstanding");
+  });
+  it("rating inadequate when all poor", () => {
+    const s = [makeRecord({ outcome: "does_not_meet", evidenceDocumented: false, childViewCaptured: false, actionPlanCreated: false })];
+    expect(evaluateReviewQuality(s).rating).toBe("inadequate");
+  });
+  it("partial scoring", () => {
+    const s = [
+      makeRecord({ outcome: "meets_standard", childViewCaptured: true }),
+      makeRecord({ outcome: "does_not_meet", childViewCaptured: false }),
+    ];
+    const r = evaluateReviewQuality(s);
+    expect(r.overallScore).toBe(19);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Helper Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── evaluateReviewCompliance ───────────────────────────────────────────────
 
-describe("Helper functions", () => {
-  it("getDomainLabel returns readable labels", () => {
-    expect(getDomainLabel("safety")).toBe("How Safe Children Are");
-    expect(getDomainLabel("leadership_and_management")).toBe("Leadership & Management");
-    expect(getDomainLabel("overall_experiences")).toBe("Overall Experiences & Progress");
+describe("evaluateReviewCompliance", () => {
+  it("zeros for empty", () => {
+    expect(evaluateReviewCompliance([]).overallScore).toBe(0);
   });
-
-  it("getGradeLabel returns readable labels", () => {
-    expect(getGradeLabel("outstanding")).toBe("Outstanding");
-    expect(getGradeLabel("good")).toBe("Good");
-    expect(getGradeLabel("requires_improvement")).toBe("Requires Improvement");
-    expect(getGradeLabel("inadequate")).toBe("Inadequate");
+  it("max 25 with full diversity", () => {
+    const domains: QualityDomain[] = ["safety_welfare", "education_learning", "health_wellbeing", "positive_relationships", "protection_children", "leadership_management", "outcomes_progress", "child_voice"];
+    const r = evaluateReviewCompliance(domains.map((d) => makeRecord({ domain: d })));
+    expect(r.overallScore).toBe(25);
+    expect(r.domainDiversityRatio).toBe(100);
   });
+  it("followUp rate", () => {
+    const s = [makeRecord({ followUpCompleted: true }), makeRecord({ followUpCompleted: false })];
+    expect(evaluateReviewCompliance(s).followUpRate).toBe(50);
+  });
+  it("regulatory aligned rate", () => {
+    const s = [makeRecord({ regulatoryAligned: true }), makeRecord({ regulatoryAligned: false }), makeRecord({ regulatoryAligned: false })];
+    expect(evaluateReviewCompliance(s).regulatoryAlignedRate).toBe(33);
+  });
+  it("improvement rate", () => {
+    const s = [makeRecord({ improvementIdentified: true }), makeRecord({ improvementIdentified: false })];
+    expect(evaluateReviewCompliance(s).improvementRate).toBe(50);
+  });
+  it("diversity 2/8=25%", () => {
+    const s = [makeRecord({ domain: "safety_welfare" }), makeRecord({ domain: "education_learning" }), makeRecord({ domain: "safety_welfare" })];
+    expect(evaluateReviewCompliance(s).domainDiversityRatio).toBe(25);
+  });
+  it("caps at 25", () => {
+    const domains: QualityDomain[] = ["safety_welfare", "education_learning", "health_wellbeing", "positive_relationships", "protection_children", "leadership_management", "outcomes_progress", "child_voice"];
+    expect(evaluateReviewCompliance(domains.map((d) => makeRecord({ domain: d }))).overallScore).toBeLessThanOrEqual(25);
+  });
+});
 
-  it("getGradeColor returns colour identifiers", () => {
-    expect(getGradeColor("outstanding")).toBe("emerald");
-    expect(getGradeColor("good")).toBe("blue");
-    expect(getGradeColor("requires_improvement")).toBe("amber");
-    expect(getGradeColor("inadequate")).toBe("red");
+// ── evaluateQualityPolicy ──────────────────────────────────────────────────
+
+describe("evaluateQualityPolicy", () => {
+  it("null gives 0", () => {
+    const r = evaluateQualityPolicy(null);
+    expect(r.overallScore).toBe(0);
+    expect(r.qualityAssuranceFramework).toBe(false);
+    expect(r.rating).toBe("inadequate");
+  });
+  it("all true gives 25", () => {
+    expect(evaluateQualityPolicy(makePolicy()).overallScore).toBe(25);
+  });
+  it("first 4 at 4pts each", () => {
+    expect(evaluateQualityPolicy(makePolicy({ childParticipationStrategy: false, auditSchedule: false, feedbackMechanism: false })).overallScore).toBe(16);
+  });
+  it("last 3 at 3pts each", () => {
+    expect(evaluateQualityPolicy(makePolicy({ qualityAssuranceFramework: false, reg45ReviewSchedule: false, continuousImprovementPlan: false, outcomesMeasurementPolicy: false })).overallScore).toBe(9);
+  });
+  it("all false gives 0", () => {
+    expect(evaluateQualityPolicy(makePolicy({ qualityAssuranceFramework: false, reg45ReviewSchedule: false, continuousImprovementPlan: false, outcomesMeasurementPolicy: false, childParticipationStrategy: false, auditSchedule: false, feedbackMechanism: false })).overallScore).toBe(0);
+  });
+  it("mirrors booleans", () => {
+    const r = evaluateQualityPolicy(makePolicy({ qualityAssuranceFramework: false }));
+    expect(r.qualityAssuranceFramework).toBe(false);
+    expect(r.reg45ReviewSchedule).toBe(true);
+  });
+  it("single 4pt boolean = 4", () => {
+    expect(evaluateQualityPolicy(makePolicy({ qualityAssuranceFramework: true, reg45ReviewSchedule: false, continuousImprovementPlan: false, outcomesMeasurementPolicy: false, childParticipationStrategy: false, auditSchedule: false, feedbackMechanism: false })).overallScore).toBe(4);
+  });
+  it("single 3pt boolean = 3", () => {
+    expect(evaluateQualityPolicy(makePolicy({ qualityAssuranceFramework: false, reg45ReviewSchedule: false, continuousImprovementPlan: false, outcomesMeasurementPolicy: false, childParticipationStrategy: true, auditSchedule: false, feedbackMechanism: false })).overallScore).toBe(3);
+  });
+  it("outstanding rating when full", () => {
+    expect(evaluateQualityPolicy(makePolicy()).rating).toBe("outstanding");
+  });
+});
+
+// ── evaluateStaffQualityReadiness ──────────────────────────────────────────
+
+describe("evaluateStaffQualityReadiness", () => {
+  it("zeros for empty", () => {
+    const r = evaluateStaffQualityReadiness([]);
+    expect(r.overallScore).toBe(0);
+    expect(r.totalStaff).toBe(0);
+    expect(r.rating).toBe("inadequate");
+  });
+  it("25 fully trained", () => {
+    expect(evaluateStaffQualityReadiness([makeTraining()]).overallScore).toBe(25);
+  });
+  it("partial — qualityAssurance only = 6", () => {
+    const t = makeTraining({ qualityAssuranceSkills: true, outcomesMonitoring: false, regulatoryKnowledge: false, reflectivePractice: false, dataAnalysis: false, childParticipation: false });
+    expect(evaluateStaffQualityReadiness([t]).overallScore).toBe(6);
+  });
+  it("partial — childParticipation only = 2", () => {
+    const t = makeTraining({ qualityAssuranceSkills: false, outcomesMonitoring: false, regulatoryKnowledge: false, reflectivePractice: false, dataAnalysis: false, childParticipation: true });
+    expect(evaluateStaffQualityReadiness([t]).overallScore).toBe(2);
+  });
+  it("partial — outcomesMonitoring only = 5", () => {
+    const t = makeTraining({ qualityAssuranceSkills: false, outcomesMonitoring: true, regulatoryKnowledge: false, reflectivePractice: false, dataAnalysis: false, childParticipation: false });
+    expect(evaluateStaffQualityReadiness([t]).overallScore).toBe(5);
+  });
+  it("partial — dataAnalysis only = 3", () => {
+    const t = makeTraining({ qualityAssuranceSkills: false, outcomesMonitoring: false, regulatoryKnowledge: false, reflectivePractice: false, dataAnalysis: true, childParticipation: false });
+    expect(evaluateStaffQualityReadiness([t]).overallScore).toBe(3);
+  });
+  it("mixed rates", () => {
+    const t1 = makeTraining({ qualityAssuranceSkills: true, outcomesMonitoring: false, regulatoryKnowledge: false, reflectivePractice: false, dataAnalysis: false, childParticipation: false });
+    const t2 = makeTraining({ qualityAssuranceSkills: false, outcomesMonitoring: true, regulatoryKnowledge: false, reflectivePractice: false, dataAnalysis: false, childParticipation: false });
+    const r = evaluateStaffQualityReadiness([t1, t2]);
+    expect(r.qualityAssuranceRate).toBe(50);
+    expect(r.outcomesMonitoringRate).toBe(50);
+    expect(r.regulatoryKnowledgeRate).toBe(0);
+  });
+  it("totalStaff count", () => {
+    expect(evaluateStaffQualityReadiness([makeTraining(), makeTraining(), makeTraining()]).totalStaff).toBe(3);
+  });
+  it("outstanding when fully trained", () => {
+    expect(evaluateStaffQualityReadiness([makeTraining()]).rating).toBe("outstanding");
+  });
+});
+
+// ── buildChildQualityProfiles ──────────────────────────────────────────────
+
+describe("buildChildQualityProfiles", () => {
+  it("empty gives []", () => { expect(buildChildQualityProfiles([])).toEqual([]); });
+  it("groups by childId", () => {
+    const s = [makeRecord({ childId: "c1", childName: "A" }), makeRecord({ childId: "c1", childName: "A" }), makeRecord({ childId: "c2", childName: "B" })];
+    const p = buildChildQualityProfiles(s);
+    expect(p).toHaveLength(2);
+    expect(p[0].totalReviews).toBe(2);
+  });
+  it("caps at 10", () => {
+    const domains: QualityDomain[] = ["safety_welfare", "education_learning", "health_wellbeing", "positive_relationships", "protection_children"];
+    const s = Array.from({ length: 12 }, (_, i) => makeRecord({ childId: "c1", childName: "A", domain: domains[i % domains.length] }));
+    expect(buildChildQualityProfiles(s)[0].overallScore).toBeLessThanOrEqual(10);
+  });
+  it("freq scoring: 3 → 0", () => {
+    const mk = (n: number) => Array.from({ length: n }, () => makeRecord({ childId: "cx", childName: "X", outcome: "does_not_meet", childViewCaptured: false, domain: "safety_welfare" }));
+    expect(buildChildQualityProfiles(mk(3))[0].overallScore).toBe(0);
+  });
+  it("freq scoring: 5 → 1", () => {
+    const mk = (n: number) => Array.from({ length: n }, () => makeRecord({ childId: "cx", childName: "X", outcome: "does_not_meet", childViewCaptured: false, domain: "safety_welfare" }));
+    expect(buildChildQualityProfiles(mk(5))[0].overallScore).toBe(1);
+  });
+  it("freq scoring: 10 → 2", () => {
+    const mk = (n: number) => Array.from({ length: n }, () => makeRecord({ childId: "cx", childName: "X", outcome: "does_not_meet", childViewCaptured: false, domain: "safety_welfare" }));
+    expect(buildChildQualityProfiles(mk(10))[0].overallScore).toBe(2);
+  });
+  it("diversity: 4 domains → 2", () => {
+    const domains: QualityDomain[] = ["safety_welfare", "education_learning", "health_wellbeing", "positive_relationships"];
+    const s = domains.map((d) => makeRecord({ childId: "c1", childName: "A", outcome: "does_not_meet", childViewCaptured: false, domain: d }));
+    expect(buildChildQualityProfiles(s)[0].overallScore).toBe(2);
+  });
+  it("perfect child gets 10", () => {
+    const domains: QualityDomain[] = ["safety_welfare", "education_learning", "health_wellbeing", "positive_relationships", "protection_children"];
+    const s = Array.from({ length: 10 }, (_, i) => makeRecord({ childId: "c1", childName: "A", domain: domains[i % domains.length] }));
+    expect(buildChildQualityProfiles(s)[0].overallScore).toBe(10);
+  });
+  it("meetsStandardRate tracked", () => {
+    const s = [
+      makeRecord({ childId: "c1", childName: "A", outcome: "meets_standard" }),
+      makeRecord({ childId: "c1", childName: "A", outcome: "does_not_meet" }),
+    ];
+    expect(buildChildQualityProfiles(s)[0].meetsStandardRate).toBe(50);
+  });
+  it("domainsCovered lists unique domains", () => {
+    const s = [
+      makeRecord({ childId: "c1", childName: "A", domain: "safety_welfare" }),
+      makeRecord({ childId: "c1", childName: "A", domain: "education_learning" }),
+      makeRecord({ childId: "c1", childName: "A", domain: "safety_welfare" }),
+    ];
+    const p = buildChildQualityProfiles(s)[0];
+    expect(p.domainsCovered).toContain("safety_welfare");
+    expect(p.domainsCovered).toContain("education_learning");
+    expect(p.domainsCovered).toHaveLength(2);
+  });
+});
+
+// ── generateQualityOfCareIntelligence ──────────────────────────────────────
+
+describe("generateQualityOfCareIntelligence", () => {
+  it("complete result", () => {
+    const domains: QualityDomain[] = ["safety_welfare", "education_learning", "health_wellbeing", "positive_relationships", "protection_children", "leadership_management", "outcomes_progress", "child_voice"];
+    const s = domains.map((d, i) => makeRecord({ childId: i < 4 ? "c1" : "c2", childName: i < 4 ? "A" : "B", domain: d }));
+    const r = generateQualityOfCareIntelligence(s, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-05-20");
+    expect(r.homeId).toBe("oak-house");
+    expect(r.overallScore).toBeLessThanOrEqual(100);
+    expect(r.regulatoryLinks).toHaveLength(7);
+  });
+  it("100 perfect", () => {
+    const domains: QualityDomain[] = ["safety_welfare", "education_learning", "health_wellbeing", "positive_relationships", "protection_children", "leadership_management", "outcomes_progress", "child_voice"];
+    const r = generateQualityOfCareIntelligence(domains.map((d) => makeRecord({ domain: d })), makePolicy(), [makeTraining()], "h", "2026-01-01", "2026-06-01");
+    expect(r.overallScore).toBe(100);
+    expect(r.rating).toBe("outstanding");
+  });
+  it("0 empty", () => {
+    const r = generateQualityOfCareIntelligence([], null, [], "h", "2026-01-01", "2026-06-01");
+    expect(r.overallScore).toBe(0);
+    expect(r.rating).toBe("inadequate");
+  });
+  it("URGENT actions", () => {
+    const r = generateQualityOfCareIntelligence([], null, [], "h", "2026-01-01", "2026-06-01");
+    expect(r.actions.filter((a) => a.startsWith("URGENT")).length).toBe(2);
+  });
+  it("strengths when >=80%", () => {
+    const domains: QualityDomain[] = ["safety_welfare", "education_learning", "health_wellbeing", "positive_relationships", "protection_children", "leadership_management", "outcomes_progress", "child_voice"];
+    const r = generateQualityOfCareIntelligence(domains.map((d) => makeRecord({ domain: d })), makePolicy(), [makeTraining()], "h", "2026-01-01", "2026-06-01");
+    expect(r.strengths.length).toBeGreaterThan(0);
+  });
+  it("improvements when <60%", () => {
+    const s = [makeRecord({ outcome: "does_not_meet", evidenceDocumented: false, childViewCaptured: false, actionPlanCreated: false, followUpCompleted: false, regulatoryAligned: false, improvementIdentified: false })];
+    const r = generateQualityOfCareIntelligence(s, makePolicy(), [makeTraining()], "h", "2026-01-01", "2026-06-01");
+    expect(r.areasForImprovement.length).toBeGreaterThan(0);
+  });
+  it("child view action when rate low", () => {
+    const s = [makeRecord({ childViewCaptured: false })];
+    const r = generateQualityOfCareIntelligence(s, makePolicy(), [makeTraining()], "h", "2026-01-01", "2026-06-01");
+    expect(r.actions.some((a) => a.toLowerCase().includes("child") && a.toLowerCase().includes("voice"))).toBe(true);
+  });
+  it("child profiles included", () => {
+    const s = [makeRecord({ childId: "c1", childName: "A" }), makeRecord({ childId: "c2", childName: "B" })];
+    const r = generateQualityOfCareIntelligence(s, makePolicy(), [makeTraining()], "h", "2026-01-01", "2026-06-01");
+    expect(r.childProfiles).toHaveLength(2);
+  });
+  it("periodStart and periodEnd stored", () => {
+    const r = generateQualityOfCareIntelligence([], null, [], "h", "2026-01-01", "2026-06-01");
+    expect(r.periodStart).toBe("2026-01-01");
+    expect(r.periodEnd).toBe("2026-06-01");
+  });
+  it("regulatory links reference correct legislation", () => {
+    const r = generateQualityOfCareIntelligence([], null, [], "h", "2026-01-01", "2026-06-01");
+    expect(r.regulatoryLinks.some((l) => l.includes("Reg 45"))).toBe(true);
+    expect(r.regulatoryLinks.some((l) => l.includes("Reg 13"))).toBe(true);
+    expect(r.regulatoryLinks.some((l) => l.includes("SCCIF"))).toBe(true);
+    expect(r.regulatoryLinks.some((l) => l.includes("Children Act"))).toBe(true);
+  });
+  it("overallScore capped at 100", () => {
+    const r = generateQualityOfCareIntelligence(Array.from({ length: 20 }, () => makeRecord()), makePolicy(), [makeTraining()], "h", "2026-01-01", "2026-06-01");
+    expect(r.overallScore).toBeLessThanOrEqual(100);
+  });
+  it("domain diversity action when coverage narrow", () => {
+    const s = [makeRecord({ domain: "safety_welfare" })];
+    const r = generateQualityOfCareIntelligence(s, makePolicy(), [makeTraining()], "h", "2026-01-01", "2026-06-01");
+    expect(r.actions.some((a) => a.toLowerCase().includes("domain") || a.toLowerCase().includes("coverage"))).toBe(true);
   });
 });

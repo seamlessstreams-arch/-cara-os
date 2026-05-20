@@ -1,1 +1,1 @@
-export { EnvironmentDashboardWidget } from "./EnvironmentDashboardWidget";
+export { default as EnvironmentDashboardWidget } from "./EnvironmentDashboardWidget";

@@ -1,787 +1,445 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Quality of Care Review Engine (Reg 45)
+// Cornerstone Quality of Care Intelligence Engine
 //
-// Deterministic engine for evaluating and scoring the quality of care across
-// all SCCIF judgement areas. Used to generate the 6-monthly Regulation 45
-// Quality of Care Review required by CHR 2015 Reg 45.
+// Deterministic engine for evaluating the quality of care provided in
+// children's homes across all key domains — safety, education, health,
+// wellbeing, relationships, leadership, and outcomes.
 //
 // Aligned to:
 //   - CHR 2015 Reg 45 — Review of quality of care
-//   - SCCIF (Social Care Common Inspection Framework) — Judgement areas
-//   - Ofsted Grade Descriptors — Outstanding/Good/RI/Inadequate criteria
-//   - CHR 2015 Reg 5 — Statement of purpose compliance
-//
-// The RM must review at least every 6 months and produce a written report
-// evaluating the adequacy and quality of care provided.
+//   - CHR 2015 Reg 5  — Statement of purpose
+//   - CHR 2015 Reg 13 — Leadership and management
+//   - SCCIF            — Social Care Common Inspection Framework
+//   - Ofsted Grade Descriptors — Outstanding/Good/RI/Inadequate
+//   - Children Act 1989 — Welfare of the child
+//   - CHR 2015 Reg 44 — Independent person visits
 //
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type OfstedGrade = "outstanding" | "good" | "requires_improvement" | "inadequate";
-
-export type SCCIFDomain =
-  | "overall_experiences"
-  | "safety"
-  | "education_and_learning"
-  | "health_and_wellbeing"
+export type QualityDomain =
+  | "safety_welfare"
+  | "education_learning"
+  | "health_wellbeing"
   | "positive_relationships"
-  | "protection_of_children"
-  | "leadership_and_management";
+  | "protection_children"
+  | "leadership_management"
+  | "outcomes_progress"
+  | "child_voice";
 
-export type EvidenceStrength = "strong" | "adequate" | "limited" | "absent";
+export type ReviewOutcome =
+  | "exceeds_standard"
+  | "meets_standard"
+  | "partially_meets"
+  | "does_not_meet"
+  | "not_assessed";
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-export interface DomainAssessment {
-  domain: SCCIFDomain;
-  score: number;                       // 0-100
-  grade: OfstedGrade;
-  strengths: string[];
-  areasForImprovement: string[];
-  evidenceItems: EvidenceItem[];
-  evidenceStrength: EvidenceStrength;
-  keyMetrics: { label: string; value: string; target?: string; met: boolean }[];
-  reg44Findings?: string[];            // from independent visitor
-  childVoiceEvidence?: string[];       // what children say
-  partnerFeedback?: string[];          // social workers, IROs, etc.
+// ── Input Records ──────────────────────────────────────────────────────────
+
+export interface QualityReviewRecord {
+  id: string;
+  childId: string;
+  childName: string;
+  reviewDate: string;
+  domain: QualityDomain;
+  outcome: ReviewOutcome;
+  evidenceDocumented: boolean;
+  childViewCaptured: boolean;
+  actionPlanCreated: boolean;
+  followUpCompleted: boolean;
+  regulatoryAligned: boolean;
+  improvementIdentified: boolean;
 }
 
-export interface EvidenceItem {
-  type: "metric" | "observation" | "child_voice" | "partner_feedback" | "reg44" | "incident" | "document";
-  description: string;
-  source: string;
-  date?: string;
-  positive: boolean;
+export interface QualityPolicy {
+  id: string;
+  qualityAssuranceFramework: boolean;
+  reg45ReviewSchedule: boolean;
+  continuousImprovementPlan: boolean;
+  outcomesMeasurementPolicy: boolean;
+  childParticipationStrategy: boolean;
+  auditSchedule: boolean;
+  feedbackMechanism: boolean;
 }
 
-export interface QualityInputData {
-  homeId: string;
-  homeName: string;
-  reviewPeriodStart: string;
-  reviewPeriodEnd: string;
-  registeredManager: string;
-  registeredCapacity: number;
-  currentOccupancy: number;
-
-  // Domain-specific input metrics
-  safety: SafetyInput;
-  education: EducationInput;
-  health: HealthInput;
-  relationships: RelationshipsInput;
-  protection: ProtectionInput;
-  leadership: LeadershipInput;
-}
-
-export interface SafetyInput {
-  totalIncidents: number;
-  restraintCount: number;
-  restraintReductionTrend: "reducing" | "stable" | "increasing";
-  missingEpisodes: number;
-  missingRepeatChildren: number;
-  bullyingIncidents: number;
-  environmentalRiskAssessmentsComplete: boolean;
-  fireDrillsCompliant: boolean;
-  medicationErrorCount: number;
-  deEscalationRate: number;           // %
-  childrenFeelSafe: number;           // % from surveys
-}
-
-export interface EducationInput {
-  averageAttendance: number;          // %
-  pepCompliance: number;              // %
-  exclusionDays: number;
-  childrenInEducation: number;        // %
-  ppSpendRate: number;                // %
-  progressingTowardsTargets: number;  // %
-  enrichmentActivitiesPerWeek: number;
-}
-
-export interface HealthInput {
-  ihaComplianceRate: number;          // %
-  rhaComplianceRate: number;          // %
-  sdqCompletionRate: number;          // %
-  dentalCheckRate: number;            // %
-  immunisationRate: number;           // %
-  camhsReferralsMade: number;
-  camhsWaitingList: number;
-  healthyEatingScore: number;         // 0-100
-  physicalActivityHoursPerWeek: number;
-}
-
-export interface RelationshipsInput {
-  keyworkComplianceRate: number;      // %
-  keyworkEngagementScore: number;     // 1-5
-  childVoiceRate: number;             // %
-  familyContactRate: number;          // % of planned contacts happening
-  childrensMeetingsHeld: number;
-  complaintsCount: number;
-  complimentsCount: number;
-  staffTurnoverRate: number;          // %
-  agencyUsageRate: number;            // %
-}
-
-export interface ProtectionInput {
-  safeguardingReferralsMade: number;
-  safeguardingConcernsOpen: number;
-  dbsComplianceRate: number;          // %
-  saferRecruitmentCompliant: boolean;
-  trainingComplianceRate: number;     // %
-  supervisionComplianceRate: number;  // %
-  allegationsThisPeriod: number;
-  notifiableEvents: number;
-  notifiableEventsCompliant: number;
-  whistleblowingCulture: number;      // 0-100 from staff survey
-}
-
-export interface LeadershipInput {
-  reg44VisitsCompliant: boolean;
-  reg44ActionsClosed: number;         // %
-  staffSupervisionRate: number;       // %
-  staffQualificationRate: number;     // % at Level 3+
-  policyReviewsCurrent: boolean;
-  statementOfPurposeCurrent: boolean;
-  complaintResponseRate: number;      // % responded within 10 days
-  ofstedActionsComplete: number;      // %
-  improvementPlanProgress: number;    // %
-  staffMorale: number;                // 0-100
+export interface StaffQualityTraining {
+  id: string;
+  staffId: string;
+  staffName: string;
+  qualityAssuranceSkills: boolean;
+  outcomesMonitoring: boolean;
+  regulatoryKnowledge: boolean;
+  reflectivePractice: boolean;
+  dataAnalysis: boolean;
+  childParticipation: boolean;
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
-export interface QualityOfCareReview {
+export interface ReviewQualityResult {
+  overallScore: number;
+  rating: Rating;
+  totalReviews: number;
+  meetsStandardRate: number;
+  evidenceDocumentedRate: number;
+  childViewRate: number;
+  actionPlanRate: number;
+}
+
+export interface ReviewComplianceResult {
+  overallScore: number;
+  rating: Rating;
+  followUpRate: number;
+  regulatoryAlignedRate: number;
+  improvementRate: number;
+  domainDiversityRatio: number;
+}
+
+export interface QualityPolicyResult {
+  overallScore: number;
+  rating: Rating;
+  qualityAssuranceFramework: boolean;
+  reg45ReviewSchedule: boolean;
+  continuousImprovementPlan: boolean;
+  outcomesMeasurementPolicy: boolean;
+  childParticipationStrategy: boolean;
+  auditSchedule: boolean;
+  feedbackMechanism: boolean;
+}
+
+export interface StaffQualityReadinessResult {
+  overallScore: number;
+  rating: Rating;
+  totalStaff: number;
+  qualityAssuranceRate: number;
+  outcomesMonitoringRate: number;
+  regulatoryKnowledgeRate: number;
+  reflectivePracticeRate: number;
+  dataAnalysisRate: number;
+  childParticipationRate: number;
+}
+
+export interface ChildQualityProfile {
+  childId: string;
+  childName: string;
+  totalReviews: number;
+  meetsStandardRate: number;
+  childViewRate: number;
+  domainsCovered: string[];
+  overallScore: number;
+}
+
+export interface QualityOfCareIntelligence {
   homeId: string;
-  homeName: string;
-  reviewDate: string;
-  reviewPeriodStart: string;
-  reviewPeriodEnd: string;
-  registeredManager: string;
-  overallGrade: OfstedGrade;
-  overallScore: number;               // 0-100
-  domains: DomainAssessment[];
-  topStrengths: string[];
-  priorityActions: string[];
-  regulatoryCompliance: {
-    reg44Compliant: boolean;
-    notifiableEventsCompliant: boolean;
-    statementOfPurposeCurrent: boolean;
-    staffingAdequate: boolean;
-    recordKeepingAdequate: boolean;
-  };
-  childrenSummary: {
-    capacity: number;
-    occupancy: number;
-    averageStay: number;
-    placementStability: number;
-  };
-  previousReviewComparison?: {
-    previousScore: number;
-    trend: "improving" | "stable" | "declining";
-    domainsImproved: SCCIFDomain[];
-    domainsDeteriorated: SCCIFDomain[];
-  };
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  reviewQuality: ReviewQualityResult;
+  reviewCompliance: ReviewComplianceResult;
+  qualityPolicy: QualityPolicyResult;
+  staffReadiness: StaffQualityReadinessResult;
+  childProfiles: ChildQualityProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const GRADE_THRESHOLDS: { grade: OfstedGrade; min: number }[] = [
-  { grade: "outstanding", min: 85 },
-  { grade: "good", min: 65 },
-  { grade: "requires_improvement", min: 40 },
-  { grade: "inadequate", min: 0 },
-];
-
-const DOMAIN_LABELS: Record<SCCIFDomain, string> = {
-  overall_experiences: "Overall Experiences & Progress",
-  safety: "How Safe Children Are",
-  education_and_learning: "Education & Learning",
-  health_and_wellbeing: "Health & Wellbeing",
-  positive_relationships: "Positive Relationships",
-  protection_of_children: "Protection of Children",
-  leadership_and_management: "Leadership & Management",
-};
-
-const DOMAIN_WEIGHTS: Record<SCCIFDomain, number> = {
-  overall_experiences: 0.20,
-  safety: 0.15,
-  education_and_learning: 0.15,
-  health_and_wellbeing: 0.10,
-  positive_relationships: 0.15,
-  protection_of_children: 0.10,
-  leadership_and_management: 0.15,
-};
-
-// ── Core: Generate Quality of Care Review ────────────────────────────────
-
-export function generateQualityOfCareReview(
-  input: QualityInputData,
-  previousScore?: number,
-): QualityOfCareReview {
-  const reviewDate = new Date().toISOString();
-  const domains: DomainAssessment[] = [];
-
-  // Assess each domain
-  domains.push(assessSafety(input));
-  domains.push(assessEducation(input));
-  domains.push(assessHealth(input));
-  domains.push(assessRelationships(input));
-  domains.push(assessProtection(input));
-  domains.push(assessLeadership(input));
-
-  // Calculate overall from domain scores
-  const overallScore = calculateOverallScore(domains);
-  domains.unshift(assessOverall(input, domains, overallScore));
-
-  const overallGrade = scoreToGrade(overallScore);
-
-  // Extract top strengths and priority actions
-  const allStrengths = domains.flatMap(d => d.strengths);
-  const allImprovements = domains.flatMap(d => d.areasForImprovement);
-  const topStrengths = allStrengths.slice(0, 5);
-  const priorityActions = allImprovements.slice(0, 5);
-
-  // Regulatory compliance summary
-  const regulatoryCompliance = {
-    reg44Compliant: input.leadership.reg44VisitsCompliant,
-    notifiableEventsCompliant: input.protection.notifiableEvents === 0 ||
-      input.protection.notifiableEventsCompliant === input.protection.notifiableEvents,
-    statementOfPurposeCurrent: input.leadership.statementOfPurposeCurrent,
-    staffingAdequate: input.relationships.agencyUsageRate < 30 && input.relationships.staffTurnoverRate < 25,
-    recordKeepingAdequate: input.leadership.staffSupervisionRate >= 80,
-  };
-
-  // Previous review comparison
-  let previousReviewComparison: QualityOfCareReview["previousReviewComparison"];
-  if (previousScore !== undefined) {
-    const diff = overallScore - previousScore;
-    const trend = diff > 3 ? "improving" : diff < -3 ? "declining" : "stable";
-    previousReviewComparison = {
-      previousScore,
-      trend,
-      domainsImproved: [],
-      domainsDeteriorated: [],
-    };
-  }
-
-  return {
-    homeId: input.homeId,
-    homeName: input.homeName,
-    reviewDate,
-    reviewPeriodStart: input.reviewPeriodStart,
-    reviewPeriodEnd: input.reviewPeriodEnd,
-    registeredManager: input.registeredManager,
-    overallGrade,
-    overallScore,
-    domains,
-    topStrengths,
-    priorityActions,
-    regulatoryCompliance,
-    childrenSummary: {
-      capacity: input.registeredCapacity,
-      occupancy: input.currentOccupancy,
-      averageStay: 0, // would come from placement data
-      placementStability: 0,
-    },
-    previousReviewComparison,
-  };
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
 }
 
-// ── Domain Assessments ───────────────────────────────────────────────────
-
-function assessSafety(input: QualityInputData): DomainAssessment {
-  const s = input.safety;
-  const strengths: string[] = [];
-  const improvements: string[] = [];
-  const metrics: DomainAssessment["keyMetrics"] = [];
-  let score = 70; // base
-
-  // De-escalation
-  if (s.deEscalationRate >= 80) {
-    score += 10;
-    strengths.push("High de-escalation success rate demonstrating skilled practice");
-  } else if (s.deEscalationRate < 50) {
-    score -= 15;
-    improvements.push("De-escalation rate below expectations — training review needed");
-  }
-  metrics.push({ label: "De-escalation rate", value: `${s.deEscalationRate}%`, target: "80%", met: s.deEscalationRate >= 80 });
-
-  // Restraint trend
-  if (s.restraintReductionTrend === "reducing") {
-    score += 10;
-    strengths.push("Restraint use is reducing — proactive behaviour support evident");
-  } else if (s.restraintReductionTrend === "increasing") {
-    score -= 15;
-    improvements.push("Restraint use is increasing — review behaviour support plans");
-  }
-
-  // Missing episodes
-  if (s.missingEpisodes === 0) {
-    score += 5;
-    strengths.push("No missing from care episodes this period");
-  } else if (s.missingRepeatChildren > 0) {
-    score -= 10;
-    improvements.push(`${s.missingRepeatChildren} child(ren) with repeat missing episodes — pattern disruption needed`);
-  }
-  metrics.push({ label: "Missing episodes", value: String(s.missingEpisodes), target: "0", met: s.missingEpisodes === 0 });
-
-  // Children feel safe
-  if (s.childrenFeelSafe >= 90) {
-    score += 10;
-    strengths.push("Children consistently report feeling safe in the home");
-  } else if (s.childrenFeelSafe < 70) {
-    score -= 20;
-    improvements.push("Children report not feeling safe — immediate review required");
-  }
-  metrics.push({ label: "Children feel safe", value: `${s.childrenFeelSafe}%`, target: "90%", met: s.childrenFeelSafe >= 90 });
-
-  // Medication errors
-  if (s.medicationErrorCount > 3) {
-    score -= 10;
-    improvements.push("Multiple medication errors — competency review needed");
-  }
-
-  // Fire drills
-  if (!s.fireDrillsCompliant) {
-    score -= 5;
-    improvements.push("Fire drills not meeting frequency requirements");
-  }
-
-  score = Math.max(0, Math.min(100, score));
-
-  return {
-    domain: "safety",
-    score,
-    grade: scoreToGrade(score),
-    strengths,
-    areasForImprovement: improvements,
-    evidenceItems: [],
-    evidenceStrength: score >= 75 ? "strong" : score >= 50 ? "adequate" : "limited",
-    keyMetrics: metrics,
-  };
-}
-
-function assessEducation(input: QualityInputData): DomainAssessment {
-  const e = input.education;
-  const strengths: string[] = [];
-  const improvements: string[] = [];
-  const metrics: DomainAssessment["keyMetrics"] = [];
-  let score = 70;
-
-  // Attendance
-  if (e.averageAttendance >= 95) {
-    score += 15;
-    strengths.push("Excellent school attendance above national expectations");
-  } else if (e.averageAttendance < 90) {
-    score -= 15;
-    improvements.push("School attendance below persistent absence threshold");
-  }
-  metrics.push({ label: "Attendance", value: `${e.averageAttendance}%`, target: "95%", met: e.averageAttendance >= 95 });
-
-  // PEP compliance
-  if (e.pepCompliance >= 100) {
-    score += 10;
-    strengths.push("All Personal Education Plans are current and reviewed");
-  } else if (e.pepCompliance < 80) {
-    score -= 10;
-    improvements.push("PEP compliance below required standard");
-  }
-  metrics.push({ label: "PEP compliance", value: `${e.pepCompliance}%`, target: "100%", met: e.pepCompliance >= 100 });
-
-  // Exclusions
-  if (e.exclusionDays === 0) {
-    score += 5;
-    strengths.push("No exclusion days this period");
-  } else if (e.exclusionDays > 5) {
-    score -= 10;
-    improvements.push(`${e.exclusionDays} exclusion days — education disruption concern`);
-  }
-
-  // Pupil Premium
-  if (e.ppSpendRate >= 80) {
-    score += 5;
-    strengths.push("Good utilisation of Pupil Premium Plus funding");
-  } else if (e.ppSpendRate < 50) {
-    score -= 5;
-    improvements.push("Pupil Premium Plus underspent — review allocation plans");
-  }
-  metrics.push({ label: "PP spend", value: `${e.ppSpendRate}%`, target: "80%", met: e.ppSpendRate >= 80 });
-
-  // Progress
-  if (e.progressingTowardsTargets >= 80) {
-    score += 5;
-    strengths.push("Most children making progress towards educational targets");
-  }
-
-  score = Math.max(0, Math.min(100, score));
-
-  return {
-    domain: "education_and_learning",
-    score,
-    grade: scoreToGrade(score),
-    strengths,
-    areasForImprovement: improvements,
-    evidenceItems: [],
-    evidenceStrength: score >= 75 ? "strong" : score >= 50 ? "adequate" : "limited",
-    keyMetrics: metrics,
-  };
-}
-
-function assessHealth(input: QualityInputData): DomainAssessment {
-  const h = input.health;
-  const strengths: string[] = [];
-  const improvements: string[] = [];
-  const metrics: DomainAssessment["keyMetrics"] = [];
-  let score = 70;
-
-  // IHA/RHA
-  if (h.ihaComplianceRate >= 100 && h.rhaComplianceRate >= 100) {
-    score += 15;
-    strengths.push("All health assessments (IHA/RHA) are current");
-  } else if (h.rhaComplianceRate < 80) {
-    score -= 10;
-    improvements.push("Review Health Assessment compliance below target");
-  }
-  metrics.push({ label: "RHA compliance", value: `${h.rhaComplianceRate}%`, target: "100%", met: h.rhaComplianceRate >= 100 });
-
-  // Dental
-  if (h.dentalCheckRate >= 90) {
-    score += 5;
-    strengths.push("Regular dental check attendance maintained");
-  } else if (h.dentalCheckRate < 70) {
-    score -= 5;
-    improvements.push("Dental check attendance requires improvement");
-  }
-  metrics.push({ label: "Dental checks", value: `${h.dentalCheckRate}%`, target: "90%", met: h.dentalCheckRate >= 90 });
-
-  // SDQ
-  if (h.sdqCompletionRate >= 100) {
-    score += 5;
-    strengths.push("SDQ assessments completed for all children");
-  }
-  metrics.push({ label: "SDQ completion", value: `${h.sdqCompletionRate}%`, target: "100%", met: h.sdqCompletionRate >= 100 });
-
-  // CAMHS wait
-  if (h.camhsWaitingList > 0) {
-    score -= 5;
-    improvements.push(`${h.camhsWaitingList} child(ren) on CAMHS waiting list — advocate for prioritisation`);
-  }
-
-  // Physical activity
-  if (h.physicalActivityHoursPerWeek >= 3) {
-    score += 5;
-    strengths.push("Good levels of physical activity engagement");
-  }
-
-  score = Math.max(0, Math.min(100, score));
-
-  return {
-    domain: "health_and_wellbeing",
-    score,
-    grade: scoreToGrade(score),
-    strengths,
-    areasForImprovement: improvements,
-    evidenceItems: [],
-    evidenceStrength: score >= 75 ? "strong" : score >= 50 ? "adequate" : "limited",
-    keyMetrics: metrics,
-  };
-}
-
-function assessRelationships(input: QualityInputData): DomainAssessment {
-  const r = input.relationships;
-  const strengths: string[] = [];
-  const improvements: string[] = [];
-  const metrics: DomainAssessment["keyMetrics"] = [];
-  let score = 70;
-
-  // Key working
-  if (r.keyworkComplianceRate >= 90 && r.keyworkEngagementScore >= 4) {
-    score += 15;
-    strengths.push("Consistent, high-quality key working with strong engagement");
-  } else if (r.keyworkComplianceRate < 70) {
-    score -= 10;
-    improvements.push("Key working sessions not meeting frequency requirements");
-  }
-  metrics.push({ label: "Keywork compliance", value: `${r.keyworkComplianceRate}%`, target: "90%", met: r.keyworkComplianceRate >= 90 });
-
-  // Child voice
-  if (r.childVoiceRate >= 80) {
-    score += 10;
-    strengths.push("Children's voice is well captured and evidenced in decisions");
-  } else if (r.childVoiceRate < 50) {
-    score -= 10;
-    improvements.push("Child voice evidence insufficient — increase participation opportunities");
-  }
-  metrics.push({ label: "Child voice", value: `${r.childVoiceRate}%`, target: "80%", met: r.childVoiceRate >= 80 });
-
-  // Family contact
-  if (r.familyContactRate >= 90) {
-    score += 5;
-    strengths.push("Family contact plans consistently facilitated");
-  } else if (r.familyContactRate < 70) {
-    score -= 5;
-    improvements.push("Family contact delivery below planned frequency");
-  }
-
-  // Staff stability
-  if (r.staffTurnoverRate < 15 && r.agencyUsageRate < 15) {
-    score += 10;
-    strengths.push("Low staff turnover and minimal agency use — stable team");
-  } else if (r.staffTurnoverRate > 30 || r.agencyUsageRate > 30) {
-    score -= 15;
-    improvements.push("High staff turnover/agency use impacting relationship continuity");
-  }
-  metrics.push({ label: "Staff turnover", value: `${r.staffTurnoverRate}%`, target: "<20%", met: r.staffTurnoverRate < 20 });
-
-  // Complaints/compliments ratio
-  if (r.complimentsCount > r.complaintsCount * 2) {
-    score += 5;
-    strengths.push("Positive feedback significantly outweighs complaints");
-  }
-
-  score = Math.max(0, Math.min(100, score));
-
-  return {
-    domain: "positive_relationships",
-    score,
-    grade: scoreToGrade(score),
-    strengths,
-    areasForImprovement: improvements,
-    evidenceItems: [],
-    evidenceStrength: score >= 75 ? "strong" : score >= 50 ? "adequate" : "limited",
-    keyMetrics: metrics,
-  };
-}
-
-function assessProtection(input: QualityInputData): DomainAssessment {
-  const p = input.protection;
-  const strengths: string[] = [];
-  const improvements: string[] = [];
-  const metrics: DomainAssessment["keyMetrics"] = [];
-  let score = 70;
-
-  // DBS
-  if (p.dbsComplianceRate >= 100) {
-    score += 10;
-    strengths.push("All staff DBS checks current");
-  } else if (p.dbsComplianceRate < 90) {
-    score -= 20;
-    improvements.push("DBS compliance below acceptable level — immediate action required");
-  }
-  metrics.push({ label: "DBS compliance", value: `${p.dbsComplianceRate}%`, target: "100%", met: p.dbsComplianceRate >= 100 });
-
-  // Training
-  if (p.trainingComplianceRate >= 90) {
-    score += 10;
-    strengths.push("Staff training compliance at good level");
-  } else if (p.trainingComplianceRate < 75) {
-    score -= 10;
-    improvements.push("Mandatory training compliance requires immediate attention");
-  }
-  metrics.push({ label: "Training", value: `${p.trainingComplianceRate}%`, target: "90%", met: p.trainingComplianceRate >= 90 });
-
-  // Supervision
-  if (p.supervisionComplianceRate >= 90) {
-    score += 10;
-    strengths.push("Supervision frequency meeting regulatory expectations");
-  } else if (p.supervisionComplianceRate < 70) {
-    score -= 15;
-    improvements.push("Supervision compliance below Ofsted expectations");
-  }
-  metrics.push({ label: "Supervision", value: `${p.supervisionComplianceRate}%`, target: "90%", met: p.supervisionComplianceRate >= 90 });
-
-  // Safer recruitment
-  if (p.saferRecruitmentCompliant) {
-    score += 5;
-    strengths.push("Safer recruitment practices consistently applied");
-  } else {
-    score -= 15;
-    improvements.push("Safer recruitment non-compliant — regulatory risk");
-  }
-
-  // Notifiable events
-  if (p.notifiableEvents > 0 && p.notifiableEventsCompliant < p.notifiableEvents) {
-    score -= 10;
-    improvements.push("Notifiable events not all submitted within statutory deadline");
-  }
-
-  // Allegations
-  if (p.allegationsThisPeriod > 0) {
-    score -= 5;
-    improvements.push(`${p.allegationsThisPeriod} allegation(s) this period — ensure LADO process followed`);
-  }
-
-  score = Math.max(0, Math.min(100, score));
-
-  return {
-    domain: "protection_of_children",
-    score,
-    grade: scoreToGrade(score),
-    strengths,
-    areasForImprovement: improvements,
-    evidenceItems: [],
-    evidenceStrength: score >= 75 ? "strong" : score >= 50 ? "adequate" : "limited",
-    keyMetrics: metrics,
-  };
-}
-
-function assessLeadership(input: QualityInputData): DomainAssessment {
-  const l = input.leadership;
-  const strengths: string[] = [];
-  const improvements: string[] = [];
-  const metrics: DomainAssessment["keyMetrics"] = [];
-  let score = 70;
-
-  // Reg 44
-  if (l.reg44VisitsCompliant) {
-    score += 10;
-    strengths.push("Regulation 44 independent visits completed monthly");
-  } else {
-    score -= 15;
-    improvements.push("Regulation 44 visits not compliant — monthly requirement not met");
-  }
-
-  // Reg 44 actions
-  if (l.reg44ActionsClosed >= 90) {
-    score += 5;
-    strengths.push("Reg 44 actions followed up and closed promptly");
-  } else if (l.reg44ActionsClosed < 60) {
-    score -= 10;
-    improvements.push("Reg 44 actions not being addressed in timely manner");
-  }
-  metrics.push({ label: "Reg 44 actions closed", value: `${l.reg44ActionsClosed}%`, target: "90%", met: l.reg44ActionsClosed >= 90 });
-
-  // Staff qualifications
-  if (l.staffQualificationRate >= 80) {
-    score += 10;
-    strengths.push("Good proportion of staff qualified to Level 3+");
-  } else if (l.staffQualificationRate < 60) {
-    score -= 10;
-    improvements.push("Workforce qualification levels below sector standard");
-  }
-  metrics.push({ label: "Qualified staff", value: `${l.staffQualificationRate}%`, target: "80%", met: l.staffQualificationRate >= 80 });
-
-  // Policies
-  if (l.policyReviewsCurrent && l.statementOfPurposeCurrent) {
-    score += 5;
-    strengths.push("Policies and Statement of Purpose reviewed and current");
-  } else {
-    score -= 5;
-    improvements.push("Policy reviews overdue or Statement of Purpose requires update");
-  }
-
-  // Complaint handling
-  if (l.complaintResponseRate >= 90) {
-    score += 5;
-    strengths.push("Complaints handled promptly within statutory timescales");
-  }
-
-  // Staff morale
-  if (l.staffMorale >= 75) {
-    score += 5;
-    strengths.push("Staff report high morale and job satisfaction");
-  } else if (l.staffMorale < 50) {
-    score -= 10;
-    improvements.push("Staff morale is low — wellbeing support review needed");
-  }
-
-  // Improvement plan
-  if (l.improvementPlanProgress >= 80) {
-    score += 5;
-    strengths.push("Strong progress against improvement plan objectives");
-  }
-  metrics.push({ label: "Improvement progress", value: `${l.improvementPlanProgress}%`, target: "80%", met: l.improvementPlanProgress >= 80 });
-
-  score = Math.max(0, Math.min(100, score));
-
-  return {
-    domain: "leadership_and_management",
-    score,
-    grade: scoreToGrade(score),
-    strengths,
-    areasForImprovement: improvements,
-    evidenceItems: [],
-    evidenceStrength: score >= 75 ? "strong" : score >= 50 ? "adequate" : "limited",
-    keyMetrics: metrics,
-  };
-}
-
-function assessOverall(input: QualityInputData, domains: DomainAssessment[], overallScore: number): DomainAssessment {
-  const strengths: string[] = [];
-  const improvements: string[] = [];
-
-  // Pick best domain
-  const best = [...domains].sort((a, b) => b.score - a.score)[0];
-  if (best && best.score >= 85) {
-    strengths.push(`${getDomainLabel(best.domain)} is a particular strength`);
-  }
-
-  // Pick weakest domain
-  const weakest = [...domains].sort((a, b) => a.score - b.score)[0];
-  if (weakest && weakest.score < 65) {
-    improvements.push(`${getDomainLabel(weakest.domain)} requires priority attention`);
-  }
-
-  // Occupancy
-  const occupancyRate = Math.round((input.currentOccupancy / input.registeredCapacity) * 100);
-  if (occupancyRate >= 75 && occupancyRate <= 100) {
-    strengths.push("Healthy occupancy level supporting sustainability");
-  }
-
-  return {
-    domain: "overall_experiences",
-    score: overallScore,
-    grade: scoreToGrade(overallScore),
-    strengths,
-    areasForImprovement: improvements,
-    evidenceItems: [],
-    evidenceStrength: overallScore >= 75 ? "strong" : overallScore >= 50 ? "adequate" : "limited",
-    keyMetrics: [],
-  };
-}
-
-// ── Utilities ────────────────────────────────────────────────────────────
-
-function calculateOverallScore(domains: DomainAssessment[]): number {
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const domain of domains) {
-    const weight = DOMAIN_WEIGHTS[domain.domain] ?? 0.1;
-    weightedSum += domain.score * weight;
-    totalWeight += weight;
-  }
-
-  return Math.round(totalWeight > 0 ? weightedSum / totalWeight : 0);
-}
-
-function scoreToGrade(score: number): OfstedGrade {
-  for (const { grade, min } of GRADE_THRESHOLDS) {
-    if (score >= min) return grade;
-  }
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
   return "inadequate";
 }
 
-export function getDomainLabel(domain: SCCIFDomain): string {
-  return DOMAIN_LABELS[domain] ?? domain.replace(/_/g, " ");
+export function getQualityDomainLabel(domain: QualityDomain): string {
+  const labels: Record<QualityDomain, string> = {
+    safety_welfare: "Safety & Welfare",
+    education_learning: "Education & Learning",
+    health_wellbeing: "Health & Wellbeing",
+    positive_relationships: "Positive Relationships",
+    protection_children: "Protection of Children",
+    leadership_management: "Leadership & Management",
+    outcomes_progress: "Outcomes & Progress",
+    child_voice: "Child Voice",
+  };
+  return labels[domain] ?? domain;
 }
 
-export function getGradeLabel(grade: OfstedGrade): string {
-  const labels: Record<OfstedGrade, string> = {
-    outstanding: "Outstanding",
-    good: "Good",
-    requires_improvement: "Requires Improvement",
-    inadequate: "Inadequate",
+export function getReviewOutcomeLabel(outcome: ReviewOutcome): string {
+  const labels: Record<ReviewOutcome, string> = {
+    exceeds_standard: "Exceeds Standard",
+    meets_standard: "Meets Standard",
+    partially_meets: "Partially Meets",
+    does_not_meet: "Does Not Meet",
+    not_assessed: "Not Assessed",
   };
-  return labels[grade] ?? grade;
+  return labels[outcome] ?? outcome;
 }
 
-export function getGradeColor(grade: OfstedGrade): string {
-  const colors: Record<OfstedGrade, string> = {
-    outstanding: "emerald",
-    good: "blue",
-    requires_improvement: "amber",
-    inadequate: "red",
+export function getRatingLabel(r: Rating): string {
+  return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// ── Constants ──────────────────────────────────────────────────────────────
+
+const ALL_DOMAINS: QualityDomain[] = [
+  "safety_welfare", "education_learning", "health_wellbeing",
+  "positive_relationships", "protection_children", "leadership_management",
+  "outcomes_progress", "child_voice",
+];
+
+// ── Evaluator 1: Review Quality (0-25) ─────────────────────────────────────
+
+export function evaluateReviewQuality(records: QualityReviewRecord[]): ReviewQualityResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", totalReviews: 0, meetsStandardRate: 0, evidenceDocumentedRate: 0, childViewRate: 0, actionPlanRate: 0 };
+  }
+
+  const meetsStandardRate = pct(
+    records.filter((r) => r.outcome === "exceeds_standard" || r.outcome === "meets_standard").length,
+    total,
+  );
+  const evidenceDocumentedRate = pct(records.filter((r) => r.evidenceDocumented).length, total);
+  const childViewRate = pct(records.filter((r) => r.childViewCaptured).length, total);
+  const actionPlanRate = pct(records.filter((r) => r.actionPlanCreated).length, total);
+
+  // Weighted: meetsStandardRate 7 + evidenceDocumentedRate 6 + childViewRate 6 + actionPlanRate 6 = 25
+  const raw = (meetsStandardRate / 100) * 7 + (evidenceDocumentedRate / 100) * 6 + (childViewRate / 100) * 6 + (actionPlanRate / 100) * 6;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalReviews: total, meetsStandardRate, evidenceDocumentedRate, childViewRate, actionPlanRate };
+}
+
+// ── Evaluator 2: Review Compliance (0-25) ──────────────────────────────────
+
+export function evaluateReviewCompliance(records: QualityReviewRecord[]): ReviewComplianceResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", followUpRate: 0, regulatoryAlignedRate: 0, improvementRate: 0, domainDiversityRatio: 0 };
+  }
+
+  const followUpRate = pct(records.filter((r) => r.followUpCompleted).length, total);
+  const regulatoryAlignedRate = pct(records.filter((r) => r.regulatoryAligned).length, total);
+  const improvementRate = pct(records.filter((r) => r.improvementIdentified).length, total);
+
+  const uniqueDomains = new Set(records.map((r) => r.domain)).size;
+  const domainDiversityRatio = pct(uniqueDomains, ALL_DOMAINS.length);
+
+  // Weighted: followUpRate 8 + regulatoryAlignedRate 7 + improvementRate 5 + domainDiversityRatio 5 = 25
+  const raw = (followUpRate / 100) * 8 + (regulatoryAlignedRate / 100) * 7 + (improvementRate / 100) * 5 + (domainDiversityRatio / 100) * 5;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), followUpRate, regulatoryAlignedRate, improvementRate, domainDiversityRatio };
+}
+
+// ── Evaluator 3: Policy & Governance (0-25) ────────────────────────────────
+
+export function evaluateQualityPolicy(policy: QualityPolicy | null): QualityPolicyResult {
+  if (!policy) {
+    return { overallScore: 0, rating: "inadequate", qualityAssuranceFramework: false, reg45ReviewSchedule: false, continuousImprovementPlan: false, outcomesMeasurementPolicy: false, childParticipationStrategy: false, auditSchedule: false, feedbackMechanism: false };
+  }
+
+  // First 4 booleans at 4 points, last 3 at 3 points = 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.qualityAssuranceFramework) score += 4;
+  if (policy.reg45ReviewSchedule) score += 4;
+  if (policy.continuousImprovementPlan) score += 4;
+  if (policy.outcomesMeasurementPolicy) score += 4;
+  if (policy.childParticipationStrategy) score += 3;
+  if (policy.auditSchedule) score += 3;
+  if (policy.feedbackMechanism) score += 3;
+
+  return {
+    overallScore: score,
+    rating: getRating(score * 4),
+    qualityAssuranceFramework: policy.qualityAssuranceFramework,
+    reg45ReviewSchedule: policy.reg45ReviewSchedule,
+    continuousImprovementPlan: policy.continuousImprovementPlan,
+    outcomesMeasurementPolicy: policy.outcomesMeasurementPolicy,
+    childParticipationStrategy: policy.childParticipationStrategy,
+    auditSchedule: policy.auditSchedule,
+    feedbackMechanism: policy.feedbackMechanism,
   };
-  return colors[grade] ?? "gray";
+}
+
+// ── Evaluator 4: Staff Readiness (0-25) ────────────────────────────────────
+
+export function evaluateStaffQualityReadiness(staff: StaffQualityTraining[]): StaffQualityReadinessResult {
+  const count = staff.length;
+  if (count === 0) {
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, qualityAssuranceRate: 0, outcomesMonitoringRate: 0, regulatoryKnowledgeRate: 0, reflectivePracticeRate: 0, dataAnalysisRate: 0, childParticipationRate: 0 };
+  }
+
+  const qualityAssuranceRate = pct(staff.filter((s) => s.qualityAssuranceSkills).length, count);
+  const outcomesMonitoringRate = pct(staff.filter((s) => s.outcomesMonitoring).length, count);
+  const regulatoryKnowledgeRate = pct(staff.filter((s) => s.regulatoryKnowledge).length, count);
+  const reflectivePracticeRate = pct(staff.filter((s) => s.reflectivePractice).length, count);
+  const dataAnalysisRate = pct(staff.filter((s) => s.dataAnalysis).length, count);
+  const childParticipationRate = pct(staff.filter((s) => s.childParticipation).length, count);
+
+  // Weighted: 6+5+5+4+3+2 = 25
+  const raw =
+    (qualityAssuranceRate / 100) * 6 +
+    (outcomesMonitoringRate / 100) * 5 +
+    (regulatoryKnowledgeRate / 100) * 5 +
+    (reflectivePracticeRate / 100) * 4 +
+    (dataAnalysisRate / 100) * 3 +
+    (childParticipationRate / 100) * 2;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, qualityAssuranceRate, outcomesMonitoringRate, regulatoryKnowledgeRate, reflectivePracticeRate, dataAnalysisRate, childParticipationRate };
+}
+
+// ── Child Profiles (0-10) ──────────────────────────────────────────────────
+
+export function buildChildQualityProfiles(records: QualityReviewRecord[]): ChildQualityProfile[] {
+  const grouped = new Map<string, QualityReviewRecord[]>();
+  for (const r of records) {
+    const arr = grouped.get(r.childId) || [];
+    arr.push(r);
+    grouped.set(r.childId, arr);
+  }
+
+  const profiles: ChildQualityProfile[] = [];
+  for (const [childId, recs] of grouped) {
+    const childName = recs[0].childName;
+    const totalReviews = recs.length;
+
+    const meetsStandardRate = pct(
+      recs.filter((r) => r.outcome === "exceeds_standard" || r.outcome === "meets_standard").length,
+      totalReviews,
+    );
+    const childViewRate = pct(recs.filter((r) => r.childViewCaptured).length, totalReviews);
+
+    const domainsSet = new Set(recs.map((r) => r.domain));
+    const domainsCovered = [...domainsSet];
+
+    // Scoring: freq [>=10→2, >=5→1] + rate1 meetsStandardRate [>=80→3, >=60→2, >=40→1] + rate2 childViewRate [same] + diversity [>=4→2, >=2→1]
+    let score = 0;
+
+    if (totalReviews >= 10) score += 2;
+    else if (totalReviews >= 5) score += 1;
+
+    if (meetsStandardRate >= 80) score += 3;
+    else if (meetsStandardRate >= 60) score += 2;
+    else if (meetsStandardRate >= 40) score += 1;
+
+    if (childViewRate >= 80) score += 3;
+    else if (childViewRate >= 60) score += 2;
+    else if (childViewRate >= 40) score += 1;
+
+    const domainCount = domainsCovered.length;
+    if (domainCount >= 4) score += 2;
+    else if (domainCount >= 2) score += 1;
+
+    profiles.push({
+      childId,
+      childName,
+      totalReviews,
+      meetsStandardRate,
+      childViewRate,
+      domainsCovered,
+      overallScore: Math.min(10, score),
+    });
+  }
+
+  return profiles;
+}
+
+// ── Master Intelligence Generator ──────────────────────────────────────────
+
+export function generateQualityOfCareIntelligence(
+  records: QualityReviewRecord[],
+  policy: QualityPolicy | null,
+  staff: StaffQualityTraining[],
+  homeId: string,
+  periodStart: string,
+  periodEnd: string,
+): QualityOfCareIntelligence {
+  const reviewQuality = evaluateReviewQuality(records);
+  const reviewCompliance = evaluateReviewCompliance(records);
+  const qualityPolicy = evaluateQualityPolicy(policy);
+  const staffReadiness = evaluateStaffQualityReadiness(staff);
+  const childProfiles = buildChildQualityProfiles(records);
+
+  const overallScore = Math.min(
+    100,
+    reviewQuality.overallScore + reviewCompliance.overallScore + qualityPolicy.overallScore + staffReadiness.overallScore,
+  );
+  const rating = getRating(overallScore);
+
+  // Strengths (>=80%)
+  const strengths: string[] = [];
+  if (reviewQuality.meetsStandardRate >= 80) strengths.push("Quality reviews consistently meet or exceed standards across domains");
+  if (reviewQuality.evidenceDocumentedRate >= 80) strengths.push("Strong evidence documentation supporting quality judgements");
+  if (reviewQuality.childViewRate >= 80) strengths.push("Children's views are consistently captured in quality reviews");
+  if (reviewQuality.actionPlanRate >= 80) strengths.push("Action plans systematically created from quality review findings");
+  if (reviewCompliance.followUpRate >= 80) strengths.push("Excellent follow-up completion on quality review actions");
+  if (reviewCompliance.regulatoryAlignedRate >= 80) strengths.push("Reviews are well aligned with regulatory requirements");
+  if (reviewCompliance.improvementRate >= 80) strengths.push("Continuous improvement culture — improvements consistently identified");
+  if (staffReadiness.qualityAssuranceRate >= 80) strengths.push("Staff are well trained in quality assurance methods");
+  if (staffReadiness.reflectivePracticeRate >= 80) strengths.push("Strong reflective practice culture across the team");
+
+  // Areas for improvement (<60%)
+  const areasForImprovement: string[] = [];
+  if (reviewQuality.meetsStandardRate < 60) areasForImprovement.push("Too many reviews show standards not being met — targeted improvement needed");
+  if (reviewQuality.evidenceDocumentedRate < 60) areasForImprovement.push("Evidence documentation is insufficient to support quality judgements");
+  if (reviewQuality.childViewRate < 60) areasForImprovement.push("Children's views are not being adequately captured in quality reviews");
+  if (reviewQuality.actionPlanRate < 60) areasForImprovement.push("Action planning from quality reviews needs to be more systematic");
+  if (reviewCompliance.followUpRate < 60) areasForImprovement.push("Follow-up on quality review actions is incomplete");
+  if (reviewCompliance.regulatoryAlignedRate < 60) areasForImprovement.push("Reviews need stronger alignment with regulatory requirements");
+  if (staffReadiness.qualityAssuranceRate < 60) areasForImprovement.push("Staff training in quality assurance methods needs improvement");
+  if (staffReadiness.regulatoryKnowledgeRate < 60) areasForImprovement.push("Staff regulatory knowledge is insufficient");
+
+  // Actions
+  const actions: string[] = [];
+  if (qualityPolicy.overallScore === 0) actions.push("URGENT: Establish a quality assurance framework — CHR 2015 Reg 45 requires regular quality of care reviews");
+  if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide quality assurance training to all staff — quality monitoring depends on skilled practitioners");
+  if (reviewQuality.meetsStandardRate < 50) actions.push("Review the quality improvement plan — fewer than half of reviews meet standard");
+  if (reviewQuality.childViewRate < 50) actions.push("Implement systematic child voice capture in all quality reviews — SCCIF requires evidence of children's views");
+  if (reviewCompliance.followUpRate < 50) actions.push("Establish a follow-up tracking system for quality review actions");
+  if (reviewCompliance.domainDiversityRatio < 50) actions.push("Ensure quality reviews cover all SCCIF domains — current coverage is too narrow");
+  if (reviewCompliance.regulatoryAlignedRate < 50) actions.push("Align quality review processes with CHR 2015 and SCCIF requirements");
+  if (staffReadiness.reflectivePracticeRate < 50) actions.push("Promote reflective practice through supervision and team meetings");
+
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Reg 45 — Review of quality of care",
+    "CHR 2015 Reg 5 — Statement of purpose",
+    "CHR 2015 Reg 13 — Leadership and management",
+    "CHR 2015 Reg 44 — Independent person visits",
+    "SCCIF — Social Care Common Inspection Framework",
+    "Ofsted Grade Descriptors — Quality judgement criteria",
+    "Children Act 1989 — Welfare of the child",
+  ];
+
+  return {
+    homeId,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    reviewQuality,
+    reviewCompliance,
+    qualityPolicy,
+    staffReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
+  };
 }

@@ -1,26 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Quality of Care Review (Reg 45) — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
-  generateQualityOfCareReview,
-  getDomainLabel,
-  getGradeLabel,
-  getGradeColor,
+  generateQualityOfCareIntelligence,
+  evaluateReviewQuality,
+  evaluateReviewCompliance,
+  evaluateQualityPolicy,
+  evaluateStaffQualityReadiness,
+  buildChildQualityProfiles,
+  pct,
+  getRating,
+  getQualityDomainLabel,
+  getReviewOutcomeLabel,
+  getRatingLabel,
 } from "./quality-of-care-engine";
 
 export type {
-  OfstedGrade,
-  SCCIFDomain,
-  EvidenceStrength,
-  DomainAssessment,
-  EvidenceItem,
-  QualityInputData,
-  SafetyInput,
-  EducationInput,
-  HealthInput,
-  RelationshipsInput,
-  ProtectionInput,
-  LeadershipInput,
-  QualityOfCareReview,
+  QualityDomain,
+  ReviewOutcome,
+  Rating,
+  QualityReviewRecord,
+  QualityPolicy,
+  StaffQualityTraining,
+  ReviewQualityResult,
+  ReviewComplianceResult,
+  QualityPolicyResult,
+  StaffQualityReadinessResult,
+  ChildQualityProfile,
+  QualityOfCareIntelligence,
 } from "./quality-of-care-engine";

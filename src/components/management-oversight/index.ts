@@ -1,1 +1,1 @@
-export { ManagementOversightDashboardWidget } from "./ManagementOversightDashboardWidget";
+export { default as ManagementOversightDashboardWidget } from "./ManagementOversightDashboardWidget";
