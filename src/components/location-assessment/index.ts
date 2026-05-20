@@ -1,1 +1,1 @@
-export { LocationDashboardWidget } from "./LocationDashboardWidget";
+export { default as LocationAssessmentDashboardWidget } from "./LocationAssessmentDashboardWidget";

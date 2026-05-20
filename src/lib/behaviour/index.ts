@@ -1,24 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Behaviour & Positive Relationships — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
-  analyseChildBehaviour,
-  calculateHomeBehaviourMetrics,
-  getSeverityLabel,
-  getBehaviourTypeLabel,
-  getInterventionLabel,
+  generateBehaviourIntelligence,
+  evaluateBehaviourQuality,
+  evaluateBehaviourCompliance,
+  evaluateBehaviourPolicy,
+  evaluateStaffBehaviourReadiness,
+  buildChildBehaviourProfiles,
+  pct,
+  getRating,
+  getBehaviourCategoryLabel,
+  getBehaviourOutcomeLabel,
+  getRatingLabel,
 } from "./behaviour-engine";
 
 export type {
-  BehaviourSeverity,
-  BehaviourType,
-  InterventionType,
-  RestraintType,
-  PositiveEventType,
-  BehaviourIncident,
-  PositiveEvent,
-  BehaviourSupportPlan,
-  ChildBehaviourAnalysis,
-  HomeBehaviourMetrics,
+  BehaviourCategory,
+  BehaviourOutcome,
+  Rating,
+  BehaviourRecord,
+  BehaviourPolicy,
+  StaffBehaviourTraining,
+  BehaviourQualityResult,
+  BehaviourComplianceResult,
+  BehaviourPolicyResult,
+  StaffBehaviourReadinessResult,
+  ChildBehaviourProfile,
+  BehaviourIntelligence,
 } from "./behaviour-engine";

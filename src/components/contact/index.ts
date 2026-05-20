@@ -1,1 +1,1 @@
-export { ContactDashboardWidget } from "./ContactDashboardWidget";
+export { default as ContactDashboardWidget } from "./ContactDashboardWidget";

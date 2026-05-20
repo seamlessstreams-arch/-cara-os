@@ -1,9 +1,9 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Behaviour & Positive Relationships Engine
+// Cornerstone Behaviour Intelligence Engine
 //
-// Deterministic engine for tracking behaviour patterns, de-escalation success
-// rates, positive reinforcement programmes, reward systems, and behaviour
-// support plan compliance.
+// Deterministic engine for evaluating behaviour management quality in
+// children's homes — positive behaviour strategies, de-escalation,
+// behaviour support plans, and restraint reduction.
 //
 // Aligned to:
 //   - CHR 2015 Reg 19 — Behaviour management
@@ -11,510 +11,427 @@
 //   - CHR 2015 Reg 35 — Behaviour management policy
 //   - SCCIF — Children's behaviour is well managed using positive strategies
 //   - Reducing the Need for Restraint and Restrictive Intervention (DfE 2019)
-//
-// Key principles:
-//   - Positive reinforcement > punishment
-//   - De-escalation before restraint
-//   - Behaviour understood in context of trauma
-//   - Every child has an individualised behaviour support plan
-//   - Restraint always debriefed, recorded, reviewed
-//   - Children involved in creating their own strategies
+//   - Children Act 1989 — Welfare of the child
+//   - UNCRC Article 37 — Protection from cruel treatment
 //
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type BehaviourSeverity = "low" | "medium" | "high" | "critical";
+export type BehaviourCategory =
+  | "positive_reinforcement"
+  | "de_escalation"
+  | "behaviour_support_plan"
+  | "restorative_practice"
+  | "risk_assessment"
+  | "therapeutic_intervention"
+  | "staff_debriefing"
+  | "child_consultation";
 
-export type BehaviourType =
-  | "verbal_aggression"
-  | "physical_aggression"
-  | "self_harm"
-  | "property_damage"
-  | "absconding"
-  | "substance_use"
-  | "sexualised_behaviour"
-  | "non_compliance"
-  | "bullying"
-  | "emotional_dysregulation"
-  | "other";
+export type BehaviourOutcome =
+  | "successful"
+  | "partially_successful"
+  | "unsuccessful"
+  | "escalated"
+  | "ongoing";
 
-export type InterventionType =
-  | "verbal_reassurance"
-  | "distraction"
-  | "offer_space"
-  | "planned_ignoring"
-  | "de_escalation_script"
-  | "sensory_regulation"
-  | "physical_intervention"
-  | "separation"
-  | "repair_conversation"
-  | "reward_offered"
-  | "natural_consequence"
-  | "restorative_meeting"
-  | "other";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-export type RestraintType = "standing" | "seated" | "ground" | "supine" | "side" | "other";
+// ── Input Records ──────────────────────────────────────────────────────────
 
-export type PositiveEventType =
-  | "reward_earned"
-  | "target_met"
-  | "prosocial_behaviour"
-  | "emotional_regulation"
-  | "helping_others"
-  | "academic_achievement"
-  | "community_participation"
-  | "conflict_resolution"
-  | "independence_milestone";
-
-// ── Core Interfaces ────────────────────────────────────────────────────────
-
-export interface BehaviourIncident {
+export interface BehaviourRecord {
   id: string;
   childId: string;
   childName: string;
-  homeId: string;
-  date: string;
-  time: string;
-  severity: BehaviourSeverity;
-  type: BehaviourType;
-  description: string;
-  antecedent?: string;                  // ABC model: what happened before
-  behaviour: string;                    // ABC model: what the child did
-  consequence: string;                  // ABC model: what happened after
-  interventionsUsed: InterventionType[];
+  recordDate: string;
+  category: BehaviourCategory;
+  positiveApproachUsed: boolean;
   deEscalationAttempted: boolean;
-  deEscalationSuccessful?: boolean;
-  restraintUsed: boolean;
-  restraintType?: RestraintType;
-  restraintDuration?: number;           // minutes
-  restraintDebriefChild?: boolean;
-  restraintDebriefStaff?: boolean;
-  injuryOccurred: boolean;
-  injuryDetails?: string;
-  triggers: string[];
-  staffInvolved: string[];
-  witnesses: string[];
-  followUpActions: string[];
-  recordedBy: string;
-  recordedAt: string;
+  childViewCaptured: boolean;
+  supportPlanFollowed: boolean;
+  documentationComplete: boolean;
+  timelyRecording: boolean;
 }
 
-export interface PositiveEvent {
+export interface BehaviourPolicy {
   id: string;
-  childId: string;
-  childName: string;
-  homeId: string;
-  date: string;
-  type: PositiveEventType;
-  description: string;
-  rewardGiven?: string;
-  acknowledgedBy: string;
-  sharedWithTeam: boolean;
-  recordedBy: string;
+  behaviourManagementPolicy: boolean;
+  positiveReinforcementFramework: boolean;
+  deEscalationProtocol: boolean;
+  restraintReductionPlan: boolean;
+  childParticipationGuidance: boolean;
+  debriefingProcedure: boolean;
+  reviewSchedule: boolean;
 }
 
-export interface BehaviourSupportPlan {
+export interface StaffBehaviourTraining {
   id: string;
-  childId: string;
-  childName: string;
-  homeId: string;
-  createdAt: string;
-  reviewDate: string;
-  lastReviewedAt?: string;
-  isActive: boolean;
-  knownTriggers: string[];
-  earlyWarningSignals: string[];
-  deEscalationStrategies: string[];
-  preferredInterventions: InterventionType[];
-  rewardTargets: string[];
-  restrictedPracticeThreshold: string;
-  childContributed: boolean;              // child's voice in their plan
-  socialWorkerAgreed: boolean;
-  parentCarerInformed: boolean;
+  staffId: string;
+  staffName: string;
+  positiveApproaches: boolean;
+  deEscalationSkills: boolean;
+  traumaInformedPractice: boolean;
+  restorativePractice: boolean;
+  riskAssessment: boolean;
+  recordKeeping: boolean;
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
-export interface ChildBehaviourAnalysis {
+export interface BehaviourQualityResult {
+  overallScore: number;
+  rating: Rating;
+  totalRecords: number;
+  positiveApproachRate: number;
+  deEscalationRate: number;
+  childViewRate: number;
+  supportPlanRate: number;
+}
+
+export interface BehaviourComplianceResult {
+  overallScore: number;
+  rating: Rating;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  supportPlanFollowedRate: number;
+  categoryDiversityRatio: number;
+}
+
+export interface BehaviourPolicyResult {
+  overallScore: number;
+  rating: Rating;
+  behaviourManagementPolicy: boolean;
+  positiveReinforcementFramework: boolean;
+  deEscalationProtocol: boolean;
+  restraintReductionPlan: boolean;
+  childParticipationGuidance: boolean;
+  debriefingProcedure: boolean;
+  reviewSchedule: boolean;
+}
+
+export interface StaffBehaviourReadinessResult {
+  overallScore: number;
+  rating: Rating;
+  totalStaff: number;
+  positiveApproachesRate: number;
+  deEscalationSkillsRate: number;
+  traumaInformedRate: number;
+  restorativePracticeRate: number;
+  riskAssessmentRate: number;
+  recordKeepingRate: number;
+}
+
+export interface ChildBehaviourProfile {
   childId: string;
   childName: string;
-  totalIncidents: number;
-  incidentsLast30Days: number;
-  incidentTrend: "increasing" | "stable" | "decreasing";
-  severityBreakdown: Record<BehaviourSeverity, number>;
-  commonTriggers: string[];
-  commonTypes: BehaviourType[];
-  deEscalationRate: number;             // % successful de-escalation
-  restraintCount: number;
-  restraintCountLast30Days: number;
-  restraintReduction: boolean;
-  positiveEventsCount: number;
-  positiveToNegativeRatio: number;      // want > 5:1
-  hasSupportPlan: boolean;
-  supportPlanCurrent: boolean;
-  supportPlanChildVoice: boolean;
-  issues: string[];
-  recommendations: string[];
+  totalRecords: number;
+  positiveApproachRate: number;
+  childViewRate: number;
+  categoriesCovered: string[];
+  overallScore: number;
 }
 
-export interface HomeBehaviourMetrics {
+export interface BehaviourIntelligence {
   homeId: string;
-  childCount: number;
-  totalIncidents: number;
-  incidentsLast30Days: number;
-  incidentTrend: "increasing" | "stable" | "decreasing";
-  averageSeverity: number;              // 1-4 mapped from severity levels
-  deEscalationSuccessRate: number;      // %
-  restraintCount: number;
-  restraintCountLast30Days: number;
-  restraintReductionTrend: boolean;
-  totalPositiveEvents: number;
-  positiveEventsLast30Days: number;
-  overallPositiveRatio: number;         // positive events / incidents
-  supportPlanComplianceRate: number;    // % with current plans
-  childVoiceInPlans: number;            // %
-  debriefComplianceRate: number;        // % restraints debriefed
-  childrenOfConcern: { childId: string; childName: string; reason: string }[];
-  commonTriggers: string[];
-  topInterventions: { type: InterventionType; count: number }[];
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  behaviourQuality: BehaviourQualityResult;
+  behaviourCompliance: BehaviourComplianceResult;
+  behaviourPolicy: BehaviourPolicyResult;
+  staffReadiness: StaffBehaviourReadinessResult;
+  childProfiles: ChildBehaviourProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const SUPPORT_PLAN_REVIEW_DAYS = 90;     // review every 3 months
-const POSITIVE_RATIO_TARGET = 5;          // 5:1 positive to negative
-const HIGH_INCIDENT_THRESHOLD_30D = 5;    // concern if >5 incidents in 30d
-const RESTRAINT_CONCERN_THRESHOLD_30D = 2;
-const SEVERITY_MAP: Record<BehaviourSeverity, number> = {
-  low: 1, medium: 2, high: 3, critical: 4,
-};
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
 
-// ── Core: Analyse Child Behaviour ──────────────────────────────────────────
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
 
-export function analyseChildBehaviour(
-  incidents: BehaviourIncident[],
-  positiveEvents: PositiveEvent[],
-  supportPlans: BehaviourSupportPlan[],
-  childId: string,
-  now?: string,
-): ChildBehaviourAnalysis {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-  const sixtyDaysAgo = currentTime - 60 * 24 * 60 * 60 * 1000;
+export function getBehaviourCategoryLabel(cat: BehaviourCategory): string {
+  const labels: Record<BehaviourCategory, string> = {
+    positive_reinforcement: "Positive Reinforcement",
+    de_escalation: "De-escalation",
+    behaviour_support_plan: "Behaviour Support Plan",
+    restorative_practice: "Restorative Practice",
+    risk_assessment: "Risk Assessment",
+    therapeutic_intervention: "Therapeutic Intervention",
+    staff_debriefing: "Staff Debriefing",
+    child_consultation: "Child Consultation",
+  };
+  return labels[cat] ?? cat;
+}
 
-  const childIncidents = incidents.filter(i => i.childId === childId);
-  const childPositive = positiveEvents.filter(p => p.childId === childId);
-  const childPlans = supportPlans.filter(p => p.childId === childId && p.isActive);
+export function getBehaviourOutcomeLabel(outcome: BehaviourOutcome): string {
+  const labels: Record<BehaviourOutcome, string> = {
+    successful: "Successful",
+    partially_successful: "Partially Successful",
+    unsuccessful: "Unsuccessful",
+    escalated: "Escalated",
+    ongoing: "Ongoing",
+  };
+  return labels[outcome] ?? outcome;
+}
 
-  const incidentsLast30 = childIncidents.filter(i => new Date(i.date).getTime() > thirtyDaysAgo);
-  const incidentsPrev30 = childIncidents.filter(
-    i => new Date(i.date).getTime() > sixtyDaysAgo && new Date(i.date).getTime() <= thirtyDaysAgo
-  );
+export function getRatingLabel(r: Rating): string {
+  return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
-  // Trend
-  let incidentTrend: "increasing" | "stable" | "decreasing" = "stable";
-  if (incidentsLast30.length > incidentsPrev30.length + 2) incidentTrend = "increasing";
-  else if (incidentsLast30.length < incidentsPrev30.length - 1) incidentTrend = "decreasing";
+// ── Constants ──────────────────────────────────────────────────────────────
 
-  // Severity breakdown
-  const severityBreakdown: Record<BehaviourSeverity, number> = { low: 0, medium: 0, high: 0, critical: 0 };
-  for (const i of childIncidents) severityBreakdown[i.severity]++;
+const ALL_CATEGORIES: BehaviourCategory[] = [
+  "positive_reinforcement", "de_escalation", "behaviour_support_plan",
+  "restorative_practice", "risk_assessment", "therapeutic_intervention",
+  "staff_debriefing", "child_consultation",
+];
 
-  // Common triggers
-  const triggerCounts = new Map<string, number>();
-  for (const i of childIncidents) {
-    for (const t of i.triggers) {
-      triggerCounts.set(t, (triggerCounts.get(t) ?? 0) + 1);
-    }
-  }
-  const commonTriggers = Array.from(triggerCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([t]) => t);
+// ── Evaluator 1: Behaviour Quality (0-25) ─────────────────────────────────
 
-  // Common types
-  const typeCounts = new Map<BehaviourType, number>();
-  for (const i of childIncidents) typeCounts.set(i.type, (typeCounts.get(i.type) ?? 0) + 1);
-  const commonTypes = Array.from(typeCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([t]) => t);
-
-  // De-escalation rate
-  const deEscAttempted = childIncidents.filter(i => i.deEscalationAttempted);
-  const deEscSuccessful = deEscAttempted.filter(i => i.deEscalationSuccessful);
-  const deEscalationRate = deEscAttempted.length > 0
-    ? Math.round((deEscSuccessful.length / deEscAttempted.length) * 100)
-    : 0;
-
-  // Restraint
-  const restraintIncidents = childIncidents.filter(i => i.restraintUsed);
-  const restraintLast30 = restraintIncidents.filter(i => new Date(i.date).getTime() > thirtyDaysAgo);
-  const restraintPrev30 = restraintIncidents.filter(
-    i => new Date(i.date).getTime() > sixtyDaysAgo && new Date(i.date).getTime() <= thirtyDaysAgo
-  );
-  const restraintReduction = restraintLast30.length < restraintPrev30.length;
-
-  // Positive ratio
-  const positiveLast30 = childPositive.filter(p => new Date(p.date).getTime() > thirtyDaysAgo);
-  const positiveToNegativeRatio = incidentsLast30.length > 0
-    ? Math.round((positiveLast30.length / incidentsLast30.length) * 10) / 10
-    : positiveLast30.length > 0 ? positiveLast30.length : 0;
-
-  // Support plan
-  const activePlan = childPlans[0];
-  const hasSupportPlan = !!activePlan;
-  const supportPlanCurrent = activePlan
-    ? new Date(activePlan.reviewDate).getTime() > currentTime ||
-      (activePlan.lastReviewedAt
-        ? (currentTime - new Date(activePlan.lastReviewedAt).getTime()) < SUPPORT_PLAN_REVIEW_DAYS * 24 * 60 * 60 * 1000
-        : false)
-    : false;
-  const supportPlanChildVoice = activePlan?.childContributed ?? false;
-
-  // Issues & recommendations
-  const issues: string[] = [];
-  const recommendations: string[] = [];
-
-  if (incidentsLast30.length > HIGH_INCIDENT_THRESHOLD_30D) {
-    issues.push(`${incidentsLast30.length} incidents in 30 days (threshold: ${HIGH_INCIDENT_THRESHOLD_30D})`);
-  }
-  if (restraintLast30.length > RESTRAINT_CONCERN_THRESHOLD_30D) {
-    issues.push(`${restraintLast30.length} restraints in 30 days — review BSP urgently`);
-  }
-  if (!hasSupportPlan) {
-    issues.push("No active behaviour support plan");
-    recommendations.push("Create individualised behaviour support plan");
-  } else if (!supportPlanCurrent) {
-    issues.push("Behaviour support plan overdue for review");
-    recommendations.push("Review and update BSP within 7 days");
-  }
-  if (incidentTrend === "increasing") {
-    issues.push("Incident frequency increasing");
-    recommendations.push("Schedule multi-agency behaviour review");
-  }
-  if (positiveToNegativeRatio < POSITIVE_RATIO_TARGET && incidentsLast30.length > 0) {
-    recommendations.push(`Increase positive interactions (currently ${positiveToNegativeRatio}:1, target 5:1)`);
-  }
-  if (hasSupportPlan && !supportPlanChildVoice) {
-    recommendations.push("Include child's voice in BSP review");
-  }
-  if (deEscalationRate < 60 && deEscAttempted.length >= 3) {
-    recommendations.push("Review de-escalation strategies — success rate below 60%");
+export function evaluateBehaviourQuality(records: BehaviourRecord[]): BehaviourQualityResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", totalRecords: 0, positiveApproachRate: 0, deEscalationRate: 0, childViewRate: 0, supportPlanRate: 0 };
   }
 
-  const childName = childIncidents[0]?.childName ?? childPositive[0]?.childName ?? childId;
+  const positiveApproachRate = pct(records.filter((r) => r.positiveApproachUsed).length, total);
+  const deEscalationRate = pct(records.filter((r) => r.deEscalationAttempted).length, total);
+  const childViewRate = pct(records.filter((r) => r.childViewCaptured).length, total);
+  const supportPlanRate = pct(records.filter((r) => r.supportPlanFollowed).length, total);
+
+  // Weighted: positiveApproachRate 7 + deEscalationRate 6 + childViewRate 6 + supportPlanRate 6 = 25
+  const raw = (positiveApproachRate / 100) * 7 + (deEscalationRate / 100) * 6 + (childViewRate / 100) * 6 + (supportPlanRate / 100) * 6;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalRecords: total, positiveApproachRate, deEscalationRate, childViewRate, supportPlanRate };
+}
+
+// ── Evaluator 2: Behaviour Compliance (0-25) ──────────────────────────────
+
+export function evaluateBehaviourCompliance(records: BehaviourRecord[]): BehaviourComplianceResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyRecordingRate: 0, supportPlanFollowedRate: 0, categoryDiversityRatio: 0 };
+  }
+
+  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, total);
+  const supportPlanFollowedRate = pct(records.filter((r) => r.supportPlanFollowed).length, total);
+
+  const uniqueCategories = new Set(records.map((r) => r.category)).size;
+  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+
+  // Weighted: documentationRate 8 + timelyRecordingRate 7 + supportPlanFollowedRate 5 + categoryDiversityRatio 5 = 25
+  const raw = (documentationRate / 100) * 8 + (timelyRecordingRate / 100) * 7 + (supportPlanFollowedRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyRecordingRate, supportPlanFollowedRate, categoryDiversityRatio };
+}
+
+// ── Evaluator 3: Policy & Governance (0-25) ────────────────────────────────
+
+export function evaluateBehaviourPolicy(policy: BehaviourPolicy | null): BehaviourPolicyResult {
+  if (!policy) {
+    return { overallScore: 0, rating: "inadequate", behaviourManagementPolicy: false, positiveReinforcementFramework: false, deEscalationProtocol: false, restraintReductionPlan: false, childParticipationGuidance: false, debriefingProcedure: false, reviewSchedule: false };
+  }
+
+  // First 4 at 4 points, last 3 at 3 points = 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.behaviourManagementPolicy) score += 4;
+  if (policy.positiveReinforcementFramework) score += 4;
+  if (policy.deEscalationProtocol) score += 4;
+  if (policy.restraintReductionPlan) score += 4;
+  if (policy.childParticipationGuidance) score += 3;
+  if (policy.debriefingProcedure) score += 3;
+  if (policy.reviewSchedule) score += 3;
 
   return {
-    childId,
-    childName,
-    totalIncidents: childIncidents.length,
-    incidentsLast30Days: incidentsLast30.length,
-    incidentTrend,
-    severityBreakdown,
-    commonTriggers,
-    commonTypes,
-    deEscalationRate,
-    restraintCount: restraintIncidents.length,
-    restraintCountLast30Days: restraintLast30.length,
-    restraintReduction,
-    positiveEventsCount: childPositive.length,
-    positiveToNegativeRatio,
-    hasSupportPlan,
-    supportPlanCurrent,
-    supportPlanChildVoice,
-    issues,
-    recommendations,
+    overallScore: score,
+    rating: getRating(score * 4),
+    behaviourManagementPolicy: policy.behaviourManagementPolicy,
+    positiveReinforcementFramework: policy.positiveReinforcementFramework,
+    deEscalationProtocol: policy.deEscalationProtocol,
+    restraintReductionPlan: policy.restraintReductionPlan,
+    childParticipationGuidance: policy.childParticipationGuidance,
+    debriefingProcedure: policy.debriefingProcedure,
+    reviewSchedule: policy.reviewSchedule,
   };
 }
 
-// ── Core: Calculate Home Metrics ────────────────────────────────────────────
+// ── Evaluator 4: Staff Readiness (0-25) ────────────────────────────────────
 
-export function calculateHomeBehaviourMetrics(
-  incidents: BehaviourIncident[],
-  positiveEvents: PositiveEvent[],
-  supportPlans: BehaviourSupportPlan[],
+export function evaluateStaffBehaviourReadiness(staff: StaffBehaviourTraining[]): StaffBehaviourReadinessResult {
+  const count = staff.length;
+  if (count === 0) {
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, positiveApproachesRate: 0, deEscalationSkillsRate: 0, traumaInformedRate: 0, restorativePracticeRate: 0, riskAssessmentRate: 0, recordKeepingRate: 0 };
+  }
+
+  const positiveApproachesRate = pct(staff.filter((s) => s.positiveApproaches).length, count);
+  const deEscalationSkillsRate = pct(staff.filter((s) => s.deEscalationSkills).length, count);
+  const traumaInformedRate = pct(staff.filter((s) => s.traumaInformedPractice).length, count);
+  const restorativePracticeRate = pct(staff.filter((s) => s.restorativePractice).length, count);
+  const riskAssessmentRate = pct(staff.filter((s) => s.riskAssessment).length, count);
+  const recordKeepingRate = pct(staff.filter((s) => s.recordKeeping).length, count);
+
+  // Weighted: 6+5+5+4+3+2 = 25
+  const raw =
+    (positiveApproachesRate / 100) * 6 +
+    (deEscalationSkillsRate / 100) * 5 +
+    (traumaInformedRate / 100) * 5 +
+    (restorativePracticeRate / 100) * 4 +
+    (riskAssessmentRate / 100) * 3 +
+    (recordKeepingRate / 100) * 2;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, positiveApproachesRate, deEscalationSkillsRate, traumaInformedRate, restorativePracticeRate, riskAssessmentRate, recordKeepingRate };
+}
+
+// ── Child Profiles (0-10) ──────────────────────────────────────────────────
+
+export function buildChildBehaviourProfiles(records: BehaviourRecord[]): ChildBehaviourProfile[] {
+  const grouped = new Map<string, BehaviourRecord[]>();
+  for (const r of records) {
+    const arr = grouped.get(r.childId) || [];
+    arr.push(r);
+    grouped.set(r.childId, arr);
+  }
+
+  const profiles: ChildBehaviourProfile[] = [];
+  for (const [childId, recs] of grouped) {
+    const childName = recs[0].childName;
+    const totalRecords = recs.length;
+
+    const positiveApproachRate = pct(recs.filter((r) => r.positiveApproachUsed).length, totalRecords);
+    const childViewRate = pct(recs.filter((r) => r.childViewCaptured).length, totalRecords);
+
+    const catsSet = new Set(recs.map((r) => r.category));
+    const categoriesCovered = [...catsSet];
+
+    // Scoring: freq [>=10→2, >=5→1] + rate1 positiveApproachRate [>=80→3, >=60→2, >=40→1] + rate2 childViewRate [same] + diversity [>=4→2, >=2→1]
+    let score = 0;
+
+    if (totalRecords >= 10) score += 2;
+    else if (totalRecords >= 5) score += 1;
+
+    if (positiveApproachRate >= 80) score += 3;
+    else if (positiveApproachRate >= 60) score += 2;
+    else if (positiveApproachRate >= 40) score += 1;
+
+    if (childViewRate >= 80) score += 3;
+    else if (childViewRate >= 60) score += 2;
+    else if (childViewRate >= 40) score += 1;
+
+    const catCount = categoriesCovered.length;
+    if (catCount >= 4) score += 2;
+    else if (catCount >= 2) score += 1;
+
+    profiles.push({
+      childId,
+      childName,
+      totalRecords,
+      positiveApproachRate,
+      childViewRate,
+      categoriesCovered,
+      overallScore: Math.min(10, score),
+    });
+  }
+
+  return profiles;
+}
+
+// ── Master Intelligence Generator ──────────────────────────────────────────
+
+export function generateBehaviourIntelligence(
+  records: BehaviourRecord[],
+  policy: BehaviourPolicy | null,
+  staff: StaffBehaviourTraining[],
   homeId: string,
-  now?: string,
-): HomeBehaviourMetrics {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-  const sixtyDaysAgo = currentTime - 60 * 24 * 60 * 60 * 1000;
+  periodStart: string,
+  periodEnd: string,
+): BehaviourIntelligence {
+  const behaviourQuality = evaluateBehaviourQuality(records);
+  const behaviourCompliance = evaluateBehaviourCompliance(records);
+  const behaviourPolicy = evaluateBehaviourPolicy(policy);
+  const staffReadiness = evaluateStaffBehaviourReadiness(staff);
+  const childProfiles = buildChildBehaviourProfiles(records);
 
-  const homeIncidents = incidents.filter(i => i.homeId === homeId);
-  const homePositive = positiveEvents.filter(p => p.homeId === homeId);
-  const homePlans = supportPlans.filter(p => p.homeId === homeId);
-
-  const incidentsLast30 = homeIncidents.filter(i => new Date(i.date).getTime() > thirtyDaysAgo);
-  const incidentsPrev30 = homeIncidents.filter(
-    i => new Date(i.date).getTime() > sixtyDaysAgo && new Date(i.date).getTime() <= thirtyDaysAgo
+  const overallScore = Math.min(
+    100,
+    behaviourQuality.overallScore + behaviourCompliance.overallScore + behaviourPolicy.overallScore + staffReadiness.overallScore,
   );
-  const positiveLast30 = homePositive.filter(p => new Date(p.date).getTime() > thirtyDaysAgo);
+  const rating = getRating(overallScore);
 
-  // Unique children
-  const childIds = new Set([
-    ...homeIncidents.map(i => i.childId),
-    ...homePositive.map(p => p.childId),
-  ]);
-  const childCount = childIds.size;
+  // Strengths (>=80%)
+  const strengths: string[] = [];
+  if (behaviourQuality.positiveApproachRate >= 80) strengths.push("Positive approaches are consistently used in behaviour management");
+  if (behaviourQuality.deEscalationRate >= 80) strengths.push("De-escalation is routinely attempted before any restrictive intervention");
+  if (behaviourQuality.childViewRate >= 80) strengths.push("Children's views are consistently captured during behaviour incidents");
+  if (behaviourQuality.supportPlanRate >= 80) strengths.push("Behaviour support plans are consistently followed");
+  if (behaviourCompliance.documentationRate >= 80) strengths.push("Behaviour incident documentation is thorough and complete");
+  if (behaviourCompliance.timelyRecordingRate >= 80) strengths.push("Behaviour records are completed in a timely manner");
+  if (staffReadiness.positiveApproachesRate >= 80) strengths.push("Staff are well trained in positive behaviour approaches");
+  if (staffReadiness.deEscalationSkillsRate >= 80) strengths.push("Strong de-escalation skills across the team");
 
-  // Trend
-  let incidentTrend: "increasing" | "stable" | "decreasing" = "stable";
-  if (incidentsLast30.length > incidentsPrev30.length + 2) incidentTrend = "increasing";
-  else if (incidentsLast30.length < incidentsPrev30.length - 1) incidentTrend = "decreasing";
+  // Areas for improvement (<60%)
+  const areasForImprovement: string[] = [];
+  if (behaviourQuality.positiveApproachRate < 60) areasForImprovement.push("Positive approaches are not being consistently used");
+  if (behaviourQuality.deEscalationRate < 60) areasForImprovement.push("De-escalation is not routinely attempted");
+  if (behaviourQuality.childViewRate < 60) areasForImprovement.push("Children's views are not being captured during behaviour incidents");
+  if (behaviourQuality.supportPlanRate < 60) areasForImprovement.push("Behaviour support plans are not consistently followed");
+  if (behaviourCompliance.documentationRate < 60) areasForImprovement.push("Behaviour documentation is incomplete or inconsistent");
+  if (behaviourCompliance.timelyRecordingRate < 60) areasForImprovement.push("Behaviour records are not being completed promptly");
+  if (staffReadiness.positiveApproachesRate < 60) areasForImprovement.push("Staff need more training in positive behaviour approaches");
+  if (staffReadiness.deEscalationSkillsRate < 60) areasForImprovement.push("Staff de-escalation skills require development");
 
-  // Average severity
-  const avgSeverity = homeIncidents.length > 0
-    ? Math.round((homeIncidents.reduce((s, i) => s + SEVERITY_MAP[i.severity], 0) / homeIncidents.length) * 10) / 10
-    : 0;
+  // Actions
+  const actions: string[] = [];
+  if (behaviourPolicy.overallScore === 0) actions.push("URGENT: Establish a behaviour management policy — CHR 2015 Reg 19/35 require documented positive behaviour strategies");
+  if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide behaviour management training to all staff — positive approaches depend on skilled practitioners");
+  if (behaviourQuality.positiveApproachRate < 50) actions.push("Implement structured positive reinforcement programmes for all children — positive strategies must be the primary approach (Reg 19)");
+  if (behaviourQuality.deEscalationRate < 50) actions.push("Ensure de-escalation is always attempted before restrictive intervention — CHR 2015 Reg 20");
+  if (behaviourCompliance.documentationRate < 50) actions.push("Improve behaviour incident documentation — all incidents must be fully recorded");
+  if (behaviourCompliance.timelyRecordingRate < 50) actions.push("Review recording timescales — behaviour records should be completed within 24 hours");
+  if (behaviourQuality.childViewRate < 50) actions.push("Capture children's views after every behaviour incident — child's voice is essential (SCCIF)");
+  if (staffReadiness.traumaInformedRate < 50) actions.push("Provide trauma-informed practice training — behaviour must be understood in context of children's experiences");
 
-  // De-escalation
-  const deEscAttempted = homeIncidents.filter(i => i.deEscalationAttempted);
-  const deEscSuccessful = deEscAttempted.filter(i => i.deEscalationSuccessful);
-  const deEscalationSuccessRate = deEscAttempted.length > 0
-    ? Math.round((deEscSuccessful.length / deEscAttempted.length) * 100)
-    : 0;
-
-  // Restraint
-  const restraints = homeIncidents.filter(i => i.restraintUsed);
-  const restraintsLast30 = restraints.filter(i => new Date(i.date).getTime() > thirtyDaysAgo);
-  const restraintsPrev30 = restraints.filter(
-    i => new Date(i.date).getTime() > sixtyDaysAgo && new Date(i.date).getTime() <= thirtyDaysAgo
-  );
-  const restraintReductionTrend = restraintsLast30.length <= restraintsPrev30.length;
-
-  // Debrief compliance
-  const restraintDebriefed = restraints.filter(i => i.restraintDebriefChild && i.restraintDebriefStaff);
-  const debriefComplianceRate = restraints.length > 0
-    ? Math.round((restraintDebriefed.length / restraints.length) * 100)
-    : 100;
-
-  // Positive ratio
-  const overallPositiveRatio = incidentsLast30.length > 0
-    ? Math.round((positiveLast30.length / incidentsLast30.length) * 10) / 10
-    : positiveLast30.length;
-
-  // Support plan compliance
-  const activePlans = homePlans.filter(p => p.isActive);
-  const currentPlans = activePlans.filter(p => {
-    if (new Date(p.reviewDate).getTime() > currentTime) return true;
-    if (p.lastReviewedAt) {
-      return (currentTime - new Date(p.lastReviewedAt).getTime()) < SUPPORT_PLAN_REVIEW_DAYS * 24 * 60 * 60 * 1000;
-    }
-    return false;
-  });
-  const supportPlanComplianceRate = activePlans.length > 0
-    ? Math.round((currentPlans.length / activePlans.length) * 100)
-    : 0;
-
-  // Child voice
-  const plansWithVoice = activePlans.filter(p => p.childContributed);
-  const childVoiceInPlans = activePlans.length > 0
-    ? Math.round((plansWithVoice.length / activePlans.length) * 100)
-    : 0;
-
-  // Children of concern
-  const childrenOfConcern: { childId: string; childName: string; reason: string }[] = [];
-  for (const cid of childIds) {
-    const childInc30 = incidentsLast30.filter(i => i.childId === cid);
-    const childRestraint30 = childInc30.filter(i => i.restraintUsed);
-    if (childInc30.length > HIGH_INCIDENT_THRESHOLD_30D) {
-      const name = childInc30[0]?.childName ?? cid;
-      childrenOfConcern.push({ childId: cid, childName: name, reason: `${childInc30.length} incidents in 30 days` });
-    } else if (childRestraint30.length > RESTRAINT_CONCERN_THRESHOLD_30D) {
-      const name = childRestraint30[0]?.childName ?? cid;
-      childrenOfConcern.push({ childId: cid, childName: name, reason: `${childRestraint30.length} restraints in 30 days` });
-    }
-  }
-
-  // Common triggers
-  const triggerCounts = new Map<string, number>();
-  for (const i of homeIncidents) {
-    for (const t of i.triggers) triggerCounts.set(t, (triggerCounts.get(t) ?? 0) + 1);
-  }
-  const commonTriggers = Array.from(triggerCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([t]) => t);
-
-  // Top interventions
-  const interventionCounts = new Map<InterventionType, number>();
-  for (const i of homeIncidents) {
-    for (const int of i.interventionsUsed) {
-      interventionCounts.set(int, (interventionCounts.get(int) ?? 0) + 1);
-    }
-  }
-  const topInterventions = Array.from(interventionCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([type, count]) => ({ type, count }));
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Reg 19 — Behaviour management (positive strategies)",
+    "CHR 2015 Reg 20 — Restraint (last resort only)",
+    "CHR 2015 Reg 35 — Behaviour management policy",
+    "SCCIF — Children's behaviour well managed with positive approaches",
+    "DfE Reducing the Need for Restraint and Restrictive Intervention (2019)",
+    "Children Act 1989 — Welfare of the child",
+    "UNCRC Article 37 — Protection from cruel treatment",
+  ];
 
   return {
     homeId,
-    childCount,
-    totalIncidents: homeIncidents.length,
-    incidentsLast30Days: incidentsLast30.length,
-    incidentTrend,
-    averageSeverity: avgSeverity,
-    deEscalationSuccessRate,
-    restraintCount: restraints.length,
-    restraintCountLast30Days: restraintsLast30.length,
-    restraintReductionTrend,
-    totalPositiveEvents: homePositive.length,
-    positiveEventsLast30Days: positiveLast30.length,
-    overallPositiveRatio,
-    supportPlanComplianceRate,
-    childVoiceInPlans,
-    debriefComplianceRate,
-    childrenOfConcern,
-    commonTriggers,
-    topInterventions,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    behaviourQuality,
+    behaviourCompliance,
+    behaviourPolicy,
+    staffReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
   };
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────
-
-export function getSeverityLabel(severity: BehaviourSeverity): string {
-  const labels: Record<BehaviourSeverity, string> = {
-    low: "Low", medium: "Medium", high: "High", critical: "Critical",
-  };
-  return labels[severity];
-}
-
-export function getBehaviourTypeLabel(type: BehaviourType): string {
-  const labels: Record<BehaviourType, string> = {
-    verbal_aggression: "Verbal Aggression",
-    physical_aggression: "Physical Aggression",
-    self_harm: "Self-Harm",
-    property_damage: "Property Damage",
-    absconding: "Absconding",
-    substance_use: "Substance Use",
-    sexualised_behaviour: "Sexualised Behaviour",
-    non_compliance: "Non-Compliance",
-    bullying: "Bullying",
-    emotional_dysregulation: "Emotional Dysregulation",
-    other: "Other",
-  };
-  return labels[type] ?? type;
-}
-
-export function getInterventionLabel(type: InterventionType): string {
-  const labels: Record<InterventionType, string> = {
-    verbal_reassurance: "Verbal Reassurance",
-    distraction: "Distraction",
-    offer_space: "Offer Space",
-    planned_ignoring: "Planned Ignoring",
-    de_escalation_script: "De-escalation Script",
-    sensory_regulation: "Sensory Regulation",
-    physical_intervention: "Physical Intervention",
-    separation: "Separation",
-    repair_conversation: "Repair Conversation",
-    reward_offered: "Reward Offered",
-    natural_consequence: "Natural Consequence",
-    restorative_meeting: "Restorative Meeting",
-    other: "Other",
-  };
-  return labels[type] ?? type;
 }

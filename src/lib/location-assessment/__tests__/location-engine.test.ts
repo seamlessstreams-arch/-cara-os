@@ -1,295 +1,484 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Location Assessment Engine — Tests
-// ══════════════════════════════════════════════════════════════════════════════
-
 import { describe, it, expect } from "vitest";
 import {
-  evaluateLocationCompliance,
-  calculateHomeLocationMetrics,
-  getServiceLabel,
-  getAreaRiskLabel,
-  getRiskLevelLabel,
+  generateLocationAssessmentIntelligence, evaluateAssessmentQuality, evaluateAssessmentCompliance,
+  evaluateLocationPolicy, evaluateStaffLocationReadiness, buildChildLocationProfiles, pct, getRating,
+  getCategoryLabel, getOutcomeLabel, getRatingLabel,
 } from "../location-engine";
-import type {
-  LocationAssessment,
-  LocalService,
-  AreaRisk,
-  ActionPlanItem,
-} from "../location-engine";
+import type { LocationAssessmentRecord, LocationPolicy, StaffLocationTraining } from "../location-engine";
 
-// ── Fixtures ──────────────────────────────────────────────────────────────
-
-const NOW = "2026-05-17T12:00:00Z";
-
-function makeServices(): LocalService[] {
-  return [
-    { category: "gp_surgery", name: "Oakfield Medical Centre", distanceMiles: 0.8, accessibleByPublicTransport: true },
-    { category: "dentist", name: "Smile Dental Practice", distanceMiles: 1.2, accessibleByPublicTransport: true },
-    { category: "hospital_ae", name: "County General Hospital", distanceMiles: 5.5, accessibleByPublicTransport: true },
-    { category: "camhs", name: "CAMHS Community Team", distanceMiles: 3.2, accessibleByPublicTransport: true, waitingTimeWeeks: 8 },
-    { category: "school_secondary", name: "Oakfield Academy", distanceMiles: 1.5, accessibleByPublicTransport: true },
-    { category: "school_primary", name: "St Mary's Primary", distanceMiles: 0.5, accessibleByPublicTransport: true },
-    { category: "police_station", name: "Oakfield Police Station", distanceMiles: 2.0, accessibleByPublicTransport: true },
-    { category: "fire_station", name: "County Fire Station", distanceMiles: 3.0, accessibleByPublicTransport: true },
-    { category: "pharmacy", name: "Boots Pharmacy", distanceMiles: 0.6, accessibleByPublicTransport: true },
-    { category: "public_transport", name: "Oakfield Bus Station", distanceMiles: 0.4, accessibleByPublicTransport: true },
-    { category: "leisure_facilities", name: "Oakfield Leisure Centre", distanceMiles: 1.8, accessibleByPublicTransport: true },
-    { category: "library", name: "Oakfield Library", distanceMiles: 1.0, accessibleByPublicTransport: true },
-  ];
+let _id = 0;
+function makeRecord(overrides: Partial<LocationAssessmentRecord> = {}): LocationAssessmentRecord {
+  _id++;
+  return { id: `la-${_id}`, childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", category: "transport_links", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true, ...overrides };
+}
+function makePolicy(overrides: Partial<LocationPolicy> = {}): LocationPolicy {
+  return { id: "lp-1", locationAssessmentPolicy: true, communityRiskFramework: true, transportAccessPlan: true, serviceProximityGuidelines: true, environmentalSafetyProtocol: true, annualReviewSchedule: true, stakeholderConsultation: true, ...overrides };
+}
+let _tid = 0;
+function makeTraining(overrides: Partial<StaffLocationTraining> = {}): StaffLocationTraining {
+  _tid++;
+  return { id: `lt-${_tid}`, staffId: `staff-${_tid}`, staffName: `Staff ${_tid}`, riskAssessmentSkills: true, communityMapping: true, safeguardingAwareness: true, regulatoryKnowledge: true, childConsultation: true, reportWriting: true, ...overrides };
 }
 
-function makeAreaRisks(): AreaRisk[] {
-  return [
-    { category: "crime_general", level: "low", description: "Below-average crime rate for area type", source: "Police data Q1 2026", dateAssessed: "2026-03-01T10:00:00Z", mitigations: [] },
-    { category: "drug_activity", level: "medium", description: "Some cannabis use reported in local park", source: "Police community report", dateAssessed: "2026-03-01T10:00:00Z", mitigations: ["Avoid park after dark", "Staff supervision on outings"] },
-    { category: "road_safety", level: "low", description: "30mph zone, crossing patrol at school times", source: "Highways assessment", dateAssessed: "2026-03-01T10:00:00Z", mitigations: [] },
-    { category: "antisocial_behaviour", level: "low", description: "Occasional reports, not persistent", source: "Police data Q1 2026", dateAssessed: "2026-03-01T10:00:00Z", mitigations: [] },
-  ];
-}
+// ── pct ──────────────────────────────────────────────────────────────────────
 
-function makeActionPlan(): ActionPlanItem[] {
-  return [
-    { id: "ap-001", description: "Update police data for Q2 2026", assignedTo: "staff-rm-01", dueDate: "2026-06-15T00:00:00Z", status: "open" },
-    { id: "ap-002", description: "Review neighbour relationships following new fence dispute", assignedTo: "staff-rm-01", dueDate: "2026-05-30T00:00:00Z", status: "in_progress" },
-    { id: "ap-003", description: "Confirm school transport arrangements for September", assignedTo: "staff-kl-02", dueDate: "2026-07-01T00:00:00Z", status: "open" },
-    { id: "ap-004", description: "Update fire evacuation route after road closure", assignedTo: "staff-jb-01", dueDate: "2026-04-01T00:00:00Z", status: "completed", completedDate: "2026-03-28T10:00:00Z" },
-  ];
-}
+describe("pct", () => {
+  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
+  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
+  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
+  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
+  it("rounds correctly", () => { expect(pct(1, 3)).toBe(33); });
+  it("handles large numbers", () => { expect(pct(999, 1000)).toBe(100); });
+});
 
-function makeAssessment(overrides: Partial<LocationAssessment> = {}): LocationAssessment {
-  return {
-    id: "la-001",
-    homeId: "home-oak",
-    homeName: "Oak House",
-    address: "14 Oakfield Road, Anytown, AT1 2BC",
-    assessmentDate: "2026-03-01T10:00:00Z",
-    reviewDueDate: "2027-03-01T10:00:00Z",
-    assessedBy: "staff-rm-01",
-    approvedBy: "manager-sm-01",
-    status: "current",
-    localServices: makeServices(),
-    areaRisks: makeAreaRisks(),
-    neighbourRelationships: [
-      { description: "Immediate neighbour (no. 12)", quality: "positive", dateLastAssessed: "2026-03-01T10:00:00Z", notes: "Friendly, aware of home's purpose" },
-      { description: "Immediate neighbour (no. 16)", quality: "neutral", dateLastAssessed: "2026-03-01T10:00:00Z" },
-      { description: "Across the road (no. 15)", quality: "positive", dateLastAssessed: "2026-03-01T10:00:00Z" },
-    ],
-    nearestBusStopMiles: 0.2,
-    nearestTrainStationMiles: 2.5,
-    publicTransportAdequate: true,
-    outdoorSpaceAvailable: true,
-    safePlayAreaNearby: true,
-    communityActivitiesAvailable: true,
-    childrenConsulted: true,
-    childrenViewsOnArea: [
-      "Alex: Likes the park and the chip shop",
-      "Jordan: Wishes there was a cinema closer",
-      "Sam: Likes that school is walkable",
-      "Casey: Feels safe in the area",
-    ],
-    overallRiskLevel: "low",
-    overallSuitability: "suitable",
-    keyStrengths: ["Excellent local services", "Good public transport", "Low crime area", "Positive neighbour relationships"],
-    keyRisks: ["Some drug activity in local park"],
-    actionPlan: makeActionPlan(),
-    lastReviewDate: "2026-03-01T10:00:00Z",
-    significantChangeSinceLastReview: false,
-    ...overrides,
-  };
-}
+// ── getRating ────────────────────────────────────────────────────────────────
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Location Compliance Tests
-// ══════════════════════════════════════════════════════════════════════════════
+describe("getRating", () => {
+  it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(100)).toBe("outstanding"); });
+  it("good 60-79", () => { expect(getRating(60)).toBe("good"); expect(getRating(79)).toBe("good"); });
+  it("requires_improvement 40-59", () => { expect(getRating(40)).toBe("requires_improvement"); expect(getRating(59)).toBe("requires_improvement"); });
+  it("inadequate < 40", () => { expect(getRating(39)).toBe("inadequate"); expect(getRating(0)).toBe("inadequate"); });
+  it("boundary at 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(79)).toBe("good"); });
+  it("boundary at 60", () => { expect(getRating(60)).toBe("good"); expect(getRating(59)).toBe("requires_improvement"); });
+  it("boundary at 40", () => { expect(getRating(40)).toBe("requires_improvement"); expect(getRating(39)).toBe("inadequate"); });
+});
 
-describe("evaluateLocationCompliance", () => {
-  it("marks compliant assessment", () => {
-    const result = evaluateLocationCompliance(makeAssessment(), NOW);
-    expect(result.isCompliant).toBe(true);
-    expect(result.issues).toHaveLength(0);
-    expect(result.overdue).toBe(false);
-    expect(result.annexACoverage).toBe(100);
-    expect(result.gpAccessible).toBe(true);
-    expect(result.educationAccessible).toBe(true);
-    expect(result.childrenConsulted).toBe(true);
-  });
+// ── Label getters ────────────────────────────────────────────────────────────
 
-  it("flags overdue review", () => {
-    const assessment = makeAssessment({ reviewDueDate: "2026-04-01T10:00:00Z" }); // past NOW
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.overdue).toBe(true);
-    expect(result.issues.some(i => i.includes("overdue"))).toBe(true);
-  });
-
-  it("flags missing Annex A services", () => {
-    const assessment = makeAssessment({
-      localServices: [
-        { category: "gp_surgery", name: "GP", distanceMiles: 1, accessibleByPublicTransport: true },
-        // Missing hospital_ae, school_secondary, police_station, public_transport
-      ],
-    });
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.annexACoverage).toBe(20); // 1 of 5 required
-    expect(result.issues.some(i => i.includes("Annex A"))).toBe(true);
-  });
-
-  it("warns about GP too far", () => {
-    const services = makeServices();
-    const gpIdx = services.findIndex(s => s.category === "gp_surgery");
-    services[gpIdx] = { ...services[gpIdx], distanceMiles: 4.5 };
-    const assessment = makeAssessment({ localServices: services });
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.gpAccessible).toBe(false);
-    expect(result.warnings.some(w => w.includes("GP surgery"))).toBe(true);
-  });
-
-  it("warns about education too far", () => {
-    const services = makeServices().filter(s => s.category !== "school_secondary" && s.category !== "school_primary");
-    services.push({ category: "school_secondary", name: "Far School", distanceMiles: 7, accessibleByPublicTransport: true });
-    const assessment = makeAssessment({ localServices: services });
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.educationAccessible).toBe(false);
-    expect(result.warnings.some(w => w.includes("Education provision"))).toBe(true);
-  });
-
-  it("flags high-risk areas without mitigations", () => {
-    const risks: AreaRisk[] = [
-      { category: "county_lines", level: "high", description: "Known county lines activity", source: "Police intel", dateAssessed: "2026-03-01T10:00:00Z", mitigations: [] },
-    ];
-    const assessment = makeAssessment({ areaRisks: risks });
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.issues.some(i => i.includes("high-risk area(s) without mitigations"))).toBe(true);
-    expect(result.highRiskAreas).toContain("County Lines");
-  });
-
-  it("does not flag high-risk areas with mitigations", () => {
-    const risks: AreaRisk[] = [
-      { category: "county_lines", level: "high", description: "Known county lines activity", source: "Police intel", dateAssessed: "2026-03-01T10:00:00Z", mitigations: ["Enhanced awareness training", "Police liaison meetings"] },
-    ];
-    const assessment = makeAssessment({ areaRisks: risks });
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.issues.filter(i => i.includes("without mitigations"))).toHaveLength(0);
-    expect(result.highRiskAreas).toContain("County Lines");
-  });
-
-  it("flags children not consulted", () => {
-    const assessment = makeAssessment({ childrenConsulted: false });
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.childrenConsulted).toBe(false);
-    expect(result.issues.some(i => i.includes("Children not consulted"))).toBe(true);
-  });
-
-  it("warns about inadequate public transport", () => {
-    const assessment = makeAssessment({ publicTransportAdequate: false });
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.publicTransportAdequate).toBe(false);
-    expect(result.warnings.some(w => w.includes("Public transport"))).toBe(true);
-  });
-
-  it("warns about unapproved assessment", () => {
-    const assessment = makeAssessment({ approvedBy: undefined });
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.warnings.some(w => w.includes("not yet approved"))).toBe(true);
-  });
-
-  it("warns about overdue actions", () => {
-    const actions: ActionPlanItem[] = [
-      { id: "ap-001", description: "Overdue task", assignedTo: "staff-rm-01", dueDate: "2026-04-01T00:00:00Z", status: "overdue" },
-    ];
-    const assessment = makeAssessment({ actionPlan: actions });
-    const result = evaluateLocationCompliance(assessment, NOW);
-    expect(result.overdueActions).toBe(1);
-    expect(result.warnings.some(w => w.includes("overdue action"))).toBe(true);
-  });
-
-  it("calculates area risk score", () => {
-    const result = evaluateLocationCompliance(makeAssessment(), NOW);
-    // 3 low (90 each) + 1 medium (60) = (270+60)/4 = 82.5 → 83
-    expect(result.areaRiskScore).toBe(83);
-  });
-
-  it("calculates days until review", () => {
-    const result = evaluateLocationCompliance(makeAssessment(), NOW);
-    // March 1 2027 - May 17 2026 ≈ 288 days
-    expect(result.daysUntilReviewDue).toBeGreaterThan(280);
-    expect(result.daysUntilReviewDue).toBeLessThan(295);
+describe("getCategoryLabel", () => {
+  it("returns all category labels", () => {
+    expect(getCategoryLabel("transport_links")).toBe("Transport Links");
+    expect(getCategoryLabel("education_access")).toBe("Education Access");
+    expect(getCategoryLabel("health_services")).toBe("Health Services");
+    expect(getCategoryLabel("community_safety")).toBe("Community Safety");
+    expect(getCategoryLabel("recreational_facilities")).toBe("Recreational Facilities");
+    expect(getCategoryLabel("cultural_diversity")).toBe("Cultural Diversity");
+    expect(getCategoryLabel("environmental_quality")).toBe("Environmental Quality");
+    expect(getCategoryLabel("emergency_services")).toBe("Emergency Services");
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Home Location Metrics Tests
-// ══════════════════════════════════════════════════════════════════════════════
-
-describe("calculateHomeLocationMetrics", () => {
-  it("calculates metrics for assessment", () => {
-    const result = calculateHomeLocationMetrics(makeAssessment(), NOW);
-    expect(result.assessmentCurrent).toBe(true);
-    expect(result.reviewOverdue).toBe(false);
-    expect(result.totalServicesAssessed).toBe(12);
-    expect(result.servicesWithinReach).toBe(12); // all within thresholds
-    expect(result.totalAreaRisks).toBe(4);
-    expect(result.highRisks).toBe(0);
-    expect(result.mediumRisks).toBe(1);
-  });
-
-  it("calculates action plan metrics", () => {
-    const result = calculateHomeLocationMetrics(makeAssessment(), NOW);
-    expect(result.totalActions).toBe(4);
-    expect(result.completedActions).toBe(1);
-    expect(result.outstandingActions).toBe(3); // 1 open + 1 in_progress + 1 open
-    expect(result.actionCompletionRate).toBe(25); // 1/4
-  });
-
-  it("counts neighbour relationships", () => {
-    const result = calculateHomeLocationMetrics(makeAssessment(), NOW);
-    expect(result.neighbourRelationshipsPositive).toBe(2);
-    expect(result.neighbourRelationshipsNegative).toBe(0);
-  });
-
-  it("calculates overall location score", () => {
-    const result = calculateHomeLocationMetrics(makeAssessment(), NOW);
-    // servicesAccessScore ~100 * 0.4 + areaRiskScore 83 * 0.4 + coverage 100 * 0.2
-    expect(result.overallLocationScore).toBeGreaterThan(85);
-  });
-
-  it("handles overdue assessment", () => {
-    const assessment = makeAssessment({ reviewDueDate: "2026-04-01T10:00:00Z" });
-    const result = calculateHomeLocationMetrics(assessment, NOW);
-    expect(result.reviewOverdue).toBe(true);
-    expect(result.assessmentCurrent).toBe(false);
-  });
-
-  it("counts high risks correctly", () => {
-    const risks: AreaRisk[] = [
-      { category: "county_lines", level: "high", description: "Test", source: "Test", dateAssessed: "2026-03-01T10:00:00Z", mitigations: ["Mitigation"] },
-      { category: "cse_risk", level: "very_high", description: "Test", source: "Test", dateAssessed: "2026-03-01T10:00:00Z", mitigations: ["Mitigation"] },
-      { category: "crime_general", level: "medium", description: "Test", source: "Test", dateAssessed: "2026-03-01T10:00:00Z", mitigations: [] },
-    ];
-    const assessment = makeAssessment({ areaRisks: risks });
-    const result = calculateHomeLocationMetrics(assessment, NOW);
-    expect(result.highRisks).toBe(2);
-    expect(result.mediumRisks).toBe(1);
+describe("getOutcomeLabel", () => {
+  it("returns all outcome labels", () => {
+    expect(getOutcomeLabel("fully_adequate")).toBe("Fully Adequate");
+    expect(getOutcomeLabel("mostly_adequate")).toBe("Mostly Adequate");
+    expect(getOutcomeLabel("partially_adequate")).toBe("Partially Adequate");
+    expect(getOutcomeLabel("inadequate")).toBe("Inadequate");
+    expect(getOutcomeLabel("not_assessed")).toBe("Not Assessed");
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Helper Tests
-// ══════════════════════════════════════════════════════════════════════════════
+describe("getRatingLabel", () => {
+  it("returns all rating labels", () => {
+    expect(getRatingLabel("outstanding")).toBe("Outstanding");
+    expect(getRatingLabel("good")).toBe("Good");
+    expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement");
+    expect(getRatingLabel("inadequate")).toBe("Inadequate");
+  });
+});
 
-describe("Label helpers", () => {
-  it("getServiceLabel returns readable labels", () => {
-    expect(getServiceLabel("gp_surgery")).toBe("GP Surgery");
-    expect(getServiceLabel("hospital_ae")).toBe("Hospital A&E");
-    expect(getServiceLabel("camhs")).toBe("CAMHS");
+// ── evaluateAssessmentQuality ────────────────────────────────────────────────
+
+describe("evaluateAssessmentQuality", () => {
+  it("returns 0 for empty", () => {
+    const r = evaluateAssessmentQuality([]);
+    expect(r.overallScore).toBe(0);
+    expect(r.totalRecords).toBe(0);
+    expect(r.thoroughRate).toBe(0);
+    expect(r.childViewRate).toBe(0);
+    expect(r.riskIdentifiedRate).toBe(0);
+    expect(r.mitigationsRate).toBe(0);
   });
 
-  it("getAreaRiskLabel returns readable labels", () => {
-    expect(getAreaRiskLabel("county_lines")).toBe("County Lines");
-    expect(getAreaRiskLabel("cse_risk")).toBe("CSE Risk");
+  it("scores 25 for perfect records", () => {
+    expect(evaluateAssessmentQuality(Array.from({ length: 10 }, () => makeRecord())).overallScore).toBe(25);
   });
 
-  it("getRiskLevelLabel returns readable labels", () => {
-    expect(getRiskLevelLabel("very_high")).toBe("Very High");
-    expect(getRiskLevelLabel("low")).toBe("Low");
+  it("scores 0 for all-false records", () => {
+    const r = evaluateAssessmentQuality([makeRecord({ thoroughAssessment: false, childViewIncorporated: false, riskIdentified: false, mitigationsDocumented: false })]);
+    expect(r.overallScore).toBe(0);
+  });
+
+  it("calculates thorough rate", () => {
+    const records = [makeRecord({ thoroughAssessment: true }), makeRecord({ thoroughAssessment: false })];
+    expect(evaluateAssessmentQuality(records).thoroughRate).toBe(50);
+  });
+
+  it("calculates child view rate", () => {
+    const records = [makeRecord({ childViewIncorporated: true }), makeRecord({ childViewIncorporated: true }), makeRecord({ childViewIncorporated: false })];
+    expect(evaluateAssessmentQuality(records).childViewRate).toBe(67);
+  });
+
+  it("calculates risk identified rate", () => {
+    const records = [makeRecord({ riskIdentified: true }), makeRecord({ riskIdentified: false }), makeRecord({ riskIdentified: false })];
+    expect(evaluateAssessmentQuality(records).riskIdentifiedRate).toBe(33);
+  });
+
+  it("calculates mitigations rate", () => {
+    const records = Array.from({ length: 4 }, () => makeRecord({ mitigationsDocumented: true })).concat([makeRecord({ mitigationsDocumented: false })]);
+    expect(evaluateAssessmentQuality(records).mitigationsRate).toBe(80);
+  });
+
+  it("caps at 25", () => {
+    expect(evaluateAssessmentQuality(Array.from({ length: 20 }, () => makeRecord())).overallScore).toBeLessThanOrEqual(25);
+  });
+
+  it("scores lower with poor quality", () => {
+    const good = evaluateAssessmentQuality(Array.from({ length: 5 }, () => makeRecord()));
+    const bad = evaluateAssessmentQuality(Array.from({ length: 5 }, () => makeRecord({ thoroughAssessment: false, childViewIncorporated: false })));
+    expect(good.overallScore).toBeGreaterThan(bad.overallScore);
+  });
+
+  it("returns correct totalRecords", () => {
+    expect(evaluateAssessmentQuality([makeRecord(), makeRecord(), makeRecord()]).totalRecords).toBe(3);
+  });
+
+  it("mixed quality produces mid-range score", () => {
+    const records = [
+      makeRecord({ thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true }),
+      makeRecord({ thoroughAssessment: false, childViewIncorporated: false, riskIdentified: false, mitigationsDocumented: false }),
+    ];
+    const r = evaluateAssessmentQuality(records);
+    expect(r.overallScore).toBeGreaterThan(5);
+    expect(r.overallScore).toBeLessThan(20);
+  });
+});
+
+// ── evaluateAssessmentCompliance ─────────────────────────────────────────────
+
+describe("evaluateAssessmentCompliance", () => {
+  it("returns 0 for empty", () => {
+    const r = evaluateAssessmentCompliance([]);
+    expect(r.overallScore).toBe(0);
+    expect(r.documentationRate).toBe(0);
+    expect(r.regulatoryRate).toBe(0);
+    expect(r.mitigationsRate).toBe(0);
+    expect(r.categoryDiversityRatio).toBe(0);
+  });
+
+  it("calculates documentation rate", () => {
+    const records = [makeRecord({ documentationComplete: true }), makeRecord({ documentationComplete: false })];
+    expect(evaluateAssessmentCompliance(records).documentationRate).toBe(50);
+  });
+
+  it("calculates regulatory rate", () => {
+    const records = [makeRecord({ regulatoryAligned: true }), makeRecord({ regulatoryAligned: false }), makeRecord({ regulatoryAligned: true })];
+    expect(evaluateAssessmentCompliance(records).regulatoryRate).toBe(67);
+  });
+
+  it("calculates mitigations rate", () => {
+    const records = Array.from({ length: 3 }, () => makeRecord({ mitigationsDocumented: true })).concat([makeRecord({ mitigationsDocumented: false })]);
+    expect(evaluateAssessmentCompliance(records).mitigationsRate).toBe(75);
+  });
+
+  it("calculates category diversity ratio", () => {
+    const records = [makeRecord({ category: "transport_links" }), makeRecord({ category: "transport_links" })];
+    expect(evaluateAssessmentCompliance(records).categoryDiversityRatio).toBe(13);
+  });
+
+  it("high diversity for many categories", () => {
+    const categories = ["transport_links", "education_access", "health_services", "community_safety", "recreational_facilities", "cultural_diversity", "environmental_quality", "emergency_services"] as const;
+    const records = categories.map((c) => makeRecord({ category: c }));
+    expect(evaluateAssessmentCompliance(records).categoryDiversityRatio).toBe(100);
+  });
+
+  it("caps at 25", () => {
+    expect(evaluateAssessmentCompliance(Array.from({ length: 20 }, () => makeRecord())).overallScore).toBeLessThanOrEqual(25);
+  });
+
+  it("scores 0 for all-false", () => {
+    const r = evaluateAssessmentCompliance([makeRecord({ documentationComplete: false, regulatoryAligned: false, mitigationsDocumented: false })]);
+    expect(r.documentationRate).toBe(0);
+    expect(r.regulatoryRate).toBe(0);
+  });
+});
+
+// ── evaluateLocationPolicy ───────────────────────────────────────────────────
+
+describe("evaluateLocationPolicy", () => {
+  it("returns 0 for null", () => {
+    const r = evaluateLocationPolicy(null);
+    expect(r.overallScore).toBe(0);
+    expect(r.locationAssessmentPolicy).toBe(false);
+    expect(r.communityRiskFramework).toBe(false);
+    expect(r.transportAccessPlan).toBe(false);
+    expect(r.serviceProximityGuidelines).toBe(false);
+    expect(r.environmentalSafetyProtocol).toBe(false);
+    expect(r.annualReviewSchedule).toBe(false);
+    expect(r.stakeholderConsultation).toBe(false);
+  });
+
+  it("scores 25 for full policy", () => {
+    expect(evaluateLocationPolicy(makePolicy()).overallScore).toBe(25);
+  });
+
+  it("4-point items individually", () => {
+    expect(evaluateLocationPolicy(makePolicy({ locationAssessmentPolicy: true, communityRiskFramework: false, transportAccessPlan: false, serviceProximityGuidelines: false, environmentalSafetyProtocol: false, annualReviewSchedule: false, stakeholderConsultation: false })).overallScore).toBe(4);
+  });
+
+  it("3-point items individually", () => {
+    expect(evaluateLocationPolicy(makePolicy({ locationAssessmentPolicy: false, communityRiskFramework: false, transportAccessPlan: false, serviceProximityGuidelines: false, environmentalSafetyProtocol: true, annualReviewSchedule: false, stakeholderConsultation: false })).overallScore).toBe(3);
+  });
+
+  it("4-point items = 16", () => {
+    expect(evaluateLocationPolicy(makePolicy({ environmentalSafetyProtocol: false, annualReviewSchedule: false, stakeholderConsultation: false })).overallScore).toBe(16);
+  });
+
+  it("3-point items = 9", () => {
+    expect(evaluateLocationPolicy(makePolicy({ locationAssessmentPolicy: false, communityRiskFramework: false, transportAccessPlan: false, serviceProximityGuidelines: false })).overallScore).toBe(9);
+  });
+
+  it("all false = 0", () => {
+    expect(evaluateLocationPolicy(makePolicy({ locationAssessmentPolicy: false, communityRiskFramework: false, transportAccessPlan: false, serviceProximityGuidelines: false, environmentalSafetyProtocol: false, annualReviewSchedule: false, stakeholderConsultation: false })).overallScore).toBe(0);
+  });
+
+  it("partial policy scores correctly", () => {
+    const r = evaluateLocationPolicy(makePolicy({ locationAssessmentPolicy: true, communityRiskFramework: true, transportAccessPlan: false, serviceProximityGuidelines: false, environmentalSafetyProtocol: true, annualReviewSchedule: false, stakeholderConsultation: false }));
+    expect(r.overallScore).toBe(11); // 4+4+3 = 11
+  });
+
+  it("preserves boolean values in result", () => {
+    const r = evaluateLocationPolicy(makePolicy({ locationAssessmentPolicy: true, communityRiskFramework: false }));
+    expect(r.locationAssessmentPolicy).toBe(true);
+    expect(r.communityRiskFramework).toBe(false);
+  });
+});
+
+// ── evaluateStaffLocationReadiness ───────────────────────────────────────────
+
+describe("evaluateStaffLocationReadiness", () => {
+  it("returns 0 for empty", () => {
+    const r = evaluateStaffLocationReadiness([]);
+    expect(r.overallScore).toBe(0);
+    expect(r.totalStaff).toBe(0);
+    expect(r.riskAssessmentRate).toBe(0);
+    expect(r.communityMappingRate).toBe(0);
+    expect(r.safeguardingRate).toBe(0);
+    expect(r.regulatoryRate).toBe(0);
+    expect(r.childConsultationRate).toBe(0);
+    expect(r.reportWritingRate).toBe(0);
+  });
+
+  it("scores 25 for fully trained", () => {
+    expect(evaluateStaffLocationReadiness(Array.from({ length: 5 }, () => makeTraining())).overallScore).toBe(25);
+  });
+
+  it("scores 0 for untrained", () => {
+    expect(evaluateStaffLocationReadiness([makeTraining({ riskAssessmentSkills: false, communityMapping: false, safeguardingAwareness: false, regulatoryKnowledge: false, childConsultation: false, reportWriting: false })]).overallScore).toBe(0);
+  });
+
+  it("single fully trained = 25", () => {
+    expect(evaluateStaffLocationReadiness([makeTraining()]).overallScore).toBe(25);
+  });
+
+  it("caps at 25", () => {
+    expect(evaluateStaffLocationReadiness(Array.from({ length: 20 }, () => makeTraining())).overallScore).toBeLessThanOrEqual(25);
+  });
+
+  it("partial training gives partial score", () => {
+    const training = [makeTraining({ riskAssessmentSkills: true, communityMapping: true, safeguardingAwareness: false, regulatoryKnowledge: false, childConsultation: false, reportWriting: false })];
+    const r = evaluateStaffLocationReadiness(training);
+    expect(r.overallScore).toBe(11); // 6+5 = 11
+    expect(r.riskAssessmentRate).toBe(100);
+    expect(r.communityMappingRate).toBe(100);
+    expect(r.safeguardingRate).toBe(0);
+  });
+
+  it("calculates rates for mixed staff", () => {
+    const training = [
+      makeTraining({ riskAssessmentSkills: true, communityMapping: true, safeguardingAwareness: true, regulatoryKnowledge: true, childConsultation: true, reportWriting: true }),
+      makeTraining({ riskAssessmentSkills: false, communityMapping: false, safeguardingAwareness: false, regulatoryKnowledge: false, childConsultation: false, reportWriting: false }),
+    ];
+    const r = evaluateStaffLocationReadiness(training);
+    expect(r.riskAssessmentRate).toBe(50);
+    expect(r.communityMappingRate).toBe(50);
+    expect(r.totalStaff).toBe(2);
+  });
+
+  it("reports correct totalStaff count", () => {
+    expect(evaluateStaffLocationReadiness([makeTraining(), makeTraining(), makeTraining()]).totalStaff).toBe(3);
+  });
+});
+
+// ── buildChildLocationProfiles ───────────────────────────────────────────────
+
+describe("buildChildLocationProfiles", () => {
+  it("returns empty for no records", () => {
+    expect(buildChildLocationProfiles([]).length).toBe(0);
+  });
+
+  it("groups by child", () => {
+    const records = [makeRecord({ childId: "c1", childName: "Alex" }), makeRecord({ childId: "c2", childName: "Jordan" })];
+    expect(buildChildLocationProfiles(records).length).toBe(2);
+  });
+
+  it("calculates thorough rate", () => {
+    const records = [makeRecord({ childId: "c1", childName: "Alex", thoroughAssessment: true }), makeRecord({ childId: "c1", childName: "Alex", thoroughAssessment: false })];
+    expect(buildChildLocationProfiles(records)[0].thoroughRate).toBe(50);
+  });
+
+  it("calculates child view rate", () => {
+    const records = [makeRecord({ childId: "c1", childName: "Alex", childViewIncorporated: true }), makeRecord({ childId: "c1", childName: "Alex", childViewIncorporated: false })];
+    expect(buildChildLocationProfiles(records)[0].childViewRate).toBe(50);
+  });
+
+  it("diversity bonus for 4+ categories", () => {
+    const categories = ["transport_links", "education_access", "health_services", "community_safety"] as const;
+    const records = categories.map((c) => makeRecord({ childId: "c1", childName: "Alex", category: c }));
+    expect(buildChildLocationProfiles(records)[0].overallScore).toBeGreaterThanOrEqual(5);
+  });
+
+  it("caps at 10", () => {
+    const records = Array.from({ length: 15 }, () => makeRecord({ childId: "c1", childName: "Alex" }));
+    expect(buildChildLocationProfiles(records)[0].overallScore).toBeLessThanOrEqual(10);
+  });
+
+  it("frequency score for >= 10 records", () => {
+    const records = Array.from({ length: 10 }, () => makeRecord({ childId: "c1", childName: "Alex" }));
+    const profile = buildChildLocationProfiles(records)[0];
+    expect(profile.totalAssessments).toBe(10);
+    expect(profile.overallScore).toBeGreaterThanOrEqual(5);
+  });
+
+  it("frequency score for >= 5 records", () => {
+    const records = Array.from({ length: 5 }, () => makeRecord({ childId: "c1", childName: "Alex" }));
+    const profile = buildChildLocationProfiles(records)[0];
+    expect(profile.totalAssessments).toBe(5);
+  });
+
+  it("low frequency score for < 5 records", () => {
+    const records = [makeRecord({ childId: "c1", childName: "Alex" })];
+    const profile = buildChildLocationProfiles(records)[0];
+    expect(profile.totalAssessments).toBe(1);
+  });
+
+  it("diversity bonus for 2+ categories", () => {
+    const records = [
+      makeRecord({ childId: "c1", childName: "Alex", category: "transport_links" }),
+      makeRecord({ childId: "c1", childName: "Alex", category: "education_access" }),
+    ];
+    const profile = buildChildLocationProfiles(records)[0];
+    expect(profile.overallScore).toBeGreaterThanOrEqual(1);
+  });
+
+  it("no diversity bonus for single category", () => {
+    const records = [
+      makeRecord({ childId: "c1", childName: "Alex", category: "transport_links", thoroughAssessment: false, childViewIncorporated: false }),
+    ];
+    const profile = buildChildLocationProfiles(records)[0];
+    expect(profile.overallScore).toBeLessThanOrEqual(2);
+  });
+});
+
+// ── generateLocationAssessmentIntelligence ───────────────────────────────────
+
+describe("generateLocationAssessmentIntelligence", () => {
+  const b = { homeId: "oak-house", periodStart: "2026-01-01", periodEnd: "2026-05-20" };
+
+  it("returns inadequate for empty", () => {
+    const r = generateLocationAssessmentIntelligence([], null, [], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.overallScore).toBe(0);
+    expect(r.rating).toBe("inadequate");
+  });
+
+  it("returns outstanding for perfect", () => {
+    const categories = ["transport_links", "education_access", "health_services", "community_safety", "recreational_facilities", "cultural_diversity", "environmental_quality", "emergency_services"] as const;
+    const records = Array.from({ length: 10 }, (_, i) => makeRecord({ category: categories[i % 8] }));
+    const r = generateLocationAssessmentIntelligence(records, makePolicy(), Array.from({ length: 5 }, () => makeTraining()), b.homeId, b.periodStart, b.periodEnd);
+    expect(r.overallScore).toBe(100);
+    expect(r.rating).toBe("outstanding");
+  });
+
+  it("caps at 100", () => {
+    const categories = ["transport_links", "education_access", "health_services", "community_safety", "recreational_facilities", "cultural_diversity", "environmental_quality", "emergency_services"] as const;
+    const r = generateLocationAssessmentIntelligence(Array.from({ length: 20 }, (_, i) => makeRecord({ category: categories[i % 8] })), makePolicy(), Array.from({ length: 10 }, () => makeTraining()), b.homeId, b.periodStart, b.periodEnd);
+    expect(r.overallScore).toBeLessThanOrEqual(100);
+  });
+
+  it("includes homeId and period", () => {
+    const r = generateLocationAssessmentIntelligence([], null, [], "test", "2026-01-01", "2026-06-30");
+    expect(r.homeId).toBe("test");
+    expect(r.periodStart).toBe("2026-01-01");
+    expect(r.periodEnd).toBe("2026-06-30");
+  });
+
+  it("generates strength for high thoroughness", () => {
+    const r = generateLocationAssessmentIntelligence(Array.from({ length: 5 }, () => makeRecord()), null, [], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.strengths.some((s) => s.includes("thorough"))).toBe(true);
+  });
+
+  it("generates strength for high child view rate", () => {
+    const r = generateLocationAssessmentIntelligence(Array.from({ length: 5 }, () => makeRecord()), null, [], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.strengths.some((s) => s.includes("Children's views"))).toBe(true);
+  });
+
+  it("generates action for no records", () => {
+    const r = generateLocationAssessmentIntelligence([], null, [], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.actions.some((a) => a.includes("No location assessment records"))).toBe(true);
+  });
+
+  it("generates URGENT for no policy", () => {
+    const r = generateLocationAssessmentIntelligence([], null, [], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.actions.some((a) => a.startsWith("URGENT") && a.includes("policy"))).toBe(true);
+  });
+
+  it("generates URGENT for no training", () => {
+    const r = generateLocationAssessmentIntelligence([], null, [], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.actions.some((a) => a.startsWith("URGENT") && a.includes("training"))).toBe(true);
+  });
+
+  it("has 7 regulatory links", () => {
+    const r = generateLocationAssessmentIntelligence([], null, [], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.regulatoryLinks.length).toBe(7);
+    expect(r.regulatoryLinks.some((l) => l.includes("CHR 2015 Reg 12"))).toBe(true);
+    expect(r.regulatoryLinks.some((l) => l.includes("SCCIF"))).toBe(true);
+    expect(r.regulatoryLinks.some((l) => l.includes("Children Act 1989"))).toBe(true);
+  });
+
+  it("good rating for ~75", () => {
+    const r = generateLocationAssessmentIntelligence(Array.from({ length: 5 }, () => makeRecord()), null, Array.from({ length: 5 }, () => makeTraining()), b.homeId, b.periodStart, b.periodEnd);
+    expect(r.rating).toBe("good");
+  });
+
+  it("areas for improvement when thoroughness is low", () => {
+    const records = Array.from({ length: 5 }, () => makeRecord({ thoroughAssessment: false }));
+    const r = generateLocationAssessmentIntelligence(records, makePolicy(), Array.from({ length: 3 }, () => makeTraining()), b.homeId, b.periodStart, b.periodEnd);
+    expect(r.areasForImprovement.some((a) => a.includes("thoroughness"))).toBe(true);
+  });
+
+  it("areas for improvement when child view is low", () => {
+    const records = Array.from({ length: 5 }, () => makeRecord({ childViewIncorporated: false }));
+    const r = generateLocationAssessmentIntelligence(records, makePolicy(), Array.from({ length: 3 }, () => makeTraining()), b.homeId, b.periodStart, b.periodEnd);
+    expect(r.areasForImprovement.some((a) => a.includes("Children's views"))).toBe(true);
+  });
+
+  it("includes child profiles in result", () => {
+    const records = [makeRecord({ childId: "c1", childName: "Alex" }), makeRecord({ childId: "c2", childName: "Jordan" })];
+    const r = generateLocationAssessmentIntelligence(records, makePolicy(), [makeTraining()], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.childProfiles.length).toBe(2);
+  });
+
+  it("no areas for improvement when no records", () => {
+    const r = generateLocationAssessmentIntelligence([], makePolicy(), [makeTraining()], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.areasForImprovement.length).toBe(0);
+  });
+
+  it("sums evaluator scores correctly", () => {
+    const records = Array.from({ length: 5 }, () => makeRecord());
+    const r = generateLocationAssessmentIntelligence(records, makePolicy(), [makeTraining()], b.homeId, b.periodStart, b.periodEnd);
+    const expectedSum = r.assessmentQuality.overallScore + r.assessmentCompliance.overallScore + r.locationPolicy.overallScore + r.staffLocationReadiness.overallScore;
+    expect(r.overallScore).toBe(Math.min(100, expectedSum));
+  });
+
+  it("action for low risk identification", () => {
+    const records = Array.from({ length: 5 }, () => makeRecord({ riskIdentified: false, thoroughAssessment: false, childViewIncorporated: false, mitigationsDocumented: false }));
+    const r = generateLocationAssessmentIntelligence(records, makePolicy(), [makeTraining()], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.actions.some((a) => a.includes("risk identification"))).toBe(true);
+  });
+
+  it("action for low documentation", () => {
+    const records = Array.from({ length: 5 }, () => makeRecord({ documentationComplete: false, regulatoryAligned: false, mitigationsDocumented: false }));
+    const r = generateLocationAssessmentIntelligence(records, makePolicy(), [makeTraining()], b.homeId, b.periodStart, b.periodEnd);
+    expect(r.actions.some((a) => a.includes("documentation completeness"))).toBe(true);
   });
 });
