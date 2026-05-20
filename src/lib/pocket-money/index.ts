@@ -1,7 +1,38 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Pocket Money & Savings — Public API
+// Cornerstone Pocket Money — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
+export {
+  generatePocketMoneyIntelligence,
+  evaluatePocketMoneyQuality,
+  evaluatePocketMoneyCompliance,
+  evaluatePocketMoneyPolicy,
+  evaluateStaffPocketMoneyReadiness,
+  buildChildPocketMoneyProfiles,
+  pct,
+  getRating,
+  getPocketMoneyCategoryLabel,
+  getPocketMoneyOutcomeLabel,
+  getRatingLabel,
+} from "./pocket-money-intelligence-engine";
+
+export type {
+  PocketMoneyCategory,
+  PocketMoneyOutcome,
+  Rating,
+  PocketMoneyRecord,
+  PocketMoneyPolicy,
+  StaffPocketMoneyTraining,
+  PocketMoneyQualityResult,
+  PocketMoneyComplianceResult,
+  PocketMoneyPolicyResult,
+  StaffPocketMoneyReadinessResult,
+  ChildPocketMoneyProfile,
+  PocketMoneyIntelligence,
+  GeneratePocketMoneyIntelligenceInput,
+} from "./pocket-money-intelligence-engine";
+
+// Legacy re-exports from pocket-money-engine
 export {
   evaluateChildFinancialCompliance,
   calculateHomeFinancialMetrics,

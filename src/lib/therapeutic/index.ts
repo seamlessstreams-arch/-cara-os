@@ -3,7 +3,38 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
+  generateTherapeuticIntelligence,
+  evaluateTherapeuticQuality,
   evaluateTherapeuticCompliance,
+  evaluateTherapeuticPolicy,
+  evaluateStaffTherapeuticReadiness,
+  buildChildTherapeuticProfiles,
+  pct,
+  getRating,
+  getTherapeuticCategoryLabel,
+  getTherapeuticOutcomeLabel,
+  getRatingLabel,
+} from "./therapeutic-intelligence-engine";
+
+export type {
+  TherapeuticCategory,
+  TherapeuticOutcome,
+  Rating,
+  TherapeuticRecord,
+  TherapeuticPolicy,
+  StaffTherapeuticTraining,
+  TherapeuticQualityResult,
+  TherapeuticComplianceResult,
+  TherapeuticPolicyResult,
+  StaffTherapeuticReadinessResult,
+  ChildTherapeuticProfile,
+  TherapeuticIntelligence,
+  GenerateTherapeuticIntelligenceInput,
+} from "./therapeutic-intelligence-engine";
+
+// Legacy re-exports from therapeutic-engine
+export {
+  evaluateTherapeuticCompliance as evaluateTherapeuticComplianceLegacy,
   calculateHomeTherapeuticMetrics,
   getModelLabel,
   getWellbeingDomainLabel,
@@ -21,9 +52,9 @@ export type {
   TherapeuticIntervention,
   CAMHSReferral,
   CrisisEvent,
-  ChildTherapeuticProfile,
+  ChildTherapeuticProfile as ChildTherapeuticProfileLegacy,
   HomeTherapeuticConfig,
-  TherapeuticComplianceResult,
+  TherapeuticComplianceResult as TherapeuticComplianceResultLegacy,
   HomeTherapeuticMetrics,
   ChildWellbeingSummary,
 } from "./therapeutic-engine";

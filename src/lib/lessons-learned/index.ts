@@ -1,7 +1,38 @@
-// ══════���══════════════════════════════════════════��════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone Lessons Learned Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
+export {
+  generateLessonsLearnedIntelligence,
+  evaluateLessonsLearnedQuality,
+  evaluateLessonsLearnedCompliance,
+  evaluateLessonsLearnedPolicy,
+  evaluateStaffLessonsLearnedReadiness,
+  buildChildLessonsLearnedProfiles,
+  pct,
+  getRating,
+  getLessonsLearnedCategoryLabel,
+  getLessonsLearnedOutcomeLabel,
+  getRatingLabel,
+} from "./lessons-learned-intelligence-engine";
+
+export type {
+  LessonsLearnedCategory,
+  LessonsLearnedOutcome,
+  Rating,
+  LessonsLearnedRecord,
+  LessonsLearnedPolicy,
+  StaffLessonsLearnedTraining,
+  LessonsLearnedQualityResult,
+  LessonsLearnedComplianceResult,
+  LessonsLearnedPolicyResult,
+  StaffLessonsLearnedReadinessResult,
+  ChildLessonsLearnedProfile,
+  LessonsLearnedIntelligence,
+  GenerateLessonsLearnedIntelligenceInput,
+} from "./lessons-learned-intelligence-engine";
+
+// Legacy re-exports from lessons-learned-engine
 export {
   generateLearningOrganisationScore,
   evaluateReviewCompliance,
@@ -10,7 +41,7 @@ export {
   getCategoryLabel,
   getReviewStatusLabel,
   getEmbeddingStatusLabel,
-  getRatingLabel,
+  getRatingLabel as getRatingLabelLegacy,
 } from "./lessons-learned-engine";
 
 export type {
