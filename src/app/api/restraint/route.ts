@@ -3,7 +3,7 @@ import {
   generateRestraintIntelligence,
 } from "@/lib/restraint";
 import type {
-  RestraintIncident,
+  RestraintRecord,
   RestraintPolicy,
   StaffRestraintTraining,
 } from "@/lib/restraint";
@@ -11,66 +11,71 @@ import type {
 // ── Demo Data: Oak House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
-  incidents: RestraintIncident[];
+  records: RestraintRecord[];
   policy: RestraintPolicy;
-  training: StaffRestraintTraining[];
+  staff: StaffRestraintTraining[];
 } {
-  const incidents: RestraintIncident[] = [
-    // Alex — 2 incidents, mostly well-managed
-    { id: "inc-001", childId: "child-alex", childName: "Alex", incidentDate: "2026-01-22", restraintType: "physical_hold", outcome: "restraint_applied", deEscalationAttempted: true, proportionateResponse: true, injuryOccurred: false, bodyMapCompleted: true, parentNotified: true, ofstedNotified: true, debriefCompleted: true, childViewsRecorded: true },
-    { id: "inc-002", childId: "child-alex", childName: "Alex", incidentDate: "2026-03-10", restraintType: "guided_away", outcome: "de_escalation_successful", deEscalationAttempted: true, proportionateResponse: true, injuryOccurred: false, bodyMapCompleted: true, parentNotified: true, ofstedNotified: false, debriefCompleted: true, childViewsRecorded: true },
+  const records: RestraintRecord[] = [
+    // Alex — 4 records across 4 categories
+    { id: "rec-001", homeId: "oak-house", date: "2026-01-22", childId: "child-alex", childName: "Alex", category: "physical_intervention", outcome: "restraint_applied", deEscalationAttempted: true, debriefCompleted: true, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: true },
+    { id: "rec-002", homeId: "oak-house", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "de_escalation", outcome: "de_escalation_successful", deEscalationAttempted: true, debriefCompleted: true, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: true },
+    { id: "rec-003", homeId: "oak-house", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "post_incident_debrief", outcome: "no_further_action", deEscalationAttempted: true, debriefCompleted: true, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: true },
+    { id: "rec-004", homeId: "oak-house", date: "2026-04-12", childId: "child-alex", childName: "Alex", category: "body_map_record", outcome: "not_applicable", deEscalationAttempted: true, debriefCompleted: true, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: true },
 
-    // Jordan — 2 incidents, one with injury
-    { id: "inc-003", childId: "child-jordan", childName: "Jordan", incidentDate: "2026-02-14", restraintType: "standing_hold", outcome: "restraint_applied", deEscalationAttempted: true, proportionateResponse: true, injuryOccurred: true, bodyMapCompleted: true, parentNotified: true, ofstedNotified: true, debriefCompleted: true, childViewsRecorded: true },
-    { id: "inc-004", childId: "child-jordan", childName: "Jordan", incidentDate: "2026-04-05", restraintType: "seated_hold", outcome: "restraint_applied", deEscalationAttempted: true, proportionateResponse: true, injuryOccurred: false, bodyMapCompleted: true, parentNotified: true, ofstedNotified: true, debriefCompleted: true, childViewsRecorded: false },
+    // Jordan — 4 records across 4 categories, some gaps
+    { id: "rec-005", homeId: "oak-house", date: "2026-02-14", childId: "child-jordan", childName: "Jordan", category: "medical_check", outcome: "injury_reported", deEscalationAttempted: true, debriefCompleted: true, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: true },
+    { id: "rec-006", homeId: "oak-house", date: "2026-03-18", childId: "child-jordan", childName: "Jordan", category: "notification_to_parent", outcome: "restraint_applied", deEscalationAttempted: true, debriefCompleted: true, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: false },
+    { id: "rec-007", homeId: "oak-house", date: "2026-04-05", childId: "child-jordan", childName: "Jordan", category: "notification_to_ofsted", outcome: "restraint_applied", deEscalationAttempted: true, debriefCompleted: false, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: true },
+    { id: "rec-008", homeId: "oak-house", date: "2026-05-01", childId: "child-jordan", childName: "Jordan", category: "review_of_technique", outcome: "no_further_action", deEscalationAttempted: true, debriefCompleted: true, bodyMapRecorded: true, parentNotified: false, documentationComplete: true, timelyRecording: true },
 
-    // Morgan — 2 incidents, one without de-escalation
-    { id: "inc-005", childId: "child-morgan", childName: "Morgan", incidentDate: "2026-03-28", restraintType: "physical_hold", outcome: "restraint_applied", deEscalationAttempted: false, proportionateResponse: true, injuryOccurred: false, bodyMapCompleted: true, parentNotified: true, ofstedNotified: true, debriefCompleted: false, childViewsRecorded: true },
-    { id: "inc-006", childId: "child-morgan", childName: "Morgan", incidentDate: "2026-05-01", restraintType: "guided_away", outcome: "de_escalation_successful", deEscalationAttempted: true, proportionateResponse: true, injuryOccurred: false, bodyMapCompleted: true, parentNotified: true, ofstedNotified: false, debriefCompleted: true, childViewsRecorded: true },
+    // Morgan — 4 records, some quality gaps
+    { id: "rec-009", homeId: "oak-house", date: "2026-01-30", childId: "child-morgan", childName: "Morgan", category: "physical_intervention", outcome: "restraint_applied", deEscalationAttempted: false, debriefCompleted: true, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: true },
+    { id: "rec-010", homeId: "oak-house", date: "2026-02-28", childId: "child-morgan", childName: "Morgan", category: "de_escalation", outcome: "de_escalation_successful", deEscalationAttempted: true, debriefCompleted: true, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: true },
+    { id: "rec-011", homeId: "oak-house", date: "2026-03-28", childId: "child-morgan", childName: "Morgan", category: "post_incident_debrief", outcome: "no_further_action", deEscalationAttempted: true, debriefCompleted: false, bodyMapRecorded: false, parentNotified: true, documentationComplete: false, timelyRecording: true },
+    { id: "rec-012", homeId: "oak-house", date: "2026-05-10", childId: "child-morgan", childName: "Morgan", category: "medical_check", outcome: "not_applicable", deEscalationAttempted: true, debriefCompleted: true, bodyMapRecorded: true, parentNotified: true, documentationComplete: true, timelyRecording: false },
   ];
 
   const policy: RestraintPolicy = {
-    id: "pol-001",
-    restraintReductionStrategy: true,
-    approvedTechniquesOnly: true,
-    deEscalationFirstPolicy: true,
-    incidentReportingProtocol: true,
-    bodyMapProtocol: true,
+    restraintPolicy: true,
+    deEscalationPolicy: true,
+    postIncidentDebriefPolicy: true,
+    bodyMapPolicy: true,
     notificationProcedure: true,
-    regularReview: true,
+    techniqueReviewPolicy: true,
+    reductionStrategyPolicy: true,
   };
 
-  const training: StaffRestraintTraining[] = [
-    { id: "tr-001", staffId: "staff-sarah", staffName: "Sarah Johnson", approvedTechniquesCertified: true, deEscalationSkills: true, proportionalityUnderstanding: true, incidentReporting: true, childRightsAwareness: true, postIncidentSupport: true },
-    { id: "tr-002", staffId: "staff-tom", staffName: "Tom Richards", approvedTechniquesCertified: true, deEscalationSkills: true, proportionalityUnderstanding: true, incidentReporting: true, childRightsAwareness: true, postIncidentSupport: false },
-    { id: "tr-003", staffId: "staff-lisa", staffName: "Lisa Williams", approvedTechniquesCertified: true, deEscalationSkills: true, proportionalityUnderstanding: true, incidentReporting: false, childRightsAwareness: true, postIncidentSupport: true },
-    { id: "tr-004", staffId: "staff-darren", staffName: "Darren Laville", approvedTechniquesCertified: true, deEscalationSkills: true, proportionalityUnderstanding: true, incidentReporting: true, childRightsAwareness: true, postIncidentSupport: true },
+  const staff: StaffRestraintTraining[] = [
+    { staffId: "staff-sarah", approvedTechniqueTraining: true, deEscalationSkills: true, postIncidentDebrief: true, bodyMapRecording: true, notificationProcedures: true, reductionStrategyKnowledge: true },
+    { staffId: "staff-tom", approvedTechniqueTraining: true, deEscalationSkills: true, postIncidentDebrief: true, bodyMapRecording: true, notificationProcedures: true, reductionStrategyKnowledge: false },
+    { staffId: "staff-lisa", approvedTechniqueTraining: true, deEscalationSkills: true, postIncidentDebrief: true, bodyMapRecording: false, notificationProcedures: true, reductionStrategyKnowledge: true },
+    { staffId: "staff-darren", approvedTechniqueTraining: true, deEscalationSkills: true, postIncidentDebrief: true, bodyMapRecording: true, notificationProcedures: true, reductionStrategyKnowledge: true },
   ];
 
-  return { incidents, policy, training };
+  return { records, policy, staff };
 }
 
 // ── GET Handler ──────────────────────────────────────────────────────────
 
 export async function GET() {
-  const { incidents, policy, training } = generateDemoData();
+  const { records, policy, staff } = generateDemoData();
 
-  const result = generateRestraintIntelligence(
-    incidents,
+  const result = generateRestraintIntelligence({
+    homeId: "oak-house",
+    periodStart: "2026-01-01",
+    periodEnd: "2026-05-20",
+    records,
     policy,
-    training,
-    "oak-house",
-    "2026-01-01",
-    "2026-05-20",
-  );
+    staff,
+  });
 
   return NextResponse.json({
     data: {
       ...result,
       meta: {
         generatedAt: new Date().toISOString(),
-        engine: "restraint-intelligence",
-        version: "1.0.0",
+        engine: "restraint",
+        version: "2.0.0",
       },
     },
   });

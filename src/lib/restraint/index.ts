@@ -1,7 +1,7 @@
 export {
   pct,
   getRating,
-  getRestraintTypeLabel,
+  getRestraintCategoryLabel,
   getRestraintOutcomeLabel,
   getRatingLabel,
   evaluateRestraintQuality,
@@ -13,10 +13,10 @@ export {
 } from "./restraint-engine";
 
 export type {
-  RestraintType,
+  RestraintCategory,
   RestraintOutcome,
   Rating,
-  RestraintIncident,
+  RestraintRecord,
   RestraintPolicy,
   StaffRestraintTraining,
   RestraintQualityResult,

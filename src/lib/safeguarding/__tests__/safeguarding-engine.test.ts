@@ -1,561 +1,634 @@
-// ══════════════════════════════════════════════════════════════════���═══════════
-// Safeguarding Engine — Tests
-//
-// Covers: escalation decisions, compliance evaluation, metrics calculation,
-// timeline building, overdue detection, category classification.
-// ═════════════════════════════════════════════════════════════════════��════════
-
 import { describe, it, expect } from "vitest";
 import {
-  determineEscalation,
-  evaluateConcernCompliance,
-  calculateSafeguardingMetrics,
-  buildSafeguardingTimeline,
-  getOverdueConcerns,
-  formatCategory,
-  formatSeverity,
-  formatStatus,
-  requiresOfstedNotification,
-  isHighRiskCategory,
+  pct,
+  getRating,
+  getSafeguardingCategoryLabel,
+  getSafeguardingOutcomeLabel,
+  getRatingLabel,
+  evaluateSafeguardingQuality,
+  evaluateSafeguardingCompliance,
+  evaluateSafeguardingPolicy,
+  evaluateStaffSafeguardingReadiness,
+  buildChildSafeguardingProfiles,
+  generateSafeguardingIntelligence,
 } from "../safeguarding-engine";
 import type {
-  SafeguardingConcern,
-  ChronologyEntry,
+  SafeguardingRecord,
+  SafeguardingPolicy,
+  StaffSafeguardingTraining,
 } from "../safeguarding-engine";
 
-// ── Test Fixtures ──────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────
 
-function makeConcern(overrides: Partial<SafeguardingConcern> = {}): SafeguardingConcern {
+function makeRecord(overrides: Partial<SafeguardingRecord> = {}): SafeguardingRecord {
   return {
-    id: "concern-001",
-    childId: "child-001",
-    childName: "Child A",
-    homeId: "home-001",
-    organisationId: "org-001",
-    category: "physical_abuse",
-    severity: "medium",
-    status: "initial_concern",
-    escalationLevel: 1,
-    description: "Observed unexplained bruising on left arm.",
-    raisedBy: "staff-001",
-    raisedAt: "2026-05-17T09:00:00Z",
-    dateOfConcern: "2026-05-17T08:30:00Z",
-    evidenceOfHarm: ["Bruising on left arm, approximately 3cm diameter"],
-    witnesses: ["staff-002"],
-    immediateActions: ["Checked child is safe", "Photographed injury with consent"],
-    dslConsulted: true,
-    dslName: "Jane Smith",
-    dslConsultedAt: "2026-05-17T09:30:00Z",
-    referrals: [],
-    assignedTo: "staff-rm-001",
-    reviewDate: "2026-05-20T09:00:00Z",
-    linkedConcerns: [],
-    linkedIncidents: [],
-    lastUpdatedBy: "staff-001",
-    lastUpdatedAt: "2026-05-17T09:30:00Z",
-    createdAt: "2026-05-17T09:00:00Z",
+    id: "sg-001",
+    homeId: "home-oak",
+    date: "2026-05-01",
+    childId: "child-alex",
+    childName: "Alex",
+    category: "concern_raised",
+    outcome: "action_taken",
+    timelyResponse: true,
+    childViewCaptured: true,
+    multiAgencyEngaged: true,
+    riskAssessmentUpdated: true,
+    documentationComplete: true,
+    timelyRecording: true,
     ...overrides,
   };
 }
 
-function makeReferral(overrides = {}) {
+function makeFullPolicy(): SafeguardingPolicy {
   return {
-    id: "ref-001",
-    concernId: "concern-001",
-    destination: "local_authority_mash" as const,
-    referralDate: "2026-05-17T10:00:00Z",
-    referredBy: "staff-rm-001",
-    referralMethod: "phone" as const,
-    acknowledged: true,
-    acknowledgedAt: "2026-05-17T11:00:00Z",
-    responseReceived: true,
-    responseDate: "2026-05-17T14:00:00Z",
-    ...overrides,
+    safeguardingPolicy: true,
+    whistleblowingPolicy: true,
+    childProtectionProcedure: true,
+    escortionPolicy: true,
+    onlineSafetyPolicy: true,
+    allegationsAgainstStaffPolicy: true,
+    preventDutyPolicy: true,
   };
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Escalation Decision Tests
-// ══════════════════════════════════════════════════════════════════════════════
+function makeFullStaff(): StaffSafeguardingTraining {
+  return {
+    staffId: "staff-sarah",
+    safeguardingLevel3: true,
+    childProtectionAwareness: true,
+    preventDutyTraining: true,
+    onlineSafetyTraining: true,
+    concernRecordingSkills: true,
+    multiAgencyWorkingKnowledge: true,
+  };
+}
 
-describe("determineEscalation", () => {
-  it("escalates immediate severity to level 5", () => {
-    const concern = makeConcern({ severity: "immediate" });
-    const result = determineEscalation(concern);
-    expect(result.recommendedLevel).toBe(5);
-    expect(result.notifyRM).toBe(true);
-    expect(result.notifyOfsted).toBe(true);
-    expect(result.notifyPolice).toBe(true);
-    expect(result.timeframe).toBe("immediate");
+// ── pct ───────────────────────────────────────────────────────────────────
+
+describe("pct", () => {
+  it("returns 0 when denominator is 0", () => {
+    expect(pct(5, 0)).toBe(0);
   });
-
-  it("escalates high severity to level 3", () => {
-    const concern = makeConcern({ severity: "high" });
-    const result = determineEscalation(concern);
-    expect(result.recommendedLevel).toBeGreaterThanOrEqual(3);
-    expect(result.notifyRM).toBe(true);
-    expect(result.timeframe).toBe("within_4_hours");
+  it("returns 100 for perfect ratio", () => {
+    expect(pct(10, 10)).toBe(100);
   });
-
-  it("escalates medium severity to level 2", () => {
-    const concern = makeConcern({ severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.recommendedLevel).toBe(2);
-    expect(result.timeframe).toBe("within_24_hours");
+  it("returns 50 for half", () => {
+    expect(pct(5, 10)).toBe(50);
   });
-
-  it("always refers CSE to MASH and police", () => {
-    const concern = makeConcern({ category: "child_sexual_exploitation", severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.referralsRequired).toContain("local_authority_mash");
-    expect(result.referralsRequired).toContain("police");
-    expect(result.referralsRequired).toContain("exploitation_hub");
-    expect(result.notifyPolice).toBe(true);
-    expect(result.notifyOfsted).toBe(true);
+  it("rounds correctly", () => {
+    expect(pct(1, 3)).toBe(33);
+    expect(pct(2, 3)).toBe(67);
   });
-
-  it("always refers CCE to MASH and police", () => {
-    const concern = makeConcern({ category: "child_criminal_exploitation", severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.referralsRequired).toContain("police");
-    expect(result.referralsRequired).toContain("exploitation_hub");
-    expect(result.recommendedLevel).toBeGreaterThanOrEqual(4);
-  });
-
-  it("refers staff allegations to LADO", () => {
-    const concern = makeConcern({ category: "allegation_against_staff", severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.referralsRequired).toContain("lado");
-    expect(result.referralsRequired).toContain("local_authority_mash");
-    expect(result.recommendedLevel).toBeGreaterThanOrEqual(4);
-    expect(result.notifyOfsted).toBe(true);
-    expect(result.timeframe).toBe("within_1_hour");
-  });
-
-  it("refers radicalisation to Prevent team", () => {
-    const concern = makeConcern({ category: "radicalisation", severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.referralsRequired).toContain("prevent_team");
-    expect(result.referralsRequired).toContain("local_authority_mash");
-  });
-
-  it("handles disclosure correctly", () => {
-    const concern = makeConcern({ category: "disclosure", severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.referralsRequired).toContain("local_authority_mash");
-    expect(result.immediateActions).toContain("Record child's exact words verbatim.");
-    expect(result.immediateActions).toContain("Do not ask leading questions.");
-    expect(result.recommendedLevel).toBeGreaterThanOrEqual(3);
-  });
-
-  it("escalates when child has 3+ active concerns (cumulative harm)", () => {
-    const concern = makeConcern({ severity: "low" });
-    const existing = [
-      makeConcern({ id: "c2", status: "ongoing_monitoring" }),
-      makeConcern({ id: "c3", status: "referral_made" }),
-      makeConcern({ id: "c4", status: "information_gathering" }),
-    ];
-    const result = determineEscalation(concern, existing);
-    expect(result.recommendedLevel).toBeGreaterThanOrEqual(3);
-    expect(result.reasons.some(r => r.includes("cumulative harm"))).toBe(true);
-  });
-
-  it("handles self-harm with CAMHS referral", () => {
-    const concern = makeConcern({ category: "self_harm", severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.referralsRequired).toContain("camhs");
-    expect(result.immediateActions).toContain("Ensure immediate safety — remove means of self-harm.");
-  });
-
-  it("self-harm high severity also refers to MASH", () => {
-    const concern = makeConcern({ category: "self_harm", severity: "high" });
-    const result = determineEscalation(concern);
-    expect(result.referralsRequired).toContain("camhs");
-    expect(result.referralsRequired).toContain("local_authority_mash");
-    expect(result.notifyRM).toBe(true);
-  });
-
-  it("sexual abuse escalates to level 4 minimum", () => {
-    const concern = makeConcern({ category: "sexual_abuse", severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.recommendedLevel).toBeGreaterThanOrEqual(4);
-    expect(result.notifyPolice).toBe(true);
-  });
-
-  it("trafficking requires police and exploitation hub", () => {
-    const concern = makeConcern({ category: "trafficking", severity: "high" });
-    const result = determineEscalation(concern);
-    expect(result.referralsRequired).toContain("police");
-    expect(result.notifyPolice).toBe(true);
-    expect(result.recommendedLevel).toBeGreaterThanOrEqual(4);
-  });
-
-  it("contextual safeguarding adds mapping actions", () => {
-    const concern = makeConcern({ category: "contextual_safeguarding", severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.immediateActions.some(a => a.includes("Map the external environment"))).toBe(true);
-  });
-
-  it("always includes DSL consultation for level 2+", () => {
-    const concern = makeConcern({ severity: "medium" });
-    const result = determineEscalation(concern);
-    expect(result.immediateActions.some(a => a.includes("Designated Safeguarding Lead"))).toBe(true);
-  });
-
-  it("always includes social worker for level 3+", () => {
-    const concern = makeConcern({ severity: "high" });
-    const result = determineEscalation(concern);
-    expect(result.referralsRequired).toContain("social_worker");
+  it("returns 0 for 0 numerator", () => {
+    expect(pct(0, 10)).toBe(0);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Compliance Evaluation Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── getRating ─────────────────────────────────────────────────────────────
 
-describe("evaluateConcernCompliance", () => {
-  it("marks fully compliant concern as compliant", () => {
-    const concern = makeConcern();
-    const result = evaluateConcernCompliance(concern);
-    expect(result.isCompliant).toBe(true);
-    expect(result.issues).toHaveLength(0);
+describe("getRating", () => {
+  it("returns outstanding for >= 80", () => {
+    expect(getRating(80)).toBe("outstanding");
+    expect(getRating(100)).toBe("outstanding");
+  });
+  it("returns good for >= 60", () => {
+    expect(getRating(60)).toBe("good");
+    expect(getRating(79)).toBe("good");
+  });
+  it("returns requires_improvement for >= 40", () => {
+    expect(getRating(40)).toBe("requires_improvement");
+    expect(getRating(59)).toBe("requires_improvement");
+  });
+  it("returns inadequate for < 40", () => {
+    expect(getRating(39)).toBe("inadequate");
+    expect(getRating(0)).toBe("inadequate");
+  });
+});
+
+// ── Label helpers ─────────────────────────────────────────────────────────
+
+describe("getSafeguardingCategoryLabel", () => {
+  it("maps concern_raised", () => {
+    expect(getSafeguardingCategoryLabel("concern_raised")).toBe("Concern Raised");
+  });
+  it("maps referral_made", () => {
+    expect(getSafeguardingCategoryLabel("referral_made")).toBe("Referral Made");
+  });
+  it("maps strategy_meeting", () => {
+    expect(getSafeguardingCategoryLabel("strategy_meeting")).toBe("Strategy Meeting");
+  });
+  it("maps all 8 categories", () => {
+    const cats = ["concern_raised", "referral_made", "strategy_meeting", "risk_assessment", "chronology_update", "multi_agency_contact", "child_protection_review", "preventive_action"] as const;
+    for (const c of cats) {
+      expect(getSafeguardingCategoryLabel(c)).toBeTruthy();
+    }
+  });
+});
+
+describe("getSafeguardingOutcomeLabel", () => {
+  it("maps action_taken", () => {
+    expect(getSafeguardingOutcomeLabel("action_taken")).toBe("Action Taken");
+  });
+  it("maps all 5 outcomes", () => {
+    const outcomes = ["action_taken", "referral_accepted", "no_further_action", "ongoing_monitoring", "not_applicable"] as const;
+    for (const o of outcomes) {
+      expect(getSafeguardingOutcomeLabel(o)).toBeTruthy();
+    }
+  });
+});
+
+describe("getRatingLabel", () => {
+  it("maps outstanding", () => {
+    expect(getRatingLabel("outstanding")).toBe("Outstanding");
+  });
+  it("maps requires_improvement", () => {
+    expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement");
+  });
+});
+
+// ── Evaluator 1: Quality ─────────────────────────────────────────────────
+
+describe("evaluateSafeguardingQuality", () => {
+  it("scores 25 for perfect records", () => {
+    const records = Array.from({ length: 5 }, (_, i) => makeRecord({ id: `sg-${i}` }));
+    const result = evaluateSafeguardingQuality(records);
+    expect(result.overallScore).toBe(25);
+    expect(result.timelyResponseRate).toBe(100);
+    expect(result.childViewCapturedRate).toBe(100);
+    expect(result.multiAgencyEngagedRate).toBe(100);
+    expect(result.riskAssessmentUpdatedRate).toBe(100);
   });
 
-  it("flags DSL not consulted for high severity", () => {
-    const concern = makeConcern({ severity: "high", dslConsulted: false });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.isCompliant).toBe(false);
-    expect(result.dslConsultedTimely).toBe(false);
-    expect(result.issues.some(i => i.includes("DSL not consulted"))).toBe(true);
+  it("scores 0 for empty records", () => {
+    const result = evaluateSafeguardingQuality([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.totalRecords).toBe(0);
   });
 
-  it("flags late DSL consultation for immediate severity", () => {
-    const concern = makeConcern({
-      severity: "immediate",
-      dslConsulted: true,
-      raisedAt: "2026-05-17T09:00:00Z",
-      dslConsultedAt: "2026-05-17T12:00:00Z", // 3 hours later
+  it("scores 0 for all-false quality flags", () => {
+    const records = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `sg-${i}`, timelyResponse: false, childViewCaptured: false, multiAgencyEngaged: false, riskAssessmentUpdated: false })
+    );
+    const result = evaluateSafeguardingQuality(records);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("weights timelyResponse highest (7)", () => {
+    const records = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `sg-${i}`, timelyResponse: true, childViewCaptured: false, multiAgencyEngaged: false, riskAssessmentUpdated: false })
+    );
+    const result = evaluateSafeguardingQuality(records);
+    expect(result.overallScore).toBe(7);
+  });
+
+  it("handles mixed data", () => {
+    const records = [
+      makeRecord({ id: "sg-1" }),
+      makeRecord({ id: "sg-2", childViewCaptured: false, riskAssessmentUpdated: false }),
+    ];
+    const result = evaluateSafeguardingQuality(records);
+    expect(result.timelyResponseRate).toBe(100);
+    expect(result.childViewCapturedRate).toBe(50);
+    expect(result.overallScore).toBeGreaterThan(0);
+    expect(result.overallScore).toBeLessThan(25);
+  });
+
+  it("returns correct totalRecords", () => {
+    const records = Array.from({ length: 7 }, (_, i) => makeRecord({ id: `sg-${i}` }));
+    expect(evaluateSafeguardingQuality(records).totalRecords).toBe(7);
+  });
+});
+
+// ── Evaluator 2: Compliance ──────────────────────────────────────────────
+
+describe("evaluateSafeguardingCompliance", () => {
+  it("scores 25 for perfect records with all categories", () => {
+    const cats = ["concern_raised", "referral_made", "strategy_meeting", "risk_assessment", "chronology_update", "multi_agency_contact", "child_protection_review", "preventive_action"] as const;
+    const records = cats.map((cat, i) => makeRecord({ id: `sg-${i}`, category: cat }));
+    const result = evaluateSafeguardingCompliance(records);
+    expect(result.overallScore).toBe(25);
+    expect(result.categoryDiversityRatio).toBe(100);
+  });
+
+  it("scores 0 for empty records", () => {
+    const result = evaluateSafeguardingCompliance([]);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("scores 0 for all-false compliance flags", () => {
+    const records = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `sg-${i}`, documentationComplete: false, timelyRecording: false, childViewCaptured: false })
+    );
+    const result = evaluateSafeguardingCompliance(records);
+    expect(result.documentationRate).toBe(0);
+    expect(result.timelyRecordingRate).toBe(0);
+  });
+
+  it("weights documentation highest (8)", () => {
+    const records = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `sg-${i}`, documentationComplete: true, timelyRecording: false, childViewCaptured: false })
+    );
+    const result = evaluateSafeguardingCompliance(records);
+    expect(result.documentationRate).toBe(100);
+    expect(result.overallScore).toBeGreaterThanOrEqual(8);
+  });
+
+  it("calculates category diversity correctly", () => {
+    const records = [
+      makeRecord({ id: "sg-1", category: "concern_raised" }),
+      makeRecord({ id: "sg-2", category: "referral_made" }),
+      makeRecord({ id: "sg-3", category: "strategy_meeting" }),
+      makeRecord({ id: "sg-4", category: "risk_assessment" }),
+    ];
+    const result = evaluateSafeguardingCompliance(records);
+    expect(result.categoryDiversityRatio).toBe(50);
+  });
+});
+
+// ── Evaluator 3: Policy ──────────────────────────────────────────────────
+
+describe("evaluateSafeguardingPolicy", () => {
+  it("scores 25 for all true", () => {
+    const result = evaluateSafeguardingPolicy(makeFullPolicy());
+    expect(result.overallScore).toBe(25);
+  });
+
+  it("scores 0 for null", () => {
+    const result = evaluateSafeguardingPolicy(null);
+    expect(result.overallScore).toBe(0);
+    expect(result.safeguardingPolicy).toBe(false);
+    expect(result.whistleblowingPolicy).toBe(false);
+  });
+
+  it("scores 0 for all false", () => {
+    const result = evaluateSafeguardingPolicy({
+      safeguardingPolicy: false,
+      whistleblowingPolicy: false,
+      childProtectionProcedure: false,
+      escortionPolicy: false,
+      onlineSafetyPolicy: false,
+      allegationsAgainstStaffPolicy: false,
+      preventDutyPolicy: false,
     });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.dslConsultedTimely).toBe(false);
-    expect(result.issues.some(i => i.includes("DSL consulted") && i.includes("after concern raised"))).toBe(true);
+    expect(result.overallScore).toBe(0);
   });
 
-  it("flags missing referral for always-refer categories", () => {
-    const concern = makeConcern({ category: "sexual_abuse", referrals: [] });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.referralTimely).toBe(false);
-    expect(result.issues.some(i => i.includes("requires external referral"))).toBe(true);
-  });
-
-  it("flags late referral for immediate severity", () => {
-    const concern = makeConcern({
-      severity: "immediate",
-      raisedAt: "2026-05-17T09:00:00Z",
-      referrals: [makeReferral({ referralDate: "2026-05-17T14:00:00Z" })], // 5 hours later
+  it("first 4 booleans weighted at 4 each", () => {
+    const result = evaluateSafeguardingPolicy({
+      safeguardingPolicy: true,
+      whistleblowingPolicy: true,
+      childProtectionProcedure: true,
+      escortionPolicy: true,
+      onlineSafetyPolicy: false,
+      allegationsAgainstStaffPolicy: false,
+      preventDutyPolicy: false,
     });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.referralTimely).toBe(false);
-    expect(result.issues.some(i => i.includes("required within"))).toBe(true);
+    expect(result.overallScore).toBe(16);
   });
 
-  it("flags no immediate actions recorded", () => {
-    const concern = makeConcern({ immediateActions: [] });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.actionsTaken).toBe(false);
-    expect(result.issues.some(i => i.includes("No immediate actions"))).toBe(true);
+  it("last 3 booleans weighted at 3 each", () => {
+    const result = evaluateSafeguardingPolicy({
+      safeguardingPolicy: false,
+      whistleblowingPolicy: false,
+      childProtectionProcedure: false,
+      escortionPolicy: false,
+      onlineSafetyPolicy: true,
+      allegationsAgainstStaffPolicy: true,
+      preventDutyPolicy: true,
+    });
+    expect(result.overallScore).toBe(9);
   });
 
-  it("flags missing child words for disclosure", () => {
-    const concern = makeConcern({ category: "disclosure", childWords: "" });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.childWordsRecorded).toBe(false);
-    expect(result.issues.some(i => i.includes("exact words not recorded"))).toBe(true);
-  });
-
-  it("returns null for childWordsRecorded when not a disclosure", () => {
-    const concern = makeConcern({ category: "physical_abuse" });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.childWordsRecorded).toBe(null);
-  });
-
-  it("flags no evidence of harm", () => {
-    const concern = makeConcern({ evidenceOfHarm: [] });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.chronologyUpdated).toBe(false);
-  });
-
-  it("flags no review date for active concern", () => {
-    const concern = makeConcern({ reviewDate: undefined, status: "ongoing_monitoring" });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.reviewScheduled).toBe(false);
-    expect(result.issues.some(i => i.includes("No review date"))).toBe(true);
-  });
-
-  it("does not flag review for closed concerns", () => {
-    const concern = makeConcern({ reviewDate: undefined, status: "closed" });
-    const result = evaluateConcernCompliance(concern);
-    expect(result.reviewScheduled).toBe(false); // but no issue flagged
-    expect(result.issues.filter(i => i.includes("review")).length).toBe(0);
+  it("preserves boolean values in result", () => {
+    const policy = { ...makeFullPolicy(), preventDutyPolicy: false };
+    const result = evaluateSafeguardingPolicy(policy);
+    expect(result.preventDutyPolicy).toBe(false);
+    expect(result.safeguardingPolicy).toBe(true);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Metrics Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Evaluator 4: Staff Readiness ─────────────────────────────────────────
 
-describe("calculateSafeguardingMetrics", () => {
-  const now = "2026-05-17T12:00:00Z";
-  const concerns = [
-    makeConcern({ id: "c1", severity: "high", status: "referral_made", raisedAt: "2026-05-15T10:00:00Z", escalationLevel: 3 }),
-    makeConcern({ id: "c2", category: "self_harm", severity: "medium", status: "ongoing_monitoring", raisedAt: "2026-05-10T10:00:00Z", escalationLevel: 2 }),
-    makeConcern({ id: "c3", category: "neglect", severity: "low", status: "closed", raisedAt: "2026-04-01T10:00:00Z", escalationLevel: 1 }),
-    makeConcern({ id: "c4", category: "disclosure", severity: "high", status: "strategy_discussion", raisedAt: "2026-05-16T10:00:00Z", escalationLevel: 4, childId: "child-002", childName: "Child B" }),
-  ];
-
-  it("calculates total and active counts", () => {
-    const result = calculateSafeguardingMetrics(concerns, "home-001", "org-001", now);
-    expect(result.totalConcerns).toBe(4);
-    expect(result.activeConcerns).toBe(3);
+describe("evaluateStaffSafeguardingReadiness", () => {
+  it("scores 25 for all-skilled staff", () => {
+    const staff = [makeFullStaff(), { ...makeFullStaff(), staffId: "staff-tom" }];
+    const result = evaluateStaffSafeguardingReadiness(staff);
+    expect(result.overallScore).toBe(25);
+    expect(result.totalStaff).toBe(2);
   });
 
-  it("counts concerns this month correctly", () => {
-    const result = calculateSafeguardingMetrics(concerns, "home-001", "org-001", now);
-    expect(result.concernsThisMonth).toBe(3); // May 10, 15, 16
+  it("scores 0 for empty staff", () => {
+    const result = evaluateStaffSafeguardingReadiness([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.totalStaff).toBe(0);
   });
 
-  it("breaks down by category", () => {
-    const result = calculateSafeguardingMetrics(concerns, "home-001", "org-001", now);
-    expect(result.byCategory.length).toBeGreaterThanOrEqual(3);
+  it("scores 0 for all-false skills", () => {
+    const staff: StaffSafeguardingTraining[] = [{
+      staffId: "staff-sarah",
+      safeguardingLevel3: false,
+      childProtectionAwareness: false,
+      preventDutyTraining: false,
+      onlineSafetyTraining: false,
+      concernRecordingSkills: false,
+      multiAgencyWorkingKnowledge: false,
+    }];
+    const result = evaluateStaffSafeguardingReadiness(staff);
+    expect(result.overallScore).toBe(0);
   });
 
-  it("breaks down by severity", () => {
-    const result = calculateSafeguardingMetrics(concerns, "home-001", "org-001", now);
-    const high = result.bySeverity.find(s => s.severity === "high");
-    expect(high?.count).toBe(2);
+  it("weights safeguardingLevel3 highest (6)", () => {
+    const staff: StaffSafeguardingTraining[] = [{
+      staffId: "staff-sarah",
+      safeguardingLevel3: true,
+      childProtectionAwareness: false,
+      preventDutyTraining: false,
+      onlineSafetyTraining: false,
+      concernRecordingSkills: false,
+      multiAgencyWorkingKnowledge: false,
+    }];
+    const result = evaluateStaffSafeguardingReadiness(staff);
+    expect(result.overallScore).toBe(6);
   });
 
-  it("counts referrals made", () => {
-    const withReferrals = [
-      makeConcern({ id: "c1", referrals: [makeReferral()] }),
-      makeConcern({ id: "c2", referrals: [makeReferral({ id: "r2" }), makeReferral({ id: "r3" })] }),
+  it("weights multiAgencyWorkingKnowledge lowest (2)", () => {
+    const staff: StaffSafeguardingTraining[] = [{
+      staffId: "staff-sarah",
+      safeguardingLevel3: false,
+      childProtectionAwareness: false,
+      preventDutyTraining: false,
+      onlineSafetyTraining: false,
+      concernRecordingSkills: false,
+      multiAgencyWorkingKnowledge: true,
+    }];
+    const result = evaluateStaffSafeguardingReadiness(staff);
+    expect(result.overallScore).toBe(2);
+  });
+
+  it("handles mixed skills across staff", () => {
+    const staff: StaffSafeguardingTraining[] = [
+      makeFullStaff(),
+      { ...makeFullStaff(), staffId: "staff-tom", safeguardingLevel3: false, preventDutyTraining: false },
     ];
-    const result = calculateSafeguardingMetrics(withReferrals, "home-001", "org-001", now);
-    expect(result.referralsMade).toBe(3);
-  });
-
-  it("calculates average escalation level", () => {
-    const result = calculateSafeguardingMetrics(concerns, "home-001", "org-001", now);
-    // (3+2+1+4)/4 = 2.5
-    expect(result.averageEscalationLevel).toBe(2.5);
-  });
-
-  it("identifies child protection plans", () => {
-    const cppConcerns = [
-      makeConcern({ id: "c1", status: "child_protection_plan" }),
-    ];
-    const result = calculateSafeguardingMetrics(cppConcerns, "home-001", "org-001", now);
-    expect(result.childProtectionPlans).toBe(1);
+    const result = evaluateStaffSafeguardingReadiness(staff);
+    expect(result.safeguardingLevel3Rate).toBe(50);
+    expect(result.preventDutyTrainingRate).toBe(50);
+    expect(result.overallScore).toBeGreaterThan(0);
+    expect(result.overallScore).toBeLessThan(25);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Timeline Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Child Profiles ───────────────────────────────────────────────────────
 
-describe("buildSafeguardingTimeline", () => {
-  it("detects cumulative harm (3+ active concerns)", () => {
-    const concerns = [
-      makeConcern({ id: "c1", status: "ongoing_monitoring" }),
-      makeConcern({ id: "c2", status: "referral_made" }),
-      makeConcern({ id: "c3", status: "information_gathering" }),
-    ];
-    const result = buildSafeguardingTimeline(concerns, [], "child-001");
-    expect(result.riskIndicators.some(r => r.includes("cumulative harm"))).toBe(true);
+describe("buildChildSafeguardingProfiles", () => {
+  it("returns empty array for no records", () => {
+    expect(buildChildSafeguardingProfiles([])).toEqual([]);
   });
 
-  it("flags exploitation concerns", () => {
-    const concerns = [
-      makeConcern({ id: "c1", category: "child_sexual_exploitation", status: "ongoing_monitoring" }),
+  it("groups by childId", () => {
+    const records = [
+      makeRecord({ id: "sg-1", childId: "child-alex", childName: "Alex" }),
+      makeRecord({ id: "sg-2", childId: "child-jordan", childName: "Jordan" }),
+      makeRecord({ id: "sg-3", childId: "child-alex", childName: "Alex" }),
     ];
-    const result = buildSafeguardingTimeline(concerns, [], "child-001");
-    expect(result.riskIndicators.some(r => r.includes("Exploitation"))).toBe(true);
+    const profiles = buildChildSafeguardingProfiles(records);
+    expect(profiles).toHaveLength(2);
   });
 
-  it("flags repeat self-harm", () => {
-    const concerns = [
-      makeConcern({ id: "c1", category: "self_harm", status: "ongoing_monitoring" }),
-      makeConcern({ id: "c2", category: "self_harm", status: "closed" }),
-    ];
-    const result = buildSafeguardingTimeline(concerns, [], "child-001");
-    expect(result.riskIndicators.some(r => r.includes("self-harm"))).toBe(true);
+  it("scores 10 for perfect child (many records, high rates, diverse)", () => {
+    const cats = ["concern_raised", "referral_made", "strategy_meeting", "risk_assessment", "chronology_update"] as const;
+    const records = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `sg-${i}`, childId: "child-alex", childName: "Alex", category: cats[i % cats.length] })
+    );
+    const profiles = buildChildSafeguardingProfiles(records);
+    expect(profiles[0].overallScore).toBe(10);
   });
 
-  it("detects escalating severity pattern", () => {
-    const concerns = [
-      makeConcern({ id: "c1", severity: "low", raisedAt: "2026-05-01T10:00:00Z", status: "closed" }),
-      makeConcern({ id: "c2", severity: "medium", raisedAt: "2026-05-05T10:00:00Z", status: "closed" }),
-      makeConcern({ id: "c3", severity: "high", raisedAt: "2026-05-10T10:00:00Z", status: "ongoing_monitoring" }),
-    ];
-    const result = buildSafeguardingTimeline(concerns, [], "child-001");
-    expect(result.patternFlags.some(f => f.includes("Escalating pattern"))).toBe(true);
+  it("scores frequency: >=10 records -> 2, >=5 -> 1, <5 -> 0", () => {
+    const records = Array.from({ length: 3 }, (_, i) => makeRecord({ id: `sg-${i}` }));
+    const profiles = buildChildSafeguardingProfiles(records);
+    // 3 records → freq:0 + rate1:3 + rate2:3 + diversity:0 = 6
+    expect(profiles[0].overallScore).toBe(6);
   });
 
-  it("flags multiple concern categories", () => {
-    const concerns = [
-      makeConcern({ id: "c1", category: "physical_abuse" }),
-      makeConcern({ id: "c2", category: "self_harm" }),
-      makeConcern({ id: "c3", category: "online_harm" }),
-      makeConcern({ id: "c4", category: "neglect" }),
+  it("sorts by overallScore descending", () => {
+    const records = [
+      makeRecord({ id: "sg-1", childId: "child-alex", childName: "Alex" }),
+      ...Array.from({ length: 10 }, (_, i) =>
+        makeRecord({ id: `sg-j${i}`, childId: "child-jordan", childName: "Jordan", category: (["concern_raised", "referral_made", "strategy_meeting", "risk_assessment"] as const)[i % 4] })
+      ),
     ];
-    const result = buildSafeguardingTimeline(concerns, [], "child-001");
-    expect(result.patternFlags.some(f => f.includes("different categories"))).toBe(true);
+    const profiles = buildChildSafeguardingProfiles(records);
+    expect(profiles[0].childId).toBe("child-jordan");
   });
 
-  it("flags unresolved referrals", () => {
-    const concerns = [
-      makeConcern({ id: "c1", referrals: [makeReferral({ responseReceived: false })] }),
-      makeConcern({ id: "c2", referrals: [makeReferral({ id: "r2", responseReceived: false })] }),
-    ];
-    const result = buildSafeguardingTimeline(concerns, [], "child-001");
-    expect(result.patternFlags.some(f => f.includes("referrals without agency response"))).toBe(true);
+  it("caps at 10", () => {
+    const cats = ["concern_raised", "referral_made", "strategy_meeting", "risk_assessment", "chronology_update", "multi_agency_contact"] as const;
+    const records = Array.from({ length: 15 }, (_, i) =>
+      makeRecord({ id: `sg-${i}`, childId: "child-alex", childName: "Alex", category: cats[i % cats.length] })
+    );
+    const profiles = buildChildSafeguardingProfiles(records);
+    expect(profiles[0].overallScore).toBeLessThanOrEqual(10);
   });
 
-  it("sorts chronology by date descending", () => {
-    const chronology: ChronologyEntry[] = [
-      { id: "e1", childId: "child-001", date: "2026-05-10T10:00:00Z", category: "concern", description: "First", significance: "significant", source: "staff-001" },
-      { id: "e2", childId: "child-001", date: "2026-05-15T10:00:00Z", category: "action", description: "Second", significance: "routine", source: "staff-001" },
+  it("includes categoriesCovered list", () => {
+    const records = [
+      makeRecord({ id: "sg-1", category: "concern_raised" }),
+      makeRecord({ id: "sg-2", category: "referral_made" }),
+      makeRecord({ id: "sg-3", category: "concern_raised" }),
     ];
-    const result = buildSafeguardingTimeline([], chronology, "child-001");
-    expect(result.entries[0].id).toBe("e2"); // most recent first
+    const profiles = buildChildSafeguardingProfiles(records);
+    expect(profiles[0].categoriesCovered).toEqual(expect.arrayContaining(["concern_raised", "referral_made"]));
+    expect(profiles[0].categoriesCovered).toHaveLength(2);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Overdue Detection Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Orchestrator ──────────────────────────────────────────────────────────
 
-describe("getOverdueConcerns", () => {
-  const now = "2026-05-17T12:00:00Z";
+describe("generateSafeguardingIntelligence", () => {
+  it("returns outstanding for perfect data", () => {
+    const cats = ["concern_raised", "referral_made", "strategy_meeting", "risk_assessment", "chronology_update", "multi_agency_contact", "child_protection_review", "preventive_action"] as const;
+    const records = cats.map((cat, i) => makeRecord({ id: `sg-${i}`, category: cat }));
+    const staff = [makeFullStaff(), { ...makeFullStaff(), staffId: "staff-tom" }];
 
-  it("detects overdue review dates", () => {
-    const concerns = [
-      makeConcern({ id: "c1", reviewDate: "2026-05-15T09:00:00Z", status: "ongoing_monitoring" }),
+    const result = generateSafeguardingIntelligence({
+      homeId: "home-oak",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-05-20",
+      records,
+      policy: makeFullPolicy(),
+      staff,
+    });
+
+    expect(result.overallScore).toBe(100);
+    expect(result.rating).toBe("outstanding");
+    expect(result.regulatoryLinks).toHaveLength(7);
+  });
+
+  it("returns inadequate for empty data", () => {
+    const result = generateSafeguardingIntelligence({
+      homeId: "home-oak",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-05-20",
+      records: [],
+      policy: null,
+      staff: [],
+    });
+
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.actions.length).toBeGreaterThan(0);
+  });
+
+  it("returns good for decent but not perfect data", () => {
+    const records = [
+      makeRecord({ id: "sg-1", category: "concern_raised" }),
+      makeRecord({ id: "sg-2", category: "referral_made", childViewCaptured: false }),
+      makeRecord({ id: "sg-3", category: "strategy_meeting", multiAgencyEngaged: false }),
+      makeRecord({ id: "sg-4", category: "risk_assessment", riskAssessmentUpdated: false, timelyRecording: false }),
+      makeRecord({ id: "sg-5", category: "chronology_update", timelyResponse: false, documentationComplete: false }),
+      makeRecord({ id: "sg-6", category: "concern_raised", childViewCaptured: false, multiAgencyEngaged: false }),
     ];
-    const result = getOverdueConcerns(concerns, now);
-    expect(result.length).toBe(1);
-    expect(result[0].type).toBe("review");
-    expect(result[0].overdueBy).toBe(2);
-  });
-
-  it("does not flag future review dates", () => {
-    const concerns = [
-      makeConcern({ id: "c1", reviewDate: "2026-05-20T09:00:00Z", status: "ongoing_monitoring" }),
+    const policy: SafeguardingPolicy = {
+      safeguardingPolicy: true,
+      whistleblowingPolicy: true,
+      childProtectionProcedure: true,
+      escortionPolicy: false,
+      onlineSafetyPolicy: true,
+      allegationsAgainstStaffPolicy: false,
+      preventDutyPolicy: false,
+    };
+    const staff: StaffSafeguardingTraining[] = [
+      makeFullStaff(),
+      { ...makeFullStaff(), staffId: "staff-tom", safeguardingLevel3: false, preventDutyTraining: false, multiAgencyWorkingKnowledge: false },
     ];
-    const result = getOverdueConcerns(concerns, now);
-    expect(result.length).toBe(0);
+
+    const result = generateSafeguardingIntelligence({
+      homeId: "home-oak",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-05-20",
+      records,
+      policy,
+      staff,
+    });
+
+    expect(result.rating).toBe("good");
+    expect(result.overallScore).toBeGreaterThanOrEqual(60);
+    expect(result.overallScore).toBeLessThan(80);
   });
 
-  it("flags concerns with no review scheduled (stale)", () => {
-    const concerns = [
-      makeConcern({
-        id: "c1",
-        reviewDate: undefined,
-        severity: "medium",
-        status: "ongoing_monitoring",
-        lastUpdatedAt: "2026-05-01T09:00:00Z", // 16 days ago, > 7 day threshold
-      }),
+  it("returns requires_improvement for weak data", () => {
+    const records = [
+      makeRecord({ id: "sg-1", category: "concern_raised", timelyResponse: false, multiAgencyEngaged: false, riskAssessmentUpdated: false, documentationComplete: false }),
+      makeRecord({ id: "sg-2", category: "referral_made", childViewCaptured: false, multiAgencyEngaged: false, timelyRecording: false }),
+      makeRecord({ id: "sg-3", category: "strategy_meeting", timelyResponse: false, childViewCaptured: false, riskAssessmentUpdated: false, documentationComplete: false, timelyRecording: false }),
+      makeRecord({ id: "sg-4", category: "risk_assessment", timelyResponse: false, multiAgencyEngaged: false, riskAssessmentUpdated: false }),
+      makeRecord({ id: "sg-5", category: "chronology_update" }),
     ];
-    const result = getOverdueConcerns(concerns, now);
-    expect(result.length).toBe(1);
-    expect(result[0].type).toBe("no_review_scheduled");
-  });
-
-  it("uses shorter threshold for high severity", () => {
-    const concerns = [
-      makeConcern({
-        id: "c1",
-        reviewDate: undefined,
-        severity: "high",
-        status: "referral_made",
-        lastUpdatedAt: "2026-05-13T09:00:00Z", // 4 days ago, > 3 day threshold for high
-      }),
+    const policy: SafeguardingPolicy = {
+      safeguardingPolicy: true,
+      whistleblowingPolicy: true,
+      childProtectionProcedure: true,
+      escortionPolicy: false,
+      onlineSafetyPolicy: false,
+      allegationsAgainstStaffPolicy: false,
+      preventDutyPolicy: false,
+    };
+    const staff: StaffSafeguardingTraining[] = [
+      { staffId: "staff-sarah", safeguardingLevel3: true, childProtectionAwareness: true, preventDutyTraining: false, onlineSafetyTraining: false, concernRecordingSkills: true, multiAgencyWorkingKnowledge: false },
     ];
-    const result = getOverdueConcerns(concerns, now);
-    expect(result.length).toBe(1);
+
+    const result = generateSafeguardingIntelligence({
+      homeId: "home-oak",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-05-20",
+      records,
+      policy,
+      staff,
+    });
+
+    expect(result.rating).toBe("requires_improvement");
+    expect(result.overallScore).toBeGreaterThanOrEqual(40);
+    expect(result.overallScore).toBeLessThan(60);
   });
 
-  it("detects unacknowledged referrals", () => {
-    const concerns = [
-      makeConcern({
-        id: "c1",
-        status: "referral_made",
-        referrals: [makeReferral({
-          acknowledged: false,
-          referralDate: "2026-05-10T09:00:00Z", // 7 days ago
-        })],
-      }),
+  it("caps overallScore at 100", () => {
+    const cats = ["concern_raised", "referral_made", "strategy_meeting", "risk_assessment", "chronology_update", "multi_agency_contact", "child_protection_review", "preventive_action"] as const;
+    const records = cats.map((cat, i) => makeRecord({ id: `sg-${i}`, category: cat }));
+    const staff = [makeFullStaff()];
+
+    const result = generateSafeguardingIntelligence({
+      homeId: "home-oak",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-05-20",
+      records,
+      policy: makeFullPolicy(),
+      staff,
+    });
+
+    expect(result.overallScore).toBeLessThanOrEqual(100);
+  });
+
+  it("populates strengths for excellent data", () => {
+    const cats = ["concern_raised", "referral_made", "strategy_meeting", "risk_assessment", "chronology_update", "multi_agency_contact", "child_protection_review", "preventive_action"] as const;
+    const records = cats.map((cat, i) => makeRecord({ id: `sg-${i}`, category: cat }));
+    const staff = [makeFullStaff()];
+
+    const result = generateSafeguardingIntelligence({
+      homeId: "home-oak",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-05-20",
+      records,
+      policy: makeFullPolicy(),
+      staff,
+    });
+
+    expect(result.strengths.length).toBeGreaterThan(0);
+  });
+
+  it("populates actions for empty records", () => {
+    const result = generateSafeguardingIntelligence({
+      homeId: "home-oak",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-05-20",
+      records: [],
+      policy: null,
+      staff: [],
+    });
+
+    expect(result.actions.some(a => a.includes("URGENT"))).toBe(true);
+  });
+
+  it("includes correct metadata fields", () => {
+    const result = generateSafeguardingIntelligence({
+      homeId: "home-oak",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-05-20",
+      records: [],
+      policy: null,
+      staff: [],
+    });
+
+    expect(result.homeId).toBe("home-oak");
+    expect(result.periodStart).toBe("2026-01-01");
+    expect(result.periodEnd).toBe("2026-05-20");
+    expect(result.regulatoryLinks).toHaveLength(7);
+  });
+
+  it("includes child profiles in result", () => {
+    const records = [
+      makeRecord({ id: "sg-1", childId: "child-alex", childName: "Alex" }),
+      makeRecord({ id: "sg-2", childId: "child-jordan", childName: "Jordan" }),
     ];
-    const result = getOverdueConcerns(concerns, now);
-    expect(result.some(r => r.type === "unacknowledged_referral")).toBe(true);
-  });
+    const result = generateSafeguardingIntelligence({
+      homeId: "home-oak",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-05-20",
+      records,
+      policy: makeFullPolicy(),
+      staff: [makeFullStaff()],
+    });
 
-  it("ignores closed concerns", () => {
-    const concerns = [
-      makeConcern({ id: "c1", status: "closed", reviewDate: "2026-05-10T09:00:00Z" }),
-    ];
-    const result = getOverdueConcerns(concerns, now);
-    expect(result.length).toBe(0);
-  });
-
-  it("sorts by overdue days descending", () => {
-    const concerns = [
-      makeConcern({ id: "c1", reviewDate: "2026-05-15T09:00:00Z", status: "ongoing_monitoring" }), // 2 days
-      makeConcern({ id: "c2", reviewDate: "2026-05-10T09:00:00Z", status: "ongoing_monitoring" }), // 7 days
-    ];
-    const result = getOverdueConcerns(concerns, now);
-    expect(result[0].concern.id).toBe("c2");
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════════════
-// Helper Function Tests
-// ══════════════════════════════════════════════════════════════════════════════
-
-describe("Helper functions", () => {
-  it("formatCategory returns readable labels", () => {
-    expect(formatCategory("child_sexual_exploitation")).toBe("CSE");
-    expect(formatCategory("child_criminal_exploitation")).toBe("CCE");
-    expect(formatCategory("honour_based_abuse")).toBe("HBA/FGM");
-    expect(formatCategory("allegation_against_staff")).toBe("Staff Allegation");
-    expect(formatCategory("physical_abuse")).toBe("Physical Abuse");
-  });
-
-  it("formatSeverity returns readable labels", () => {
-    expect(formatSeverity("low")).toBe("Low");
-    expect(formatSeverity("immediate")).toBe("Immediate");
-  });
-
-  it("formatStatus returns readable labels", () => {
-    expect(formatStatus("strategy_discussion")).toBe("Strategy Discussion");
-    expect(formatStatus("child_protection_plan")).toBe("Child Protection Plan");
-    expect(formatStatus("section_47_enquiry")).toBe("Section 47 Enquiry");
-  });
-
-  it("requiresOfstedNotification detects correct cases", () => {
-    expect(requiresOfstedNotification(makeConcern({ escalationLevel: 4 }))).toBe(true);
-    expect(requiresOfstedNotification(makeConcern({ severity: "immediate" }))).toBe(true);
-    expect(requiresOfstedNotification(makeConcern({ category: "allegation_against_staff" }))).toBe(true);
-    expect(requiresOfstedNotification(makeConcern({ category: "sexual_abuse" }))).toBe(true);
-    expect(requiresOfstedNotification(makeConcern({ severity: "low", escalationLevel: 1, category: "other" }))).toBe(false);
-  });
-
-  it("isHighRiskCategory identifies correct categories", () => {
-    expect(isHighRiskCategory("sexual_abuse")).toBe(true);
-    expect(isHighRiskCategory("child_sexual_exploitation")).toBe(true);
-    expect(isHighRiskCategory("trafficking")).toBe(true);
-    expect(isHighRiskCategory("allegation_against_staff")).toBe(true);
-    expect(isHighRiskCategory("self_harm")).toBe(false);
-    expect(isHighRiskCategory("other")).toBe(false);
+    expect(result.childProfiles).toHaveLength(2);
   });
 });

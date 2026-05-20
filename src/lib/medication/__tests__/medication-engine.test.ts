@@ -1,13 +1,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Medication Intelligence Engine — Tests
+// Medication Intelligence Engine v2.0 — Tests
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
 import {
   pct,
   getRating,
-  getMedicationTypeLabel,
-  getAdministrationOutcomeLabel,
+  getMedicationCategoryLabel,
+  getMedicationOutcomeLabel,
   getRatingLabel,
   evaluateMedicationQuality,
   evaluateMedicationCompliance,
@@ -17,57 +17,55 @@ import {
   generateMedicationIntelligence,
 } from "../medication-engine";
 import type {
-  MedicationAdministration,
+  MedicationRecord,
   MedicationPolicy,
   StaffMedicationTraining,
-  MedicationType,
+  MedicationCategory,
 } from "../medication-engine";
 
 // ── Factory Functions ─────────────────────────────────────────────────────
 
-function makeAdministration(overrides: Partial<MedicationAdministration> = {}): MedicationAdministration {
+function makeRecord(overrides: Partial<MedicationRecord> = {}): MedicationRecord {
   return {
-    id: "admin-001",
+    id: "rec-001",
+    homeId: "oak-house",
+    date: "2026-03-15",
     childId: "child-alex",
     childName: "Alex",
-    administrationDate: "2026-03-15",
-    medicationType: "regular_oral",
+    category: "regular_administration",
     outcome: "administered_correctly",
-    consentObtained: true,
-    twoStaffWitnessed: true,
-    documentedCorrectly: true,
-    sideEffectsMonitored: true,
-    storageCompliant: true,
-    marChartUpdated: true,
+    administeredCorrectly: true,
+    signedByTwoStaff: true,
+    consentOnFile: true,
+    errorReported: true,
+    documentationComplete: true,
+    timelyRecording: true,
     ...overrides,
   };
 }
 
 function makePolicy(overrides: Partial<MedicationPolicy> = {}): MedicationPolicy {
   return {
-    id: "pol-001",
-    medicationManagementPolicy: true,
-    controlledDrugsProcedure: true,
-    administrationProtocol: true,
-    storageAndDisposalPolicy: true,
-    errorReportingProcess: true,
+    medicationPolicy: true,
+    controlledDrugPolicy: true,
+    administrationProcedure: true,
     consentFramework: true,
-    regularReview: true,
+    errorReportingPolicy: true,
+    storagePolicy: true,
+    reviewSchedulePolicy: true,
     ...overrides,
   };
 }
 
 function makeTraining(overrides: Partial<StaffMedicationTraining> = {}): StaffMedicationTraining {
   return {
-    id: "tr-001",
     staffId: "staff-sarah",
-    staffName: "Sarah Johnson",
     medicationAdministration: true,
-    controlledDrugsHandling: true,
-    errorRecognition: true,
-    sideEffectsAwareness: true,
-    storageRequirements: true,
-    consentAndCapacity: true,
+    controlledDrugHandling: true,
+    errorReporting: true,
+    consentProcess: true,
+    storageChecks: true,
+    medicationReview: true,
     ...overrides,
   };
 }
@@ -96,6 +94,10 @@ describe("pct", () => {
   it("returns 100 for equal numerator and denominator", () => {
     expect(pct(10, 10)).toBe(100);
   });
+
+  it("returns 50 for half", () => {
+    expect(pct(5, 10)).toBe(50);
+  });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -122,47 +124,56 @@ describe("getRating", () => {
     expect(getRating(39)).toBe("inadequate");
     expect(getRating(0)).toBe("inadequate");
   });
+
+  it("handles exact boundaries correctly", () => {
+    expect(getRating(80)).toBe("outstanding");
+    expect(getRating(60)).toBe("good");
+    expect(getRating(40)).toBe("requires_improvement");
+  });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
 // Label helpers
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("getMedicationTypeLabel", () => {
-  it("returns correct label for regular_oral", () => {
-    expect(getMedicationTypeLabel("regular_oral")).toBe("Regular Oral");
+describe("getMedicationCategoryLabel", () => {
+  it("returns correct label for regular_administration", () => {
+    expect(getMedicationCategoryLabel("regular_administration")).toBe("Regular Administration");
+  });
+
+  it("returns correct label for prn_administration", () => {
+    expect(getMedicationCategoryLabel("prn_administration")).toBe("PRN Administration");
   });
 
   it("returns correct label for controlled_drug", () => {
-    expect(getMedicationTypeLabel("controlled_drug")).toBe("Controlled Drug");
+    expect(getMedicationCategoryLabel("controlled_drug")).toBe("Controlled Drug");
   });
 
-  it("returns correct label for prn_as_needed", () => {
-    expect(getMedicationTypeLabel("prn_as_needed")).toBe("PRN (As Needed)");
+  it("returns correct label for medication_storage", () => {
+    expect(getMedicationCategoryLabel("medication_storage")).toBe("Medication Storage");
   });
 
-  it("returns correct label for all types", () => {
-    expect(getMedicationTypeLabel("topical")).toBe("Topical");
-    expect(getMedicationTypeLabel("inhaler")).toBe("Inhaler");
-    expect(getMedicationTypeLabel("injectable")).toBe("Injectable");
-    expect(getMedicationTypeLabel("liquid")).toBe("Liquid");
-    expect(getMedicationTypeLabel("patch")).toBe("Patch");
+  it("returns correct labels for all remaining categories", () => {
+    expect(getMedicationCategoryLabel("consent_review")).toBe("Consent Review");
+    expect(getMedicationCategoryLabel("medication_error")).toBe("Medication Error");
+    expect(getMedicationCategoryLabel("medication_review")).toBe("Medication Review");
+    expect(getMedicationCategoryLabel("competency_assessment")).toBe("Competency Assessment");
   });
 });
 
-describe("getAdministrationOutcomeLabel", () => {
+describe("getMedicationOutcomeLabel", () => {
   it("returns correct label for administered_correctly", () => {
-    expect(getAdministrationOutcomeLabel("administered_correctly")).toBe("Administered Correctly");
+    expect(getMedicationOutcomeLabel("administered_correctly")).toBe("Administered Correctly");
   });
 
-  it("returns correct label for refused_by_child", () => {
-    expect(getAdministrationOutcomeLabel("refused_by_child")).toBe("Refused by Child");
+  it("returns correct label for dose_refused", () => {
+    expect(getMedicationOutcomeLabel("dose_refused")).toBe("Dose Refused");
   });
 
-  it("returns correct label for all outcomes", () => {
-    expect(getAdministrationOutcomeLabel("missed_dose")).toBe("Missed Dose");
-    expect(getAdministrationOutcomeLabel("error_occurred")).toBe("Error Occurred");
-    expect(getAdministrationOutcomeLabel("not_recorded")).toBe("Not Recorded");
+  it("returns correct labels for all remaining outcomes", () => {
+    expect(getMedicationOutcomeLabel("error_identified")).toBe("Error Identified");
+    expect(getMedicationOutcomeLabel("review_completed")).toBe("Review Completed");
+    expect(getMedicationOutcomeLabel("not_applicable")).toBe("Not Applicable");
   });
 });
 
@@ -186,76 +197,131 @@ describe("getRatingLabel", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateMedicationQuality", () => {
-  it("returns zeros and concern for empty administrations", () => {
+  it("returns zeros for empty records (PRESENCE pattern)", () => {
     const result = evaluateMedicationQuality([]);
-    expect(result.totalAdministrations).toBe(0);
-    expect(result.correctAdminRate).toBe(0);
-    expect(result.consentRate).toBe(0);
-    expect(result.witnessedRate).toBe(0);
-    expect(result.sideEffectsRate).toBe(0);
-    expect(result.score).toBe(0);
-    expect(result.concerns.length).toBeGreaterThan(0);
+    expect(result.totalRecords).toBe(0);
+    expect(result.administeredCorrectlyRate).toBe(0);
+    expect(result.signedByTwoStaffRate).toBe(0);
+    expect(result.consentOnFileRate).toBe(0);
+    expect(result.errorReportedRate).toBe(0);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
   });
 
-  it("scores max 25 for perfect administrations", () => {
-    const admins = Array.from({ length: 5 }, (_, i) =>
-      makeAdministration({ id: `a-${i}` }),
+  it("scores max 25 for perfect records", () => {
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}` }),
     );
-    const result = evaluateMedicationQuality(admins);
-    expect(result.correctAdminRate).toBe(100);
-    expect(result.consentRate).toBe(100);
-    expect(result.witnessedRate).toBe(100);
-    expect(result.sideEffectsRate).toBe(100);
-    expect(result.score).toBe(25);
+    const result = evaluateMedicationQuality(recs);
+    expect(result.administeredCorrectlyRate).toBe(100);
+    expect(result.signedByTwoStaffRate).toBe(100);
+    expect(result.consentOnFileRate).toBe(100);
+    expect(result.errorReportedRate).toBe(100);
+    expect(result.overallScore).toBe(25);
   });
 
-  it("calculates correct admin rate accurately", () => {
-    const admins = [
-      makeAdministration({ id: "a1" }),
-      makeAdministration({ id: "a2", outcome: "refused_by_child" }),
-      makeAdministration({ id: "a3", outcome: "missed_dose" }),
-      makeAdministration({ id: "a4" }),
+  it("calculates administeredCorrectlyRate accurately", () => {
+    const recs = [
+      makeRecord({ id: "r1", administeredCorrectly: true }),
+      makeRecord({ id: "r2", administeredCorrectly: false }),
+      makeRecord({ id: "r3", administeredCorrectly: true }),
+      makeRecord({ id: "r4", administeredCorrectly: false }),
     ];
-    const result = evaluateMedicationQuality(admins);
-    expect(result.correctAdminRate).toBe(50);
+    const result = evaluateMedicationQuality(recs);
+    expect(result.administeredCorrectlyRate).toBe(50);
   });
 
-  it("generates strength for high correct admin rate", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}` }),
-    );
-    const result = evaluateMedicationQuality(admins);
-    expect(result.strengths.some((s) => s.includes("administration accuracy"))).toBe(true);
+  it("calculates signedByTwoStaffRate accurately", () => {
+    const recs = [
+      makeRecord({ id: "r1", signedByTwoStaff: true }),
+      makeRecord({ id: "r2", signedByTwoStaff: false }),
+      makeRecord({ id: "r3", signedByTwoStaff: false }),
+    ];
+    const result = evaluateMedicationQuality(recs);
+    expect(result.signedByTwoStaffRate).toBe(33);
   });
 
-  it("generates concern for low consent rate", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}`, consentObtained: false }),
-    );
-    const result = evaluateMedicationQuality(admins);
-    expect(result.concerns.some((c) => c.includes("Consent rate"))).toBe(true);
+  it("applies correct weight of 7 to administeredCorrectlyRate", () => {
+    // 1 record with only administeredCorrectly = true, everything else false
+    const recs = [
+      makeRecord({
+        administeredCorrectly: true,
+        signedByTwoStaff: false,
+        consentOnFile: false,
+        errorReported: false,
+      }),
+    ];
+    const result = evaluateMedicationQuality(recs);
+    expect(result.overallScore).toBe(7);
   });
 
-  it("generates concern for low witnessed rate", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}`, twoStaffWitnessed: false }),
-    );
-    const result = evaluateMedicationQuality(admins);
-    expect(result.concerns.some((c) => c.includes("Witnessed rate"))).toBe(true);
+  it("applies correct weight of 6 to signedByTwoStaffRate", () => {
+    const recs = [
+      makeRecord({
+        administeredCorrectly: false,
+        signedByTwoStaff: true,
+        consentOnFile: false,
+        errorReported: false,
+      }),
+    ];
+    const result = evaluateMedicationQuality(recs);
+    expect(result.overallScore).toBe(6);
   });
 
-  it("generates concern for low side effects monitoring", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}`, sideEffectsMonitored: false }),
-    );
-    const result = evaluateMedicationQuality(admins);
-    expect(result.concerns.some((c) => c.includes("Side-effects monitoring"))).toBe(true);
+  it("applies correct weight of 6 to consentOnFileRate", () => {
+    const recs = [
+      makeRecord({
+        administeredCorrectly: false,
+        signedByTwoStaff: false,
+        consentOnFile: true,
+        errorReported: false,
+      }),
+    ];
+    const result = evaluateMedicationQuality(recs);
+    expect(result.overallScore).toBe(6);
+  });
+
+  it("applies correct weight of 6 to errorReportedRate", () => {
+    const recs = [
+      makeRecord({
+        administeredCorrectly: false,
+        signedByTwoStaff: false,
+        consentOnFile: false,
+        errorReported: true,
+      }),
+    ];
+    const result = evaluateMedicationQuality(recs);
+    expect(result.overallScore).toBe(6);
   });
 
   it("clamps score to 0-25 range", () => {
-    const result = evaluateMedicationQuality([makeAdministration()]);
-    expect(result.score).toBeGreaterThanOrEqual(0);
-    expect(result.score).toBeLessThanOrEqual(25);
+    const result = evaluateMedicationQuality([makeRecord()]);
+    expect(result.overallScore).toBeGreaterThanOrEqual(0);
+    expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+
+  it("assigns rating based on score * 4", () => {
+    const recs = [makeRecord()];
+    const result = evaluateMedicationQuality(recs);
+    // 25 * 4 = 100 >= 80 => outstanding
+    expect(result.rating).toBe("outstanding");
+  });
+
+  it("handles mixed data correctly", () => {
+    const recs = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({
+        id: `r-${i}`,
+        administeredCorrectly: i < 7,
+        signedByTwoStaff: i < 5,
+        consentOnFile: i < 8,
+        errorReported: i < 6,
+      }),
+    );
+    const result = evaluateMedicationQuality(recs);
+    expect(result.administeredCorrectlyRate).toBe(70);
+    expect(result.signedByTwoStaffRate).toBe(50);
+    expect(result.consentOnFileRate).toBe(80);
+    expect(result.errorReportedRate).toBe(60);
   });
 });
 
@@ -264,76 +330,105 @@ describe("evaluateMedicationQuality", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateMedicationCompliance", () => {
-  it("returns zeros and concern for empty administrations", () => {
+  it("returns zeros for empty records (PRESENCE pattern)", () => {
     const result = evaluateMedicationCompliance([]);
-    expect(result.totalAdministrations).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.storageRate).toBe(0);
-    expect(result.marChartRate).toBe(0);
-    expect(result.typeDiversityRatio).toBe(0);
-    expect(result.score).toBe(0);
-    expect(result.concerns.length).toBeGreaterThan(0);
+    expect(result.documentationRate).toBe(0);
+    expect(result.timelyRecordingRate).toBe(0);
+    expect(result.signedByTwoStaffRate).toBe(0);
+    expect(result.categoryDiversityRatio).toBe(0);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
   });
 
-  it("scores high for perfect compliance", () => {
-    const admins = Array.from({ length: 5 }, (_, i) =>
-      makeAdministration({ id: `a-${i}` }),
-    );
-    const result = evaluateMedicationCompliance(admins);
-    expect(result.documentedRate).toBe(100);
-    expect(result.storageRate).toBe(100);
-    expect(result.marChartRate).toBe(100);
-    // Only 1 type so diversity is low, score won't be exactly 25
-    expect(result.score).toBeGreaterThan(19);
-  });
-
-  it("calculates documented rate accurately", () => {
-    const admins = [
-      makeAdministration({ id: "a1", documentedCorrectly: true }),
-      makeAdministration({ id: "a2", documentedCorrectly: false }),
+  it("scores high for perfect compliance with all 8 categories", () => {
+    const cats: MedicationCategory[] = [
+      "regular_administration", "prn_administration", "controlled_drug",
+      "medication_storage", "consent_review", "medication_error",
+      "medication_review", "competency_assessment",
     ];
-    const result = evaluateMedicationCompliance(admins);
-    expect(result.documentedRate).toBe(50);
+    const recs = cats.map((cat, i) =>
+      makeRecord({ id: `r-${i}`, category: cat }),
+    );
+    const result = evaluateMedicationCompliance(recs);
+    expect(result.documentationRate).toBe(100);
+    expect(result.timelyRecordingRate).toBe(100);
+    expect(result.signedByTwoStaffRate).toBe(100);
+    expect(result.categoryDiversityRatio).toBe(100);
+    expect(result.overallScore).toBe(25);
   });
 
-  it("calculates type diversity correctly", () => {
-    const types: MedicationType[] = ["regular_oral", "controlled_drug", "inhaler", "topical"];
-    const admins = types.map((t, i) =>
-      makeAdministration({ id: `a-${i}`, medicationType: t }),
-    );
-    const result = evaluateMedicationCompliance(admins);
-    expect(result.uniqueTypes).toBe(4);
-    expect(result.typeDiversityRatio).toBe(0.5);
+  it("calculates documentation rate accurately", () => {
+    const recs = [
+      makeRecord({ id: "r1", documentationComplete: true }),
+      makeRecord({ id: "r2", documentationComplete: false }),
+    ];
+    const result = evaluateMedicationCompliance(recs);
+    expect(result.documentationRate).toBe(50);
   });
 
-  it("generates strength for high documentation rate", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}` }),
-    );
-    const result = evaluateMedicationCompliance(admins);
-    expect(result.strengths.some((s) => s.includes("documentation"))).toBe(true);
+  it("calculates timely recording rate accurately", () => {
+    const recs = [
+      makeRecord({ id: "r1", timelyRecording: true }),
+      makeRecord({ id: "r2", timelyRecording: false }),
+      makeRecord({ id: "r3", timelyRecording: true }),
+    ];
+    const result = evaluateMedicationCompliance(recs);
+    expect(result.timelyRecordingRate).toBe(67);
   });
 
-  it("generates concern for low storage compliance", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}`, storageCompliant: false }),
-    );
-    const result = evaluateMedicationCompliance(admins);
-    expect(result.concerns.some((c) => c.includes("Storage compliance"))).toBe(true);
+  it("calculates category diversity ratio correctly", () => {
+    const recs = [
+      makeRecord({ id: "r1", category: "regular_administration" }),
+      makeRecord({ id: "r2", category: "controlled_drug" }),
+      makeRecord({ id: "r3", category: "consent_review" }),
+      makeRecord({ id: "r4", category: "medication_review" }),
+    ];
+    const result = evaluateMedicationCompliance(recs);
+    // 4/8 = 50
+    expect(result.categoryDiversityRatio).toBe(50);
   });
 
-  it("generates concern for low MAR chart rate", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}`, marChartUpdated: false }),
-    );
-    const result = evaluateMedicationCompliance(admins);
-    expect(result.concerns.some((c) => c.includes("MAR chart"))).toBe(true);
+  it("applies correct weight of 8 to documentation rate", () => {
+    const recs = [
+      makeRecord({
+        documentationComplete: true,
+        timelyRecording: false,
+        signedByTwoStaff: false,
+        category: "regular_administration", // 1/8 categories -> 13%
+      }),
+    ];
+    const result = evaluateMedicationCompliance(recs);
+    // 8 + 0 + 0 + (13/100)*5 = 8 + 0.65 = 8.65 -> round = 9
+    expect(result.overallScore).toBe(9);
+  });
+
+  it("applies correct weight of 7 to timely recording rate", () => {
+    const recs = [
+      makeRecord({
+        documentationComplete: false,
+        timelyRecording: true,
+        signedByTwoStaff: false,
+        category: "regular_administration",
+      }),
+    ];
+    const result = evaluateMedicationCompliance(recs);
+    // 0 + 7 + 0 + (13/100)*5 = 7 + 0.65 = 7.65 -> round = 8
+    expect(result.overallScore).toBe(8);
   });
 
   it("clamps score to 0-25 range", () => {
-    const result = evaluateMedicationCompliance([makeAdministration()]);
-    expect(result.score).toBeGreaterThanOrEqual(0);
-    expect(result.score).toBeLessThanOrEqual(25);
+    const result = evaluateMedicationCompliance([makeRecord()]);
+    expect(result.overallScore).toBeGreaterThanOrEqual(0);
+    expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+
+  it("handles single category properly (low diversity)", () => {
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, category: "regular_administration" }),
+    );
+    const result = evaluateMedicationCompliance(recs);
+    // 1/8 = 12.5 -> rounds to 13
+    expect(result.categoryDiversityRatio).toBe(13);
   });
 });
 
@@ -342,76 +437,163 @@ describe("evaluateMedicationCompliance", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateMedicationPolicy", () => {
-  it("returns 0 and URGENT concern for null policy", () => {
+  it("returns all false and score 0 for null policy", () => {
     const result = evaluateMedicationPolicy(null);
-    expect(result.score).toBe(0);
-    expect(result.concerns.some((c) => c.includes("URGENT"))).toBe(true);
-    expect(result.medicationManagementPolicy).toBe(false);
-    expect(result.controlledDrugsProcedure).toBe(false);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.medicationPolicy).toBe(false);
+    expect(result.controlledDrugPolicy).toBe(false);
+    expect(result.administrationProcedure).toBe(false);
+    expect(result.consentFramework).toBe(false);
+    expect(result.errorReportingPolicy).toBe(false);
+    expect(result.storagePolicy).toBe(false);
+    expect(result.reviewSchedulePolicy).toBe(false);
   });
 
   it("scores 25 for fully complete policy", () => {
     const result = evaluateMedicationPolicy(makePolicy());
-    expect(result.score).toBe(25);
-    expect(result.strengths.some((s) => s.includes("7/7"))).toBe(true);
+    expect(result.overallScore).toBe(25);
   });
 
   it("scores 0 for all-false policy", () => {
     const result = evaluateMedicationPolicy(makePolicy({
-      medicationManagementPolicy: false,
-      controlledDrugsProcedure: false,
-      administrationProtocol: false,
-      storageAndDisposalPolicy: false,
-      errorReportingProcess: false,
+      medicationPolicy: false,
+      controlledDrugPolicy: false,
+      administrationProcedure: false,
       consentFramework: false,
-      regularReview: false,
+      errorReportingPolicy: false,
+      storagePolicy: false,
+      reviewSchedulePolicy: false,
     }));
-    expect(result.score).toBe(0);
-    expect(result.concerns.length).toBe(7);
+    expect(result.overallScore).toBe(0);
   });
 
-  it("applies correct weights — 4 for management policy", () => {
+  it("applies correct weight of 4 for medicationPolicy", () => {
     const result = evaluateMedicationPolicy(makePolicy({
-      medicationManagementPolicy: true,
-      controlledDrugsProcedure: false,
-      administrationProtocol: false,
-      storageAndDisposalPolicy: false,
-      errorReportingProcess: false,
+      medicationPolicy: true,
+      controlledDrugPolicy: false,
+      administrationProcedure: false,
       consentFramework: false,
-      regularReview: false,
+      errorReportingPolicy: false,
+      storagePolicy: false,
+      reviewSchedulePolicy: false,
     }));
-    expect(result.score).toBe(4);
+    expect(result.overallScore).toBe(4);
   });
 
-  it("applies correct weights — 3 for consent framework", () => {
+  it("applies correct weight of 4 for controlledDrugPolicy", () => {
     const result = evaluateMedicationPolicy(makePolicy({
-      medicationManagementPolicy: false,
-      controlledDrugsProcedure: false,
-      administrationProtocol: false,
-      storageAndDisposalPolicy: false,
-      errorReportingProcess: false,
+      medicationPolicy: false,
+      controlledDrugPolicy: true,
+      administrationProcedure: false,
+      consentFramework: false,
+      errorReportingPolicy: false,
+      storagePolicy: false,
+      reviewSchedulePolicy: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("applies correct weight of 4 for administrationProcedure", () => {
+    const result = evaluateMedicationPolicy(makePolicy({
+      medicationPolicy: false,
+      controlledDrugPolicy: false,
+      administrationProcedure: true,
+      consentFramework: false,
+      errorReportingPolicy: false,
+      storagePolicy: false,
+      reviewSchedulePolicy: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("applies correct weight of 4 for consentFramework", () => {
+    const result = evaluateMedicationPolicy(makePolicy({
+      medicationPolicy: false,
+      controlledDrugPolicy: false,
+      administrationProcedure: false,
       consentFramework: true,
-      regularReview: false,
+      errorReportingPolicy: false,
+      storagePolicy: false,
+      reviewSchedulePolicy: false,
     }));
-    expect(result.score).toBe(3);
+    expect(result.overallScore).toBe(4);
   });
 
-  it("generates concern for missing controlled drugs procedure", () => {
-    const result = evaluateMedicationPolicy(makePolicy({ controlledDrugsProcedure: false }));
-    expect(result.concerns.some((c) => c.includes("controlled drugs procedure"))).toBe(true);
-  });
-
-  it("generates concern for missing error reporting", () => {
-    const result = evaluateMedicationPolicy(makePolicy({ errorReportingProcess: false }));
-    expect(result.concerns.some((c) => c.includes("error reporting"))).toBe(true);
-  });
-
-  it("shows good coverage strength for 5+ policies", () => {
+  it("applies correct weight of 3 for errorReportingPolicy", () => {
     const result = evaluateMedicationPolicy(makePolicy({
+      medicationPolicy: false,
+      controlledDrugPolicy: false,
+      administrationProcedure: false,
       consentFramework: false,
-      regularReview: false,
+      errorReportingPolicy: true,
+      storagePolicy: false,
+      reviewSchedulePolicy: false,
     }));
-    expect(result.strengths.some((s) => s.includes("5/7"))).toBe(true);
+    expect(result.overallScore).toBe(3);
+  });
+
+  it("applies correct weight of 3 for storagePolicy", () => {
+    const result = evaluateMedicationPolicy(makePolicy({
+      medicationPolicy: false,
+      controlledDrugPolicy: false,
+      administrationProcedure: false,
+      consentFramework: false,
+      errorReportingPolicy: false,
+      storagePolicy: true,
+      reviewSchedulePolicy: false,
+    }));
+    expect(result.overallScore).toBe(3);
+  });
+
+  it("applies correct weight of 3 for reviewSchedulePolicy", () => {
+    const result = evaluateMedicationPolicy(makePolicy({
+      medicationPolicy: false,
+      controlledDrugPolicy: false,
+      administrationProcedure: false,
+      consentFramework: false,
+      errorReportingPolicy: false,
+      storagePolicy: false,
+      reviewSchedulePolicy: true,
+    }));
+    expect(result.overallScore).toBe(3);
+  });
+
+  it("sums first 4 at 4 points correctly = 16", () => {
+    const result = evaluateMedicationPolicy(makePolicy({
+      medicationPolicy: true,
+      controlledDrugPolicy: true,
+      administrationProcedure: true,
+      consentFramework: true,
+      errorReportingPolicy: false,
+      storagePolicy: false,
+      reviewSchedulePolicy: false,
+    }));
+    expect(result.overallScore).toBe(16);
+  });
+
+  it("sums last 3 at 3 points correctly = 9", () => {
+    const result = evaluateMedicationPolicy(makePolicy({
+      medicationPolicy: false,
+      controlledDrugPolicy: false,
+      administrationProcedure: false,
+      consentFramework: false,
+      errorReportingPolicy: true,
+      storagePolicy: true,
+      reviewSchedulePolicy: true,
+    }));
+    expect(result.overallScore).toBe(9);
+  });
+
+  it("reflects policy booleans in result", () => {
+    const result = evaluateMedicationPolicy(makePolicy({
+      medicationPolicy: true,
+      controlledDrugPolicy: false,
+      storagePolicy: true,
+    }));
+    expect(result.medicationPolicy).toBe(true);
+    expect(result.controlledDrugPolicy).toBe(false);
+    expect(result.storagePolicy).toBe(true);
   });
 });
 
@@ -420,90 +602,155 @@ describe("evaluateMedicationPolicy", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateStaffMedicationReadiness", () => {
-  it("returns zeros and URGENT concern for empty training", () => {
+  it("returns zeros for empty staff array", () => {
     const result = evaluateStaffMedicationReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.score).toBe(0);
-    expect(result.concerns.some((c) => c.includes("URGENT"))).toBe(true);
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.medicationAdministrationRate).toBe(0);
+    expect(result.controlledDrugHandlingRate).toBe(0);
+    expect(result.errorReportingRate).toBe(0);
+    expect(result.consentProcessRate).toBe(0);
+    expect(result.storageChecksRate).toBe(0);
+    expect(result.medicationReviewRate).toBe(0);
   });
 
   it("scores 25 for fully trained staff", () => {
-    const training = Array.from({ length: 4 }, (_, i) =>
-      makeTraining({ id: `tr-${i}`, staffId: `staff-${i}`, staffName: `Staff ${i}` }),
+    const staff = Array.from({ length: 4 }, (_, i) =>
+      makeTraining({ staffId: `staff-${i}` }),
     );
-    const result = evaluateStaffMedicationReadiness(training);
-    expect(result.score).toBe(25);
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.overallScore).toBe(25);
   });
 
   it("calculates rates accurately for mixed training", () => {
-    const training = [
-      makeTraining({ id: "tr-1", staffId: "s1", staffName: "Staff 1" }),
-      makeTraining({ id: "tr-2", staffId: "s2", staffName: "Staff 2", medicationAdministration: false, controlledDrugsHandling: false }),
+    const staff = [
+      makeTraining({ staffId: "s1" }),
+      makeTraining({ staffId: "s2", medicationAdministration: false, controlledDrugHandling: false }),
     ];
-    const result = evaluateStaffMedicationReadiness(training);
+    const result = evaluateStaffMedicationReadiness(staff);
     expect(result.medicationAdministrationRate).toBe(50);
-    expect(result.controlledDrugsHandlingRate).toBe(50);
-    expect(result.errorRecognitionRate).toBe(100);
+    expect(result.controlledDrugHandlingRate).toBe(50);
+    expect(result.errorReportingRate).toBe(100);
   });
 
-  it("applies correct weights — 6 for medication administration", () => {
-    const training = [
+  it("applies correct weight of 6 for medicationAdministration", () => {
+    const staff = [
       makeTraining({
         medicationAdministration: true,
-        controlledDrugsHandling: false,
-        errorRecognition: false,
-        sideEffectsAwareness: false,
-        storageRequirements: false,
-        consentAndCapacity: false,
+        controlledDrugHandling: false,
+        errorReporting: false,
+        consentProcess: false,
+        storageChecks: false,
+        medicationReview: false,
       }),
     ];
-    const result = evaluateStaffMedicationReadiness(training);
-    expect(result.score).toBe(6);
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.overallScore).toBe(6);
   });
 
-  it("applies correct weights — 2 for consent and capacity", () => {
-    const training = [
+  it("applies correct weight of 5 for controlledDrugHandling", () => {
+    const staff = [
       makeTraining({
         medicationAdministration: false,
-        controlledDrugsHandling: false,
-        errorRecognition: false,
-        sideEffectsAwareness: false,
-        storageRequirements: false,
-        consentAndCapacity: true,
+        controlledDrugHandling: true,
+        errorReporting: false,
+        consentProcess: false,
+        storageChecks: false,
+        medicationReview: false,
       }),
     ];
-    const result = evaluateStaffMedicationReadiness(training);
-    expect(result.score).toBe(2);
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.overallScore).toBe(5);
   });
 
-  it("generates strengths for high rates", () => {
-    const training = Array.from({ length: 5 }, (_, i) =>
-      makeTraining({ id: `tr-${i}`, staffId: `staff-${i}`, staffName: `Staff ${i}` }),
-    );
-    const result = evaluateStaffMedicationReadiness(training);
-    expect(result.strengths.length).toBeGreaterThan(0);
-  });
-
-  it("generates concerns for low rates", () => {
-    const training = [
+  it("applies correct weight of 5 for errorReporting", () => {
+    const staff = [
       makeTraining({
         medicationAdministration: false,
-        controlledDrugsHandling: false,
-        errorRecognition: false,
-        sideEffectsAwareness: false,
-        storageRequirements: false,
-        consentAndCapacity: false,
+        controlledDrugHandling: false,
+        errorReporting: true,
+        consentProcess: false,
+        storageChecks: false,
+        medicationReview: false,
       }),
     ];
-    const result = evaluateStaffMedicationReadiness(training);
-    expect(result.concerns.length).toBeGreaterThan(0);
-    expect(result.concerns.some((c) => c.includes("Medication administration training"))).toBe(true);
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.overallScore).toBe(5);
+  });
+
+  it("applies correct weight of 4 for consentProcess", () => {
+    const staff = [
+      makeTraining({
+        medicationAdministration: false,
+        controlledDrugHandling: false,
+        errorReporting: false,
+        consentProcess: true,
+        storageChecks: false,
+        medicationReview: false,
+      }),
+    ];
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("applies correct weight of 3 for storageChecks", () => {
+    const staff = [
+      makeTraining({
+        medicationAdministration: false,
+        controlledDrugHandling: false,
+        errorReporting: false,
+        consentProcess: false,
+        storageChecks: true,
+        medicationReview: false,
+      }),
+    ];
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.overallScore).toBe(3);
+  });
+
+  it("applies correct weight of 2 for medicationReview", () => {
+    const staff = [
+      makeTraining({
+        medicationAdministration: false,
+        controlledDrugHandling: false,
+        errorReporting: false,
+        consentProcess: false,
+        storageChecks: false,
+        medicationReview: true,
+      }),
+    ];
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.overallScore).toBe(2);
   });
 
   it("clamps score to 0-25 range", () => {
     const result = evaluateStaffMedicationReadiness([makeTraining()]);
-    expect(result.score).toBeGreaterThanOrEqual(0);
-    expect(result.score).toBeLessThanOrEqual(25);
+    expect(result.overallScore).toBeGreaterThanOrEqual(0);
+    expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+
+  it("counts total staff correctly", () => {
+    const staff = Array.from({ length: 3 }, (_, i) =>
+      makeTraining({ staffId: `s-${i}` }),
+    );
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.totalStaff).toBe(3);
+  });
+
+  it("handles all skills false = score 0", () => {
+    const staff = [
+      makeTraining({
+        medicationAdministration: false,
+        controlledDrugHandling: false,
+        errorReporting: false,
+        consentProcess: false,
+        storageChecks: false,
+        medicationReview: false,
+      }),
+    ];
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.overallScore).toBe(0);
   });
 });
 
@@ -512,121 +759,192 @@ describe("evaluateStaffMedicationReadiness", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("buildChildMedicationProfiles", () => {
-  it("returns empty array for no administrations", () => {
+  it("returns empty array for no records", () => {
     expect(buildChildMedicationProfiles([])).toEqual([]);
   });
 
-  it("groups administrations by child", () => {
-    const admins = [
-      makeAdministration({ id: "a1", childId: "child-alex", childName: "Alex" }),
-      makeAdministration({ id: "a2", childId: "child-jordan", childName: "Jordan" }),
-      makeAdministration({ id: "a3", childId: "child-alex", childName: "Alex" }),
+  it("groups records by child", () => {
+    const recs = [
+      makeRecord({ id: "r1", childId: "child-alex", childName: "Alex" }),
+      makeRecord({ id: "r2", childId: "child-jordan", childName: "Jordan" }),
+      makeRecord({ id: "r3", childId: "child-alex", childName: "Alex" }),
     ];
-    const profiles = buildChildMedicationProfiles(admins);
+    const profiles = buildChildMedicationProfiles(recs);
     expect(profiles).toHaveLength(2);
     const alex = profiles.find((p) => p.childId === "child-alex");
-    expect(alex?.totalAdministrations).toBe(2);
+    expect(alex?.totalRecords).toBe(2);
   });
 
-  it("calculates correct admin rate per child", () => {
-    const admins = [
-      makeAdministration({ id: "a1", childId: "child-alex", outcome: "administered_correctly" }),
-      makeAdministration({ id: "a2", childId: "child-alex", outcome: "missed_dose" }),
+  it("calculates administeredCorrectlyRate per child", () => {
+    const recs = [
+      makeRecord({ id: "r1", childId: "child-alex", administeredCorrectly: true }),
+      makeRecord({ id: "r2", childId: "child-alex", administeredCorrectly: false }),
     ];
-    const profiles = buildChildMedicationProfiles(admins);
-    expect(profiles[0].correctAdminRate).toBe(50);
+    const profiles = buildChildMedicationProfiles(recs);
+    expect(profiles[0].administeredCorrectlyRate).toBe(50);
   });
 
-  it("scores max 10 for child with many perfect administrations", () => {
-    const admins = Array.from({ length: 12 }, (_, i) =>
-      makeAdministration({
-        id: `a-${i}`,
+  it("calculates consentOnFileRate per child", () => {
+    const recs = [
+      makeRecord({ id: "r1", childId: "child-alex", consentOnFile: true }),
+      makeRecord({ id: "r2", childId: "child-alex", consentOnFile: false }),
+      makeRecord({ id: "r3", childId: "child-alex", consentOnFile: true }),
+    ];
+    const profiles = buildChildMedicationProfiles(recs);
+    expect(profiles[0].consentOnFileRate).toBe(67);
+  });
+
+  it("gives frequency score of 2 for >= 10 records", () => {
+    const recs = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, childId: "child-alex", childName: "Alex" }),
+    );
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=2, rate1=3 (100%), rate2=3 (100%), diversity=0 (1 cat) = 8
+    expect(profiles[0].overallScore).toBe(8);
+  });
+
+  it("gives frequency score of 1 for >= 5 records", () => {
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, childId: "child-alex", childName: "Alex" }),
+    );
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=1, rate1=3, rate2=3, diversity=0 = 7
+    expect(profiles[0].overallScore).toBe(7);
+  });
+
+  it("gives frequency score of 0 for < 5 records", () => {
+    const recs = Array.from({ length: 3 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, childId: "child-alex", childName: "Alex" }),
+    );
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=0, rate1=3, rate2=3, diversity=0 = 6
+    expect(profiles[0].overallScore).toBe(6);
+  });
+
+  it("gives diversity bonus of 2 for >= 4 unique categories", () => {
+    const cats: MedicationCategory[] = [
+      "regular_administration", "controlled_drug", "consent_review", "medication_review",
+    ];
+    const recs = cats.map((cat, i) =>
+      makeRecord({ id: `r-${i}`, childId: "child-alex", childName: "Alex", category: cat }),
+    );
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=0, rate1=3, rate2=3, diversity=2 = 8
+    expect(profiles[0].overallScore).toBe(8);
+  });
+
+  it("gives diversity bonus of 1 for >= 2 unique categories", () => {
+    const recs = [
+      makeRecord({ id: "r1", childId: "child-alex", category: "regular_administration" }),
+      makeRecord({ id: "r2", childId: "child-alex", category: "controlled_drug" }),
+    ];
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=0, rate1=3, rate2=3, diversity=1 = 7
+    expect(profiles[0].overallScore).toBe(7);
+  });
+
+  it("gives diversity bonus of 0 for 1 category", () => {
+    const recs = [
+      makeRecord({ id: "r1", childId: "child-alex", category: "regular_administration" }),
+    ];
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=0, rate1=3, rate2=3, diversity=0 = 6
+    expect(profiles[0].overallScore).toBe(6);
+  });
+
+  it("scores max 10 for child with many perfect records across categories", () => {
+    const cats: MedicationCategory[] = [
+      "regular_administration", "prn_administration", "controlled_drug",
+      "medication_storage", "consent_review", "medication_error",
+    ];
+    const recs = Array.from({ length: 12 }, (_, i) =>
+      makeRecord({
+        id: `r-${i}`,
         childId: "child-alex",
         childName: "Alex",
-        medicationType: (["regular_oral", "controlled_drug", "inhaler", "topical"] as MedicationType[])[i % 4],
+        category: cats[i % 6],
       }),
     );
-    const profiles = buildChildMedicationProfiles(admins);
-    expect(profiles[0].medicationScore).toBe(10);
-  });
-
-  it("gives frequency score of 2 for >= 10 administrations", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}`, childId: "child-alex", childName: "Alex" }),
-    );
-    const profiles = buildChildMedicationProfiles(admins);
-    // freq=2, rate1=3 (100%), rate2=3 (100%), diversity=0 (1 type) = 8
-    expect(profiles[0].medicationScore).toBe(8);
-  });
-
-  it("gives frequency score of 1 for >= 5 administrations", () => {
-    const admins = Array.from({ length: 5 }, (_, i) =>
-      makeAdministration({ id: `a-${i}`, childId: "child-alex", childName: "Alex" }),
-    );
-    const profiles = buildChildMedicationProfiles(admins);
-    // freq=1, rate1=3, rate2=3, diversity=0 = 7
-    expect(profiles[0].medicationScore).toBe(7);
-  });
-
-  it("gives frequency score of 0 for < 5 administrations", () => {
-    const admins = Array.from({ length: 3 }, (_, i) =>
-      makeAdministration({ id: `a-${i}`, childId: "child-alex", childName: "Alex" }),
-    );
-    const profiles = buildChildMedicationProfiles(admins);
-    // freq=0, rate1=3, rate2=3, diversity=0 = 6
-    expect(profiles[0].medicationScore).toBe(6);
-  });
-
-  it("gives diversity bonus of 2 for >= 4 unique types", () => {
-    const types: MedicationType[] = ["regular_oral", "controlled_drug", "inhaler", "topical"];
-    const admins = types.map((t, i) =>
-      makeAdministration({ id: `a-${i}`, childId: "child-alex", childName: "Alex", medicationType: t }),
-    );
-    const profiles = buildChildMedicationProfiles(admins);
-    // freq=0, rate1=3, rate2=3, diversity=2 = 8
-    expect(profiles[0].medicationScore).toBe(8);
-  });
-
-  it("gives diversity bonus of 1 for >= 2 unique types", () => {
-    const admins = [
-      makeAdministration({ id: "a1", childId: "child-alex", medicationType: "regular_oral" }),
-      makeAdministration({ id: "a2", childId: "child-alex", medicationType: "inhaler" }),
-    ];
-    const profiles = buildChildMedicationProfiles(admins);
-    // freq=0, rate1=3, rate2=3, diversity=1 = 7
-    expect(profiles[0].medicationScore).toBe(7);
+    const profiles = buildChildMedicationProfiles(recs);
+    expect(profiles[0].overallScore).toBe(10);
   });
 
   it("caps score at 10", () => {
-    // Create a scenario that would exceed 10 without cap
-    const admins = Array.from({ length: 15 }, (_, i) =>
-      makeAdministration({
-        id: `a-${i}`,
+    const cats: MedicationCategory[] = [
+      "regular_administration", "prn_administration", "controlled_drug",
+      "medication_storage", "consent_review",
+    ];
+    const recs = Array.from({ length: 15 }, (_, i) =>
+      makeRecord({
+        id: `r-${i}`,
         childId: "child-alex",
         childName: "Alex",
-        medicationType: (["regular_oral", "controlled_drug", "inhaler", "topical", "injectable"] as MedicationType[])[i % 5],
+        category: cats[i % 5],
       }),
     );
-    const profiles = buildChildMedicationProfiles(admins);
-    expect(profiles[0].medicationScore).toBeLessThanOrEqual(10);
+    const profiles = buildChildMedicationProfiles(recs);
+    expect(profiles[0].overallScore).toBeLessThanOrEqual(10);
+  });
+
+  it("returns categoriesCovered list", () => {
+    const recs = [
+      makeRecord({ id: "r1", childId: "child-alex", category: "regular_administration" }),
+      makeRecord({ id: "r2", childId: "child-alex", category: "controlled_drug" }),
+      makeRecord({ id: "r3", childId: "child-alex", category: "regular_administration" }),
+    ];
+    const profiles = buildChildMedicationProfiles(recs);
+    expect(profiles[0].categoriesCovered).toContain("regular_administration");
+    expect(profiles[0].categoriesCovered).toContain("controlled_drug");
+    expect(profiles[0].categoriesCovered).toHaveLength(2);
+  });
+
+  it("handles rate1 thresholds: >=60 gives 2", () => {
+    // 2 out of 3 = 67%
+    const recs = [
+      makeRecord({ id: "r1", childId: "child-alex", administeredCorrectly: true }),
+      makeRecord({ id: "r2", childId: "child-alex", administeredCorrectly: true }),
+      makeRecord({ id: "r3", childId: "child-alex", administeredCorrectly: false }),
+    ];
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=0, rate1=2 (67%), rate2=3 (100%), diversity=0 = 5
+    expect(profiles[0].overallScore).toBe(5);
+  });
+
+  it("handles rate1 thresholds: >=40 gives 1", () => {
+    // 2 out of 5 = 40%
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, childId: "child-alex", administeredCorrectly: i < 2 }),
+    );
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=1, rate1=1 (40%), rate2=3 (100%), diversity=0 = 5
+    expect(profiles[0].overallScore).toBe(5);
+  });
+
+  it("handles rate1 thresholds: <40 gives 0", () => {
+    // 1 out of 5 = 20%
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}`, childId: "child-alex", administeredCorrectly: i < 1 }),
+    );
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=1, rate1=0 (20%), rate2=3 (100%), diversity=0 = 4
+    expect(profiles[0].overallScore).toBe(4);
   });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Master Generator: generateMedicationIntelligence
+// Orchestrator: generateMedicationIntelligence
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("generateMedicationIntelligence", () => {
   it("returns full structure with all fields", () => {
-    const admins = [makeAdministration()];
+    const recs = [makeRecord()];
     const policy = makePolicy();
-    const training = [makeTraining()];
-    const result = generateMedicationIntelligence(admins, policy, training, "oak-house", "2026-01-01", "2026-12-31");
+    const staff = [makeTraining()];
+    const result = generateMedicationIntelligence(recs, policy, staff, "oak-house", "2026-01-01", "2026-12-31");
 
     expect(result.homeId).toBe("oak-house");
     expect(result.periodStart).toBe("2026-01-01");
     expect(result.periodEnd).toBe("2026-12-31");
-    expect(result.assessedAt).toBeDefined();
     expect(result.overallScore).toBeGreaterThanOrEqual(0);
     expect(result.rating).toBeDefined();
     expect(result.medicationQuality).toBeDefined();
@@ -641,43 +959,52 @@ describe("generateMedicationIntelligence", () => {
   });
 
   it("caps overall score at 100", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}` }),
+    const cats: MedicationCategory[] = [
+      "regular_administration", "prn_administration", "controlled_drug",
+      "medication_storage", "consent_review", "medication_error",
+      "medication_review", "competency_assessment",
+    ];
+    const recs = cats.map((cat, i) =>
+      makeRecord({ id: `r-${i}`, category: cat }),
     );
     const policy = makePolicy();
-    const training = Array.from({ length: 4 }, (_, i) =>
-      makeTraining({ id: `tr-${i}`, staffId: `s-${i}`, staffName: `Staff ${i}` }),
+    const staff = Array.from({ length: 4 }, (_, i) =>
+      makeTraining({ staffId: `s-${i}` }),
     );
-    const result = generateMedicationIntelligence(admins, policy, training, "oak-house", "2026-01-01", "2026-12-31");
+    const result = generateMedicationIntelligence(recs, policy, staff, "oak-house", "2026-01-01", "2026-12-31");
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
   it("sums all four evaluator scores", () => {
-    const admins = Array.from({ length: 5 }, (_, i) =>
-      makeAdministration({ id: `a-${i}` }),
+    const recs = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r-${i}` }),
     );
     const policy = makePolicy();
-    const training = [makeTraining()];
-    const result = generateMedicationIntelligence(admins, policy, training, "oak-house", "2026-01-01", "2026-12-31");
+    const staff = [makeTraining()];
+    const result = generateMedicationIntelligence(recs, policy, staff, "oak-house", "2026-01-01", "2026-12-31");
 
-    const expectedSum = Math.round(
-      result.medicationQuality.score +
-      result.medicationCompliance.score +
-      result.medicationPolicy.score +
-      result.staffReadiness.score,
-    );
+    const expectedSum =
+      result.medicationQuality.overallScore +
+      result.medicationCompliance.overallScore +
+      result.medicationPolicy.overallScore +
+      result.staffReadiness.overallScore;
     expect(result.overallScore).toBe(Math.min(100, expectedSum));
   });
 
   it("assigns outstanding rating for high scores", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}` }),
+    const cats: MedicationCategory[] = [
+      "regular_administration", "prn_administration", "controlled_drug",
+      "medication_storage", "consent_review", "medication_error",
+      "medication_review", "competency_assessment",
+    ];
+    const recs = cats.map((cat, i) =>
+      makeRecord({ id: `r-${i}`, category: cat }),
     );
     const policy = makePolicy();
-    const training = Array.from({ length: 4 }, (_, i) =>
-      makeTraining({ id: `tr-${i}`, staffId: `s-${i}`, staffName: `Staff ${i}` }),
+    const staff = Array.from({ length: 4 }, (_, i) =>
+      makeTraining({ staffId: `s-${i}` }),
     );
-    const result = generateMedicationIntelligence(admins, policy, training, "oak-house", "2026-01-01", "2026-12-31");
+    const result = generateMedicationIntelligence(recs, policy, staff, "oak-house", "2026-01-01", "2026-12-31");
     expect(result.rating).toBe("outstanding");
   });
 
@@ -687,37 +1014,44 @@ describe("generateMedicationIntelligence", () => {
     expect(result.overallScore).toBe(0);
   });
 
-  it("filters administrations to period", () => {
-    const admins = [
-      makeAdministration({ id: "a1", administrationDate: "2026-03-15" }),
-      makeAdministration({ id: "a2", administrationDate: "2025-06-15" }), // outside period
-    ];
-    const result = generateMedicationIntelligence(admins, null, [], "oak-house", "2026-01-01", "2026-12-31");
-    expect(result.medicationQuality.totalAdministrations).toBe(1);
-  });
-
   it("includes 7 regulatory links", () => {
     const result = generateMedicationIntelligence([], null, [], "oak-house", "2026-01-01", "2026-12-31");
     expect(result.regulatoryLinks).toHaveLength(7);
-    expect(result.regulatoryLinks.some((l) => l.includes("CHR 2015"))).toBe(true);
-    expect(result.regulatoryLinks.some((l) => l.includes("Misuse of Drugs Act"))).toBe(true);
-    expect(result.regulatoryLinks.some((l) => l.includes("CQC"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("CHR 2015 Reg 23"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("Misuse of Drugs Act 1971"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("CQC Guidance"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("NICE CG76"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("SCCIF"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("HSCA 2008 Reg 12"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("NMS 3"))).toBe(true);
   });
 
-  it("generates strength when evaluator score >= 20", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}` }),
+  it("generates strengths for high rates (>=80%)", () => {
+    const recs = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `r-${i}` }),
     );
-    const result = generateMedicationIntelligence(admins, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
-    // With all perfect data, quality and policy should be >= 20
-    expect(result.strengths.some((s) => s.includes("score"))).toBe(true);
+    const result = generateMedicationIntelligence(recs, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
+    expect(result.strengths.some((s) => s.includes("administered correctly"))).toBe(true);
+    expect(result.strengths.some((s) => s.includes("Dual-signature"))).toBe(true);
+    expect(result.strengths.some((s) => s.includes("Consent records"))).toBe(true);
+    expect(result.strengths.some((s) => s.includes("Error reporting"))).toBe(true);
   });
 
-  it("generates area for improvement when evaluator score < 15", () => {
-    // policy = null gives score 0, staff = [] gives score 0
-    const admins = [makeAdministration()];
-    const result = generateMedicationIntelligence(admins, null, [], "oak-house", "2026-01-01", "2026-12-31");
-    expect(result.areasForImprovement.some((a) => a.includes("needs improvement"))).toBe(true);
+  it("generates areas for improvement for low rates (<60%)", () => {
+    const recs = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({
+        id: `r-${i}`,
+        administeredCorrectly: false,
+        signedByTwoStaff: false,
+        consentOnFile: false,
+        errorReported: false,
+        documentationComplete: false,
+        timelyRecording: false,
+      }),
+    );
+    const result = generateMedicationIntelligence(recs, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
+    expect(result.areasForImprovement.some((a) => a.includes("accuracy"))).toBe(true);
+    expect(result.areasForImprovement.some((a) => a.includes("Dual-signature"))).toBe(true);
   });
 
   it("generates URGENT action when policy score is 0", () => {
@@ -725,70 +1059,166 @@ describe("generateMedicationIntelligence", () => {
     expect(result.actions.some((a) => a.startsWith("URGENT") && a.includes("policy"))).toBe(true);
   });
 
-  it("generates URGENT action when staff count is 0", () => {
+  it("generates URGENT action when staff readiness score is 0", () => {
     const result = generateMedicationIntelligence([], makePolicy(), [], "oak-house", "2026-01-01", "2026-12-31");
-    expect(result.actions.some((a) => a.startsWith("URGENT") && a.includes("staff"))).toBe(true);
+    expect(result.actions.some((a) => a.startsWith("URGENT") && a.includes("training"))).toBe(true);
   });
 
-  it("generates URGENT action when errors occurred", () => {
-    const admins = [
-      makeAdministration({ id: "a1", outcome: "error_occurred" }),
-      makeAdministration({ id: "a2", outcome: "error_occurred" }),
+  it("builds child profiles from records", () => {
+    const recs = [
+      makeRecord({ id: "r1", childId: "child-alex", childName: "Alex" }),
+      makeRecord({ id: "r2", childId: "child-jordan", childName: "Jordan" }),
     ];
-    const result = generateMedicationIntelligence(admins, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
-    expect(result.actions.some((a) => a.startsWith("URGENT") && a.includes("error"))).toBe(true);
-  });
-
-  it("generates conditional actions when rates < 50", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({
-        id: `a-${i}`,
-        outcome: "missed_dose",
-        consentObtained: false,
-        documentedCorrectly: false,
-        storageCompliant: false,
-      }),
-    );
-    const result = generateMedicationIntelligence(admins, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
-    expect(result.actions.some((a) => a.includes("Administration accuracy"))).toBe(true);
-    expect(result.actions.some((a) => a.includes("Consent rate"))).toBe(true);
-  });
-
-  it("generates no-action message when everything is perfect", () => {
-    const admins = Array.from({ length: 10 }, (_, i) =>
-      makeAdministration({ id: `a-${i}` }),
-    );
-    const result = generateMedicationIntelligence(admins, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
-    expect(result.actions.some((a) => a.includes("No immediate actions"))).toBe(true);
-  });
-
-  it("builds child profiles from period data", () => {
-    const admins = [
-      makeAdministration({ id: "a1", childId: "child-alex", childName: "Alex", administrationDate: "2026-03-15" }),
-      makeAdministration({ id: "a2", childId: "child-jordan", childName: "Jordan", administrationDate: "2026-04-10" }),
-    ];
-    const result = generateMedicationIntelligence(admins, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
+    const result = generateMedicationIntelligence(recs, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
     expect(result.childProfiles).toHaveLength(2);
   });
 
-  it("generates areas for improvement includes overall rating when < 40", () => {
-    const result = generateMedicationIntelligence([], null, [], "oak-house", "2026-01-01", "2026-12-31");
-    expect(result.areasForImprovement.some((a) => a.includes("Inadequate"))).toBe(true);
+  it("generates no urgent actions for perfect data", () => {
+    const cats: MedicationCategory[] = [
+      "regular_administration", "prn_administration", "controlled_drug",
+      "medication_storage", "consent_review", "medication_error",
+      "medication_review", "competency_assessment",
+    ];
+    const recs = cats.map((cat, i) =>
+      makeRecord({ id: `r-${i}`, category: cat }),
+    );
+    const result = generateMedicationIntelligence(recs, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
+    expect(result.actions.every((a) => !a.startsWith("URGENT"))).toBe(true);
   });
 
-  it("generates overall strength message for good score", () => {
-    // Create a scenario with a score between 60-79
-    const admins = Array.from({ length: 5 }, (_, i) =>
-      makeAdministration({ id: `a-${i}`, twoStaffWitnessed: false, sideEffectsMonitored: false }),
+  it("generates conditional actions for low rates (<50%)", () => {
+    const recs = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({
+        id: `r-${i}`,
+        administeredCorrectly: false,
+        signedByTwoStaff: false,
+        documentationComplete: false,
+        timelyRecording: false,
+        consentOnFile: false,
+      }),
     );
-    const policy = makePolicy({ consentFramework: false, regularReview: false, errorReportingProcess: false });
-    const training = [
-      makeTraining({ controlledDrugsHandling: false, sideEffectsAwareness: false, storageRequirements: false, consentAndCapacity: false }),
+    const staff = [
+      makeTraining({ errorReporting: false }),
     ];
-    const result = generateMedicationIntelligence(admins, policy, training, "oak-house", "2026-01-01", "2026-12-31");
-    // The score should be in the good range
-    if (result.overallScore >= 60 && result.overallScore < 80) {
-      expect(result.strengths.some((s) => s.includes("Good"))).toBe(true);
-    }
+    const result = generateMedicationIntelligence(recs, makePolicy(), staff, "oak-house", "2026-01-01", "2026-12-31");
+    expect(result.actions.some((a) => a.includes("administration procedures"))).toBe(true);
+    expect(result.actions.some((a) => a.includes("dual-signature"))).toBe(true);
+    expect(result.actions.some((a) => a.includes("documentation"))).toBe(true);
+  });
+
+  it("handles empty records with full policy and staff", () => {
+    const result = generateMedicationIntelligence([], makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-12-31");
+    expect(result.medicationQuality.overallScore).toBe(0);
+    expect(result.medicationCompliance.overallScore).toBe(0);
+    expect(result.medicationPolicy.overallScore).toBe(25);
+    expect(result.staffReadiness.overallScore).toBe(25);
+    expect(result.overallScore).toBe(50);
+  });
+
+  it("sets homeId and period correctly", () => {
+    const result = generateMedicationIntelligence([], null, [], "oak-house", "2026-01-01", "2026-06-30");
+    expect(result.homeId).toBe("oak-house");
+    expect(result.periodStart).toBe("2026-01-01");
+    expect(result.periodEnd).toBe("2026-06-30");
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Edge Cases
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("Edge Cases", () => {
+  it("single record with all false booleans scores 0 for quality", () => {
+    const recs = [
+      makeRecord({
+        administeredCorrectly: false,
+        signedByTwoStaff: false,
+        consentOnFile: false,
+        errorReported: false,
+      }),
+    ];
+    const result = evaluateMedicationQuality(recs);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("single staff with all false skills scores 0", () => {
+    const staff = [
+      makeTraining({
+        medicationAdministration: false,
+        controlledDrugHandling: false,
+        errorReporting: false,
+        consentProcess: false,
+        storageChecks: false,
+        medicationReview: false,
+      }),
+    ];
+    const result = evaluateStaffMedicationReadiness(staff);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("pct handles large numbers correctly", () => {
+    expect(pct(999, 1000)).toBe(100);
+    expect(pct(1, 1000)).toBe(0);
+    expect(pct(5, 1000)).toBe(1);
+  });
+
+  it("child profile with all false booleans and single record", () => {
+    const recs = [
+      makeRecord({
+        childId: "child-alex",
+        administeredCorrectly: false,
+        consentOnFile: false,
+        category: "regular_administration",
+      }),
+    ];
+    const profiles = buildChildMedicationProfiles(recs);
+    // freq=0, rate1=0 (<40), rate2=0 (<40), diversity=0 (1 cat) = 0
+    expect(profiles[0].overallScore).toBe(0);
+  });
+
+  it("orchestrator with completely zero data scores 0 overall", () => {
+    const result = generateMedicationIntelligence([], null, [], "oak-house", "2026-01-01", "2026-12-31");
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.childProfiles).toEqual([]);
+  });
+
+  it("policy null returns all 7 booleans as false", () => {
+    const result = evaluateMedicationPolicy(null);
+    expect(result.medicationPolicy).toBe(false);
+    expect(result.controlledDrugPolicy).toBe(false);
+    expect(result.administrationProcedure).toBe(false);
+    expect(result.consentFramework).toBe(false);
+    expect(result.errorReportingPolicy).toBe(false);
+    expect(result.storagePolicy).toBe(false);
+    expect(result.reviewSchedulePolicy).toBe(false);
+  });
+
+  it("compliance with all 8 categories gives 100% diversity", () => {
+    const cats: MedicationCategory[] = [
+      "regular_administration", "prn_administration", "controlled_drug",
+      "medication_storage", "consent_review", "medication_error",
+      "medication_review", "competency_assessment",
+    ];
+    const recs = cats.map((cat, i) => makeRecord({ id: `r-${i}`, category: cat }));
+    const result = evaluateMedicationCompliance(recs);
+    expect(result.categoryDiversityRatio).toBe(100);
+  });
+
+  it("quality scoring uses Math.round correctly for fractional results", () => {
+    // 3 out of 4 = 75% for each rate
+    const recs = Array.from({ length: 4 }, (_, i) =>
+      makeRecord({
+        id: `r-${i}`,
+        administeredCorrectly: i < 3,
+        signedByTwoStaff: i < 3,
+        consentOnFile: i < 3,
+        errorReported: i < 3,
+      }),
+    );
+    const result = evaluateMedicationQuality(recs);
+    expect(result.administeredCorrectlyRate).toBe(75);
+    // 0.75*7 + 0.75*6 + 0.75*6 + 0.75*6 = 5.25+4.5+4.5+4.5 = 18.75 -> round = 19
+    expect(result.overallScore).toBe(19);
   });
 });

@@ -5,8 +5,8 @@
 export {
   pct,
   getRating,
-  getMedicationTypeLabel,
-  getAdministrationOutcomeLabel,
+  getMedicationCategoryLabel,
+  getMedicationOutcomeLabel,
   getRatingLabel,
   evaluateMedicationQuality,
   evaluateMedicationCompliance,
@@ -17,10 +17,10 @@ export {
 } from "./medication-engine";
 
 export type {
-  MedicationType,
-  AdministrationOutcome,
+  MedicationCategory,
+  MedicationOutcome,
   Rating,
-  MedicationAdministration,
+  MedicationRecord,
   MedicationPolicy,
   StaffMedicationTraining,
   MedicationQualityResult,

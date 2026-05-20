@@ -2,6 +2,7 @@
 // Cornerstone Missing From Care — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ── Legacy episode engine (unchanged) ──
 export {
   evaluateEpisodeCompliance,
   analyzePattern,
@@ -22,3 +23,33 @@ export type {
   PatternAnalysis,
   HomeMetrics,
 } from "./episode-engine";
+
+// ── New 4-evaluator intelligence engine ──
+export {
+  evaluateQuality,
+  evaluateCompliance,
+  evaluatePolicy,
+  evaluateStaffReadiness,
+  buildChildProfiles,
+  generateMissingFromCareIntelligence,
+  getRating,
+  getRatingLabel,
+  getMissingFromCareCategoryLabel,
+  getMissingFromCareOutcomeLabel,
+  pct,
+} from "./missing-from-care-engine";
+
+export type {
+  MissingFromCareCategory,
+  MissingFromCareOutcome,
+  Rating,
+  MissingFromCareRecord,
+  MissingFromCarePolicy,
+  StaffMissingFromCareTraining,
+  QualityResult,
+  ComplianceResult,
+  PolicyResult,
+  StaffReadinessResult,
+  ChildProfile,
+  MissingFromCareIntelligence,
+} from "./missing-from-care-engine";

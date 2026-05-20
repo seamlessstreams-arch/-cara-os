@@ -1,7 +1,7 @@
 "use client";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// MEDICATION DASHBOARD WIDGET
+// MEDICATION DASHBOARD WIDGET v2.0
 //
 // Displays the 4-layer medication intelligence:
 // - Overall score with rating
@@ -9,6 +9,8 @@
 // - Child medication profiles
 // - Strengths, areas for improvement, and actions
 // - Regulatory references
+//
+// NO lucide-react, NO Card/Badge, NO cn(). ONLY React + Tailwind CSS.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
@@ -16,67 +18,60 @@ import { useState, useEffect } from "react";
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
 interface MedicationQualityData {
-  totalAdministrations: number;
-  correctAdminRate: number;
-  consentRate: number;
-  witnessedRate: number;
-  sideEffectsRate: number;
-  score: number;
-  strengths: string[];
-  concerns: string[];
+  overallScore: number;
+  rating: string;
+  totalRecords: number;
+  administeredCorrectlyRate: number;
+  signedByTwoStaffRate: number;
+  consentOnFileRate: number;
+  errorReportedRate: number;
 }
 
 interface MedicationComplianceData {
-  totalAdministrations: number;
-  documentedRate: number;
-  storageRate: number;
-  marChartRate: number;
-  typeDiversityRatio: number;
-  uniqueTypes: number;
-  score: number;
-  strengths: string[];
-  concerns: string[];
+  overallScore: number;
+  rating: string;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  signedByTwoStaffRate: number;
+  categoryDiversityRatio: number;
 }
 
 interface MedicationPolicyData {
-  medicationManagementPolicy: boolean;
-  controlledDrugsProcedure: boolean;
-  administrationProtocol: boolean;
-  storageAndDisposalPolicy: boolean;
-  errorReportingProcess: boolean;
+  overallScore: number;
+  rating: string;
+  medicationPolicy: boolean;
+  controlledDrugPolicy: boolean;
+  administrationProcedure: boolean;
   consentFramework: boolean;
-  regularReview: boolean;
-  score: number;
-  strengths: string[];
-  concerns: string[];
+  errorReportingPolicy: boolean;
+  storagePolicy: boolean;
+  reviewSchedulePolicy: boolean;
 }
 
 interface StaffReadinessData {
+  overallScore: number;
+  rating: string;
   totalStaff: number;
   medicationAdministrationRate: number;
-  controlledDrugsHandlingRate: number;
-  errorRecognitionRate: number;
-  sideEffectsAwarenessRate: number;
-  storageRequirementsRate: number;
-  consentAndCapacityRate: number;
-  score: number;
-  strengths: string[];
-  concerns: string[];
+  controlledDrugHandlingRate: number;
+  errorReportingRate: number;
+  consentProcessRate: number;
+  storageChecksRate: number;
+  medicationReviewRate: number;
 }
 
 interface ChildMedicationProfileData {
   childId: string;
   childName: string;
-  totalAdministrations: number;
-  correctAdminRate: number;
-  consentRate: number;
-  uniqueMedTypes: number;
-  medicationScore: number;
+  totalRecords: number;
+  administeredCorrectlyRate: number;
+  consentOnFileRate: number;
+  categoriesCovered: string[];
+  overallScore: number;
 }
 
 interface MedicationData {
   homeId: string;
-  assessedAt: string;
   periodStart: string;
   periodEnd: string;
   overallScore: number;
@@ -95,9 +90,9 @@ interface MedicationData {
 // ── Inline Components ─────────────────────────────────────────────────────
 
 function ScoreBar({ label, score, max }: { label: string; score: number; max: number }) {
-  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+  const pctVal = max > 0 ? Math.round((score / max) * 100) : 0;
   const colour =
-    pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-amber-500" : pct >= 40 ? "bg-orange-500" : "bg-red-500";
+    pctVal >= 80 ? "bg-green-500" : pctVal >= 60 ? "bg-amber-500" : pctVal >= 40 ? "bg-orange-500" : "bg-red-500";
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
@@ -105,7 +100,7 @@ function ScoreBar({ label, score, max }: { label: string; score: number; max: nu
         <span className="text-slate-500">{score}/{max}</span>
       </div>
       <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${colour}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full rounded-full transition-all ${colour}`} style={{ width: `${pctVal}%` }} />
       </div>
     </div>
   );
@@ -171,9 +166,9 @@ function formatRating(rating: string): string {
 }
 
 function getScoreColour(score: number, max: number): string {
-  const pct = max > 0 ? (score / max) * 100 : 0;
-  if (pct >= 80) return "text-green-600";
-  if (pct >= 60) return "text-amber-600";
+  const pctVal = max > 0 ? (score / max) * 100 : 0;
+  if (pctVal >= 80) return "text-green-600";
+  if (pctVal >= 60) return "text-amber-600";
   return "text-red-600";
 }
 
@@ -255,49 +250,49 @@ export default function MedicationDashboardWidget() {
 
       {/* 4 Evaluator Score Bars */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ScoreBar label="Medication Quality" score={data.medicationQuality.score} max={25} />
-        <ScoreBar label="Medication Compliance" score={data.medicationCompliance.score} max={25} />
-        <ScoreBar label="Medication Policy" score={data.medicationPolicy.score} max={25} />
-        <ScoreBar label="Staff Readiness" score={data.staffReadiness.score} max={25} />
+        <ScoreBar label="Medication Quality" score={data.medicationQuality.overallScore} max={25} />
+        <ScoreBar label="Medication Compliance" score={data.medicationCompliance.overallScore} max={25} />
+        <ScoreBar label="Medication Policy" score={data.medicationPolicy.overallScore} max={25} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} max={25} />
       </div>
 
       {/* Medication Quality Section */}
       <Section title="Medication Quality" defaultOpen>
-        <Stat label="Total Administrations" value={data.medicationQuality.totalAdministrations} />
-        <Stat label="Correct Administration Rate" value={data.medicationQuality.correctAdminRate + "%"} />
-        <Stat label="Consent Rate" value={data.medicationQuality.consentRate + "%"} />
-        <Stat label="Dual-Witness Rate" value={data.medicationQuality.witnessedRate + "%"} />
-        <Stat label="Side-Effects Monitoring Rate" value={data.medicationQuality.sideEffectsRate + "%"} />
+        <Stat label="Total Records" value={data.medicationQuality.totalRecords} />
+        <Stat label="Administered Correctly Rate" value={data.medicationQuality.administeredCorrectlyRate + "%"} />
+        <Stat label="Signed by Two Staff Rate" value={data.medicationQuality.signedByTwoStaffRate + "%"} />
+        <Stat label="Consent on File Rate" value={data.medicationQuality.consentOnFileRate + "%"} />
+        <Stat label="Error Reported Rate" value={data.medicationQuality.errorReportedRate + "%"} />
       </Section>
 
       {/* Medication Compliance Section */}
       <Section title="Medication Compliance">
-        <Stat label="Documentation Rate" value={data.medicationCompliance.documentedRate + "%"} />
-        <Stat label="Storage Compliance Rate" value={data.medicationCompliance.storageRate + "%"} />
-        <Stat label="MAR Chart Completion" value={data.medicationCompliance.marChartRate + "%"} />
-        <Stat label="Medication Type Diversity" value={data.medicationCompliance.uniqueTypes + "/8"} />
+        <Stat label="Documentation Rate" value={data.medicationCompliance.documentationRate + "%"} />
+        <Stat label="Timely Recording Rate" value={data.medicationCompliance.timelyRecordingRate + "%"} />
+        <Stat label="Signed by Two Staff Rate" value={data.medicationCompliance.signedByTwoStaffRate + "%"} />
+        <Stat label="Category Diversity" value={data.medicationCompliance.categoryDiversityRatio + "%"} />
       </Section>
 
       {/* Medication Policy Section */}
       <Section title="Medication Policy">
-        <Stat label="Medication Management Policy" value={data.medicationPolicy.medicationManagementPolicy ? "Yes" : "No"} />
-        <Stat label="Controlled Drugs Procedure" value={data.medicationPolicy.controlledDrugsProcedure ? "Yes" : "No"} />
-        <Stat label="Administration Protocol" value={data.medicationPolicy.administrationProtocol ? "Yes" : "No"} />
-        <Stat label="Storage & Disposal Policy" value={data.medicationPolicy.storageAndDisposalPolicy ? "Yes" : "No"} />
-        <Stat label="Error Reporting Process" value={data.medicationPolicy.errorReportingProcess ? "Yes" : "No"} />
+        <Stat label="Medication Policy" value={data.medicationPolicy.medicationPolicy ? "Yes" : "No"} />
+        <Stat label="Controlled Drug Policy" value={data.medicationPolicy.controlledDrugPolicy ? "Yes" : "No"} />
+        <Stat label="Administration Procedure" value={data.medicationPolicy.administrationProcedure ? "Yes" : "No"} />
         <Stat label="Consent Framework" value={data.medicationPolicy.consentFramework ? "Yes" : "No"} />
-        <Stat label="Regular Review" value={data.medicationPolicy.regularReview ? "Yes" : "No"} />
+        <Stat label="Error Reporting Policy" value={data.medicationPolicy.errorReportingPolicy ? "Yes" : "No"} />
+        <Stat label="Storage Policy" value={data.medicationPolicy.storagePolicy ? "Yes" : "No"} />
+        <Stat label="Review Schedule Policy" value={data.medicationPolicy.reviewSchedulePolicy ? "Yes" : "No"} />
       </Section>
 
       {/* Staff Readiness Section */}
       <Section title="Staff Readiness">
-        <Stat label="Total Staff Trained" value={data.staffReadiness.totalStaff} />
+        <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
         <Stat label="Medication Administration" value={data.staffReadiness.medicationAdministrationRate + "%"} />
-        <Stat label="Controlled Drugs Handling" value={data.staffReadiness.controlledDrugsHandlingRate + "%"} />
-        <Stat label="Error Recognition" value={data.staffReadiness.errorRecognitionRate + "%"} />
-        <Stat label="Side-Effects Awareness" value={data.staffReadiness.sideEffectsAwarenessRate + "%"} />
-        <Stat label="Storage Requirements" value={data.staffReadiness.storageRequirementsRate + "%"} />
-        <Stat label="Consent & Capacity" value={data.staffReadiness.consentAndCapacityRate + "%"} />
+        <Stat label="Controlled Drug Handling" value={data.staffReadiness.controlledDrugHandlingRate + "%"} />
+        <Stat label="Error Reporting" value={data.staffReadiness.errorReportingRate + "%"} />
+        <Stat label="Consent Process" value={data.staffReadiness.consentProcessRate + "%"} />
+        <Stat label="Storage Checks" value={data.staffReadiness.storageChecksRate + "%"} />
+        <Stat label="Medication Review" value={data.staffReadiness.medicationReviewRate + "%"} />
       </Section>
 
       {/* Child Medication Profiles */}
@@ -312,11 +307,11 @@ export default function MedicationDashboardWidget() {
                 <div>
                   <p className="text-sm font-medium text-slate-800">{child.childName}</p>
                   <p className="text-xs text-slate-500">
-                    {child.totalAdministrations} administrations, {child.uniqueMedTypes} types, {child.correctAdminRate}% correct, {child.consentRate}% consent
+                    {child.totalRecords} records, {child.categoriesCovered.length} categories, {child.administeredCorrectlyRate}% correct, {child.consentOnFileRate}% consent
                   </p>
                 </div>
-                <div className={`text-lg font-bold ${getScoreColour(child.medicationScore, 10)}`}>
-                  {child.medicationScore}/10
+                <div className={`text-lg font-bold ${getScoreColour(child.overallScore, 10)}`}>
+                  {child.overallScore}/10
                 </div>
               </div>
             ))}

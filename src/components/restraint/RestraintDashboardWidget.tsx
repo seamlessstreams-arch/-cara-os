@@ -3,12 +3,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // RESTRAINT DASHBOARD WIDGET
 //
-// Displays the 4-layer restraint intelligence:
+// Displays the 4-evaluator restraint intelligence:
 // - Overall score with rating
-// - Layer scores: restraint quality, compliance, policy, staff readiness
+// - Evaluator scores: quality, compliance, policy, staff readiness
 // - Child restraint profiles
 // - Strengths, areas for improvement, and actions
 // - Regulatory references
+//
+// Dependencies: React + Tailwind CSS only. No lucide-react, no Card/Badge, no cn().
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
@@ -16,66 +18,60 @@ import { useState, useEffect } from "react";
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
 interface RestraintQualityData {
-  totalIncidents: number;
-  deEscalationRate: number;
-  proportionateRate: number;
-  noInjuryRate: number;
-  childViewsRate: number;
-  score: number;
-  strengths: string[];
-  concerns: string[];
+  overallScore: number;
+  rating: string;
+  totalRecords: number;
+  deEscalationAttemptedRate: number;
+  debriefCompletedRate: number;
+  bodyMapRecordedRate: number;
+  parentNotifiedRate: number;
 }
 
 interface RestraintComplianceData {
-  totalIncidents: number;
-  bodyMapRate: number;
-  parentNotifiedRate: number;
-  ofstedNotifiedRate: number;
-  debriefRate: number;
-  score: number;
-  strengths: string[];
-  concerns: string[];
+  overallScore: number;
+  rating: string;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  debriefCompletedRate: number;
+  categoryDiversityRatio: number;
 }
 
 interface RestraintPolicyData {
-  restraintReductionStrategy: boolean;
-  approvedTechniquesOnly: boolean;
-  deEscalationFirstPolicy: boolean;
-  incidentReportingProtocol: boolean;
-  bodyMapProtocol: boolean;
+  overallScore: number;
+  rating: string;
+  restraintPolicy: boolean;
+  deEscalationPolicy: boolean;
+  postIncidentDebriefPolicy: boolean;
+  bodyMapPolicy: boolean;
   notificationProcedure: boolean;
-  regularReview: boolean;
-  score: number;
-  strengths: string[];
-  concerns: string[];
+  techniqueReviewPolicy: boolean;
+  reductionStrategyPolicy: boolean;
 }
 
 interface StaffReadinessData {
+  overallScore: number;
+  rating: string;
   totalStaff: number;
-  approvedTechniquesCertifiedRate: number;
+  approvedTechniqueTrainingRate: number;
   deEscalationSkillsRate: number;
-  proportionalityUnderstandingRate: number;
-  incidentReportingRate: number;
-  childRightsAwarenessRate: number;
-  postIncidentSupportRate: number;
-  score: number;
-  strengths: string[];
-  concerns: string[];
+  postIncidentDebriefRate: number;
+  bodyMapRecordingRate: number;
+  notificationProceduresRate: number;
+  reductionStrategyKnowledgeRate: number;
 }
 
-interface ChildRestraintProfileData {
+interface ChildProfileData {
   childId: string;
   childName: string;
-  totalIncidents: number;
-  deEscalationRate: number;
-  proportionateRate: number;
-  injuryCount: number;
-  restraintScore: number;
+  totalRecords: number;
+  deEscalationAttemptedRate: number;
+  debriefCompletedRate: number;
+  categoriesCovered: string[];
+  overallScore: number;
 }
 
 interface RestraintData {
   homeId: string;
-  assessedAt: string;
   periodStart: string;
   periodEnd: string;
   overallScore: number;
@@ -84,7 +80,7 @@ interface RestraintData {
   restraintCompliance: RestraintComplianceData;
   restraintPolicy: RestraintPolicyData;
   staffReadiness: StaffReadinessData;
-  childProfiles: ChildRestraintProfileData[];
+  childProfiles: ChildProfileData[];
   strengths: string[];
   areasForImprovement: string[];
   actions: string[];
@@ -254,49 +250,49 @@ export default function RestraintDashboardWidget() {
 
       {/* 4 Evaluator Score Bars */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ScoreBar label="Restraint Quality" score={data.restraintQuality.score} max={25} />
-        <ScoreBar label="Restraint Compliance" score={data.restraintCompliance.score} max={25} />
-        <ScoreBar label="Restraint Policy" score={data.restraintPolicy.score} max={25} />
-        <ScoreBar label="Staff Readiness" score={data.staffReadiness.score} max={25} />
+        <ScoreBar label="Restraint Quality" score={data.restraintQuality.overallScore} max={25} />
+        <ScoreBar label="Restraint Compliance" score={data.restraintCompliance.overallScore} max={25} />
+        <ScoreBar label="Restraint Policy" score={data.restraintPolicy.overallScore} max={25} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} max={25} />
       </div>
 
       {/* Restraint Quality Section */}
       <Section title="Restraint Quality" defaultOpen>
-        <Stat label="Total Incidents" value={data.restraintQuality.totalIncidents} />
-        <Stat label="De-escalation Rate" value={data.restraintQuality.deEscalationRate + "%"} />
-        <Stat label="Proportionate Rate" value={data.restraintQuality.proportionateRate + "%"} />
-        <Stat label="No Injury Rate" value={data.restraintQuality.noInjuryRate + "%"} />
-        <Stat label="Child Views Rate" value={data.restraintQuality.childViewsRate + "%"} />
+        <Stat label="Total Records" value={data.restraintQuality.totalRecords} />
+        <Stat label="De-escalation Attempted Rate" value={data.restraintQuality.deEscalationAttemptedRate + "%"} />
+        <Stat label="Debrief Completed Rate" value={data.restraintQuality.debriefCompletedRate + "%"} />
+        <Stat label="Body Map Recorded Rate" value={data.restraintQuality.bodyMapRecordedRate + "%"} />
+        <Stat label="Parent Notified Rate" value={data.restraintQuality.parentNotifiedRate + "%"} />
       </Section>
 
       {/* Restraint Compliance Section */}
       <Section title="Restraint Compliance">
-        <Stat label="Body Map Rate" value={data.restraintCompliance.bodyMapRate + "%"} />
-        <Stat label="Parent Notified Rate" value={data.restraintCompliance.parentNotifiedRate + "%"} />
-        <Stat label="Ofsted Notified Rate" value={data.restraintCompliance.ofstedNotifiedRate + "%"} />
-        <Stat label="Debrief Rate" value={data.restraintCompliance.debriefRate + "%"} />
+        <Stat label="Documentation Rate" value={data.restraintCompliance.documentationRate + "%"} />
+        <Stat label="Timely Recording Rate" value={data.restraintCompliance.timelyRecordingRate + "%"} />
+        <Stat label="Debrief Completed Rate" value={data.restraintCompliance.debriefCompletedRate + "%"} />
+        <Stat label="Category Diversity" value={data.restraintCompliance.categoryDiversityRatio + "%"} />
       </Section>
 
       {/* Restraint Policy Section */}
       <Section title="Restraint Policy">
-        <Stat label="Restraint Reduction Strategy" value={data.restraintPolicy.restraintReductionStrategy ? "Yes" : "No"} />
-        <Stat label="Approved Techniques Only" value={data.restraintPolicy.approvedTechniquesOnly ? "Yes" : "No"} />
-        <Stat label="De-escalation First Policy" value={data.restraintPolicy.deEscalationFirstPolicy ? "Yes" : "No"} />
-        <Stat label="Incident Reporting Protocol" value={data.restraintPolicy.incidentReportingProtocol ? "Yes" : "No"} />
-        <Stat label="Body Map Protocol" value={data.restraintPolicy.bodyMapProtocol ? "Yes" : "No"} />
+        <Stat label="Restraint Policy" value={data.restraintPolicy.restraintPolicy ? "Yes" : "No"} />
+        <Stat label="De-escalation Policy" value={data.restraintPolicy.deEscalationPolicy ? "Yes" : "No"} />
+        <Stat label="Post-Incident Debrief Policy" value={data.restraintPolicy.postIncidentDebriefPolicy ? "Yes" : "No"} />
+        <Stat label="Body Map Policy" value={data.restraintPolicy.bodyMapPolicy ? "Yes" : "No"} />
         <Stat label="Notification Procedure" value={data.restraintPolicy.notificationProcedure ? "Yes" : "No"} />
-        <Stat label="Regular Review" value={data.restraintPolicy.regularReview ? "Yes" : "No"} />
+        <Stat label="Technique Review Policy" value={data.restraintPolicy.techniqueReviewPolicy ? "Yes" : "No"} />
+        <Stat label="Reduction Strategy Policy" value={data.restraintPolicy.reductionStrategyPolicy ? "Yes" : "No"} />
       </Section>
 
       {/* Staff Readiness Section */}
       <Section title="Staff Readiness">
         <Stat label="Total Staff Trained" value={data.staffReadiness.totalStaff} />
-        <Stat label="Approved Techniques Certified" value={data.staffReadiness.approvedTechniquesCertifiedRate + "%"} />
+        <Stat label="Approved Technique Training" value={data.staffReadiness.approvedTechniqueTrainingRate + "%"} />
         <Stat label="De-escalation Skills" value={data.staffReadiness.deEscalationSkillsRate + "%"} />
-        <Stat label="Proportionality Understanding" value={data.staffReadiness.proportionalityUnderstandingRate + "%"} />
-        <Stat label="Incident Reporting" value={data.staffReadiness.incidentReportingRate + "%"} />
-        <Stat label="Child Rights Awareness" value={data.staffReadiness.childRightsAwarenessRate + "%"} />
-        <Stat label="Post-Incident Support" value={data.staffReadiness.postIncidentSupportRate + "%"} />
+        <Stat label="Post-Incident Debrief" value={data.staffReadiness.postIncidentDebriefRate + "%"} />
+        <Stat label="Body Map Recording" value={data.staffReadiness.bodyMapRecordingRate + "%"} />
+        <Stat label="Notification Procedures" value={data.staffReadiness.notificationProceduresRate + "%"} />
+        <Stat label="Reduction Strategy Knowledge" value={data.staffReadiness.reductionStrategyKnowledgeRate + "%"} />
       </Section>
 
       {/* Child Restraint Profiles */}
@@ -311,11 +307,11 @@ export default function RestraintDashboardWidget() {
                 <div>
                   <p className="text-sm font-medium text-slate-800">{child.childName}</p>
                   <p className="text-xs text-slate-500">
-                    {child.totalIncidents} incident{child.totalIncidents !== 1 ? "s" : ""}, {child.deEscalationRate}% de-escalation, {child.proportionateRate}% proportionate, {child.injuryCount} injur{child.injuryCount !== 1 ? "ies" : "y"}
+                    {child.totalRecords} record{child.totalRecords !== 1 ? "s" : ""}, {child.deEscalationAttemptedRate}% de-escalation, {child.debriefCompletedRate}% debrief, {child.categoriesCovered.length} categor{child.categoriesCovered.length !== 1 ? "ies" : "y"}
                   </p>
                 </div>
-                <div className={`text-lg font-bold ${getScoreColour(child.restraintScore, 10)}`}>
-                  {child.restraintScore}/10
+                <div className={`text-lg font-bold ${getScoreColour(child.overallScore, 10)}`}>
+                  {child.overallScore}/10
                 </div>
               </div>
             ))}

@@ -1,1 +1,1 @@
-export { MissingFromCareDashboardWidget } from "./MissingFromCareDashboardWidget";
+export { default as MissingFromCareDashboardWidget } from "./MissingFromCareDashboardWidget";

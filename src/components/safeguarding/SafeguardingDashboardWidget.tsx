@@ -1,211 +1,139 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// SafeguardingDashboardWidget — Live safeguarding overview for home dashboard
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
 import { useEffect, useState } from "react";
 
+interface ChildSafeguardingProfile { childId: string; childName: string; totalRecords: number; timelyResponseRate: number; childViewCapturedRate: number; categoriesCovered: string[]; overallScore: number; }
+
 interface SafeguardingData {
-  metrics: {
-    totalConcerns: number;
-    activeConcerns: number;
-    concernsThisMonth: number;
-    complianceRate: number;
-    overdueReviews: number;
-    childProtectionPlans: number;
-    referralsMade: number;
-    immediateProtectionActions: number;
-    byCategory: { category: string; count: number }[];
-    bySeverity: { severity: string; count: number }[];
-  };
-  activeConcerns: {
-    id: string;
-    childName: string;
-    category: string;
-    severity: string;
-    status: string;
-    raisedAt: string;
-  }[];
-  overdue: {
-    concernId: string;
-    childName: string;
-    category: string;
-    overdueBy: number;
-    type: string;
-  }[];
+  homeId: string; periodStart: string; periodEnd: string; overallScore: number; rating: string;
+  safeguardingQuality: { overallScore: number; totalRecords: number; timelyResponseRate: number; childViewCapturedRate: number; multiAgencyEngagedRate: number; riskAssessmentUpdatedRate: number; };
+  safeguardingCompliance: { overallScore: number; documentationRate: number; timelyRecordingRate: number; childViewCapturedRate: number; categoryDiversityRatio: number; };
+  safeguardingPolicy: { overallScore: number; safeguardingPolicy: boolean; whistleblowingPolicy: boolean; childProtectionProcedure: boolean; escortionPolicy: boolean; onlineSafetyPolicy: boolean; allegationsAgainstStaffPolicy: boolean; preventDutyPolicy: boolean; };
+  staffReadiness: { overallScore: number; totalStaff: number; safeguardingLevel3Rate: number; childProtectionAwarenessRate: number; preventDutyTrainingRate: number; onlineSafetyTrainingRate: number; concernRecordingSkillsRate: number; multiAgencyWorkingKnowledgeRate: number; };
+  childProfiles: ChildSafeguardingProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
 }
 
-interface Props {
-  homeId?: string;
+function ratingColour(r: string) {
+  if (r === "outstanding") return "text-green-700 bg-green-50 border-green-200";
+  if (r === "good") return "text-blue-700 bg-blue-50 border-blue-200";
+  if (r === "requires_improvement") return "text-amber-700 bg-amber-50 border-amber-200";
+  return "text-red-700 bg-red-50 border-red-200";
+}
+function ratingLabel(r: string) { return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()); }
+function boolBadge(v: boolean) { return v ? "text-green-700 bg-green-50 border-green-200" : "text-red-700 bg-red-50 border-red-200"; }
+
+function ScoreBar({ label, score, max = 25 }: { label: string; score: number; max?: number }) {
+  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+  const fill = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
+  return (<div className="mb-3"><div className="flex justify-between text-sm mb-1"><span className="font-medium text-gray-700">{label}</span><span className="text-gray-500">{score}/{max}</span></div><div className="h-2 rounded-full bg-gray-100 overflow-hidden"><div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} /></div></div>);
 }
 
-const SEVERITY_STYLES: Record<string, string> = {
-  low: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
-  medium: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  high: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
-  immediate: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-};
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (<div className="border border-gray-200 rounded-lg overflow-hidden mb-4"><button onClick={() => setOpen(!open)} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 flex justify-between items-center"><span className="font-semibold text-gray-800">{title}</span><span className="text-gray-400 text-lg">{open ? "−" : "+"}</span></button>{open && <div className="px-4 py-3">{children}</div>}</div>);
+}
 
-const CATEGORY_LABELS: Record<string, string> = {
-  physical_abuse: "Physical Abuse",
-  emotional_abuse: "Emotional Abuse",
-  sexual_abuse: "Sexual Abuse",
-  neglect: "Neglect",
-  child_sexual_exploitation: "CSE",
-  child_criminal_exploitation: "CCE",
-  radicalisation: "Radicalisation",
-  online_harm: "Online Harm",
-  peer_on_peer_abuse: "Peer-on-Peer",
-  self_harm: "Self-Harm",
-  trafficking: "Trafficking",
-  allegation_against_staff: "Staff Allegation",
-  disclosure: "Disclosure",
-  contextual_safeguarding: "Contextual",
-  missing_linked: "Missing (SG)",
-  other: "Other",
-};
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (<div className="bg-gray-50 rounded-lg px-3 py-2 text-center"><div className="text-lg font-bold text-gray-800">{value}</div><div className="text-xs text-gray-500">{label}</div></div>);
+}
 
-export function SafeguardingDashboardWidget({ homeId = "home-001" }: Props) {
+export default function SafeguardingDashboardWidget() {
   const [data, setData] = useState<SafeguardingData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [homeId]);
+    fetch("/api/safeguarding")
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((json) => setData(json.data))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/safeguarding?homeId=${homeId}`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="rounded-lg border border-border bg-card p-6 animate-pulse">
-        <div className="h-4 w-32 bg-muted rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-muted rounded" />
-          <div className="h-3 w-3/4 bg-muted rounded" />
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return (<div className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse"><div className="h-6 bg-gray-200 rounded w-3/4 mb-4" /><div className="h-4 bg-gray-100 rounded w-1/2 mb-3" /><div className="h-4 bg-gray-100 rounded w-2/3 mb-3" /><div className="h-4 bg-gray-100 rounded w-1/3" /></div>);
+  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">Safeguarding</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
   if (!data) return null;
 
-  const { metrics, activeConcerns, overdue } = data;
+  const rc = ratingColour(data.rating);
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">Safeguarding</h3>
-              <p className="text-xs text-muted-foreground">
-                {metrics.activeConcerns} active concern{metrics.activeConcerns !== 1 ? "s" : ""}
-              </p>
-            </div>
-          </div>
-          {overdue.length > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
-              {overdue.length} overdue
-            </span>
-          )}
+    <div className="rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+        <div><h2 className="text-lg font-bold text-gray-900">Safeguarding</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold ${rc}`}><span className="text-xl font-bold">{data.overallScore}</span><span>/100</span><span className="ml-1">{ratingLabel(data.rating)}</span></div>
+      </div>
+
+      <div className="mb-6">
+        <ScoreBar label="Safeguarding Quality" score={data.safeguardingQuality.overallScore} />
+        <ScoreBar label="Safeguarding Compliance" score={data.safeguardingCompliance.overallScore} />
+        <ScoreBar label="Policy & Procedures" score={data.safeguardingPolicy.overallScore} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} />
+      </div>
+
+      <Section title="Safeguarding Quality" defaultOpen>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Records" value={data.safeguardingQuality.totalRecords} />
+          <Stat label="Timely Response" value={`${data.safeguardingQuality.timelyResponseRate}%`} />
+          <Stat label="Child View Captured" value={`${data.safeguardingQuality.childViewCapturedRate}%`} />
+          <Stat label="Multi-Agency" value={`${data.safeguardingQuality.multiAgencyEngagedRate}%`} />
+          <Stat label="Risk Assessment" value={`${data.safeguardingQuality.riskAssessmentUpdatedRate}%`} />
         </div>
-      </div>
+      </Section>
 
-      {/* Key Stats */}
-      <div className="grid grid-cols-4 gap-px bg-border">
-        <Stat label="This Month" value={metrics.concernsThisMonth} />
-        <Stat label="Compliance" value={`${metrics.complianceRate}%`} highlight={metrics.complianceRate < 90} />
-        <Stat label="Referrals" value={metrics.referralsMade} />
-        <Stat label="CP Plans" value={metrics.childProtectionPlans} highlight={metrics.childProtectionPlans > 0} />
-      </div>
+      <Section title="Safeguarding Compliance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Documentation" value={`${data.safeguardingCompliance.documentationRate}%`} />
+          <Stat label="Timely Recording" value={`${data.safeguardingCompliance.timelyRecordingRate}%`} />
+          <Stat label="Child View" value={`${data.safeguardingCompliance.childViewCapturedRate}%`} />
+          <Stat label="Category Coverage" value={`${data.safeguardingCompliance.categoryDiversityRatio}%`} />
+        </div>
+      </Section>
 
-      {/* Active Concerns List */}
-      {activeConcerns.length > 0 && (
-        <div className="border-t border-border">
-          <div className="px-4 py-2 bg-muted/30">
-            <span className="text-xs font-medium text-muted-foreground">Active Concerns</span>
-          </div>
-          <div className="divide-y divide-border max-h-48 overflow-y-auto">
-            {activeConcerns.slice(0, 5).map((concern) => (
-              <div key={concern.id} className="px-4 py-2.5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={`inline-flex px-1.5 py-0.5 rounded text-xs font-medium ${SEVERITY_STYLES[concern.severity] ?? ""}`}>
-                    {concern.severity}
-                  </span>
-                  <div>
-                    <p className="text-xs font-medium">{concern.childName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {CATEGORY_LABELS[concern.category] ?? concern.category}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(concern.raisedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                </span>
+      <Section title="Policy & Procedures">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {([
+            ["Safeguarding Policy", data.safeguardingPolicy.safeguardingPolicy],
+            ["Whistleblowing", data.safeguardingPolicy.whistleblowingPolicy],
+            ["Child Protection", data.safeguardingPolicy.childProtectionProcedure],
+            ["E-Safety / Escort", data.safeguardingPolicy.escortionPolicy],
+            ["Online Safety", data.safeguardingPolicy.onlineSafetyPolicy],
+            ["Allegations Policy", data.safeguardingPolicy.allegationsAgainstStaffPolicy],
+            ["Prevent Duty", data.safeguardingPolicy.preventDutyPolicy],
+          ] as [string, boolean][]).map(([label, val]) => (
+            <div key={label} className={`rounded-lg px-3 py-2 text-center border ${boolBadge(val)}`}><div className="text-sm font-semibold">{val ? "Yes" : "No"}</div><div className="text-xs">{label}</div></div>
+          ))}
+        </div>
+      </Section>
+
+      <Section title="Staff Readiness">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
+          <Stat label="Level 3 Safeguarding" value={`${data.staffReadiness.safeguardingLevel3Rate}%`} />
+          <Stat label="Child Protection" value={`${data.staffReadiness.childProtectionAwarenessRate}%`} />
+          <Stat label="Prevent Duty" value={`${data.staffReadiness.preventDutyTrainingRate}%`} />
+          <Stat label="Online Safety" value={`${data.staffReadiness.onlineSafetyTrainingRate}%`} />
+          <Stat label="Concern Recording" value={`${data.staffReadiness.concernRecordingSkillsRate}%`} />
+          <Stat label="Multi-Agency" value={`${data.staffReadiness.multiAgencyWorkingKnowledgeRate}%`} />
+        </div>
+      </Section>
+
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Safeguarding Profiles">
+          <div className="space-y-3">
+            {data.childProfiles.map((cp) => (
+              <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
+                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Timely: {cp.timelyResponseRate}%</span><span>Child View: {cp.childViewCapturedRate}%</span></div>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Overdue Items */}
-      {overdue.length > 0 && (
-        <div className="border-t border-border bg-red-50/50 dark:bg-red-900/10">
-          <div className="px-4 py-2">
-            <span className="text-xs font-medium text-red-700 dark:text-red-400">Overdue Actions</span>
-          </div>
-          <div className="divide-y divide-red-100 dark:divide-red-800/30">
-            {overdue.slice(0, 3).map((item, i) => (
-              <div key={i} className="px-4 py-2 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-red-800 dark:text-red-300">{item.childName}</p>
-                  <p className="text-xs text-red-600 dark:text-red-400">
-                    {item.type === "review" ? "Review overdue" :
-                     item.type === "unacknowledged_referral" ? "Referral unacknowledged" :
-                     "No review scheduled"}
-                  </p>
-                </div>
-                <span className="text-xs font-medium text-red-700 dark:text-red-400">
-                  {item.overdueBy}d overdue
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="p-3 border-t border-border text-center">
-        <a href="/safeguarding" className="text-xs text-primary font-medium hover:underline">
-          View all safeguarding concerns →
-        </a>
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value, highlight }: { label: string; value: string | number; highlight?: boolean }) {
-  return (
-    <div className="bg-card p-3 text-center">
-      <p className={`text-lg font-bold ${highlight ? "text-red-600" : ""}`}>{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      {data.strengths.length > 0 && (<Section title="Strengths"><ul className="space-y-1">{data.strengths.map((s, i) => (<li key={i} className="text-sm text-green-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-green-500" />{s}</li>))}</ul></Section>)}
+      {data.areasForImprovement.length > 0 && (<Section title="Areas for Improvement"><ul className="space-y-1">{data.areasForImprovement.map((a, i) => (<li key={i} className="text-sm text-amber-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />{a}</li>))}</ul></Section>)}
+      {data.actions.length > 0 && (<Section title="Actions" defaultOpen><ul className="space-y-1">{data.actions.map((a, i) => (<li key={i} className={`text-sm flex gap-2 ${a.startsWith("URGENT") ? "text-red-800 font-semibold" : "text-gray-700"}`}><span className={`shrink-0 mt-1 h-1.5 w-1.5 rounded-full ${a.startsWith("URGENT") ? "bg-red-500" : "bg-gray-400"}`} />{a}</li>))}</ul></Section>)}
+      <Section title="Regulatory Links"><ul className="space-y-1">{data.regulatoryLinks.map((l, i) => (<li key={i} className="text-sm text-gray-600 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-gray-400" />{l}</li>))}</ul></Section>
     </div>
   );
 }
