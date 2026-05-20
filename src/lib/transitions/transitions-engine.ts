@@ -1,440 +1,438 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Transitions & Admissions Engine
+// Cornerstone Transitions Intelligence Engine
 //
-// Deterministic engine for managing placement transitions — admissions,
-// planned moves, emergency placements, and leaving care. Tracks matching
-// quality, impact assessments, settling-in, and regulatory compliance.
+// Deterministic engine for evaluating the quality and compliance of
+// transitions in children's homes — admissions, discharges, placement
+// changes, step-down/step-up moves, family reunification, independent
+// living preparation, and emergency moves.
 //
 // Aligned to:
-//   - CHR 2015 Reg 14 — Admissions (matching & impact assessment)
-//   - CHR 2015 Reg 36 — Statement of purpose (matching criteria)
-//   - Sufficiency Duty (s.22G Children Act 1989)
-//   - SCCIF — Matching and placement stability
-//   - Care Planning Regulations 2010 — Placement Plan within 5 days
+//   - CHR 2015 Reg 5 — Engaging with the wider system
+//   - CHR 2015 Reg 14 — Care planning (placement plan)
+//   - SCCIF — Placement stability and matching decisions
+//   - Children Act 1989 — Welfare of the child
+//   - Care Planning Regulations 2010
+//   - Leaving Care Act 2000
+//   - DfE Guide to Children's Homes Regulations
 //
-// Key requirements:
-//   - Impact assessment before every admission
-//   - Matching assessment against home's Statement of Purpose
-//   - Placement Plan within 5 working days
-//   - Settling-in period monitoring (first 72 hours critical)
-//   - Reg 44 independent visitor notified of all admissions
-//   - Children's guide provided on arrival
-//   - Risk assessment completed before or on admission
-//
-// No AI. No external calls. Pure input → output.
+// No AI. No external calls. Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type TransitionType =
-  | "admission_planned"
-  | "admission_emergency"
-  | "internal_move"
+export type TransitionCategory =
+  | "admission_transition"
+  | "discharge_planning"
+  | "placement_move"
   | "step_down"
   | "step_up"
-  | "leaving_planned"
-  | "leaving_unplanned"
-  | "leaving_18"
-  | "reunification";
+  | "family_reunification"
+  | "independent_living"
+  | "emergency_move";
 
-export type TransitionStatus =
-  | "referral_received"
-  | "matching_assessment"
-  | "impact_assessment"
-  | "approved"
-  | "placement_confirmed"
-  | "arrived"
-  | "settling_in"
-  | "established"
-  | "move_planning"
-  | "departed"
-  | "cancelled"
-  | "rejected";
+export type TransitionOutcome =
+  | "completed"
+  | "partially_completed"
+  | "not_completed"
+  | "deferred"
+  | "emergency_override";
 
-export type MatchingDomain =
-  | "age_appropriateness"
-  | "gender_dynamics"
-  | "risk_compatibility"
-  | "needs_capability"
-  | "location_suitability"
-  | "education_continuity"
-  | "cultural_identity"
-  | "peer_relationships"
-  | "staffing_capacity"
-  | "therapeutic_fit";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-export type MatchingScore = 1 | 2 | 3 | 4 | 5;
-// 1 = Poor fit, 2 = Below average, 3 = Adequate, 4 = Good fit, 5 = Excellent fit
+// ── Input Records ──────────────────────────────────────────────────────────
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
-
-export interface Transition {
+export interface TransitionRecord {
   id: string;
   childId: string;
   childName: string;
-  homeId: string;
-  type: TransitionType;
-  status: TransitionStatus;
-  referralDate: string;
-  referralSource: string;               // placing authority
-  placingAuthority: string;
-  socialWorkerName: string;
-  expectedArrivalDate?: string;
-  actualArrivalDate?: string;
-  expectedDepartureDate?: string;
-  actualDepartureDate?: string;
-  matchingAssessment?: MatchingAssessment;
-  impactAssessment?: ImpactAssessment;
-  placementPlanDate?: string;
-  placementPlanDue: string;
-  riskAssessmentCompleted: boolean;
-  childrenGuideProvided: boolean;
-  reg44Notified: boolean;
-  settlingInReviews: SettlingInReview[];
-  departureReason?: string;
-  departureDestination?: string;
-  handoverCompleted?: boolean;
-  recordedBy: string;
+  transitionDate: string;
+  category: TransitionCategory;
+  transitionPlanInPlace: boolean;
+  childPrepared: boolean;
+  receivingServiceBriefed: boolean;
+  handoverComplete: boolean;
+  documentationComplete: boolean;
+  timelyProcess: boolean;
 }
 
-export interface MatchingAssessment {
-  completedAt: string;
-  completedBy: string;
-  domains: { domain: MatchingDomain; score: MatchingScore; notes: string }[];
-  overallScore: number;                 // average
-  recommendation: "accept" | "accept_with_conditions" | "reject";
-  conditions?: string[];
-  existingChildrenConsulted: boolean;
-  existingChildrenViews?: string;
+export interface TransitionPolicy {
+  id: string;
+  transitionPolicy: boolean;
+  placementStabilityGuidance: boolean;
+  handoverProtocol: boolean;
+  childPreparationFramework: boolean;
+  familyInvolvementPolicy: boolean;
+  emergencyMoveProtocol: boolean;
+  reviewSchedule: boolean;
 }
 
-export interface ImpactAssessment {
-  completedAt: string;
-  completedBy: string;
-  impactOnExistingChildren: "positive" | "neutral" | "manageable" | "concerning" | "high_risk";
-  impactOnStaffing: "adequate" | "stretched" | "insufficient";
-  impactOnDynamics: string;
-  mitigationActions: string[];
-  approvedBy: string;
-  approvedAt: string;
-}
-
-export interface SettlingInReview {
-  date: string;
-  hoursPostArrival: number;
-  childSettling: "well" | "mixed" | "struggling";
-  sleepFirstNight?: boolean;
-  eatFirstMeal?: boolean;
-  engagedWithPeers?: boolean;
-  expressedWorries: string[];
-  supportProvided: string[];
-  concerns: string[];
-  reviewedBy: string;
+export interface StaffTransitionTraining {
+  id: string;
+  staffId: string;
+  staffName: string;
+  transitionPlanning: boolean;
+  childPreparation: boolean;
+  handoverSkills: boolean;
+  familyEngagement: boolean;
+  multiAgencyWorking: boolean;
+  emotionalSupport: boolean;
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
+export interface TransitionQualityResult {
+  overallScore: number;
+  rating: Rating;
+  totalTransitions: number;
+  transitionPlanRate: number;
+  childPreparedRate: number;
+  receivingBriefedRate: number;
+  handoverRate: number;
+}
+
 export interface TransitionComplianceResult {
-  transitionId: string;
+  overallScore: number;
+  rating: Rating;
+  documentationRate: number;
+  timelyRate: number;
+  handoverRate: number;
+  categoryDiversityRatio: number;
+}
+
+export interface TransitionPolicyResult {
+  overallScore: number;
+  rating: Rating;
+  transitionPolicy: boolean;
+  placementStabilityGuidance: boolean;
+  handoverProtocol: boolean;
+  childPreparationFramework: boolean;
+  familyInvolvementPolicy: boolean;
+  emergencyMoveProtocol: boolean;
+  reviewSchedule: boolean;
+}
+
+export interface StaffTransitionReadinessResult {
+  overallScore: number;
+  rating: Rating;
+  totalStaff: number;
+  transitionPlanningRate: number;
+  childPreparationRate: number;
+  handoverSkillsRate: number;
+  familyEngagementRate: number;
+  multiAgencyWorkingRate: number;
+  emotionalSupportRate: number;
+}
+
+export interface ChildTransitionProfile {
+  childId: string;
   childName: string;
-  type: TransitionType;
-  status: TransitionStatus;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  matchingCompleted: boolean;
-  matchingScore?: number;
-  impactAssessmentCompleted: boolean;
-  placementPlanOnTime: boolean;
-  riskAssessmentDone: boolean;
-  childrenGuideGiven: boolean;
-  reg44Notified: boolean;
-  settlingInMonitored: boolean;
-  daysInPlacement?: number;
+  totalRecords: number;
+  transitionPlanRate: number;
+  childPreparedRate: number;
+  categoriesCovered: string[];
+  overallScore: number;
 }
 
-export interface HomeTransitionMetrics {
+export interface TransitionsIntelligence {
   homeId: string;
-  currentOccupancy: number;
-  registeredCapacity: number;
-  occupancyRate: number;                // %
-  totalTransitions12Months: number;
-  admissionsThisYear: number;
-  departuresThisYear: number;
-  emergencyAdmissionRate: number;       // %
-  averageMatchingScore: number;
-  matchingComplianceRate: number;       // % with assessment done
-  impactAssessmentRate: number;         // %
-  placementPlanOnTimeRate: number;      // %
-  settlingInComplianceRate: number;     // %
-  averagePlacementLength: number;       // months
-  plannedMoveRate: number;              // % departures that were planned
-  activeTransitions: { childName: string; type: string; status: string; days: number }[];
-  complianceIssues: string[];
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  transitionQuality: TransitionQualityResult;
+  transitionCompliance: TransitionComplianceResult;
+  transitionPolicy: TransitionPolicyResult;
+  staffReadiness: StaffTransitionReadinessResult;
+  childProfiles: ChildTransitionProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const PLACEMENT_PLAN_DEADLINE_DAYS = 5;     // 5 working days
-const SETTLING_IN_HOURS = [4, 24, 72];       // reviews at 4h, 24h, 72h
-const MATCHING_THRESHOLD = 3;                // minimum acceptable matching score
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
 
-// ── Core: Evaluate Transition Compliance ────────────────────────────────────
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
 
-export function evaluateTransitionCompliance(
-  transition: Transition,
-  now?: string,
-): TransitionComplianceResult {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const issues: string[] = [];
-  const warnings: string[] = [];
+export function getTransitionCategoryLabel(cat: TransitionCategory): string {
+  const labels: Record<TransitionCategory, string> = {
+    admission_transition: "Admission Transition",
+    discharge_planning: "Discharge Planning",
+    placement_move: "Placement Move",
+    step_down: "Step Down",
+    step_up: "Step Up",
+    family_reunification: "Family Reunification",
+    independent_living: "Independent Living",
+    emergency_move: "Emergency Move",
+  };
+  return labels[cat] ?? cat;
+}
 
-  const isAdmission = transition.type.startsWith("admission") || transition.type === "internal_move" || transition.type === "step_down" || transition.type === "step_up";
-  const hasArrived = transition.status === "arrived" || transition.status === "settling_in" || transition.status === "established" || transition.status === "departed";
+export function getTransitionOutcomeLabel(outcome: TransitionOutcome): string {
+  const labels: Record<TransitionOutcome, string> = {
+    completed: "Completed",
+    partially_completed: "Partially Completed",
+    not_completed: "Not Completed",
+    deferred: "Deferred",
+    emergency_override: "Emergency Override",
+  };
+  return labels[outcome] ?? outcome;
+}
 
-  // Matching assessment
-  const matchingCompleted = !!transition.matchingAssessment;
-  if (isAdmission && !matchingCompleted && transition.type !== "admission_emergency") {
-    issues.push("Matching assessment not completed before admission");
+export function getRatingLabel(r: Rating): string {
+  return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// ── Constants ──────────────────────────────────────────────────────────────
+
+const ALL_CATEGORIES: TransitionCategory[] = [
+  "admission_transition", "discharge_planning", "placement_move",
+  "step_down", "step_up", "family_reunification",
+  "independent_living", "emergency_move",
+];
+
+// ── Evaluator 1: Transition Quality (0-25) ────────────────────────────────
+
+export function evaluateTransitionQuality(records: TransitionRecord[]): TransitionQualityResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", totalTransitions: 0, transitionPlanRate: 0, childPreparedRate: 0, receivingBriefedRate: 0, handoverRate: 0 };
   }
 
-  // Impact assessment
-  const impactAssessmentCompleted = !!transition.impactAssessment;
-  if (isAdmission && !impactAssessmentCompleted) {
-    if (transition.type === "admission_emergency") {
-      if (hasArrived) {
-        warnings.push("Emergency admission — impact assessment should be completed within 72 hours");
-      }
-    } else {
-      issues.push("Impact assessment not completed (Reg 14 requirement)");
-    }
+  const transitionPlanRate = pct(records.filter((r) => r.transitionPlanInPlace).length, total);
+  const childPreparedRate = pct(records.filter((r) => r.childPrepared).length, total);
+  const receivingBriefedRate = pct(records.filter((r) => r.receivingServiceBriefed).length, total);
+  const handoverRate = pct(records.filter((r) => r.handoverComplete).length, total);
+
+  // Weighted: transitionPlanRate 7 + childPreparedRate 6 + receivingBriefedRate 6 + handoverRate 6 = 25
+  const raw = (transitionPlanRate / 100) * 7 + (childPreparedRate / 100) * 6 + (receivingBriefedRate / 100) * 6 + (handoverRate / 100) * 6;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalTransitions: total, transitionPlanRate, childPreparedRate, receivingBriefedRate, handoverRate };
+}
+
+// ── Evaluator 2: Transition Compliance (0-25) ─────────────────────────────
+
+export function evaluateTransitionCompliance(records: TransitionRecord[]): TransitionComplianceResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyRate: 0, handoverRate: 0, categoryDiversityRatio: 0 };
   }
 
-  // Placement plan
-  let placementPlanOnTime = true;
-  if (hasArrived) {
-    const planDueTime = new Date(transition.placementPlanDue).getTime();
-    if (transition.placementPlanDate) {
-      const planTime = new Date(transition.placementPlanDate).getTime();
-      if (planTime > planDueTime) {
-        placementPlanOnTime = false;
-        warnings.push("Placement plan completed after 5-day deadline");
-      }
-    } else if (currentTime > planDueTime) {
-      placementPlanOnTime = false;
-      issues.push("Placement plan overdue (5 working days from admission)");
-    }
+  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRate = pct(records.filter((r) => r.timelyProcess).length, total);
+  const handoverRate = pct(records.filter((r) => r.handoverComplete).length, total);
+
+  const uniqueCategories = new Set(records.map((r) => r.category)).size;
+  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+
+  // Weighted: documentationRate 8 + timelyRate 7 + handoverRate 5 + categoryDiversityRatio 5 = 25
+  const raw = (documentationRate / 100) * 8 + (timelyRate / 100) * 7 + (handoverRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyRate, handoverRate, categoryDiversityRatio };
+}
+
+// ── Evaluator 3: Transition Policy (0-25) ─────────────────────────────────
+
+export function evaluateTransitionPolicy(policy: TransitionPolicy | null): TransitionPolicyResult {
+  if (!policy) {
+    return { overallScore: 0, rating: "inadequate", transitionPolicy: false, placementStabilityGuidance: false, handoverProtocol: false, childPreparationFramework: false, familyInvolvementPolicy: false, emergencyMoveProtocol: false, reviewSchedule: false };
   }
 
-  // Risk assessment
-  if (hasArrived && !transition.riskAssessmentCompleted) {
-    issues.push("Risk assessment not completed for placed child");
-  }
-
-  // Children's guide
-  if (hasArrived && !transition.childrenGuideProvided) {
-    issues.push("Children's guide not provided on arrival");
-  }
-
-  // Reg 44 notification
-  if (isAdmission && hasArrived && !transition.reg44Notified) {
-    warnings.push("Reg 44 independent visitor not notified of admission");
-  }
-
-  // Settling-in reviews
-  let settlingInMonitored = true;
-  if (hasArrived && transition.actualArrivalDate) {
-    const hoursSinceArrival = (currentTime - new Date(transition.actualArrivalDate).getTime()) / (60 * 60 * 1000);
-    const expectedReviews = SETTLING_IN_HOURS.filter(h => h <= hoursSinceArrival);
-    if (expectedReviews.length > transition.settlingInReviews.length) {
-      settlingInMonitored = false;
-      warnings.push(`Settling-in reviews behind schedule (${transition.settlingInReviews.length}/${expectedReviews.length} expected)`);
-    }
-  }
-
-  // Matching score check
-  let matchingScore: number | undefined;
-  if (transition.matchingAssessment) {
-    matchingScore = transition.matchingAssessment.overallScore;
-    if (matchingScore < MATCHING_THRESHOLD) {
-      warnings.push(`Low matching score (${matchingScore.toFixed(1)}/5) — review conditions`);
-    }
-  }
-
-  // Days in placement
-  let daysInPlacement: number | undefined;
-  if (transition.actualArrivalDate) {
-    const endTime = transition.actualDepartureDate
-      ? new Date(transition.actualDepartureDate).getTime()
-      : currentTime;
-    daysInPlacement = Math.round((endTime - new Date(transition.actualArrivalDate).getTime()) / (24 * 60 * 60 * 1000));
-  }
+  // First 4 at 4 points, last 3 at 3 points = 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.transitionPolicy) score += 4;
+  if (policy.placementStabilityGuidance) score += 4;
+  if (policy.handoverProtocol) score += 4;
+  if (policy.childPreparationFramework) score += 4;
+  if (policy.familyInvolvementPolicy) score += 3;
+  if (policy.emergencyMoveProtocol) score += 3;
+  if (policy.reviewSchedule) score += 3;
 
   return {
-    transitionId: transition.id,
-    childName: transition.childName,
-    type: transition.type,
-    status: transition.status,
-    isCompliant: issues.length === 0,
-    issues,
-    warnings,
-    matchingCompleted,
-    matchingScore,
-    impactAssessmentCompleted,
-    placementPlanOnTime,
-    riskAssessmentDone: transition.riskAssessmentCompleted,
-    childrenGuideGiven: transition.childrenGuideProvided,
-    reg44Notified: transition.reg44Notified,
-    settlingInMonitored,
-    daysInPlacement,
+    overallScore: score,
+    rating: getRating(score * 4),
+    transitionPolicy: policy.transitionPolicy,
+    placementStabilityGuidance: policy.placementStabilityGuidance,
+    handoverProtocol: policy.handoverProtocol,
+    childPreparationFramework: policy.childPreparationFramework,
+    familyInvolvementPolicy: policy.familyInvolvementPolicy,
+    emergencyMoveProtocol: policy.emergencyMoveProtocol,
+    reviewSchedule: policy.reviewSchedule,
   };
 }
 
-// ── Core: Calculate Home Metrics ────────────────────────────────────────────
+// ── Evaluator 4: Staff Transition Readiness (0-25) ────────────────────────
 
-export function calculateTransitionMetrics(
-  transitions: Transition[],
-  homeId: string,
-  registeredCapacity: number,
-  now?: string,
-): HomeTransitionMetrics {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const twelveMonthsAgo = currentTime - 365 * 24 * 60 * 60 * 1000;
+export function evaluateStaffTransitionReadiness(staff: StaffTransitionTraining[]): StaffTransitionReadinessResult {
+  const count = staff.length;
+  if (count === 0) {
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, transitionPlanningRate: 0, childPreparationRate: 0, handoverSkillsRate: 0, familyEngagementRate: 0, multiAgencyWorkingRate: 0, emotionalSupportRate: 0 };
+  }
 
-  const homeTransitions = transitions.filter(t => t.homeId === homeId);
-  const last12Months = homeTransitions.filter(t => new Date(t.referralDate).getTime() > twelveMonthsAgo);
+  const transitionPlanningRate = pct(staff.filter((s) => s.transitionPlanning).length, count);
+  const childPreparationRate = pct(staff.filter((s) => s.childPreparation).length, count);
+  const handoverSkillsRate = pct(staff.filter((s) => s.handoverSkills).length, count);
+  const familyEngagementRate = pct(staff.filter((s) => s.familyEngagement).length, count);
+  const multiAgencyWorkingRate = pct(staff.filter((s) => s.multiAgencyWorking).length, count);
+  const emotionalSupportRate = pct(staff.filter((s) => s.emotionalSupport).length, count);
 
-  // Current occupancy (children currently placed)
-  const currentResidents = homeTransitions.filter(t =>
-    t.actualArrivalDate &&
-    !t.actualDepartureDate &&
-    (t.status === "arrived" || t.status === "settling_in" || t.status === "established")
-  );
-  const currentOccupancy = currentResidents.length;
-  const occupancyRate = registeredCapacity > 0 ? Math.round((currentOccupancy / registeredCapacity) * 100) : 0;
+  // Weighted: 6+5+5+4+3+2 = 25
+  const raw =
+    (transitionPlanningRate / 100) * 6 +
+    (childPreparationRate / 100) * 5 +
+    (handoverSkillsRate / 100) * 5 +
+    (familyEngagementRate / 100) * 4 +
+    (multiAgencyWorkingRate / 100) * 3 +
+    (emotionalSupportRate / 100) * 2;
+  const overallScore = Math.min(25, Math.round(raw));
 
-  // Admissions and departures
-  const admissions = last12Months.filter(t => t.type.startsWith("admission") || t.type === "step_down" || t.type === "step_up");
-  const departures = last12Months.filter(t => t.status === "departed");
+  return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, transitionPlanningRate, childPreparationRate, handoverSkillsRate, familyEngagementRate, multiAgencyWorkingRate, emotionalSupportRate };
+}
 
-  // Emergency rate
-  const emergencyAdmissions = admissions.filter(t => t.type === "admission_emergency");
-  const emergencyAdmissionRate = admissions.length > 0
-    ? Math.round((emergencyAdmissions.length / admissions.length) * 100)
-    : 0;
+// ── Child Profiles (0-10) ──────────────────────────────────────────────────
 
-  // Matching scores
-  const withMatching = admissions.filter(t => t.matchingAssessment);
-  const averageMatchingScore = withMatching.length > 0
-    ? Math.round((withMatching.reduce((s, t) => s + t.matchingAssessment!.overallScore, 0) / withMatching.length) * 10) / 10
-    : 0;
-  const matchingComplianceRate = admissions.length > 0
-    ? Math.round((withMatching.length / admissions.length) * 100)
-    : 100;
+export function buildChildTransitionProfiles(records: TransitionRecord[]): ChildTransitionProfile[] {
+  const grouped = new Map<string, TransitionRecord[]>();
+  for (const r of records) {
+    const arr = grouped.get(r.childId) || [];
+    arr.push(r);
+    grouped.set(r.childId, arr);
+  }
 
-  // Impact assessment rate
-  const withImpact = admissions.filter(t => t.impactAssessment);
-  const impactAssessmentRate = admissions.length > 0
-    ? Math.round((withImpact.length / admissions.length) * 100)
-    : 100;
+  const profiles: ChildTransitionProfile[] = [];
+  for (const [childId, recs] of grouped) {
+    const childName = recs[0].childName;
+    const totalRecords = recs.length;
 
-  // Placement plan compliance
-  const arrivedTransitions = homeTransitions.filter(t => t.actualArrivalDate);
-  const complianceResults = arrivedTransitions.map(t => evaluateTransitionCompliance(t, now));
-  const planOnTime = complianceResults.filter(r => r.placementPlanOnTime);
-  const placementPlanOnTimeRate = complianceResults.length > 0
-    ? Math.round((planOnTime.length / complianceResults.length) * 100)
-    : 100;
+    const transitionPlanRate = pct(recs.filter((r) => r.transitionPlanInPlace).length, totalRecords);
+    const childPreparedRate = pct(recs.filter((r) => r.childPrepared).length, totalRecords);
 
-  // Settling-in compliance
-  const settlingCompliant = complianceResults.filter(r => r.settlingInMonitored);
-  const settlingInComplianceRate = complianceResults.length > 0
-    ? Math.round((settlingCompliant.length / complianceResults.length) * 100)
-    : 100;
+    const catsSet = new Set(recs.map((r) => r.category));
+    const categoriesCovered = [...catsSet];
 
-  // Average placement length
-  const completedPlacements = homeTransitions.filter(t => t.actualArrivalDate && t.actualDepartureDate);
-  const totalDays = completedPlacements.reduce((sum, t) => {
-    const days = (new Date(t.actualDepartureDate!).getTime() - new Date(t.actualArrivalDate!).getTime()) / (24 * 60 * 60 * 1000);
-    return sum + days;
-  }, 0);
-  const averagePlacementLength = completedPlacements.length > 0
-    ? Math.round((totalDays / completedPlacements.length / 30.44) * 10) / 10
-    : 0;
+    // Scoring: freq [>=10->2, >=5->1] + rate1 transitionPlanRate [>=80->3, >=60->2, >=40->1] + rate2 childPreparedRate [same] + diversity [>=4->2, >=2->1]
+    let score = 0;
 
-  // Planned move rate
-  const plannedDepartures = departures.filter(t =>
-    t.type === "leaving_planned" || t.type === "leaving_18" || t.type === "reunification" || t.type === "step_down"
-  );
-  const plannedMoveRate = departures.length > 0
-    ? Math.round((plannedDepartures.length / departures.length) * 100)
-    : 100;
+    if (totalRecords >= 10) score += 2;
+    else if (totalRecords >= 5) score += 1;
 
-  // Active transitions
-  const active = homeTransitions
-    .filter(t => t.status !== "departed" && t.status !== "cancelled" && t.status !== "rejected" && t.status !== "established")
-    .map(t => {
-      const startTime = new Date(t.referralDate).getTime();
-      const days = Math.round((currentTime - startTime) / (24 * 60 * 60 * 1000));
-      return { childName: t.childName, type: t.type, status: t.status, days };
+    if (transitionPlanRate >= 80) score += 3;
+    else if (transitionPlanRate >= 60) score += 2;
+    else if (transitionPlanRate >= 40) score += 1;
+
+    if (childPreparedRate >= 80) score += 3;
+    else if (childPreparedRate >= 60) score += 2;
+    else if (childPreparedRate >= 40) score += 1;
+
+    const catCount = categoriesCovered.length;
+    if (catCount >= 4) score += 2;
+    else if (catCount >= 2) score += 1;
+
+    profiles.push({
+      childId,
+      childName,
+      totalRecords,
+      transitionPlanRate,
+      childPreparedRate,
+      categoriesCovered,
+      overallScore: Math.min(10, score),
     });
+  }
 
-  // Compliance issues
-  const allIssues = complianceResults.flatMap(r => r.issues);
-  const uniqueIssues = [...new Set(allIssues)];
+  return profiles;
+}
+
+// ── Master Intelligence Generator ──────────────────────────────────────────
+
+export function generateTransitionsIntelligence(
+  records: TransitionRecord[],
+  policy: TransitionPolicy | null,
+  staff: StaffTransitionTraining[],
+  homeId: string,
+  periodStart: string,
+  periodEnd: string,
+): TransitionsIntelligence {
+  const transitionQuality = evaluateTransitionQuality(records);
+  const transitionCompliance = evaluateTransitionCompliance(records);
+  const transitionPolicy = evaluateTransitionPolicy(policy);
+  const staffReadiness = evaluateStaffTransitionReadiness(staff);
+  const childProfiles = buildChildTransitionProfiles(records);
+
+  const overallScore = Math.min(
+    100,
+    transitionQuality.overallScore + transitionCompliance.overallScore + transitionPolicy.overallScore + staffReadiness.overallScore,
+  );
+  const rating = getRating(overallScore);
+
+  // Strengths (>=80%)
+  const strengths: string[] = [];
+  if (transitionQuality.transitionPlanRate >= 80) strengths.push("Transition plans are consistently in place before moves");
+  if (transitionQuality.childPreparedRate >= 80) strengths.push("Children are well prepared ahead of transitions");
+  if (transitionQuality.receivingBriefedRate >= 80) strengths.push("Receiving services are routinely briefed before transitions");
+  if (transitionQuality.handoverRate >= 80) strengths.push("Handovers are thorough and well managed");
+  if (transitionCompliance.documentationRate >= 80) strengths.push("Transition documentation is comprehensive and complete");
+  if (transitionCompliance.timelyRate >= 80) strengths.push("Transitions are completed within required timescales");
+  if (staffReadiness.transitionPlanningRate >= 80) strengths.push("Staff are well trained in transition planning");
+  if (staffReadiness.childPreparationRate >= 80) strengths.push("Strong child preparation skills across the team");
+
+  // Areas for improvement (<60%)
+  const areasForImprovement: string[] = [];
+  if (transitionQuality.transitionPlanRate < 60) areasForImprovement.push("Transition plans are not consistently in place before moves");
+  if (transitionQuality.childPreparedRate < 60) areasForImprovement.push("Children are not being adequately prepared for transitions");
+  if (transitionQuality.receivingBriefedRate < 60) areasForImprovement.push("Receiving services are not consistently briefed before transitions");
+  if (transitionQuality.handoverRate < 60) areasForImprovement.push("Handover processes need improvement");
+  if (transitionCompliance.documentationRate < 60) areasForImprovement.push("Transition documentation is incomplete or inconsistent");
+  if (transitionCompliance.timelyRate < 60) areasForImprovement.push("Transitions are taking too long to complete");
+  if (staffReadiness.transitionPlanningRate < 60) areasForImprovement.push("Staff transition planning skills require development");
+  if (staffReadiness.childPreparationRate < 60) areasForImprovement.push("Staff child preparation training needs improvement");
+
+  // Actions
+  const actions: string[] = [];
+  if (transitionPolicy.overallScore === 0) actions.push("URGENT: Establish a formal transitions policy — CHR 2015 Reg 5 and Reg 14 require documented transition and care planning processes");
+  if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide transition planning and handover training to all staff — effective transitions depend on skilled practitioners");
+  if (transitionQuality.childPreparedRate < 50) actions.push("Implement systematic child preparation for all transitions — children must be supported through placement changes");
+  if (transitionQuality.receivingBriefedRate < 50) actions.push("Ensure receiving services are briefed before every transition — SCCIF requires effective multi-agency coordination");
+  if (transitionCompliance.documentationRate < 50) actions.push("Improve transition documentation — placement plans and handover records must be comprehensive (Reg 14)");
+  if (transitionCompliance.timelyRate < 50) actions.push("Review transition timescales — moves should be planned and executed within agreed timeframes");
+  if (transitionQuality.transitionPlanRate < 50) actions.push("Develop transition plans for all placement moves to support continuity of care");
+  if (staffReadiness.familyEngagementRate < 50) actions.push("Train staff in family engagement during transitions — families should be involved throughout the process");
+
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Reg 5 — Engaging with the wider system to benefit children",
+    "CHR 2015 Reg 14 — Care planning standard (placement plans)",
+    "SCCIF — Placement stability and transition quality",
+    "Children Act 1989 — Welfare of the child during transitions",
+    "Care Planning Regulations 2010 — Placement plan requirements",
+    "Leaving Care Act 2000 — Pathway planning for care leavers",
+    "DfE Guide to Children's Homes Regulations: Transitions and stability",
+  ];
 
   return {
     homeId,
-    currentOccupancy,
-    registeredCapacity,
-    occupancyRate,
-    totalTransitions12Months: last12Months.length,
-    admissionsThisYear: admissions.length,
-    departuresThisYear: departures.length,
-    emergencyAdmissionRate,
-    averageMatchingScore,
-    matchingComplianceRate,
-    impactAssessmentRate,
-    placementPlanOnTimeRate,
-    settlingInComplianceRate,
-    averagePlacementLength,
-    plannedMoveRate,
-    activeTransitions: active,
-    complianceIssues: uniqueIssues,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    transitionQuality,
+    transitionCompliance,
+    transitionPolicy,
+    staffReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
   };
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────
-
-export function getTransitionTypeLabel(type: TransitionType): string {
-  const labels: Record<TransitionType, string> = {
-    admission_planned: "Planned Admission",
-    admission_emergency: "Emergency Admission",
-    internal_move: "Internal Move",
-    step_down: "Step Down",
-    step_up: "Step Up",
-    leaving_planned: "Planned Departure",
-    leaving_unplanned: "Unplanned Departure",
-    leaving_18: "Leaving at 18",
-    reunification: "Reunification",
-  };
-  return labels[type] ?? type;
-}
-
-export function getTransitionStatusLabel(status: TransitionStatus): string {
-  const labels: Record<TransitionStatus, string> = {
-    referral_received: "Referral Received",
-    matching_assessment: "Matching",
-    impact_assessment: "Impact Assessment",
-    approved: "Approved",
-    placement_confirmed: "Confirmed",
-    arrived: "Arrived",
-    settling_in: "Settling In",
-    established: "Established",
-    move_planning: "Move Planning",
-    departed: "Departed",
-    cancelled: "Cancelled",
-    rejected: "Rejected",
-  };
-  return labels[status] ?? status;
 }

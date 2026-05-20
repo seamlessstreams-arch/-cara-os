@@ -1,23 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Transitions & Admissions — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
+  generateTransitionsIntelligence,
+  evaluateTransitionQuality,
   evaluateTransitionCompliance,
-  calculateTransitionMetrics,
-  getTransitionTypeLabel,
-  getTransitionStatusLabel,
+  evaluateTransitionPolicy,
+  evaluateStaffTransitionReadiness,
+  buildChildTransitionProfiles,
+  pct,
+  getRating,
+  getTransitionCategoryLabel,
+  getTransitionOutcomeLabel,
+  getRatingLabel,
 } from "./transitions-engine";
 
 export type {
-  TransitionType,
-  TransitionStatus,
-  MatchingDomain,
-  MatchingScore,
-  Transition,
-  MatchingAssessment,
-  ImpactAssessment,
-  SettlingInReview,
+  TransitionCategory,
+  TransitionOutcome,
+  Rating,
+  TransitionRecord,
+  TransitionPolicy,
+  StaffTransitionTraining,
+  TransitionQualityResult,
   TransitionComplianceResult,
-  HomeTransitionMetrics,
+  TransitionPolicyResult,
+  StaffTransitionReadinessResult,
+  ChildTransitionProfile,
+  TransitionsIntelligence,
 } from "./transitions-engine";

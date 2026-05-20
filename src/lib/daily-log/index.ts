@@ -1,31 +1,33 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Daily Log & Key Events — Public API
+// Cornerstone Daily Log Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  evaluateDailyCompliance,
-  analyzeChildWellbeing,
-  generateHandoverSummary,
-  calculateHomeActivityMetrics,
-  getShiftLabel,
-  getEventCategoryLabel,
-  getMoodLabel,
-} from "./daily-engine";
+  ALL_CATEGORIES,
+  pct,
+  getRating,
+  getDailyLogCategoryLabel,
+  getDailyLogOutcomeLabel,
+  getRatingLabel,
+  evaluateDailyLogQuality,
+  evaluateDailyLogCompliance,
+  evaluateDailyLogPolicy,
+  evaluateStaffDailyLogReadiness,
+  buildChildDailyLogProfiles,
+  generateDailyLogIntelligence,
+} from "./daily-log-engine";
 
 export type {
-  ShiftType,
-  EventCategory,
-  MoodRating,
-  EventPriority,
-  DailyLogEntry,
-  ChildShiftEntry,
-  KeyEvent,
-  MedicationEntry,
-  MealRecord,
-  NightCheck,
-  VisitorRecord,
-  DailyComplianceResult,
-  ChildWellbeingTrend,
-  ShiftHandoverSummary,
-  HomeActivityMetrics,
-} from "./daily-engine";
+  DailyLogCategory,
+  DailyLogOutcome,
+  Rating,
+  DailyLogRecord,
+  DailyLogPolicy,
+  StaffDailyLogTraining,
+  DailyLogQualityResult,
+  DailyLogComplianceResult,
+  DailyLogPolicyResult,
+  StaffDailyLogReadinessResult,
+  ChildDailyLogProfile,
+  DailyLogIntelligence,
+} from "./daily-log-engine";

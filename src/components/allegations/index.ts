@@ -1,1 +1,1 @@
-export { AllegationsDashboardWidget } from "./AllegationsDashboardWidget";
+export { default as AllegationsDashboardWidget } from "./AllegationsDashboardWidget";

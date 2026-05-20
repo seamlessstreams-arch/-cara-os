@@ -1,1 +1,1 @@
-export { TransitionsDashboardWidget } from "./TransitionsDashboardWidget";
+export { default as TransitionsDashboardWidget } from "./TransitionsDashboardWidget";

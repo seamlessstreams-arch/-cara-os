@@ -1,1 +1,1 @@
-export { DailyLogDashboardWidget } from "./DailyLogDashboardWidget";
+export { default as DailyLogDashboardWidget } from "./DailyLogDashboardWidget";

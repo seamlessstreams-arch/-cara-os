@@ -1,21 +1,32 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Activities & Enrichment — Public API
+// Cornerstone Activities & Enrichment Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  evaluateChildActivitiesCompliance,
-  calculateHomeActivitiesMetrics,
+  pct,
+  getRating,
   getActivityCategoryLabel,
-  getBarrierLabel,
+  getActivityOutcomeLabel,
+  getRatingLabel,
+  evaluateActivityQuality,
+  evaluateActivityCompliance,
+  evaluateActivityPolicy,
+  evaluateStaffActivityReadiness,
+  buildChildActivityProfiles,
+  generateActivitiesIntelligence,
 } from "./activities-engine";
 
 export type {
   ActivityCategory,
-  ParticipationLevel,
-  BarrierType,
+  ActivityOutcome,
+  Rating,
   ActivityRecord,
-  ActivityPlan,
-  ChildActivitiesProfile,
-  ActivitiesComplianceResult,
-  HomeActivitiesMetrics,
+  ActivityPolicy,
+  StaffActivityTraining,
+  ActivityQualityResult,
+  ActivityComplianceResult,
+  ActivityPolicyResult,
+  StaffActivityReadinessResult,
+  ChildActivityProfile,
+  ActivitiesIntelligence,
 } from "./activities-engine";

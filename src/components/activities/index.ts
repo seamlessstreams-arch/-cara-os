@@ -1,1 +1,1 @@
-export { ActivitiesDashboardWidget } from "./ActivitiesDashboardWidget";
+export { default as ActivitiesDashboardWidget } from "./ActivitiesDashboardWidget";

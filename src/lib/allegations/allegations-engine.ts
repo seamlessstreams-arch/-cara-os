@@ -1,19 +1,18 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// ALLEGATIONS AGAINST STAFF INTELLIGENCE ENGINE
+// Cornerstone Allegations Intelligence Engine
 //
-// Pure deterministic engine for tracking, analysing and reporting on
-// allegations, complaints, and concerns about staff, including LADO
-// referrals, whistleblowing, DBS notifications, and outcome tracking.
+// Deterministic engine for evaluating allegations management quality in
+// children's homes — safeguarding response, LADO referrals, investigation
+// compliance, and staff training in handling allegations.
 //
-// Regulatory basis:
-//   - CHR 2015, Reg 37 — Complaints and representations
-//   - CHR 2015, Reg 38 — Allegation procedures
-//   - CHR 2015, Reg 40 — Notification of serious events
-//   - Working Together 2023, Ch 2 — Managing allegations against people who
-//     work with children
-//   - Keeping Children Safe in Education 2024 — Part 4
-//   - SCCIF — "Leadership and management" — responding to allegations
-//   - DBS referral duties (Safeguarding Vulnerable Groups Act 2006)
+// Aligned to:
+//   - CHR 2015 Reg 37 — Complaints and representations
+//   - CHR 2015 Reg 38 — Allegation procedures
+//   - CHR 2015 Reg 40 — Notification of serious events
+//   - Working Together 2023 Ch 2 — Managing allegations
+//   - Keeping Children Safe in Education 2024 Part 4
+//   - SCCIF — Leadership and management (responding to allegations)
+//   - Safeguarding Vulnerable Groups Act 2006 — DBS referral duty
 //
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
@@ -26,725 +25,413 @@ export type AllegationCategory =
   | "sexual_abuse"
   | "neglect"
   | "inappropriate_restraint"
-  | "inappropriate_relationship"
   | "professional_boundary"
-  | "substance_misuse"
-  | "criminal_behaviour"
   | "failure_to_safeguard"
-  | "whistleblowing";
-
-export type AllegationSource =
-  | "child"
-  | "parent_carer"
-  | "staff_member"
-  | "external_professional"
-  | "placing_authority"
-  | "anonymous"
-  | "self_reported"
-  | "ofsted";
+  | "whistleblowing_concern";
 
 export type AllegationOutcome =
   | "substantiated"
-  | "malicious"
-  | "false"
   | "unsubstantiated"
   | "unfounded"
+  | "malicious"
   | "ongoing";
 
-export type InvestigationStatus =
-  | "initial_assessment"
-  | "lado_referral_made"
-  | "lado_strategy_meeting"
-  | "police_investigation"
-  | "internal_investigation"
-  | "disciplinary"
-  | "resolved"
-  | "closed_no_action";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-export type StaffAction =
-  | "no_action"
-  | "suspended"
-  | "restricted_duties"
-  | "supervision_enhanced"
-  | "redeployed"
-  | "dismissed"
-  | "resigned"
-  | "training_required"
-  | "written_warning"
-  | "final_warning"
-  | "dbs_referral";
+// ── Input Records ──────────────────────────────────────────────────────────
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
-
-export interface StaffMember {
+export interface AllegationRecord {
   id: string;
-  name: string;
-  role: string;
-  startDate: string;
-  dbsNumber?: string;
-  currentlyEmployed: boolean;
+  childId: string;
+  childName: string;
+  reportDate: string;
+  category: AllegationCategory;
+  ladoReferralMade: boolean;
+  ofstedNotified: boolean;
+  childSupportOffered: boolean;
+  staffSupportProvided: boolean;
+  documentationComplete: boolean;
+  timelyInvestigation: boolean;
 }
 
-export interface Allegation {
+export interface AllegationPolicy {
+  id: string;
+  allegationsPolicy: boolean;
+  ladoReferralProtocol: boolean;
+  ofstedNotificationProcedure: boolean;
+  dbsReferralGuidance: boolean;
+  childProtectionFramework: boolean;
+  whistleblowingPolicy: boolean;
+  reviewSchedule: boolean;
+}
+
+export interface StaffAllegationTraining {
   id: string;
   staffId: string;
-  category: AllegationCategory;
-  source: AllegationSource;
-  dateReported: string;
-  dateOfIncident?: string;
-  summary: string;
-  childrenInvolved: string[];
-
-  // Investigation
-  investigationStatus: InvestigationStatus;
-  ladoReferralDate?: string;
-  ladoReferralTimely?: boolean; // within 1 working day
-  policeInvolved: boolean;
-  ofstedNotified: boolean;
-  ofstedNotifiedDate?: string;
-  ofstedNotifiedTimely?: boolean; // within required timeframe
-  placingAuthorityNotified: boolean;
-  riNotified: boolean;
-
-  // Outcome
-  outcome?: AllegationOutcome;
-  outcomeDate?: string;
-  staffAction: StaffAction;
-  dbsReferralMade?: boolean;
-  dbsReferralDate?: string;
-  lessonsLearned?: string;
-  policyReviewRequired: boolean;
-  supportOfferedToChild: boolean;
-  supportOfferedToStaff: boolean;
+  staffName: string;
+  safeguardingKnowledge: boolean;
+  allegationProcedures: boolean;
+  ladoProcess: boolean;
+  investigationSkills: boolean;
+  childProtection: boolean;
+  recordKeeping: boolean;
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
-export interface AllegationComplianceResult {
-  totalAllegations: number;
-  ladoReferralsMade: number;
-  ladoReferralsRequired: number;
-  ladoTimelinessRate: number;
-  ofstedNotifications: number;
-  ofstedNotificationsRequired: number;
-  ofstedTimelinessRate: number;
-  placingAuthorityNotifiedRate: number;
-  riNotifiedRate: number;
-  dbsReferralsMade: number;
-  dbsReferralsRequired: number;
-}
-
-export interface AllegationPatternResult {
-  categoryBreakdown: { category: AllegationCategory; count: number }[];
-  sourceBreakdown: { source: AllegationSource; count: number }[];
-  outcomeBreakdown: { outcome: AllegationOutcome; count: number }[];
-  staffWithMultiple: { staffId: string; staffName: string; count: number }[];
-  averageResolutionDays: number;
-  ongoingCount: number;
-}
-
-export interface AllegationStaffProfile {
-  staffId: string;
-  staffName: string;
-  role: string;
-  allegationCount: number;
-  categories: AllegationCategory[];
-  outcomes: AllegationOutcome[];
-  currentAction: StaffAction;
-  isHighRisk: boolean;
-  riskReason?: string;
-}
-
-export interface AllegationsIntelligenceResult {
-  homeId: string;
-  assessedAt: string;
-  periodStart: string;
-  periodEnd: string;
-
-  // Overall
+export interface AllegationQualityResult {
   overallScore: number;
-  rating: "outstanding" | "good" | "requires_improvement" | "inadequate";
-
-  // Compliance
-  compliance: AllegationComplianceResult;
-
-  // Patterns
-  patterns: AllegationPatternResult;
-
-  // Staff profiles with allegations
-  staffProfiles: AllegationStaffProfile[];
-
-  // Child protection
+  rating: Rating;
+  totalAllegations: number;
+  ladoReferralRate: number;
+  ofstedNotifiedRate: number;
   childSupportRate: number;
   staffSupportRate: number;
+}
 
-  // Insights
+export interface AllegationComplianceResult {
+  overallScore: number;
+  rating: Rating;
+  documentationRate: number;
+  timelyInvestigationRate: number;
+  childSupportRate: number;
+  categoryDiversityRatio: number;
+}
+
+export interface AllegationPolicyResult {
+  overallScore: number;
+  rating: Rating;
+  allegationsPolicy: boolean;
+  ladoReferralProtocol: boolean;
+  ofstedNotificationProcedure: boolean;
+  dbsReferralGuidance: boolean;
+  childProtectionFramework: boolean;
+  whistleblowingPolicy: boolean;
+  reviewSchedule: boolean;
+}
+
+export interface StaffAllegationReadinessResult {
+  overallScore: number;
+  rating: Rating;
+  totalStaff: number;
+  safeguardingKnowledgeRate: number;
+  allegationProceduresRate: number;
+  ladoProcessRate: number;
+  investigationSkillsRate: number;
+  childProtectionRate: number;
+  recordKeepingRate: number;
+}
+
+export interface ChildAllegationProfile {
+  childId: string;
+  childName: string;
+  totalRecords: number;
+  ladoReferralRate: number;
+  childSupportRate: number;
+  categoriesCovered: string[];
+  overallScore: number;
+}
+
+export interface AllegationsIntelligence {
+  homeId: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  allegationQuality: AllegationQualityResult;
+  allegationCompliance: AllegationComplianceResult;
+  allegationPolicy: AllegationPolicyResult;
+  staffReadiness: StaffAllegationReadinessResult;
+  childProfiles: ChildAllegationProfile[];
   strengths: string[];
-  concerns: string[];
-  immediateActions: string[];
+  areasForImprovement: string[];
+  actions: string[];
   regulatoryLinks: string[];
 }
 
-// ── Constants ──────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const LADO_REQUIRED_CATEGORIES: AllegationCategory[] = [
-  "physical_abuse", "emotional_abuse", "sexual_abuse", "neglect",
-  "inappropriate_restraint", "inappropriate_relationship", "failure_to_safeguard",
-];
-
-const OFSTED_NOTIFIABLE_CATEGORIES: AllegationCategory[] = [
-  "physical_abuse", "sexual_abuse", "inappropriate_relationship",
-  "criminal_behaviour", "failure_to_safeguard",
-];
-
-const DBS_REFERRAL_CATEGORIES: AllegationCategory[] = [
-  "physical_abuse", "sexual_abuse", "inappropriate_relationship", "criminal_behaviour",
-];
-
-// ── Core: Evaluate Compliance ─────────────────────────────────────────────
-
-export function evaluateAllegationCompliance(
-  allegations: Allegation[],
-  periodStart: string,
-  periodEnd: string,
-): AllegationComplianceResult {
-  const periodAllegations = allegations.filter(
-    (a) => a.dateReported >= periodStart && a.dateReported <= periodEnd,
-  );
-
-  const ladoRequired = periodAllegations.filter(
-    (a) => LADO_REQUIRED_CATEGORIES.includes(a.category),
-  );
-  const ladoMade = ladoRequired.filter((a) => a.ladoReferralDate);
-  const ladoTimely = ladoMade.filter((a) => a.ladoReferralTimely);
-
-  const ofstedRequired = periodAllegations.filter(
-    (a) => OFSTED_NOTIFIABLE_CATEGORIES.includes(a.category),
-  );
-  const ofstedNotified = ofstedRequired.filter((a) => a.ofstedNotified);
-  const ofstedTimely = ofstedNotified.filter((a) => a.ofstedNotifiedTimely);
-
-  const paNotified = periodAllegations.filter((a) => a.placingAuthorityNotified).length;
-  const riNotified = periodAllegations.filter((a) => a.riNotified).length;
-
-  // DBS referral tracking — only for substantiated allegations in relevant categories
-  const dbsRequired = periodAllegations.filter(
-    (a) => a.outcome === "substantiated" && DBS_REFERRAL_CATEGORIES.includes(a.category),
-  );
-  const dbsMade = dbsRequired.filter((a) => a.dbsReferralMade);
-
-  return {
-    totalAllegations: periodAllegations.length,
-    ladoReferralsMade: ladoMade.length,
-    ladoReferralsRequired: ladoRequired.length,
-    ladoTimelinessRate: ladoMade.length > 0
-      ? Math.round((ladoTimely.length / ladoMade.length) * 100) : 100,
-    ofstedNotifications: ofstedNotified.length,
-    ofstedNotificationsRequired: ofstedRequired.length,
-    ofstedTimelinessRate: ofstedNotified.length > 0
-      ? Math.round((ofstedTimely.length / ofstedNotified.length) * 100) : 100,
-    placingAuthorityNotifiedRate: periodAllegations.length > 0
-      ? Math.round((paNotified / periodAllegations.length) * 100) : 100,
-    riNotifiedRate: periodAllegations.length > 0
-      ? Math.round((riNotified / periodAllegations.length) * 100) : 100,
-    dbsReferralsMade: dbsMade.length,
-    dbsReferralsRequired: dbsRequired.length,
-  };
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
 }
 
-// ── Core: Analyse Patterns ────────────────────────────────────────────────
-
-export function analyseAllegationPatterns(
-  allegations: Allegation[],
-  staff: StaffMember[],
-  periodStart: string,
-  periodEnd: string,
-): AllegationPatternResult {
-  const periodAllegations = allegations.filter(
-    (a) => a.dateReported >= periodStart && a.dateReported <= periodEnd,
-  );
-  const staffMap = new Map(staff.map((s) => [s.id, s]));
-
-  // Category breakdown
-  const categoryMap = new Map<AllegationCategory, number>();
-  for (const a of periodAllegations) {
-    categoryMap.set(a.category, (categoryMap.get(a.category) || 0) + 1);
-  }
-  const categoryBreakdown = [...categoryMap.entries()]
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count);
-
-  // Source breakdown
-  const sourceMap = new Map<AllegationSource, number>();
-  for (const a of periodAllegations) {
-    sourceMap.set(a.source, (sourceMap.get(a.source) || 0) + 1);
-  }
-  const sourceBreakdown = [...sourceMap.entries()]
-    .map(([source, count]) => ({ source, count }))
-    .sort((a, b) => b.count - a.count);
-
-  // Outcome breakdown
-  const outcomeMap = new Map<AllegationOutcome, number>();
-  for (const a of periodAllegations) {
-    if (a.outcome) {
-      outcomeMap.set(a.outcome, (outcomeMap.get(a.outcome) || 0) + 1);
-    }
-  }
-  const outcomeBreakdown = [...outcomeMap.entries()]
-    .map(([outcome, count]) => ({ outcome, count }))
-    .sort((a, b) => b.count - a.count);
-
-  // Staff with multiple allegations
-  const staffAllegations = new Map<string, number>();
-  for (const a of periodAllegations) {
-    staffAllegations.set(a.staffId, (staffAllegations.get(a.staffId) || 0) + 1);
-  }
-  const staffWithMultiple = [...staffAllegations.entries()]
-    .filter(([, count]) => count >= 2)
-    .map(([staffId, count]) => ({
-      staffId,
-      staffName: staffMap.get(staffId)?.name ?? staffId,
-      count,
-    }))
-    .sort((a, b) => b.count - a.count);
-
-  // Average resolution days
-  const resolved = periodAllegations.filter(
-    (a) => a.outcome && a.outcome !== "ongoing" && a.outcomeDate,
-  );
-  let avgDays = 0;
-  if (resolved.length > 0) {
-    const totalDays = resolved.reduce((sum, a) => {
-      const start = new Date(a.dateReported).getTime();
-      const end = new Date(a.outcomeDate!).getTime();
-      return sum + Math.round((end - start) / (1000 * 60 * 60 * 24));
-    }, 0);
-    avgDays = Math.round(totalDays / resolved.length);
-  }
-
-  const ongoingCount = periodAllegations.filter(
-    (a) => !a.outcome || a.outcome === "ongoing",
-  ).length;
-
-  return {
-    categoryBreakdown,
-    sourceBreakdown,
-    outcomeBreakdown,
-    staffWithMultiple,
-    averageResolutionDays: avgDays,
-    ongoingCount,
-  };
-}
-
-// ── Core: Build Staff Profiles ────────────────────────────────────────────
-
-export function buildAllegationStaffProfiles(
-  allegations: Allegation[],
-  staff: StaffMember[],
-  periodStart: string,
-  periodEnd: string,
-): AllegationStaffProfile[] {
-  const periodAllegations = allegations.filter(
-    (a) => a.dateReported >= periodStart && a.dateReported <= periodEnd,
-  );
-
-  const staffAllegationMap = new Map<string, Allegation[]>();
-  for (const a of periodAllegations) {
-    const existing = staffAllegationMap.get(a.staffId) || [];
-    existing.push(a);
-    staffAllegationMap.set(a.staffId, existing);
-  }
-
-  const staffMap = new Map(staff.map((s) => [s.id, s]));
-
-  return [...staffAllegationMap.entries()].map(([staffId, staffAllegations]) => {
-    const member = staffMap.get(staffId);
-    const categories = [...new Set(staffAllegations.map((a) => a.category))];
-    const outcomes = staffAllegations
-      .filter((a) => a.outcome)
-      .map((a) => a.outcome!);
-
-    const latestAction = staffAllegations
-      .sort((a, b) => b.dateReported.localeCompare(a.dateReported))[0].staffAction;
-
-    // High risk determination
-    let isHighRisk = false;
-    let riskReason: string | undefined;
-
-    if (staffAllegations.length >= 3) {
-      isHighRisk = true;
-      riskReason = `${staffAllegations.length} allegations in period — pattern of concern`;
-    } else if (outcomes.includes("substantiated")) {
-      isHighRisk = true;
-      riskReason = "Substantiated allegation";
-    } else if (categories.some((c) => ["sexual_abuse", "physical_abuse"].includes(c))) {
-      isHighRisk = true;
-      riskReason = "Serious category (sexual/physical abuse)";
-    }
-
-    return {
-      staffId,
-      staffName: member?.name ?? staffId,
-      role: member?.role ?? "Unknown",
-      allegationCount: staffAllegations.length,
-      categories,
-      outcomes,
-      currentAction: latestAction,
-      isHighRisk,
-      riskReason,
-    };
-  });
-}
-
-// ── Main: Generate Allegations Intelligence ───────────────────────────────
-
-export function generateAllegationsIntelligence(
-  allegations: Allegation[],
-  staff: StaffMember[],
-  homeId: string,
-  periodStart: string,
-  periodEnd: string,
-): AllegationsIntelligenceResult {
-  const assessedAt = new Date().toISOString();
-
-  const periodAllegations = allegations.filter(
-    (a) => a.dateReported >= periodStart && a.dateReported <= periodEnd,
-  );
-
-  const compliance = evaluateAllegationCompliance(allegations, periodStart, periodEnd);
-  const patterns = analyseAllegationPatterns(allegations, staff, periodStart, periodEnd);
-  const staffProfiles = buildAllegationStaffProfiles(allegations, staff, periodStart, periodEnd);
-
-  // Child/staff support rates
-  const childSupportRate = periodAllegations.length > 0
-    ? Math.round(
-      (periodAllegations.filter((a) => a.supportOfferedToChild).length / periodAllegations.length) * 100,
-    ) : 100;
-
-  const staffSupportRate = periodAllegations.length > 0
-    ? Math.round(
-      (periodAllegations.filter((a) => a.supportOfferedToStaff).length / periodAllegations.length) * 100,
-    ) : 100;
-
-  const overallScore = calculateAllegationsScore(compliance, patterns, staffProfiles, childSupportRate, staffSupportRate);
-  const rating = getAllegationsRating(overallScore);
-
-  const strengths = generateAllegationStrengths(compliance, patterns, childSupportRate, staffSupportRate);
-  const concerns = generateAllegationConcerns(compliance, patterns, staffProfiles);
-  const immediateActions = generateAllegationActions(compliance, patterns, staffProfiles, periodAllegations);
-  const regulatoryLinks = generateAllegationRegulatoryLinks(compliance, patterns, staffProfiles);
-
-  return {
-    homeId,
-    assessedAt,
-    periodStart,
-    periodEnd,
-    overallScore,
-    rating,
-    compliance,
-    patterns,
-    staffProfiles,
-    childSupportRate,
-    staffSupportRate,
-    strengths,
-    concerns,
-    immediateActions,
-    regulatoryLinks,
-  };
-}
-
-// ── Scoring ────────────────────────────────────────────────────────────────
-
-function calculateAllegationsScore(
-  compliance: AllegationComplianceResult,
-  patterns: AllegationPatternResult,
-  staffProfiles: AllegationStaffProfile[],
-  childSupportRate: number,
-  staffSupportRate: number,
-): number {
-  let score = 50; // Start at midpoint — zero allegations = good baseline
-
-  // LADO compliance (max +20)
-  if (compliance.ladoReferralsRequired > 0) {
-    const ladoCompRate = (compliance.ladoReferralsMade / compliance.ladoReferralsRequired) * 100;
-    score += (ladoCompRate / 100) * 10;
-    score += (compliance.ladoTimelinessRate / 100) * 10;
-  } else {
-    score += 20;
-  }
-
-  // Ofsted compliance (max +15)
-  if (compliance.ofstedNotificationsRequired > 0) {
-    const ofstedCompRate = (compliance.ofstedNotifications / compliance.ofstedNotificationsRequired) * 100;
-    score += (ofstedCompRate / 100) * 8;
-    score += (compliance.ofstedTimelinessRate / 100) * 7;
-  } else {
-    score += 15;
-  }
-
-  // Support rates (max +10)
-  score += (childSupportRate / 100) * 5;
-  score += (staffSupportRate / 100) * 5;
-
-  // DBS referral compliance (max +5)
-  if (compliance.dbsReferralsRequired > 0) {
-    score += (compliance.dbsReferralsMade / compliance.dbsReferralsRequired) * 5;
-  } else {
-    score += 5;
-  }
-
-  // Penalties
-  const substantiated = patterns.outcomeBreakdown.find((o) => o.outcome === "substantiated");
-  if (substantiated) score -= substantiated.count * 5;
-
-  const highRiskStaff = staffProfiles.filter((s) => s.isHighRisk);
-  score -= highRiskStaff.length * 3;
-
-  if (patterns.ongoingCount > 2) score -= (patterns.ongoingCount - 2) * 2;
-
-  // Placing authority and RI notification
-  score += (compliance.placingAuthorityNotifiedRate / 100) * 3;
-  score += (compliance.riNotifiedRate / 100) * 2;
-
-  return Math.max(0, Math.min(100, Math.round(score)));
-}
-
-function getAllegationsRating(score: number): "outstanding" | "good" | "requires_improvement" | "inadequate" {
+export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
   if (score >= 40) return "requires_improvement";
   return "inadequate";
 }
 
-// ── Insight Generation ─────────────────────────────────────────────────────
-
-function generateAllegationStrengths(
-  compliance: AllegationComplianceResult,
-  patterns: AllegationPatternResult,
-  childSupportRate: number,
-  staffSupportRate: number,
-): string[] {
-  const strengths: string[] = [];
-
-  if (compliance.totalAllegations === 0) {
-    strengths.push("No allegations received this period — reflects well on staff culture and safeguarding practice");
-    return strengths;
-  }
-
-  if (compliance.ladoReferralsRequired > 0 && compliance.ladoReferralsMade === compliance.ladoReferralsRequired) {
-    strengths.push("All LADO referrals made as required — robust safeguarding response");
-  }
-  if (compliance.ladoTimelinessRate === 100 && compliance.ladoReferralsMade > 0) {
-    strengths.push("LADO referrals made within 1 working day in all cases");
-  }
-  if (compliance.ofstedNotificationsRequired > 0 && compliance.ofstedNotifications === compliance.ofstedNotificationsRequired) {
-    strengths.push("Full compliance with Ofsted notification requirements");
-  }
-  if (childSupportRate >= 90) {
-    strengths.push("Children involved in allegations consistently offered support");
-  }
-  if (staffSupportRate >= 90) {
-    strengths.push("Staff subject to allegations offered appropriate support — demonstrates duty of care");
-  }
-  if (patterns.sourceBreakdown.some((s) => s.source === "staff_member")) {
-    strengths.push("Staff feel empowered to raise concerns — healthy whistleblowing culture");
-  }
-
-  return strengths;
-}
-
-function generateAllegationConcerns(
-  compliance: AllegationComplianceResult,
-  patterns: AllegationPatternResult,
-  staffProfiles: AllegationStaffProfile[],
-): string[] {
-  const concerns: string[] = [];
-
-  if (compliance.ladoReferralsRequired > 0 && compliance.ladoReferralsMade < compliance.ladoReferralsRequired) {
-    const missed = compliance.ladoReferralsRequired - compliance.ladoReferralsMade;
-    concerns.push(`${missed} LADO referral(s) not made where required — serious compliance failure`);
-  }
-
-  if (compliance.ladoTimelinessRate < 100 && compliance.ladoReferralsMade > 0) {
-    concerns.push("LADO referrals not consistently made within 1 working day");
-  }
-
-  if (compliance.ofstedNotificationsRequired > 0 && compliance.ofstedNotifications < compliance.ofstedNotificationsRequired) {
-    concerns.push("Not all Ofsted notifications made where required");
-  }
-
-  if (compliance.dbsReferralsRequired > 0 && compliance.dbsReferralsMade < compliance.dbsReferralsRequired) {
-    concerns.push("DBS referral(s) outstanding for substantiated allegation(s) — legal duty under SVGA 2006");
-  }
-
-  const highRisk = staffProfiles.filter((s) => s.isHighRisk);
-  for (const profile of highRisk) {
-    concerns.push(
-      `${profile.staffName} (${profile.role}): ${profile.riskReason}`,
-    );
-  }
-
-  if (patterns.staffWithMultiple.length > 0) {
-    for (const s of patterns.staffWithMultiple) {
-      concerns.push(`${s.staffName} has ${s.count} allegations this period — pattern review required`);
-    }
-  }
-
-  if (patterns.ongoingCount > 0) {
-    concerns.push(`${patterns.ongoingCount} allegation(s) still ongoing — monitor for timely resolution`);
-  }
-
-  return concerns;
-}
-
-function generateAllegationActions(
-  compliance: AllegationComplianceResult,
-  patterns: AllegationPatternResult,
-  staffProfiles: AllegationStaffProfile[],
-  periodAllegations: Allegation[],
-): string[] {
-  const actions: string[] = [];
-
-  // Missing LADO referrals
-  if (compliance.ladoReferralsRequired > compliance.ladoReferralsMade) {
-    actions.push(
-      `URGENT: ${compliance.ladoReferralsRequired - compliance.ladoReferralsMade} LADO referral(s) outstanding. Contact LADO immediately — Working Together 2023 requires referral within 1 working day.`,
-    );
-  }
-
-  // Missing DBS referrals
-  if (compliance.dbsReferralsRequired > compliance.dbsReferralsMade) {
-    actions.push(
-      `URGENT: ${compliance.dbsReferralsRequired - compliance.dbsReferralsMade} DBS referral(s) outstanding for substantiated allegation(s). Legal duty under Safeguarding Vulnerable Groups Act 2006.`,
-    );
-  }
-
-  // Missing Ofsted notifications
-  if (compliance.ofstedNotificationsRequired > compliance.ofstedNotifications) {
-    actions.push(
-      `HIGH: ${compliance.ofstedNotificationsRequired - compliance.ofstedNotifications} Ofsted notification(s) outstanding. Notify within statutory timeframe (Reg 40).`,
-    );
-  }
-
-  // High-risk staff
-  for (const profile of staffProfiles.filter((s) => s.isHighRisk)) {
-    if (profile.currentAction === "no_action") {
-      actions.push(
-        `HIGH: ${profile.staffName} flagged high-risk (${profile.riskReason}) but no action taken. Review with LADO and HR.`,
-      );
-    }
-  }
-
-  // Child support gaps
-  const unsupported = periodAllegations.filter((a) => !a.supportOfferedToChild);
-  if (unsupported.length > 0) {
-    actions.push(
-      `MEDIUM: ${unsupported.length} allegation(s) where child support not recorded. Ensure therapeutic/advocacy support offered.`,
-    );
-  }
-
-  if (actions.length === 0) {
-    actions.push("No immediate actions required. Allegation management procedures are operating effectively.");
-  }
-
-  return actions;
-}
-
-function generateAllegationRegulatoryLinks(
-  compliance: AllegationComplianceResult,
-  patterns: AllegationPatternResult,
-  staffProfiles: AllegationStaffProfile[],
-): string[] {
-  const links = new Set<string>();
-
-  links.add("CHR 2015, Reg 37 — Complaints and representations");
-  links.add("SCCIF: Leadership and management — Responding to allegations");
-
-  if (compliance.ladoReferralsRequired > 0) {
-    links.add("Working Together 2023, Ch 2 — Managing allegations against people who work with children");
-    links.add("CHR 2015, Reg 38 — Allegation procedures");
-  }
-
-  if (compliance.ofstedNotificationsRequired > 0) {
-    links.add("CHR 2015, Reg 40 — Notification of serious events");
-  }
-
-  if (compliance.dbsReferralsRequired > 0) {
-    links.add("Safeguarding Vulnerable Groups Act 2006 — DBS referral duty");
-    links.add("Keeping Children Safe in Education 2024, Part 4 — Allegations");
-  }
-
-  const hasSexualAbuse = patterns.categoryBreakdown.some((c) => c.category === "sexual_abuse");
-  if (hasSexualAbuse) {
-    links.add("Sexual Offences Act 2003 — Abuse of position of trust");
-  }
-
-  const hasWhistleblowing = patterns.sourceBreakdown.some((s) => s.source === "staff_member" || s.source === "self_reported");
-  if (hasWhistleblowing) {
-    links.add("Public Interest Disclosure Act 1998 — Whistleblowing protections");
-  }
-
-  return [...links];
-}
-
-// ── Utility: Labels ────────────────────────────────────────────────────────
-
-export function getAllegationCategoryLabel(category: AllegationCategory): string {
+export function getAllegationCategoryLabel(cat: AllegationCategory): string {
   const labels: Record<AllegationCategory, string> = {
     physical_abuse: "Physical Abuse",
     emotional_abuse: "Emotional Abuse",
     sexual_abuse: "Sexual Abuse",
     neglect: "Neglect",
     inappropriate_restraint: "Inappropriate Restraint",
-    inappropriate_relationship: "Inappropriate Relationship",
-    professional_boundary: "Professional Boundary Breach",
-    substance_misuse: "Substance Misuse",
-    criminal_behaviour: "Criminal Behaviour",
+    professional_boundary: "Professional Boundary",
     failure_to_safeguard: "Failure to Safeguard",
-    whistleblowing: "Whistleblowing",
+    whistleblowing_concern: "Whistleblowing Concern",
   };
-  return labels[category];
+  return labels[cat] ?? cat;
 }
 
 export function getAllegationOutcomeLabel(outcome: AllegationOutcome): string {
   const labels: Record<AllegationOutcome, string> = {
     substantiated: "Substantiated",
-    malicious: "Malicious",
-    false: "False",
     unsubstantiated: "Unsubstantiated",
     unfounded: "Unfounded",
+    malicious: "Malicious",
     ongoing: "Ongoing",
   };
-  return labels[outcome];
+  return labels[outcome] ?? outcome;
 }
 
-export function getStaffActionLabel(action: StaffAction): string {
-  const labels: Record<StaffAction, string> = {
-    no_action: "No Action",
-    suspended: "Suspended",
-    restricted_duties: "Restricted Duties",
-    supervision_enhanced: "Enhanced Supervision",
-    redeployed: "Redeployed",
-    dismissed: "Dismissed",
-    resigned: "Resigned",
-    training_required: "Training Required",
-    written_warning: "Written Warning",
-    final_warning: "Final Warning",
-    dbs_referral: "DBS Referral",
-  };
-  return labels[action];
+export function getRatingLabel(r: Rating): string {
+  return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function getSourceLabel(source: AllegationSource): string {
-  const labels: Record<AllegationSource, string> = {
-    child: "Child",
-    parent_carer: "Parent/Carer",
-    staff_member: "Staff Member",
-    external_professional: "External Professional",
-    placing_authority: "Placing Authority",
-    anonymous: "Anonymous",
-    self_reported: "Self-Reported",
-    ofsted: "Ofsted",
+// ── Constants ──────────────────────────────────────────────────────────────
+
+const ALL_CATEGORIES: AllegationCategory[] = [
+  "physical_abuse", "emotional_abuse", "sexual_abuse", "neglect",
+  "inappropriate_restraint", "professional_boundary", "failure_to_safeguard",
+  "whistleblowing_concern",
+];
+
+// ── Evaluator 1: Allegation Quality (0-25) ─────────────────────────────────
+
+export function evaluateAllegationQuality(records: AllegationRecord[]): AllegationQualityResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", totalAllegations: 0, ladoReferralRate: 0, ofstedNotifiedRate: 0, childSupportRate: 0, staffSupportRate: 0 };
+  }
+
+  const ladoReferralRate = pct(records.filter((r) => r.ladoReferralMade).length, total);
+  const ofstedNotifiedRate = pct(records.filter((r) => r.ofstedNotified).length, total);
+  const childSupportRate = pct(records.filter((r) => r.childSupportOffered).length, total);
+  const staffSupportRate = pct(records.filter((r) => r.staffSupportProvided).length, total);
+
+  // Weighted: ladoReferralRate 7 + ofstedNotifiedRate 6 + childSupportRate 6 + staffSupportRate 6 = 25
+  const raw = (ladoReferralRate / 100) * 7 + (ofstedNotifiedRate / 100) * 6 + (childSupportRate / 100) * 6 + (staffSupportRate / 100) * 6;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalAllegations: total, ladoReferralRate, ofstedNotifiedRate, childSupportRate, staffSupportRate };
+}
+
+// ── Evaluator 2: Allegation Compliance (0-25) ──────────────────────────────
+
+export function evaluateAllegationCompliance(records: AllegationRecord[]): AllegationComplianceResult {
+  const total = records.length;
+  if (total === 0) {
+    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyInvestigationRate: 0, childSupportRate: 0, categoryDiversityRatio: 0 };
+  }
+
+  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
+  const timelyInvestigationRate = pct(records.filter((r) => r.timelyInvestigation).length, total);
+  const childSupportRate = pct(records.filter((r) => r.childSupportOffered).length, total);
+
+  const uniqueCategories = new Set(records.map((r) => r.category)).size;
+  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+
+  // Weighted: documentationRate 8 + timelyInvestigationRate 7 + childSupportRate 5 + categoryDiversityRatio 5 = 25
+  const raw = (documentationRate / 100) * 8 + (timelyInvestigationRate / 100) * 7 + (childSupportRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyInvestigationRate, childSupportRate, categoryDiversityRatio };
+}
+
+// ── Evaluator 3: Policy & Governance (0-25) ────────────────────────────────
+
+export function evaluateAllegationPolicy(policy: AllegationPolicy | null): AllegationPolicyResult {
+  if (!policy) {
+    return { overallScore: 0, rating: "inadequate", allegationsPolicy: false, ladoReferralProtocol: false, ofstedNotificationProcedure: false, dbsReferralGuidance: false, childProtectionFramework: false, whistleblowingPolicy: false, reviewSchedule: false };
+  }
+
+  // First 4 at 4 points, last 3 at 3 points = 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.allegationsPolicy) score += 4;
+  if (policy.ladoReferralProtocol) score += 4;
+  if (policy.ofstedNotificationProcedure) score += 4;
+  if (policy.dbsReferralGuidance) score += 4;
+  if (policy.childProtectionFramework) score += 3;
+  if (policy.whistleblowingPolicy) score += 3;
+  if (policy.reviewSchedule) score += 3;
+
+  return {
+    overallScore: score,
+    rating: getRating(score * 4),
+    allegationsPolicy: policy.allegationsPolicy,
+    ladoReferralProtocol: policy.ladoReferralProtocol,
+    ofstedNotificationProcedure: policy.ofstedNotificationProcedure,
+    dbsReferralGuidance: policy.dbsReferralGuidance,
+    childProtectionFramework: policy.childProtectionFramework,
+    whistleblowingPolicy: policy.whistleblowingPolicy,
+    reviewSchedule: policy.reviewSchedule,
   };
-  return labels[source];
+}
+
+// ── Evaluator 4: Staff Readiness (0-25) ────────────────────────────────────
+
+export function evaluateStaffAllegationReadiness(staff: StaffAllegationTraining[]): StaffAllegationReadinessResult {
+  const count = staff.length;
+  if (count === 0) {
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, safeguardingKnowledgeRate: 0, allegationProceduresRate: 0, ladoProcessRate: 0, investigationSkillsRate: 0, childProtectionRate: 0, recordKeepingRate: 0 };
+  }
+
+  const safeguardingKnowledgeRate = pct(staff.filter((s) => s.safeguardingKnowledge).length, count);
+  const allegationProceduresRate = pct(staff.filter((s) => s.allegationProcedures).length, count);
+  const ladoProcessRate = pct(staff.filter((s) => s.ladoProcess).length, count);
+  const investigationSkillsRate = pct(staff.filter((s) => s.investigationSkills).length, count);
+  const childProtectionRate = pct(staff.filter((s) => s.childProtection).length, count);
+  const recordKeepingRate = pct(staff.filter((s) => s.recordKeeping).length, count);
+
+  // Weighted: 6+5+5+4+3+2 = 25
+  const raw =
+    (safeguardingKnowledgeRate / 100) * 6 +
+    (allegationProceduresRate / 100) * 5 +
+    (ladoProcessRate / 100) * 5 +
+    (investigationSkillsRate / 100) * 4 +
+    (childProtectionRate / 100) * 3 +
+    (recordKeepingRate / 100) * 2;
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, safeguardingKnowledgeRate, allegationProceduresRate, ladoProcessRate, investigationSkillsRate, childProtectionRate, recordKeepingRate };
+}
+
+// ── Child Profiles (0-10) ──────────────────────────────────────────────────
+
+export function buildChildAllegationProfiles(records: AllegationRecord[]): ChildAllegationProfile[] {
+  const grouped = new Map<string, AllegationRecord[]>();
+  for (const r of records) {
+    const arr = grouped.get(r.childId) || [];
+    arr.push(r);
+    grouped.set(r.childId, arr);
+  }
+
+  const profiles: ChildAllegationProfile[] = [];
+  for (const [childId, recs] of grouped) {
+    const childName = recs[0].childName;
+    const totalRecords = recs.length;
+
+    const ladoReferralRate = pct(recs.filter((r) => r.ladoReferralMade).length, totalRecords);
+    const childSupportRate = pct(recs.filter((r) => r.childSupportOffered).length, totalRecords);
+
+    const catsSet = new Set(recs.map((r) => r.category));
+    const categoriesCovered = [...catsSet];
+
+    // Scoring: freq [>=10→2, >=5→1] + rate1 ladoReferralRate [>=80→3, >=60→2, >=40→1] + rate2 childSupportRate [same] + diversity [>=4→2, >=2→1]
+    let score = 0;
+
+    if (totalRecords >= 10) score += 2;
+    else if (totalRecords >= 5) score += 1;
+
+    if (ladoReferralRate >= 80) score += 3;
+    else if (ladoReferralRate >= 60) score += 2;
+    else if (ladoReferralRate >= 40) score += 1;
+
+    if (childSupportRate >= 80) score += 3;
+    else if (childSupportRate >= 60) score += 2;
+    else if (childSupportRate >= 40) score += 1;
+
+    const catCount = categoriesCovered.length;
+    if (catCount >= 4) score += 2;
+    else if (catCount >= 2) score += 1;
+
+    profiles.push({
+      childId,
+      childName,
+      totalRecords,
+      ladoReferralRate,
+      childSupportRate,
+      categoriesCovered,
+      overallScore: Math.min(10, score),
+    });
+  }
+
+  return profiles;
+}
+
+// ── Master Intelligence Generator ──────────────────────────────────────────
+
+export function generateAllegationsIntelligence(
+  records: AllegationRecord[],
+  policy: AllegationPolicy | null,
+  staff: StaffAllegationTraining[],
+  homeId: string,
+  periodStart: string,
+  periodEnd: string,
+): AllegationsIntelligence {
+  const allegationQuality = evaluateAllegationQuality(records);
+  const allegationCompliance = evaluateAllegationCompliance(records);
+  const allegationPolicy = evaluateAllegationPolicy(policy);
+  const staffReadiness = evaluateStaffAllegationReadiness(staff);
+  const childProfiles = buildChildAllegationProfiles(records);
+
+  const overallScore = Math.min(
+    100,
+    allegationQuality.overallScore + allegationCompliance.overallScore + allegationPolicy.overallScore + staffReadiness.overallScore,
+  );
+  const rating = getRating(overallScore);
+
+  // Strengths (>=80%)
+  const strengths: string[] = [];
+  if (allegationQuality.ladoReferralRate >= 80) strengths.push("LADO referrals are consistently made where required");
+  if (allegationQuality.ofstedNotifiedRate >= 80) strengths.push("Ofsted notifications are routinely completed");
+  if (allegationQuality.childSupportRate >= 80) strengths.push("Children involved in allegations are consistently offered support");
+  if (allegationQuality.staffSupportRate >= 80) strengths.push("Staff subject to allegations receive appropriate support");
+  if (allegationCompliance.documentationRate >= 80) strengths.push("Allegations documentation is thorough and complete");
+  if (allegationCompliance.timelyInvestigationRate >= 80) strengths.push("Investigations are completed within required timescales");
+  if (staffReadiness.safeguardingKnowledgeRate >= 80) strengths.push("Staff have strong safeguarding knowledge");
+  if (staffReadiness.allegationProceduresRate >= 80) strengths.push("Staff are well trained in allegation procedures");
+
+  // Areas for improvement (<60%)
+  const areasForImprovement: string[] = [];
+  if (allegationQuality.ladoReferralRate < 60) areasForImprovement.push("LADO referrals are not consistently made where required");
+  if (allegationQuality.ofstedNotifiedRate < 60) areasForImprovement.push("Ofsted notifications are not being made consistently");
+  if (allegationQuality.childSupportRate < 60) areasForImprovement.push("Children involved in allegations are not receiving adequate support");
+  if (allegationQuality.staffSupportRate < 60) areasForImprovement.push("Staff support during allegations needs improvement");
+  if (allegationCompliance.documentationRate < 60) areasForImprovement.push("Allegations documentation is incomplete or inconsistent");
+  if (allegationCompliance.timelyInvestigationRate < 60) areasForImprovement.push("Investigations are not being completed promptly");
+  if (staffReadiness.safeguardingKnowledgeRate < 60) areasForImprovement.push("Staff safeguarding knowledge needs development");
+  if (staffReadiness.allegationProceduresRate < 60) areasForImprovement.push("Staff need more training in allegation procedures");
+
+  // Actions
+  const actions: string[] = [];
+  if (allegationPolicy.overallScore === 0) actions.push("URGENT: Establish an allegations policy — CHR 2015 Reg 37/38 require documented procedures for handling allegations");
+  if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide safeguarding and allegation management training to all staff — proper investigation depends on skilled practitioners");
+  if (allegationQuality.ladoReferralRate < 50) actions.push("Ensure all allegations in relevant categories are referred to LADO — Working Together 2023 requires referral within 1 working day");
+  if (allegationQuality.ofstedNotifiedRate < 50) actions.push("Implement systematic Ofsted notification for all notifiable events — CHR 2015 Reg 40");
+  if (allegationCompliance.documentationRate < 50) actions.push("Improve allegations documentation — all investigations must be fully recorded");
+  if (allegationCompliance.timelyInvestigationRate < 50) actions.push("Review investigation timescales — allegations should be investigated promptly");
+  if (allegationQuality.childSupportRate < 50) actions.push("Ensure children involved in allegations are offered therapeutic and advocacy support");
+  if (staffReadiness.ladoProcessRate < 50) actions.push("Train staff in LADO referral process — timely referrals are essential for safeguarding");
+
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Reg 37 — Complaints and representations",
+    "CHR 2015 Reg 38 — Allegation procedures",
+    "CHR 2015 Reg 40 — Notification of serious events",
+    "Working Together 2023 Ch 2 — Managing allegations",
+    "Keeping Children Safe in Education 2024 Part 4",
+    "SCCIF — Leadership and management (responding to allegations)",
+    "Safeguarding Vulnerable Groups Act 2006 — DBS referral duty",
+  ];
+
+  return {
+    homeId,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    allegationQuality,
+    allegationCompliance,
+    allegationPolicy,
+    staffReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
+  };
 }

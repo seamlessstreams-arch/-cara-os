@@ -1,28 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Allegations Against Staff — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
   generateAllegationsIntelligence,
+  evaluateAllegationQuality,
   evaluateAllegationCompliance,
-  analyseAllegationPatterns,
-  buildAllegationStaffProfiles,
+  evaluateAllegationPolicy,
+  evaluateStaffAllegationReadiness,
+  buildChildAllegationProfiles,
+  pct,
+  getRating,
   getAllegationCategoryLabel,
   getAllegationOutcomeLabel,
-  getStaffActionLabel,
-  getSourceLabel,
+  getRatingLabel,
 } from "./allegations-engine";
 
 export type {
   AllegationCategory,
-  AllegationSource,
   AllegationOutcome,
-  InvestigationStatus,
-  StaffAction,
-  StaffMember,
-  Allegation,
+  Rating,
+  AllegationRecord,
+  AllegationPolicy,
+  StaffAllegationTraining,
+  AllegationQualityResult,
   AllegationComplianceResult,
-  AllegationPatternResult,
-  AllegationStaffProfile,
-  AllegationsIntelligenceResult,
+  AllegationPolicyResult,
+  StaffAllegationReadinessResult,
+  ChildAllegationProfile,
+  AllegationsIntelligence,
 } from "./allegations-engine";

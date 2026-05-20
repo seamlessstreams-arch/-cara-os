@@ -1,410 +1,396 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// ActivitiesDashboardWidget — Children's Activities & Enrichment card
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
-import { useEffect, useState } from "react";
+// ══════════════════════════════════════════════════════════════════════════════
+// ACTIVITIES & ENRICHMENT DASHBOARD WIDGET
+//
+// Displays the 4-layer activities intelligence:
+// - Overall score with rating
+// - Layer scores: activity quality, compliance, policy, staff readiness
+// - Child activity profiles
+// - Strengths, areas for improvement, and actions
+// - Regulatory references
+// ══════════════════════════════════════════════════════════════════════════════
 
-interface ActivityRecord {
-  id: string;
-  name: string;
-  category: string;
-  participationLevel: string;
-  communityBased: boolean;
-  childChosenActivity: boolean;
-  achievements?: string[];
-  endDate?: string;
+import { useState, useEffect } from "react";
+
+// ── Local interfaces (mirrors API shape) ──────────────────────────────────
+
+interface ActivityQualityData {
+  totalRecords: number;
+  childChoiceRate: number;
+  ageAppropriateRate: number;
+  inclusiveRate: number;
+  enjoymentRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-interface ChildResult {
+interface ActivityComplianceData {
+  totalRecords: number;
+  documentationRate: number;
+  riskAssessedRate: number;
+  childChoiceRate: number;
+  categoryDiversityRatio: number;
+  uniqueCategories: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface ActivityPolicyData {
+  activitiesPolicy: boolean;
+  inclusionFramework: boolean;
+  riskAssessmentProtocol: boolean;
+  childParticipationGuidance: boolean;
+  communityEngagementStrategy: boolean;
+  budgetAllocationPolicy: boolean;
+  reviewSchedule: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface StaffReadinessData {
+  totalStaff: number;
+  activityPlanningRate: number;
+  safeguardingAwarenessRate: number;
+  inclusionSkillsRate: number;
+  riskManagementRate: number;
+  communityLinksRate: number;
+  firstAidRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface ChildActivityProfileData {
   childId: string;
   childName: string;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  totalActiveActivities: number;
-  communityBasedCount: number;
-  communityRate: number;
-  diversityScore: number;
-  childChosenRate: number;
-  newExperiencesThisQuarter: number;
-  droppedOutCount: number;
-  monthlyBudget: number;
-  monthlySpend: number;
-  budgetUtilisation: number;
-  unresolvedBarriers: number;
-  achievementsCount: number;
+  totalActivities: number;
+  childChoiceRate: number;
+  enjoymentRate: number;
+  uniqueCategories: number;
+  activityScore: number;
 }
 
-interface HomeMetrics {
+interface ActivitiesData {
   homeId: string;
-  totalChildren: number;
-  averageActivitiesPerChild: number;
-  childrenWithNoActivities: number;
-  totalCommunityActivities: number;
-  averageCommunityRate: number;
-  averageDiversityScore: number;
-  leastRepresentedCategories: { category: string; count: number }[];
-  averageChildChosenRate: number;
-  totalNewExperiences: number;
-  totalDroppedOut: number;
-  totalMonthlyBudget: number;
-  totalMonthlySpend: number;
-  averageBudgetUtilisation: number;
-  totalUnresolvedBarriers: number;
-  mostCommonBarriers: { barrier: string; count: number }[];
-  totalAchievements: number;
-  complianceIssues: string[];
+  assessedAt: string;
+  periodStart: string;
+  periodEnd: string;
   overallScore: number;
+  rating: string;
+  activityQuality: ActivityQualityData;
+  activityCompliance: ActivityComplianceData;
+  activityPolicy: ActivityPolicyData;
+  staffReadiness: StaffReadinessData;
+  childProfiles: ChildActivityProfileData[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-interface Profile {
-  childId: string;
-  childName: string;
-  activities: ActivityRecord[];
+// ── Inline Components ─────────────────────────────────────────────────────
+
+function ScoreBar({ label, score, max }: { label: string; score: number; max: number }) {
+  const pctVal = max > 0 ? Math.round((score / max) * 100) : 0;
+  const colour =
+    pctVal >= 80 ? "bg-green-500" : pctVal >= 60 ? "bg-amber-500" : pctVal >= 40 ? "bg-orange-500" : "bg-red-500";
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-600 font-medium">{label}</span>
+        <span className="text-slate-500">{score}/{max}</span>
+      </div>
+      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${colour}`} style={{ width: `${pctVal}%` }} />
+      </div>
+    </div>
+  );
 }
 
-interface DashboardData {
-  metrics: HomeMetrics;
-  childResults: ChildResult[];
-  profiles: Profile[];
+function Section({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+      >
+        <span className="text-sm font-medium text-slate-700">{title}</span>
+        <span className="text-slate-400 text-xs">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && <div className="p-4 space-y-3">{children}</div>}
+    </div>
+  );
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex items-center justify-between py-1">
+      <span className="text-xs text-slate-500">{label}</span>
+      <span className="text-xs font-semibold text-slate-700">{String(value)}</span>
+    </div>
+  );
+}
 
-function getScoreColour(score: number): string {
-  if (score >= 75) return "text-green-600";
-  if (score >= 50) return "text-amber-600";
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function getRatingColour(rating: string): string {
+  switch (rating) {
+    case "outstanding": return "text-green-600";
+    case "good": return "text-amber-600";
+    case "requires_improvement": return "text-orange-600";
+    case "inadequate": return "text-red-600";
+    default: return "text-slate-600";
+  }
+}
+
+function getRatingBg(rating: string): string {
+  switch (rating) {
+    case "outstanding": return "bg-green-50 border-green-200";
+    case "good": return "bg-amber-50 border-amber-200";
+    case "requires_improvement": return "bg-orange-50 border-orange-200";
+    case "inadequate": return "bg-red-50 border-red-200";
+    default: return "bg-slate-50 border-slate-200";
+  }
+}
+
+function formatRating(rating: string): string {
+  return rating.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+function getScoreColour(score: number, max: number): string {
+  const pctVal = max > 0 ? (score / max) * 100 : 0;
+  if (pctVal >= 80) return "text-green-600";
+  if (pctVal >= 60) return "text-amber-600";
   return "text-red-600";
 }
 
-function getScoreBg(score: number): string {
-  if (score >= 75) return "bg-green-50 border-green-100";
-  if (score >= 50) return "bg-amber-50 border-amber-100";
-  return "bg-red-50 border-red-100";
-}
+// ── Main Component ────────────────────────────────────────────────────────
 
-function getCategoryLabel(cat: string): string {
-  const labels: Record<string, string> = {
-    sport_team: "Team Sports",
-    sport_individual: "Individual Sports",
-    creative_arts: "Creative Arts",
-    outdoor_adventure: "Outdoor/Adventure",
-    academic_enrichment: "Academic",
-    cultural: "Cultural",
-    religious_spiritual: "Religious",
-    life_skills: "Life Skills",
-    social_community: "Social/Community",
-    health_wellbeing: "Health & Wellbeing",
-    hobbies_interests: "Hobbies",
-    identity_heritage: "Identity/Heritage",
-  };
-  return labels[cat] ?? cat;
-}
-
-function getBarrierLabel(barrier: string): string {
-  const labels: Record<string, string> = {
-    financial: "Financial",
-    transport: "Transport",
-    confidence: "Confidence",
-    peer_issues: "Peer Issues",
-    timing_clash: "Timing",
-    health_condition: "Health",
-    consent_required: "Consent",
-    placement_restriction: "Restriction",
-    staffing: "Staffing",
-    not_available_locally: "Availability",
-  };
-  return labels[barrier] ?? barrier;
-}
-
-function getCategoryIcon(cat: string): string {
-  const icons: Record<string, string> = {
-    sport_team: "⚽",
-    sport_individual: "🏊",
-    creative_arts: "🎨",
-    outdoor_adventure: "🏕️",
-    academic_enrichment: "📚",
-    cultural: "🎭",
-    religious_spiritual: "🕊️",
-    life_skills: "🍳",
-    social_community: "🤝",
-    health_wellbeing: "🧘",
-    hobbies_interests: "🎮",
-    identity_heritage: "🌍",
-  };
-  return icons[cat] ?? "📋";
-}
-
-// ── Component ────────────────────────────────────────────────────────────────
-
-export function ActivitiesDashboardWidget() {
-  const [data, setData] = useState<DashboardData | null>(null);
+export default function ActivitiesDashboardWidget() {
+  const [data, setData] = useState<ActivitiesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/activities?homeId=home-oak&mode=dashboard")
+    fetch("/api/activities")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch activities data");
         return res.json();
       })
-      .then((json) => setData(json))
+      .then((json) => setData(json.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
+  // Loading skeleton
   if (loading) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm animate-pulse">
-        <div className="h-6 w-52 bg-slate-200 rounded mb-4" />
+        <div className="h-6 w-64 bg-slate-200 rounded mb-4" />
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 bg-slate-100 rounded-lg" />
+          ))}
+        </div>
         <div className="space-y-3">
           <div className="h-4 w-full bg-slate-100 rounded" />
           <div className="h-4 w-3/4 bg-slate-100 rounded" />
+          <div className="h-4 w-1/2 bg-slate-100 rounded" />
         </div>
       </div>
     );
   }
 
-  if (error || !data) {
+  // Error state
+  if (error) {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-        <p className="text-red-700 text-sm">Error loading activities data: {error}</p>
+        <p className="text-red-700 text-sm font-medium">Error loading activities data</p>
+        <p className="text-red-600 text-xs mt-1">{error}</p>
       </div>
     );
   }
 
-  const { metrics, childResults, profiles } = data;
+  // Null guard
+  if (!data) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <p className="text-slate-500 text-sm">No activities data available.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">
-            Activities & Enrichment
-          </h3>
+          <h3 className="text-lg font-semibold text-slate-900">Activities & Enrichment</h3>
           <p className="text-sm text-slate-500 mt-0.5">
-            Leisure, recreation, culture, and new experiences
+            Quality, compliance, policy, and staff readiness
           </p>
         </div>
-        <div className="text-right">
-          <p className={`text-2xl font-bold ${getScoreColour(metrics.overallScore)}`}>
-            {metrics.overallScore}%
+        <div className={`text-right px-4 py-2 rounded-lg border ${getRatingBg(data.rating)}`}>
+          <p className={`text-2xl font-bold ${getRatingColour(data.rating)}`}>
+            {data.overallScore}
           </p>
-          <p className="text-xs text-slate-400">overall score</p>
+          <p className={`text-xs font-medium ${getRatingColour(data.rating)}`}>
+            {formatRating(data.rating)}
+          </p>
         </div>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MetricCard
-          label="Avg Activities"
-          value={String(metrics.averageActivitiesPerChild)}
-          sub="per child"
-          score={Math.min(100, Math.round((metrics.averageActivitiesPerChild / 4) * 100))}
-        />
-        <MetricCard
-          label="Community"
-          value={`${metrics.averageCommunityRate}%`}
-          sub={`${metrics.totalCommunityActivities} activities`}
-          score={metrics.averageCommunityRate}
-        />
-        <MetricCard
-          label="Diversity"
-          value={`${metrics.averageDiversityScore}%`}
-          sub="categories covered"
-          score={metrics.averageDiversityScore}
-        />
-        <MetricCard
-          label="Child Choice"
-          value={`${metrics.averageChildChosenRate}%`}
-          sub="child-chosen"
-          score={metrics.averageChildChosenRate}
-        />
+      {/* 4 Evaluator Score Bars */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ScoreBar label="Activity Quality" score={data.activityQuality.score} max={25} />
+        <ScoreBar label="Activity Compliance" score={data.activityCompliance.score} max={25} />
+        <ScoreBar label="Activity Policy" score={data.activityPolicy.score} max={25} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.score} max={25} />
       </div>
 
-      {/* Per-Child Summary */}
-      <div>
-        <h4 className="text-sm font-medium text-slate-700 mb-3">Children's Activities</h4>
-        <div className="space-y-2">
-          {childResults.map((child) => {
-            const profile = profiles.find(p => p.childId === child.childId);
-            const activeActivities = profile?.activities.filter(
-              a => !a.endDate && (a.participationLevel === "regular" || a.participationLevel === "occasional")
-            ) ?? [];
+      {/* Activity Quality Section */}
+      <Section title="Activity Quality" defaultOpen>
+        <Stat label="Total Records" value={data.activityQuality.totalRecords} />
+        <Stat label="Child Choice Rate" value={data.activityQuality.childChoiceRate + "%"} />
+        <Stat label="Age-Appropriate Rate" value={data.activityQuality.ageAppropriateRate + "%"} />
+        <Stat label="Inclusive Participation Rate" value={data.activityQuality.inclusiveRate + "%"} />
+        <Stat label="Enjoyment Recorded Rate" value={data.activityQuality.enjoymentRate + "%"} />
+      </Section>
 
-            return (
+      {/* Activity Compliance Section */}
+      <Section title="Activity Compliance">
+        <Stat label="Documentation Rate" value={data.activityCompliance.documentationRate + "%"} />
+        <Stat label="Risk Assessed Rate" value={data.activityCompliance.riskAssessedRate + "%"} />
+        <Stat label="Child Choice Rate" value={data.activityCompliance.childChoiceRate + "%"} />
+        <Stat label="Category Diversity" value={data.activityCompliance.uniqueCategories + "/8"} />
+      </Section>
+
+      {/* Activity Policy Section */}
+      <Section title="Activity Policy">
+        <Stat label="Activities Policy" value={data.activityPolicy.activitiesPolicy ? "Yes" : "No"} />
+        <Stat label="Inclusion Framework" value={data.activityPolicy.inclusionFramework ? "Yes" : "No"} />
+        <Stat label="Risk Assessment Protocol" value={data.activityPolicy.riskAssessmentProtocol ? "Yes" : "No"} />
+        <Stat label="Child Participation Guidance" value={data.activityPolicy.childParticipationGuidance ? "Yes" : "No"} />
+        <Stat label="Community Engagement Strategy" value={data.activityPolicy.communityEngagementStrategy ? "Yes" : "No"} />
+        <Stat label="Budget Allocation Policy" value={data.activityPolicy.budgetAllocationPolicy ? "Yes" : "No"} />
+        <Stat label="Review Schedule" value={data.activityPolicy.reviewSchedule ? "Yes" : "No"} />
+      </Section>
+
+      {/* Staff Readiness Section */}
+      <Section title="Staff Readiness">
+        <Stat label="Total Staff Trained" value={data.staffReadiness.totalStaff} />
+        <Stat label="Activity Planning" value={data.staffReadiness.activityPlanningRate + "%"} />
+        <Stat label="Safeguarding Awareness" value={data.staffReadiness.safeguardingAwarenessRate + "%"} />
+        <Stat label="Inclusion Skills" value={data.staffReadiness.inclusionSkillsRate + "%"} />
+        <Stat label="Risk Management" value={data.staffReadiness.riskManagementRate + "%"} />
+        <Stat label="Community Links" value={data.staffReadiness.communityLinksRate + "%"} />
+        <Stat label="First Aid" value={data.staffReadiness.firstAidRate + "%"} />
+      </Section>
+
+      {/* Child Activity Profiles */}
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Activity Profiles">
+          <div className="space-y-3">
+            {data.childProfiles.map((child) => (
               <div
                 key={child.childId}
-                className="p-3 rounded-lg border border-slate-100"
+                className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-slate-800">{child.childName}</p>
-                    <span className="text-xs text-slate-500">
-                      {child.totalActiveActivities} active &middot; {child.communityBasedCount} community
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {child.achievementsCount > 0 && (
-                      <span className="text-xs bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
-                        {child.achievementsCount} achievements
-                      </span>
-                    )}
-                    {child.unresolvedBarriers > 0 && (
-                      <span className="text-xs bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
-                        {child.unresolvedBarriers} barriers
-                      </span>
-                    )}
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-800">{child.childName}</p>
+                  <p className="text-xs text-slate-500">
+                    {child.totalActivities} activities, {child.uniqueCategories} categories, {child.childChoiceRate}% choice, {child.enjoymentRate}% enjoyment
+                  </p>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {activeActivities.map((act) => (
-                    <span
-                      key={act.id}
-                      className={`text-xs px-2 py-0.5 rounded-full border ${
-                        act.communityBased
-                          ? "bg-blue-50 text-blue-700 border-blue-100"
-                          : "bg-slate-50 text-slate-600 border-slate-100"
-                      }`}
-                    >
-                      {getCategoryIcon(act.category)} {act.name.split("(")[0].trim()}
-                    </span>
-                  ))}
+                <div className={`text-lg font-bold ${getScoreColour(child.activityScore, 10)}`}>
+                  {child.activityScore}/10
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Budget Overview */}
-      <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-        <div className="flex items-center gap-4">
-          <div>
-            <p className="text-xs text-slate-500">Monthly Budget</p>
-            <p className="text-sm font-semibold text-slate-800">
-              £{metrics.totalMonthlySpend} / £{metrics.totalMonthlyBudget}
-            </p>
-          </div>
-          <div className="w-32 h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full ${
-                metrics.averageBudgetUtilisation >= 70 ? "bg-green-500" :
-                metrics.averageBudgetUtilisation >= 40 ? "bg-amber-500" : "bg-red-500"
-              }`}
-              style={{ width: `${Math.min(100, metrics.averageBudgetUtilisation)}%` }}
-            />
-          </div>
-          <span className="text-xs text-slate-500">{metrics.averageBudgetUtilisation}% used</span>
-        </div>
-        <div className="text-right">
-          <p className="text-xs text-slate-500">New Experiences</p>
-          <p className="text-sm font-semibold text-slate-800">{metrics.totalNewExperiences} this quarter</p>
-        </div>
-      </div>
-
-      {/* Least Represented Categories */}
-      {metrics.leastRepresentedCategories.filter(c => c.count === 0).length > 0 && (
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-blue-800 mb-2">Gaps to Explore</h4>
-          <div className="flex flex-wrap gap-2">
-            {metrics.leastRepresentedCategories
-              .filter(c => c.count === 0)
-              .map((cat) => (
-                <span
-                  key={cat.category}
-                  className="text-xs bg-white text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full"
-                >
-                  {getCategoryIcon(cat.category)} {getCategoryLabel(cat.category)}
-                </span>
-              ))}
-          </div>
-        </div>
-      )}
-
-      {/* Barriers */}
-      {metrics.mostCommonBarriers.length > 0 && (
-        <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-amber-800 mb-2">
-            Active Barriers ({metrics.totalUnresolvedBarriers})
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {metrics.mostCommonBarriers.map((b) => (
-              <span
-                key={b.barrier}
-                className="text-xs bg-white text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full"
-              >
-                {getBarrierLabel(b.barrier)} ({b.count})
-              </span>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Compliance Issues */}
-      {metrics.complianceIssues.length > 0 && (
-        <div className="bg-red-50 border border-red-100 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-red-800 mb-2">
-            Issues ({metrics.complianceIssues.length})
-          </h4>
-          <ul className="space-y-1">
-            {metrics.complianceIssues.map((issue, i) => (
-              <li key={i} className="text-xs text-red-700 flex items-start gap-1.5">
-                <span className="mt-0.5 shrink-0">•</span>
-                <span>{issue}</span>
+      {/* Strengths */}
+      {data.strengths.length > 0 && (
+        <Section title="Strengths">
+          <ul className="space-y-1.5">
+            {data.strengths.map((s, i) => (
+              <li key={i} className="text-xs text-green-700 flex items-start gap-1.5">
+                <span className="mt-0.5 shrink-0 text-green-500">+</span>
+                <span>{s}</span>
               </li>
             ))}
           </ul>
-        </div>
+        </Section>
+      )}
+
+      {/* Areas for Improvement */}
+      {data.areasForImprovement.length > 0 && (
+        <Section title="Areas for Improvement">
+          <ul className="space-y-1.5">
+            {data.areasForImprovement.map((a, i) => (
+              <li key={i} className="text-xs text-amber-700 flex items-start gap-1.5">
+                <span className="mt-0.5 shrink-0 text-amber-500">-</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Actions */}
+      {data.actions.length > 0 && (
+        <Section title="Actions">
+          <ul className="space-y-1.5">
+            {data.actions.map((a, i) => (
+              <li key={i} className={`text-xs flex items-start gap-1.5 ${
+                a.startsWith("URGENT") ? "text-red-700" :
+                a.startsWith("HIGH") ? "text-orange-700" :
+                a.startsWith("MEDIUM") ? "text-amber-700" :
+                "text-slate-600"
+              }`}>
+                <span className="mt-0.5 shrink-0">*</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Regulatory Links */}
+      {data.regulatoryLinks.length > 0 && (
+        <Section title="Regulatory References">
+          <ul className="space-y-1">
+            {data.regulatoryLinks.map((link, i) => (
+              <li key={i} className="text-xs text-slate-500">{link}</li>
+            ))}
+          </ul>
+        </Section>
       )}
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-        <div className="flex items-center gap-4">
-          <MiniStat label="Achievements" value={String(metrics.totalAchievements)} />
-          <MiniStat label="Dropped out" value={String(metrics.totalDroppedOut)} />
-          {metrics.childrenWithNoActivities > 0 && (
-            <MiniStat label="No activities" value={String(metrics.childrenWithNoActivities)} />
-          )}
-        </div>
         <span className="text-xs text-slate-400">
-          Reg 9 &middot; UNCRC Art 31
+          Period: {data.periodStart} to {data.periodEnd}
+        </span>
+        <span className="text-xs text-slate-400">
+          Reg 9 &middot; Reg 5 &middot; UNCRC Art 31
         </span>
       </div>
-    </div>
-  );
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function MetricCard({
-  label,
-  value,
-  sub,
-  score,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  score: number;
-}) {
-  return (
-    <div className="bg-slate-50 rounded-lg p-3">
-      <p className="text-xs text-slate-500 mb-1">{label}</p>
-      <p className={`text-lg font-semibold ${getScoreColour(score)}`}>{value}</p>
-      <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
-    </div>
-  );
-}
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-xs text-slate-500">{label}:</span>
-      <span className="text-xs font-semibold text-slate-700">{value}</span>
     </div>
   );
 }
