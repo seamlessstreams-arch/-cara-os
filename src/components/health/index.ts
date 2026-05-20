@@ -1,1 +1,1 @@
-export { HealthDashboardWidget } from "./HealthDashboardWidget";
+export { default as HealthDashboardWidget } from "./HealthDashboardWidget";

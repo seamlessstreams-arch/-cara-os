@@ -1,1 +1,1 @@
-export { SupervisionDashboardWidget } from "./SupervisionDashboardWidget";
+export { default as SupervisionDashboardWidget } from "./SupervisionDashboardWidget";

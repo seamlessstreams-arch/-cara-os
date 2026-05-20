@@ -1,21 +1,32 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Staff Supervision — Public API
-// ══════════════════════════════════════════════════════════════════════════════
+/* ──────────────────────────────────────────────────────────────
+   Supervision Intelligence — Barrel Re-export
+   ────────────────────────────────────────────────────────────── */
 
 export {
-  evaluateSupervisionCompliance,
-  calculateTeamMetrics,
+  pct,
+  getRating,
   getSupervisionTypeLabel,
-  getTopicLabel,
+  getContentCoverageLabel,
+  getRatingLabel,
+  evaluateSupervisionQuality,
+  evaluateSupervisionCompliance,
+  evaluateSupervisionPolicy,
+  evaluateStaffSupervisionReadiness,
+  buildStaffSupervisionProfiles,
+  generateSupervisionIntelligence,
 } from "./supervision-engine";
 
 export type {
   SupervisionType,
-  SupervisionTopic,
-  ActionStatus,
-  SupervisionRecord,
-  SupervisionAction,
-  StaffSupervisionProfile,
+  ContentCoverage,
+  Rating,
+  SupervisionSession,
+  SupervisionPolicy,
+  StaffSupervisionTraining,
+  SupervisionQualityResult,
   SupervisionComplianceResult,
-  TeamSupervisionMetrics,
+  SupervisionPolicyResult,
+  StaffReadinessResult,
+  StaffSupervisionProfile,
+  SupervisionIntelligence,
 } from "./supervision-engine";

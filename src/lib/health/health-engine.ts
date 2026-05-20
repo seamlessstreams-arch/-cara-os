@@ -1,385 +1,582 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Health & Wellbeing — Intelligence Engine
-//
-// Deterministic engine for tracking health assessments, medication management,
-// appointments, immunisations, and dental/optical checks.
-//
-// Aligned to:
-//   - CHR 2015 Reg 10 — The health and wellbeing standard
-//   - Promoting Health of Looked After Children (DfE/DoH 2015)
-//   - IHA within 20 working days of becoming LAC
-//   - RHA annually (6-monthly for under-5s)
-//   - SDQ (Strengths & Difficulties Questionnaire) annually
-//
-// Health requirements for looked-after children:
-//   1. Initial Health Assessment (IHA) within 20 working days
-//   2. Review Health Assessment (RHA) annually (6-monthly <5 years)
-//   3. Dental check every 6 months
-//   4. Optical check annually
-//   5. Immunisations up to date
-//   6. SDQ completed annually
-//   7. Medication recorded and administered safely
-//
-// No AI. No external calls. Pure input → output.
-// ══════════════════════════════════════════════════════════════════════════════
+/* ──────────────────────────────────────────────────────────────
+   Health Intelligence Engine
+
+   Pure deterministic engine for tracking health assessments,
+   medical appointments, immunisations, and wellbeing for
+   looked-after children.
+
+   Regulatory basis:
+     - CHR 2015 Reg 10 — The health and wellbeing standard
+     - Promoting Health of Looked After Children (DfE/DoH 2015)
+     - IHA within 20 working days of becoming LAC
+     - RHA annually (6-monthly for under-5s)
+     - SDQ (Strengths & Difficulties Questionnaire) annually
+     - SCCIF — Health and wellbeing of children
+     - UNCRC Article 24 — Right to health
+
+   No AI. No external calls. Pure input → output.
+   ────────────────────────────────────────────────────────────── */
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type HealthAssessmentType = "iha" | "rha" | "dental" | "optical" | "sdq" | "immunisation_review";
+export type HealthAssessmentType =
+  | "initial_health_assessment"
+  | "review_health_assessment"
+  | "dental_check"
+  | "optical_check"
+  | "immunisation_review"
+  | "sdq_assessment"
+  | "mental_health_review"
+  | "specialist_referral";
 
-export type MedicationType = "regular" | "prn" | "short_course" | "depot" | "controlled";
+export type AssessmentOutcome =
+  | "completed_on_time"
+  | "completed_late"
+  | "overdue"
+  | "missed"
+  | "not_due";
 
-export type AppointmentStatus = "scheduled" | "attended" | "dna" | "cancelled" | "rescheduled";
+export type Rating =
+  | "outstanding"
+  | "good"
+  | "requires_improvement"
+  | "inadequate";
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
+// ── Input Interfaces ───────────────────────────────────────────────────────
 
-export interface ChildHealthRecord {
+export interface HealthRecord {
+  id: string;
   childId: string;
   childName: string;
-  homeId: string;
-  dateOfBirth: string;
-  gpName: string;
-  gpSurgery: string;
-  dentist: string;
-  optician: string;
-
-  // Assessments
-  healthAssessments: HealthAssessment[];
-  lacEntryDate: string;           // date became looked-after
-
-  // Medication
-  medications: MedicationRecord[];
-
-  // Appointments
-  appointments: AppointmentRecord[];
-
-  // Immunisations
-  immunisationsUpToDate: boolean;
-  immunisationNotes?: string;
-
-  // SDQ
-  lastSDQDate?: string;
-  lastSDQScore?: number;          // 0-40 total difficulties
-  sdqBand?: "normal" | "borderline" | "abnormal";
-
-  // Conditions
-  knownConditions: string[];
-  allergies: string[];
-  dietaryRequirements: string[];
+  assessmentDate: string;
+  assessmentType: HealthAssessmentType;
+  outcome: AssessmentOutcome;
+  childConsented: boolean;
+  actionPlanCreated: boolean;
+  gpNotified: boolean;
+  documentedInCareFile: boolean;
+  followUpScheduled: boolean;
+  parentCarerInformed: boolean;
 }
 
-export interface HealthAssessment {
-  type: HealthAssessmentType;
-  date: string;
-  assessedBy: string;
-  outcome: string;
-  actionPlan: string[];
-  nextDueDate: string;
-}
-
-export interface MedicationRecord {
+export interface HealthPolicy {
   id: string;
-  name: string;
-  type: MedicationType;
-  dose: string;
-  frequency: string;
-  prescribedBy: string;
-  startDate: string;
-  endDate?: string;
-  active: boolean;
-  sideEffectsMonitored: boolean;
-  consentObtained: boolean;
-  lastReviewDate?: string;
-  nextReviewDate?: string;
+  healthAssessmentSchedule: boolean;
+  mentalHealthStrategy: boolean;
+  medicationProtocol: boolean;
+  consentFramework: boolean;
+  dentalOpticalTracking: boolean;
+  immunisationMonitoring: boolean;
+  regularReview: boolean;
 }
 
-export interface AppointmentRecord {
+export interface StaffHealthTraining {
   id: string;
-  type: string;                   // "GP", "CAMHS", "Dentist", etc.
-  date: string;
-  provider: string;
-  status: AppointmentStatus;
-  notes?: string;
-  followUpRequired: boolean;
-  followUpDate?: string;
+  staffId: string;
+  staffName: string;
+  healthAssessmentProcess: boolean;
+  mentalHealthAwareness: boolean;
+  medicationAdministration: boolean;
+  consentAndCapacity: boolean;
+  firstAidCertified: boolean;
+  healthPromotionSkills: boolean;
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
+export interface HealthQualityResult {
+  overallScore: number;
+  totalRecords: number;
+  completedOnTimeRate: number;
+  childConsentRate: number;
+  actionPlanRate: number;
+  followUpRate: number;
+}
+
 export interface HealthComplianceResult {
+  overallScore: number;
+  totalRecords: number;
+  documentedRate: number;
+  gpNotifiedRate: number;
+  parentInformedRate: number;
+  typeDiversityRatio: number;
+}
+
+export interface HealthPolicyResult {
+  overallScore: number;
+  healthAssessmentSchedule: boolean;
+  mentalHealthStrategy: boolean;
+  medicationProtocol: boolean;
+  consentFramework: boolean;
+  dentalOpticalTracking: boolean;
+  immunisationMonitoring: boolean;
+  regularReview: boolean;
+}
+
+export interface StaffHealthReadinessResult {
+  overallScore: number;
+  totalStaff: number;
+  healthAssessmentProcessRate: number;
+  mentalHealthAwarenessRate: number;
+  medicationAdministrationRate: number;
+  consentAndCapacityRate: number;
+  firstAidCertifiedRate: number;
+  healthPromotionSkillsRate: number;
+}
+
+export interface ChildHealthProfile {
   childId: string;
   childName: string;
-  isCompliant: boolean;
-  issues: string[];
-  ihaCompliant: boolean;
-  rhaCompliant: boolean;
-  dentalCompliant: boolean;
-  opticalCompliant: boolean;
-  sdqCompliant: boolean;
-  immunisationsCompliant: boolean;
-  medicationCompliant: boolean;
-  dnaRate: number;                // % DNA of total appointments
-  recommendations: string[];
+  totalAssessments: number;
+  overallScore: number;
+  completedOnTimeRate: number;
+  childConsentRate: number;
+  diversityCount: number;
 }
 
-export interface HomeHealthMetrics {
+export interface HealthIntelligence {
   homeId: string;
-  childCount: number;
-  overallComplianceRate: number;  // %
-  ihaComplianceRate: number;
-  rhaComplianceRate: number;
-  dentalComplianceRate: number;
-  opticalComplianceRate: number;
-  sdqComplianceRate: number;
-  immunisationRate: number;       // %
-  averageDNARate: number;
-  totalActiveMedications: number;
-  medicationsOverdueReview: number;
-  upcomingAppointments: { childId: string; childName: string; type: string; date: string }[];
-  concerns: { childId: string; childName: string; concern: string }[];
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  healthQuality: HealthQualityResult;
+  healthCompliance: HealthComplianceResult;
+  healthPolicy: HealthPolicyResult;
+  staffHealthReadiness: StaffHealthReadinessResult;
+  childProfiles: ChildHealthProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const IHA_DEADLINE_WORKING_DAYS = 20;
-const RHA_INTERVAL_MONTHS = 12;        // annual for 5+
-const RHA_INTERVAL_MONTHS_UNDER5 = 6;  // 6-monthly for under-5s
-const DENTAL_INTERVAL_MONTHS = 6;
-const OPTICAL_INTERVAL_MONTHS = 12;
-const SDQ_INTERVAL_MONTHS = 12;
-const MEDICATION_REVIEW_MONTHS = 3;    // every 3 months minimum
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
 
-// ── Core: Evaluate Health Compliance ─────────────────────────────────────
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
 
-export function evaluateHealthCompliance(
-  record: ChildHealthRecord,
-  now?: string,
-): HealthComplianceResult {
-  const currentDate = now ? new Date(now) : new Date();
-  const issues: string[] = [];
-  const recommendations: string[] = [];
+// ── Label Maps ─────────────────────────────────────────────────────────────
 
-  const ageYears = Math.floor(
-    (currentDate.getTime() - new Date(record.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000),
-  );
+const ASSESSMENT_TYPE_LABELS: Record<HealthAssessmentType, string> = {
+  initial_health_assessment: "Initial Health Assessment",
+  review_health_assessment: "Review Health Assessment",
+  dental_check: "Dental Check",
+  optical_check: "Optical Check",
+  immunisation_review: "Immunisation Review",
+  sdq_assessment: "SDQ Assessment",
+  mental_health_review: "Mental Health Review",
+  specialist_referral: "Specialist Referral",
+};
 
-  // IHA (within 20 working days of becoming LAC)
-  const iha = record.healthAssessments.find(a => a.type === "iha");
-  const ihaCompliant = !!iha;
-  if (!ihaCompliant) {
-    const daysSinceLAC = Math.floor(
-      (currentDate.getTime() - new Date(record.lacEntryDate).getTime()) / (24 * 60 * 60 * 1000),
-    );
-    if (daysSinceLAC > IHA_DEADLINE_WORKING_DAYS * 1.5) { // approx working days
-      issues.push("Initial Health Assessment (IHA) not completed — statutory deadline passed.");
-      recommendations.push("URGENT: Arrange IHA with LAC nurse immediately.");
-    }
+const OUTCOME_LABELS: Record<AssessmentOutcome, string> = {
+  completed_on_time: "Completed On Time",
+  completed_late: "Completed Late",
+  overdue: "Overdue",
+  missed: "Missed",
+  not_due: "Not Due",
+};
+
+const RATING_LABELS: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
+
+export function getAssessmentTypeLabel(v: HealthAssessmentType): string {
+  return ASSESSMENT_TYPE_LABELS[v];
+}
+
+export function getOutcomeLabel(v: AssessmentOutcome): string {
+  return OUTCOME_LABELS[v];
+}
+
+export function getRatingLabel(v: Rating): string {
+  return RATING_LABELS[v];
+}
+
+// ── Evaluator 1: Health Quality (0–25) ─────────────────────────────────────
+
+export function evaluateHealthQuality(
+  records: HealthRecord[],
+): HealthQualityResult {
+  if (records.length === 0) {
+    return {
+      overallScore: 0,
+      totalRecords: 0,
+      completedOnTimeRate: 0,
+      childConsentRate: 0,
+      actionPlanRate: 0,
+      followUpRate: 0,
+    };
   }
 
-  // RHA (annual or 6-monthly for under-5s)
-  const rhaInterval = ageYears < 5 ? RHA_INTERVAL_MONTHS_UNDER5 : RHA_INTERVAL_MONTHS;
-  const rhaAssessments = record.healthAssessments.filter(a => a.type === "rha");
-  const lastRHA = rhaAssessments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-  const rhaDeadline = new Date(currentDate.getTime() - rhaInterval * 30 * 24 * 60 * 60 * 1000);
-  const rhaCompliant = !!(lastRHA && new Date(lastRHA.date) >= rhaDeadline) || !!(iha && !lastRHA && new Date(iha.date) >= rhaDeadline);
-  if (!rhaCompliant && ihaCompliant) {
-    issues.push(`Review Health Assessment overdue (interval: ${rhaInterval} months).`);
-    recommendations.push("Schedule RHA with LAC health team.");
-  }
+  const completedOnTime = records.filter(
+    (r) => r.outcome === "completed_on_time",
+  ).length;
+  const consented = records.filter((r) => r.childConsented).length;
+  const actionPlan = records.filter((r) => r.actionPlanCreated).length;
+  const followUp = records.filter((r) => r.followUpScheduled).length;
 
-  // Dental (every 6 months)
-  const dentalAssessments = record.healthAssessments.filter(a => a.type === "dental");
-  const lastDental = dentalAssessments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-  const dentalDeadline = new Date(currentDate.getTime() - DENTAL_INTERVAL_MONTHS * 30 * 24 * 60 * 60 * 1000);
-  const dentalCompliant = !!(lastDental && new Date(lastDental.date) >= dentalDeadline);
-  if (!dentalCompliant) {
-    issues.push("Dental check overdue (6-monthly requirement).");
-    recommendations.push("Book dental appointment.");
-  }
+  const completedOnTimeRate = pct(completedOnTime, records.length);
+  const childConsentRate = pct(consented, records.length);
+  const actionPlanRate = pct(actionPlan, records.length);
+  const followUpRate = pct(followUp, records.length);
 
-  // Optical (annual)
-  const opticalAssessments = record.healthAssessments.filter(a => a.type === "optical");
-  const lastOptical = opticalAssessments.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-  const opticalDeadline = new Date(currentDate.getTime() - OPTICAL_INTERVAL_MONTHS * 30 * 24 * 60 * 60 * 1000);
-  const opticalCompliant = !!(lastOptical && new Date(lastOptical.date) >= opticalDeadline);
-  if (!opticalCompliant) {
-    issues.push("Optical check overdue (annual requirement).");
-    recommendations.push("Book eye test appointment.");
-  }
-
-  // SDQ (annual)
-  const sdqCompliant = !!(record.lastSDQDate &&
-    new Date(record.lastSDQDate) >= new Date(currentDate.getTime() - SDQ_INTERVAL_MONTHS * 30 * 24 * 60 * 60 * 1000));
-  if (!sdqCompliant) {
-    issues.push("SDQ not completed within last 12 months.");
-    recommendations.push("Complete SDQ with carer and teacher.");
-  }
-
-  // SDQ score concern
-  if (record.sdqBand === "abnormal" && record.lastSDQScore) {
-    recommendations.push(`SDQ total score ${record.lastSDQScore} (abnormal range) — ensure CAMHS referral in place.`);
-  }
-
-  // Immunisations
-  const immunisationsCompliant = record.immunisationsUpToDate;
-  if (!immunisationsCompliant) {
-    issues.push("Immunisations not up to date.");
-    recommendations.push("Book immunisation catch-up with GP.");
-  }
-
-  // Medication compliance
-  const activeMeds = record.medications.filter(m => m.active);
-  const overdueReview = activeMeds.filter(m => {
-    if (!m.nextReviewDate) return true;
-    return new Date(m.nextReviewDate) < currentDate;
-  });
-  const medicationCompliant = overdueReview.length === 0 &&
-    activeMeds.every(m => m.consentObtained && m.sideEffectsMonitored);
-  if (!medicationCompliant) {
-    if (overdueReview.length > 0) {
-      issues.push(`${overdueReview.length} medication(s) overdue for review.`);
-      recommendations.push("Schedule medication review with prescriber.");
-    }
-    const noConsent = activeMeds.filter(m => !m.consentObtained);
-    if (noConsent.length > 0) {
-      issues.push(`Consent not obtained for ${noConsent.length} medication(s).`);
-    }
-  }
-
-  // DNA rate
-  const allAppointments = record.appointments;
-  const dnaCount = allAppointments.filter(a => a.status === "dna").length;
-  const dnaRate = allAppointments.length > 0
-    ? Math.round((dnaCount / allAppointments.length) * 100)
-    : 0;
-  if (dnaRate > 20) {
-    recommendations.push(`High DNA rate (${dnaRate}%) — review barriers to appointment attendance.`);
-  }
-
-  const isCompliant = issues.length === 0;
+  // Weights: completedOnTimeRate 7 + childConsentRate 6 + actionPlanRate 6 + followUpRate 6 = 25
+  let score = 0;
+  score += Math.round((completedOnTimeRate / 100) * 7);
+  score += Math.round((childConsentRate / 100) * 6);
+  score += Math.round((actionPlanRate / 100) * 6);
+  score += Math.round((followUpRate / 100) * 6);
 
   return {
-    childId: record.childId,
-    childName: record.childName,
-    isCompliant,
-    issues,
-    ihaCompliant,
-    rhaCompliant,
-    dentalCompliant,
-    opticalCompliant,
-    sdqCompliant,
-    immunisationsCompliant,
-    medicationCompliant,
-    dnaRate,
-    recommendations,
+    overallScore: Math.min(25, Math.max(0, score)),
+    totalRecords: records.length,
+    completedOnTimeRate,
+    childConsentRate,
+    actionPlanRate,
+    followUpRate,
   };
 }
 
-// ── Core: Home Health Metrics ────────────────────────────────────────────
+// ── Evaluator 2: Health Compliance (0–25) ──────────────────────────────────
 
-export function calculateHomeHealthMetrics(
-  records: ChildHealthRecord[],
-  homeId: string,
-  now?: string,
-): HomeHealthMetrics {
-  const currentDate = now ? new Date(now) : new Date();
-  const homeRecords = records.filter(r => r.homeId === homeId);
+const ALL_ASSESSMENT_TYPES: HealthAssessmentType[] = [
+  "initial_health_assessment",
+  "review_health_assessment",
+  "dental_check",
+  "optical_check",
+  "immunisation_review",
+  "sdq_assessment",
+  "mental_health_review",
+  "specialist_referral",
+];
 
-  const results = homeRecords.map(r => evaluateHealthCompliance(r, now));
-
-  // Compliance rates
-  const compliantCount = results.filter(r => r.isCompliant).length;
-  const overallComplianceRate = homeRecords.length > 0
-    ? Math.round((compliantCount / homeRecords.length) * 100)
-    : 100;
-
-  const ihaComplianceRate = homeRecords.length > 0
-    ? Math.round((results.filter(r => r.ihaCompliant).length / homeRecords.length) * 100)
-    : 100;
-  const rhaComplianceRate = homeRecords.length > 0
-    ? Math.round((results.filter(r => r.rhaCompliant).length / homeRecords.length) * 100)
-    : 100;
-  const dentalComplianceRate = homeRecords.length > 0
-    ? Math.round((results.filter(r => r.dentalCompliant).length / homeRecords.length) * 100)
-    : 100;
-  const opticalComplianceRate = homeRecords.length > 0
-    ? Math.round((results.filter(r => r.opticalCompliant).length / homeRecords.length) * 100)
-    : 100;
-  const sdqComplianceRate = homeRecords.length > 0
-    ? Math.round((results.filter(r => r.sdqCompliant).length / homeRecords.length) * 100)
-    : 100;
-  const immunisationRate = homeRecords.length > 0
-    ? Math.round((results.filter(r => r.immunisationsCompliant).length / homeRecords.length) * 100)
-    : 100;
-
-  // DNA rate
-  const averageDNARate = results.length > 0
-    ? Math.round(results.reduce((s, r) => s + r.dnaRate, 0) / results.length)
-    : 0;
-
-  // Medications
-  const totalActiveMedications = homeRecords.reduce(
-    (s, r) => s + r.medications.filter(m => m.active).length, 0,
-  );
-  const medicationsOverdueReview = homeRecords.reduce((s, r) => {
-    return s + r.medications.filter(m =>
-      m.active && m.nextReviewDate && new Date(m.nextReviewDate) < currentDate,
-    ).length;
-  }, 0);
-
-  // Upcoming appointments (next 14 days)
-  const fourteenDays = new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000);
-  const upcomingAppointments = homeRecords.flatMap(r =>
-    r.appointments
-      .filter(a => a.status === "scheduled" && new Date(a.date) >= currentDate && new Date(a.date) <= fourteenDays)
-      .map(a => ({ childId: r.childId, childName: r.childName, type: a.type, date: a.date })),
-  ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  // Concerns
-  const concerns: { childId: string; childName: string; concern: string }[] = [];
-  for (const result of results) {
-    for (const issue of result.issues) {
-      concerns.push({ childId: result.childId, childName: result.childName, concern: issue });
-    }
+export function evaluateHealthCompliance(
+  records: HealthRecord[],
+): HealthComplianceResult {
+  if (records.length === 0) {
+    return {
+      overallScore: 0,
+      totalRecords: 0,
+      documentedRate: 0,
+      gpNotifiedRate: 0,
+      parentInformedRate: 0,
+      typeDiversityRatio: 0,
+    };
   }
+
+  const documented = records.filter((r) => r.documentedInCareFile).length;
+  const gpNotified = records.filter((r) => r.gpNotified).length;
+  const parentInformed = records.filter((r) => r.parentCarerInformed).length;
+
+  const uniqueTypes = new Set(records.map((r) => r.assessmentType));
+  const typeDiversityRatio = pct(uniqueTypes.size, ALL_ASSESSMENT_TYPES.length);
+
+  const documentedRate = pct(documented, records.length);
+  const gpNotifiedRate = pct(gpNotified, records.length);
+  const parentInformedRate = pct(parentInformed, records.length);
+
+  // Weights: documentedRate 8 + gpNotifiedRate 7 + parentInformedRate 5 + typeDiversityRatio 5 = 25
+  let score = 0;
+  score += Math.round((documentedRate / 100) * 8);
+  score += Math.round((gpNotifiedRate / 100) * 7);
+  score += Math.round((parentInformedRate / 100) * 5);
+  score += Math.round((typeDiversityRatio / 100) * 5);
+
+  return {
+    overallScore: Math.min(25, Math.max(0, score)),
+    totalRecords: records.length,
+    documentedRate,
+    gpNotifiedRate,
+    parentInformedRate,
+    typeDiversityRatio,
+  };
+}
+
+// ── Evaluator 3: Health Policy (0–25) ──────────────────────────────────────
+
+export function evaluateHealthPolicy(
+  policy: HealthPolicy | null,
+): HealthPolicyResult {
+  if (!policy) {
+    return {
+      overallScore: 0,
+      healthAssessmentSchedule: false,
+      mentalHealthStrategy: false,
+      medicationProtocol: false,
+      consentFramework: false,
+      dentalOpticalTracking: false,
+      immunisationMonitoring: false,
+      regularReview: false,
+    };
+  }
+
+  // Weights: 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.healthAssessmentSchedule) score += 4;
+  if (policy.mentalHealthStrategy) score += 4;
+  if (policy.medicationProtocol) score += 4;
+  if (policy.consentFramework) score += 4;
+  if (policy.dentalOpticalTracking) score += 3;
+  if (policy.immunisationMonitoring) score += 3;
+  if (policy.regularReview) score += 3;
+
+  return {
+    overallScore: Math.min(25, Math.max(0, score)),
+    healthAssessmentSchedule: policy.healthAssessmentSchedule,
+    mentalHealthStrategy: policy.mentalHealthStrategy,
+    medicationProtocol: policy.medicationProtocol,
+    consentFramework: policy.consentFramework,
+    dentalOpticalTracking: policy.dentalOpticalTracking,
+    immunisationMonitoring: policy.immunisationMonitoring,
+    regularReview: policy.regularReview,
+  };
+}
+
+// ── Evaluator 4: Staff Health Readiness (0–25) ─────────────────────────────
+
+export function evaluateStaffHealthReadiness(
+  training: StaffHealthTraining[],
+): StaffHealthReadinessResult {
+  if (training.length === 0) {
+    return {
+      overallScore: 0,
+      totalStaff: 0,
+      healthAssessmentProcessRate: 0,
+      mentalHealthAwarenessRate: 0,
+      medicationAdministrationRate: 0,
+      consentAndCapacityRate: 0,
+      firstAidCertifiedRate: 0,
+      healthPromotionSkillsRate: 0,
+    };
+  }
+
+  let assessmentProcess = 0;
+  let mentalHealth = 0;
+  let medication = 0;
+  let consent = 0;
+  let firstAid = 0;
+  let healthPromo = 0;
+
+  for (const t of training) {
+    if (t.healthAssessmentProcess) assessmentProcess++;
+    if (t.mentalHealthAwareness) mentalHealth++;
+    if (t.medicationAdministration) medication++;
+    if (t.consentAndCapacity) consent++;
+    if (t.firstAidCertified) firstAid++;
+    if (t.healthPromotionSkills) healthPromo++;
+  }
+
+  const healthAssessmentProcessRate = pct(assessmentProcess, training.length);
+  const mentalHealthAwarenessRate = pct(mentalHealth, training.length);
+  const medicationAdministrationRate = pct(medication, training.length);
+  const consentAndCapacityRate = pct(consent, training.length);
+  const firstAidCertifiedRate = pct(firstAid, training.length);
+  const healthPromotionSkillsRate = pct(healthPromo, training.length);
+
+  // Weights: 6+5+5+4+3+2 = 25
+  let score = 0;
+  score += Math.round((healthAssessmentProcessRate / 100) * 6);
+  score += Math.round((mentalHealthAwarenessRate / 100) * 5);
+  score += Math.round((medicationAdministrationRate / 100) * 5);
+  score += Math.round((consentAndCapacityRate / 100) * 4);
+  score += Math.round((firstAidCertifiedRate / 100) * 3);
+  score += Math.round((healthPromotionSkillsRate / 100) * 2);
+
+  return {
+    overallScore: Math.min(25, Math.max(0, score)),
+    totalStaff: training.length,
+    healthAssessmentProcessRate,
+    mentalHealthAwarenessRate,
+    medicationAdministrationRate,
+    consentAndCapacityRate,
+    firstAidCertifiedRate,
+    healthPromotionSkillsRate,
+  };
+}
+
+// ── Child Health Profiles (0–10 per child) ─────────────────────────────────
+
+export function buildChildHealthProfiles(
+  records: HealthRecord[],
+): ChildHealthProfile[] {
+  const childIds = new Set<string>();
+  const childNames = new Map<string, string>();
+
+  for (const r of records) {
+    childIds.add(r.childId);
+    childNames.set(r.childId, r.childName);
+  }
+
+  return Array.from(childIds).map((childId) => {
+    const childRecords = records.filter((r) => r.childId === childId);
+
+    const completedOnTime = childRecords.filter(
+      (r) => r.outcome === "completed_on_time",
+    ).length;
+    const consented = childRecords.filter((r) => r.childConsented).length;
+    const uniqueTypes = new Set(childRecords.map((r) => r.assessmentType));
+
+    const completedOnTimeRate = pct(completedOnTime, childRecords.length);
+    const childConsentRate = pct(consented, childRecords.length);
+
+    // freq: >=10 -> 2, >=5 -> 1, else 0
+    let freq = 0;
+    if (childRecords.length >= 10) freq = 2;
+    else if (childRecords.length >= 5) freq = 1;
+
+    // rate1 (completedOnTimeRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
+    let rate1 = 0;
+    if (completedOnTimeRate >= 80) rate1 = 3;
+    else if (completedOnTimeRate >= 60) rate1 = 2;
+    else if (completedOnTimeRate >= 40) rate1 = 1;
+
+    // rate2 (childConsentRate): same thresholds
+    let rate2 = 0;
+    if (childConsentRate >= 80) rate2 = 3;
+    else if (childConsentRate >= 60) rate2 = 2;
+    else if (childConsentRate >= 40) rate2 = 1;
+
+    // diversity (unique assessment types): >=4 -> 2, >=2 -> 1, else 0
+    let diversity = 0;
+    if (uniqueTypes.size >= 4) diversity = 2;
+    else if (uniqueTypes.size >= 2) diversity = 1;
+
+    const overallScore = Math.min(10, freq + rate1 + rate2 + diversity);
+
+    return {
+      childId,
+      childName: childNames.get(childId) || "Unknown",
+      totalAssessments: childRecords.length,
+      overallScore,
+      completedOnTimeRate,
+      childConsentRate,
+      diversityCount: uniqueTypes.size,
+    };
+  });
+}
+
+// ── Master Generator ───────────────────────────────────────────────────────
+
+export function generateHealthIntelligence(
+  records: HealthRecord[],
+  policy: HealthPolicy | null,
+  training: StaffHealthTraining[],
+  homeId: string,
+  periodStart: string,
+  periodEnd: string,
+): HealthIntelligence {
+  const healthQuality = evaluateHealthQuality(records);
+  const healthCompliance = evaluateHealthCompliance(records);
+  const healthPolicy = evaluateHealthPolicy(policy);
+  const staffHealthReadiness = evaluateStaffHealthReadiness(training);
+
+  const rawScore =
+    healthQuality.overallScore +
+    healthCompliance.overallScore +
+    healthPolicy.overallScore +
+    staffHealthReadiness.overallScore;
+
+  const overallScore = Math.min(100, Math.max(0, rawScore));
+  const rating = getRating(overallScore);
+
+  const childProfiles = buildChildHealthProfiles(records);
+
+  // ── Strengths (score >= 20) ──
+  const strengths: string[] = [];
+  if (healthQuality.overallScore >= 20)
+    strengths.push("Health assessment quality is strong with " + healthQuality.completedOnTimeRate + "% completed on time");
+  if (healthCompliance.overallScore >= 20)
+    strengths.push("Health compliance is excellent with " + healthCompliance.documentedRate + "% documentation rate");
+  if (healthPolicy.overallScore >= 20)
+    strengths.push("Comprehensive health policies in place covering key regulatory areas");
+  if (staffHealthReadiness.overallScore >= 20)
+    strengths.push("Staff health readiness is strong with well-trained team across all competencies");
+  if (healthQuality.childConsentRate >= 90)
+    strengths.push("Excellent child consent practice at " + healthQuality.childConsentRate + "%");
+  if (healthQuality.actionPlanRate >= 90)
+    strengths.push("Action plans consistently created for health assessments");
+  if (healthCompliance.gpNotifiedRate >= 90)
+    strengths.push("GP notification rate excellent at " + healthCompliance.gpNotifiedRate + "%");
+  if (healthCompliance.parentInformedRate >= 90)
+    strengths.push("Parents/carers consistently informed of health outcomes");
+  if (staffHealthReadiness.firstAidCertifiedRate === 100)
+    strengths.push("All staff hold current first aid certification");
+
+  // ── Areas for Improvement (score < 15) ──
+  const areasForImprovement: string[] = [];
+  if (healthQuality.overallScore < 15)
+    areasForImprovement.push("Health assessment quality needs improvement — overall quality score " + healthQuality.overallScore + "/25");
+  if (healthCompliance.overallScore < 15)
+    areasForImprovement.push("Health compliance needs strengthening — documentation and notification gaps identified");
+  if (healthPolicy.overallScore < 15)
+    areasForImprovement.push("Health policy framework is incomplete — review and update policies");
+  if (staffHealthReadiness.overallScore < 15)
+    areasForImprovement.push("Staff health readiness requires improvement — training gaps identified");
+  if (healthQuality.completedOnTimeRate < 50)
+    areasForImprovement.push("Only " + healthQuality.completedOnTimeRate + "% of assessments completed on time — target 80%+");
+  if (healthCompliance.documentedRate < 50)
+    areasForImprovement.push("Documentation rate at " + healthCompliance.documentedRate + "% — all assessments must be recorded in care files");
+  if (healthQuality.childConsentRate < 50)
+    areasForImprovement.push("Child consent rate at " + healthQuality.childConsentRate + "% — ensure consent is obtained for all assessments");
+  if (healthCompliance.gpNotifiedRate < 50)
+    areasForImprovement.push("GP notification rate at " + healthCompliance.gpNotifiedRate + "% — GPs must be informed of all assessment outcomes");
+
+  // ── Actions ──
+  const actions: string[] = [];
+  if (healthPolicy.overallScore === 0)
+    actions.push("URGENT: No health policies in place — develop and implement health policy framework immediately");
+  if (staffHealthReadiness.overallScore === 0)
+    actions.push("URGENT: No staff health training recorded — arrange comprehensive health training programme");
+  if (healthQuality.completedOnTimeRate < 50)
+    actions.push("Review health assessment scheduling to improve timeliness — currently " + healthQuality.completedOnTimeRate + "%");
+  if (healthCompliance.documentedRate < 50)
+    actions.push("Implement documentation audit to ensure all assessments are recorded in care files");
+  if (healthQuality.childConsentRate < 50)
+    actions.push("Review consent processes and ensure age-appropriate consent is obtained");
+  if (healthCompliance.gpNotifiedRate < 50)
+    actions.push("Establish GP notification protocol for all health assessment outcomes");
+  if (healthQuality.followUpRate < 60)
+    actions.push("Strengthen follow-up scheduling after health assessments — current rate " + healthQuality.followUpRate + "%");
+  if (healthCompliance.parentInformedRate < 60)
+    actions.push("Improve communication with parents/carers about health assessment outcomes");
+
+  const regulatoryLinks: string[] = [
+    "CHR 2015 Reg 10 — The health and wellbeing standard",
+    "Promoting the Health of Looked After Children (DfE/DoH 2015)",
+    "IHA within 20 working days of becoming LAC",
+    "RHA annually (6-monthly for under-5s)",
+    "SDQ completed annually for all looked-after children",
+    "SCCIF — Health and wellbeing: timely, high-quality health care",
+    "UNCRC Article 24 — Right to the highest attainable standard of health",
+  ];
 
   return {
     homeId,
-    childCount: homeRecords.length,
-    overallComplianceRate,
-    ihaComplianceRate,
-    rhaComplianceRate,
-    dentalComplianceRate,
-    opticalComplianceRate,
-    sdqComplianceRate,
-    immunisationRate,
-    averageDNARate,
-    totalActiveMedications,
-    medicationsOverdueReview,
-    upcomingAppointments,
-    concerns,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    healthQuality,
+    healthCompliance,
+    healthPolicy,
+    staffHealthReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
   };
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-
-export function getAssessmentTypeLabel(type: HealthAssessmentType): string {
-  const labels: Record<HealthAssessmentType, string> = {
-    iha: "Initial Health Assessment",
-    rha: "Review Health Assessment",
-    dental: "Dental Check",
-    optical: "Optical Check",
-    sdq: "Strengths & Difficulties Questionnaire",
-    immunisation_review: "Immunisation Review",
-  };
-  return labels[type];
-}
-
-export function getSDQBandLabel(band: "normal" | "borderline" | "abnormal"): string {
-  const labels = {
-    normal: "Normal (0-13)",
-    borderline: "Borderline (14-16)",
-    abnormal: "Abnormal (17-40)",
-  };
-  return labels[band];
 }

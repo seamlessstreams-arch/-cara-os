@@ -1,1 +1,1 @@
-export { EducationDashboardWidget } from "./EducationDashboardWidget";
+export { default as EducationDashboardWidget } from "./EducationDashboardWidget";

@@ -1,23 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Life Story & Identity Work — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
-  evaluateChildLifeStoryCompliance,
-  calculateHomeLifeStoryMetrics,
+  generateLifeStoryIntelligence,
+  evaluateSessionQuality,
+  evaluateIdentityCulture,
+  evaluateLifeStoryPolicy,
+  evaluateStaffLifeStoryReadiness,
+  buildChildLifeStoryProfiles,
+  pct,
+  getRating,
   getSessionTypeLabel,
-  getIdentityCategoryLabel,
+  getEngagementLabel,
+  getRatingLabel,
 } from "./life-story-engine";
 
 export type {
-  IdentityCategory,
   SessionType,
-  SessionStatus,
   EngagementLevel,
-  LifeStorySession,
-  IdentityNeed,
-  FamilyConnection,
+  Rating,
+  LifeStoryRecord,
+  LifeStoryPolicy,
+  StaffLifeStoryTraining,
+  SessionQualityResult,
+  IdentityCultureResult,
+  LifeStoryPolicyResult,
+  StaffLifeStoryReadinessResult,
   ChildLifeStoryProfile,
-  LifeStoryComplianceResult,
-  HomeLifeStoryMetrics,
+  LifeStoryIntelligence,
 } from "./life-story-engine";

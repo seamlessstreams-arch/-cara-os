@@ -1,71 +1,134 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// HealthDashboardWidget — Health & Wellbeing dashboard card
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
 import { useEffect, useState } from "react";
 
-interface Metrics {
+/* ──────────────────────────────────────────────────────────────
+   HealthDashboardWidget — Health Intelligence dashboard card
+   ────────────────────────────────────────────────────────────── */
+
+interface HealthData {
   homeId: string;
-  childCount: number;
-  overallComplianceRate: number;
-  ihaComplianceRate: number;
-  rhaComplianceRate: number;
-  dentalComplianceRate: number;
-  opticalComplianceRate: number;
-  sdqComplianceRate: number;
-  immunisationRate: number;
-  averageDNARate: number;
-  totalActiveMedications: number;
-  medicationsOverdueReview: number;
-  upcomingAppointments: { childName: string; type: string; date: string }[];
-  concerns: { childName: string; concern: string }[];
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: string;
+  healthQuality: {
+    overallScore: number;
+    totalRecords: number;
+    completedOnTimeRate: number;
+    childConsentRate: number;
+    actionPlanRate: number;
+    followUpRate: number;
+  };
+  healthCompliance: {
+    overallScore: number;
+    documentedRate: number;
+    gpNotifiedRate: number;
+    parentInformedRate: number;
+    typeDiversityRatio: number;
+  };
+  healthPolicy: {
+    overallScore: number;
+  };
+  staffHealthReadiness: {
+    overallScore: number;
+    totalStaff: number;
+  };
+  childProfiles: {
+    childId: string;
+    childName: string;
+    totalAssessments: number;
+    overallScore: number;
+    completedOnTimeRate: number;
+  }[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-interface Props {
-  homeId?: string;
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  iha: "IHA",
-  rha: "RHA",
-  dental: "Dental",
-  optical: "Optical",
-  sdq: "SDQ",
-  camhs: "CAMHS",
-  gp: "GP",
-  specialist: "Specialist",
+const RATING_COLORS: Record<string, string> = {
+  outstanding: "bg-green-100 text-green-800 border-green-300",
+  good: "bg-blue-100 text-blue-800 border-blue-300",
+  requires_improvement: "bg-amber-100 text-amber-800 border-amber-300",
+  inadequate: "bg-red-100 text-red-800 border-red-300",
 };
 
-export function HealthDashboardWidget({ homeId = "home-oak" }: Props) {
-  const [data, setData] = useState<Metrics | null>(null);
+const RATING_LABELS: Record<string, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
+
+function ScoreBar({ score, label, max = 25 }: { score: number; label: string; max?: number }) {
+  const pctVal = (score / max) * 100;
+  const color =
+    pctVal >= 80 ? "bg-green-500" :
+    pctVal >= 60 ? "bg-blue-500" :
+    pctVal >= 40 ? "bg-amber-500" :
+    "bg-red-500";
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-sm text-gray-600 w-40 shrink-0">{label}</span>
+      <div className="flex-1 bg-gray-100 rounded-full h-2.5">
+        <div className={`h-2.5 rounded-full ${color}`} style={{ width: `${Math.min(pctVal, 100)}%` }} />
+      </div>
+      <span className="text-sm font-medium w-12 text-right">{score}/{max}</span>
+    </div>
+  );
+}
+
+function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+        <span className="font-medium text-gray-900">{title}</span>
+        <span className="text-gray-400">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && <div className="p-4 space-y-3">{children}</div>}
+    </div>
+  );
+}
+
+export default function HealthDashboardWidget() {
+  const [data, setData] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [homeId]);
-
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/health?homeId=${homeId}&view=overview`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
+    fetch("/api/health")
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => setData(json.data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   if (loading) {
     return (
-      <div className="rounded-lg border border-border bg-card p-6 animate-pulse">
-        <div className="h-4 w-36 bg-muted rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-muted rounded" />
-          <div className="h-3 w-3/4 bg-muted rounded" />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-2/3" />
+          <div className="h-4 bg-gray-200 rounded w-1/2" />
+          <div className="grid grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-20 bg-gray-200 rounded" />
+            ))}
+          </div>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
+        <h3 className="text-lg font-semibold text-red-800">Health Intelligence</h3>
+        <p className="text-red-600 mt-2">Failed to load: {error}</p>
       </div>
     );
   }
@@ -73,119 +136,122 @@ export function HealthDashboardWidget({ homeId = "home-oak" }: Props) {
   if (!data) return null;
 
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">Health & Wellbeing</h3>
-              <p className="text-xs text-muted-foreground">Reg 10 — Health standard</p>
-            </div>
-          </div>
-          <div className={`text-right px-2 py-0.5 rounded-full text-xs font-medium ${
-            data.overallComplianceRate >= 90 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" :
-            data.overallComplianceRate >= 70 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" :
-            "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-          }`}>
-            {data.overallComplianceRate}%
-          </div>
-        </div>
-      </div>
-
-      {/* Concerns */}
-      {data.concerns.length > 0 && (
-        <div className="px-4 py-2.5 border-b border-border bg-red-50/50 dark:bg-red-900/10">
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-xs font-medium text-red-700 dark:text-red-400">
-              {data.concerns.length} health concern{data.concerns.length > 1 ? "s" : ""}
-            </span>
-          </div>
-          <p className="text-[10px] text-red-600 dark:text-red-400 line-clamp-1">
-            {data.concerns[0].childName}: {data.concerns[0].concern}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Health Intelligence</h3>
+          <p className="text-sm text-gray-500">
+            {data.periodStart} to {data.periodEnd}
           </p>
         </div>
-      )}
-
-      {/* Assessment compliance grid */}
-      <div className="px-4 py-3 border-b border-border">
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-2">Assessments</p>
-        <div className="grid grid-cols-3 gap-2">
-          <ComplianceTile label="IHA" value={data.ihaComplianceRate} />
-          <ComplianceTile label="RHA" value={data.rhaComplianceRate} />
-          <ComplianceTile label="Dental" value={data.dentalComplianceRate} />
-          <ComplianceTile label="Optical" value={data.opticalComplianceRate} />
-          <ComplianceTile label="SDQ" value={data.sdqComplianceRate} />
-          <ComplianceTile label="Immunise" value={data.immunisationRate} />
+        <div className="text-right">
+          <div className="text-3xl font-bold text-gray-900">{data.overallScore}</div>
+          <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full border ${RATING_COLORS[data.rating] ?? "bg-gray-100 text-gray-800 border-gray-300"}`}>
+            {RATING_LABELS[data.rating] ?? data.rating}
+          </span>
         </div>
       </div>
 
-      {/* Medication + DNA */}
-      <div className="grid grid-cols-2 divide-x divide-border border-b border-border">
-        <div className="p-3 text-center">
-          <p className="text-lg font-bold">{data.totalActiveMedications}</p>
-          <p className="text-[10px] text-muted-foreground">Active meds</p>
-          {data.medicationsOverdueReview > 0 && (
-            <p className="text-[9px] text-red-600 dark:text-red-400 mt-0.5">
-              {data.medicationsOverdueReview} overdue review
-            </p>
-          )}
+      {/* Evaluator scores */}
+      <div className="space-y-2">
+        <ScoreBar score={data.healthQuality.overallScore} label="Health Quality" />
+        <ScoreBar score={data.healthCompliance.overallScore} label="Health Compliance" />
+        <ScoreBar score={data.healthPolicy.overallScore} label="Health Policy" />
+        <ScoreBar score={data.staffHealthReadiness.overallScore} label="Staff Readiness" />
+      </div>
+
+      {/* Key metrics */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <p className="text-2xl font-bold text-gray-900">{data.healthQuality.totalRecords}</p>
+          <p className="text-xs text-gray-500">Assessments</p>
         </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${data.averageDNARate > 15 ? "text-red-600 dark:text-red-400" : data.averageDNARate > 5 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}`}>
-            {data.averageDNARate}%
-          </p>
-          <p className="text-[10px] text-muted-foreground">DNA rate</p>
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <p className="text-2xl font-bold text-gray-900">{data.healthQuality.completedOnTimeRate}%</p>
+          <p className="text-xs text-gray-500">On Time</p>
+        </div>
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <p className="text-2xl font-bold text-gray-900">{data.healthCompliance.documentedRate}%</p>
+          <p className="text-xs text-gray-500">Documented</p>
+        </div>
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <p className="text-2xl font-bold text-gray-900">{data.staffHealthReadiness.totalStaff}</p>
+          <p className="text-xs text-gray-500">Staff Trained</p>
         </div>
       </div>
 
-      {/* Upcoming appointments */}
-      {data.upcomingAppointments.length > 0 && (
-        <div className="border-b border-border">
-          <div className="px-4 py-2 bg-muted/30">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Upcoming</p>
-          </div>
-          <div className="divide-y divide-border">
-            {data.upcomingAppointments.slice(0, 3).map((apt, i) => (
-              <div key={i} className="px-4 py-2 flex items-center justify-between">
+      {/* Child profiles */}
+      {data.childProfiles.length > 0 && (
+        <Section title={`Child Profiles (${data.childProfiles.length})`} defaultOpen>
+          <div className="divide-y divide-gray-100">
+            {data.childProfiles.map((cp) => (
+              <div key={cp.childId} className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-xs font-medium">{apt.childName}</p>
-                  <p className="text-[10px] text-muted-foreground">{TYPE_LABELS[apt.type] ?? apt.type}</p>
+                  <p className="text-sm font-medium text-gray-900">{cp.childName}</p>
+                  <p className="text-xs text-gray-500">
+                    {cp.totalAssessments} assessments, {cp.completedOnTimeRate}% on time
+                  </p>
                 </div>
-                <span className="text-[10px] text-muted-foreground">
-                  {new Date(apt.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                <span className={`text-sm font-semibold ${cp.overallScore >= 7 ? "text-green-600" : cp.overallScore >= 4 ? "text-amber-600" : "text-red-600"}`}>
+                  {cp.overallScore}/10
                 </span>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Footer */}
-      <div className="p-3 text-center">
-        <a href="/health" className="text-xs text-primary font-medium hover:underline">
-          View health records →
-        </a>
-      </div>
-    </div>
-  );
-}
+      {/* Strengths */}
+      {data.strengths.length > 0 && (
+        <Section title="Strengths">
+          <ul className="space-y-1">
+            {data.strengths.map((s, i) => (
+              <li key={i} className="text-sm text-green-700 flex gap-2">
+                <span className="shrink-0">+</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
-function ComplianceTile({ label, value }: { label: string; value: number }) {
-  const color = value >= 90 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-    : value >= 70 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300";
+      {/* Areas for improvement */}
+      {data.areasForImprovement.length > 0 && (
+        <Section title="Areas for Improvement">
+          <ul className="space-y-1">
+            {data.areasForImprovement.map((a, i) => (
+              <li key={i} className="text-sm text-amber-700 flex gap-2">
+                <span className="shrink-0">-</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
-  return (
-    <div className={`rounded px-2 py-1.5 text-center ${color}`}>
-      <p className="text-xs font-bold">{value}%</p>
-      <p className="text-[9px]">{label}</p>
+      {/* Actions */}
+      {data.actions.length > 0 && (
+        <Section title="Actions" defaultOpen>
+          <ul className="space-y-1">
+            {data.actions.map((a, i) => (
+              <li key={i} className={`text-sm flex gap-2 ${a.startsWith("URGENT") ? "text-red-700 font-medium" : "text-gray-700"}`}>
+                <span className="shrink-0">{a.startsWith("URGENT") ? "!" : "•"}</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Regulatory links */}
+      <Section title="Regulatory Framework">
+        <ul className="space-y-1">
+          {data.regulatoryLinks.map((l, i) => (
+            <li key={i} className="text-xs text-gray-500">{l}</li>
+          ))}
+        </ul>
+      </Section>
     </div>
   );
 }

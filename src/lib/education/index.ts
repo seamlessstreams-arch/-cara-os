@@ -1,24 +1,32 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Education & PEP Tracking — Public API
+// Cornerstone Education Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  evaluateEducationCompliance,
-  calculateHomeEducationMetrics,
-  getEducationStatusLabel,
-  getKeyStageLabel,
+  pct,
+  getRating,
+  getPlacementLabel,
   getAttainmentLabel,
+  getRatingLabel,
+  evaluateEducationQuality,
+  evaluateEducationCompliance,
+  evaluateEducationPolicy,
+  evaluateStaffEducationReadiness,
+  buildChildEducationProfiles,
+  generateEducationIntelligence,
 } from "./education-engine";
 
 export type {
-  EducationStatus,
-  KeyStage,
+  EducationPlacement,
   AttainmentLevel,
-  PEPStatus,
-  ChildEducationRecord,
-  PEPTarget,
-  SubjectAttainment,
-  ExclusionRecord,
+  Rating,
+  EducationRecord,
+  EducationPolicy,
+  StaffEducationTraining,
+  EducationQualityResult,
   EducationComplianceResult,
-  HomeEducationMetrics,
+  EducationPolicyResult,
+  StaffEducationReadinessResult,
+  ChildEducationProfile,
+  EducationIntelligence,
 } from "./education-engine";

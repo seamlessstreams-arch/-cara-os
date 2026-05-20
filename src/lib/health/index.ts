@@ -1,22 +1,32 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Health & Wellbeing — Public API
-// ══════════════════════════════════════════════════════════════════════════════
+/* ──────────────────────────────────────────────────────────────
+   Health Intelligence — Public API
+   ────────────────────────────────────────────────────────────── */
 
 export {
-  evaluateHealthCompliance,
-  calculateHomeHealthMetrics,
+  pct,
+  getRating,
   getAssessmentTypeLabel,
-  getSDQBandLabel,
+  getOutcomeLabel,
+  getRatingLabel,
+  evaluateHealthQuality,
+  evaluateHealthCompliance,
+  evaluateHealthPolicy,
+  evaluateStaffHealthReadiness,
+  buildChildHealthProfiles,
+  generateHealthIntelligence,
 } from "./health-engine";
 
 export type {
   HealthAssessmentType,
-  MedicationType,
-  AppointmentStatus,
-  ChildHealthRecord,
-  HealthAssessment,
-  MedicationRecord,
-  AppointmentRecord,
+  AssessmentOutcome,
+  Rating,
+  HealthRecord,
+  HealthPolicy,
+  StaffHealthTraining,
+  HealthQualityResult,
   HealthComplianceResult,
-  HomeHealthMetrics,
+  HealthPolicyResult,
+  StaffHealthReadinessResult,
+  ChildHealthProfile,
+  HealthIntelligence,
 } from "./health-engine";

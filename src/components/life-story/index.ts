@@ -1,1 +1,1 @@
-export { LifeStoryDashboardWidget } from "./LifeStoryDashboardWidget";
+export { default as LifeStoryDashboardWidget } from "./LifeStoryDashboardWidget";
