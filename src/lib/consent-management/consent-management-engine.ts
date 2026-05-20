@@ -1,205 +1,147 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone — Consent Management Intelligence Engine
-//
-// Pure deterministic engine — no AI, no external calls.
-// Analyses effectiveness of consent management across:
-//   • Consent recording & currency
-//   • Delegated authority clarity
-//   • Gillick competence assessments
-//   • Consent compliance & audit
-//
-// Regulatory framework:
-//   CHR 2015 Reg 20 (delegated authority)
-//   Children Act 1989 s33(3) (parental responsibility)
-//   Gillick v West Norfolk [1986] (competence)
-//   DfE Delegated Authority Guide 2013
-//   SCCIF (Social Care Common Inspection Framework)
-//   UNCRC Article 12 (right to be heard in decisions)
-// ══════════════════════════════════════════════════════════════════════════════
+/* ──────────────────────────────────────────────────────────────
+   Consent Management Intelligence Engine
 
-// ── Types ───────────────────────────────────────────────────────────────────
+   Pure deterministic engine — no AI, no external calls.
+   Analyses how well a children's home manages consent processes:
+     - Quality of consent records (obtained, documented, child views)
+     - Compliance with consent procedures (parent consultation, reviews)
+     - Policy framework robustness
+     - Staff readiness to manage consent lawfully
 
-export type ConsentArea =
-  | "medical_routine"        // GP, dental, optician
-  | "medical_emergency"      // Emergency medical treatment
-  | "medical_specialist"     // Referrals to specialists, CAMHS
-  | "medication"             // Administering medication
-  | "immunisation"           // Vaccinations
-  | "education"              // School trips, extra-curricular
-  | "overnight_stay"         // Sleepovers, residential trips
-  | "haircut"                // Haircuts and personal appearance
-  | "photography"            // Photos for social media, school
-  | "internet_social_media"  // Online access and social media
-  | "contact"                // Contact with family/friends
-  | "passport_travel"        // Travel documents and trips abroad
-  | "religious_cultural"     // Religious observance, cultural activities
-  | "data_sharing"           // Sharing info with professionals
-  | "independent_activity"   // Going out independently
-  | "other";
+   Regulatory basis:
+     CHR 2015 Reg 20 — delegated authority
+     Children Act 1989 s33(3) — parental responsibility
+     Gillick v West Norfolk [1986] — competence to consent
+     Mental Capacity Act 2005 — capacity assessment principles
+     UK GDPR / DPA 2018 — data consent
+     UNCRC Article 12 — right to be heard
+     SCCIF — social care common inspection framework
+   ────────────────────────────────────────────────────────────── */
+
+// ── Type unions ─────────────────────────────────────────────────────────────
+
+export type ConsentCategory =
+  | "medical_treatment"
+  | "dental_treatment"
+  | "photography"
+  | "social_media"
+  | "educational_trips"
+  | "overnight_stays"
+  | "data_sharing"
+  | "therapeutic_intervention";
 
 export type ConsentStatus =
-  | "granted"
-  | "refused"
-  | "withdrawn"
+  | "obtained"
   | "pending"
-  | "not_sought"
-  | "expired";
+  | "refused"
+  | "expired"
+  | "not_required";
 
-export type ConsentHolder =
-  | "parent_mother"
-  | "parent_father"
-  | "local_authority"
-  | "child_gillick"
-  | "court_order"
-  | "delegated_carer"
-  | "other";
+export type Rating =
+  | "outstanding"
+  | "good"
+  | "requires_improvement"
+  | "inadequate";
 
-export type GillickOutcome =
-  | "competent"
-  | "not_competent"
-  | "partially_competent"
-  | "review_required";
-
-export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
-
-// ── Interfaces ──────────────────────────────────────────────────────────────
+// ── Input interfaces ────────────────────────────────────────────────────────
 
 export interface ConsentRecord {
   id: string;
-  homeId: string;
   childId: string;
   childName: string;
-  consentArea: ConsentArea;
-  consentHolder: ConsentHolder;
-  consentHolderName: string;
+  recordDate: string;
+  category: ConsentCategory;
   status: ConsentStatus;
-  dateRecorded: string;
-  expiryDate?: string;          // When consent needs renewal
-  conditions?: string;          // Any conditions on the consent
-  evidenceOnFile: boolean;      // Written consent on file
-  childInformed: boolean;       // Child was informed of the decision
-  childAgreed?: boolean;        // Child's own view aligns
+  childViewsSought: boolean;
+  consentDocumented: boolean;
+  expiryTracked: boolean;
+  parentCarerConsulted: boolean;
+  staffRecorded: boolean;
+  reviewScheduled: boolean;
 }
 
-export interface DelegatedAuthority {
+export interface ConsentPolicy {
   id: string;
-  homeId: string;
-  childId: string;
-  childName: string;
-  area: ConsentArea;
-  delegatedTo: "registered_manager" | "key_worker" | "any_carer" | "specific_staff";
-  delegatedToName?: string;
-  agreedDate: string;
-  reviewDate: string;
-  documentedInPlacementPlan: boolean;
-  parentAgreed: boolean;
-  localAuthorityAgreed: boolean;
-  restrictions?: string;
+  consentFramework: boolean;
+  informedConsentGuidance: boolean;
+  capacityAssessmentProtocol: boolean;
+  gillikCompetenceProcess: boolean;
+  consentRefusalProcess: boolean;
+  dataConsentProtocol: boolean;
+  regularReview: boolean;
 }
 
-export interface GillickAssessment {
+export interface StaffConsentTraining {
   id: string;
-  homeId: string;
-  childId: string;
-  childName: string;
-  assessmentDate: string;
-  assessedBy: string;
-  area: ConsentArea;
-  outcome: GillickOutcome;
-  reasoning: string;
-  childViews: string;
-  reviewDate: string;
-  parentInformed: boolean;
+  staffId: string;
+  staffName: string;
+  consentLawUnderstanding: boolean;
+  capacityAssessment: boolean;
+  gillikCompetence: boolean;
+  documentationSkills: boolean;
+  childParticipation: boolean;
+  escalationProcess: boolean;
 }
 
-export interface ConsentAudit {
-  id: string;
-  homeId: string;
-  auditDate: string;
-  auditor: string;
-  totalRecordsChecked: number;
-  compliantRecords: number;
-  issuesFound: string[];
-  actionsRequired: string[];
-  actionsCompleted: number;
-  nextAuditDate: string;
+// ── Result interfaces ───────────────────────────────────────────────────────
+
+export interface ConsentQualityResult {
+  obtainedRate: number;
+  childViewsRate: number;
+  documentedRate: number;
+  expiryTrackedRate: number;
+  overallScore: number;
+}
+
+export interface ConsentComplianceResult {
+  parentConsultedRate: number;
+  staffRecordedRate: number;
+  reviewScheduledRate: number;
+  categoryDiversityRatio: number;
+  overallScore: number;
+}
+
+export interface ConsentPolicyResult {
+  consentFramework: boolean;
+  informedConsentGuidance: boolean;
+  capacityAssessmentProtocol: boolean;
+  gillikCompetenceProcess: boolean;
+  consentRefusalProcess: boolean;
+  dataConsentProtocol: boolean;
+  regularReview: boolean;
+  overallScore: number;
+}
+
+export interface StaffConsentReadinessResult {
+  consentLawRate: number;
+  capacityAssessmentRate: number;
+  gillikCompetenceRate: number;
+  documentationSkillsRate: number;
+  childParticipationRate: number;
+  escalationProcessRate: number;
+  overallScore: number;
 }
 
 export interface ChildConsentProfile {
   childId: string;
   childName: string;
-  totalConsents: number;
-  grantedConsents: number;
-  pendingConsents: number;
-  expiredConsents: number;
-  evidenceOnFileRate: number;
-  childInformedRate: number;
-  delegatedAreas: number;
-  gillickAssessments: number;
-  gillickCompetentAreas: number;
-  consentCoverageRate: number;   // % of standard areas with recorded consent
-  overallScore: number;          // 0–10
-}
-
-// ── Result Types ────────────────────────────────────────────────────────────
-
-export interface ConsentRecordingResult {
   totalRecords: number;
-  granted: number;
-  refused: number;
-  withdrawn: number;
-  pending: number;
-  notSought: number;
-  expired: number;
-  evidenceOnFileRate: number;    // %
-  childInformedRate: number;     // %
-  childAgreedRate: number;       // % of those where child view is recorded
-  consentCurrencyRate: number;   // % not expired
-  overallScore: number;          // 0–30
-}
-
-export interface DelegatedAuthorityResult {
-  totalDelegations: number;
-  documentedInPlanRate: number;  // %
-  parentAgreedRate: number;      // %
-  laAgreedRate: number;          // %
-  overdueReviews: number;
-  areasWithDelegation: number;
-  overallScore: number;          // 0–25
-}
-
-export interface GillickCompetenceResult {
-  totalAssessments: number;
-  competent: number;
-  notCompetent: number;
-  partiallyCompetent: number;
-  reviewRequired: number;
-  parentInformedRate: number;    // %
-  overdueReviews: number;
-  childViewsCapturedRate: number; // % where childViews is non-empty
-  overallScore: number;          // 0–25
-}
-
-export interface ConsentAuditResult {
-  totalAudits: number;
-  averageComplianceRate: number; // %
-  totalIssuesFound: number;
-  actionsCompletionRate: number; // %
-  auditCurrent: boolean;         // Most recent audit is not overdue
-  overallScore: number;          // 0–20
+  obtainedRate: number;
+  childViewsRate: number;
+  uniqueCategories: number;
+  overallScore: number;
 }
 
 export interface ConsentManagementIntelligence {
   homeId: string;
   periodStart: string;
   periodEnd: string;
-  referenceDate: string;
   overallScore: number;
   rating: Rating;
-  recording: ConsentRecordingResult;
-  delegatedAuthority: DelegatedAuthorityResult;
-  gillickCompetence: GillickCompetenceResult;
-  audit: ConsentAuditResult;
+  consentQuality: ConsentQualityResult;
+  consentCompliance: ConsentComplianceResult;
+  consentPolicy: ConsentPolicyResult;
+  staffReadiness: StaffConsentReadinessResult;
   childProfiles: ChildConsentProfile[];
   strengths: string[];
   areasForImprovement: string[];
@@ -207,592 +149,363 @@ export interface ConsentManagementIntelligence {
   regulatoryLinks: string[];
 }
 
-// ── Constants ───────────────────────────────────────────────────────────────
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
-/** Standard consent areas every child should ideally have recorded. */
-const STANDARD_CONSENT_AREAS: ConsentArea[] = [
-  "medical_routine", "medical_emergency", "medication", "immunisation",
-  "education", "overnight_stay", "haircut", "photography",
-  "internet_social_media", "contact", "independent_activity", "data_sharing",
-];
-
-// ── Helper Functions ────────────────────────────────────────────────────────
-
-function pct(num: number, den: number): number {
+export function pct(num: number, den: number): number {
   if (den === 0) return 0;
-  return Math.round((num / den) * 1000) / 10;
+  return Math.round((num / den) * 100);
 }
 
-function clamp(v: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, v));
-}
-
-function ratingFromScore(score: number): Rating {
+export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
   if (score >= 40) return "requires_improvement";
   return "inadequate";
 }
 
-function isInPeriod(date: string | undefined, start: string, end: string): boolean {
-  if (!date) return false;
-  return date >= start && date <= end;
+// ── Label maps & getters ────────────────────────────────────────────────────
+
+const consentCategoryLabels: Record<ConsentCategory, string> = {
+  medical_treatment: "Medical Treatment",
+  dental_treatment: "Dental Treatment",
+  photography: "Photography",
+  social_media: "Social Media",
+  educational_trips: "Educational Trips",
+  overnight_stays: "Overnight Stays",
+  data_sharing: "Data Sharing",
+  therapeutic_intervention: "Therapeutic Intervention",
+};
+
+export function getConsentCategoryLabel(c: ConsentCategory): string {
+  return consentCategoryLabels[c] ?? c;
 }
 
-// ── Label Functions ─────────────────────────────────────────────────────────
-
-export function getConsentAreaLabel(a: ConsentArea): string {
-  const labels: Record<ConsentArea, string> = {
-    medical_routine: "Routine Medical",
-    medical_emergency: "Emergency Medical",
-    medical_specialist: "Specialist Referral",
-    medication: "Medication",
-    immunisation: "Immunisation",
-    education: "Education Activities",
-    overnight_stay: "Overnight Stays",
-    haircut: "Haircut / Appearance",
-    photography: "Photography",
-    internet_social_media: "Internet & Social Media",
-    contact: "Contact Arrangements",
-    passport_travel: "Passport & Travel",
-    religious_cultural: "Religious / Cultural",
-    data_sharing: "Data Sharing",
-    independent_activity: "Independent Activities",
-    other: "Other",
-  };
-  return labels[a] || a;
-}
+const consentStatusLabels: Record<ConsentStatus, string> = {
+  obtained: "Obtained",
+  pending: "Pending",
+  refused: "Refused",
+  expired: "Expired",
+  not_required: "Not Required",
+};
 
 export function getConsentStatusLabel(s: ConsentStatus): string {
-  const labels: Record<ConsentStatus, string> = {
-    granted: "Granted",
-    refused: "Refused",
-    withdrawn: "Withdrawn",
-    pending: "Pending",
-    not_sought: "Not Sought",
-    expired: "Expired",
-  };
-  return labels[s] || s;
+  return consentStatusLabels[s] ?? s;
 }
 
-export function getConsentHolderLabel(h: ConsentHolder): string {
-  const labels: Record<ConsentHolder, string> = {
-    parent_mother: "Mother",
-    parent_father: "Father",
-    local_authority: "Local Authority",
-    child_gillick: "Child (Gillick Competent)",
-    court_order: "Court Order",
-    delegated_carer: "Delegated to Carer",
-    other: "Other",
-  };
-  return labels[h] || h;
+const ratingLabels: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
+
+export function getRatingLabel(r: Rating): string {
+  return ratingLabels[r] ?? r;
 }
 
-export function getGillickOutcomeLabel(o: GillickOutcome): string {
-  const labels: Record<GillickOutcome, string> = {
-    competent: "Competent",
-    not_competent: "Not Competent",
-    partially_competent: "Partially Competent",
-    review_required: "Review Required",
-  };
-  return labels[o] || o;
-}
+// ── Evaluator 1: Consent Quality (0–25) ─────────────────────────────────────
 
-// ── Core Evaluation Functions ───────────────────────────────────────────────
-
-/**
- * Evaluate consent recording quality and currency.
- * Focuses on: evidence on file, child informed, consent currency, child agreement.
- * Score: 0–30
- */
-export function evaluateConsentRecording(
-  records: ConsentRecord[],
-  periodStart: string,
-  periodEnd: string,
-  referenceDate: string,
-): ConsentRecordingResult {
-  // Include records recorded in-period OR currently active (not expired before period start)
-  const relevantRecords = records.filter((r) =>
-    isInPeriod(r.dateRecorded, periodStart, periodEnd) ||
-    (r.status === "granted" && (!r.expiryDate || r.expiryDate >= periodStart)),
-  );
-
-  if (relevantRecords.length === 0) {
-    return {
-      totalRecords: 0, granted: 0, refused: 0, withdrawn: 0, pending: 0,
-      notSought: 0, expired: 0, evidenceOnFileRate: 0, childInformedRate: 0,
-      childAgreedRate: 0, consentCurrencyRate: 0, overallScore: 0,
-    };
+export function evaluateConsentQuality(records: ConsentRecord[]): ConsentQualityResult {
+  if (records.length === 0) {
+    return { obtainedRate: 0, childViewsRate: 0, documentedRate: 0, expiryTrackedRate: 0, overallScore: 0 };
   }
 
-  const granted = relevantRecords.filter((r) => r.status === "granted").length;
-  const refused = relevantRecords.filter((r) => r.status === "refused").length;
-  const withdrawn = relevantRecords.filter((r) => r.status === "withdrawn").length;
-  const pending = relevantRecords.filter((r) => r.status === "pending").length;
-  const notSought = relevantRecords.filter((r) => r.status === "not_sought").length;
-  const expired = relevantRecords.filter((r) => r.status === "expired").length;
+  const obtained = records.filter((r) => r.status === "obtained").length;
+  const childViews = records.filter((r) => r.childViewsSought).length;
+  const documented = records.filter((r) => r.consentDocumented).length;
+  const expiryTracked = records.filter((r) => r.expiryTracked).length;
 
-  const evidenceOnFile = relevantRecords.filter((r) => r.evidenceOnFile).length;
-  const evidenceRate = pct(evidenceOnFile, relevantRecords.length);
+  const obtainedRate = pct(obtained, records.length);
+  const childViewsRate = pct(childViews, records.length);
+  const documentedRate = pct(documented, records.length);
+  const expiryTrackedRate = pct(expiryTracked, records.length);
 
-  const childInformed = relevantRecords.filter((r) => r.childInformed).length;
-  const informedRate = pct(childInformed, relevantRecords.length);
+  const raw =
+    (obtainedRate / 100) * 7 +
+    (childViewsRate / 100) * 6 +
+    (documentedRate / 100) * 6 +
+    (expiryTrackedRate / 100) * 6;
 
-  // Child agreed rate — only for records where childAgreed is defined
-  const withChildView = relevantRecords.filter((r) => r.childAgreed !== undefined);
-  const childAgreed = withChildView.filter((r) => r.childAgreed === true).length;
-  const agreedRate = pct(childAgreed, withChildView.length);
+  const overallScore = Math.min(Math.round(raw * 10) / 10, 25);
 
-  // Currency — % of records that are not expired
-  const current = relevantRecords.filter((r) => r.status !== "expired").length;
-  const currencyRate = pct(current, relevantRecords.length);
-
-  // Scoring — 30 points max
-  let score = 0;
-
-  // Evidence on file: up to 10 points
-  score += (evidenceRate / 100) * 10;
-
-  // Child informed: up to 8 points
-  score += (informedRate / 100) * 8;
-
-  // Currency rate: up to 6 points
-  score += (currencyRate / 100) * 6;
-
-  // Not-sought penalty: -1 point per "not_sought" (max -4)
-  score -= Math.min(notSought, 4);
-
-  // Pending items penalty: -0.5 per pending (max -3)
-  score -= Math.min(pending * 0.5, 3);
-
-  // Child agreement bonus: up to 6 points
-  if (withChildView.length > 0) {
-    score += (agreedRate / 100) * 6;
-  } else {
-    // No child views recorded — redistribute partially to evidence
-    score += (evidenceRate / 100) * 3;
-  }
-
-  return {
-    totalRecords: relevantRecords.length,
-    granted,
-    refused,
-    withdrawn,
-    pending,
-    notSought,
-    expired,
-    evidenceOnFileRate: evidenceRate,
-    childInformedRate: informedRate,
-    childAgreedRate: agreedRate,
-    consentCurrencyRate: currencyRate,
-    overallScore: Math.round(clamp(score, 0, 30) * 10) / 10,
-  };
+  return { obtainedRate, childViewsRate, documentedRate, expiryTrackedRate, overallScore };
 }
 
-/**
- * Evaluate delegated authority arrangements.
- * Delegated authority normalises children's lives by allowing carers to make
- * day-to-day decisions without requiring formal consent for every activity.
- * Score: 0–25
- */
-export function evaluateDelegatedAuthority(
-  delegations: DelegatedAuthority[],
-  periodStart: string,
-  periodEnd: string,
-  referenceDate: string,
-): DelegatedAuthorityResult {
-  const relevantDelegations = delegations.filter((d) =>
-    isInPeriod(d.agreedDate, periodStart, periodEnd) ||
-    d.reviewDate >= periodStart,
-  );
+// ── Evaluator 2: Consent Compliance (0–25) ──────────────────────────────────
 
-  if (relevantDelegations.length === 0) {
+export function evaluateConsentCompliance(records: ConsentRecord[]): ConsentComplianceResult {
+  if (records.length === 0) {
+    return { parentConsultedRate: 0, staffRecordedRate: 0, reviewScheduledRate: 0, categoryDiversityRatio: 0, overallScore: 0 };
+  }
+
+  const parentConsulted = records.filter((r) => r.parentCarerConsulted).length;
+  const staffRecorded = records.filter((r) => r.staffRecorded).length;
+  const reviewScheduled = records.filter((r) => r.reviewScheduled).length;
+  const uniqueCategories = new Set(records.map((r) => r.category)).size;
+
+  const parentConsultedRate = pct(parentConsulted, records.length);
+  const staffRecordedRate = pct(staffRecorded, records.length);
+  const reviewScheduledRate = pct(reviewScheduled, records.length);
+  const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
+
+  const raw =
+    (parentConsultedRate / 100) * 8 +
+    (staffRecordedRate / 100) * 7 +
+    (reviewScheduledRate / 100) * 5 +
+    Math.min(categoryDiversityRatio, 1) * 5;
+
+  const overallScore = Math.min(Math.round(raw * 10) / 10, 25);
+
+  return { parentConsultedRate, staffRecordedRate, reviewScheduledRate, categoryDiversityRatio, overallScore };
+}
+
+// ── Evaluator 3: Consent Policy (0–25) ──────────────────────────────────────
+
+export function evaluateConsentPolicy(policy: ConsentPolicy | null): ConsentPolicyResult {
+  if (!policy) {
     return {
-      totalDelegations: 0, documentedInPlanRate: 0, parentAgreedRate: 0,
-      laAgreedRate: 0, overdueReviews: 0, areasWithDelegation: 0,
+      consentFramework: false,
+      informedConsentGuidance: false,
+      capacityAssessmentProtocol: false,
+      gillikCompetenceProcess: false,
+      consentRefusalProcess: false,
+      dataConsentProtocol: false,
+      regularReview: false,
       overallScore: 0,
     };
   }
 
-  const documented = relevantDelegations.filter((d) => d.documentedInPlacementPlan).length;
-  const documentedRate = pct(documented, relevantDelegations.length);
-
-  const parentAgreed = relevantDelegations.filter((d) => d.parentAgreed).length;
-  const parentRate = pct(parentAgreed, relevantDelegations.length);
-
-  const laAgreed = relevantDelegations.filter((d) => d.localAuthorityAgreed).length;
-  const laRate = pct(laAgreed, relevantDelegations.length);
-
-  const overdue = relevantDelegations.filter((d) => d.reviewDate < referenceDate).length;
-
-  const uniqueAreas = new Set(relevantDelegations.map((d) => d.area));
-
-  // Scoring — 25 points max
   let score = 0;
-
-  // Documented in placement plan: up to 8 points
-  score += (documentedRate / 100) * 8;
-
-  // Parent agreed: up to 5 points
-  score += (parentRate / 100) * 5;
-
-  // LA agreed: up to 5 points
-  score += (laRate / 100) * 5;
-
-  // Number of areas with delegation: up to 4 points (more = more normalised life)
-  score += Math.min(uniqueAreas.size / 6, 1) * 4;
-
-  // Overdue reviews penalty: -1 per overdue (max -3)
-  score -= Math.min(overdue, 3);
-
-  // Having delegations at all: 3 points (shows proactive normalising)
-  score += 3;
+  if (policy.consentFramework) score += 4;
+  if (policy.informedConsentGuidance) score += 4;
+  if (policy.capacityAssessmentProtocol) score += 4;
+  if (policy.gillikCompetenceProcess) score += 4;
+  if (policy.consentRefusalProcess) score += 3;
+  if (policy.dataConsentProtocol) score += 3;
+  if (policy.regularReview) score += 3;
 
   return {
-    totalDelegations: relevantDelegations.length,
-    documentedInPlanRate: documentedRate,
-    parentAgreedRate: parentRate,
-    laAgreedRate: laRate,
-    overdueReviews: overdue,
-    areasWithDelegation: uniqueAreas.size,
-    overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
+    consentFramework: policy.consentFramework,
+    informedConsentGuidance: policy.informedConsentGuidance,
+    capacityAssessmentProtocol: policy.capacityAssessmentProtocol,
+    gillikCompetenceProcess: policy.gillikCompetenceProcess,
+    consentRefusalProcess: policy.consentRefusalProcess,
+    dataConsentProtocol: policy.dataConsentProtocol,
+    regularReview: policy.regularReview,
+    overallScore: score,
   };
 }
 
-/**
- * Evaluate Gillick competence assessments.
- * Children's growing autonomy must be recognised. Gillick assessments
- * determine whether a child can make decisions for themselves.
- * Score: 0–25
- */
-export function evaluateGillickCompetence(
-  assessments: GillickAssessment[],
-  childIds: string[],
-  periodStart: string,
-  periodEnd: string,
-  referenceDate: string,
-): GillickCompetenceResult {
-  const periodAssessments = assessments.filter((a) =>
-    isInPeriod(a.assessmentDate, periodStart, periodEnd),
-  );
+// ── Evaluator 4: Staff Consent Readiness (0–25) ─────────────────────────────
 
-  if (periodAssessments.length === 0) {
-    // No assessments — might be fine if all children are young, but engine can't know ages
+export function evaluateStaffConsentReadiness(training: StaffConsentTraining[]): StaffConsentReadinessResult {
+  if (training.length === 0) {
     return {
-      totalAssessments: 0, competent: 0, notCompetent: 0,
-      partiallyCompetent: 0, reviewRequired: 0, parentInformedRate: 0,
-      overdueReviews: 0, childViewsCapturedRate: 0, overallScore: 0,
+      consentLawRate: 0,
+      capacityAssessmentRate: 0,
+      gillikCompetenceRate: 0,
+      documentationSkillsRate: 0,
+      childParticipationRate: 0,
+      escalationProcessRate: 0,
+      overallScore: 0,
     };
   }
 
-  const competent = periodAssessments.filter((a) => a.outcome === "competent").length;
-  const notCompetent = periodAssessments.filter((a) => a.outcome === "not_competent").length;
-  const partial = periodAssessments.filter((a) => a.outcome === "partially_competent").length;
-  const reviewReq = periodAssessments.filter((a) => a.outcome === "review_required").length;
+  const consentLaw = training.filter((t) => t.consentLawUnderstanding).length;
+  const capacity = training.filter((t) => t.capacityAssessment).length;
+  const gillik = training.filter((t) => t.gillikCompetence).length;
+  const docs = training.filter((t) => t.documentationSkills).length;
+  const childPart = training.filter((t) => t.childParticipation).length;
+  const escalation = training.filter((t) => t.escalationProcess).length;
 
-  const parentInformed = periodAssessments.filter((a) => a.parentInformed).length;
-  const parentRate = pct(parentInformed, periodAssessments.length);
+  const consentLawRate = pct(consentLaw, training.length);
+  const capacityAssessmentRate = pct(capacity, training.length);
+  const gillikCompetenceRate = pct(gillik, training.length);
+  const documentationSkillsRate = pct(docs, training.length);
+  const childParticipationRate = pct(childPart, training.length);
+  const escalationProcessRate = pct(escalation, training.length);
 
-  const overdue = periodAssessments.filter((a) => a.reviewDate < referenceDate).length;
+  const raw =
+    (consentLawRate / 100) * 6 +
+    (capacityAssessmentRate / 100) * 5 +
+    (gillikCompetenceRate / 100) * 5 +
+    (documentationSkillsRate / 100) * 4 +
+    (childParticipationRate / 100) * 3 +
+    (escalationProcessRate / 100) * 2;
 
-  const withViews = periodAssessments.filter((a) => a.childViews && a.childViews.trim().length > 0).length;
-  const viewsRate = pct(withViews, periodAssessments.length);
-
-  // Scoring — 25 points max
-  let score = 0;
-
-  // Having assessments at all: up to 8 points (shows recognition of child autonomy)
-  const coverageRatio = Math.min(periodAssessments.length / Math.max(childIds.length, 1), 1);
-  score += coverageRatio * 8;
-
-  // Child views captured: up to 7 points
-  score += (viewsRate / 100) * 7;
-
-  // Parent informed: up to 5 points
-  score += (parentRate / 100) * 5;
-
-  // Overdue review penalty: -1 per overdue (max -3)
-  score -= Math.min(overdue, 3);
-
-  // Competence recognition bonus: up to 5 points (more competent = greater autonomy recognised)
-  if (periodAssessments.length > 0) {
-    const competenceRate = pct(competent + partial, periodAssessments.length);
-    score += (competenceRate / 100) * 5;
-  }
+  const overallScore = Math.min(Math.round(raw * 10) / 10, 25);
 
   return {
-    totalAssessments: periodAssessments.length,
-    competent,
-    notCompetent,
-    partiallyCompetent: partial,
-    reviewRequired: reviewReq,
-    parentInformedRate: parentRate,
-    overdueReviews: overdue,
-    childViewsCapturedRate: viewsRate,
-    overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
+    consentLawRate,
+    capacityAssessmentRate,
+    gillikCompetenceRate,
+    documentationSkillsRate,
+    childParticipationRate,
+    escalationProcessRate,
+    overallScore,
   };
 }
 
-/**
- * Evaluate consent audit findings and compliance.
- * Regular audits ensure consent records are maintained accurately.
- * Score: 0–20
- */
-export function evaluateConsentAudit(
-  audits: ConsentAudit[],
-  periodStart: string,
-  periodEnd: string,
-  referenceDate: string,
-): ConsentAuditResult {
-  const periodAudits = audits.filter((a) => isInPeriod(a.auditDate, periodStart, periodEnd));
+// ── Child profiles ──────────────────────────────────────────────────────────
 
-  if (periodAudits.length === 0) {
-    return {
-      totalAudits: 0, averageComplianceRate: 0, totalIssuesFound: 0,
-      actionsCompletionRate: 0, auditCurrent: false, overallScore: 0,
-    };
+export function buildChildConsentProfiles(records: ConsentRecord[]): ChildConsentProfile[] {
+  if (records.length === 0) return [];
+
+  const groups = new Map<string, ConsentRecord[]>();
+  for (const r of records) {
+    const arr = groups.get(r.childId) ?? [];
+    arr.push(r);
+    groups.set(r.childId, arr);
   }
 
-  // Average compliance rate
-  const totalCompliance = periodAudits.reduce(
-    (sum, a) => sum + pct(a.compliantRecords, a.totalRecordsChecked),
-    0,
-  );
-  const avgCompliance = Math.round((totalCompliance / periodAudits.length) * 10) / 10;
+  const profiles: ChildConsentProfile[] = [];
+  for (const [childId, childRecords] of groups) {
+    const childName = childRecords[0].childName;
+    const totalRecords = childRecords.length;
+    const obtained = childRecords.filter((r) => r.status === "obtained").length;
+    const childViews = childRecords.filter((r) => r.childViewsSought).length;
+    const uniqueCategories = new Set(childRecords.map((r) => r.category)).size;
 
-  const totalIssues = periodAudits.reduce((sum, a) => sum + a.issuesFound.length, 0);
+    const obtainedRate = pct(obtained, totalRecords);
+    const childViewsRate = pct(childViews, totalRecords);
 
-  const totalActions = periodAudits.reduce((sum, a) => sum + a.actionsRequired.length, 0);
-  const completedActions = periodAudits.reduce((sum, a) => sum + a.actionsCompleted, 0);
-  const actionsRate = pct(completedActions, totalActions);
-
-  // Is the most recent audit current?
-  const sorted = [...periodAudits].sort((a, b) => b.auditDate.localeCompare(a.auditDate));
-  const mostRecent = sorted[0];
-  const auditCurrent = mostRecent.nextAuditDate >= referenceDate;
-
-  // Scoring — 20 points max
-  let score = 0;
-
-  // Having audits: 4 points
-  score += 4;
-
-  // Average compliance: up to 8 points
-  score += (avgCompliance / 100) * 8;
-
-  // Actions completion: up to 5 points
-  score += (actionsRate / 100) * 5;
-
-  // Audit currency: 3 points if current, 0 if overdue
-  if (auditCurrent) score += 3;
-
-  return {
-    totalAudits: periodAudits.length,
-    averageComplianceRate: avgCompliance,
-    totalIssuesFound: totalIssues,
-    actionsCompletionRate: actionsRate,
-    auditCurrent,
-    overallScore: Math.round(clamp(score, 0, 20) * 10) / 10,
-  };
-}
-
-/**
- * Build per-child consent profiles.
- */
-export function buildChildConsentProfiles(
-  records: ConsentRecord[],
-  delegations: DelegatedAuthority[],
-  gillickAssessments: GillickAssessment[],
-  childIds: string[],
-): ChildConsentProfile[] {
-  return childIds.map((childId) => {
-    const childRecords = records.filter((r) => r.childId === childId);
-    const childDelegations = delegations.filter((d) => d.childId === childId);
-    const childGillick = gillickAssessments.filter((a) => a.childId === childId);
-
-    const childName = childRecords[0]?.childName || childDelegations[0]?.childName || childGillick[0]?.childName || childId;
-
-    const granted = childRecords.filter((r) => r.status === "granted").length;
-    const pending = childRecords.filter((r) => r.status === "pending").length;
-    const expired = childRecords.filter((r) => r.status === "expired").length;
-
-    const evidenceOnFile = childRecords.filter((r) => r.evidenceOnFile).length;
-    const evidenceRate = pct(evidenceOnFile, childRecords.length);
-
-    const childInformed = childRecords.filter((r) => r.childInformed).length;
-    const informedRate = pct(childInformed, childRecords.length);
-
-    const gillickCompetent = childGillick.filter(
-      (a) => a.outcome === "competent" || a.outcome === "partially_competent",
-    ).length;
-
-    // Coverage: how many standard areas have a recorded consent
-    const coveredAreas = new Set(childRecords.map((r) => r.consentArea));
-    const coverageRate = pct(
-      STANDARD_CONSENT_AREAS.filter((a) => coveredAreas.has(a)).length,
-      STANDARD_CONSENT_AREAS.length,
-    );
-
-    // Child score: 0–10
+    // Score 0–10
     let score = 0;
-    if (childRecords.length > 0) {
-      score += (evidenceRate / 100) * 3;        // Evidence: 3
-      score += (informedRate / 100) * 2;         // Informed: 2
-      score += (coverageRate / 100) * 3;         // Coverage: 3
-      if (childDelegations.length > 0) score += 1; // Has delegated authority: 1
-      if (childGillick.length > 0) score += 1;     // Has Gillick assessment: 1
-    }
 
-    return {
-      childId,
-      childName,
-      totalConsents: childRecords.length,
-      grantedConsents: granted,
-      pendingConsents: pending,
-      expiredConsents: expired,
-      evidenceOnFileRate: evidenceRate,
-      childInformedRate: informedRate,
-      delegatedAreas: childDelegations.length,
-      gillickAssessments: childGillick.length,
-      gillickCompetentAreas: gillickCompetent,
-      consentCoverageRate: coverageRate,
-      overallScore: Math.round(clamp(score, 0, 10) * 10) / 10,
-    };
-  });
+    // freq: >= 10 records -> 2, >= 5 -> 1, else 0
+    if (totalRecords >= 10) score += 2;
+    else if (totalRecords >= 5) score += 1;
+
+    // rate1 (obtainedRate): >= 80 -> 3, >= 60 -> 2, >= 40 -> 1, else 0
+    if (obtainedRate >= 80) score += 3;
+    else if (obtainedRate >= 60) score += 2;
+    else if (obtainedRate >= 40) score += 1;
+
+    // rate2 (childViewsRate): same thresholds
+    if (childViewsRate >= 80) score += 3;
+    else if (childViewsRate >= 60) score += 2;
+    else if (childViewsRate >= 40) score += 1;
+
+    // diversity (unique categories): >= 4 -> 2, >= 2 -> 1, else 0
+    if (uniqueCategories >= 4) score += 2;
+    else if (uniqueCategories >= 2) score += 1;
+
+    // Cap at 10
+    score = Math.min(score, 10);
+
+    profiles.push({ childId, childName, totalRecords, obtainedRate, childViewsRate, uniqueCategories, overallScore: score });
+  }
+
+  return profiles;
 }
 
-// ── Main Intelligence Function ──────────────────────────────────────────────
+// ── Master generator ────────────────────────────────────────────────────────
 
-/**
- * Generate comprehensive Consent Management intelligence for a home.
- */
 export function generateConsentManagementIntelligence(
   records: ConsentRecord[],
-  delegations: DelegatedAuthority[],
-  gillickAssessments: GillickAssessment[],
-  audits: ConsentAudit[],
-  childIds: string[],
+  policy: ConsentPolicy | null,
+  training: StaffConsentTraining[],
   homeId: string,
   periodStart: string,
   periodEnd: string,
-  referenceDate: string,
 ): ConsentManagementIntelligence {
-  const recording = evaluateConsentRecording(records, periodStart, periodEnd, referenceDate);
-  const delegatedAuth = evaluateDelegatedAuthority(delegations, periodStart, periodEnd, referenceDate);
-  const gillick = evaluateGillickCompetence(gillickAssessments, childIds, periodStart, periodEnd, referenceDate);
-  const audit = evaluateConsentAudit(audits, periodStart, periodEnd, referenceDate);
-  const childProfiles = buildChildConsentProfiles(records, delegations, gillickAssessments, childIds);
+  const consentQuality = evaluateConsentQuality(records);
+  const consentCompliance = evaluateConsentCompliance(records);
+  const consentPolicy = evaluateConsentPolicy(policy);
+  const staffReadiness = evaluateStaffConsentReadiness(training);
+  const childProfiles = buildChildConsentProfiles(records);
 
-  const overallScore = Math.round(
-    (recording.overallScore + delegatedAuth.overallScore + gillick.overallScore + audit.overallScore) * 10,
-  ) / 10;
-  const rating = ratingFromScore(overallScore);
+  const rawTotal =
+    consentQuality.overallScore +
+    consentCompliance.overallScore +
+    consentPolicy.overallScore +
+    staffReadiness.overallScore;
 
-  // ── Strengths ──
+  const overallScore = Math.min(Math.round(rawTotal * 10) / 10, 100);
+  const rating = getRating(overallScore);
+
+  // ── Strengths: evaluator score >= 20 ──
   const strengths: string[] = [];
-  if (recording.evidenceOnFileRate >= 90 && recording.totalRecords > 0) {
-    strengths.push("Excellent record-keeping — written consent evidence is maintained on file for over 90% of decisions");
+  if (consentQuality.overallScore >= 20) {
+    strengths.push("Consent records are of high quality with strong documentation, child views sought, and expiry tracking in place");
   }
-  if (recording.childInformedRate >= 90 && recording.totalRecords > 0) {
-    strengths.push("Children are consistently informed about consent decisions affecting them");
+  if (consentCompliance.overallScore >= 20) {
+    strengths.push("Excellent compliance with consent procedures including parent consultation, staff recording, and review scheduling");
   }
-  if (recording.consentCurrencyRate >= 95 && recording.totalRecords > 0) {
-    strengths.push("Consent records are well maintained and kept up to date");
+  if (consentPolicy.overallScore >= 20) {
+    strengths.push("Comprehensive consent policy framework is in place covering all key areas of consent management");
   }
-  if (delegatedAuth.totalDelegations > 0 && delegatedAuth.documentedInPlanRate >= 90) {
-    strengths.push("Delegated authority is clearly documented in placement plans, supporting normalised daily life");
-  }
-  if (delegatedAuth.areasWithDelegation >= 4) {
-    strengths.push("Good range of delegated authority across multiple areas, enabling carers to make timely decisions");
-  }
-  if (gillick.totalAssessments > 0 && gillick.childViewsCapturedRate >= 90) {
-    strengths.push("Gillick competence assessments consistently capture and respect children's views");
-  }
-  if (gillick.competent > 0) {
-    strengths.push("Children's growing autonomy is recognised through Gillick competence assessments");
-  }
-  if (audit.auditCurrent && audit.averageComplianceRate >= 90) {
-    strengths.push("Regular consent audits demonstrate high compliance and effective quality assurance");
+  if (staffReadiness.overallScore >= 20) {
+    strengths.push("Staff demonstrate strong readiness in consent law, capacity assessment, and child participation");
   }
 
-  // ── Areas for Improvement ──
+  // ── Areas for improvement: evaluator score < 15 ──
   const areasForImprovement: string[] = [];
-  if (recording.notSought > 0) {
-    areasForImprovement.push(`Consent has not been sought for ${recording.notSought} area(s) — all consent decisions must be actively pursued`);
+  if (consentQuality.overallScore < 15) {
+    areasForImprovement.push("Consent record quality needs improvement — ensure all consents are obtained, documented, and child views are sought");
   }
-  if (recording.expired > 0) {
-    areasForImprovement.push(`${recording.expired} consent record(s) have expired — these need prompt renewal`);
+  if (consentCompliance.overallScore < 15) {
+    areasForImprovement.push("Consent compliance requires attention — strengthen parent consultation, staff recording, and review scheduling");
   }
-  if (recording.evidenceOnFileRate < 80 && recording.totalRecords > 0) {
-    areasForImprovement.push("Written consent evidence is not consistently maintained on file");
+  if (consentPolicy.overallScore < 15) {
+    areasForImprovement.push("Consent policy framework is incomplete — review and strengthen consent policies and protocols");
   }
-  if (recording.childInformedRate < 80 && recording.totalRecords > 0) {
-    areasForImprovement.push("Children are not always informed about consent decisions — their right to be heard must be upheld");
-  }
-  if (delegatedAuth.totalDelegations === 0) {
-    areasForImprovement.push("No delegated authority arrangements recorded — this may be restricting children's daily experiences");
-  }
-  if (delegatedAuth.overdueReviews > 0) {
-    areasForImprovement.push(`${delegatedAuth.overdueReviews} delegated authority arrangement(s) are overdue for review`);
-  }
-  if (gillick.totalAssessments === 0 && childIds.length > 0) {
-    areasForImprovement.push("No Gillick competence assessments recorded — children's capacity for autonomous decision-making should be assessed");
-  }
-  if (gillick.overdueReviews > 0) {
-    areasForImprovement.push(`${gillick.overdueReviews} Gillick assessment(s) are overdue for review`);
-  }
-  if (audit.totalAudits === 0) {
-    areasForImprovement.push("No consent audits have been conducted — regular auditing is essential for quality assurance");
-  }
-  if (!audit.auditCurrent && audit.totalAudits > 0) {
-    areasForImprovement.push("The most recent consent audit is overdue for renewal");
+  if (staffReadiness.overallScore < 15) {
+    areasForImprovement.push("Staff consent training is insufficient — invest in training for consent law, capacity assessment, and Gillick competence");
   }
 
   // ── Actions ──
   const actions: string[] = [];
-  if (recording.notSought > 0) {
-    actions.push(`URGENT: Seek consent for all ${recording.notSought} outstanding area(s) where consent has not been obtained`);
+
+  // URGENT when policy score = 0 or staff score = 0
+  if (consentPolicy.overallScore === 0) {
+    actions.push("URGENT: No consent policy framework in place — develop and implement a comprehensive consent policy immediately");
   }
-  if (recording.expired > 0) {
-    actions.push(`HIGH: Renew ${recording.expired} expired consent record(s)`);
-  }
-  if (recording.pending > 0) {
-    actions.push(`HIGH: Follow up on ${recording.pending} pending consent request(s)`);
-  }
-  if (delegatedAuth.overdueReviews > 0) {
-    actions.push(`MEDIUM: Review ${delegatedAuth.overdueReviews} overdue delegated authority arrangement(s)`);
-  }
-  if (delegatedAuth.totalDelegations === 0 && childIds.length > 0) {
-    actions.push("MEDIUM: Establish delegated authority arrangements to support normalised daily decision-making");
-  }
-  if (gillick.totalAssessments === 0 && childIds.length > 0) {
-    actions.push("MEDIUM: Conduct Gillick competence assessments for all young people of appropriate age");
-  }
-  if (audit.totalAudits === 0) {
-    actions.push("LOW: Schedule an initial consent records audit");
+  if (staffReadiness.overallScore === 0) {
+    actions.push("URGENT: No staff have completed consent training — arrange mandatory consent management training for all staff");
   }
 
-  // ── Regulatory Links ──
+  // Conditional on rates < 50
+  if (records.length > 0 && consentQuality.obtainedRate < 50) {
+    actions.push("Increase the rate of obtained consents — currently below 50%, review all pending and expired consent records");
+  }
+  if (records.length > 0 && consentQuality.childViewsRate < 50) {
+    actions.push("Improve child participation in consent processes — child views are sought in fewer than 50% of records");
+  }
+  if (records.length > 0 && consentQuality.documentedRate < 50) {
+    actions.push("Strengthen consent documentation — fewer than 50% of consent decisions are properly documented");
+  }
+  if (records.length > 0 && consentCompliance.parentConsultedRate < 50) {
+    actions.push("Ensure parents and carers are consulted on consent decisions — consultation rate is below 50%");
+  }
+  if (records.length > 0 && consentCompliance.staffRecordedRate < 50) {
+    actions.push("Improve staff recording of consent decisions — recording rate is below 50%");
+  }
+  if (records.length > 0 && consentCompliance.reviewScheduledRate < 50) {
+    actions.push("Schedule regular reviews for consent records — review scheduling rate is below 50%");
+  }
+
+  // ── Regulatory links: exactly 7 ──
   const regulatoryLinks: string[] = [
-    "CHR 2015 Reg 20 — delegated authority to make decisions about a child's upbringing",
-    "Children Act 1989 s33(3) — exercise of parental responsibility by the local authority",
-    "Gillick v West Norfolk and Wisbech AHA [1986] — competence to consent",
-    "DfE Delegated Authority Guide 2013 — practical guidance on normalising children's experiences",
-    "SCCIF — Ofsted evaluates how effectively consent and delegated authority support children's daily lives",
-    "UNCRC Article 12 — the right of the child to express views and have them given due weight",
+    "CHR 2015 Reg 20 — delegated authority to make day-to-day decisions about a child's upbringing",
+    "Children Act 1989 s33(3) — local authority exercise of parental responsibility and consent",
+    "Gillick v West Norfolk and Wisbech AHA [1986] — children's competence to consent to treatment",
+    "Mental Capacity Act 2005 — principles for assessing capacity to consent",
+    "UK GDPR / Data Protection Act 2018 — lawful basis for processing children's data and consent requirements",
+    "UNCRC Article 12 — the right of the child to express views in all matters affecting them",
+    "SCCIF — Ofsted evaluates how effectively consent processes support children's welfare and rights",
   ];
 
   return {
     homeId,
     periodStart,
     periodEnd,
-    referenceDate,
     overallScore,
     rating,
-    recording,
-    delegatedAuthority: delegatedAuth,
-    gillickCompetence: gillick,
-    audit,
+    consentQuality,
+    consentCompliance,
+    consentPolicy,
+    staffReadiness,
     childProfiles,
     strengths,
     areasForImprovement,

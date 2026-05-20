@@ -1,1 +1,1 @@
-export { EmergencyPreparednessDashboardWidget } from "./EmergencyPreparednessDashboardWidget";
+export { default as EmergencyPreparednessDashboardWidget } from "./EmergencyPreparednessDashboardWidget";

@@ -1,22 +1,32 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Delegated Authority & Consent — Public API
+// Cornerstone Delegated Authority Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  evaluateDelegatedAuthorityCompliance,
-  calculateHomeDelegatedAuthorityMetrics,
-  getDecisionCategoryLabel,
-  getAuthorityLevelLabel,
+  pct,
+  getRating,
+  getAuthorityCategoryLabel,
+  getDecisionOutcomeLabel,
+  getRatingLabel,
+  evaluateAuthorityQuality,
+  evaluateAuthorityCompliance,
+  evaluateAuthorityPolicy,
+  evaluateStaffAuthorityReadiness,
+  buildChildAuthorityProfiles,
+  generateDelegatedAuthorityIntelligence,
 } from "./delegated-authority-engine";
 
 export type {
-  DecisionCategory,
-  AuthorityLevel,
-  ConsentStatus,
-  DelegatedAuthorityEntry,
-  ConsentRecord,
-  ChildDelegatedAuthorityProfile,
-  EmergencyDecision,
-  DelegatedAuthorityComplianceResult,
-  HomeDelegatedAuthorityMetrics,
+  AuthorityCategory,
+  DecisionOutcome,
+  Rating,
+  AuthorityDecision,
+  AuthorityPolicy,
+  StaffAuthorityTraining,
+  AuthorityQualityResult,
+  AuthorityComplianceResult,
+  AuthorityPolicyResult,
+  StaffAuthorityReadinessResult,
+  ChildAuthorityProfile,
+  DelegatedAuthorityIntelligence,
 } from "./delegated-authority-engine";

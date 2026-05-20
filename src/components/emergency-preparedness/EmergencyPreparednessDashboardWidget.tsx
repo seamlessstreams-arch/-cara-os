@@ -1,146 +1,106 @@
 "use client";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// EMERGENCY PREPAREDNESS DASHBOARD WIDGET
-//
-// Displays emergency preparedness and business continuity intelligence:
-// - Overall score with Ofsted-aligned rating
-// - Key metrics: plan coverage, drill success, BC readiness, response quality
-// - Expandable sections for detailed analysis
-// - Regulatory framework references
-// ══════════════════════════════════════════════════════════════════════════════
-
 import { useState, useEffect } from "react";
 
-// ── Local Type Definitions ────────────────────────────────────────────────
+// ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
-interface EmergencyPlanEvaluation {
-  totalPlans: number;
-  emergencyTypesCovered: string[];
-  emergencyTypesUncovered: string[];
-  coverageRate: number;
-  currentPlans: number;
-  expiredPlans: number;
-  underReviewPlans: number;
-  draftPlans: number;
-  currencyRate: number;
-  staffTrainingRate: number;
-  childrenBriefingRate: number;
-  contactListCompleteness: number;
-  expiryAlerts: { planId: string; planName: string; nextReviewDate: string; daysUntilExpiry: number }[];
-}
-
-interface DrillReadinessEvaluation {
+interface EmergencyQuality {
   totalDrills: number;
-  drillsByType: Record<string, number>;
-  timeOfDayVariety: { day: number; evening: number; night: number; weekend: number };
-  timeOfDayVarietyScore: number;
-  successRate: number;
-  partialSuccessRate: number;
-  failureRate: number;
-  averageEvacuationTimeMinutes: number | null;
-  actionsCompletionRate: number;
-  lessonsLearnedCaptured: number;
-  totalIssuesIdentified: number;
-}
-
-interface BusinessContinuityEvaluation {
-  totalPlans: number;
-  currentPlans: number;
-  coverageRate: number;
-  currencyRate: number;
-  minimumStaffingDocumented: number;
-  alternativeAccommodationArranged: number;
-  itBackupRate: number;
-  communicationPlanRate: number;
-  supplierAlternativesRate: number;
-}
-
-interface LoneWorkingEvaluation {
-  totalAssessments: number;
-  currentAssessments: number;
-  currencyRate: number;
-  loneWorkingOccurs: boolean;
-  riskLevels: { low: number; medium: number; high: number };
-  mitigationInPlace: number;
-  checkInProtocolRate: number;
-  emergencyProcedureRate: number;
-}
-
-interface IncidentResponseEvaluation {
-  totalIncidents: number;
-  averageResponseTimeMinutes: number | null;
-  planAdherenceRate: number;
-  notificationCompletenessRate: number;
-  childrenSafeRate: number;
+  readinessRate: number;
+  completionRate: number;
+  childBriefingRate: number;
   debriefRate: number;
-  lessonsLearnedCaptured: number;
-  incidentsByType: Record<string, number>;
+  score: number;
+}
+
+interface EmergencyCompliance {
+  totalDrills: number;
+  documentedRate: number;
+  staffParticipationRate: number;
+  improvementsRate: number;
+  uniqueDrillTypes: number;
+  typeDiversityRatio: number;
+  score: number;
+}
+
+interface EmergencyPolicyData {
+  fireEvacuationPlan: boolean;
+  lockdownProcedure: boolean;
+  missingChildProtocol: boolean;
+  medicalEmergencyPlan: boolean;
+  businessContinuityPlan: boolean;
+  emergencyContactSystem: boolean;
+  regularReview: boolean;
+  score: number;
+}
+
+interface StaffReadiness {
+  totalStaff: number;
+  firstAidCertifiedRate: number;
+  fireMarshallTrainedRate: number;
+  evacuationProceduresRate: number;
+  emergencyProtocolsRate: number;
+  safeguardingInEmergenciesRate: number;
+  communicationInCrisisRate: number;
+  score: number;
+}
+
+interface DrillSummaryItem {
+  drillType: string;
+  count: number;
+  avgReadiness: number;
+  lastDate: string;
 }
 
 interface EmergencyPreparednessData {
   homeId: string;
-  assessedAt: string;
   periodStart: string;
   periodEnd: string;
   overallScore: number;
   rating: string;
-  emergencyPlans: EmergencyPlanEvaluation;
-  drillReadiness: DrillReadinessEvaluation;
-  businessContinuity: BusinessContinuityEvaluation;
-  loneWorking: LoneWorkingEvaluation;
-  incidentResponse: IncidentResponseEvaluation;
+  emergencyQuality: EmergencyQuality;
+  emergencyCompliance: EmergencyCompliance;
+  emergencyPolicy: EmergencyPolicyData;
+  staffEmergencyReadiness: StaffReadiness;
+  drillSummary: DrillSummaryItem[];
   strengths: string[];
   areasForImprovement: string[];
   actions: string[];
   regulatoryLinks: string[];
 }
 
-// ── Rating Badge ──────────────────────────────────────────────────────────
+// ── ScoreBar ──────────────────────────────────────────────────────────────
 
-function RatingBadge({ score, rating }: { score: number; rating: string }) {
-  const colorClass =
-    rating === "outstanding"
-      ? "bg-green-100 text-green-800 border-green-300"
-      : rating === "good"
-        ? "bg-blue-100 text-blue-800 border-blue-300"
-        : rating === "requires_improvement"
-          ? "bg-orange-100 text-orange-800 border-orange-300"
-          : "bg-red-100 text-red-800 border-red-300";
-
-  const label =
-    rating === "outstanding" ? "Outstanding"
-      : rating === "good" ? "Good"
-        : rating === "requires_improvement" ? "Requires Improvement"
-          : "Inadequate";
+function ScoreBar({ label, score, max = 25 }: { label: string; score: number; max?: number }) {
+  const pctVal = Math.round((score / max) * 100);
+  const fillColor =
+    pctVal >= 80
+      ? "bg-green-500"
+      : pctVal >= 60
+        ? "bg-blue-500"
+        : pctVal >= 40
+          ? "bg-orange-500"
+          : "bg-red-500";
 
   return (
-    <div className={`rounded-lg border px-4 py-3 text-center ${colorClass}`}>
-      <div className="text-3xl font-bold">{score}</div>
-      <div className="text-sm font-medium mt-1">{label}</div>
+    <div className="mb-3">
+      <div className="flex justify-between items-center mb-1">
+        <span className="text-xs font-medium text-gray-700">{label}</span>
+        <span className="text-xs font-bold text-gray-900">
+          {score}/{max}
+        </span>
+      </div>
+      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${fillColor}`}
+          style={{ width: `${pctVal}%` }}
+        />
+      </div>
     </div>
   );
 }
 
-// ── Metric Card ───────────────────────────────────────────────────────────
-
-function MetricCard({ label, value, suffix }: { label: string; value: number | string; suffix?: string }) {
-  const numValue = typeof value === "number" ? value : parseInt(value, 10);
-  const color =
-    numValue >= 80 ? "text-green-700 bg-green-50"
-      : numValue >= 60 ? "text-blue-700 bg-blue-50"
-        : numValue >= 40 ? "text-orange-700 bg-orange-50"
-          : "text-red-700 bg-red-50";
-
-  return (
-    <div className={`rounded-lg p-3 text-center ${color}`}>
-      <div className="text-2xl font-bold">{value}{suffix}</div>
-      <div className="text-xs font-medium mt-0.5">{label}</div>
-    </div>
-  );
-}
-
-// ── Section Toggle ────────────────────────────────────────────────────────
+// ── Section (collapsible) ────────────────────────────────────────────────
 
 function Section({
   title,
@@ -152,38 +112,54 @@ function Section({
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+
   return (
-    <div className="border border-gray-100 rounded-lg">
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50 flex items-center justify-between"
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 hover:bg-gray-100 transition-colors"
       >
-        {title}
-        <span className="text-gray-400 text-xs">{open ? "▲" : "▼"}</span>
+        <span className="text-sm font-semibold text-gray-800">{title}</span>
+        <span className="text-gray-400 text-xs">{open ? "Hide" : "Show"}</span>
       </button>
-      {open && <div className="px-4 pb-3 space-y-2">{children}</div>}
+      {open && <div className="px-4 py-3">{children}</div>}
     </div>
   );
 }
 
-// ── Stat Row ──────────────────────────────────────────────────────────────
+// ── Stat ──────────────────────────────────────────────────────────────────
 
-function StatRow({ label, value }: { label: string; value: string | number }) {
+function Stat({ label, value, suffix = "" }: { label: string; value: string | number; suffix?: string }) {
   return (
-    <div className="flex justify-between items-center text-sm py-1 border-b border-gray-50 last:border-0">
-      <span className="text-gray-600">{label}</span>
-      <span className="font-medium text-gray-900">{value}</span>
+    <div className="text-center p-2 bg-gray-50 rounded-lg">
+      <div className="text-lg font-bold text-gray-800">
+        {value}
+        {suffix && <span className="text-sm font-normal text-gray-500">{suffix}</span>}
+      </div>
+      <div className="text-[10px] text-gray-500 uppercase mt-0.5">{label}</div>
     </div>
   );
 }
+
+// ── Drill Type Label ─────────────────────────────────────────────────────
+
+const drillTypeDisplayNames: Record<string, string> = {
+  fire_drill: "Fire Drill",
+  evacuation_exercise: "Evacuation Exercise",
+  first_aid_scenario: "First Aid Scenario",
+  lockdown_procedure: "Lockdown Procedure",
+  missing_child_protocol: "Missing Child Protocol",
+  medical_emergency: "Medical Emergency",
+  utility_failure: "Utility Failure",
+  severe_weather: "Severe Weather",
+};
 
 // ── Main Widget ───────────────────────────────────────────────────────────
 
-export function EmergencyPreparednessDashboardWidget() {
+export default function EmergencyPreparednessDashboardWidget() {
   const [data, setData] = useState<EmergencyPreparednessData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -201,23 +177,59 @@ export function EmergencyPreparednessDashboardWidget() {
     fetchData();
   }, []);
 
+  // Loading skeleton
   if (loading) {
     return (
       <div className="bg-white border border-gray-200 rounded-xl p-6 animate-pulse">
         <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
+        <div className="h-4 bg-gray-100 rounded w-2/3 mb-3" />
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-12 bg-gray-100 rounded" />
+          ))}
+        </div>
         <div className="h-20 bg-gray-100 rounded" />
       </div>
     );
   }
 
-  if (error || !data) {
+  // Error state
+  if (error) {
     return (
       <div className="bg-white border border-red-200 rounded-xl p-6">
         <h3 className="font-semibold text-red-800">Emergency Preparedness</h3>
-        <p className="text-sm text-red-600 mt-1">{error ?? "No data available"}</p>
+        <p className="text-sm text-red-600 mt-1">{error}</p>
       </div>
     );
   }
+
+  // Null guard
+  if (!data) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <h3 className="font-semibold text-gray-800">Emergency Preparedness</h3>
+        <p className="text-sm text-gray-500 mt-1">No data available</p>
+      </div>
+    );
+  }
+
+  const ratingColor =
+    data.rating === "outstanding"
+      ? "bg-green-100 text-green-800 border-green-300"
+      : data.rating === "good"
+        ? "bg-blue-100 text-blue-800 border-blue-300"
+        : data.rating === "requires_improvement"
+          ? "bg-orange-100 text-orange-800 border-orange-300"
+          : "bg-red-100 text-red-800 border-red-300";
+
+  const ratingLabel =
+    data.rating === "outstanding"
+      ? "Outstanding"
+      : data.rating === "good"
+        ? "Good"
+        : data.rating === "requires_improvement"
+          ? "Requires Improvement"
+          : "Inadequate";
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
@@ -225,181 +237,146 @@ export function EmergencyPreparednessDashboardWidget() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="font-semibold text-gray-900 text-lg">
-            Emergency Preparedness & Business Continuity
+            Emergency Preparedness
           </h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            {data.periodStart} to {data.periodEnd} | {data.emergencyPlans.totalPlans} plans | {data.drillReadiness.totalDrills} drills
+            {data.periodStart} to {data.periodEnd} | {data.emergencyQuality.totalDrills} drills | {data.staffEmergencyReadiness.totalStaff} staff
           </p>
         </div>
-        <RatingBadge score={data.overallScore} rating={data.rating} />
+        <div className={`rounded-lg border px-4 py-3 text-center ${ratingColor}`}>
+          <div className="text-3xl font-bold">{data.overallScore}</div>
+          <div className="text-sm font-medium mt-1">{ratingLabel}</div>
+        </div>
       </div>
 
-      {/* Key Metrics Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <MetricCard label="Plan Coverage" value={data.emergencyPlans.coverageRate} suffix="%" />
-        <MetricCard label="Drill Success Rate" value={data.drillReadiness.successRate} suffix="%" />
-        <MetricCard label="BC Readiness" value={data.businessContinuity.coverageRate} suffix="%" />
-        <MetricCard
-          label="Response Quality"
-          value={data.incidentResponse.totalIncidents > 0 ? data.incidentResponse.planAdherenceRate : "N/A"}
-          suffix={data.incidentResponse.totalIncidents > 0 ? "%" : ""}
-        />
+      {/* 4 Score Bars */}
+      <div className="mb-5">
+        <ScoreBar label="Emergency Quality" score={data.emergencyQuality.score} />
+        <ScoreBar label="Emergency Compliance" score={data.emergencyCompliance.score} />
+        <ScoreBar label="Emergency Policy" score={data.emergencyPolicy.score} />
+        <ScoreBar label="Staff Emergency Readiness" score={data.staffEmergencyReadiness.score} />
       </div>
 
-      {/* Expiry Alerts */}
-      {data.emergencyPlans.expiryAlerts.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-          <h4 className="text-sm font-semibold text-amber-800 mb-1">Plan Review Alerts</h4>
-          {data.emergencyPlans.expiryAlerts.slice(0, 3).map((alert) => (
-            <div key={alert.planId} className="text-xs text-amber-700">
-              {alert.planName} — {alert.daysUntilExpiry < 0 ? `${Math.abs(alert.daysUntilExpiry)} days overdue` : `due in ${alert.daysUntilExpiry} days`}
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Sections */}
+      <div className="space-y-3">
+        {/* Emergency Quality */}
+        <Section title="Emergency Quality" defaultOpen>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+            <Stat label="Readiness Rate" value={data.emergencyQuality.readinessRate} suffix="%" />
+            <Stat label="Completion Rate" value={data.emergencyQuality.completionRate} suffix="%" />
+            <Stat label="Child Briefing" value={data.emergencyQuality.childBriefingRate} suffix="%" />
+            <Stat label="Debrief Rate" value={data.emergencyQuality.debriefRate} suffix="%" />
+            <Stat label="Total Drills" value={data.emergencyQuality.totalDrills} />
+          </div>
+        </Section>
 
-      {/* Urgent Actions */}
-      {data.actions.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-          <h4 className="text-sm font-semibold text-red-800 mb-2">Priority Actions</h4>
-          <ul className="space-y-1">
-            {data.actions.slice(0, 3).map((action, i) => (
-              <li key={i} className="text-xs text-red-700 flex items-start gap-1.5">
-                <span className="mt-0.5 shrink-0">*</span>
-                <span>{action}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {/* Emergency Compliance */}
+        <Section title="Emergency Compliance">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+            <Stat label="Documented" value={data.emergencyCompliance.documentedRate} suffix="%" />
+            <Stat label="Staff Participation" value={data.emergencyCompliance.staffParticipationRate} suffix="%" />
+            <Stat label="Improvements ID'd" value={data.emergencyCompliance.improvementsRate} suffix="%" />
+            <Stat label="Drill Types" value={data.emergencyCompliance.uniqueDrillTypes} suffix="/8" />
+            <Stat label="Diversity Ratio" value={data.emergencyCompliance.typeDiversityRatio} />
+          </div>
+        </Section>
 
-      {/* Expandable Details */}
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="text-sm text-blue-600 hover:text-blue-800 font-medium w-full text-left"
-      >
-        {expanded ? "Hide details" : "Show detailed analysis"}
-      </button>
-
-      {expanded && (
-        <div className="mt-4 space-y-3">
-          {/* Emergency Plans */}
-          <Section title="Emergency Plans" defaultOpen>
-            <StatRow label="Total plans" value={data.emergencyPlans.totalPlans} />
-            <StatRow label="Current" value={data.emergencyPlans.currentPlans} />
-            <StatRow label="Expired" value={data.emergencyPlans.expiredPlans} />
-            <StatRow label="Under review" value={data.emergencyPlans.underReviewPlans} />
-            <StatRow label="Draft" value={data.emergencyPlans.draftPlans} />
-            <StatRow label="Coverage rate" value={`${data.emergencyPlans.coverageRate}%`} />
-            <StatRow label="Currency rate" value={`${data.emergencyPlans.currencyRate}%`} />
-            <StatRow label="Staff trained" value={`${data.emergencyPlans.staffTrainingRate}%`} />
-            <StatRow label="Children briefed" value={`${data.emergencyPlans.childrenBriefingRate}%`} />
-            <StatRow label="Contact list complete" value={`${data.emergencyPlans.contactListCompleteness}%`} />
-            {data.emergencyPlans.emergencyTypesUncovered.length > 0 && (
-              <div className="text-xs text-orange-600 mt-1">
-                Uncovered: {data.emergencyPlans.emergencyTypesUncovered.join(", ")}
+        {/* Emergency Policy */}
+        <Section title="Emergency Policy">
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { label: "Fire Evacuation Plan", value: data.emergencyPolicy.fireEvacuationPlan },
+              { label: "Lockdown Procedure", value: data.emergencyPolicy.lockdownProcedure },
+              { label: "Missing Child Protocol", value: data.emergencyPolicy.missingChildProtocol },
+              { label: "Medical Emergency Plan", value: data.emergencyPolicy.medicalEmergencyPlan },
+              { label: "Business Continuity", value: data.emergencyPolicy.businessContinuityPlan },
+              { label: "Emergency Contacts", value: data.emergencyPolicy.emergencyContactSystem },
+              { label: "Regular Review", value: data.emergencyPolicy.regularReview },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className={`text-xs px-3 py-2 rounded-lg ${
+                  item.value
+                    ? "bg-green-50 text-green-700"
+                    : "bg-red-50 text-red-700"
+                }`}
+              >
+                {item.value ? "Yes" : "No"} — {item.label}
               </div>
-            )}
-          </Section>
+            ))}
+          </div>
+        </Section>
 
-          {/* Drill Analysis */}
-          <Section title="Drill Analysis">
-            <StatRow label="Total drills" value={data.drillReadiness.totalDrills} />
-            <StatRow label="Success rate" value={`${data.drillReadiness.successRate}%`} />
-            <StatRow label="Partial success" value={`${data.drillReadiness.partialSuccessRate}%`} />
-            <StatRow label="Failure rate" value={`${data.drillReadiness.failureRate}%`} />
-            <StatRow
-              label="Avg evacuation time"
-              value={data.drillReadiness.averageEvacuationTimeMinutes != null
-                ? `${data.drillReadiness.averageEvacuationTimeMinutes} min`
-                : "N/A"}
-            />
-            <StatRow label="Time variety score" value={`${data.drillReadiness.timeOfDayVarietyScore}%`} />
-            <StatRow label="Actions completion" value={`${data.drillReadiness.actionsCompletionRate}%`} />
-            <StatRow label="Issues identified" value={data.drillReadiness.totalIssuesIdentified} />
-            <div className="text-xs text-gray-500 mt-1">
-              Day: {data.drillReadiness.timeOfDayVariety.day} |
-              Evening: {data.drillReadiness.timeOfDayVariety.evening} |
-              Night: {data.drillReadiness.timeOfDayVariety.night} |
-              Weekend: {data.drillReadiness.timeOfDayVariety.weekend}
+        {/* Staff Emergency Readiness */}
+        <Section title="Staff Emergency Readiness">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+            <Stat label="First Aid" value={data.staffEmergencyReadiness.firstAidCertifiedRate} suffix="%" />
+            <Stat label="Fire Marshall" value={data.staffEmergencyReadiness.fireMarshallTrainedRate} suffix="%" />
+            <Stat label="Evacuation" value={data.staffEmergencyReadiness.evacuationProceduresRate} suffix="%" />
+            <Stat label="Protocols" value={data.staffEmergencyReadiness.emergencyProtocolsRate} suffix="%" />
+            <Stat label="Safeguarding" value={data.staffEmergencyReadiness.safeguardingInEmergenciesRate} suffix="%" />
+            <Stat label="Crisis Comms" value={data.staffEmergencyReadiness.communicationInCrisisRate} suffix="%" />
+          </div>
+          <p className="text-xs text-gray-500">
+            {data.staffEmergencyReadiness.totalStaff} staff assessed
+          </p>
+        </Section>
+
+        {/* Drill Type Summary */}
+        {data.drillSummary.length > 0 && (
+          <Section title="Drill Type Summary">
+            <div className="space-y-2">
+              {data.drillSummary.map((ds) => (
+                <div
+                  key={ds.drillType}
+                  className="flex items-center justify-between text-xs border-b border-gray-100 pb-1 last:border-0"
+                >
+                  <span className="text-gray-700 font-medium">
+                    {drillTypeDisplayNames[ds.drillType] ?? ds.drillType}
+                  </span>
+                  <span className="text-gray-500">
+                    {ds.count} drill{ds.count !== 1 ? "s" : ""} | {ds.avgReadiness}% ready | last: {ds.lastDate}
+                  </span>
+                </div>
+              ))}
             </div>
           </Section>
+        )}
 
-          {/* Business Continuity */}
-          <Section title="Business Continuity">
-            <StatRow label="Total BC plans" value={data.businessContinuity.totalPlans} />
-            <StatRow label="Current" value={data.businessContinuity.currentPlans} />
-            <StatRow label="Coverage rate" value={`${data.businessContinuity.coverageRate}%`} />
-            <StatRow label="Staffing documented" value={data.businessContinuity.minimumStaffingDocumented} />
-            <StatRow label="Alt accommodation" value={data.businessContinuity.alternativeAccommodationArranged} />
-            <StatRow label="IT backup" value={`${data.businessContinuity.itBackupRate}%`} />
-            <StatRow label="Communication plans" value={`${data.businessContinuity.communicationPlanRate}%`} />
-            <StatRow label="Supplier alternatives" value={`${data.businessContinuity.supplierAlternativesRate}%`} />
-          </Section>
-
-          {/* Lone Working */}
-          <Section title="Lone Working">
-            <StatRow label="Assessments" value={data.loneWorking.totalAssessments} />
-            <StatRow label="Current" value={data.loneWorking.currentAssessments} />
-            <StatRow label="Currency rate" value={`${data.loneWorking.currencyRate}%`} />
-            <StatRow label="Lone working occurs" value={data.loneWorking.loneWorkingOccurs ? "Yes" : "No"} />
-            <StatRow label="Check-in protocol" value={`${data.loneWorking.checkInProtocolRate}%`} />
-            <StatRow label="Emergency procedure" value={`${data.loneWorking.emergencyProcedureRate}%`} />
-            <div className="text-xs text-gray-500 mt-1">
-              Risk: Low {data.loneWorking.riskLevels.low} |
-              Medium {data.loneWorking.riskLevels.medium} |
-              High {data.loneWorking.riskLevels.high}
-            </div>
-          </Section>
-
-          {/* Incident Response */}
-          <Section title="Incident Response">
-            <StatRow label="Total incidents" value={data.incidentResponse.totalIncidents} />
-            <StatRow
-              label="Avg response time"
-              value={data.incidentResponse.averageResponseTimeMinutes != null
-                ? `${data.incidentResponse.averageResponseTimeMinutes} min`
-                : "N/A"}
-            />
-            <StatRow label="Plan adherence" value={`${data.incidentResponse.planAdherenceRate}%`} />
-            <StatRow label="Notifications complete" value={`${data.incidentResponse.notificationCompletenessRate}%`} />
-            <StatRow label="Children safe" value={`${data.incidentResponse.childrenSafeRate}%`} />
-            <StatRow label="Debriefs completed" value={`${data.incidentResponse.debriefRate}%`} />
-          </Section>
-
-          {/* Strengths / Areas / Actions */}
-          {data.strengths.length > 0 && (
-            <Section title="Strengths">
-              {data.strengths.map((s, i) => (
-                <div key={i} className="text-xs text-green-700">+ {s}</div>
-              ))}
-            </Section>
-          )}
-
-          {data.areasForImprovement.length > 0 && (
-            <Section title="Areas for Improvement">
-              {data.areasForImprovement.map((a, i) => (
-                <div key={i} className="text-xs text-orange-700">- {a}</div>
-              ))}
-            </Section>
-          )}
-
-          {data.actions.length > 0 && (
-            <Section title="Actions Required">
-              {data.actions.map((a, i) => (
-                <div key={i} className="text-xs text-red-700">* {a}</div>
-              ))}
-            </Section>
-          )}
-
-          {/* Regulatory Framework */}
-          <Section title="Regulatory Framework">
-            {data.regulatoryLinks.map((link, i) => (
-              <div key={i} className="text-xs text-gray-600">{link}</div>
+        {/* Strengths */}
+        {data.strengths.length > 0 && (
+          <Section title="Strengths">
+            {data.strengths.map((s, i) => (
+              <div key={i} className="text-xs text-green-700 py-0.5">+ {s}</div>
             ))}
           </Section>
-        </div>
-      )}
+        )}
+
+        {/* Areas for Improvement */}
+        {data.areasForImprovement.length > 0 && (
+          <Section title="Areas for Improvement">
+            {data.areasForImprovement.map((a, i) => (
+              <div key={i} className="text-xs text-orange-700 py-0.5">- {a}</div>
+            ))}
+          </Section>
+        )}
+
+        {/* Actions */}
+        {data.actions.length > 0 && (
+          <Section title="Actions Required">
+            {data.actions.map((a, i) => (
+              <div key={i} className="text-xs text-red-700 py-0.5">* {a}</div>
+            ))}
+          </Section>
+        )}
+
+        {/* Regulatory Links */}
+        <Section title="Regulatory Framework">
+          {data.regulatoryLinks.map((link, i) => (
+            <div key={i} className="text-xs text-gray-600 py-0.5">{link}</div>
+          ))}
+        </Section>
+      </div>
     </div>
   );
 }

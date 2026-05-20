@@ -1,264 +1,96 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Delegated Authority & Consent — API Route
-// ══════════════════════════════════════════════════════════════════════════════
-
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import {
-  evaluateDelegatedAuthorityCompliance,
-  calculateHomeDelegatedAuthorityMetrics,
-  getDecisionCategoryLabel,
-  getAuthorityLevelLabel,
+  generateDelegatedAuthorityIntelligence,
+  getAuthorityCategoryLabel,
+  getDecisionOutcomeLabel,
+  getRatingLabel,
 } from "@/lib/delegated-authority";
 import type {
-  ChildDelegatedAuthorityProfile,
-  DelegatedAuthorityEntry,
-  ConsentRecord,
-  EmergencyDecision,
+  AuthorityDecision,
+  AuthorityPolicy,
+  StaffAuthorityTraining,
 } from "@/lib/delegated-authority";
 
-// ── Demo Data ─────────────────────────────────────────────────────────────────
+// ── Demo Data: Oak House ──────────────────────────────────────────────────
 
-const NOW = "2026-05-17T12:00:00Z";
+function generateDemoData(): {
+  decisions: AuthorityDecision[];
+  policy: AuthorityPolicy;
+  training: StaffAuthorityTraining[];
+} {
+  const decisions: AuthorityDecision[] = [
+    // Alex — education & health
+    { id: "dec-001", childId: "child-alex", childName: "Alex", decisionDate: "2026-01-15", category: "education_decisions", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-002", childId: "child-alex", childName: "Alex", decisionDate: "2026-02-03", category: "health_appointments", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-003", childId: "child-alex", childName: "Alex", decisionDate: "2026-02-20", category: "social_activities", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-004", childId: "child-alex", childName: "Alex", decisionDate: "2026-03-10", category: "overnight_stays", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-005", childId: "child-alex", childName: "Alex", decisionDate: "2026-03-25", category: "haircuts_appearance", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: false, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-006", childId: "child-alex", childName: "Alex", decisionDate: "2026-04-05", category: "travel_permissions", outcome: "approved_delayed", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-007", childId: "child-alex", childName: "Alex", decisionDate: "2026-04-18", category: "religious_observance", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-008", childId: "child-alex", childName: "Alex", decisionDate: "2026-05-02", category: "emergency_medical", outcome: "approved_timely", childConsulted: false, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
 
-function makeDelegation(
-  category: DelegatedAuthorityEntry["category"],
-  authorityLevel: DelegatedAuthorityEntry["authorityLevel"],
-  notes?: string,
-): DelegatedAuthorityEntry {
-  return {
-    category,
-    authorityLevel,
-    agreedDate: "2026-01-15T10:00:00Z",
-    agreedBy: "SW Jane Smith",
-    reviewDate: "2026-07-15T10:00:00Z",
-    notes,
+    // Jordan — mixed outcomes
+    { id: "dec-009", childId: "child-jordan", childName: "Jordan", decisionDate: "2026-01-20", category: "education_decisions", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-010", childId: "child-jordan", childName: "Jordan", decisionDate: "2026-02-10", category: "health_appointments", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-011", childId: "child-jordan", childName: "Jordan", decisionDate: "2026-02-28", category: "social_activities", outcome: "approved_delayed", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: false },
+    { id: "dec-012", childId: "child-jordan", childName: "Jordan", decisionDate: "2026-03-15", category: "overnight_stays", outcome: "referred_up", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: false, staffMadeDecision: false, outcomeRecorded: true },
+    { id: "dec-013", childId: "child-jordan", childName: "Jordan", decisionDate: "2026-04-01", category: "haircuts_appearance", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-014", childId: "child-jordan", childName: "Jordan", decisionDate: "2026-04-20", category: "travel_permissions", outcome: "denied", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-015", childId: "child-jordan", childName: "Jordan", decisionDate: "2026-05-05", category: "emergency_medical", outcome: "approved_timely", childConsulted: false, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+
+    // Morgan — good overall
+    { id: "dec-016", childId: "child-morgan", childName: "Morgan", decisionDate: "2026-01-25", category: "education_decisions", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-017", childId: "child-morgan", childName: "Morgan", decisionDate: "2026-02-15", category: "health_appointments", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-018", childId: "child-morgan", childName: "Morgan", decisionDate: "2026-03-05", category: "social_activities", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-019", childId: "child-morgan", childName: "Morgan", decisionDate: "2026-03-20", category: "overnight_stays", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-020", childId: "child-morgan", childName: "Morgan", decisionDate: "2026-04-10", category: "haircuts_appearance", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: false, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-021", childId: "child-morgan", childName: "Morgan", decisionDate: "2026-04-28", category: "travel_permissions", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+    { id: "dec-022", childId: "child-morgan", childName: "Morgan", decisionDate: "2026-05-10", category: "religious_observance", outcome: "approved_timely", childConsulted: true, decisionDocumented: true, parentNotified: true, withinDelegatedScope: true, staffMadeDecision: true, outcomeRecorded: true },
+  ];
+
+  const policy: AuthorityPolicy = {
+    id: "pol-001",
+    delegatedAuthorityMatrix: true,
+    clearDecisionFramework: true,
+    staffEmpowermentGuidance: true,
+    escalationProtocol: true,
+    parentalNotificationProcess: true,
+    childParticipationFramework: true,
+    regularReview: true,
   };
+
+  const training: StaffAuthorityTraining[] = [
+    { id: "tr-001", staffId: "staff-sarah", staffName: "Sarah Johnson", delegatedAuthorityUnderstanding: true, decisionMakingConfidence: true, scopeRecognition: true, documentationCompetency: true, escalationAwareness: true, childConsultationSkills: true },
+    { id: "tr-002", staffId: "staff-tom", staffName: "Tom Richards", delegatedAuthorityUnderstanding: true, decisionMakingConfidence: true, scopeRecognition: true, documentationCompetency: true, escalationAwareness: true, childConsultationSkills: false },
+    { id: "tr-003", staffId: "staff-lisa", staffName: "Lisa Williams", delegatedAuthorityUnderstanding: true, decisionMakingConfidence: true, scopeRecognition: true, documentationCompetency: false, escalationAwareness: true, childConsultationSkills: true },
+    { id: "tr-004", staffId: "staff-darren", staffName: "Darren Laville", delegatedAuthorityUnderstanding: true, decisionMakingConfidence: true, scopeRecognition: true, documentationCompetency: true, escalationAwareness: true, childConsultationSkills: true },
+  ];
+
+  return { decisions, policy, training };
 }
 
-const DEMO_PROFILES: ChildDelegatedAuthorityProfile[] = [
-  {
-    childId: "child-alex",
-    childName: "Alex",
-    homeId: "home-oak",
-    placingAuthority: "Anyshire County Council",
-    socialWorkerName: "Jane Smith",
-    delegatedAuthority: [
-      makeDelegation("routine_medical", "home_decides"),
-      makeDelegation("dental", "home_decides"),
-      makeDelegation("haircut", "home_decides"),
-      makeDelegation("leisure_activities", "home_decides"),
-      makeDelegation("clothing_choices", "home_decides"),
-      makeDelegation("pocket_money_amounts", "home_decides"),
-      makeDelegation("emergency_medical", "home_decides"),
-      makeDelegation("diet_changes", "home_decides"),
-      makeDelegation("overnight_stays", "home_with_notification"),
-      makeDelegation("school_trips", "home_with_notification"),
-      makeDelegation("social_media", "home_with_notification"),
-      makeDelegation("mobile_phone", "home_with_notification"),
-      makeDelegation("ear_piercing", "home_with_notification"),
-      makeDelegation("religious_observance", "home_decides"),
-      makeDelegation("relationships_dating", "home_with_notification"),
-      makeDelegation("travel_domestic", "home_with_notification"),
-      makeDelegation("specialist_medical", "la_consent_required"),
-      makeDelegation("vaccinations", "parent_consent_required"),
-      makeDelegation("travel_international", "la_consent_required"),
-      makeDelegation("education_decisions", "la_consent_required"),
-      makeDelegation("contact_arrangements", "la_consent_required"),
-      makeDelegation("photographs_media", "parent_consent_required"),
-    ],
-    scheduleAgreedDate: "2026-01-15T10:00:00Z",
-    scheduleLastReviewDate: "2026-01-15T10:00:00Z",
-    scheduleNextReviewDate: "2026-07-15T10:00:00Z",
-    consentRecords: [
-      { id: "con-001", childId: "child-alex", category: "school_trips", description: "Year 9 residential trip to Wales", requestedDate: "2026-05-01T10:00:00Z", requestedBy: "staff-rm-01", consentFrom: "Anyshire CC (SW)", consentStatus: "granted", responseDate: "2026-05-03T10:00:00Z", expiryDate: "2026-06-30T00:00:00Z", evidenceHeld: true, childInformed: true },
-      { id: "con-002", childId: "child-alex", category: "photographs_media", description: "School newsletter photo", requestedDate: "2026-04-20T10:00:00Z", requestedBy: "staff-rm-01", consentFrom: "Parent (Mother)", consentStatus: "granted", responseDate: "2026-04-22T10:00:00Z", evidenceHeld: true, childInformed: true },
-      { id: "con-003", childId: "child-alex", category: "vaccinations", description: "MMR booster", requestedDate: "2026-05-10T10:00:00Z", requestedBy: "staff-rm-02", consentFrom: "Parent (Mother)", consentStatus: "pending", evidenceHeld: false, childInformed: true },
-    ],
-    placementPlanSpecifiesDelegation: true,
-    childInformedOfRights: true,
-    emergencyDecisionsMade: [
-      { id: "em-001", date: "2026-03-15T19:00:00Z", category: "emergency_medical", description: "A&E visit — suspected fracture after football", madeBy: "staff-rm-01", rationale: "Immediate medical attention required — wrist swelling", laNotified: true, laNotifiedDate: "2026-03-16T09:00:00Z", parentNotified: true, parentNotifiedDate: "2026-03-15T20:00:00Z", outcome: "Hairline fracture — cast fitted, follow-up in 4 weeks" },
-    ],
-  },
-  {
-    childId: "child-jordan",
-    childName: "Jordan",
-    homeId: "home-oak",
-    placingAuthority: "Boroughton MBC",
-    socialWorkerName: "Marcus Williams",
-    delegatedAuthority: [
-      makeDelegation("routine_medical", "home_decides"),
-      makeDelegation("dental", "home_decides"),
-      makeDelegation("haircut", "home_decides"),
-      makeDelegation("leisure_activities", "home_decides"),
-      makeDelegation("clothing_choices", "home_decides"),
-      makeDelegation("pocket_money_amounts", "home_decides"),
-      makeDelegation("emergency_medical", "home_decides"),
-      makeDelegation("overnight_stays", "home_with_notification", "Only pre-approved friends — max 1 night"),
-      makeDelegation("school_trips", "home_with_notification"),
-      makeDelegation("social_media", "la_consent_required", "Risk assessment required — online safety concerns"),
-      makeDelegation("mobile_phone", "home_with_notification"),
-      makeDelegation("specialist_medical", "la_consent_required"),
-      makeDelegation("vaccinations", "la_consent_required", "Parent consent not available — s.20"),
-      makeDelegation("travel_international", "la_consent_required"),
-      makeDelegation("education_decisions", "la_consent_required"),
-      makeDelegation("contact_arrangements", "la_consent_required"),
-      makeDelegation("photographs_media", "la_consent_required"),
-      makeDelegation("ear_piercing", "la_consent_required"),
-      makeDelegation("travel_domestic", "home_with_notification"),
-      makeDelegation("diet_changes", "home_decides"),
-      makeDelegation("religious_observance", "home_decides"),
-      makeDelegation("relationships_dating", "home_with_notification"),
-    ],
-    scheduleAgreedDate: "2026-02-01T10:00:00Z",
-    scheduleLastReviewDate: "2026-02-01T10:00:00Z",
-    scheduleNextReviewDate: "2026-08-01T10:00:00Z",
-    consentRecords: [
-      { id: "con-004", childId: "child-jordan", category: "specialist_medical", description: "CAMHS initial assessment", requestedDate: "2026-04-01T10:00:00Z", requestedBy: "staff-rm-02", consentFrom: "Boroughton MBC (SW)", consentStatus: "granted", responseDate: "2026-04-05T10:00:00Z", evidenceHeld: true, childInformed: true },
-      { id: "con-005", childId: "child-jordan", category: "photographs_media", description: "Sports day photos for website", requestedDate: "2026-05-05T10:00:00Z", requestedBy: "staff-rm-01", consentFrom: "Boroughton MBC (SW)", consentStatus: "pending", evidenceHeld: false, childInformed: true },
-    ],
-    placementPlanSpecifiesDelegation: true,
-    childInformedOfRights: true,
-    emergencyDecisionsMade: [],
-  },
-  {
-    childId: "child-morgan",
-    childName: "Morgan",
-    homeId: "home-oak",
-    placingAuthority: "Anyshire County Council",
-    socialWorkerName: "Jane Smith",
-    delegatedAuthority: [
-      makeDelegation("routine_medical", "home_decides"),
-      makeDelegation("dental", "home_decides"),
-      makeDelegation("haircut", "home_decides"),
-      makeDelegation("leisure_activities", "home_decides"),
-      makeDelegation("clothing_choices", "home_decides"),
-      makeDelegation("pocket_money_amounts", "home_decides"),
-      makeDelegation("emergency_medical", "home_decides"),
-      makeDelegation("overnight_stays", "home_decides"),
-      makeDelegation("school_trips", "home_decides"),
-      makeDelegation("social_media", "home_with_notification"),
-      makeDelegation("mobile_phone", "home_decides"),
-      makeDelegation("specialist_medical", "la_consent_required"),
-      makeDelegation("vaccinations", "parent_consent_required"),
-      makeDelegation("travel_international", "la_consent_required"),
-      makeDelegation("education_decisions", "la_consent_required"),
-      makeDelegation("contact_arrangements", "la_consent_required"),
-      makeDelegation("photographs_media", "parent_consent_required"),
-      makeDelegation("ear_piercing", "home_with_notification"),
-      makeDelegation("travel_domestic", "home_decides"),
-      makeDelegation("diet_changes", "home_decides"),
-      makeDelegation("religious_observance", "home_decides"),
-      makeDelegation("relationships_dating", "home_with_notification"),
-    ],
-    scheduleAgreedDate: "2025-11-20T10:00:00Z",
-    scheduleLastReviewDate: "2025-11-20T10:00:00Z",
-    scheduleNextReviewDate: "2026-05-20T10:00:00Z",
-    consentRecords: [
-      { id: "con-006", childId: "child-morgan", category: "travel_international", description: "School trip to France — July 2026", requestedDate: "2026-04-15T10:00:00Z", requestedBy: "staff-rm-01", consentFrom: "Anyshire CC (SW)", consentStatus: "granted", responseDate: "2026-04-28T10:00:00Z", expiryDate: "2026-08-01T00:00:00Z", evidenceHeld: true, childInformed: true },
-      { id: "con-007", childId: "child-morgan", category: "vaccinations", description: "HPV vaccination (school programme)", requestedDate: "2026-03-01T10:00:00Z", requestedBy: "staff-rm-02", consentFrom: "Parent (Father)", consentStatus: "granted", responseDate: "2026-03-10T10:00:00Z", evidenceHeld: true, childInformed: true },
-    ],
-    placementPlanSpecifiesDelegation: true,
-    childInformedOfRights: true,
-    emergencyDecisionsMade: [],
-  },
-  {
-    childId: "child-sam",
-    childName: "Sam",
-    homeId: "home-oak",
-    placingAuthority: "Crestfield Borough Council",
-    socialWorkerName: "Linda Okafor",
-    delegatedAuthority: [
-      makeDelegation("routine_medical", "home_decides"),
-      makeDelegation("dental", "home_decides"),
-      makeDelegation("haircut", "home_decides"),
-      makeDelegation("leisure_activities", "home_decides"),
-      makeDelegation("clothing_choices", "home_decides"),
-      makeDelegation("pocket_money_amounts", "home_decides"),
-      makeDelegation("emergency_medical", "home_decides"),
-      makeDelegation("overnight_stays", "la_consent_required", "No unsupervised overnight stays — safety plan"),
-      makeDelegation("school_trips", "home_with_notification"),
-      makeDelegation("social_media", "la_consent_required", "CSE risk — supervised access only"),
-      makeDelegation("mobile_phone", "la_consent_required", "Monitored device only"),
-      makeDelegation("specialist_medical", "la_consent_required"),
-      makeDelegation("vaccinations", "la_consent_required"),
-      makeDelegation("travel_international", "court_order_required"),
-      makeDelegation("education_decisions", "la_consent_required"),
-      makeDelegation("contact_arrangements", "court_order_required"),
-      makeDelegation("photographs_media", "la_consent_required"),
-    ],
-    scheduleAgreedDate: "2026-03-01T10:00:00Z",
-    scheduleLastReviewDate: "2026-03-01T10:00:00Z",
-    scheduleNextReviewDate: "2026-09-01T10:00:00Z",
-    consentRecords: [
-      { id: "con-008", childId: "child-sam", category: "specialist_medical", description: "Therapeutic assessment — trauma therapy", requestedDate: "2026-04-10T10:00:00Z", requestedBy: "staff-rm-02", consentFrom: "Crestfield BC (SW)", consentStatus: "granted", responseDate: "2026-04-15T10:00:00Z", evidenceHeld: true, childInformed: true },
-      { id: "con-009", childId: "child-sam", category: "overnight_stays", description: "Approved sleepover at friend Kai's house", requestedDate: "2026-05-12T10:00:00Z", requestedBy: "staff-rm-01", consentFrom: "Crestfield BC (SW)", consentStatus: "pending", evidenceHeld: false, childInformed: true },
-    ],
-    placementPlanSpecifiesDelegation: true,
-    childInformedOfRights: true,
-    emergencyDecisionsMade: [
-      { id: "em-002", date: "2026-04-20T23:00:00Z", category: "emergency_medical", description: "999 call — breathing difficulty/panic attack", madeBy: "staff-rm-02", rationale: "Child in acute distress, difficulty breathing — ambulance called", laNotified: true, laNotifiedDate: "2026-04-21T09:00:00Z", parentNotified: false, parentNotifiedDate: undefined, outcome: "Assessed at hospital — panic attack, discharged same night" },
-    ],
-  },
-];
+// ── GET Handler ──────────────────────────────────────────────────────────
 
-// ── GET Handler ─────────────────────────────────────────────────────────────
+export async function GET() {
+  const { decisions, policy, training } = generateDemoData();
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const mode = searchParams.get("mode") ?? "dashboard";
-  const homeId = searchParams.get("homeId") ?? "home-oak";
-  const childId = searchParams.get("childId");
+  const result = generateDelegatedAuthorityIntelligence(
+    decisions,
+    policy,
+    training,
+    "oak-house",
+    "2026-01-01",
+    "2026-05-20",
+  );
 
-  if (mode === "dashboard") {
-    const homeProfiles = DEMO_PROFILES.filter(p => p.homeId === homeId);
-    const metrics = calculateHomeDelegatedAuthorityMetrics(homeProfiles, homeId, NOW);
-    const childResults = homeProfiles.map(p => evaluateDelegatedAuthorityCompliance(p, NOW));
-    return NextResponse.json({ metrics, childResults, profiles: homeProfiles });
-  }
-
-  if (mode === "child" && childId) {
-    const profile = DEMO_PROFILES.find(p => p.childId === childId);
-    if (!profile) {
-      return NextResponse.json({ error: "Child not found" }, { status: 404 });
-    }
-    const result = evaluateDelegatedAuthorityCompliance(profile, NOW);
-    return NextResponse.json({ result, profile });
-  }
-
-  if (mode === "metrics") {
-    const homeProfiles = DEMO_PROFILES.filter(p => p.homeId === homeId);
-    const metrics = calculateHomeDelegatedAuthorityMetrics(homeProfiles, homeId, NOW);
-    return NextResponse.json(metrics);
-  }
-
-  return NextResponse.json({ error: "Invalid mode" }, { status: 400 });
-}
-
-// ── POST Handler ────────────────────────────────────────────────────────────
-
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { action } = body;
-
-  if (action === "evaluate") {
-    const profile = body.profile as ChildDelegatedAuthorityProfile;
-    if (!profile) {
-      return NextResponse.json({ error: "Missing profile" }, { status: 400 });
-    }
-    const result = evaluateDelegatedAuthorityCompliance(profile, body.now ?? NOW);
-    return NextResponse.json(result);
-  }
-
-  if (action === "metrics") {
-    const profiles = body.profiles as ChildDelegatedAuthorityProfile[];
-    const homeId = body.homeId as string;
-    if (!profiles || !homeId) {
-      return NextResponse.json({ error: "Missing profiles or homeId" }, { status: 400 });
-    }
-    const metrics = calculateHomeDelegatedAuthorityMetrics(profiles, homeId, body.now ?? NOW);
-    return NextResponse.json(metrics);
-  }
-
-  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+  return NextResponse.json({
+    data: {
+      ...result,
+      meta: {
+        generatedAt: new Date().toISOString(),
+        engine: "delegated-authority-intelligence",
+        version: "1.0.0",
+      },
+    },
+  });
 }

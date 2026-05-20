@@ -1,1 +1,1 @@
-export { ConsentManagementDashboardWidget } from "./ConsentManagementDashboardWidget";
+export { default as ConsentManagementDashboardWidget } from "./ConsentManagementDashboardWidget";
