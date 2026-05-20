@@ -1,7 +1,34 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Contextual Safeguarding Intelligence — Public API
-// ══════════════════════════════════════════════════════════════════════════════
+export {
+  generateContextualSafeguardingIntelligence,
+  evaluateContextualSafeguardingQuality,
+  evaluateContextualSafeguardingCompliance,
+  evaluateContextualSafeguardingPolicy,
+  evaluateStaffContextualSafeguardingReadiness,
+  buildChildContextualSafeguardingProfiles,
+  pct,
+  getRating,
+  getContextualSafeguardingCategoryLabel,
+  getContextualSafeguardingOutcomeLabel,
+  getRatingLabel,
+} from "./contextual-safeguarding-intelligence-engine";
 
+export type {
+  ContextualSafeguardingCategory,
+  ContextualSafeguardingOutcome,
+  Rating,
+  ContextualSafeguardingRecord,
+  ContextualSafeguardingPolicy,
+  StaffContextualSafeguardingTraining,
+  ContextualSafeguardingQualityResult,
+  ContextualSafeguardingComplianceResult,
+  ContextualSafeguardingPolicyResult,
+  StaffContextualSafeguardingReadinessResult,
+  ChildContextualSafeguardingProfile,
+  ContextualSafeguardingIntelligence,
+  GenerateContextualSafeguardingIntelligenceInput,
+} from "./contextual-safeguarding-intelligence-engine";
+
+// Legacy re-exports from contextual-safeguarding-engine
 export {
   generateContextualAssessment,
   buildChildProfile,
