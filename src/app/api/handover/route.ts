@@ -1,292 +1,82 @@
-// ==============================================================================
-// Cornerstone -- Handover Intelligence API Route
-//
-// GET  -> returns Oak House demo intelligence
-// POST -> accepts custom data for any home
-// ==============================================================================
-
 import { NextResponse } from "next/server";
-import { generateHandoverIntelligence } from "@/lib/handover/handover-engine";
+import {
+  generateHandoverIntelligence,
+} from "@/lib/handover";
 import type {
   HandoverRecord,
-  HandoverExpectation,
-  HandoverItem,
-} from "@/lib/handover/handover-engine";
+  HandoverPolicy,
+  StaffHandoverTraining,
+} from "@/lib/handover";
 
-// -- Oak House Demo Data ------------------------------------------------------
+// ── Demo Data: Oak House ──────────────────────────────────────────────────
 
-function makeItem(
-  id: string,
-  priority: "critical" | "important" | "routine",
-  category: HandoverItem["category"],
-  summary: string,
-  opts: {
-    childId?: string;
-    childName?: string;
-    acknowledged?: boolean;
-    followUpRequired?: boolean;
-    followUpCompletedAt?: string;
-  } = {},
-): HandoverItem {
-  return {
-    id,
-    childId: opts.childId,
-    childName: opts.childName,
-    priority,
-    category,
-    summary,
-    acknowledged: opts.acknowledged ?? true,
-    followUpRequired: opts.followUpRequired ?? false,
-    followUpCompletedAt: opts.followUpCompletedAt,
-  };
-}
-
-function getDemoData(): {
+function generateDemoData(): {
   records: HandoverRecord[];
-  expectations: HandoverExpectation[];
+  policy: HandoverPolicy;
+  training: StaffHandoverTraining[];
 } {
-  const records: HandoverRecord[] = [];
-  const expectations: HandoverExpectation[] = [];
-  let idCounter = 1;
+  const records: HandoverRecord[] = [
+    // Alex — shift handover, medication handover, incident handover, child update
+    { id: "ho-001", homeId: "oak-house", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "shift_handover", outcome: "fully_communicated", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: true, tasksHandedOver: true, documentationComplete: true, timelyRecording: true },
+    { id: "ho-002", homeId: "oak-house", date: "2026-02-03", childId: "child-alex", childName: "Alex", category: "medication_handover", outcome: "fully_communicated", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: true, tasksHandedOver: true, documentationComplete: true, timelyRecording: true },
+    { id: "ho-003", homeId: "oak-house", date: "2026-02-20", childId: "child-alex", childName: "Alex", category: "incident_handover", outcome: "fully_communicated", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: true, tasksHandedOver: false, documentationComplete: true, timelyRecording: true },
+    { id: "ho-004", homeId: "oak-house", date: "2026-03-10", childId: "child-alex", childName: "Alex", category: "child_update", outcome: "fully_communicated", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: true, tasksHandedOver: true, documentationComplete: true, timelyRecording: true },
 
-  for (let day = 1; day <= 20; day++) {
-    const date = `2025-01-${String(day).padStart(2, "0")}`;
+    // Jordan — risk update, appointment reminder, contact update, task completion
+    { id: "ho-005", homeId: "oak-house", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "risk_update", outcome: "fully_communicated", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: true, tasksHandedOver: true, documentationComplete: true, timelyRecording: true },
+    { id: "ho-006", homeId: "oak-house", date: "2026-02-10", childId: "child-jordan", childName: "Jordan", category: "appointment_reminder", outcome: "partially_communicated", allChildrenCovered: true, medicationStatusUpdated: false, incidentsCommunicated: true, tasksHandedOver: true, documentationComplete: true, timelyRecording: false },
+    { id: "ho-007", homeId: "oak-house", date: "2026-02-28", childId: "child-jordan", childName: "Jordan", category: "contact_update", outcome: "fully_communicated", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: true, tasksHandedOver: true, documentationComplete: true, timelyRecording: true },
+    { id: "ho-008", homeId: "oak-house", date: "2026-03-15", childId: "child-jordan", childName: "Jordan", category: "task_completion", outcome: "follow_up_required", allChildrenCovered: false, medicationStatusUpdated: true, incidentsCommunicated: false, tasksHandedOver: true, documentationComplete: false, timelyRecording: true },
 
-    // Expectations: morning->afternoon and afternoon->evening each day
-    expectations.push({ date, outgoingShift: "morning", incomingShift: "afternoon" });
-    expectations.push({ date, outgoingShift: "afternoon", incomingShift: "evening" });
-    if (day <= 18) {
-      expectations.push({ date, outgoingShift: "evening", incomingShift: "waking_night" });
-    }
+    // Morgan — shift handover, medication handover, incident handover, risk update
+    { id: "ho-009", homeId: "oak-house", date: "2026-01-25", childId: "child-morgan", childName: "Morgan", category: "shift_handover", outcome: "fully_communicated", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: true, tasksHandedOver: true, documentationComplete: true, timelyRecording: true },
+    { id: "ho-010", homeId: "oak-house", date: "2026-02-15", childId: "child-morgan", childName: "Morgan", category: "medication_handover", outcome: "fully_communicated", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: true, tasksHandedOver: true, documentationComplete: true, timelyRecording: true },
+    { id: "ho-011", homeId: "oak-house", date: "2026-03-05", childId: "child-morgan", childName: "Morgan", category: "incident_handover", outcome: "information_gap", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: false, tasksHandedOver: true, documentationComplete: true, timelyRecording: true },
+    { id: "ho-012", homeId: "oak-house", date: "2026-03-20", childId: "child-morgan", childName: "Morgan", category: "risk_update", outcome: "fully_communicated", allChildrenCovered: true, medicationStatusUpdated: true, incidentsCommunicated: true, tasksHandedOver: true, documentationComplete: true, timelyRecording: true },
+  ];
 
-    // Morning -> Afternoon
-    if (day === 5 || day === 12) {
-      // 2 missed
-      records.push({
-        id: `ho-${idCounter++}`,
-        homeId: "oak-house",
-        date,
-        outgoingShift: "morning",
-        incomingShift: "afternoon",
-        outgoingStaffIds: ["staff-sarah", "staff-tom"],
-        incomingStaffIds: ["staff-lisa"],
-        status: "missed",
-        childUpdatesIncluded: false,
-        riskUpdatesIncluded: false,
-        medicationUpdatesIncluded: false,
-        incidentsBriefed: false,
-        emotionalPresentationNoted: false,
-        planChangesHighlighted: false,
-        criticalItems: [],
-        importantItems: [],
-        routineItems: [],
-      });
-    } else if (day === 7) {
-      // 1 partial
-      records.push({
-        id: `ho-${idCounter++}`,
-        homeId: "oak-house",
-        date,
-        outgoingShift: "morning",
-        incomingShift: "afternoon",
-        outgoingStaffIds: ["staff-tom"],
-        incomingStaffIds: ["staff-lisa", "staff-darren"],
-        status: "partial",
-        startedAt: `${date}T14:00:00Z`,
-        durationMinutes: 5,
-        childUpdatesIncluded: true,
-        riskUpdatesIncluded: false,
-        medicationUpdatesIncluded: false,
-        incidentsBriefed: false,
-        emotionalPresentationNoted: false,
-        planChangesHighlighted: false,
-        criticalItems: [],
-        importantItems: [],
-        routineItems: [],
-      });
-    } else if (day === 10) {
-      // 1 late
-      records.push({
-        id: `ho-${idCounter++}`,
-        homeId: "oak-house",
-        date,
-        outgoingShift: "morning",
-        incomingShift: "afternoon",
-        outgoingStaffIds: ["staff-sarah", "staff-tom"],
-        incomingStaffIds: ["staff-lisa", "staff-darren"],
-        status: "late",
-        startedAt: `${date}T15:30:00Z`,
-        completedAt: `${date}T15:50:00Z`,
-        durationMinutes: 20,
-        childUpdatesIncluded: true,
-        riskUpdatesIncluded: true,
-        medicationUpdatesIncluded: true,
-        incidentsBriefed: true,
-        emotionalPresentationNoted: true,
-        planChangesHighlighted: true,
-        criticalItems: [],
-        importantItems: [],
-        routineItems: [],
-      });
-    } else {
-      // Completed
-      const criticalItems: HandoverItem[] = [];
-      if (day === 3 || day === 15) {
-        criticalItems.push(
-          makeItem(`item-${idCounter++}`, "critical", "risk", "Alex - increased self-harm risk observed", {
-            childId: "child-alex",
-            childName: "Alex",
-            acknowledged: day !== 15,
-            followUpRequired: true,
-            followUpCompletedAt: day === 3 ? "2025-01-03T16:00:00Z" : undefined,
-          }),
-        );
-      }
+  const policy: HandoverPolicy = {
+    handoverPolicy: true,
+    shiftHandoverProcedure: true,
+    medicationHandoverProtocol: true,
+    incidentCommunicationPolicy: true,
+    taskTrackingProcedure: true,
+    handoverRecordKeeping: true,
+    handoverAuditPolicy: true,
+  };
 
-      records.push({
-        id: `ho-${idCounter++}`,
-        homeId: "oak-house",
-        date,
-        outgoingShift: "morning",
-        incomingShift: "afternoon",
-        outgoingStaffIds: ["staff-sarah", "staff-tom"],
-        incomingStaffIds: ["staff-lisa", "staff-darren"],
-        status: "completed",
-        startedAt: `${date}T14:00:00Z`,
-        completedAt: `${date}T14:20:00Z`,
-        durationMinutes: 20,
-        childUpdatesIncluded: true,
-        riskUpdatesIncluded: day % 4 !== 0,
-        medicationUpdatesIncluded: true,
-        incidentsBriefed: day % 5 !== 0,
-        emotionalPresentationNoted: day % 3 !== 0,
-        planChangesHighlighted: true,
-        criticalItems,
-        importantItems: day % 6 === 0
-          ? [makeItem(`item-${idCounter++}`, "important", "medication", "Morgan medication change", {
-              childId: "child-morgan",
-              childName: "Morgan",
-              acknowledged: true,
-            })]
-          : [],
-        routineItems: [
-          makeItem(`item-${idCounter++}`, "routine", "general", "All children settled"),
-        ],
-      });
-    }
+  const training: StaffHandoverTraining[] = [
+    { staffId: "staff-sarah", handoverCommunication: true, medicationHandoverSkills: true, incidentReporting: true, taskPrioritisation: true, childStatusAssessment: true, handoverDocumentation: true },
+    { staffId: "staff-tom", handoverCommunication: true, medicationHandoverSkills: true, incidentReporting: true, taskPrioritisation: true, childStatusAssessment: true, handoverDocumentation: false },
+    { staffId: "staff-lisa", handoverCommunication: true, medicationHandoverSkills: true, incidentReporting: true, taskPrioritisation: false, childStatusAssessment: true, handoverDocumentation: true },
+    { staffId: "staff-darren", handoverCommunication: true, medicationHandoverSkills: true, incidentReporting: true, taskPrioritisation: true, childStatusAssessment: true, handoverDocumentation: true },
+  ];
 
-    // Afternoon -> Evening (all completed)
-    records.push({
-      id: `ho-${idCounter++}`,
-      homeId: "oak-house",
-      date,
-      outgoingShift: "afternoon",
-      incomingShift: "evening",
-      outgoingStaffIds: ["staff-lisa", "staff-darren"],
-      incomingStaffIds: ["staff-tom", "staff-sarah"],
-      status: "completed",
-      startedAt: `${date}T18:00:00Z`,
-      completedAt: `${date}T18:15:00Z`,
-      durationMinutes: 15,
-      childUpdatesIncluded: true,
-      riskUpdatesIncluded: true,
-      medicationUpdatesIncluded: true,
-      incidentsBriefed: true,
-      emotionalPresentationNoted: true,
-      planChangesHighlighted: day % 7 !== 0,
-      criticalItems: [],
-      importantItems: [],
-      routineItems: [
-        makeItem(`item-${idCounter++}`, "routine", "general", "Afternoon session completed"),
-      ],
-    });
-
-    // Evening -> Waking Night (days 1-18)
-    if (day <= 18) {
-      records.push({
-        id: `ho-${idCounter++}`,
-        homeId: "oak-house",
-        date,
-        outgoingShift: "evening",
-        incomingShift: "waking_night",
-        outgoingStaffIds: ["staff-tom", "staff-sarah"],
-        incomingStaffIds: ["staff-lisa"],
-        status: "completed",
-        startedAt: `${date}T22:00:00Z`,
-        completedAt: `${date}T22:15:00Z`,
-        durationMinutes: 15,
-        childUpdatesIncluded: true,
-        riskUpdatesIncluded: true,
-        medicationUpdatesIncluded: true,
-        incidentsBriefed: true,
-        emotionalPresentationNoted: day % 4 !== 0,
-        planChangesHighlighted: true,
-        criticalItems: [],
-        importantItems: [],
-        routineItems: [
-          makeItem(`item-${idCounter++}`, "routine", "general", "Children settled for the night"),
-        ],
-      });
-    }
-  }
-
-  return { records, expectations };
+  return { records, policy, training };
 }
 
-// -- GET Handler --------------------------------------------------------------
+// ── GET Handler ──────────────────────────────────────────────────────────
 
 export async function GET() {
-  try {
-    const { records, expectations } = getDemoData();
-    const result = generateHandoverIntelligence(
-      records,
-      expectations,
-      "oak-house",
-      "2025-01-01",
-      "2025-01-20",
-    );
-    return NextResponse.json(result);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to generate handover intelligence", details: String(error) },
-      { status: 500 },
-    );
-  }
-}
+  const { records, policy, training } = generateDemoData();
 
-// -- POST Handler -------------------------------------------------------------
+  const result = generateHandoverIntelligence(
+    records,
+    policy,
+    training,
+    "oak-house",
+    "2026-01-01",
+    "2026-05-20",
+  );
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { records, expectations, homeId, periodStart, periodEnd } = body;
-
-    if (!records || !expectations || !homeId || !periodStart || !periodEnd) {
-      return NextResponse.json(
-        { error: "Missing required fields: records, expectations, homeId, periodStart, periodEnd" },
-        { status: 400 },
-      );
-    }
-
-    if (!Array.isArray(records) || !Array.isArray(expectations)) {
-      return NextResponse.json(
-        { error: "records and expectations must be arrays" },
-        { status: 400 },
-      );
-    }
-
-    const result = generateHandoverIntelligence(
-      records,
-      expectations,
-      homeId,
-      periodStart,
-      periodEnd,
-    );
-    return NextResponse.json(result);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to process handover data", details: String(error) },
-      { status: 500 },
-    );
-  }
+  return NextResponse.json({
+    data: {
+      ...result,
+      meta: {
+        generatedAt: new Date().toISOString(),
+        engine: "handover",
+        version: "2.0.0",
+      },
+    },
+  });
 }

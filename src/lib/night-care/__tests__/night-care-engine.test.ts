@@ -1,1825 +1,1210 @@
-// ==============================================================================
-// Cornerstone -- Night Care Intelligence Engine Tests
-// ==============================================================================
-
 import { describe, it, expect } from "vitest";
 import {
-  evaluateMonitoringQuality,
-  evaluateIncidentManagement,
-  evaluateStaffingAdequacy,
-  evaluateSleepEnvironment,
   generateNightCareIntelligence,
-  getCheckTypeLabel,
-  getCheckOutcomeLabel,
-  getSleepQualityLabel,
-  getNightIncidentTypeLabel,
-  getStaffingLevelLabel,
-  getHandoverQualityLabel,
+  evaluateQuality,
+  evaluateCompliance,
+  evaluatePolicy,
+  evaluateStaffReadiness,
+  buildChildNightCareProfiles,
+  pct,
+  getRating,
+  getCategoryLabel,
+  getOutcomeLabel,
+  getRatingLabel,
 } from "../night-care-engine";
 import type {
-  NightCheck,
-  NightIncident,
-  NightStaffing,
-  SleepEnvironment,
+  NightCareRecord,
+  NightCarePolicy,
+  NightCareStaffTraining,
 } from "../night-care-engine";
 
-// -- Shared Constants --------------------------------------------------------
+// ── Factory Functions ────────────────────────────────────────────────────────
 
-const PERIOD_START = "2025-03-01";
-const PERIOD_END = "2025-03-31";
-const HOME_ID = "oak-house";
-
-// -- Factory Helpers ---------------------------------------------------------
-
-function makeCheck(overrides: Partial<NightCheck> = {}): NightCheck {
+function makeRecord(overrides: Partial<NightCareRecord> = {}): NightCareRecord {
   return {
-    id: "nc-1",
+    id: "rec-1",
+    homeId: "oak-house",
+    date: "2026-05-10",
     childId: "child-alex",
     childName: "Alex",
-    date: "2025-03-10",
-    time: "22:00",
-    checkType: "visual_check",
-    outcome: "child_sleeping",
-    staffId: "staff-lisa",
-    notes: "Sleeping soundly.",
-    doorOpenCheck: true,
-    temperatureChecked: true,
+    category: "night_check",
+    outcome: "settled_night",
+    nightCheckCompleted: true,
+    sleepPatternRecorded: true,
+    incidentHandledAppropriately: true,
+    childComfortChecked: true,
+    documentationComplete: true,
+    timelyRecording: true,
     ...overrides,
   };
 }
 
-function makeIncident(overrides: Partial<NightIncident> = {}): NightIncident {
+function makePolicy(overrides: Partial<NightCarePolicy> = {}): NightCarePolicy {
   return {
-    id: "ni-1",
-    childId: "child-jordan",
-    date: "2025-03-10",
-    time: "01:30",
-    incidentType: "sleep_disturbance",
-    severity: "low",
-    managedEffectively: true,
-    supportProvided: true,
-    managerNotified: true,
-    recordedTimely: true,
-    deEscalationUsed: true,
+    nightCarePolicy: true,
+    sleepMonitoringGuidance: true,
+    nightIncidentProcedure: true,
+    wakingNightPolicy: true,
+    nightMedicationProtocol: true,
+    bedtimeRoutineGuidance: true,
+    nightHandoverProcedure: true,
     ...overrides,
   };
 }
 
-function makeStaffing(overrides: Partial<NightStaffing> = {}): NightStaffing {
+function makeTraining(overrides: Partial<NightCareStaffTraining> = {}): NightCareStaffTraining {
   return {
-    id: "ns-1",
-    date: "2025-03-10",
-    plannedStaff: 2,
-    actualStaff: 2,
-    staffingLevel: "adequate",
-    wakingNightStaff: 1,
-    sleepingInStaff: 1,
-    agencyStaffUsed: false,
-    handoverCompleted: true,
-    handoverQuality: "thorough",
+    id: "tr-1",
+    staffId: "staff-sarah",
+    staffName: "Sarah Johnson",
+    nightCareCompetency: true,
+    sleepMonitoringSkills: true,
+    nightIncidentResponse: true,
+    nightMedicationHandling: true,
+    childComfortTechniques: true,
+    nightHandoverProcedure: true,
     ...overrides,
   };
 }
 
-function makeEnvironment(overrides: Partial<SleepEnvironment> = {}): SleepEnvironment {
-  return {
-    id: "se-1",
-    childId: "child-alex",
-    roomTemperatureAppropriate: true,
-    beddingClean: true,
-    noiseLevel: "quiet",
-    lightingAppropriate: true,
-    personalBelongingsAccessible: true,
-    safetyChecked: true,
-    ...overrides,
-  };
-}
+// ══════════════════════════════════════════════════════════════════════════════
+// pct
+// ══════════════════════════════════════════════════════════════════════════════
 
-// Helper: generate N checks for a child on a given night
-function makeChecksForChild(
-  childId: string,
-  childName: string,
-  date: string,
-  count: number,
-  overrides: Partial<NightCheck> = {},
-): NightCheck[] {
-  const times = ["21:00", "23:00", "01:00", "03:00", "05:00", "06:00"];
-  return Array.from({ length: count }, (_, i) => makeCheck({
-    id: `nc-${childId}-${date}-${i}`,
-    childId,
-    childName,
-    date,
-    time: times[i] || `${20 + i}:00`,
-    ...overrides,
-  }));
-}
-
-// ==============================================================================
-// Label Functions
-// ==============================================================================
-
-describe("Label Functions", () => {
-  describe("getCheckTypeLabel", () => {
-    it("returns correct label for visual_check", () => {
-      expect(getCheckTypeLabel("visual_check")).toBe("Visual Check");
-    });
-
-    it("returns correct label for listening_check", () => {
-      expect(getCheckTypeLabel("listening_check")).toBe("Listening Check");
-    });
-
-    it("returns correct label for welfare_check", () => {
-      expect(getCheckTypeLabel("welfare_check")).toBe("Welfare Check");
-    });
-
-    it("returns correct label for medication_check", () => {
-      expect(getCheckTypeLabel("medication_check")).toBe("Medication Check");
-    });
-
-    it("returns correct label for security_check", () => {
-      expect(getCheckTypeLabel("security_check")).toBe("Security Check");
-    });
-  });
-
-  describe("getCheckOutcomeLabel", () => {
-    it("returns correct label for child_sleeping", () => {
-      expect(getCheckOutcomeLabel("child_sleeping")).toBe("Child Sleeping");
-    });
-
-    it("returns correct label for child_awake_settled", () => {
-      expect(getCheckOutcomeLabel("child_awake_settled")).toBe("Child Awake (Settled)");
-    });
-
-    it("returns correct label for child_awake_unsettled", () => {
-      expect(getCheckOutcomeLabel("child_awake_unsettled")).toBe("Child Awake (Unsettled)");
-    });
-
-    it("returns correct label for child_absent", () => {
-      expect(getCheckOutcomeLabel("child_absent")).toBe("Child Absent");
-    });
-
-    it("returns correct label for concern_identified", () => {
-      expect(getCheckOutcomeLabel("concern_identified")).toBe("Concern Identified");
-    });
-
-    it("returns correct label for intervention_required", () => {
-      expect(getCheckOutcomeLabel("intervention_required")).toBe("Intervention Required");
-    });
-  });
-
-  describe("getSleepQualityLabel", () => {
-    it("returns correct labels for all sleep quality types", () => {
-      expect(getSleepQualityLabel("good")).toBe("Good");
-      expect(getSleepQualityLabel("fair")).toBe("Fair");
-      expect(getSleepQualityLabel("poor")).toBe("Poor");
-      expect(getSleepQualityLabel("disturbed")).toBe("Disturbed");
-      expect(getSleepQualityLabel("not_assessed")).toBe("Not Assessed");
-    });
-  });
-
-  describe("getNightIncidentTypeLabel", () => {
-    it("returns correct labels for all incident types", () => {
-      expect(getNightIncidentTypeLabel("sleep_disturbance")).toBe("Sleep Disturbance");
-      expect(getNightIncidentTypeLabel("night_terror")).toBe("Night Terror");
-      expect(getNightIncidentTypeLabel("self_harm_attempt")).toBe("Self-Harm Attempt");
-      expect(getNightIncidentTypeLabel("missing")).toBe("Missing");
-      expect(getNightIncidentTypeLabel("medical_emergency")).toBe("Medical Emergency");
-      expect(getNightIncidentTypeLabel("behavioural_incident")).toBe("Behavioural Incident");
-      expect(getNightIncidentTypeLabel("fire_alarm")).toBe("Fire Alarm");
-      expect(getNightIncidentTypeLabel("intruder_alert")).toBe("Intruder Alert");
-    });
-  });
-
-  describe("getStaffingLevelLabel", () => {
-    it("returns correct labels for all staffing levels", () => {
-      expect(getStaffingLevelLabel("adequate")).toBe("Adequate");
-      expect(getStaffingLevelLabel("minimum")).toBe("Minimum");
-      expect(getStaffingLevelLabel("below_minimum")).toBe("Below Minimum");
-      expect(getStaffingLevelLabel("lone_working")).toBe("Lone Working");
-    });
-  });
-
-  describe("getHandoverQualityLabel", () => {
-    it("returns correct labels for all handover quality types", () => {
-      expect(getHandoverQualityLabel("thorough")).toBe("Thorough");
-      expect(getHandoverQualityLabel("adequate")).toBe("Adequate");
-      expect(getHandoverQualityLabel("brief")).toBe("Brief");
-      expect(getHandoverQualityLabel("missed")).toBe("Missed");
-    });
-  });
+describe("pct", () => {
+  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
+  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
+  it("rounds to nearest integer", () => expect(pct(1, 3)).toBe(33));
+  it("returns 100 for equal values", () => expect(pct(5, 5)).toBe(100));
+  it("returns 0 for 0 numerator", () => expect(pct(0, 10)).toBe(0));
+  it("handles large numbers", () => expect(pct(999, 1000)).toBe(100));
+  it("rounds 50.5 correctly", () => expect(pct(1, 2)).toBe(50));
 });
 
-// ==============================================================================
-// evaluateMonitoringQuality
-// ==============================================================================
+// ══════════════════════════════════════════════════════════════════════════════
+// getRating
+// ══════════════════════════════════════════════════════════════════════════════
 
-describe("evaluateMonitoringQuality", () => {
-  it("returns zero scores when no checks provided", () => {
-    const result = evaluateMonitoringQuality([], 3);
-    expect(result.totalChecks).toBe(0);
-    expect(result.overallScore).toBe(0);
-    expect(result.averageChecksPerChild).toBe(0);
-    expect(result.welfareChecksIncluded).toBe(false);
-  });
-
-  it("counts total checks correctly", () => {
-    const checks = [makeCheck({ id: "1" }), makeCheck({ id: "2" }), makeCheck({ id: "3" })];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.totalChecks).toBe(3);
-  });
-
-  it("calculates average checks per child per night", () => {
-    // 4 checks for 1 child on 1 night
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 4);
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.averageChecksPerChild).toBe(4);
-  });
-
-  it("gives full frequency score for >= 4 checks per child per night", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5);
-    const result = evaluateMonitoringQuality(checks, 1);
-    // averageChecksPerChild should be 5, which gives +8 for frequency
-    expect(result.averageChecksPerChild).toBe(5);
-  });
-
-  it("gives partial frequency score for 3 checks per child per night", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 3);
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.averageChecksPerChild).toBe(3);
-  });
-
-  it("gives partial frequency score for 2 checks per child per night", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 2);
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.averageChecksPerChild).toBe(2);
-  });
-
-  it("gives minimal frequency score for 1 check per child per night", () => {
-    const checks = [makeCheck()];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.averageChecksPerChild).toBe(1);
-  });
-
-  it("detects welfare checks included", () => {
-    const checks = [
-      makeCheck({ id: "1", checkType: "visual_check" }),
-      makeCheck({ id: "2", checkType: "welfare_check" }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.welfareChecksIncluded).toBe(true);
-  });
-
-  it("detects welfare checks not included", () => {
-    const checks = [
-      makeCheck({ id: "1", checkType: "visual_check" }),
-      makeCheck({ id: "2", checkType: "listening_check" }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.welfareChecksIncluded).toBe(false);
-  });
-
-  it("calculates door open check rate correctly", () => {
-    const checks = [
-      makeCheck({ id: "1", doorOpenCheck: true }),
-      makeCheck({ id: "2", doorOpenCheck: true }),
-      makeCheck({ id: "3", doorOpenCheck: false }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.doorOpenCheckRate).toBe(66.7);
-  });
-
-  it("calculates temperature check rate correctly", () => {
-    const checks = [
-      makeCheck({ id: "1", temperatureChecked: true }),
-      makeCheck({ id: "2", temperatureChecked: false }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.temperatureCheckRate).toBe(50);
-  });
-
-  it("gives full concern follow-up score when no concerns exist", () => {
-    const checks = [makeCheck({ outcome: "child_sleeping" })];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.concernFollowUpRate).toBe(0); // No concerns, rate is 0 but score is full
-  });
-
-  it("calculates concern follow-up rate with subsequent check", () => {
-    const checks = [
-      makeCheck({ id: "1", time: "01:00", outcome: "concern_identified" }),
-      makeCheck({ id: "2", time: "02:00", outcome: "child_sleeping" }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.concernFollowUpRate).toBe(100);
-  });
-
-  it("calculates concern follow-up rate without subsequent check", () => {
-    const checks = [
-      makeCheck({ id: "1", time: "05:00", outcome: "concern_identified" }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.concernFollowUpRate).toBe(0);
-  });
-
-  it("calculates documentation quality from notes", () => {
-    const checks = [
-      makeCheck({ id: "1", notes: "Good observation." }),
-      makeCheck({ id: "2", notes: "" }),
-      makeCheck({ id: "3", notes: "Another note." }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.documentationQuality).toBe(66.7);
-  });
-
-  it("gives 100% documentation quality when all checks have notes", () => {
-    const checks = [
-      makeCheck({ id: "1", notes: "Note 1" }),
-      makeCheck({ id: "2", notes: "Note 2" }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.documentationQuality).toBe(100);
-  });
-
-  it("gives 0% documentation quality when no checks have notes", () => {
-    const checks = [
-      makeCheck({ id: "1", notes: "" }),
-      makeCheck({ id: "2", notes: "   " }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.documentationQuality).toBe(0);
-  });
-
-  it("clamps overall score to 0-25 range", () => {
-    // Perfect scenario with many checks
-    const checks = [
-      ...makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, { checkType: "welfare_check", notes: "Good" }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.overallScore).toBeLessThanOrEqual(25);
-    expect(result.overallScore).toBeGreaterThanOrEqual(0);
-  });
-
-  it("handles multiple children and nights correctly", () => {
-    const checks = [
-      ...makeChecksForChild("child-alex", "Alex", "2025-03-10", 4),
-      ...makeChecksForChild("child-jordan", "Jordan", "2025-03-10", 4),
-    ];
-    const result = evaluateMonitoringQuality(checks, 2);
-    expect(result.totalChecks).toBe(8);
-    expect(result.averageChecksPerChild).toBe(4);
-  });
-
-  it("handles intervention_required as concern for follow-up", () => {
-    const checks = [
-      makeCheck({ id: "1", time: "01:00", outcome: "intervention_required" }),
-      makeCheck({ id: "2", time: "02:00", outcome: "child_sleeping" }),
-    ];
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.concernFollowUpRate).toBe(100);
-  });
+describe("getRating", () => {
+  it("outstanding at exactly 80", () => expect(getRating(80)).toBe("outstanding"));
+  it("outstanding at 100", () => expect(getRating(100)).toBe("outstanding"));
+  it("outstanding at 95", () => expect(getRating(95)).toBe("outstanding"));
+  it("good at exactly 60", () => expect(getRating(60)).toBe("good"));
+  it("good at 79", () => expect(getRating(79)).toBe("good"));
+  it("requires_improvement at exactly 40", () => expect(getRating(40)).toBe("requires_improvement"));
+  it("requires_improvement at 59", () => expect(getRating(59)).toBe("requires_improvement"));
+  it("inadequate at 39", () => expect(getRating(39)).toBe("inadequate"));
+  it("inadequate at 0", () => expect(getRating(0)).toBe("inadequate"));
 });
 
-// ==============================================================================
-// evaluateIncidentManagement
-// ==============================================================================
+// ══════════════════════════════════════════════════════════════════════════════
+// Label functions
+// ══════════════════════════════════════════════════════════════════════════════
 
-describe("evaluateIncidentManagement", () => {
-  it("returns full score (25) when no incidents exist", () => {
-    const result = evaluateIncidentManagement([]);
-    expect(result.totalIncidents).toBe(0);
-    expect(result.overallScore).toBe(25);
-    expect(result.criticalIncidents).toBe(0);
-  });
-
-  it("counts total incidents correctly", () => {
-    const incidents = [makeIncident({ id: "1" }), makeIncident({ id: "2" })];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.totalIncidents).toBe(2);
-  });
-
-  it("calculates managed effectively rate at 100%", () => {
-    const incidents = [
-      makeIncident({ id: "1", managedEffectively: true }),
-      makeIncident({ id: "2", managedEffectively: true }),
-    ];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.managedEffectivelyRate).toBe(100);
-  });
-
-  it("calculates managed effectively rate at 50%", () => {
-    const incidents = [
-      makeIncident({ id: "1", managedEffectively: true }),
-      makeIncident({ id: "2", managedEffectively: false }),
-    ];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.managedEffectivelyRate).toBe(50);
-  });
-
-  it("calculates support provided rate correctly", () => {
-    const incidents = [
-      makeIncident({ id: "1", supportProvided: true }),
-      makeIncident({ id: "2", supportProvided: false }),
-      makeIncident({ id: "3", supportProvided: true }),
-    ];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.supportProvidedRate).toBe(66.7);
-  });
-
-  it("calculates manager notified rate correctly", () => {
-    const incidents = [
-      makeIncident({ id: "1", managerNotified: true }),
-      makeIncident({ id: "2", managerNotified: false }),
-    ];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.managerNotifiedRate).toBe(50);
-  });
-
-  it("calculates recorded timely rate correctly", () => {
-    const incidents = [
-      makeIncident({ id: "1", recordedTimely: true }),
-      makeIncident({ id: "2", recordedTimely: true }),
-      makeIncident({ id: "3", recordedTimely: false }),
-    ];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.recordedTimelyRate).toBe(66.7);
-  });
-
-  it("calculates de-escalation used rate correctly", () => {
-    const incidents = [
-      makeIncident({ id: "1", deEscalationUsed: true }),
-      makeIncident({ id: "2", deEscalationUsed: false }),
-    ];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.deEscalationUsedRate).toBe(50);
-  });
-
-  it("counts critical incidents correctly", () => {
-    const incidents = [
-      makeIncident({ id: "1", severity: "critical" }),
-      makeIncident({ id: "2", severity: "low" }),
-      makeIncident({ id: "3", severity: "critical" }),
-    ];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.criticalIncidents).toBe(2);
-  });
-
-  it("gives bonus for no critical incidents", () => {
-    const incidentsNoCritical = [makeIncident({ severity: "low" })];
-    const incidentsWithCritical = [makeIncident({ severity: "critical" })];
-    const resultNoCritical = evaluateIncidentManagement(incidentsNoCritical);
-    const resultWithCritical = evaluateIncidentManagement(incidentsWithCritical);
-    expect(resultNoCritical.overallScore).toBeGreaterThan(resultWithCritical.overallScore);
-  });
-
-  it("gives full managed effectively points when rate >= 90%", () => {
-    const incidents = Array.from({ length: 10 }, (_, i) =>
-      makeIncident({ id: `i-${i}`, managedEffectively: i < 9 }),
-    );
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.managedEffectivelyRate).toBe(90);
-  });
-
-  it("gives full recorded timely points when rate >= 90%", () => {
-    const incidents = Array.from({ length: 10 }, (_, i) =>
-      makeIncident({ id: `i-${i}`, recordedTimely: i < 9 }),
-    );
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.recordedTimelyRate).toBe(90);
-  });
-
-  it("clamps overall score to 0-25 range", () => {
-    const result = evaluateIncidentManagement([makeIncident()]);
-    expect(result.overallScore).toBeLessThanOrEqual(25);
-    expect(result.overallScore).toBeGreaterThanOrEqual(0);
-  });
-
-  it("scores poorly when all metrics are bad", () => {
-    const incidents = [
-      makeIncident({
-        id: "1",
-        managedEffectively: false,
-        supportProvided: false,
-        managerNotified: false,
-        recordedTimely: false,
-        deEscalationUsed: false,
-        severity: "critical",
-      }),
-    ];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.overallScore).toBe(0);
-  });
-
-  it("scores well when all metrics are good with no critical incidents", () => {
-    const incidents = [makeIncident({ severity: "low" })];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.overallScore).toBeGreaterThanOrEqual(20);
-  });
+describe("getCategoryLabel", () => {
+  it("night_check", () => expect(getCategoryLabel("night_check")).toBe("Night Check"));
+  it("sleep_monitoring", () => expect(getCategoryLabel("sleep_monitoring")).toBe("Sleep Monitoring"));
+  it("night_incident", () => expect(getCategoryLabel("night_incident")).toBe("Night Incident"));
+  it("waking_night_support", () => expect(getCategoryLabel("waking_night_support")).toBe("Waking Night Support"));
+  it("night_medication", () => expect(getCategoryLabel("night_medication")).toBe("Night Medication"));
+  it("bedtime_routine", () => expect(getCategoryLabel("bedtime_routine")).toBe("Bedtime Routine"));
+  it("night_handover", () => expect(getCategoryLabel("night_handover")).toBe("Night Handover"));
+  it("disturbance_response", () => expect(getCategoryLabel("disturbance_response")).toBe("Disturbance Response"));
 });
 
-// ==============================================================================
-// evaluateStaffingAdequacy
-// ==============================================================================
+describe("getOutcomeLabel", () => {
+  it("settled_night", () => expect(getOutcomeLabel("settled_night")).toBe("Settled Night"));
+  it("minor_disturbance", () => expect(getOutcomeLabel("minor_disturbance")).toBe("Minor Disturbance"));
+  it("significant_incident", () => expect(getOutcomeLabel("significant_incident")).toBe("Significant Incident"));
+  it("support_provided", () => expect(getOutcomeLabel("support_provided")).toBe("Support Provided"));
+  it("not_applicable", () => expect(getOutcomeLabel("not_applicable")).toBe("Not Applicable"));
+});
 
-describe("evaluateStaffingAdequacy", () => {
-  it("returns zero scores when no staffing data provided", () => {
-    const result = evaluateStaffingAdequacy([]);
-    expect(result.totalNights).toBe(0);
+describe("getRatingLabel", () => {
+  it("outstanding", () => expect(getRatingLabel("outstanding")).toBe("Outstanding"));
+  it("good", () => expect(getRatingLabel("good")).toBe("Good"));
+  it("requires_improvement", () => expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement"));
+  it("inadequate", () => expect(getRatingLabel("inadequate")).toBe("Inadequate"));
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// evaluateQuality
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("evaluateQuality", () => {
+  it("returns 0 for empty records", () => {
+    const result = evaluateQuality([]);
     expect(result.overallScore).toBe(0);
+    expect(result.totalRecords).toBe(0);
+    expect(result.nightCheckCompletedRate).toBe(0);
+    expect(result.sleepPatternRecordedRate).toBe(0);
+    expect(result.incidentHandledAppropriatelyRate).toBe(0);
+    expect(result.childComfortCheckedRate).toBe(0);
   });
 
-  it("counts total nights correctly", () => {
-    const staffing = [makeStaffing({ id: "1" }), makeStaffing({ id: "2" })];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.totalNights).toBe(2);
-  });
-
-  it("calculates adequate staffing rate at 100%", () => {
-    const staffing = [
-      makeStaffing({ id: "1", staffingLevel: "adequate" }),
-      makeStaffing({ id: "2", staffingLevel: "adequate" }),
-    ];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.adequateStaffingRate).toBe(100);
-  });
-
-  it("calculates adequate staffing rate correctly with mixed levels", () => {
-    const staffing = [
-      makeStaffing({ id: "1", staffingLevel: "adequate" }),
-      makeStaffing({ id: "2", staffingLevel: "minimum" }),
-      makeStaffing({ id: "3", staffingLevel: "adequate" }),
-    ];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.adequateStaffingRate).toBe(66.7);
-  });
-
-  it("counts lone working nights correctly", () => {
-    const staffing = [
-      makeStaffing({ id: "1", staffingLevel: "lone_working" }),
-      makeStaffing({ id: "2", staffingLevel: "adequate" }),
-      makeStaffing({ id: "3", staffingLevel: "lone_working" }),
-    ];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.loneWorkingNights).toBe(2);
-  });
-
-  it("gives full points for no lone working", () => {
-    const staffingNoLone = [makeStaffing({ staffingLevel: "adequate" })];
-    const staffingWithLone = [makeStaffing({ staffingLevel: "lone_working" })];
-    const resultNoLone = evaluateStaffingAdequacy(staffingNoLone);
-    const resultWithLone = evaluateStaffingAdequacy(staffingWithLone);
-    expect(resultNoLone.overallScore).toBeGreaterThan(resultWithLone.overallScore);
-  });
-
-  it("calculates handover completed rate at 100%", () => {
-    const staffing = [
-      makeStaffing({ id: "1", handoverCompleted: true }),
-      makeStaffing({ id: "2", handoverCompleted: true }),
-    ];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.handoverCompletedRate).toBe(100);
-  });
-
-  it("calculates handover completed rate correctly with missed handovers", () => {
-    const staffing = [
-      makeStaffing({ id: "1", handoverCompleted: true }),
-      makeStaffing({ id: "2", handoverCompleted: false }),
-    ];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.handoverCompletedRate).toBe(50);
-  });
-
-  it("calculates handover quality rate correctly", () => {
-    const staffing = [
-      makeStaffing({ id: "1", handoverQuality: "thorough" }),
-      makeStaffing({ id: "2", handoverQuality: "adequate" }),
-      makeStaffing({ id: "3", handoverQuality: "brief" }),
-      makeStaffing({ id: "4", handoverQuality: "missed" }),
-    ];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.handoverQualityRate).toBe(50);
-  });
-
-  it("counts agency-only nights correctly", () => {
-    const staffing = [
-      makeStaffing({ id: "1", agencyStaffUsed: true, wakingNightStaff: 0, sleepingInStaff: 0 }),
-      makeStaffing({ id: "2", agencyStaffUsed: false }),
-      makeStaffing({ id: "3", agencyStaffUsed: true, wakingNightStaff: 1, sleepingInStaff: 0 }),
-    ];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.agencyOnlyNights).toBe(1);
-  });
-
-  it("does not count agency night if permanent staff present", () => {
-    const staffing = [
-      makeStaffing({ agencyStaffUsed: true, wakingNightStaff: 1, sleepingInStaff: 0 }),
-    ];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.agencyOnlyNights).toBe(0);
-  });
-
-  it("gives full handover points when rate >= 95%", () => {
-    const staffing = Array.from({ length: 20 }, (_, i) =>
-      makeStaffing({ id: `s-${i}`, handoverCompleted: i < 19 }),
-    );
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.handoverCompletedRate).toBe(95);
-  });
-
-  it("clamps overall score to 0-25 range", () => {
-    const result = evaluateStaffingAdequacy([makeStaffing()]);
-    expect(result.overallScore).toBeLessThanOrEqual(25);
-    expect(result.overallScore).toBeGreaterThanOrEqual(0);
-  });
-
-  it("scores max when all metrics are perfect", () => {
-    const staffing = [makeStaffing()];
-    const result = evaluateStaffingAdequacy(staffing);
+  it("scores 25 for all-true records", () => {
+    const result = evaluateQuality([makeRecord(), makeRecord({ id: "rec-2" })]);
     expect(result.overallScore).toBe(25);
   });
 
-  it("scores poorly when all metrics are bad", () => {
-    const staffing = [
-      makeStaffing({
-        staffingLevel: "lone_working",
-        handoverCompleted: false,
-        handoverQuality: "missed",
-        agencyStaffUsed: true,
-        wakingNightStaff: 0,
-        sleepingInStaff: 0,
-      }),
-    ];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.overallScore).toBeLessThan(5);
+  it("calculates nightCheckCompletedRate correctly", () => {
+    const result = evaluateQuality([
+      makeRecord({ id: "r1", nightCheckCompleted: true }),
+      makeRecord({ id: "r2", nightCheckCompleted: false }),
+    ]);
+    expect(result.nightCheckCompletedRate).toBe(50);
   });
-});
 
-// ==============================================================================
-// evaluateSleepEnvironment
-// ==============================================================================
+  it("calculates sleepPatternRecordedRate correctly", () => {
+    const result = evaluateQuality([
+      makeRecord({ id: "r1", sleepPatternRecorded: true }),
+      makeRecord({ id: "r2", sleepPatternRecorded: false }),
+      makeRecord({ id: "r3", sleepPatternRecorded: true }),
+    ]);
+    expect(result.sleepPatternRecordedRate).toBe(67);
+  });
 
-describe("evaluateSleepEnvironment", () => {
-  it("returns zero scores when no assessments provided", () => {
-    const result = evaluateSleepEnvironment([]);
-    expect(result.totalAssessments).toBe(0);
+  it("calculates incidentHandledAppropriatelyRate correctly", () => {
+    const result = evaluateQuality([
+      makeRecord({ id: "r1", incidentHandledAppropriately: true }),
+      makeRecord({ id: "r2", incidentHandledAppropriately: false }),
+    ]);
+    expect(result.incidentHandledAppropriatelyRate).toBe(50);
+  });
+
+  it("calculates childComfortCheckedRate correctly", () => {
+    const result = evaluateQuality([
+      makeRecord({ id: "r1", childComfortChecked: true }),
+      makeRecord({ id: "r2", childComfortChecked: false }),
+      makeRecord({ id: "r3", childComfortChecked: false }),
+    ]);
+    expect(result.childComfortCheckedRate).toBe(33);
+  });
+
+  it("scores 0 when all booleans are false", () => {
+    const result = evaluateQuality([
+      makeRecord({
+        nightCheckCompleted: false,
+        sleepPatternRecorded: false,
+        incidentHandledAppropriately: false,
+        childComfortChecked: false,
+      }),
+    ]);
     expect(result.overallScore).toBe(0);
   });
 
-  it("counts total assessments correctly", () => {
-    const envs = [makeEnvironment({ id: "1" }), makeEnvironment({ id: "2" })];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.totalAssessments).toBe(2);
-  });
-
-  it("calculates temperature appropriate rate correctly", () => {
-    const envs = [
-      makeEnvironment({ id: "1", roomTemperatureAppropriate: true }),
-      makeEnvironment({ id: "2", roomTemperatureAppropriate: false }),
-    ];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.temperatureAppropriateRate).toBe(50);
-  });
-
-  it("calculates bedding clean rate correctly", () => {
-    const envs = [
-      makeEnvironment({ id: "1", beddingClean: true }),
-      makeEnvironment({ id: "2", beddingClean: true }),
-      makeEnvironment({ id: "3", beddingClean: false }),
-    ];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.beddingCleanRate).toBe(66.7);
-  });
-
-  it("calculates noise acceptable rate correctly with quiet", () => {
-    const envs = [makeEnvironment({ noiseLevel: "quiet" })];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.noiseAcceptableRate).toBe(100);
-  });
-
-  it("calculates noise acceptable rate correctly with acceptable", () => {
-    const envs = [makeEnvironment({ noiseLevel: "acceptable" })];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.noiseAcceptableRate).toBe(100);
-  });
-
-  it("calculates noise rate correctly with noisy", () => {
-    const envs = [makeEnvironment({ noiseLevel: "noisy" })];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.noiseAcceptableRate).toBe(0);
-  });
-
-  it("calculates noise acceptable rate with mixed levels", () => {
-    const envs = [
-      makeEnvironment({ id: "1", noiseLevel: "quiet" }),
-      makeEnvironment({ id: "2", noiseLevel: "noisy" }),
-      makeEnvironment({ id: "3", noiseLevel: "acceptable" }),
-    ];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.noiseAcceptableRate).toBe(66.7);
-  });
-
-  it("calculates lighting appropriate rate correctly", () => {
-    const envs = [
-      makeEnvironment({ id: "1", lightingAppropriate: true }),
-      makeEnvironment({ id: "2", lightingAppropriate: false }),
-    ];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.lightingAppropriateRate).toBe(50);
-  });
-
-  it("calculates safety checked rate correctly", () => {
-    const envs = [
-      makeEnvironment({ id: "1", safetyChecked: true }),
-      makeEnvironment({ id: "2", safetyChecked: true }),
-      makeEnvironment({ id: "3", safetyChecked: false }),
-    ];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.safetyCheckedRate).toBe(66.7);
-  });
-
-  it("calculates personal belongings rate correctly", () => {
-    const envs = [
-      makeEnvironment({ id: "1", personalBelongingsAccessible: true }),
-      makeEnvironment({ id: "2", personalBelongingsAccessible: false }),
-    ];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.personalBelongingsRate).toBe(50);
-  });
-
-  it("scores max when all metrics are perfect", () => {
-    const envs = [makeEnvironment()];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.overallScore).toBe(25);
-  });
-
-  it("scores zero when all metrics are bad", () => {
-    const envs = [
-      makeEnvironment({
-        roomTemperatureAppropriate: false,
-        beddingClean: false,
-        noiseLevel: "noisy",
-        lightingAppropriate: false,
-        personalBelongingsAccessible: false,
-        safetyChecked: false,
-      }),
-    ];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.overallScore).toBe(0);
-  });
-
-  it("clamps overall score to 0-25 range", () => {
-    const result = evaluateSleepEnvironment([makeEnvironment()]);
+  it("caps score at 25", () => {
+    const result = evaluateQuality([makeRecord()]);
     expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+
+  it("score minimum is 0", () => {
+    const result = evaluateQuality([
+      makeRecord({
+        nightCheckCompleted: false,
+        sleepPatternRecorded: false,
+        incidentHandledAppropriately: false,
+        childComfortChecked: false,
+      }),
+    ]);
     expect(result.overallScore).toBeGreaterThanOrEqual(0);
   });
 
-  it("handles large number of assessments", () => {
-    const envs = Array.from({ length: 100 }, (_, i) =>
-      makeEnvironment({ id: `se-${i}`, roomTemperatureAppropriate: i < 80 }),
-    );
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.temperatureAppropriateRate).toBe(80);
-    expect(result.totalAssessments).toBe(100);
+  it("returns correct total records count", () => {
+    const result = evaluateQuality([
+      makeRecord({ id: "r1" }),
+      makeRecord({ id: "r2" }),
+      makeRecord({ id: "r3" }),
+    ]);
+    expect(result.totalRecords).toBe(3);
+  });
+
+  it("nightCheck weight is 7 (highest)", () => {
+    // 100% nightCheck only = 7 points
+    const result = evaluateQuality([
+      makeRecord({
+        nightCheckCompleted: true,
+        sleepPatternRecorded: false,
+        incidentHandledAppropriately: false,
+        childComfortChecked: false,
+      }),
+    ]);
+    expect(result.overallScore).toBe(7);
+  });
+
+  it("sleepPattern weight is 6", () => {
+    const result = evaluateQuality([
+      makeRecord({
+        nightCheckCompleted: false,
+        sleepPatternRecorded: true,
+        incidentHandledAppropriately: false,
+        childComfortChecked: false,
+      }),
+    ]);
+    expect(result.overallScore).toBe(6);
+  });
+
+  it("incident weight is 6", () => {
+    const result = evaluateQuality([
+      makeRecord({
+        nightCheckCompleted: false,
+        sleepPatternRecorded: false,
+        incidentHandledAppropriately: true,
+        childComfortChecked: false,
+      }),
+    ]);
+    expect(result.overallScore).toBe(6);
+  });
+
+  it("comfort weight is 6", () => {
+    const result = evaluateQuality([
+      makeRecord({
+        nightCheckCompleted: false,
+        sleepPatternRecorded: false,
+        incidentHandledAppropriately: false,
+        childComfortChecked: true,
+      }),
+    ]);
+    expect(result.overallScore).toBe(6);
   });
 });
 
-// ==============================================================================
-// generateNightCareIntelligence
-// ==============================================================================
+// ══════════════════════════════════════════════════════════════════════════════
+// evaluateCompliance
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("evaluateCompliance", () => {
+  it("returns 0 for empty records", () => {
+    const result = evaluateCompliance([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.totalRecords).toBe(0);
+    expect(result.documentationRate).toBe(0);
+    expect(result.timelyRecordingRate).toBe(0);
+    expect(result.nightCheckCompletedRate).toBe(0);
+    expect(result.categoryDiversityRatio).toBe(0);
+    expect(result.uniqueCategories).toBe(0);
+  });
+
+  it("calculates documentationRate correctly", () => {
+    const result = evaluateCompliance([
+      makeRecord({ id: "r1", documentationComplete: true }),
+      makeRecord({ id: "r2", documentationComplete: false }),
+    ]);
+    expect(result.documentationRate).toBe(50);
+  });
+
+  it("calculates timelyRecordingRate correctly", () => {
+    const result = evaluateCompliance([
+      makeRecord({ id: "r1", timelyRecording: true }),
+      makeRecord({ id: "r2", timelyRecording: false }),
+      makeRecord({ id: "r3", timelyRecording: true }),
+    ]);
+    expect(result.timelyRecordingRate).toBe(67);
+  });
+
+  it("calculates nightCheckCompletedRate for compliance", () => {
+    const result = evaluateCompliance([
+      makeRecord({ id: "r1", nightCheckCompleted: true }),
+      makeRecord({ id: "r2", nightCheckCompleted: false }),
+    ]);
+    expect(result.nightCheckCompletedRate).toBe(50);
+  });
+
+  it("calculates categoryDiversityRatio from unique categories", () => {
+    const result = evaluateCompliance([
+      makeRecord({ id: "r1", category: "night_check" }),
+      makeRecord({ id: "r2", category: "sleep_monitoring" }),
+      makeRecord({ id: "r3", category: "bedtime_routine" }),
+      makeRecord({ id: "r4", category: "night_handover" }),
+    ]);
+    expect(result.uniqueCategories).toBe(4);
+    expect(result.categoryDiversityRatio).toBe(0.5); // 4/8
+  });
+
+  it("diversity ratio 1.0 for all 8 categories", () => {
+    const categories = [
+      "night_check", "sleep_monitoring", "night_incident", "waking_night_support",
+      "night_medication", "bedtime_routine", "night_handover", "disturbance_response",
+    ] as const;
+    const records = categories.map((category, i) =>
+      makeRecord({ id: `r${i}`, category }),
+    );
+    const result = evaluateCompliance(records);
+    expect(result.uniqueCategories).toBe(8);
+    expect(result.categoryDiversityRatio).toBe(1);
+  });
+
+  it("diversity ratio 0.13 for 1 category", () => {
+    const result = evaluateCompliance([
+      makeRecord({ id: "r1", category: "night_check" }),
+    ]);
+    expect(result.uniqueCategories).toBe(1);
+    expect(result.categoryDiversityRatio).toBe(0.13);
+  });
+
+  it("scores high when all metrics are perfect with diverse categories", () => {
+    const categories = [
+      "night_check", "sleep_monitoring", "night_incident", "waking_night_support",
+      "night_medication", "bedtime_routine", "night_handover", "disturbance_response",
+    ] as const;
+    const records = categories.map((category, i) =>
+      makeRecord({ id: `r${i}`, category }),
+    );
+    const result = evaluateCompliance(records);
+    expect(result.overallScore).toBe(25);
+  });
+
+  it("scores 0 when all metrics are poor with single category", () => {
+    const result = evaluateCompliance([
+      makeRecord({
+        documentationComplete: false,
+        timelyRecording: false,
+        nightCheckCompleted: false,
+      }),
+    ]);
+    // Only diversity contributes a small amount (0.13 * 5 = 0.65 -> rounds to 0.6)
+    expect(result.overallScore).toBeLessThanOrEqual(1);
+  });
+
+  it("caps score at 25", () => {
+    const result = evaluateCompliance([makeRecord()]);
+    expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+
+  it("returns correct total records count", () => {
+    const result = evaluateCompliance([
+      makeRecord({ id: "r1" }),
+      makeRecord({ id: "r2" }),
+    ]);
+    expect(result.totalRecords).toBe(2);
+  });
+
+  it("weights documentation at 8", () => {
+    // 100% documentation + 0% timely + 0% nightCheck + single category
+    const result = evaluateCompliance([
+      makeRecord({
+        documentationComplete: true,
+        timelyRecording: false,
+        nightCheckCompleted: false,
+      }),
+    ]);
+    // 8 + 0 + 0 + 0.13*5 = 8.65 rounds to 8.6 or 8.7
+    expect(result.overallScore).toBeGreaterThanOrEqual(8);
+    expect(result.overallScore).toBeLessThanOrEqual(9);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// evaluatePolicy
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("evaluatePolicy", () => {
+  it("returns 0 for null policy (all false)", () => {
+    const result = evaluatePolicy(null);
+    expect(result.overallScore).toBe(0);
+    expect(result.nightCarePolicy).toBe(false);
+    expect(result.sleepMonitoringGuidance).toBe(false);
+    expect(result.nightIncidentProcedure).toBe(false);
+    expect(result.wakingNightPolicy).toBe(false);
+    expect(result.nightMedicationProtocol).toBe(false);
+    expect(result.bedtimeRoutineGuidance).toBe(false);
+    expect(result.nightHandoverProcedure).toBe(false);
+  });
+
+  it("returns 25 for all-true policy", () => {
+    const result = evaluatePolicy(makePolicy());
+    expect(result.overallScore).toBe(25);
+  });
+
+  it("nightCarePolicy contributes 4", () => {
+    const result = evaluatePolicy(makePolicy({
+      nightCarePolicy: true,
+      sleepMonitoringGuidance: false,
+      nightIncidentProcedure: false,
+      wakingNightPolicy: false,
+      nightMedicationProtocol: false,
+      bedtimeRoutineGuidance: false,
+      nightHandoverProcedure: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("sleepMonitoringGuidance contributes 4", () => {
+    const result = evaluatePolicy(makePolicy({
+      nightCarePolicy: false,
+      sleepMonitoringGuidance: true,
+      nightIncidentProcedure: false,
+      wakingNightPolicy: false,
+      nightMedicationProtocol: false,
+      bedtimeRoutineGuidance: false,
+      nightHandoverProcedure: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("nightIncidentProcedure contributes 4", () => {
+    const result = evaluatePolicy(makePolicy({
+      nightCarePolicy: false,
+      sleepMonitoringGuidance: false,
+      nightIncidentProcedure: true,
+      wakingNightPolicy: false,
+      nightMedicationProtocol: false,
+      bedtimeRoutineGuidance: false,
+      nightHandoverProcedure: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("wakingNightPolicy contributes 4", () => {
+    const result = evaluatePolicy(makePolicy({
+      nightCarePolicy: false,
+      sleepMonitoringGuidance: false,
+      nightIncidentProcedure: false,
+      wakingNightPolicy: true,
+      nightMedicationProtocol: false,
+      bedtimeRoutineGuidance: false,
+      nightHandoverProcedure: false,
+    }));
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("nightMedicationProtocol contributes 3", () => {
+    const result = evaluatePolicy(makePolicy({
+      nightCarePolicy: false,
+      sleepMonitoringGuidance: false,
+      nightIncidentProcedure: false,
+      wakingNightPolicy: false,
+      nightMedicationProtocol: true,
+      bedtimeRoutineGuidance: false,
+      nightHandoverProcedure: false,
+    }));
+    expect(result.overallScore).toBe(3);
+  });
+
+  it("bedtimeRoutineGuidance contributes 3", () => {
+    const result = evaluatePolicy(makePolicy({
+      nightCarePolicy: false,
+      sleepMonitoringGuidance: false,
+      nightIncidentProcedure: false,
+      wakingNightPolicy: false,
+      nightMedicationProtocol: false,
+      bedtimeRoutineGuidance: true,
+      nightHandoverProcedure: false,
+    }));
+    expect(result.overallScore).toBe(3);
+  });
+
+  it("nightHandoverProcedure contributes 3", () => {
+    const result = evaluatePolicy(makePolicy({
+      nightCarePolicy: false,
+      sleepMonitoringGuidance: false,
+      nightIncidentProcedure: false,
+      wakingNightPolicy: false,
+      nightMedicationProtocol: false,
+      bedtimeRoutineGuidance: false,
+      nightHandoverProcedure: true,
+    }));
+    expect(result.overallScore).toBe(3);
+  });
+
+  it("weights sum to 25 (4+4+4+4+3+3+3)", () => {
+    const result = evaluatePolicy(makePolicy());
+    expect(result.overallScore).toBe(25);
+  });
+
+  it("partial policy returns correct partial score", () => {
+    // nightCarePolicy (4) + nightIncidentProcedure (4) + nightMedicationProtocol (3) = 11
+    const result = evaluatePolicy(makePolicy({
+      nightCarePolicy: true,
+      sleepMonitoringGuidance: false,
+      nightIncidentProcedure: true,
+      wakingNightPolicy: false,
+      nightMedicationProtocol: true,
+      bedtimeRoutineGuidance: false,
+      nightHandoverProcedure: false,
+    }));
+    expect(result.overallScore).toBe(11);
+  });
+
+  it("preserves boolean values in result", () => {
+    const result = evaluatePolicy(makePolicy({
+      nightCarePolicy: true,
+      sleepMonitoringGuidance: false,
+      nightIncidentProcedure: true,
+      wakingNightPolicy: false,
+      nightMedicationProtocol: true,
+      bedtimeRoutineGuidance: false,
+      nightHandoverProcedure: true,
+    }));
+    expect(result.nightCarePolicy).toBe(true);
+    expect(result.sleepMonitoringGuidance).toBe(false);
+    expect(result.nightIncidentProcedure).toBe(true);
+    expect(result.wakingNightPolicy).toBe(false);
+    expect(result.nightMedicationProtocol).toBe(true);
+    expect(result.bedtimeRoutineGuidance).toBe(false);
+    expect(result.nightHandoverProcedure).toBe(true);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// evaluateStaffReadiness
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("evaluateStaffReadiness", () => {
+  it("returns 0 for empty training", () => {
+    const result = evaluateStaffReadiness([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.totalStaff).toBe(0);
+    expect(result.nightCareCompetencyRate).toBe(0);
+    expect(result.sleepMonitoringSkillsRate).toBe(0);
+    expect(result.nightIncidentResponseRate).toBe(0);
+    expect(result.nightMedicationHandlingRate).toBe(0);
+    expect(result.childComfortTechniquesRate).toBe(0);
+    expect(result.nightHandoverProcedureRate).toBe(0);
+  });
+
+  it("scores 25 for all-true training", () => {
+    const result = evaluateStaffReadiness([makeTraining(), makeTraining({ id: "tr-2", staffId: "staff-tom" })]);
+    expect(result.overallScore).toBe(25);
+  });
+
+  it("nightCareCompetency weight is 6 (highest)", () => {
+    const result = evaluateStaffReadiness([
+      makeTraining({
+        nightCareCompetency: true,
+        sleepMonitoringSkills: false,
+        nightIncidentResponse: false,
+        nightMedicationHandling: false,
+        childComfortTechniques: false,
+        nightHandoverProcedure: false,
+      }),
+    ]);
+    expect(result.overallScore).toBe(6);
+  });
+
+  it("sleepMonitoringSkills weight is 5", () => {
+    const result = evaluateStaffReadiness([
+      makeTraining({
+        nightCareCompetency: false,
+        sleepMonitoringSkills: true,
+        nightIncidentResponse: false,
+        nightMedicationHandling: false,
+        childComfortTechniques: false,
+        nightHandoverProcedure: false,
+      }),
+    ]);
+    expect(result.overallScore).toBe(5);
+  });
+
+  it("nightIncidentResponse weight is 5", () => {
+    const result = evaluateStaffReadiness([
+      makeTraining({
+        nightCareCompetency: false,
+        sleepMonitoringSkills: false,
+        nightIncidentResponse: true,
+        nightMedicationHandling: false,
+        childComfortTechniques: false,
+        nightHandoverProcedure: false,
+      }),
+    ]);
+    expect(result.overallScore).toBe(5);
+  });
+
+  it("nightMedicationHandling weight is 4", () => {
+    const result = evaluateStaffReadiness([
+      makeTraining({
+        nightCareCompetency: false,
+        sleepMonitoringSkills: false,
+        nightIncidentResponse: false,
+        nightMedicationHandling: true,
+        childComfortTechniques: false,
+        nightHandoverProcedure: false,
+      }),
+    ]);
+    expect(result.overallScore).toBe(4);
+  });
+
+  it("childComfortTechniques weight is 3", () => {
+    const result = evaluateStaffReadiness([
+      makeTraining({
+        nightCareCompetency: false,
+        sleepMonitoringSkills: false,
+        nightIncidentResponse: false,
+        nightMedicationHandling: false,
+        childComfortTechniques: true,
+        nightHandoverProcedure: false,
+      }),
+    ]);
+    expect(result.overallScore).toBe(3);
+  });
+
+  it("nightHandoverProcedure weight is 2", () => {
+    const result = evaluateStaffReadiness([
+      makeTraining({
+        nightCareCompetency: false,
+        sleepMonitoringSkills: false,
+        nightIncidentResponse: false,
+        nightMedicationHandling: false,
+        childComfortTechniques: false,
+        nightHandoverProcedure: true,
+      }),
+    ]);
+    expect(result.overallScore).toBe(2);
+  });
+
+  it("weights sum to 25 (6+5+5+4+3+2)", () => {
+    const result = evaluateStaffReadiness([makeTraining()]);
+    expect(result.overallScore).toBe(25);
+  });
+
+  it("calculates rates correctly across multiple staff", () => {
+    const result = evaluateStaffReadiness([
+      makeTraining({ id: "tr-1", staffId: "staff-sarah", nightCareCompetency: true, sleepMonitoringSkills: true }),
+      makeTraining({ id: "tr-2", staffId: "staff-tom", nightCareCompetency: true, sleepMonitoringSkills: false }),
+      makeTraining({ id: "tr-3", staffId: "staff-lisa", nightCareCompetency: false, sleepMonitoringSkills: true }),
+    ]);
+    expect(result.totalStaff).toBe(3);
+    expect(result.nightCareCompetencyRate).toBe(67);
+    expect(result.sleepMonitoringSkillsRate).toBe(67);
+  });
+
+  it("scores 0 when all skills are false", () => {
+    const result = evaluateStaffReadiness([
+      makeTraining({
+        nightCareCompetency: false,
+        sleepMonitoringSkills: false,
+        nightIncidentResponse: false,
+        nightMedicationHandling: false,
+        childComfortTechniques: false,
+        nightHandoverProcedure: false,
+      }),
+    ]);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("caps at 25", () => {
+    const result = evaluateStaffReadiness([makeTraining()]);
+    expect(result.overallScore).toBeLessThanOrEqual(25);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// buildChildNightCareProfiles
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("buildChildNightCareProfiles", () => {
+  it("returns empty array for no records", () => {
+    expect(buildChildNightCareProfiles([])).toEqual([]);
+  });
+
+  it("builds one profile per child", () => {
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", childName: "Alex" }),
+      makeRecord({ id: "r2", childId: "child-alex", childName: "Alex" }),
+      makeRecord({ id: "r3", childId: "child-jordan", childName: "Jordan" }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    expect(profiles).toHaveLength(2);
+    expect(profiles.find((p) => p.childId === "child-alex")!.totalRecords).toBe(2);
+    expect(profiles.find((p) => p.childId === "child-jordan")!.totalRecords).toBe(1);
+  });
+
+  it("calculates nightCheckCompletedRate per child", () => {
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", nightCheckCompleted: true }),
+      makeRecord({ id: "r2", childId: "child-alex", nightCheckCompleted: false }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    expect(profiles[0].nightCheckCompletedRate).toBe(50);
+  });
+
+  it("calculates sleepPatternRecordedRate per child", () => {
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", sleepPatternRecorded: true }),
+      makeRecord({ id: "r2", childId: "child-alex", sleepPatternRecorded: true }),
+      makeRecord({ id: "r3", childId: "child-alex", sleepPatternRecorded: false }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    expect(profiles[0].sleepPatternRecordedRate).toBe(67);
+  });
+
+  it("counts unique categories per child", () => {
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", category: "night_check" }),
+      makeRecord({ id: "r2", childId: "child-alex", category: "sleep_monitoring" }),
+      makeRecord({ id: "r3", childId: "child-alex", category: "night_check" }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    expect(profiles[0].uniqueCategories).toBe(2);
+  });
+
+  it("frequency score: >=10 records -> 2", () => {
+    const records = Array.from({ length: 10 }, (_, i) =>
+      makeRecord({ id: `r${i}`, childId: "child-alex" }),
+    );
+    const profiles = buildChildNightCareProfiles(records);
+    // freq=2, rate1=3 (100%), rate2=3 (100%), diversity=0 (1 category) = 8
+    expect(profiles[0].overallScore).toBe(8);
+  });
+
+  it("frequency score: >=5 records -> 1", () => {
+    const records = Array.from({ length: 5 }, (_, i) =>
+      makeRecord({ id: `r${i}`, childId: "child-alex" }),
+    );
+    const profiles = buildChildNightCareProfiles(records);
+    // freq=1, rate1=3, rate2=3, diversity=0 = 7
+    expect(profiles[0].overallScore).toBe(7);
+  });
+
+  it("frequency score: <5 records -> 0", () => {
+    const records = Array.from({ length: 4 }, (_, i) =>
+      makeRecord({ id: `r${i}`, childId: "child-alex" }),
+    );
+    const profiles = buildChildNightCareProfiles(records);
+    // freq=0, rate1=3, rate2=3, diversity=0 = 6
+    expect(profiles[0].overallScore).toBe(6);
+  });
+
+  it("rate1 thresholds: >=80 -> 3, >=60 -> 2, >=40 -> 1, <40 -> 0", () => {
+    // 3 out of 4 nightCheck = 75% -> rate1=2
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", nightCheckCompleted: true }),
+      makeRecord({ id: "r2", childId: "child-alex", nightCheckCompleted: true }),
+      makeRecord({ id: "r3", childId: "child-alex", nightCheckCompleted: true }),
+      makeRecord({ id: "r4", childId: "child-alex", nightCheckCompleted: false }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    expect(profiles[0].nightCheckCompletedRate).toBe(75);
+    // freq=0, rate1=2, rate2=3 (all sleep true), diversity=0 (1 cat) = 5
+    expect(profiles[0].overallScore).toBe(5);
+  });
+
+  it("rate2 thresholds: >=80 -> 3, >=60 -> 2, >=40 -> 1, <40 -> 0", () => {
+    // 1 out of 3 sleepPattern = 33% -> rate2=0
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", sleepPatternRecorded: true }),
+      makeRecord({ id: "r2", childId: "child-alex", sleepPatternRecorded: false }),
+      makeRecord({ id: "r3", childId: "child-alex", sleepPatternRecorded: false }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    expect(profiles[0].sleepPatternRecordedRate).toBe(33);
+    // freq=0, rate1=3, rate2=0, diversity=0 = 3
+    expect(profiles[0].overallScore).toBe(3);
+  });
+
+  it("diversity bonus: >=4 categories -> 2", () => {
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", category: "night_check" }),
+      makeRecord({ id: "r2", childId: "child-alex", category: "sleep_monitoring" }),
+      makeRecord({ id: "r3", childId: "child-alex", category: "bedtime_routine" }),
+      makeRecord({ id: "r4", childId: "child-alex", category: "night_handover" }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    // freq=0, rate1=3, rate2=3, diversity=2 = 8
+    expect(profiles[0].overallScore).toBe(8);
+  });
+
+  it("diversity bonus: >=2 categories -> 1", () => {
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", category: "night_check" }),
+      makeRecord({ id: "r2", childId: "child-alex", category: "sleep_monitoring" }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    // freq=0, rate1=3, rate2=3, diversity=1 = 7
+    expect(profiles[0].overallScore).toBe(7);
+  });
+
+  it("diversity bonus: 1 category -> 0", () => {
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", category: "night_check" }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    // freq=0, rate1=3, rate2=3, diversity=0 = 6
+    expect(profiles[0].overallScore).toBe(6);
+  });
+
+  it("caps profile score at 10", () => {
+    // Max possible: freq=2 + rate1=3 + rate2=3 + diversity=2 = 10
+    const categories = [
+      "night_check", "sleep_monitoring", "bedtime_routine", "night_handover",
+    ] as const;
+    const records = Array.from({ length: 12 }, (_, i) =>
+      makeRecord({ id: `r${i}`, childId: "child-alex", category: categories[i % 4] }),
+    );
+    const profiles = buildChildNightCareProfiles(records);
+    expect(profiles[0].overallScore).toBeLessThanOrEqual(10);
+    expect(profiles[0].overallScore).toBe(10);
+  });
+
+  it("produces zero score for child with all-false and 1 record 1 category", () => {
+    const records = [
+      makeRecord({
+        childId: "child-alex",
+        nightCheckCompleted: false,
+        sleepPatternRecorded: false,
+        category: "night_check",
+      }),
+    ];
+    const profiles = buildChildNightCareProfiles(records);
+    // freq=0, rate1=0, rate2=0, diversity=0 = 0
+    expect(profiles[0].overallScore).toBe(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// generateNightCareIntelligence (orchestrator)
+// ══════════════════════════════════════════════════════════════════════════════
 
 describe("generateNightCareIntelligence", () => {
+  const HOME_ID = "oak-house";
+  const START = "2026-05-01";
+  const END = "2026-05-31";
+
   it("returns all required top-level fields", () => {
-    const result = generateNightCareIntelligence([], [], [], [], 3, HOME_ID, PERIOD_START, PERIOD_END);
+    const result = generateNightCareIntelligence([], null, [], HOME_ID, START, END);
     expect(result.homeId).toBe(HOME_ID);
-    expect(result.periodStart).toBe(PERIOD_START);
-    expect(result.periodEnd).toBe(PERIOD_END);
+    expect(result.periodStart).toBe(START);
+    expect(result.periodEnd).toBe(END);
     expect(typeof result.overallScore).toBe("number");
     expect(typeof result.rating).toBe("string");
-    expect(result.monitoringQuality).toBeDefined();
-    expect(result.incidentManagement).toBeDefined();
-    expect(result.staffingAdequacy).toBeDefined();
-    expect(result.sleepEnvironment).toBeDefined();
+    expect(result.quality).toBeDefined();
+    expect(result.compliance).toBeDefined();
+    expect(result.policy).toBeDefined();
+    expect(result.staffReadiness).toBeDefined();
+    expect(Array.isArray(result.childProfiles)).toBe(true);
     expect(Array.isArray(result.strengths)).toBe(true);
     expect(Array.isArray(result.areasForImprovement)).toBe(true);
     expect(Array.isArray(result.actions)).toBe(true);
     expect(Array.isArray(result.regulatoryLinks)).toBe(true);
   });
 
-  it("overall score is the sum of four sub-scores clamped to 0-100", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-      checkType: "welfare_check",
-      notes: "Good observation.",
-    });
-    const staffing = [makeStaffing()];
-    const envs = [makeEnvironment()];
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
+  it("overall score is the sum of four sub-scores capped at 100", () => {
+    const records = [makeRecord()];
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
     const expectedSum =
-      result.monitoringQuality.overallScore +
-      result.incidentManagement.overallScore +
-      result.staffingAdequacy.overallScore +
-      result.sleepEnvironment.overallScore;
-    expect(result.overallScore).toBe(Math.round(Math.min(expectedSum, 100) * 10) / 10);
+      result.quality.overallScore +
+      result.compliance.overallScore +
+      result.policy.overallScore +
+      result.staffReadiness.overallScore;
+    expect(result.overallScore).toBe(Math.min(100, Math.max(0, expectedSum)));
   });
 
   it("overall score never exceeds 100", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-      checkType: "welfare_check",
-      notes: "Good observation.",
-    });
-    const staffing = [makeStaffing()];
-    const envs = [makeEnvironment()];
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
+    const records = [makeRecord()];
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
   it("overall score never goes below 0", () => {
-    const result = generateNightCareIntelligence([], [], [], [], 3, HOME_ID, PERIOD_START, PERIOD_END);
+    const result = generateNightCareIntelligence([], null, [], HOME_ID, START, END);
     expect(result.overallScore).toBeGreaterThanOrEqual(0);
   });
 
   it("assigns outstanding rating for score >= 80", () => {
-    // Perfect data
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-      checkType: "welfare_check",
-      notes: "Thorough observation.",
-    });
-    const staffing = [makeStaffing()];
-    const envs = [makeEnvironment()];
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
+    const categories = [
+      "night_check", "sleep_monitoring", "night_incident", "waking_night_support",
+      "night_medication", "bedtime_routine", "night_handover", "disturbance_response",
+    ] as const;
+    const records = categories.map((category, i) =>
+      makeRecord({ id: `r${i}`, category }),
+    );
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
     expect(result.overallScore).toBeGreaterThanOrEqual(80);
     expect(result.rating).toBe("outstanding");
   });
 
-  it("assigns good rating for score 60-79", () => {
-    // Some decent data but not perfect
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 3, {
-      notes: "Brief note.",
-      doorOpenCheck: false,
-      temperatureChecked: false,
-    });
-    const staffing = [makeStaffing({ handoverQuality: "brief" })];
-    const envs = [makeEnvironment({ roomTemperatureAppropriate: false })];
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    // Adjusted: this should land in the good range
-    expect(result.overallScore).toBeGreaterThanOrEqual(60);
-    expect(result.overallScore).toBeLessThan(80);
-    expect(result.rating).toBe("good");
-  });
-
-  it("assigns requires_improvement rating for score 40-59", () => {
-    // Poor data across the board
-    const checks = [makeCheck({ notes: "", doorOpenCheck: false, temperatureChecked: false })];
-    const incidents = [makeIncident({ managedEffectively: false, supportProvided: false, severity: "high" })];
-    const staffing = [makeStaffing({ staffingLevel: "minimum", handoverQuality: "brief", handoverCompleted: false })];
-    const envs = [makeEnvironment({ roomTemperatureAppropriate: false, beddingClean: false })];
-    const result = generateNightCareIntelligence(checks, incidents, staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.overallScore).toBeGreaterThanOrEqual(40);
-    expect(result.overallScore).toBeLessThan(60);
-    expect(result.rating).toBe("requires_improvement");
-  });
-
-  it("assigns inadequate rating for score < 40", () => {
-    // Everything is terrible
-    const checks = [makeCheck({ notes: "", doorOpenCheck: false, temperatureChecked: false })];
-    const incidents = [
-      makeIncident({ id: "1", managedEffectively: false, supportProvided: false, managerNotified: false, recordedTimely: false, deEscalationUsed: false, severity: "critical" }),
-    ];
-    const staffing = [makeStaffing({
-      staffingLevel: "lone_working",
-      handoverCompleted: false,
-      handoverQuality: "missed",
-      agencyStaffUsed: true,
-      wakingNightStaff: 0,
-      sleepingInStaff: 0,
-    })];
-    const envs = [makeEnvironment({
-      roomTemperatureAppropriate: false,
-      beddingClean: false,
-      noiseLevel: "noisy",
-      lightingAppropriate: false,
-      personalBelongingsAccessible: false,
-      safetyChecked: false,
-    })];
-    const result = generateNightCareIntelligence(checks, incidents, staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.overallScore).toBeLessThan(40);
+  it("assigns inadequate rating for empty data with null policy", () => {
+    const result = generateNightCareIntelligence([], null, [], HOME_ID, START, END);
+    expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
   });
 
-  it("always includes regulatory links", () => {
-    const result = generateNightCareIntelligence([], [], [], [], 3, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.regulatoryLinks.length).toBeGreaterThan(0);
+  it("always includes 7 regulatory links", () => {
+    const result = generateNightCareIntelligence([], null, [], HOME_ID, START, END);
+    expect(result.regulatoryLinks).toHaveLength(7);
+    expect(result.regulatoryLinks.some((l) => l.includes("CHR 2015 Reg 12"))).toBe(true);
     expect(result.regulatoryLinks.some((l) => l.includes("CHR 2015 Reg 34"))).toBe(true);
-    expect(result.regulatoryLinks.some((l) => l.includes("NMS 26"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("NMS 7"))).toBe(true);
     expect(result.regulatoryLinks.some((l) => l.includes("SCCIF"))).toBe(true);
-    expect(result.regulatoryLinks.some((l) => l.includes("NICE"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("Children Act 1989 s.22"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("Quality Standards 2015"))).toBe(true);
+    expect(result.regulatoryLinks.some((l) => l.includes("CHR 2015 Reg 40"))).toBe(true);
   });
 
-  // -- Strengths Tests --
+  // -- Strengths --
 
-  it("identifies strength for high check frequency", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, { notes: "Good." });
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("frequent"))).toBe(true);
+  it("identifies strength for high nightCheck rate", () => {
+    const records = [makeRecord()];
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.strengths.some((s) => s.includes("Night checks consistently completed"))).toBe(true);
   });
 
-  it("identifies strength for welfare checks included", () => {
-    const checks = [makeCheck({ checkType: "welfare_check", notes: "Welfare check." })];
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("Welfare checks"))).toBe(true);
+  it("identifies strength for high sleepPattern rate", () => {
+    const records = [makeRecord()];
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.strengths.some((s) => s.includes("Sleep patterns recorded"))).toBe(true);
   });
 
-  it("identifies strength for no incidents", () => {
-    const result = generateNightCareIntelligence([], [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("No night-time incidents"))).toBe(true);
+  it("identifies strength for all staff trained", () => {
+    const training = [makeTraining()];
+    const result = generateNightCareIntelligence([makeRecord()], makePolicy(), training, HOME_ID, START, END);
+    expect(result.strengths.some((s) => s.includes("All staff trained in night care competency"))).toBe(true);
   });
 
-  it("identifies strength for adequate staffing", () => {
-    const staffing = Array.from({ length: 10 }, (_, i) =>
-      makeStaffing({ id: `s-${i}`, staffingLevel: "adequate" }),
-    );
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("staffing levels are consistently adequate"))).toBe(true);
+  it("identifies strength for comprehensive policy", () => {
+    const result = generateNightCareIntelligence([makeRecord()], makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.strengths.some((s) => s.includes("Comprehensive night care policy"))).toBe(true);
   });
 
-  it("identifies strength for no lone working", () => {
-    const staffing = [makeStaffing({ staffingLevel: "adequate" })];
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("No lone working"))).toBe(true);
+  it("identifies strength for 100% documentation", () => {
+    const records = [makeRecord()];
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.strengths.some((s) => s.includes("Documentation rate at 100%"))).toBe(true);
   });
 
-  it("identifies strength for good handover completion", () => {
-    const staffing = Array.from({ length: 20 }, (_, i) =>
-      makeStaffing({ id: `s-${i}`, handoverCompleted: true }),
-    );
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("handovers are consistently completed"))).toBe(true);
+  // -- Areas for Improvement --
+
+  it("flags area when no records found", () => {
+    const result = generateNightCareIntelligence([], makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.areasForImprovement.some((a) => a.includes("No night care records found"))).toBe(true);
   });
 
-  it("identifies strength for good sleep environment temperature", () => {
-    const envs = Array.from({ length: 10 }, (_, i) =>
-      makeEnvironment({ id: `se-${i}`, roomTemperatureAppropriate: true }),
-    );
-    const result = generateNightCareIntelligence([], [], [makeStaffing()], envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("temperatures are consistently appropriate"))).toBe(true);
-  });
-
-  it("identifies strength for clean bedding", () => {
-    const envs = Array.from({ length: 20 }, (_, i) =>
-      makeEnvironment({ id: `se-${i}`, beddingClean: true }),
-    );
-    const result = generateNightCareIntelligence([], [], [makeStaffing()], envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("Bedding"))).toBe(true);
-  });
-
-  // -- Areas for Improvement Tests --
-
-  it("flags area when no checks recorded", () => {
-    const result = generateNightCareIntelligence([], [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("No night monitoring checks"))).toBe(true);
-  });
-
-  it("flags area when check frequency is low", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 2, { notes: "Brief." });
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("frequency is below"))).toBe(true);
-  });
-
-  it("flags area when welfare checks not included", () => {
-    const checks = [makeCheck({ checkType: "visual_check", notes: "Visual only." })];
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("Welfare checks are not included"))).toBe(true);
-  });
-
-  it("flags area when documentation quality is low", () => {
-    const checks = [
-      makeCheck({ id: "1", notes: "" }),
-      makeCheck({ id: "2", notes: "" }),
-      makeCheck({ id: "3", notes: "One note." }),
+  it("flags area when nightCheck rate is low", () => {
+    const records = [
+      makeRecord({ id: "r1", nightCheckCompleted: false }),
+      makeRecord({ id: "r2", nightCheckCompleted: false }),
     ];
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("documentation needs improvement"))).toBe(true);
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.areasForImprovement.some((a) => a.includes("Night check completion rate"))).toBe(true);
   });
 
-  it("flags area when lone working occurred", () => {
-    const staffing = [makeStaffing({ staffingLevel: "lone_working" })];
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("Lone working"))).toBe(true);
+  it("flags area when no policy", () => {
+    const result = generateNightCareIntelligence([makeRecord()], null, [makeTraining()], HOME_ID, START, END);
+    expect(result.areasForImprovement.some((a) => a.includes("No night care policy"))).toBe(true);
   });
 
-  it("flags area when staffing is below adequate", () => {
-    const staffing = Array.from({ length: 10 }, (_, i) =>
-      makeStaffing({ id: `s-${i}`, staffingLevel: i < 7 ? "below_minimum" : "adequate" }),
+  it("flags area when no training records", () => {
+    const result = generateNightCareIntelligence([makeRecord()], makePolicy(), [], HOME_ID, START, END);
+    expect(result.areasForImprovement.some((a) => a.includes("No staff night care training records"))).toBe(true);
+  });
+
+  it("flags area when nightIncidentProcedure missing from policy", () => {
+    const result = generateNightCareIntelligence(
+      [makeRecord()],
+      makePolicy({ nightIncidentProcedure: false }),
+      [makeTraining()],
+      HOME_ID, START, END,
     );
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("staffing levels are frequently below"))).toBe(true);
+    expect(result.areasForImprovement.some((a) => a.includes("Night incident procedure missing"))).toBe(true);
   });
 
-  it("flags area when handovers not completed", () => {
-    const staffing = [
-      makeStaffing({ id: "1", handoverCompleted: false }),
-      makeStaffing({ id: "2", handoverCompleted: false }),
+  it("flags area when documentation rate below 100", () => {
+    const records = [
+      makeRecord({ id: "r1", documentationComplete: true }),
+      makeRecord({ id: "r2", documentationComplete: false }),
     ];
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("handovers are not consistently completed"))).toBe(true);
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.areasForImprovement.some((a) => a.includes("Documentation rate at"))).toBe(true);
   });
 
-  it("flags area when agency-only nights occurred", () => {
-    const staffing = [makeStaffing({ agencyStaffUsed: true, wakingNightStaff: 0, sleepingInStaff: 0 })];
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("Agency-only staffing"))).toBe(true);
+  // -- Actions --
+
+  it("generates URGENT action when no records", () => {
+    const result = generateNightCareIntelligence([], makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.actions.some((a) => a.includes("URGENT") && a.includes("night care recording"))).toBe(true);
   });
 
-  it("flags area when temperature is not appropriate", () => {
-    const envs = Array.from({ length: 5 }, (_, i) =>
-      makeEnvironment({ id: `se-${i}`, roomTemperatureAppropriate: false }),
-    );
-    const result = generateNightCareIntelligence([], [], [makeStaffing()], envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("temperatures are not consistently appropriate"))).toBe(true);
-  });
-
-  it("flags area when noise levels are high", () => {
-    const envs = Array.from({ length: 5 }, (_, i) =>
-      makeEnvironment({ id: `se-${i}`, noiseLevel: "noisy" }),
-    );
-    const result = generateNightCareIntelligence([], [], [makeStaffing()], envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("Noise levels"))).toBe(true);
-  });
-
-  it("flags area for critical incidents", () => {
-    const incidents = [makeIncident({ severity: "critical" })];
-    const result = generateNightCareIntelligence([], incidents, [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("critical incident"))).toBe(true);
-  });
-
-  // -- Actions Tests --
-
-  it("generates URGENT action when no checks recorded", () => {
-    const result = generateNightCareIntelligence([], [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("URGENT") && a.includes("monitoring check regime"))).toBe(true);
-  });
-
-  it("generates URGENT action when critical incidents occur", () => {
-    const incidents = [makeIncident({ severity: "critical" })];
-    const result = generateNightCareIntelligence([], incidents, [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("URGENT") && a.includes("critical"))).toBe(true);
-  });
-
-  it("generates URGENT action when lone working occurs", () => {
-    const staffing = [makeStaffing({ staffingLevel: "lone_working" })];
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("URGENT") && a.includes("lone working"))).toBe(true);
-  });
-
-  it("generates HIGH action for low staffing", () => {
-    const staffing = Array.from({ length: 10 }, (_, i) =>
-      makeStaffing({ id: `s-${i}`, staffingLevel: i < 7 ? "below_minimum" : "adequate" }),
-    );
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("HIGH") && a.includes("staffing levels"))).toBe(true);
-  });
-
-  it("generates MEDIUM action for poor handover completion", () => {
-    const staffing = [
-      makeStaffing({ id: "1", handoverCompleted: false }),
-      makeStaffing({ id: "2", handoverCompleted: false }),
+  it("generates URGENT action for low nightCheck rate", () => {
+    const records = [
+      makeRecord({ id: "r1", nightCheckCompleted: false }),
+      makeRecord({ id: "r2", nightCheckCompleted: false }),
     ];
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("MEDIUM") && a.includes("handover"))).toBe(true);
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.actions.some((a) => a.includes("URGENT") && a.includes("night check"))).toBe(true);
   });
 
-  it("generates MEDIUM action for poor temperature", () => {
-    const envs = Array.from({ length: 5 }, (_, i) =>
-      makeEnvironment({ id: `se-${i}`, roomTemperatureAppropriate: false }),
-    );
-    const result = generateNightCareIntelligence([], [], [makeStaffing()], envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("MEDIUM") && a.includes("temperature"))).toBe(true);
+  it("generates URGENT action for no training", () => {
+    const result = generateNightCareIntelligence([makeRecord()], makePolicy(), [], HOME_ID, START, END);
+    expect(result.actions.some((a) => a.includes("URGENT") && a.includes("training"))).toBe(true);
   });
 
-  it("generates LOW action for agency-only nights", () => {
-    const staffing = [makeStaffing({ agencyStaffUsed: true, wakingNightStaff: 0, sleepingInStaff: 0 })];
-    const result = generateNightCareIntelligence([], [], staffing, [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("LOW") && a.includes("agency"))).toBe(true);
+  it("generates action for policy development when null", () => {
+    const result = generateNightCareIntelligence([makeRecord()], null, [makeTraining()], HOME_ID, START, END);
+    expect(result.actions.some((a) => a.includes("Develop") && a.includes("policy"))).toBe(true);
   });
 
   it("generates no actions when everything is excellent", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-      checkType: "welfare_check",
-      notes: "Good observation.",
-    });
-    const staffing = [makeStaffing()];
-    const envs = [makeEnvironment()];
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.length).toBe(0);
+    const categories = [
+      "night_check", "sleep_monitoring", "night_incident", "waking_night_support",
+      "night_medication", "bedtime_routine", "night_handover", "disturbance_response",
+    ] as const;
+    const records = categories.map((category, i) =>
+      makeRecord({ id: `r${i}`, category }),
+    );
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.actions).toHaveLength(0);
   });
 
-  // -- Demo Data Integration --
+  // -- Child Profiles in Orchestrator --
 
-  it("produces a realistic result with demo-like data", () => {
-    const checks = [
-      ...makeChecksForChild("child-alex", "Alex", "2025-03-10", 4, { notes: "Good observation." }),
-      ...makeChecksForChild("child-jordan", "Jordan", "2025-03-10", 5, { notes: "Detailed note." }),
-      ...makeChecksForChild("child-morgan", "Morgan", "2025-03-10", 4, { notes: "All well." }),
+  it("includes child profiles in result", () => {
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", childName: "Alex" }),
+      makeRecord({ id: "r2", childId: "child-jordan", childName: "Jordan" }),
+      makeRecord({ id: "r3", childId: "child-morgan", childName: "Morgan" }),
     ];
-    // Add welfare checks
-    checks[0] = { ...checks[0], checkType: "welfare_check" };
-    checks[5] = { ...checks[5], checkType: "welfare_check" };
-    checks[9] = { ...checks[9], checkType: "welfare_check" };
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.childProfiles).toHaveLength(3);
+  });
 
-    const incidents = [makeIncident({ severity: "low" })];
-    const staffing = [
-      makeStaffing({ id: "s-1" }),
-      makeStaffing({ id: "s-2", handoverQuality: "adequate" }),
-      makeStaffing({ id: "s-3" }),
-    ];
-    const envs = [
-      makeEnvironment({ id: "e-1", childId: "child-alex" }),
-      makeEnvironment({ id: "e-2", childId: "child-jordan" }),
-      makeEnvironment({ id: "e-3", childId: "child-morgan", noiseLevel: "acceptable" }),
-    ];
-
-    const result = generateNightCareIntelligence(checks, incidents, staffing, envs, 3, HOME_ID, PERIOD_START, PERIOD_END);
-
-    expect(result.overallScore).toBeGreaterThanOrEqual(80);
-    expect(result.rating).toBe("outstanding");
-    expect(result.monitoringQuality.totalChecks).toBe(13);
-    expect(result.incidentManagement.totalIncidents).toBe(1);
-    expect(result.staffingAdequacy.totalNights).toBe(3);
-    expect(result.sleepEnvironment.totalAssessments).toBe(3);
-    expect(result.strengths.length).toBeGreaterThan(0);
-    expect(result.regulatoryLinks.length).toBe(4);
+  it("returns empty child profiles when no records", () => {
+    const result = generateNightCareIntelligence([], makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.childProfiles).toHaveLength(0);
   });
 
   // -- Edge Cases --
 
-  it("handles empty arrays for all inputs", () => {
-    const result = generateNightCareIntelligence([], [], [], [], 0, HOME_ID, PERIOD_START, PERIOD_END);
+  it("handles single record, null policy, empty training", () => {
+    const result = generateNightCareIntelligence([makeRecord()], null, [], HOME_ID, START, END);
     expect(result.overallScore).toBeGreaterThanOrEqual(0);
     expect(result.overallScore).toBeLessThanOrEqual(100);
     expect(typeof result.rating).toBe("string");
   });
 
-  it("handles single check, single incident, single night, single environment", () => {
-    const result = generateNightCareIntelligence(
-      [makeCheck()],
-      [makeIncident()],
-      [makeStaffing()],
-      [makeEnvironment()],
-      1, HOME_ID, PERIOD_START, PERIOD_END,
-    );
-    expect(result.overallScore).toBeGreaterThan(0);
-    expect(result.monitoringQuality.totalChecks).toBe(1);
-    expect(result.incidentManagement.totalIncidents).toBe(1);
-  });
-
-  it("handles many checks across many nights", () => {
-    const checks: NightCheck[] = [];
-    for (let d = 1; d <= 30; d++) {
-      const date = `2025-03-${String(d).padStart(2, "0")}`;
-      checks.push(...makeChecksForChild("child-alex", "Alex", date, 4, { notes: "Night check." }));
-    }
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.monitoringQuality.totalChecks).toBe(120);
-    expect(result.monitoringQuality.averageChecksPerChild).toBe(4);
-  });
-
-  it("preserves homeId, periodStart, periodEnd in result", () => {
-    const result = generateNightCareIntelligence([], [], [], [], 1, "my-home", "2025-01-01", "2025-12-31");
+  it("preserves homeId, periodStart, periodEnd", () => {
+    const result = generateNightCareIntelligence([], null, [], "my-home", "2026-01-01", "2026-12-31");
     expect(result.homeId).toBe("my-home");
-    expect(result.periodStart).toBe("2025-01-01");
-    expect(result.periodEnd).toBe("2025-12-31");
+    expect(result.periodStart).toBe("2026-01-01");
+    expect(result.periodEnd).toBe("2026-12-31");
   });
 
-  // -- Strength: incident management effectiveness --
+  it("all four zero scores produce 0 overall", () => {
+    const result = generateNightCareIntelligence([], null, [], HOME_ID, START, END);
+    expect(result.overallScore).toBe(0);
+  });
 
-  it("identifies strength when incident managed effectively rate >= 90%", () => {
-    const incidents = Array.from({ length: 10 }, (_, i) =>
-      makeIncident({ id: `i-${i}`, managedEffectively: true, severity: "low" }),
+  it("all four perfect scores produce 100 overall with diverse categories", () => {
+    const categories = [
+      "night_check", "sleep_monitoring", "night_incident", "waking_night_support",
+      "night_medication", "bedtime_routine", "night_handover", "disturbance_response",
+    ] as const;
+    const records = categories.map((category, i) =>
+      makeRecord({ id: `r${i}`, category }),
     );
-    const result = generateNightCareIntelligence([], incidents, [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("managed effectively"))).toBe(true);
-  });
-
-  it("identifies strength when de-escalation rate >= 90%", () => {
-    const incidents = Array.from({ length: 10 }, (_, i) =>
-      makeIncident({ id: `i-${i}`, deEscalationUsed: true, severity: "low" }),
-    );
-    const result = generateNightCareIntelligence([], incidents, [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("De-escalation"))).toBe(true);
-  });
-
-  it("identifies strength for thorough documentation >= 90%", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-      checkType: "welfare_check",
-      notes: "Thorough observation with detailed commentary.",
-    });
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("documentation is thorough"))).toBe(true);
-  });
-
-  it("identifies strength for door-open check rate >= 90%", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-      doorOpenCheck: true,
-      notes: "Check done.",
-    });
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("Door-open checks"))).toBe(true);
-  });
-
-  // -- Actions: incident recording and check frequency --
-
-  it("generates HIGH action for low check frequency", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 2, { notes: "Brief." });
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("HIGH") && a.includes("night check frequency"))).toBe(true);
-  });
-
-  it("generates HIGH action for poor incident recording timeliness", () => {
-    const incidents = [
-      makeIncident({ id: "1", recordedTimely: false }),
-      makeIncident({ id: "2", recordedTimely: false }),
-    ];
-    const result = generateNightCareIntelligence([], incidents, [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("HIGH") && a.includes("timely recording"))).toBe(true);
-  });
-
-  it("generates MEDIUM action for poor documentation quality", () => {
-    const checks = [
-      makeCheck({ id: "1", notes: "" }),
-      makeCheck({ id: "2", notes: "" }),
-      makeCheck({ id: "3", notes: "One note." }),
-    ];
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.startsWith("MEDIUM") && a.includes("recording meaningful"))).toBe(true);
-  });
-
-  // -- Areas for improvement: incident management --
-
-  it("flags area when incident management effectiveness is low", () => {
-    const incidents = [
-      makeIncident({ id: "1", managedEffectively: false }),
-      makeIncident({ id: "2", managedEffectively: false }),
-    ];
-    const result = generateNightCareIntelligence([], incidents, [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("incident management effectiveness"))).toBe(true);
-  });
-
-  it("flags area when incident recording timeliness is low", () => {
-    const incidents = [
-      makeIncident({ id: "1", recordedTimely: false }),
-      makeIncident({ id: "2", recordedTimely: false }),
-    ];
-    const result = generateNightCareIntelligence([], incidents, [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("not consistently recorded"))).toBe(true);
-  });
-
-  // -- Oak House Demo Data Integration --
-
-  it("produces outstanding result with full Oak House demo data", () => {
-    // Oak House children: Alex (14), Jordan (13), Morgan (15)
-    // Staff: Sarah Johnson, Tom Richards, Lisa Williams
-    const checks = [
-      ...makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-        staffId: "staff-sarah-johnson",
-        checkType: "welfare_check",
-        notes: "Alex sleeping peacefully, room temperature comfortable.",
-      }),
-      ...makeChecksForChild("child-jordan", "Jordan", "2025-03-10", 5, {
-        staffId: "staff-tom-richards",
-        checkType: "welfare_check",
-        notes: "Jordan settled, no concerns noted.",
-      }),
-      ...makeChecksForChild("child-morgan", "Morgan", "2025-03-10", 5, {
-        staffId: "staff-lisa-williams",
-        checkType: "welfare_check",
-        notes: "Morgan sleeping well, environment calm.",
-      }),
-    ];
-
-    const staffing = [
-      makeStaffing({
-        id: "s-1",
-        date: "2025-03-10",
-        plannedStaff: 3,
-        actualStaff: 3,
-        staffingLevel: "adequate",
-        wakingNightStaff: 2,
-        sleepingInStaff: 1,
-        handoverCompleted: true,
-        handoverQuality: "thorough",
-      }),
-    ];
-
-    const envs = [
-      makeEnvironment({ id: "e-alex", childId: "child-alex" }),
-      makeEnvironment({ id: "e-jordan", childId: "child-jordan" }),
-      makeEnvironment({ id: "e-morgan", childId: "child-morgan" }),
-    ];
-
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 3, HOME_ID, PERIOD_START, PERIOD_END);
-
-    expect(result.homeId).toBe("oak-house");
-    expect(result.rating).toBe("outstanding");
-    expect(result.overallScore).toBeGreaterThanOrEqual(80);
-    expect(result.monitoringQuality.totalChecks).toBe(15);
-    expect(result.monitoringQuality.averageChecksPerChild).toBe(5);
-    expect(result.monitoringQuality.welfareChecksIncluded).toBe(true);
-    expect(result.monitoringQuality.documentationQuality).toBe(100);
-    expect(result.sleepEnvironment.totalAssessments).toBe(3);
-    expect(result.incidentManagement.totalIncidents).toBe(0);
-    expect(result.staffingAdequacy.totalNights).toBe(1);
-    expect(result.strengths.length).toBeGreaterThan(3);
-    expect(result.actions.length).toBe(0);
-  });
-
-  it("produces result with Oak House children across multiple nights", () => {
-    const dates = ["2025-03-10", "2025-03-11", "2025-03-12"];
-    const checks: NightCheck[] = [];
-    for (const date of dates) {
-      checks.push(...makeChecksForChild("child-alex", "Alex", date, 4, { notes: "All well.", staffId: "staff-sarah-johnson" }));
-      checks.push(...makeChecksForChild("child-jordan", "Jordan", date, 4, { notes: "Settled.", staffId: "staff-tom-richards" }));
-      checks.push(...makeChecksForChild("child-morgan", "Morgan", date, 4, { notes: "Sleeping.", staffId: "staff-lisa-williams" }));
-    }
-    // Add welfare checks
-    checks[0] = { ...checks[0], checkType: "welfare_check" };
-    checks[4] = { ...checks[4], checkType: "welfare_check" };
-    checks[8] = { ...checks[8], checkType: "welfare_check" };
-
-    const staffing = dates.map((date, i) =>
-      makeStaffing({ id: `s-${i}`, date, staffingLevel: "adequate", handoverQuality: "thorough" }),
-    );
-
-    const envs = [
-      makeEnvironment({ id: "e-alex", childId: "child-alex" }),
-      makeEnvironment({ id: "e-jordan", childId: "child-jordan" }),
-      makeEnvironment({ id: "e-morgan", childId: "child-morgan" }),
-    ];
-
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 3, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.monitoringQuality.totalChecks).toBe(36);
-    expect(result.monitoringQuality.averageChecksPerChild).toBe(4);
-    expect(result.staffingAdequacy.totalNights).toBe(3);
-    expect(result.rating).toBe("outstanding");
-  });
-
-  it("handles Oak House scenario with one incident for Jordan", () => {
-    const checks = [
-      ...makeChecksForChild("child-alex", "Alex", "2025-03-10", 4, { notes: "Sleeping.", staffId: "staff-sarah-johnson" }),
-      ...makeChecksForChild("child-jordan", "Jordan", "2025-03-10", 4, { notes: "Checked.", staffId: "staff-tom-richards" }),
-      ...makeChecksForChild("child-morgan", "Morgan", "2025-03-10", 4, { notes: "Well.", staffId: "staff-lisa-williams" }),
-    ];
-    checks[0] = { ...checks[0], checkType: "welfare_check" };
-
-    const incidents = [
-      makeIncident({
-        id: "ni-jordan-1",
-        childId: "child-jordan",
-        date: "2025-03-10",
-        time: "02:15",
-        incidentType: "night_terror",
-        severity: "medium",
-        managedEffectively: true,
-        supportProvided: true,
-        managerNotified: true,
-        recordedTimely: true,
-        deEscalationUsed: true,
-      }),
-    ];
-
-    const staffing = [makeStaffing()];
-    const envs = [
-      makeEnvironment({ id: "e-alex", childId: "child-alex" }),
-      makeEnvironment({ id: "e-jordan", childId: "child-jordan" }),
-      makeEnvironment({ id: "e-morgan", childId: "child-morgan" }),
-    ];
-
-    const result = generateNightCareIntelligence(checks, incidents, staffing, envs, 3, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.incidentManagement.totalIncidents).toBe(1);
-    expect(result.incidentManagement.managedEffectivelyRate).toBe(100);
-    expect(result.incidentManagement.criticalIncidents).toBe(0);
-    expect(result.overallScore).toBeGreaterThanOrEqual(80);
-  });
-
-  // -- All Critical Incidents Edge Case --
-
-  it("handles scenario where all incidents are critical", () => {
-    const incidents = Array.from({ length: 5 }, (_, i) =>
-      makeIncident({
-        id: `critical-${i}`,
-        severity: "critical",
-        managedEffectively: false,
-        supportProvided: false,
-        managerNotified: false,
-        recordedTimely: false,
-        deEscalationUsed: false,
-      }),
-    );
-    const result = generateNightCareIntelligence([], incidents, [], [], 3, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.incidentManagement.criticalIncidents).toBe(5);
-    expect(result.incidentManagement.overallScore).toBe(0);
-    expect(result.areasForImprovement.some((a) => a.includes("5 critical incident(s)"))).toBe(true);
-    expect(result.actions.some((a) => a.includes("critical"))).toBe(true);
-  });
-
-  // -- Poor Sleep Environments Edge Case --
-
-  it("handles scenario with all-poor sleep environments", () => {
-    const envs = Array.from({ length: 3 }, (_, i) =>
-      makeEnvironment({
-        id: `se-bad-${i}`,
-        childId: `child-${i}`,
-        roomTemperatureAppropriate: false,
-        beddingClean: false,
-        noiseLevel: "noisy",
-        lightingAppropriate: false,
-        personalBelongingsAccessible: false,
-        safetyChecked: false,
-      }),
-    );
-    const result = generateNightCareIntelligence([], [], [], envs, 3, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.sleepEnvironment.overallScore).toBe(0);
-    expect(result.sleepEnvironment.temperatureAppropriateRate).toBe(0);
-    expect(result.sleepEnvironment.beddingCleanRate).toBe(0);
-    expect(result.sleepEnvironment.noiseAcceptableRate).toBe(0);
-    expect(result.sleepEnvironment.lightingAppropriateRate).toBe(0);
-    expect(result.sleepEnvironment.safetyCheckedRate).toBe(0);
-    expect(result.sleepEnvironment.personalBelongingsRate).toBe(0);
-    expect(result.areasForImprovement.some((a) => a.includes("temperatures"))).toBe(true);
-    expect(result.areasForImprovement.some((a) => a.includes("Noise"))).toBe(true);
-  });
-
-  // -- Inadequate Staffing Edge Case --
-
-  it("handles scenario with all lone working nights", () => {
-    const staffing = Array.from({ length: 7 }, (_, i) =>
-      makeStaffing({
-        id: `s-${i}`,
-        staffingLevel: "lone_working",
-        handoverCompleted: false,
-        handoverQuality: "missed",
-        agencyStaffUsed: true,
-        wakingNightStaff: 0,
-        sleepingInStaff: 0,
-      }),
-    );
-    const result = generateNightCareIntelligence([], [], staffing, [], 3, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.staffingAdequacy.loneWorkingNights).toBe(7);
-    expect(result.staffingAdequacy.adequateStaffingRate).toBe(0);
-    expect(result.staffingAdequacy.handoverCompletedRate).toBe(0);
-    expect(result.staffingAdequacy.agencyOnlyNights).toBe(7);
-    expect(result.staffingAdequacy.overallScore).toBe(0);
-    expect(result.actions.some((a) => a.includes("lone working"))).toBe(true);
-    expect(result.actions.some((a) => a.includes("agency"))).toBe(true);
-  });
-
-  // -- Boundary Conditions for Rating Thresholds --
-
-  it("rating boundary: score exactly 80 yields outstanding", () => {
-    // We need to engineer a score of exactly 80
-    // monitoring=25, incidents=25, staffing=25, environment=5 => 80
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-      checkType: "welfare_check",
-      notes: "Good observation.",
-    });
-    const staffing = [makeStaffing()];
-
-    // Environment with partial scores to get exactly ~5 out of 25
-    // temp: false => 0/6, bedding: true => 5/5, noise: quiet => 4/4, lighting: false => 0/4
-    // safety: false => 0/3, belongings: false => 0/3 = 9/25
-    // Let's try: environment with partial good to get around 5
-    // temp: false => 0, bedding: false => 0, noise: noisy => 0, lighting: true => 4, safety: false => 0, belongings: true => 3 = 7
-    // Need a score of 80 - 75 = 5 from environment
-    // temp: false => 0, bedding: true => 5, noise: noisy => 0, lighting: false => 0, safety: false => 0, belongings: false => 0 = 5
-    const envs = [
-      makeEnvironment({
-        roomTemperatureAppropriate: false,
-        beddingClean: true,
-        noiseLevel: "noisy",
-        lightingAppropriate: false,
-        personalBelongingsAccessible: false,
-        safetyChecked: false,
-      }),
-    ];
-
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    // The exact score depends on monitoring sub-scores, but verify it's in the right ballpark
-    expect(result.overallScore).toBeGreaterThanOrEqual(75);
-    if (result.overallScore >= 80) {
-      expect(result.rating).toBe("outstanding");
-    }
-  });
-
-  it("rating boundary: score of 79.9 yields good", () => {
-    // A score just below 80 should be "good"
-    // We verify the rating logic: ratingFromScore(79) => "good"
-    // We can test by getting a score in the good range
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 3, {
-      notes: "Note.",
-      doorOpenCheck: false,
-      temperatureChecked: false,
-    });
-    const staffing = [makeStaffing()];
-    const envs = [makeEnvironment({
-      roomTemperatureAppropriate: false,
-      beddingClean: true,
-      noiseLevel: "quiet",
-      lightingAppropriate: true,
-      personalBelongingsAccessible: true,
-      safetyChecked: true,
-    })];
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    if (result.overallScore >= 60 && result.overallScore < 80) {
-      expect(result.rating).toBe("good");
-    }
-  });
-
-  it("rating boundary: score of 59.9 yields requires_improvement", () => {
-    // Ensure scores just below 60 give requires_improvement
-    const checks = [makeCheck({ notes: "", doorOpenCheck: false, temperatureChecked: false })];
-    const staffing = [makeStaffing({
-      staffingLevel: "minimum",
-      handoverQuality: "adequate",
-    })];
-    const envs = [makeEnvironment({
-      roomTemperatureAppropriate: false,
-      beddingClean: false,
-      noiseLevel: "noisy",
-      lightingAppropriate: false,
-      personalBelongingsAccessible: true,
-      safetyChecked: true,
-    })];
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    if (result.overallScore >= 40 && result.overallScore < 60) {
-      expect(result.rating).toBe("requires_improvement");
-    }
-  });
-
-  it("rating boundary: score of 39.9 yields inadequate", () => {
-    // Craft a scenario that lands below 40
-    const checks = [makeCheck({ notes: "", doorOpenCheck: false, temperatureChecked: false })];
-    const incidents = [
-      makeIncident({
-        managedEffectively: false,
-        supportProvided: false,
-        managerNotified: false,
-        recordedTimely: false,
-        deEscalationUsed: false,
-        severity: "critical",
-      }),
-    ];
-    const staffing = [makeStaffing({
-      staffingLevel: "below_minimum",
-      handoverCompleted: false,
-      handoverQuality: "missed",
-    })];
-    const envs = [makeEnvironment({
-      roomTemperatureAppropriate: false,
-      beddingClean: false,
-      noiseLevel: "noisy",
-      lightingAppropriate: false,
-      personalBelongingsAccessible: false,
-      safetyChecked: false,
-    })];
-    const result = generateNightCareIntelligence(checks, incidents, staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.overallScore).toBeLessThan(40);
-    expect(result.rating).toBe("inadequate");
-  });
-
-  // -- Mixed Scenarios --
-
-  it("handles a night with concern identified and follow-up in intelligence output", () => {
-    const checks = [
-      makeCheck({
-        id: "concern-1",
-        childId: "child-alex",
-        childName: "Alex",
-        date: "2025-03-10",
-        time: "01:00",
-        outcome: "concern_identified",
-        notes: "Alex appeared distressed.",
-        staffId: "staff-sarah-johnson",
-      }),
-      makeCheck({
-        id: "followup-1",
-        childId: "child-alex",
-        childName: "Alex",
-        date: "2025-03-10",
-        time: "01:30",
-        outcome: "child_awake_settled",
-        notes: "Alex calmed after reassurance.",
-        staffId: "staff-sarah-johnson",
-      }),
-      makeCheck({
-        id: "check-3",
-        childId: "child-alex",
-        childName: "Alex",
-        date: "2025-03-10",
-        time: "03:00",
-        outcome: "child_sleeping",
-        notes: "Sleeping well now.",
-        staffId: "staff-tom-richards",
-      }),
-      makeCheck({
-        id: "check-4",
-        childId: "child-alex",
-        childName: "Alex",
-        date: "2025-03-10",
-        time: "05:00",
-        outcome: "child_sleeping",
-        notes: "Still asleep.",
-        staffId: "staff-lisa-williams",
-        checkType: "welfare_check",
-      }),
-    ];
-    const result = generateNightCareIntelligence(checks, [], [makeStaffing()], [makeEnvironment()], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.monitoringQuality.concernFollowUpRate).toBe(100);
-    expect(result.monitoringQuality.averageChecksPerChild).toBe(4);
-  });
-
-  it("handles zero totalChildren without error", () => {
-    const checks = [makeCheck()];
-    const result = generateNightCareIntelligence(checks, [], [], [], 0, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.monitoringQuality.totalChecks).toBe(1);
-    expect(typeof result.overallScore).toBe("number");
-  });
-
-  it("handles large totalChildren with few checks", () => {
-    const checks = [makeCheck()];
-    const result = generateNightCareIntelligence(checks, [], [], [], 100, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.monitoringQuality.totalChecks).toBe(1);
-  });
-
-  it("does not include strength for managed effectively when rate < 90%", () => {
-    const incidents = [
-      makeIncident({ id: "1", managedEffectively: true }),
-      makeIncident({ id: "2", managedEffectively: false }),
-    ];
-    const result = generateNightCareIntelligence([], incidents, [], [], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("managed effectively"))).toBe(false);
-  });
-
-  it("does not include strength for de-escalation when rate < 90%", () => {
-    const incidents = [
-      makeIncident({ id: "1", deEscalationUsed: true }),
-      makeIncident({ id: "2", deEscalationUsed: false }),
-    ];
-    const result = generateNightCareIntelligence([], incidents, [], [], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.strengths.some((s) => s.includes("De-escalation"))).toBe(false);
-  });
-
-  it("does not flag area for low check frequency when checks >= 3 per child", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 3, { notes: "Good." });
-    const result = generateNightCareIntelligence(checks, [], [], [], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.areasForImprovement.some((a) => a.includes("frequency is below"))).toBe(false);
-  });
-
-  it("does not generate any action for staffing when no staffing data", () => {
-    const result = generateNightCareIntelligence([], [], [], [], 1, HOME_ID, PERIOD_START, PERIOD_END);
-    expect(result.actions.some((a) => a.includes("staffing levels"))).toBe(false);
-  });
-});
-
-// ==============================================================================
-// Scoring Precision Tests
-// ==============================================================================
-
-describe("Scoring Precision", () => {
-  it("monitoring score for perfect single-child single-night is 25", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-      checkType: "welfare_check",
-      notes: "Detailed observation.",
-      doorOpenCheck: true,
-      temperatureChecked: true,
-    });
-    const result = evaluateMonitoringQuality(checks, 1);
-    expect(result.overallScore).toBe(25);
-  });
-
-  it("incident score for single perfect incident is 25", () => {
-    const incidents = [
-      makeIncident({
-        managedEffectively: true,
-        supportProvided: true,
-        managerNotified: true,
-        recordedTimely: true,
-        deEscalationUsed: true,
-        severity: "low",
-      }),
-    ];
-    const result = evaluateIncidentManagement(incidents);
-    expect(result.overallScore).toBe(25);
-  });
-
-  it("staffing score for perfect single night is 25", () => {
-    const staffing = [makeStaffing()];
-    const result = evaluateStaffingAdequacy(staffing);
-    expect(result.overallScore).toBe(25);
-  });
-
-  it("environment score for perfect single assessment is 25", () => {
-    const envs = [makeEnvironment()];
-    const result = evaluateSleepEnvironment(envs);
-    expect(result.overallScore).toBe(25);
-  });
-
-  it("all four perfect scores combine to 100", () => {
-    const checks = makeChecksForChild("child-alex", "Alex", "2025-03-10", 5, {
-      checkType: "welfare_check",
-      notes: "Detailed observation.",
-      doorOpenCheck: true,
-      temperatureChecked: true,
-    });
-    const staffing = [makeStaffing()];
-    const envs = [makeEnvironment()];
-
-    const result = generateNightCareIntelligence(checks, [], staffing, envs, 1, HOME_ID, PERIOD_START, PERIOD_END);
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
     expect(result.overallScore).toBe(100);
     expect(result.rating).toBe("outstanding");
   });
 
-  it("all four zero scores combine to 25 (incident default)", () => {
-    // Empty checks, no incidents (25), empty staffing, empty environments
-    const result = generateNightCareIntelligence([], [], [], [], 0, HOME_ID, PERIOD_START, PERIOD_END);
-    // monitoring=0, incidents=25 (no incidents = full marks), staffing=0, environment=0
-    expect(result.overallScore).toBe(25);
+  // -- Oak House Demo Integration --
+
+  it("produces outstanding result with full Oak House demo data", () => {
+    const categories = [
+      "night_check", "sleep_monitoring", "night_incident", "waking_night_support",
+      "night_medication", "bedtime_routine", "night_handover", "disturbance_response",
+    ] as const;
+
+    const records: NightCareRecord[] = [];
+    const children = [
+      { id: "child-alex", name: "Alex" },
+      { id: "child-jordan", name: "Jordan" },
+      { id: "child-morgan", name: "Morgan" },
+    ];
+
+    let idx = 0;
+    for (const child of children) {
+      for (let i = 0; i < 4; i++) {
+        records.push(makeRecord({
+          id: `rec-${idx++}`,
+          childId: child.id,
+          childName: child.name,
+          category: categories[i % categories.length],
+        }));
+      }
+    }
+
+    const training = [
+      makeTraining({ id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson" }),
+      makeTraining({ id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards" }),
+      makeTraining({ id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams" }),
+      makeTraining({ id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville" }),
+    ];
+
+    const result = generateNightCareIntelligence(records, makePolicy(), training, HOME_ID, START, END);
+    expect(result.homeId).toBe("oak-house");
+    expect(result.rating).toBe("outstanding");
+    expect(result.overallScore).toBeGreaterThanOrEqual(80);
+    expect(result.childProfiles).toHaveLength(3);
+    expect(result.strengths.length).toBeGreaterThan(0);
+    expect(result.regulatoryLinks).toHaveLength(7);
   });
 
-  it("monitoring frequency scoring thresholds", () => {
-    // 1 check => +2, 2 checks => +4, 3 checks => +6, 4+ => +8
-    const oneCheck = evaluateMonitoringQuality([makeCheck({ notes: "" })], 1);
-    const twoChecks = evaluateMonitoringQuality(
-      makeChecksForChild("child-alex", "Alex", "2025-03-10", 2, { notes: "" }),
-      1,
+  it("produces result with mixed quality data", () => {
+    const records = [
+      makeRecord({ id: "r1", childId: "child-alex", childName: "Alex", nightCheckCompleted: true, sleepPatternRecorded: true }),
+      makeRecord({ id: "r2", childId: "child-alex", childName: "Alex", nightCheckCompleted: false, sleepPatternRecorded: false }),
+      makeRecord({ id: "r3", childId: "child-jordan", childName: "Jordan", nightCheckCompleted: true, sleepPatternRecorded: true }),
+      makeRecord({ id: "r4", childId: "child-jordan", childName: "Jordan", nightCheckCompleted: true, sleepPatternRecorded: false }),
+    ];
+
+    const result = generateNightCareIntelligence(
+      records,
+      makePolicy({ nightMedicationProtocol: false }),
+      [makeTraining({ nightMedicationHandling: false })],
+      HOME_ID, START, END,
     );
-    const threeChecks = evaluateMonitoringQuality(
-      makeChecksForChild("child-alex", "Alex", "2025-03-10", 3, { notes: "" }),
-      1,
+    expect(result.overallScore).toBeGreaterThan(0);
+    expect(result.overallScore).toBeLessThan(100);
+    expect(result.childProfiles).toHaveLength(2);
+  });
+
+  it("handles all-bad scenario", () => {
+    const records = [
+      makeRecord({
+        nightCheckCompleted: false,
+        sleepPatternRecorded: false,
+        incidentHandledAppropriately: false,
+        childComfortChecked: false,
+        documentationComplete: false,
+        timelyRecording: false,
+      }),
+    ];
+    const result = generateNightCareIntelligence(records, null, [], HOME_ID, START, END);
+    expect(result.overallScore).toBeLessThan(5);
+    expect(result.rating).toBe("inadequate");
+    expect(result.areasForImprovement.length).toBeGreaterThan(0);
+    expect(result.actions.length).toBeGreaterThan(0);
+  });
+
+  it("does not flag area when nightCheck rate is above 80", () => {
+    const records = [
+      makeRecord({ id: "r1", nightCheckCompleted: true }),
+      makeRecord({ id: "r2", nightCheckCompleted: true }),
+      makeRecord({ id: "r3", nightCheckCompleted: true }),
+      makeRecord({ id: "r4", nightCheckCompleted: true }),
+      makeRecord({ id: "r5", nightCheckCompleted: true }),
+    ];
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.areasForImprovement.some((a) => a.includes("Night check completion rate"))).toBe(false);
+  });
+
+  it("does not flag staff training area when all trained", () => {
+    const result = generateNightCareIntelligence(
+      [makeRecord()],
+      makePolicy(),
+      [makeTraining()],
+      HOME_ID, START, END,
     );
-    const fourChecks = evaluateMonitoringQuality(
-      makeChecksForChild("child-alex", "Alex", "2025-03-10", 4, { notes: "" }),
-      1,
-    );
-
-    // Each tier gives more points for frequency
-    expect(fourChecks.overallScore).toBeGreaterThan(threeChecks.overallScore);
-    expect(threeChecks.overallScore).toBeGreaterThan(twoChecks.overallScore);
-    expect(twoChecks.overallScore).toBeGreaterThan(oneCheck.overallScore);
+    expect(result.areasForImprovement.some((a) => a.includes("night care competency"))).toBe(false);
   });
 
-  it("incident score decreases with worse management rates", () => {
-    const perfect = evaluateIncidentManagement([makeIncident({ severity: "low" })]);
-    const partial = evaluateIncidentManagement([
-      makeIncident({ managedEffectively: false, severity: "low" }),
-    ]);
-    const terrible = evaluateIncidentManagement([
-      makeIncident({
-        managedEffectively: false,
-        supportProvided: false,
-        managerNotified: false,
-        recordedTimely: false,
-        deEscalationUsed: false,
-        severity: "critical",
-      }),
-    ]);
-
-    expect(perfect.overallScore).toBeGreaterThan(partial.overallScore);
-    expect(partial.overallScore).toBeGreaterThan(terrible.overallScore);
-  });
-
-  it("staffing score decreases with worse staffing conditions", () => {
-    const perfect = evaluateStaffingAdequacy([makeStaffing()]);
-    const partial = evaluateStaffingAdequacy([
-      makeStaffing({ staffingLevel: "minimum", handoverQuality: "brief" }),
-    ]);
-    const terrible = evaluateStaffingAdequacy([
-      makeStaffing({
-        staffingLevel: "lone_working",
-        handoverCompleted: false,
-        handoverQuality: "missed",
-        agencyStaffUsed: true,
-        wakingNightStaff: 0,
-        sleepingInStaff: 0,
-      }),
-    ]);
-
-    expect(perfect.overallScore).toBeGreaterThan(partial.overallScore);
-    expect(partial.overallScore).toBeGreaterThan(terrible.overallScore);
-  });
-
-  it("environment score decreases with worse conditions", () => {
-    const perfect = evaluateSleepEnvironment([makeEnvironment()]);
-    const partial = evaluateSleepEnvironment([
-      makeEnvironment({ roomTemperatureAppropriate: false, beddingClean: false }),
-    ]);
-    const terrible = evaluateSleepEnvironment([
-      makeEnvironment({
-        roomTemperatureAppropriate: false,
-        beddingClean: false,
-        noiseLevel: "noisy",
-        lightingAppropriate: false,
-        personalBelongingsAccessible: false,
-        safetyChecked: false,
-      }),
-    ]);
-
-    expect(perfect.overallScore).toBeGreaterThan(partial.overallScore);
-    expect(partial.overallScore).toBeGreaterThan(terrible.overallScore);
+  it("handles records from multiple dates", () => {
+    const records = [
+      makeRecord({ id: "r1", date: "2026-05-01" }),
+      makeRecord({ id: "r2", date: "2026-05-02" }),
+      makeRecord({ id: "r3", date: "2026-05-03" }),
+    ];
+    const result = generateNightCareIntelligence(records, makePolicy(), [makeTraining()], HOME_ID, START, END);
+    expect(result.quality.totalRecords).toBe(3);
   });
 });

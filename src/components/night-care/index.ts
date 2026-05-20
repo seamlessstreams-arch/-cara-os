@@ -1,1 +1,1 @@
-export { NightCareDashboardWidget } from "./NightCareDashboardWidget";
+export { default as NightCareDashboardWidget } from "./NightCareDashboardWidget";

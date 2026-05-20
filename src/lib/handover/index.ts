@@ -1,27 +1,32 @@
+// ══════════════════════════════════════════════════════════════════════════════
+// Cornerstone Handover Intelligence — Public API
+// ══════════════════════════════════════════════════════════════════════════════
+
 export {
-  evaluateHandoverCompleteness,
+  pct,
+  getRating,
+  getHandoverCategoryLabel,
+  getHandoverOutcomeLabel,
+  getRatingLabel,
   evaluateHandoverQuality,
-  evaluateInformationTransfer,
-  evaluateContinuityOfCare,
-  buildShiftProfiles,
+  evaluateHandoverCompliance,
+  evaluateHandoverPolicy,
+  evaluateStaffHandoverReadiness,
+  buildChildHandoverProfiles,
   generateHandoverIntelligence,
-  getShiftLabel,
-  getItemCategoryLabel,
 } from "./handover-engine";
 
 export type {
-  ShiftType,
-  HandoverStatus,
-  InformationPriority,
-  ContinuityRating,
-  ItemCategory,
-  HandoverItem,
+  HandoverCategory,
+  HandoverOutcome,
+  Rating,
   HandoverRecord,
-  HandoverExpectation,
-  CompletenessResult,
-  QualityResult,
-  InformationTransferResult,
-  ContinuityResult,
-  ShiftProfile,
-  HandoverIntelligenceResult,
+  HandoverPolicy,
+  StaffHandoverTraining,
+  HandoverQualityResult,
+  HandoverComplianceResult,
+  HandoverPolicyResult,
+  StaffHandoverReadinessResult,
+  ChildHandoverProfile,
+  HandoverIntelligence,
 } from "./handover-engine";

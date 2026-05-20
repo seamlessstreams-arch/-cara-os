@@ -1,332 +1,268 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Risk Assessment & Management Engine — Tests
-// ══════════════════════════════════════════════════════════════════════════════
-
 import { describe, it, expect } from "vitest";
 import {
-  evaluateChildRiskCompliance,
-  calculateHomeRiskMetrics,
-  getRiskCategoryLabel,
-  getRiskLevelLabel,
+  pct, getRating, getRiskAssessmentCategoryLabel, getRiskAssessmentOutcomeLabel, getRatingLabel,
+  evaluateRiskAssessmentQuality, evaluateRiskAssessmentCompliance, evaluateRiskAssessmentPolicy,
+  evaluateStaffRiskAssessmentReadiness, buildChildRiskAssessmentProfiles, generateRiskAssessmentIntelligence,
 } from "../risk-assessment-engine";
-import type {
-  ChildRiskProfile,
-  RiskAssessment,
-  RiskIncident,
-  ControlMeasure,
-} from "../risk-assessment-engine";
+import type { RiskAssessmentRecord, RiskAssessmentPolicy, StaffRiskAssessmentTraining } from "../risk-assessment-engine";
 
-// ── Fixtures ──────────────────────────────────────────────────────────────
-
-const NOW = "2026-05-17T12:00:00Z";
-
-function makeMeasures(): ControlMeasure[] {
-  return [
-    { id: "cm-1", description: "1:1 supervision during triggers", status: "active", implementedDate: "2026-03-01T10:00:00Z", lastReviewedDate: "2026-05-01T10:00:00Z", responsiblePerson: "staff-rm-01", effectiveness: "effective" },
-    { id: "cm-2", description: "Daily check-in with keyworker", status: "active", implementedDate: "2026-03-01T10:00:00Z", lastReviewedDate: "2026-05-01T10:00:00Z", responsiblePerson: "staff-sw-01", effectiveness: "effective" },
-  ];
+function makeRecord(overrides: Partial<RiskAssessmentRecord> = {}): RiskAssessmentRecord {
+  return { id: "ra-001", homeId: "home-oak", date: "2026-05-01", childId: "child-alex", childName: "Alex", category: "initial_assessment", outcome: "risk_reduced", controlMeasuresIdentified: true, childViewIncluded: true, reviewDateSet: true, multiAgencyInput: true, documentationComplete: true, timelyRecording: true, ...overrides };
+}
+function makeFullPolicy(): RiskAssessmentPolicy {
+  return { riskAssessmentPolicy: true, dynamicRiskUpdatePolicy: true, positiveRiskTakingPolicy: true, incidentTriggeredReviewPolicy: true, communityRiskPolicy: true, environmentalRiskPolicy: true, multiAgencyRiskSharingPolicy: true };
+}
+function makeFullStaff(): StaffRiskAssessmentTraining {
+  return { staffId: "staff-sarah", riskAssessmentSkills: true, dynamicRiskManagement: true, positiveRiskTaking: true, incidentRiskAnalysis: true, childViewInRisk: true, multiAgencyRiskSharing: true };
 }
 
-function makeAssessments(): RiskAssessment[] {
-  return [
-    {
-      id: "ra-1",
-      category: "self_harm",
-      currentLevel: "medium",
-      previousLevel: "high",
-      dateAssessed: "2026-05-01T10:00:00Z",
-      nextReviewDate: "2026-06-01T10:00:00Z",
-      assessedBy: "staff-rm-01",
-      triggers: ["Conflict with peers", "Contact visits cancelled"],
-      controlMeasures: makeMeasures(),
-      contextualFactors: ["History of trauma", "Recent placement move"],
-      protectiveFactors: ["Strong keyworker relationship", "Engaged in therapy"],
-      escalationPlan: "Contact CAMHS duty, notify placing authority",
-      childAware: true,
-    },
-    {
-      id: "ra-2",
-      category: "missing",
-      currentLevel: "low",
-      dateAssessed: "2026-04-15T10:00:00Z",
-      nextReviewDate: "2026-05-15T10:00:00Z", // slightly overdue
-      assessedBy: "staff-rm-01",
-      triggers: ["Arguments in home"],
-      controlMeasures: [
-        { id: "cm-3", description: "Check-ins every 2 hours when upset", status: "active", implementedDate: "2026-04-15T10:00:00Z", lastReviewedDate: "2026-04-15T10:00:00Z", responsiblePerson: "staff-sw-02", effectiveness: "effective" },
-      ],
-      contextualFactors: ["Peer influence"],
-      protectiveFactors: ["Good school attendance"],
-      escalationPlan: "Missing protocol — notify police after 1 hour",
-      childAware: true,
-    },
-    {
-      id: "ra-3",
-      category: "substance_misuse",
-      currentLevel: "medium",
-      dateAssessed: "2026-04-20T10:00:00Z",
-      nextReviewDate: "2026-05-20T10:00:00Z",
-      assessedBy: "staff-sw-01",
-      triggers: ["Weekend unsupervised time", "Contact with previous peer group"],
-      controlMeasures: [
-        { id: "cm-4", description: "Random room checks", status: "active", implementedDate: "2026-04-20T10:00:00Z", lastReviewedDate: "2026-05-01T10:00:00Z", responsiblePerson: "staff-rm-01", effectiveness: "partially_effective" },
-      ],
-      contextualFactors: ["Previous cannabis use"],
-      protectiveFactors: ["Engaged in sports"],
-      escalationPlan: "Refer to substance misuse service",
-      childAware: true,
-    },
-  ];
-}
+// ── pct ───────────────────────────────────────────────────────────────────
+describe("pct", () => {
+  it("returns 0 when denominator is 0", () => expect(pct(5, 0)).toBe(0));
+  it("returns 100 for perfect ratio", () => expect(pct(10, 10)).toBe(100));
+  it("returns 50 for half", () => expect(pct(5, 10)).toBe(50));
+  it("rounds correctly", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
+  it("returns 0 for 0 numerator", () => expect(pct(0, 10)).toBe(0));
+});
 
-function makeIncidents(): RiskIncident[] {
-  return [
-    { id: "ri-1", date: "2026-05-10T20:00:00Z", category: "self_harm", severity: "medium", description: "Superficial scratching to arm", immediateActionTaken: "First aid, 1:1 support, CAMHS notified", riskReassessed: true, notifiedParties: ["CAMHS", "Social worker"], recordedBy: "staff-rm-01" },
-    { id: "ri-2", date: "2026-04-28T22:00:00Z", category: "missing", severity: "low", description: "Late return from school (20 mins)", immediateActionTaken: "Phone contact made, child returned safely", riskReassessed: false, notifiedParties: [], recordedBy: "staff-sw-02" },
-  ];
-}
+// ── getRating ─────────────────────────────────────────────────────────────
+describe("getRating", () => {
+  it("returns outstanding for >= 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(100)).toBe("outstanding"); });
+  it("returns good for >= 60", () => { expect(getRating(60)).toBe("good"); expect(getRating(79)).toBe("good"); });
+  it("returns requires_improvement for >= 40", () => { expect(getRating(40)).toBe("requires_improvement"); expect(getRating(59)).toBe("requires_improvement"); });
+  it("returns inadequate for < 40", () => { expect(getRating(39)).toBe("inadequate"); expect(getRating(0)).toBe("inadequate"); });
+});
 
-function makeProfile(overrides: Partial<ChildRiskProfile> = {}): ChildRiskProfile {
-  return {
-    childId: "child-alex",
-    childName: "Alex Turner",
-    homeId: "home-oak",
-    dateOfBirth: "2012-01-15T00:00:00Z",
-    riskAssessments: makeAssessments(),
-    incidents: makeIncidents(),
-    positiveRiskTaking: [
-      { id: "pr-1", date: "2026-05-05T14:00:00Z", description: "Independent bus journey to school", riskIdentified: "Travel alone", mitigationsInPlace: ["Phone check-in", "Known route", "Time window agreed"], outcome: "Successful — child confident", recordedBy: "staff-sw-01" },
-    ],
-    childInvolvedInPlanning: true,
-    multiAgencyMeetingDate: "2026-04-10T10:00:00Z",
-    lastOverallReviewDate: "2026-05-01T10:00:00Z",
-    ...overrides,
-  };
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// Child Risk Compliance Tests
-// ══════════════════════════════════════════════════════════════════════════════
-
-describe("evaluateChildRiskCompliance", () => {
-  it("evaluates well-managed child risk profile", () => {
-    const result = evaluateChildRiskCompliance(makeProfile(), NOW);
-    expect(result.isCompliant).toBe(true);
-    expect(result.issues).toHaveLength(0);
-    expect(result.overallRiskLevel).toBe("medium");
-    expect(result.riskManagementScore).toBeGreaterThan(70);
+// ── Label helpers ─────────────────────────────────────────────────────────
+describe("getRiskAssessmentCategoryLabel", () => {
+  it("maps initial_assessment", () => expect(getRiskAssessmentCategoryLabel("initial_assessment")).toBe("Initial Assessment"));
+  it("maps all 8 categories", () => {
+    const cats = ["initial_assessment", "review_assessment", "dynamic_risk_update", "positive_risk_taking", "incident_triggered", "placement_risk", "community_risk", "environmental_risk"] as const;
+    for (const c of cats) expect(getRiskAssessmentCategoryLabel(c)).toBeTruthy();
   });
-
-  it("identifies overall risk level as highest single risk", () => {
-    const profile = makeProfile({
-      riskAssessments: [
-        ...makeAssessments(),
-        { id: "ra-high", category: "cse", currentLevel: "high", dateAssessed: "2026-05-01T10:00:00Z", nextReviewDate: "2026-06-01T10:00:00Z", assessedBy: "staff-rm-01", triggers: [], controlMeasures: makeMeasures(), contextualFactors: [], protectiveFactors: [], escalationPlan: "Refer to CSE team", childAware: true },
-      ],
-    });
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.overallRiskLevel).toBe("high");
-    expect(result.activeHighRisks).toContain("cse");
+});
+describe("getRiskAssessmentOutcomeLabel", () => {
+  it("maps risk_reduced", () => expect(getRiskAssessmentOutcomeLabel("risk_reduced")).toBe("Risk Reduced"));
+  it("maps all 5 outcomes", () => {
+    const outcomes = ["risk_reduced", "risk_maintained", "risk_increased", "controls_adequate", "not_applicable"] as const;
+    for (const o of outcomes) expect(getRiskAssessmentOutcomeLabel(o)).toBeTruthy();
   });
+});
+describe("getRatingLabel", () => {
+  it("maps outstanding", () => expect(getRatingLabel("outstanding")).toBe("Outstanding"));
+  it("maps requires_improvement", () => expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement"));
+});
 
-  it("flags overdue risk assessments", () => {
-    const profile = makeProfile({
-      riskAssessments: [
-        { id: "ra-overdue", category: "aggression_to_others", currentLevel: "medium", dateAssessed: "2026-03-01T10:00:00Z", nextReviewDate: "2026-04-01T10:00:00Z", assessedBy: "staff-rm-01", triggers: [], controlMeasures: makeMeasures(), contextualFactors: [], protectiveFactors: [], escalationPlan: "Physical intervention as last resort", childAware: true },
-      ],
-    });
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.assessmentsOverdue.length).toBe(1);
-    expect(result.issues.some(i => i.includes("overdue for review"))).toBe(true);
+// ── Evaluator 1: Quality ─────────────────────────────────────────────────
+describe("evaluateRiskAssessmentQuality", () => {
+  it("scores 25 for perfect records", () => {
+    const records = Array.from({ length: 5 }, (_, i) => makeRecord({ id: `ra-${i}` }));
+    const result = evaluateRiskAssessmentQuality(records);
+    expect(result.overallScore).toBe(25);
+    expect(result.controlMeasuresIdentifiedRate).toBe(100);
   });
-
-  it("flags no risk assessments on file", () => {
-    const profile = makeProfile({ riskAssessments: [] });
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.issues.some(i => i.includes("No risk assessments on file"))).toBe(true);
+  it("scores 0 for empty records", () => {
+    const result = evaluateRiskAssessmentQuality([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.totalRecords).toBe(0);
   });
-
-  it("warns about overall review overdue", () => {
-    const profile = makeProfile({ lastOverallReviewDate: "2026-03-01T10:00:00Z" }); // >30 days
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.overallReviewOverdue).toBe(true);
-    expect(result.warnings.some(w => w.includes("Overall risk review overdue"))).toBe(true);
+  it("scores 0 for all-false quality flags", () => {
+    const records = Array.from({ length: 5 }, (_, i) => makeRecord({ id: `ra-${i}`, controlMeasuresIdentified: false, childViewIncluded: false, reviewDateSet: false, multiAgencyInput: false }));
+    expect(evaluateRiskAssessmentQuality(records).overallScore).toBe(0);
   });
-
-  it("counts incidents correctly", () => {
-    const result = evaluateChildRiskCompliance(makeProfile(), NOW);
-    expect(result.incidentsLast30Days).toBe(2); // both May 10 and Apr 28 within 30 days of May 17
-    expect(result.incidentsLast90Days).toBe(2);
+  it("weights controlMeasuresIdentified highest (7)", () => {
+    const records = Array.from({ length: 10 }, (_, i) => makeRecord({ id: `ra-${i}`, controlMeasuresIdentified: true, childViewIncluded: false, reviewDateSet: false, multiAgencyInput: false }));
+    expect(evaluateRiskAssessmentQuality(records).overallScore).toBe(7);
   });
-
-  it("warns about high incident frequency", () => {
-    const manyIncidents: RiskIncident[] = [
-      { id: "ri-1", date: "2026-05-16T10:00:00Z", category: "aggression_to_others", severity: "medium", description: "A", immediateActionTaken: "B", riskReassessed: true, notifiedParties: [], recordedBy: "staff-01" },
-      { id: "ri-2", date: "2026-05-14T10:00:00Z", category: "aggression_to_others", severity: "low", description: "A", immediateActionTaken: "B", riskReassessed: true, notifiedParties: [], recordedBy: "staff-01" },
-      { id: "ri-3", date: "2026-05-12T10:00:00Z", category: "self_harm", severity: "medium", description: "A", immediateActionTaken: "B", riskReassessed: true, notifiedParties: [], recordedBy: "staff-01" },
-    ];
-    const profile = makeProfile({ incidents: manyIncidents });
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.incidentsLast30Days).toBe(3);
-    expect(result.warnings.some(w => w.includes("3 incidents in last 30 days"))).toBe(true);
+  it("handles mixed data", () => {
+    const records = [makeRecord({ id: "ra-1" }), makeRecord({ id: "ra-2", childViewIncluded: false, multiAgencyInput: false })];
+    const result = evaluateRiskAssessmentQuality(records);
+    expect(result.overallScore).toBeGreaterThan(0);
+    expect(result.overallScore).toBeLessThan(25);
   });
-
-  it("flags unreassessed high-severity incidents", () => {
-    const incidents: RiskIncident[] = [
-      { id: "ri-1", date: "2026-05-15T10:00:00Z", category: "self_harm", severity: "high", description: "Serious self-harm", immediateActionTaken: "A&E", riskReassessed: false, notifiedParties: ["CAMHS"], recordedBy: "staff-01" },
-    ];
-    const profile = makeProfile({ incidents });
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.issues.some(i => i.includes("without subsequent risk reassessment"))).toBe(true);
-  });
-
-  it("warns about ineffective control measures", () => {
-    const assessments = makeAssessments();
-    assessments[0].controlMeasures[0].effectiveness = "ineffective";
-    const profile = makeProfile({ riskAssessments: assessments });
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.ineffectiveMeasures).toBe(1);
-    expect(result.warnings.some(w => w.includes("ineffective"))).toBe(true);
-  });
-
-  it("flags high risk without active control measures", () => {
-    const profile = makeProfile({
-      riskAssessments: [
-        { id: "ra-1", category: "cse", currentLevel: "high", dateAssessed: "2026-05-01T10:00:00Z", nextReviewDate: "2026-06-01T10:00:00Z", assessedBy: "staff-rm-01", triggers: [], controlMeasures: [{ id: "cm-disc", description: "Old measure", status: "discontinued", implementedDate: "2026-01-01", lastReviewedDate: "2026-03-01", responsiblePerson: "staff-01" }], contextualFactors: [], protectiveFactors: [], escalationPlan: "Refer", childAware: true },
-      ],
-    });
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.issues.some(i => i.includes("No active control measures"))).toBe(true);
-  });
-
-  it("warns about child not involved in planning", () => {
-    const profile = makeProfile({ childInvolvedInPlanning: false });
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.warnings.some(w => w.includes("not involved in risk management"))).toBe(true);
-  });
-
-  it("flags missing multi-agency meeting for high-risk child", () => {
-    const profile = makeProfile({
-      multiAgencyMeetingDate: undefined,
-      riskAssessments: [
-        { id: "ra-1", category: "cse", currentLevel: "high", dateAssessed: "2026-05-01T10:00:00Z", nextReviewDate: "2026-06-01T10:00:00Z", assessedBy: "staff-rm-01", triggers: [], controlMeasures: makeMeasures(), contextualFactors: [], protectiveFactors: [], escalationPlan: "Refer", childAware: true },
-      ],
-    });
-    const result = evaluateChildRiskCompliance(profile, NOW);
-    expect(result.issues.some(i => i.includes("No multi-agency meeting"))).toBe(true);
-  });
-
-  it("tracks positive risk-taking entries", () => {
-    const result = evaluateChildRiskCompliance(makeProfile(), NOW);
-    expect(result.positiveRiskEntries).toBe(1);
-  });
-
-  it("calculates risk management score", () => {
-    const result = evaluateChildRiskCompliance(makeProfile(), NOW);
-    expect(result.riskManagementScore).toBe(100);
-
-    const minimal = makeProfile({
-      riskAssessments: [
-        { id: "ra-overdue", category: "aggression_to_others", currentLevel: "high", dateAssessed: "2026-01-01T10:00:00Z", nextReviewDate: "2026-02-01T10:00:00Z", assessedBy: "staff-01", triggers: [], controlMeasures: [{ id: "cm-disc", description: "Old", status: "discontinued", implementedDate: "2026-01-01", lastReviewedDate: "2026-01-01", responsiblePerson: "staff-01", effectiveness: "ineffective" }], contextualFactors: [], protectiveFactors: [], escalationPlan: "X", childAware: false },
-      ],
-      incidents: [
-        { id: "ri-1", date: "2026-05-15T10:00:00Z", category: "self_harm", severity: "critical", description: "X", immediateActionTaken: "Y", riskReassessed: false, notifiedParties: [], recordedBy: "staff-01" },
-      ],
-      positiveRiskTaking: [],
-      childInvolvedInPlanning: false,
-      lastOverallReviewDate: "2026-02-01T10:00:00Z",
-      multiAgencyMeetingDate: undefined,
-    });
-    const minResult = evaluateChildRiskCompliance(minimal, NOW);
-    expect(minResult.riskManagementScore).toBeLessThan(30);
+  it("returns correct totalRecords", () => {
+    const records = Array.from({ length: 7 }, (_, i) => makeRecord({ id: `ra-${i}` }));
+    expect(evaluateRiskAssessmentQuality(records).totalRecords).toBe(7);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Home Risk Metrics Tests
-// ══════════════════════════════════════════════════════════════════════════════
-
-describe("calculateHomeRiskMetrics", () => {
-  it("calculates metrics for home", () => {
-    const profiles = [
-      makeProfile({ childId: "c1", childName: "Alex" }),
-      makeProfile({ childId: "c2", childName: "Jordan" }),
-    ];
-    const result = calculateHomeRiskMetrics(profiles, "home-oak", NOW);
-    expect(result.childCount).toBe(2);
-    expect(result.overallManagementScore).toBe(100);
-    expect(result.childInvolvementRate).toBe(100);
+// ── Evaluator 2: Compliance ──────────────────────────────────────────────
+describe("evaluateRiskAssessmentCompliance", () => {
+  it("scores 25 for perfect records with all categories", () => {
+    const cats = ["initial_assessment", "review_assessment", "dynamic_risk_update", "positive_risk_taking", "incident_triggered", "placement_risk", "community_risk", "environmental_risk"] as const;
+    const records = cats.map((cat, i) => makeRecord({ id: `ra-${i}`, category: cat }));
+    const result = evaluateRiskAssessmentCompliance(records);
+    expect(result.overallScore).toBe(25);
+    expect(result.categoryDiversityRatio).toBe(100);
   });
-
-  it("counts children at high/very high risk", () => {
-    const profiles = [
-      makeProfile({ childId: "c1", childName: "Alex" }), // medium
-      makeProfile({
-        childId: "c2",
-        childName: "Jordan",
-        riskAssessments: [
-          { id: "ra-h", category: "cce", currentLevel: "very_high", dateAssessed: "2026-05-01T10:00:00Z", nextReviewDate: "2026-06-01T10:00:00Z", assessedBy: "staff-rm-01", triggers: [], controlMeasures: makeMeasures(), contextualFactors: [], protectiveFactors: [], escalationPlan: "X", childAware: true },
-        ],
-        multiAgencyMeetingDate: "2026-05-01T10:00:00Z",
-      }),
-    ];
-    const result = calculateHomeRiskMetrics(profiles, "home-oak", NOW);
-    expect(result.childrenAtVeryHighRisk).toBe(1);
-  });
-
-  it("aggregates incidents across children", () => {
-    const profiles = [
-      makeProfile({ childId: "c1", childName: "Alex" }),
-      makeProfile({ childId: "c2", childName: "Jordan" }),
-    ];
-    const result = calculateHomeRiskMetrics(profiles, "home-oak", NOW);
-    expect(result.totalIncidents30Days).toBe(4); // 2 each (both incidents within 30 days)
-    expect(result.totalIncidents90Days).toBe(4); // 2 each
-  });
-
-  it("identifies most prevalent risks", () => {
-    const profiles = [
-      makeProfile({ childId: "c1" }),
-      makeProfile({ childId: "c2" }),
-    ];
-    const result = calculateHomeRiskMetrics(profiles, "home-oak", NOW);
-    expect(result.mostPrevalentRisks.length).toBeGreaterThan(0);
-    expect(result.mostPrevalentRisks).toContain("self_harm");
-  });
-
-  it("calculates positive risk-taking rate", () => {
-    const profiles = [
-      makeProfile({ childId: "c1", positiveRiskTaking: [] }),
-      makeProfile({ childId: "c2" }), // has 1 entry
-    ];
-    const result = calculateHomeRiskMetrics(profiles, "home-oak", NOW);
-    expect(result.positiveRiskTakingRate).toBe(50);
-  });
-
-  it("identifies children with compliance issues", () => {
-    const profiles = [
-      makeProfile({ childId: "c1", childName: "Alex" }),
-      makeProfile({ childId: "c2", childName: "Jordan", riskAssessments: [] }),
-    ];
-    const result = calculateHomeRiskMetrics(profiles, "home-oak", NOW);
-    expect(result.childrenWithIssues.length).toBe(1);
-    expect(result.childrenWithIssues[0].childName).toBe("Jordan");
+  it("scores 0 for empty records", () => expect(evaluateRiskAssessmentCompliance([]).overallScore).toBe(0));
+  it("calculates category diversity correctly", () => {
+    const records = [makeRecord({ id: "ra-1", category: "initial_assessment" }), makeRecord({ id: "ra-2", category: "review_assessment" }), makeRecord({ id: "ra-3", category: "dynamic_risk_update" }), makeRecord({ id: "ra-4", category: "positive_risk_taking" })];
+    expect(evaluateRiskAssessmentCompliance(records).categoryDiversityRatio).toBe(50);
   });
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Helper Tests
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Evaluator 3: Policy ──────────────────────────────────────────────────
+describe("evaluateRiskAssessmentPolicy", () => {
+  it("scores 25 for all true", () => expect(evaluateRiskAssessmentPolicy(makeFullPolicy()).overallScore).toBe(25));
+  it("scores 0 for null", () => {
+    const result = evaluateRiskAssessmentPolicy(null);
+    expect(result.overallScore).toBe(0);
+    expect(result.riskAssessmentPolicy).toBe(false);
+  });
+  it("scores 0 for all false", () => expect(evaluateRiskAssessmentPolicy({ riskAssessmentPolicy: false, dynamicRiskUpdatePolicy: false, positiveRiskTakingPolicy: false, incidentTriggeredReviewPolicy: false, communityRiskPolicy: false, environmentalRiskPolicy: false, multiAgencyRiskSharingPolicy: false }).overallScore).toBe(0));
+  it("first 4 booleans weighted at 4 each", () => {
+    const result = evaluateRiskAssessmentPolicy({ riskAssessmentPolicy: true, dynamicRiskUpdatePolicy: true, positiveRiskTakingPolicy: true, incidentTriggeredReviewPolicy: true, communityRiskPolicy: false, environmentalRiskPolicy: false, multiAgencyRiskSharingPolicy: false });
+    expect(result.overallScore).toBe(16);
+  });
+  it("last 3 booleans weighted at 3 each", () => {
+    const result = evaluateRiskAssessmentPolicy({ riskAssessmentPolicy: false, dynamicRiskUpdatePolicy: false, positiveRiskTakingPolicy: false, incidentTriggeredReviewPolicy: false, communityRiskPolicy: true, environmentalRiskPolicy: true, multiAgencyRiskSharingPolicy: true });
+    expect(result.overallScore).toBe(9);
+  });
+  it("preserves boolean values in result", () => {
+    const policy = { ...makeFullPolicy(), multiAgencyRiskSharingPolicy: false };
+    const result = evaluateRiskAssessmentPolicy(policy);
+    expect(result.multiAgencyRiskSharingPolicy).toBe(false);
+    expect(result.riskAssessmentPolicy).toBe(true);
+  });
+});
 
-describe("Helper functions", () => {
-  it("getRiskCategoryLabel returns readable labels", () => {
-    expect(getRiskCategoryLabel("self_harm")).toBe("Self-Harm");
-    expect(getRiskCategoryLabel("cse")).toBe("Child Sexual Exploitation");
-    expect(getRiskCategoryLabel("missing")).toBe("Missing from Care");
+// ── Evaluator 4: Staff Readiness ─────────────────────────────────────────
+describe("evaluateStaffRiskAssessmentReadiness", () => {
+  it("scores 25 for all-skilled staff", () => {
+    const staff = [makeFullStaff(), { ...makeFullStaff(), staffId: "staff-tom" }];
+    expect(evaluateStaffRiskAssessmentReadiness(staff).overallScore).toBe(25);
+  });
+  it("scores 0 for empty staff", () => {
+    const result = evaluateStaffRiskAssessmentReadiness([]);
+    expect(result.overallScore).toBe(0);
+    expect(result.totalStaff).toBe(0);
+  });
+  it("scores 0 for all-false skills", () => {
+    const staff: StaffRiskAssessmentTraining[] = [{ staffId: "s", riskAssessmentSkills: false, dynamicRiskManagement: false, positiveRiskTaking: false, incidentRiskAnalysis: false, childViewInRisk: false, multiAgencyRiskSharing: false }];
+    expect(evaluateStaffRiskAssessmentReadiness(staff).overallScore).toBe(0);
+  });
+  it("weights riskAssessmentSkills highest (6)", () => {
+    const staff: StaffRiskAssessmentTraining[] = [{ staffId: "s", riskAssessmentSkills: true, dynamicRiskManagement: false, positiveRiskTaking: false, incidentRiskAnalysis: false, childViewInRisk: false, multiAgencyRiskSharing: false }];
+    expect(evaluateStaffRiskAssessmentReadiness(staff).overallScore).toBe(6);
+  });
+  it("weights multiAgencyRiskSharing lowest (2)", () => {
+    const staff: StaffRiskAssessmentTraining[] = [{ staffId: "s", riskAssessmentSkills: false, dynamicRiskManagement: false, positiveRiskTaking: false, incidentRiskAnalysis: false, childViewInRisk: false, multiAgencyRiskSharing: true }];
+    expect(evaluateStaffRiskAssessmentReadiness(staff).overallScore).toBe(2);
+  });
+  it("handles mixed skills", () => {
+    const staff: StaffRiskAssessmentTraining[] = [makeFullStaff(), { ...makeFullStaff(), staffId: "staff-tom", riskAssessmentSkills: false, positiveRiskTaking: false }];
+    const result = evaluateStaffRiskAssessmentReadiness(staff);
+    expect(result.riskAssessmentSkillsRate).toBe(50);
+    expect(result.overallScore).toBeGreaterThan(0);
+    expect(result.overallScore).toBeLessThan(25);
+  });
+});
+
+// ── Child Profiles ───────────────────────────────────────────────────────
+describe("buildChildRiskAssessmentProfiles", () => {
+  it("returns empty array for no records", () => expect(buildChildRiskAssessmentProfiles([])).toEqual([]));
+  it("groups by childId", () => {
+    const records = [makeRecord({ id: "ra-1", childId: "child-alex" }), makeRecord({ id: "ra-2", childId: "child-jordan", childName: "Jordan" }), makeRecord({ id: "ra-3", childId: "child-alex" })];
+    expect(buildChildRiskAssessmentProfiles(records)).toHaveLength(2);
+  });
+  it("scores 10 for perfect child", () => {
+    const cats = ["initial_assessment", "review_assessment", "dynamic_risk_update", "positive_risk_taking", "incident_triggered"] as const;
+    const records = Array.from({ length: 10 }, (_, i) => makeRecord({ id: `ra-${i}`, category: cats[i % cats.length] }));
+    expect(buildChildRiskAssessmentProfiles(records)[0].overallScore).toBe(10);
+  });
+  it("scores frequency correctly", () => {
+    const records = Array.from({ length: 3 }, (_, i) => makeRecord({ id: `ra-${i}` }));
+    // 3 records → freq:0 + rate1:3 + rate2:3 + diversity:0 = 6
+    expect(buildChildRiskAssessmentProfiles(records)[0].overallScore).toBe(6);
+  });
+  it("sorts by overallScore descending", () => {
+    const records = [
+      makeRecord({ id: "ra-1", childId: "child-alex", childName: "Alex" }),
+      ...Array.from({ length: 10 }, (_, i) => makeRecord({ id: `ra-j${i}`, childId: "child-jordan", childName: "Jordan", category: (["initial_assessment", "review_assessment", "dynamic_risk_update", "positive_risk_taking"] as const)[i % 4] })),
+    ];
+    expect(buildChildRiskAssessmentProfiles(records)[0].childId).toBe("child-jordan");
+  });
+  it("caps at 10", () => {
+    const cats = ["initial_assessment", "review_assessment", "dynamic_risk_update", "positive_risk_taking", "incident_triggered", "placement_risk"] as const;
+    const records = Array.from({ length: 15 }, (_, i) => makeRecord({ id: `ra-${i}`, category: cats[i % cats.length] }));
+    expect(buildChildRiskAssessmentProfiles(records)[0].overallScore).toBeLessThanOrEqual(10);
+  });
+});
+
+// ── Orchestrator ──────────────────────────────────────────────────────────
+describe("generateRiskAssessmentIntelligence", () => {
+  it("returns outstanding for perfect data", () => {
+    const cats = ["initial_assessment", "review_assessment", "dynamic_risk_update", "positive_risk_taking", "incident_triggered", "placement_risk", "community_risk", "environmental_risk"] as const;
+    const records = cats.map((cat, i) => makeRecord({ id: `ra-${i}`, category: cat }));
+    const result = generateRiskAssessmentIntelligence({ homeId: "home-oak", periodStart: "2026-01-01", periodEnd: "2026-05-20", records, policy: makeFullPolicy(), staff: [makeFullStaff()] });
+    expect(result.overallScore).toBe(100);
+    expect(result.rating).toBe("outstanding");
+    expect(result.regulatoryLinks).toHaveLength(7);
   });
 
-  it("getRiskLevelLabel returns readable labels", () => {
-    expect(getRiskLevelLabel("low")).toBe("Low");
-    expect(getRiskLevelLabel("very_high")).toBe("Very High");
+  it("returns inadequate for empty data", () => {
+    const result = generateRiskAssessmentIntelligence({ homeId: "home-oak", periodStart: "2026-01-01", periodEnd: "2026-05-20", records: [], policy: null, staff: [] });
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+    expect(result.actions.length).toBeGreaterThan(0);
+  });
+
+  it("returns good for decent data", () => {
+    const records = [
+      makeRecord({ id: "ra-1", category: "initial_assessment" }),
+      makeRecord({ id: "ra-2", category: "review_assessment", childViewIncluded: false }),
+      makeRecord({ id: "ra-3", category: "dynamic_risk_update", multiAgencyInput: false }),
+      makeRecord({ id: "ra-4", category: "positive_risk_taking", reviewDateSet: false, timelyRecording: false }),
+      makeRecord({ id: "ra-5", category: "incident_triggered", controlMeasuresIdentified: false, documentationComplete: false }),
+      makeRecord({ id: "ra-6", category: "initial_assessment", childViewIncluded: false, multiAgencyInput: false }),
+    ];
+    const policy: RiskAssessmentPolicy = { riskAssessmentPolicy: true, dynamicRiskUpdatePolicy: true, positiveRiskTakingPolicy: true, incidentTriggeredReviewPolicy: false, communityRiskPolicy: true, environmentalRiskPolicy: false, multiAgencyRiskSharingPolicy: false };
+    const staff = [makeFullStaff(), { ...makeFullStaff(), staffId: "staff-tom", riskAssessmentSkills: false, positiveRiskTaking: false, multiAgencyRiskSharing: false }];
+    const result = generateRiskAssessmentIntelligence({ homeId: "home-oak", periodStart: "2026-01-01", periodEnd: "2026-05-20", records, policy, staff });
+    expect(result.rating).toBe("good");
+    expect(result.overallScore).toBeGreaterThanOrEqual(60);
+    expect(result.overallScore).toBeLessThan(80);
+  });
+
+  it("returns requires_improvement for weak data", () => {
+    const records = [
+      makeRecord({ id: "ra-1", category: "initial_assessment", controlMeasuresIdentified: false, multiAgencyInput: false, reviewDateSet: false, documentationComplete: false }),
+      makeRecord({ id: "ra-2", category: "review_assessment", childViewIncluded: false, multiAgencyInput: false, timelyRecording: false }),
+      makeRecord({ id: "ra-3", category: "dynamic_risk_update", controlMeasuresIdentified: false, childViewIncluded: false, reviewDateSet: false, documentationComplete: false, timelyRecording: false }),
+      makeRecord({ id: "ra-4", category: "positive_risk_taking", multiAgencyInput: false, reviewDateSet: false }),
+      makeRecord({ id: "ra-5", category: "incident_triggered" }),
+    ];
+    const policy: RiskAssessmentPolicy = { riskAssessmentPolicy: true, dynamicRiskUpdatePolicy: true, positiveRiskTakingPolicy: true, incidentTriggeredReviewPolicy: false, communityRiskPolicy: false, environmentalRiskPolicy: false, multiAgencyRiskSharingPolicy: false };
+    const staff: StaffRiskAssessmentTraining[] = [{ staffId: "s", riskAssessmentSkills: true, dynamicRiskManagement: true, positiveRiskTaking: false, incidentRiskAnalysis: false, childViewInRisk: true, multiAgencyRiskSharing: false }];
+    const result = generateRiskAssessmentIntelligence({ homeId: "home-oak", periodStart: "2026-01-01", periodEnd: "2026-05-20", records, policy, staff });
+    expect(result.rating).toBe("requires_improvement");
+    expect(result.overallScore).toBeGreaterThanOrEqual(40);
+    expect(result.overallScore).toBeLessThan(60);
+  });
+
+  it("caps at 100", () => {
+    const cats = ["initial_assessment", "review_assessment", "dynamic_risk_update", "positive_risk_taking", "incident_triggered", "placement_risk", "community_risk", "environmental_risk"] as const;
+    const records = cats.map((cat, i) => makeRecord({ id: `ra-${i}`, category: cat }));
+    const result = generateRiskAssessmentIntelligence({ homeId: "home-oak", periodStart: "2026-01-01", periodEnd: "2026-05-20", records, policy: makeFullPolicy(), staff: [makeFullStaff()] });
+    expect(result.overallScore).toBeLessThanOrEqual(100);
+  });
+
+  it("populates strengths and actions", () => {
+    const cats = ["initial_assessment", "review_assessment", "dynamic_risk_update", "positive_risk_taking", "incident_triggered", "placement_risk", "community_risk", "environmental_risk"] as const;
+    const records = cats.map((cat, i) => makeRecord({ id: `ra-${i}`, category: cat }));
+    const result = generateRiskAssessmentIntelligence({ homeId: "home-oak", periodStart: "2026-01-01", periodEnd: "2026-05-20", records, policy: makeFullPolicy(), staff: [makeFullStaff()] });
+    expect(result.strengths.length).toBeGreaterThan(0);
+  });
+
+  it("includes URGENT actions for empty records", () => {
+    const result = generateRiskAssessmentIntelligence({ homeId: "home-oak", periodStart: "2026-01-01", periodEnd: "2026-05-20", records: [], policy: null, staff: [] });
+    expect(result.actions.some(a => a.includes("URGENT"))).toBe(true);
+  });
+
+  it("includes child profiles", () => {
+    const records = [makeRecord({ id: "ra-1", childId: "child-alex" }), makeRecord({ id: "ra-2", childId: "child-jordan", childName: "Jordan" })];
+    const result = generateRiskAssessmentIntelligence({ homeId: "home-oak", periodStart: "2026-01-01", periodEnd: "2026-05-20", records, policy: makeFullPolicy(), staff: [makeFullStaff()] });
+    expect(result.childProfiles).toHaveLength(2);
   });
 });

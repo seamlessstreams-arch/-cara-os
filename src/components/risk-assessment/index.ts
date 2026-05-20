@@ -1,1 +1,1 @@
-export { RiskAssessmentDashboardWidget } from "./RiskAssessmentDashboardWidget";
+export { default as RiskAssessmentDashboardWidget } from "./RiskAssessmentDashboardWidget";

@@ -1,165 +1,179 @@
-// ==============================================================================
-// Cornerstone -- Night Care Intelligence Engine
+// ══════════════════════════════════════════════════════════════════════════════
+// Cornerstone — Night Care Intelligence Engine
 //
-// Pure deterministic engine -- no AI, no external calls.
-// Evaluates overnight care quality including:
-//   - Monitoring checks (visual, listening, welfare, medication, security)
-//   - Incident management during night hours
-//   - Staffing adequacy and handover quality
-//   - Sleep environment suitability
+// Pure deterministic engine — no AI, no external calls, no randomness.
+// Evaluates overnight care quality across night checks, sleep monitoring,
+// incident handling, bedtime routines, handovers, medication, and waking
+// night support within a children's residential home.
 //
-// Regulatory framework:
-//   CHR 2015 Reg 34 -- employment of staff (night cover)
-//   NMS 26 -- night care
-//   SCCIF -- quality of care, experiences & progress
-//   NICE Sleep Guidance -- evidence-based sleep support
-// ==============================================================================
+// Regulatory basis:
+//   CHR 2015 Reg 12 — Health and comfort of children
+//   CHR 2015 Reg 34 — Safeguarding (night supervision)
+//   NMS 7 — Staffing of children's homes
+//   SCCIF — Overall experiences: safety at night
+//   Children Act 1989 s.22 — Duty of care
+//   Quality Standards 2015 — Standard 6 (safe and effective)
+//   CHR 2015 Reg 40 — Notifiable events (night incidents)
+// ══════════════════════════════════════════════════════════════════════════════
 
-// -- Types -------------------------------------------------------------------
+// ── Types ────────────────────────────────────────────────────────────────────
 
-export type CheckType =
-  | "visual_check"
-  | "listening_check"
-  | "welfare_check"
-  | "medication_check"
-  | "security_check";
+export type NightCareCategory =
+  | "night_check"
+  | "sleep_monitoring"
+  | "night_incident"
+  | "waking_night_support"
+  | "night_medication"
+  | "bedtime_routine"
+  | "night_handover"
+  | "disturbance_response";
 
-export type CheckOutcome =
-  | "child_sleeping"
-  | "child_awake_settled"
-  | "child_awake_unsettled"
-  | "child_absent"
-  | "concern_identified"
-  | "intervention_required";
+export type NightCareOutcome =
+  | "settled_night"
+  | "minor_disturbance"
+  | "significant_incident"
+  | "support_provided"
+  | "not_applicable";
 
-export type SleepQuality =
+export type Rating =
+  | "outstanding"
   | "good"
-  | "fair"
-  | "poor"
-  | "disturbed"
-  | "not_assessed";
+  | "requires_improvement"
+  | "inadequate";
 
-export type NightIncidentType =
-  | "sleep_disturbance"
-  | "night_terror"
-  | "self_harm_attempt"
-  | "missing"
-  | "medical_emergency"
-  | "behavioural_incident"
-  | "fire_alarm"
-  | "intruder_alert";
+// ── Label Maps ───────────────────────────────────────────────────────────────
 
-export type IncidentSeverity = "critical" | "high" | "medium" | "low";
+const CATEGORY_LABELS: Record<NightCareCategory, string> = {
+  night_check: "Night Check",
+  sleep_monitoring: "Sleep Monitoring",
+  night_incident: "Night Incident",
+  waking_night_support: "Waking Night Support",
+  night_medication: "Night Medication",
+  bedtime_routine: "Bedtime Routine",
+  night_handover: "Night Handover",
+  disturbance_response: "Disturbance Response",
+};
 
-export type StaffingLevel =
-  | "adequate"
-  | "minimum"
-  | "below_minimum"
-  | "lone_working";
+const OUTCOME_LABELS: Record<NightCareOutcome, string> = {
+  settled_night: "Settled Night",
+  minor_disturbance: "Minor Disturbance",
+  significant_incident: "Significant Incident",
+  support_provided: "Support Provided",
+  not_applicable: "Not Applicable",
+};
 
-export type HandoverQuality = "thorough" | "adequate" | "brief" | "missed";
+const RATING_LABELS: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
 
-export type NoiseLevel = "quiet" | "acceptable" | "noisy";
+// ── Label Getters ────────────────────────────────────────────────────────────
 
-export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
+export function getCategoryLabel(v: NightCareCategory): string {
+  return CATEGORY_LABELS[v];
+}
 
-// -- Interfaces --------------------------------------------------------------
+export function getOutcomeLabel(v: NightCareOutcome): string {
+  return OUTCOME_LABELS[v];
+}
 
-export interface NightCheck {
+export function getRatingLabel(v: Rating): string {
+  return RATING_LABELS[v];
+}
+
+// ── Input Interfaces ─────────────────────────────────────────────────────────
+
+export interface NightCareRecord {
   id: string;
+  homeId: string;
+  date: string;
   childId: string;
   childName: string;
-  date: string;
-  time: string;
-  checkType: CheckType;
-  outcome: CheckOutcome;
+  category: NightCareCategory;
+  outcome: NightCareOutcome;
+  nightCheckCompleted: boolean;
+  sleepPatternRecorded: boolean;
+  incidentHandledAppropriately: boolean;
+  childComfortChecked: boolean;
+  documentationComplete: boolean;
+  timelyRecording: boolean;
+}
+
+export interface NightCarePolicy {
+  nightCarePolicy: boolean;
+  sleepMonitoringGuidance: boolean;
+  nightIncidentProcedure: boolean;
+  wakingNightPolicy: boolean;
+  nightMedicationProtocol: boolean;
+  bedtimeRoutineGuidance: boolean;
+  nightHandoverProcedure: boolean;
+}
+
+export interface NightCareStaffTraining {
+  id: string;
   staffId: string;
-  notes: string;
-  doorOpenCheck: boolean;
-  temperatureChecked: boolean;
+  staffName: string;
+  nightCareCompetency: boolean;
+  sleepMonitoringSkills: boolean;
+  nightIncidentResponse: boolean;
+  nightMedicationHandling: boolean;
+  childComfortTechniques: boolean;
+  nightHandoverProcedure: boolean;
 }
 
-export interface NightIncident {
-  id: string;
+// ── Result Interfaces ────────────────────────────────────────────────────────
+
+export interface QualityResult {
+  overallScore: number;
+  totalRecords: number;
+  nightCheckCompletedRate: number;
+  sleepPatternRecordedRate: number;
+  incidentHandledAppropriatelyRate: number;
+  childComfortCheckedRate: number;
+}
+
+export interface ComplianceResult {
+  overallScore: number;
+  totalRecords: number;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  nightCheckCompletedRate: number;
+  categoryDiversityRatio: number;
+  uniqueCategories: number;
+}
+
+export interface PolicyResult {
+  overallScore: number;
+  nightCarePolicy: boolean;
+  sleepMonitoringGuidance: boolean;
+  nightIncidentProcedure: boolean;
+  wakingNightPolicy: boolean;
+  nightMedicationProtocol: boolean;
+  bedtimeRoutineGuidance: boolean;
+  nightHandoverProcedure: boolean;
+}
+
+export interface StaffReadinessResult {
+  overallScore: number;
+  totalStaff: number;
+  nightCareCompetencyRate: number;
+  sleepMonitoringSkillsRate: number;
+  nightIncidentResponseRate: number;
+  nightMedicationHandlingRate: number;
+  childComfortTechniquesRate: number;
+  nightHandoverProcedureRate: number;
+}
+
+export interface ChildNightCareProfile {
   childId: string;
-  date: string;
-  time: string;
-  incidentType: NightIncidentType;
-  severity: IncidentSeverity;
-  managedEffectively: boolean;
-  supportProvided: boolean;
-  managerNotified: boolean;
-  recordedTimely: boolean;
-  deEscalationUsed: boolean;
-}
-
-export interface NightStaffing {
-  id: string;
-  date: string;
-  plannedStaff: number;
-  actualStaff: number;
-  staffingLevel: StaffingLevel;
-  wakingNightStaff: number;
-  sleepingInStaff: number;
-  agencyStaffUsed: boolean;
-  handoverCompleted: boolean;
-  handoverQuality: HandoverQuality;
-}
-
-export interface SleepEnvironment {
-  id: string;
-  childId: string;
-  roomTemperatureAppropriate: boolean;
-  beddingClean: boolean;
-  noiseLevel: NoiseLevel;
-  lightingAppropriate: boolean;
-  personalBelongingsAccessible: boolean;
-  safetyChecked: boolean;
-}
-
-// -- Result Types ------------------------------------------------------------
-
-export interface MonitoringQualityResult {
-  totalChecks: number;
-  averageChecksPerChild: number;
-  welfareChecksIncluded: boolean;
-  doorOpenCheckRate: number;
-  temperatureCheckRate: number;
-  concernFollowUpRate: number;
-  documentationQuality: number;
-  overallScore: number; // 0-25
-}
-
-export interface IncidentManagementResult {
-  totalIncidents: number;
-  managedEffectivelyRate: number;
-  supportProvidedRate: number;
-  managerNotifiedRate: number;
-  recordedTimelyRate: number;
-  deEscalationUsedRate: number;
-  criticalIncidents: number;
-  overallScore: number; // 0-25
-}
-
-export interface StaffingAdequacyResult {
-  totalNights: number;
-  adequateStaffingRate: number;
-  loneWorkingNights: number;
-  handoverCompletedRate: number;
-  handoverQualityRate: number;
-  agencyOnlyNights: number;
-  overallScore: number; // 0-25
-}
-
-export interface SleepEnvironmentResult {
-  totalAssessments: number;
-  temperatureAppropriateRate: number;
-  beddingCleanRate: number;
-  noiseAcceptableRate: number;
-  lightingAppropriateRate: number;
-  safetyCheckedRate: number;
-  personalBelongingsRate: number;
-  overallScore: number; // 0-25
+  childName: string;
+  totalRecords: number;
+  nightCheckCompletedRate: number;
+  sleepPatternRecordedRate: number;
+  uniqueCategories: number;
+  overallScore: number;
 }
 
 export interface NightCareIntelligence {
@@ -168,756 +182,596 @@ export interface NightCareIntelligence {
   periodEnd: string;
   overallScore: number;
   rating: Rating;
-  monitoringQuality: MonitoringQualityResult;
-  incidentManagement: IncidentManagementResult;
-  staffingAdequacy: StaffingAdequacyResult;
-  sleepEnvironment: SleepEnvironmentResult;
+  quality: QualityResult;
+  compliance: ComplianceResult;
+  policy: PolicyResult;
+  staffReadiness: StaffReadinessResult;
+  childProfiles: ChildNightCareProfile[];
   strengths: string[];
   areasForImprovement: string[];
   actions: string[];
   regulatoryLinks: string[];
 }
 
-// -- Helpers -----------------------------------------------------------------
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-function pct(num: number, den: number): number {
+/** Calculate percentage, returning 0 if denominator is 0. */
+export function pct(num: number, den: number): number {
   if (den === 0) return 0;
-  return Math.round((num / den) * 1000) / 10;
+  return Math.round((num / den) * 100);
 }
 
-function clamp(v: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, v));
-}
-
-function ratingFromScore(score: number): Rating {
+/** Map overall score (0-100) to Ofsted-style rating. */
+export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
   if (score >= 40) return "requires_improvement";
   return "inadequate";
 }
 
-// -- Label Functions ---------------------------------------------------------
-
-export function getCheckTypeLabel(t: CheckType): string {
-  const labels: Record<CheckType, string> = {
-    visual_check: "Visual Check",
-    listening_check: "Listening Check",
-    welfare_check: "Welfare Check",
-    medication_check: "Medication Check",
-    security_check: "Security Check",
-  };
-  return labels[t] || t;
-}
-
-export function getCheckOutcomeLabel(o: CheckOutcome): string {
-  const labels: Record<CheckOutcome, string> = {
-    child_sleeping: "Child Sleeping",
-    child_awake_settled: "Child Awake (Settled)",
-    child_awake_unsettled: "Child Awake (Unsettled)",
-    child_absent: "Child Absent",
-    concern_identified: "Concern Identified",
-    intervention_required: "Intervention Required",
-  };
-  return labels[o] || o;
-}
-
-export function getSleepQualityLabel(q: SleepQuality): string {
-  const labels: Record<SleepQuality, string> = {
-    good: "Good",
-    fair: "Fair",
-    poor: "Poor",
-    disturbed: "Disturbed",
-    not_assessed: "Not Assessed",
-  };
-  return labels[q] || q;
-}
-
-export function getNightIncidentTypeLabel(t: NightIncidentType): string {
-  const labels: Record<NightIncidentType, string> = {
-    sleep_disturbance: "Sleep Disturbance",
-    night_terror: "Night Terror",
-    self_harm_attempt: "Self-Harm Attempt",
-    missing: "Missing",
-    medical_emergency: "Medical Emergency",
-    behavioural_incident: "Behavioural Incident",
-    fire_alarm: "Fire Alarm",
-    intruder_alert: "Intruder Alert",
-  };
-  return labels[t] || t;
-}
-
-export function getStaffingLevelLabel(l: StaffingLevel): string {
-  const labels: Record<StaffingLevel, string> = {
-    adequate: "Adequate",
-    minimum: "Minimum",
-    below_minimum: "Below Minimum",
-    lone_working: "Lone Working",
-  };
-  return labels[l] || l;
-}
-
-export function getHandoverQualityLabel(q: HandoverQuality): string {
-  const labels: Record<HandoverQuality, string> = {
-    thorough: "Thorough",
-    adequate: "Adequate",
-    brief: "Brief",
-    missed: "Missed",
-  };
-  return labels[q] || q;
-}
-
-// -- Core Evaluation Functions -----------------------------------------------
+// ── Evaluator 1: Quality (0-25) ─────────────────────────────────────────────
 
 /**
- * Evaluate monitoring quality -- are night checks frequent, thorough, and
- * well-documented? Includes welfare checks, door/temperature checks, and
- * concern follow-up.
- * Score: 0-25
+ * Evaluates night care quality from record quality booleans.
+ * Empty (no records) = 0.
+ *
+ * Weights:
+ *   nightCheckCompletedRate       -> 0-7
+ *   sleepPatternRecordedRate      -> 0-6
+ *   incidentHandledAppropriatelyRate -> 0-6
+ *   childComfortCheckedRate       -> 0-6
  */
-export function evaluateMonitoringQuality(
-  checks: NightCheck[],
-  totalChildren: number,
-): MonitoringQualityResult {
-  if (checks.length === 0) {
+export function evaluateQuality(records: NightCareRecord[]): QualityResult {
+  if (records.length === 0) {
     return {
-      totalChecks: 0,
-      averageChecksPerChild: 0,
-      welfareChecksIncluded: false,
-      doorOpenCheckRate: 0,
-      temperatureCheckRate: 0,
-      concernFollowUpRate: 0,
-      documentationQuality: 0,
-      overallScore: 0, // No checks is bad
+      overallScore: 0,
+      totalRecords: 0,
+      nightCheckCompletedRate: 0,
+      sleepPatternRecordedRate: 0,
+      incidentHandledAppropriatelyRate: 0,
+      childComfortCheckedRate: 0,
     };
   }
 
-  // Group checks by child to calculate average per child per night
-  const childNights = new Map<string, Set<string>>();
-  for (const check of checks) {
-    const key = check.childId;
-    if (!childNights.has(key)) childNights.set(key, new Set());
-    childNights.get(key)!.add(check.date);
+  const nightCheckCount = records.filter((r) => r.nightCheckCompleted).length;
+  const sleepPatternCount = records.filter((r) => r.sleepPatternRecorded).length;
+  const incidentCount = records.filter((r) => r.incidentHandledAppropriately).length;
+  const comfortCount = records.filter((r) => r.childComfortChecked).length;
+
+  const nightCheckCompletedRate = pct(nightCheckCount, records.length);
+  const sleepPatternRecordedRate = pct(sleepPatternCount, records.length);
+  const incidentHandledAppropriatelyRate = pct(incidentCount, records.length);
+  const childComfortCheckedRate = pct(comfortCount, records.length);
+
+  let score = 0;
+  score += Math.round((nightCheckCompletedRate / 100) * 7);
+  score += Math.round((sleepPatternRecordedRate / 100) * 6);
+  score += Math.round((incidentHandledAppropriatelyRate / 100) * 6);
+  score += Math.round((childComfortCheckedRate / 100) * 6);
+
+  return {
+    overallScore: Math.min(25, Math.max(0, score)),
+    totalRecords: records.length,
+    nightCheckCompletedRate,
+    sleepPatternRecordedRate,
+    incidentHandledAppropriatelyRate,
+    childComfortCheckedRate,
+  };
+}
+
+// ── Evaluator 2: Compliance (0-25) ──────────────────────────────────────────
+
+/**
+ * Evaluates compliance from documentation, timeliness, domain rate and diversity.
+ * Empty (no records) = 0.
+ *
+ * Weights:
+ *   documentationRate         -> 0-8
+ *   timelyRecordingRate       -> 0-7
+ *   nightCheckCompletedRate   -> 0-5
+ *   categoryDiversityRatio    -> 0-5
+ */
+export function evaluateCompliance(records: NightCareRecord[]): ComplianceResult {
+  if (records.length === 0) {
+    return {
+      overallScore: 0,
+      totalRecords: 0,
+      documentationRate: 0,
+      timelyRecordingRate: 0,
+      nightCheckCompletedRate: 0,
+      categoryDiversityRatio: 0,
+      uniqueCategories: 0,
+    };
   }
 
-  // Calculate average checks per child per night
-  let totalChecksPerChildPerNight = 0;
-  let childNightCount = 0;
-  for (const [childId, dates] of childNights) {
-    for (const date of dates) {
-      const checksForChildNight = checks.filter(
-        (c) => c.childId === childId && c.date === date,
-      ).length;
-      totalChecksPerChildPerNight += checksForChildNight;
-      childNightCount++;
+  const documentedCount = records.filter((r) => r.documentationComplete).length;
+  const documentationRate = pct(documentedCount, records.length);
+
+  const timelyCount = records.filter((r) => r.timelyRecording).length;
+  const timelyRecordingRate = pct(timelyCount, records.length);
+
+  const nightCheckCount = records.filter((r) => r.nightCheckCompleted).length;
+  const nightCheckCompletedRate = pct(nightCheckCount, records.length);
+
+  const uniqueCategoriesSet = new Set(records.map((r) => r.category));
+  const uniqueCategories = uniqueCategoriesSet.size;
+  const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
+
+  let score = 0;
+  score += (documentationRate / 100) * 8;
+  score += (timelyRecordingRate / 100) * 7;
+  score += (nightCheckCompletedRate / 100) * 5;
+  score += categoryDiversityRatio * 5;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  return {
+    overallScore: score,
+    totalRecords: records.length,
+    documentationRate,
+    timelyRecordingRate,
+    nightCheckCompletedRate,
+    categoryDiversityRatio,
+    uniqueCategories,
+  };
+}
+
+// ── Evaluator 3: Policy (0-25) ──────────────────────────────────────────────
+
+/**
+ * Evaluates night care policy completeness.
+ * Null = all false, score 0.
+ *
+ * 7 boolean fields weighted 4+4+4+4+3+3+3 = 25:
+ *   nightCarePolicy:           4
+ *   sleepMonitoringGuidance:   4
+ *   nightIncidentProcedure:    4
+ *   wakingNightPolicy:         4
+ *   nightMedicationProtocol:   3
+ *   bedtimeRoutineGuidance:    3
+ *   nightHandoverProcedure:    3
+ */
+export function evaluatePolicy(policy: NightCarePolicy | null): PolicyResult {
+  if (policy === null) {
+    return {
+      overallScore: 0,
+      nightCarePolicy: false,
+      sleepMonitoringGuidance: false,
+      nightIncidentProcedure: false,
+      wakingNightPolicy: false,
+      nightMedicationProtocol: false,
+      bedtimeRoutineGuidance: false,
+      nightHandoverProcedure: false,
+    };
+  }
+
+  let score = 0;
+  if (policy.nightCarePolicy) score += 4;
+  if (policy.sleepMonitoringGuidance) score += 4;
+  if (policy.nightIncidentProcedure) score += 4;
+  if (policy.wakingNightPolicy) score += 4;
+  if (policy.nightMedicationProtocol) score += 3;
+  if (policy.bedtimeRoutineGuidance) score += 3;
+  if (policy.nightHandoverProcedure) score += 3;
+
+  return {
+    overallScore: Math.min(25, Math.max(0, score)),
+    nightCarePolicy: policy.nightCarePolicy,
+    sleepMonitoringGuidance: policy.sleepMonitoringGuidance,
+    nightIncidentProcedure: policy.nightIncidentProcedure,
+    wakingNightPolicy: policy.wakingNightPolicy,
+    nightMedicationProtocol: policy.nightMedicationProtocol,
+    bedtimeRoutineGuidance: policy.bedtimeRoutineGuidance,
+    nightHandoverProcedure: policy.nightHandoverProcedure,
+  };
+}
+
+// ── Evaluator 4: Staff Readiness (0-25) ─────────────────────────────────────
+
+/**
+ * Evaluates staff readiness from training records.
+ * Empty = 0.
+ *
+ * 6 skill rates weighted 6+5+5+4+3+2 = 25:
+ *   nightCareCompetencyRate:      6
+ *   sleepMonitoringSkillsRate:    5
+ *   nightIncidentResponseRate:    5
+ *   nightMedicationHandlingRate:  4
+ *   childComfortTechniquesRate:   3
+ *   nightHandoverProcedureRate:   2
+ */
+export function evaluateStaffReadiness(
+  training: NightCareStaffTraining[],
+): StaffReadinessResult {
+  if (training.length === 0) {
+    return {
+      overallScore: 0,
+      totalStaff: 0,
+      nightCareCompetencyRate: 0,
+      sleepMonitoringSkillsRate: 0,
+      nightIncidentResponseRate: 0,
+      nightMedicationHandlingRate: 0,
+      childComfortTechniquesRate: 0,
+      nightHandoverProcedureRate: 0,
+    };
+  }
+
+  let competency = 0;
+  let sleepSkills = 0;
+  let incidentResponse = 0;
+  let medicationHandling = 0;
+  let comfortTechniques = 0;
+  let handoverProcedure = 0;
+
+  for (const t of training) {
+    if (t.nightCareCompetency) competency++;
+    if (t.sleepMonitoringSkills) sleepSkills++;
+    if (t.nightIncidentResponse) incidentResponse++;
+    if (t.nightMedicationHandling) medicationHandling++;
+    if (t.childComfortTechniques) comfortTechniques++;
+    if (t.nightHandoverProcedure) handoverProcedure++;
+  }
+
+  const nightCareCompetencyRate = pct(competency, training.length);
+  const sleepMonitoringSkillsRate = pct(sleepSkills, training.length);
+  const nightIncidentResponseRate = pct(incidentResponse, training.length);
+  const nightMedicationHandlingRate = pct(medicationHandling, training.length);
+  const childComfortTechniquesRate = pct(comfortTechniques, training.length);
+  const nightHandoverProcedureRate = pct(handoverProcedure, training.length);
+
+  let score = 0;
+  score += Math.round((nightCareCompetencyRate / 100) * 6);
+  score += Math.round((sleepMonitoringSkillsRate / 100) * 5);
+  score += Math.round((nightIncidentResponseRate / 100) * 5);
+  score += Math.round((nightMedicationHandlingRate / 100) * 4);
+  score += Math.round((childComfortTechniquesRate / 100) * 3);
+  score += Math.round((nightHandoverProcedureRate / 100) * 2);
+
+  return {
+    overallScore: Math.min(25, Math.max(0, score)),
+    totalStaff: training.length,
+    nightCareCompetencyRate,
+    sleepMonitoringSkillsRate,
+    nightIncidentResponseRate,
+    nightMedicationHandlingRate,
+    childComfortTechniquesRate,
+    nightHandoverProcedureRate,
+  };
+}
+
+// ── Child Profiles ──────────────────────────────────────────────────────────
+
+/**
+ * Builds per-child night care profiles from record data.
+ * Each child scored 0-10:
+ *   frequency [>=10 -> 2, >=5 -> 1]
+ *   + rate1 nightCheckCompletedRate [>=80 -> 3, >=60 -> 2, >=40 -> 1]
+ *   + rate2 sleepPatternRecordedRate [same thresholds]
+ *   + diversity uniqueCategories [>=4 -> 2, >=2 -> 1]
+ */
+export function buildChildNightCareProfiles(
+  records: NightCareRecord[],
+): ChildNightCareProfile[] {
+  if (records.length === 0) return [];
+
+  const childMap = new Map<
+    string,
+    { childId: string; childName: string; records: NightCareRecord[] }
+  >();
+
+  for (const r of records) {
+    if (!childMap.has(r.childId)) {
+      childMap.set(r.childId, { childId: r.childId, childName: r.childName, records: [] });
     }
-  }
-  const avgChecksPerChild =
-    childNightCount > 0
-      ? Math.round((totalChecksPerChildPerNight / childNightCount) * 10) / 10
-      : 0;
-
-  // Welfare checks included
-  const welfareChecks = checks.filter((c) => c.checkType === "welfare_check");
-  const welfareChecksIncluded = welfareChecks.length > 0;
-
-  // Door open check rate
-  const doorOpenCount = checks.filter((c) => c.doorOpenCheck).length;
-  const doorOpenCheckRate = pct(doorOpenCount, checks.length);
-
-  // Temperature check rate
-  const tempCount = checks.filter((c) => c.temperatureChecked).length;
-  const temperatureCheckRate = pct(tempCount, checks.length);
-
-  // Concern follow-up: checks that identified a concern or required intervention
-  const concernChecks = checks.filter(
-    (c) =>
-      c.outcome === "concern_identified" ||
-      c.outcome === "intervention_required",
-  );
-  // For concern follow-up, we check if there is a subsequent check for the same child on the same night
-  let followedUp = 0;
-  for (const concern of concernChecks) {
-    const subsequentCheck = checks.find(
-      (c) =>
-        c.childId === concern.childId &&
-        c.date === concern.date &&
-        c.time > concern.time &&
-        c.id !== concern.id,
-    );
-    if (subsequentCheck) followedUp++;
-  }
-  const concernFollowUpRate = pct(followedUp, concernChecks.length);
-
-  // Documentation quality: checks with non-empty notes
-  const documentedChecks = checks.filter(
-    (c) => c.notes && c.notes.trim().length > 0,
-  );
-  const documentationQuality = pct(documentedChecks.length, checks.length);
-
-  // Scoring -- 25 points max
-  let score = 0;
-
-  // Check frequency: +8 if avg >= 4 per child per night
-  if (avgChecksPerChild >= 4) score += 8;
-  else if (avgChecksPerChild >= 3) score += 6;
-  else if (avgChecksPerChild >= 2) score += 4;
-  else if (avgChecksPerChild >= 1) score += 2;
-
-  // Welfare checks included: +5
-  if (welfareChecksIncluded) score += 5;
-
-  // Door/temperature checks rate: +4 (combined)
-  const combinedDoorTempRate = (doorOpenCheckRate + temperatureCheckRate) / 2;
-  score += (combinedDoorTempRate / 100) * 4;
-
-  // Concern follow-up rate: +4
-  if (concernChecks.length === 0) {
-    score += 4; // No concerns = full marks for follow-up
-  } else {
-    score += (concernFollowUpRate / 100) * 4;
+    childMap.get(r.childId)!.records.push(r);
   }
 
-  // Documentation quality: +4
-  score += (documentationQuality / 100) * 4;
+  return Array.from(childMap.values()).map((child) => {
+    const totalRecords = child.records.length;
 
-  return {
-    totalChecks: checks.length,
-    averageChecksPerChild: avgChecksPerChild,
-    welfareChecksIncluded,
-    doorOpenCheckRate,
-    temperatureCheckRate,
-    concernFollowUpRate,
-    documentationQuality,
-    overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
-  };
-}
+    const nightCheckCount = child.records.filter((r) => r.nightCheckCompleted).length;
+    const nightCheckCompletedRate = pct(nightCheckCount, totalRecords);
 
-/**
- * Evaluate incident management -- were night incidents handled effectively,
- * with appropriate support, notification, and recording?
- * Score: 0-25
- */
-export function evaluateIncidentManagement(
-  incidents: NightIncident[],
-): IncidentManagementResult {
-  if (incidents.length === 0) {
+    const sleepPatternCount = child.records.filter((r) => r.sleepPatternRecorded).length;
+    const sleepPatternRecordedRate = pct(sleepPatternCount, totalRecords);
+
+    const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
+    const uniqueCategories = uniqueCategoriesSet.size;
+
+    // frequency: >=10 records -> 2, >=5 -> 1, else 0
+    let frequencyScore = 0;
+    if (totalRecords >= 10) frequencyScore = 2;
+    else if (totalRecords >= 5) frequencyScore = 1;
+
+    // rate1 (nightCheckCompletedRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
+    let rate1Score = 0;
+    if (nightCheckCompletedRate >= 80) rate1Score = 3;
+    else if (nightCheckCompletedRate >= 60) rate1Score = 2;
+    else if (nightCheckCompletedRate >= 40) rate1Score = 1;
+
+    // rate2 (sleepPatternRecordedRate): same thresholds
+    let rate2Score = 0;
+    if (sleepPatternRecordedRate >= 80) rate2Score = 3;
+    else if (sleepPatternRecordedRate >= 60) rate2Score = 2;
+    else if (sleepPatternRecordedRate >= 40) rate2Score = 1;
+
+    // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
+    let diversityBonus = 0;
+    if (uniqueCategories >= 4) diversityBonus = 2;
+    else if (uniqueCategories >= 2) diversityBonus = 1;
+
+    const overallScore = Math.min(10, frequencyScore + rate1Score + rate2Score + diversityBonus);
+
     return {
-      totalIncidents: 0,
-      managedEffectivelyRate: 0,
-      supportProvidedRate: 0,
-      managerNotifiedRate: 0,
-      recordedTimelyRate: 0,
-      deEscalationUsedRate: 0,
-      criticalIncidents: 0,
-      overallScore: 25, // No incidents = full marks (20 base + 5 bonus)
+      childId: child.childId,
+      childName: child.childName,
+      totalRecords,
+      nightCheckCompletedRate,
+      sleepPatternRecordedRate,
+      uniqueCategories,
+      overallScore,
     };
-  }
-
-  const managedCount = incidents.filter((i) => i.managedEffectively).length;
-  const managedRate = pct(managedCount, incidents.length);
-
-  const supportCount = incidents.filter((i) => i.supportProvided).length;
-  const supportRate = pct(supportCount, incidents.length);
-
-  const managerCount = incidents.filter((i) => i.managerNotified).length;
-  const managerRate = pct(managerCount, incidents.length);
-
-  const recordedCount = incidents.filter((i) => i.recordedTimely).length;
-  const recordedRate = pct(recordedCount, incidents.length);
-
-  const deEscCount = incidents.filter((i) => i.deEscalationUsed).length;
-  const deEscRate = pct(deEscCount, incidents.length);
-
-  const criticalCount = incidents.filter(
-    (i) => i.severity === "critical",
-  ).length;
-
-  // Scoring -- 25 points max
-  let score = 0;
-
-  // Managed effectively >= 90%: +7
-  if (managedRate >= 90) score += 7;
-  else score += (managedRate / 100) * 7;
-
-  // Support provided: +5
-  score += (supportRate / 100) * 5;
-
-  // Manager notified: +4
-  score += (managerRate / 100) * 4;
-
-  // Recorded timely >= 90%: +4
-  if (recordedRate >= 90) score += 4;
-  else score += (recordedRate / 100) * 4;
-
-  // De-escalation used: +3
-  score += (deEscRate / 100) * 3;
-
-  // No critical incidents: +2
-  if (criticalCount === 0) score += 2;
-
-  return {
-    totalIncidents: incidents.length,
-    managedEffectivelyRate: managedRate,
-    supportProvidedRate: supportRate,
-    managerNotifiedRate: managerRate,
-    recordedTimelyRate: recordedRate,
-    deEscalationUsedRate: deEscRate,
-    criticalIncidents: criticalCount,
-    overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
-  };
+  });
 }
 
-/**
- * Evaluate staffing adequacy -- are night shifts properly staffed, with
- * thorough handovers and no lone working?
- * Score: 0-25
- */
-export function evaluateStaffingAdequacy(
-  staffing: NightStaffing[],
-): StaffingAdequacyResult {
-  if (staffing.length === 0) {
-    return {
-      totalNights: 0,
-      adequateStaffingRate: 0,
-      loneWorkingNights: 0,
-      handoverCompletedRate: 0,
-      handoverQualityRate: 0,
-      agencyOnlyNights: 0,
-      overallScore: 0, // No staffing data = cannot assess
-    };
-  }
-
-  const adequateCount = staffing.filter(
-    (s) => s.staffingLevel === "adequate",
-  ).length;
-  const adequateRate = pct(adequateCount, staffing.length);
-
-  const loneWorkingCount = staffing.filter(
-    (s) => s.staffingLevel === "lone_working",
-  ).length;
-
-  const handoverCompleted = staffing.filter(
-    (s) => s.handoverCompleted,
-  ).length;
-  const handoverCompletedRate = pct(handoverCompleted, staffing.length);
-
-  // Handover quality: thorough or adequate counts as good
-  const goodHandoverCount = staffing.filter(
-    (s) =>
-      s.handoverQuality === "thorough" || s.handoverQuality === "adequate",
-  ).length;
-  const handoverQualityRate = pct(goodHandoverCount, staffing.length);
-
-  // Agency-only nights: nights where agency was used AND actual staff is only agency
-  // (simplified: count nights where agencyStaffUsed AND actualStaff == 0 is unlikely,
-  // so we count nights where agencyStaffUsed && wakingNightStaff + sleepingInStaff === 0
-  // but more practically, any night where agency is the sole staffing type)
-  const agencyOnlyNights = staffing.filter(
-    (s) =>
-      s.agencyStaffUsed &&
-      s.wakingNightStaff === 0 &&
-      s.sleepingInStaff === 0,
-  ).length;
-
-  // Scoring -- 25 points max
-  let score = 0;
-
-  // Adequate staffing >= 90%: +8
-  if (adequateRate >= 90) score += 8;
-  else score += (adequateRate / 100) * 8;
-
-  // No lone working: +5
-  if (loneWorkingCount === 0) score += 5;
-  else {
-    const loneWorkingRate = pct(loneWorkingCount, staffing.length);
-    score += ((100 - loneWorkingRate) / 100) * 5;
-  }
-
-  // Handover completed >= 95%: +4
-  if (handoverCompletedRate >= 95) score += 4;
-  else score += (handoverCompletedRate / 100) * 4;
-
-  // Handover quality (thorough/adequate): +4
-  score += (handoverQualityRate / 100) * 4;
-
-  // No agency-only nights: +4
-  if (agencyOnlyNights === 0) score += 4;
-  else {
-    const agencyOnlyRate = pct(agencyOnlyNights, staffing.length);
-    score += ((100 - agencyOnlyRate) / 100) * 4;
-  }
-
-  return {
-    totalNights: staffing.length,
-    adequateStaffingRate: adequateRate,
-    loneWorkingNights: loneWorkingCount,
-    handoverCompletedRate: handoverCompletedRate,
-    handoverQualityRate: handoverQualityRate,
-    agencyOnlyNights,
-    overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
-  };
-}
-
-/**
- * Evaluate sleep environment -- are bedrooms safe, comfortable, and
- * conducive to good sleep?
- * Score: 0-25
- */
-export function evaluateSleepEnvironment(
-  environments: SleepEnvironment[],
-): SleepEnvironmentResult {
-  if (environments.length === 0) {
-    return {
-      totalAssessments: 0,
-      temperatureAppropriateRate: 0,
-      beddingCleanRate: 0,
-      noiseAcceptableRate: 0,
-      lightingAppropriateRate: 0,
-      safetyCheckedRate: 0,
-      personalBelongingsRate: 0,
-      overallScore: 0, // No assessments = cannot assess
-    };
-  }
-
-  const tempOk = environments.filter(
-    (e) => e.roomTemperatureAppropriate,
-  ).length;
-  const tempRate = pct(tempOk, environments.length);
-
-  const beddingOk = environments.filter((e) => e.beddingClean).length;
-  const beddingRate = pct(beddingOk, environments.length);
-
-  const noiseOk = environments.filter(
-    (e) => e.noiseLevel === "quiet" || e.noiseLevel === "acceptable",
-  ).length;
-  const noiseRate = pct(noiseOk, environments.length);
-
-  const lightingOk = environments.filter(
-    (e) => e.lightingAppropriate,
-  ).length;
-  const lightingRate = pct(lightingOk, environments.length);
-
-  const safetyOk = environments.filter((e) => e.safetyChecked).length;
-  const safetyRate = pct(safetyOk, environments.length);
-
-  const belongingsOk = environments.filter(
-    (e) => e.personalBelongingsAccessible,
-  ).length;
-  const belongingsRate = pct(belongingsOk, environments.length);
-
-  // Scoring -- 25 points max
-  let score = 0;
-
-  // Temperature appropriate: +6
-  score += (tempRate / 100) * 6;
-
-  // Bedding clean: +5
-  score += (beddingRate / 100) * 5;
-
-  // Noise acceptable: +4
-  score += (noiseRate / 100) * 4;
-
-  // Lighting appropriate: +4
-  score += (lightingRate / 100) * 4;
-
-  // Safety checked: +3
-  score += (safetyRate / 100) * 3;
-
-  // Personal belongings accessible: +3
-  score += (belongingsRate / 100) * 3;
-
-  return {
-    totalAssessments: environments.length,
-    temperatureAppropriateRate: tempRate,
-    beddingCleanRate: beddingRate,
-    noiseAcceptableRate: noiseRate,
-    lightingAppropriateRate: lightingRate,
-    safetyCheckedRate: safetyRate,
-    personalBelongingsRate: belongingsRate,
-    overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
-  };
-}
-
-// -- Main Intelligence Function ----------------------------------------------
+// ── Orchestrator ─────────────────────────────────────────────────────────────
 
 export function generateNightCareIntelligence(
-  checks: NightCheck[],
-  incidents: NightIncident[],
-  staffing: NightStaffing[],
-  environments: SleepEnvironment[],
-  totalChildren: number,
+  records: NightCareRecord[],
+  policy: NightCarePolicy | null,
+  training: NightCareStaffTraining[],
   homeId: string,
   periodStart: string,
   periodEnd: string,
 ): NightCareIntelligence {
-  const monitoringQuality = evaluateMonitoringQuality(checks, totalChildren);
-  const incidentManagement = evaluateIncidentManagement(incidents);
-  const staffingAdequacy = evaluateStaffingAdequacy(staffing);
-  const sleepEnvironment = evaluateSleepEnvironment(environments);
+  const quality = evaluateQuality(records);
+  const compliance = evaluateCompliance(records);
+  const policyResult = evaluatePolicy(policy);
+  const staffReadiness = evaluateStaffReadiness(training);
 
   const rawScore =
-    monitoringQuality.overallScore +
-    incidentManagement.overallScore +
-    staffingAdequacy.overallScore +
-    sleepEnvironment.overallScore;
+    quality.overallScore +
+    compliance.overallScore +
+    policyResult.overallScore +
+    staffReadiness.overallScore;
 
-  const overallScore = Math.round(clamp(rawScore, 0, 100) * 10) / 10;
-  const rating = ratingFromScore(overallScore);
+  const overallScore = Math.min(100, Math.max(0, rawScore));
+  const rating = getRating(overallScore);
 
-  // -- Strengths --
+  const childProfiles = buildChildNightCareProfiles(records);
+
+  // ── Strengths ──
   const strengths: string[] = [];
 
-  if (monitoringQuality.averageChecksPerChild >= 4) {
+  if (records.length > 0 && quality.nightCheckCompletedRate >= 90) {
     strengths.push(
-      "Night monitoring checks are frequent, exceeding the recommended minimum of 4 per child per night",
+      "Night checks consistently completed at " +
+        quality.nightCheckCompletedRate +
+        "%, ensuring children are safe and well overnight",
     );
   }
-  if (monitoringQuality.welfareChecksIncluded) {
+  if (records.length > 0 && quality.sleepPatternRecordedRate >= 90) {
     strengths.push(
-      "Welfare checks are routinely included in the night monitoring regime",
+      "Sleep patterns recorded at " +
+        quality.sleepPatternRecordedRate +
+        "%, supporting individual care planning",
     );
   }
-  if (monitoringQuality.documentationQuality >= 90) {
+  if (records.length > 0 && quality.incidentHandledAppropriatelyRate >= 90) {
     strengths.push(
-      "Night check documentation is thorough, with detailed notes for each observation",
+      "Night incidents handled appropriately at " +
+        quality.incidentHandledAppropriatelyRate +
+        "%, demonstrating staff competence",
     );
   }
-  if (monitoringQuality.doorOpenCheckRate >= 90) {
+  if (records.length > 0 && quality.childComfortCheckedRate >= 90) {
     strengths.push(
-      "Door-open checks are consistently performed, respecting children's privacy while ensuring safety",
+      "Child comfort checked at " +
+        quality.childComfortCheckedRate +
+        "%, reflecting a nurturing night care approach",
     );
   }
-  if (incidentManagement.totalIncidents === 0) {
+  if (records.length > 0 && compliance.documentationRate === 100) {
     strengths.push(
-      "No night-time incidents recorded during the period, indicating a calm and well-managed environment",
-    );
-  } else {
-    if (incidentManagement.managedEffectivelyRate >= 90) {
-      strengths.push(
-        "Night incidents are consistently managed effectively by staff",
-      );
-    }
-    if (incidentManagement.deEscalationUsedRate >= 90) {
-      strengths.push(
-        "De-escalation techniques are routinely used during night-time incidents",
-      );
-    }
-  }
-  if (
-    staffingAdequacy.totalNights > 0 &&
-    staffingAdequacy.adequateStaffingRate >= 90
-  ) {
-    strengths.push(
-      "Night staffing levels are consistently adequate, meeting regulatory requirements",
+      "Documentation rate at 100% — all night care activities fully recorded",
     );
   }
-  if (
-    staffingAdequacy.totalNights > 0 &&
-    staffingAdequacy.loneWorkingNights === 0
-  ) {
+  if (records.length > 0 && compliance.timelyRecordingRate === 100) {
     strengths.push(
-      "No lone working during night shifts, ensuring staff safety and support",
+      "All night care records completed in a timely manner",
     );
   }
-  if (
-    staffingAdequacy.totalNights > 0 &&
-    staffingAdequacy.handoverCompletedRate >= 95
-  ) {
+  if (records.length > 0 && compliance.uniqueCategories >= 6) {
     strengths.push(
-      "Night-to-day handovers are consistently completed, ensuring continuity of care",
+      "Comprehensive night care coverage: " +
+        compliance.uniqueCategories +
+        " of 8 categories represented",
     );
   }
-  if (
-    sleepEnvironment.totalAssessments > 0 &&
-    sleepEnvironment.temperatureAppropriateRate >= 90
-  ) {
+  if (policy !== null && policyResult.overallScore === 25) {
     strengths.push(
-      "Bedroom temperatures are consistently appropriate for restful sleep",
+      "Comprehensive night care policy in place covering all required areas",
     );
   }
-  if (
-    sleepEnvironment.totalAssessments > 0 &&
-    sleepEnvironment.beddingCleanRate >= 95
-  ) {
+  if (training.length > 0 && staffReadiness.nightCareCompetencyRate === 100) {
     strengths.push(
-      "Bedding is maintained to a high standard of cleanliness and comfort",
+      "All staff trained in night care competency",
+    );
+  }
+  if (training.length > 0 && staffReadiness.nightIncidentResponseRate === 100) {
+    strengths.push(
+      "All staff trained in night incident response",
     );
   }
 
-  // -- Areas for Improvement --
+  // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
 
-  if (
-    monitoringQuality.totalChecks > 0 &&
-    monitoringQuality.averageChecksPerChild < 3
-  ) {
+  if (records.length === 0) {
     areasForImprovement.push(
-      "Night check frequency is below recommended levels -- aim for at least 4 checks per child per night",
+      "No night care records found — night care activities must be documented",
     );
   }
-  if (monitoringQuality.totalChecks === 0) {
+  if (records.length > 0 && quality.nightCheckCompletedRate < 80) {
     areasForImprovement.push(
-      "No night monitoring checks were recorded during the period",
+      "Night check completion rate at " +
+        quality.nightCheckCompletedRate +
+        "% — must improve to ensure child safety",
     );
   }
-  if (
-    monitoringQuality.totalChecks > 0 &&
-    !monitoringQuality.welfareChecksIncluded
-  ) {
+  if (records.length > 0 && quality.sleepPatternRecordedRate < 80) {
     areasForImprovement.push(
-      "Welfare checks are not included in the night monitoring regime",
+      "Sleep pattern recording rate at " +
+        quality.sleepPatternRecordedRate +
+        "% — individual sleep data needed for care planning",
     );
   }
-  if (
-    monitoringQuality.totalChecks > 0 &&
-    monitoringQuality.documentationQuality < 70
-  ) {
+  if (records.length > 0 && quality.incidentHandledAppropriatelyRate < 80) {
     areasForImprovement.push(
-      "Night check documentation needs improvement -- staff should record meaningful observations",
+      "Night incident handling rate at " +
+        quality.incidentHandledAppropriatelyRate +
+        "% — staff require additional incident management support",
     );
   }
-  if (
-    incidentManagement.totalIncidents > 0 &&
-    incidentManagement.managedEffectivelyRate < 80
-  ) {
+  if (records.length > 0 && quality.childComfortCheckedRate < 80) {
     areasForImprovement.push(
-      "Night incident management effectiveness is below acceptable threshold",
+      "Child comfort check rate at " +
+        quality.childComfortCheckedRate +
+        "% — children's wellbeing must be consistently monitored",
     );
   }
-  if (
-    incidentManagement.totalIncidents > 0 &&
-    incidentManagement.recordedTimelyRate < 80
-  ) {
+  if (records.length > 0 && compliance.documentationRate < 100) {
     areasForImprovement.push(
-      "Night incidents are not consistently recorded in a timely manner",
+      "Documentation rate at " +
+        compliance.documentationRate +
+        "% — all night care activities must be fully recorded",
     );
   }
-  if (incidentManagement.criticalIncidents > 0) {
+  if (records.length > 0 && compliance.timelyRecordingRate < 80) {
     areasForImprovement.push(
-      `${incidentManagement.criticalIncidents} critical incident(s) occurred during night hours -- review prevention strategies`,
+      "Timely recording rate at " +
+        compliance.timelyRecordingRate +
+        "% — records must be completed promptly",
     );
   }
-  if (
-    staffingAdequacy.totalNights > 0 &&
-    staffingAdequacy.adequateStaffingRate < 80
-  ) {
+  if (records.length > 0 && compliance.uniqueCategories <= 3) {
     areasForImprovement.push(
-      "Night staffing levels are frequently below adequate levels",
+      "Only " +
+        compliance.uniqueCategories +
+        " night care categories covered — limited scope of overnight care activities",
     );
   }
-  if (staffingAdequacy.loneWorkingNights > 0) {
+  if (policy === null) {
     areasForImprovement.push(
-      `Lone working occurred on ${staffingAdequacy.loneWorkingNights} night(s) -- this presents a risk to staff and children`,
+      "No night care policy in place — statutory requirement",
     );
   }
-  if (
-    staffingAdequacy.totalNights > 0 &&
-    staffingAdequacy.handoverCompletedRate < 90
-  ) {
+  if (policy !== null && !policy.nightCarePolicy) {
     areasForImprovement.push(
-      "Night-to-day handovers are not consistently completed",
+      "Core night care policy not documented",
     );
   }
-  if (staffingAdequacy.agencyOnlyNights > 0) {
+  if (policy !== null && !policy.nightIncidentProcedure) {
     areasForImprovement.push(
-      `Agency-only staffing occurred on ${staffingAdequacy.agencyOnlyNights} night(s) -- children deserve familiar care staff`,
+      "Night incident procedure missing from policy — safeguarding risk",
     );
   }
-  if (
-    sleepEnvironment.totalAssessments > 0 &&
-    sleepEnvironment.temperatureAppropriateRate < 80
-  ) {
+  if (training.length === 0) {
     areasForImprovement.push(
-      "Room temperatures are not consistently appropriate for sleep",
+      "No staff night care training records — all staff must be trained",
     );
   }
-  if (
-    sleepEnvironment.totalAssessments > 0 &&
-    sleepEnvironment.noiseAcceptableRate < 80
-  ) {
+  if (training.length > 0 && staffReadiness.nightCareCompetencyRate < 100) {
     areasForImprovement.push(
-      "Noise levels are frequently above acceptable levels for restful sleep",
+      "Only " +
+        staffReadiness.nightCareCompetencyRate +
+        "% of staff trained in night care competency — all staff require this training",
+    );
+  }
+  if (training.length > 0 && staffReadiness.nightIncidentResponseRate < 75) {
+    areasForImprovement.push(
+      "Night incident response training completed by only " +
+        staffReadiness.nightIncidentResponseRate +
+        "% of staff",
     );
   }
 
-  // -- Actions --
+  // ── Actions ──
   const actions: string[] = [];
 
-  if (monitoringQuality.totalChecks === 0) {
+  if (records.length === 0) {
     actions.push(
-      "URGENT: Implement a structured night monitoring check regime immediately",
+      "URGENT: Implement structured night care recording immediately",
     );
   }
-  if (incidentManagement.criticalIncidents > 0) {
+  if (records.length > 0 && quality.nightCheckCompletedRate < 80) {
     actions.push(
-      "URGENT: Review all critical night-time incidents and implement prevention strategies",
+      "URGENT: Review night check procedures and ensure all checks are completed and recorded",
     );
   }
-  if (staffingAdequacy.loneWorkingNights > 0) {
+  if (records.length > 0 && quality.incidentHandledAppropriatelyRate < 80) {
     actions.push(
-      "URGENT: Eliminate lone working during night shifts -- review staffing rota and contingency plans",
+      "URGENT: Provide night incident management training to all night staff",
     );
   }
-  if (
-    staffingAdequacy.totalNights > 0 &&
-    staffingAdequacy.adequateStaffingRate < 80
-  ) {
+  if (records.length > 0 && quality.sleepPatternRecordedRate < 80) {
     actions.push(
-      "HIGH: Review night staffing levels and recruitment to ensure adequate cover",
+      "Improve sleep pattern recording — integrate into standard night check procedures",
     );
   }
-  if (
-    monitoringQuality.totalChecks > 0 &&
-    monitoringQuality.averageChecksPerChild < 3
-  ) {
+  if (records.length > 0 && quality.childComfortCheckedRate < 80) {
     actions.push(
-      "HIGH: Increase night check frequency to meet the minimum of 4 checks per child per night",
+      "Ensure child comfort is checked and recorded during every night care round",
     );
   }
-  if (
-    incidentManagement.totalIncidents > 0 &&
-    incidentManagement.recordedTimelyRate < 80
-  ) {
+  if (records.length > 0 && compliance.documentationRate < 100) {
     actions.push(
-      "HIGH: Provide training on timely recording of night incidents",
+      "Ensure all night care activities are fully documented before end of shift",
     );
   }
-  if (
-    staffingAdequacy.totalNights > 0 &&
-    staffingAdequacy.handoverCompletedRate < 90
-  ) {
+  if (records.length > 0 && compliance.timelyRecordingRate < 80) {
     actions.push(
-      "MEDIUM: Implement a structured handover checklist for night-to-day transitions",
+      "Improve timeliness of night care recording — records must be completed promptly",
     );
   }
-  if (
-    monitoringQuality.totalChecks > 0 &&
-    monitoringQuality.documentationQuality < 70
-  ) {
+  if (policy === null) {
     actions.push(
-      "MEDIUM: Provide guidance to night staff on recording meaningful check observations",
+      "Develop and implement a comprehensive night care policy covering all 7 required areas",
     );
   }
-  if (
-    sleepEnvironment.totalAssessments > 0 &&
-    sleepEnvironment.temperatureAppropriateRate < 80
-  ) {
+  if (policy !== null && policyResult.overallScore < 25) {
     actions.push(
-      "MEDIUM: Review heating/cooling arrangements to ensure appropriate bedroom temperatures",
+      "Review and update night care policy to address all gaps identified",
     );
   }
-  if (staffingAdequacy.agencyOnlyNights > 0) {
+  if (training.length === 0) {
     actions.push(
-      "LOW: Reduce reliance on agency-only night staffing through permanent recruitment",
+      "URGENT: Arrange night care training for all staff immediately",
+    );
+  }
+  if (training.length > 0 && staffReadiness.nightCareCompetencyRate < 100) {
+    actions.push(
+      "Ensure all staff complete night care competency training — currently " +
+        staffReadiness.nightCareCompetencyRate +
+        "%",
+    );
+  }
+  if (training.length > 0 && staffReadiness.nightIncidentResponseRate < 100) {
+    actions.push(
+      "Ensure all staff complete night incident response training — currently " +
+        staffReadiness.nightIncidentResponseRate +
+        "%",
     );
   }
 
-  // -- Regulatory Links --
   const regulatoryLinks: string[] = [
-    "CHR 2015 Reg 34 -- employment of staff, ensuring sufficient night cover for children's needs",
-    "NMS 26 -- night care, children are adequately supervised and supported during the night",
-    "SCCIF -- quality of care, children's experiences and progress including overnight",
-    "NICE Sleep Guidance -- evidence-based approaches to supporting healthy sleep in children",
+    "CHR 2015 Reg 12 — Health and comfort of children",
+    "CHR 2015 Reg 34 — Safeguarding (night supervision)",
+    "NMS 7 — Staffing of children's homes",
+    "SCCIF — Overall experiences: safety at night",
+    "Children Act 1989 s.22 — Duty of care",
+    "Quality Standards 2015 — Standard 6 (safe and effective)",
+    "CHR 2015 Reg 40 — Notifiable events (night incidents)",
   ];
 
   return {
@@ -926,10 +780,11 @@ export function generateNightCareIntelligence(
     periodEnd,
     overallScore,
     rating,
-    monitoringQuality,
-    incidentManagement,
-    staffingAdequacy,
-    sleepEnvironment,
+    quality,
+    compliance,
+    policy: policyResult,
+    staffReadiness,
+    childProfiles,
     strengths,
     areasForImprovement,
     actions,

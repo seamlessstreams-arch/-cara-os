@@ -1,200 +1,131 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import type {
-  HandoverIntelligenceResult,
-  ShiftProfile,
-  HandoverItem,
-} from "@/lib/handover/handover-engine";
-import { getShiftLabel, getItemCategoryLabel } from "@/lib/handover/handover-engine";
+import { useState, useEffect } from "react";
 
-// -- Rating Badge -------------------------------------------------------------
+// ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
-function RatingBadge({ rating, score }: { rating: string; score: number }) {
-  const colorMap: Record<string, string> = {
-    outstanding: "bg-green-100 text-green-800 border-green-300",
-    good: "bg-blue-100 text-blue-800 border-blue-300",
-    requires_improvement: "bg-amber-100 text-amber-800 border-amber-300",
-    inadequate: "bg-red-100 text-red-800 border-red-300",
+interface HandoverQualityData {
+  totalRecords: number;
+  allChildrenCoveredRate: number;
+  medicationStatusUpdatedRate: number;
+  incidentsCommunicatedRate: number;
+  tasksHandedOverRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface HandoverComplianceData {
+  totalRecords: number;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  allChildrenCoveredRate: number;
+  categoryDiversityRatio: number;
+  uniqueCategories: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface HandoverPolicyData {
+  handoverPolicy: boolean;
+  shiftHandoverProcedure: boolean;
+  medicationHandoverProtocol: boolean;
+  incidentCommunicationPolicy: boolean;
+  taskTrackingProcedure: boolean;
+  handoverRecordKeeping: boolean;
+  handoverAuditPolicy: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface StaffReadinessData {
+  totalStaff: number;
+  handoverCommunicationRate: number;
+  medicationHandoverSkillsRate: number;
+  incidentReportingRate: number;
+  taskPrioritisationRate: number;
+  childStatusAssessmentRate: number;
+  handoverDocumentationRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface ChildHandoverProfileData {
+  childId: string;
+  childName: string;
+  totalRecords: number;
+  allChildrenCoveredRate: number;
+  medicationStatusUpdatedRate: number;
+  uniqueCategories: number;
+  handoverScore: number;
+}
+
+interface HandoverData {
+  homeId: string;
+  assessedAt: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: string;
+  handoverQuality: HandoverQualityData;
+  handoverCompliance: HandoverComplianceData;
+  handoverPolicy: HandoverPolicyData;
+  staffReadiness: StaffReadinessData;
+  childProfiles: ChildHandoverProfileData[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
+  meta: {
+    generatedAt: string;
+    engine: string;
+    version: string;
   };
-  const labelMap: Record<string, string> = {
-    outstanding: "Outstanding",
-    good: "Good",
-    requires_improvement: "Requires Improvement",
-    inadequate: "Inadequate",
-  };
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-semibold ${colorMap[rating] ?? "bg-gray-100 text-gray-800 border-gray-300"}`}
-    >
-      {labelMap[rating] ?? rating} -- {score}/100
-    </span>
-  );
 }
 
-// -- Metric Card --------------------------------------------------------------
+// ── Rating colours ────────────────────────────────────────────────────────
 
-function MetricCard({
-  label,
-  value,
-  suffix,
-  color,
-}: {
-  label: string;
-  value: number | string;
-  suffix?: string;
-  color?: string;
-}) {
-  return (
-    <div className="flex flex-col items-center rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-      <span className={`text-2xl font-bold ${color ?? "text-gray-900"}`}>
-        {value}
-        {suffix}
-      </span>
-      <span className="mt-1 text-xs text-gray-500 text-center">{label}</span>
-    </div>
-  );
+function ratingColour(rating: string): string {
+  switch (rating) {
+    case "outstanding": return "bg-green-100 text-green-800 border-green-300";
+    case "good": return "bg-blue-100 text-blue-800 border-blue-300";
+    case "requires_improvement": return "bg-amber-100 text-amber-800 border-amber-300";
+    case "inadequate": return "bg-red-100 text-red-800 border-red-300";
+    default: return "bg-gray-100 text-gray-800 border-gray-300";
+  }
 }
 
-// -- Progress Bar -------------------------------------------------------------
-
-function ProgressBar({
-  value,
-  max,
-  color,
-}: {
-  value: number;
-  max: number;
-  color: string;
-}) {
-  const pctVal = max > 0 ? Math.round((value / max) * 100) : 0;
-  return (
-    <div className="flex items-center gap-2 w-full">
-      <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-        <div
-          className={`h-full rounded-full ${color}`}
-          style={{ width: `${pctVal}%` }}
-        />
-      </div>
-      <span className="text-xs font-medium text-gray-600 w-10 text-right">
-        {pctVal}%
-      </span>
-    </div>
-  );
+function ratingLabel(rating: string): string {
+  switch (rating) {
+    case "outstanding": return "Outstanding";
+    case "good": return "Good";
+    case "requires_improvement": return "Requires Improvement";
+    case "inadequate": return "Inadequate";
+    default: return rating;
+  }
 }
 
-// -- Continuity Badge ---------------------------------------------------------
-
-function ContinuityBadge({ rating }: { rating: string }) {
-  const map: Record<string, string> = {
-    excellent: "bg-green-100 text-green-700 border-green-200",
-    good: "bg-blue-100 text-blue-700 border-blue-200",
-    adequate: "bg-amber-100 text-amber-700 border-amber-200",
-    poor: "bg-red-100 text-red-700 border-red-200",
-  };
-  const labels: Record<string, string> = {
-    excellent: "EXCELLENT",
-    good: "GOOD",
-    adequate: "ADEQUATE",
-    poor: "POOR",
-  };
-  return (
-    <span
-      className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${map[rating] ?? "bg-gray-100 text-gray-700"}`}
-    >
-      {labels[rating] ?? rating}
-    </span>
-  );
+function scoreBarColour(score: number, max: number): string {
+  const pct = max > 0 ? (score / max) * 100 : 0;
+  if (pct >= 80) return "bg-green-500";
+  if (pct >= 60) return "bg-blue-500";
+  if (pct >= 40) return "bg-amber-500";
+  return "bg-red-500";
 }
 
-// -- Shift Profile Card -------------------------------------------------------
-
-function ShiftCard({ profile }: { profile: ShiftProfile }) {
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-semibold text-gray-900">
-          {getShiftLabel(profile.shiftType)}
-        </h4>
-        <span className="text-xs text-gray-500">
-          {profile.totalHandovers} handovers
-        </span>
-      </div>
-      <div className="space-y-2">
-        <div>
-          <div className="flex justify-between text-xs text-gray-500 mb-1">
-            <span>Completion Rate</span>
-            <span>{profile.completionRate}%</span>
-          </div>
-          <ProgressBar
-            value={profile.completionRate}
-            max={100}
-            color={
-              profile.completionRate >= 95
-                ? "bg-green-500"
-                : profile.completionRate >= 80
-                  ? "bg-blue-500"
-                  : "bg-amber-500"
-            }
-          />
-        </div>
-        <div className="grid grid-cols-3 gap-2 text-center pt-2 border-t">
-          <div>
-            <span className="text-lg font-bold text-gray-900">
-              {profile.avgQualityScore}
-            </span>
-            <p className="text-xs text-gray-500">Quality</p>
-          </div>
-          <div>
-            <span className="text-lg font-bold text-gray-900">
-              {profile.avgDuration}m
-            </span>
-            <p className="text-xs text-gray-500">Avg Duration</p>
-          </div>
-          <div>
-            <span
-              className={`text-lg font-bold ${profile.criticalItemsMissed > 0 ? "text-red-600" : "text-green-600"}`}
-            >
-              {profile.criticalItemsMissed}
-            </span>
-            <p className="text-xs text-gray-500">Critical Missed</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+function rateTextColour(rate: number): string {
+  if (rate >= 80) return "text-green-600";
+  if (rate >= 60) return "text-amber-600";
+  return "text-red-600";
 }
 
-// -- Critical Item Row --------------------------------------------------------
+// ── Main Widget ──────────────────────────────────────────────────────────
 
-function CriticalItemRow({ item }: { item: HandoverItem }) {
-  return (
-    <div className="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0">
-      <div className="flex items-center gap-2">
-        <span
-          className={`w-2 h-2 rounded-full ${item.acknowledged ? "bg-green-500" : "bg-red-500"}`}
-        />
-        <span className="text-sm text-gray-700">
-          {item.childName ? `${item.childName} -- ` : ""}
-          {item.summary}
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500">
-          {getItemCategoryLabel(item.category)}
-        </span>
-        {!item.acknowledged && (
-          <span className="text-xs font-medium text-red-600">UNACKNOWLEDGED</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// -- Main Widget --------------------------------------------------------------
-
-export function HandoverDashboardWidget() {
-  const [data, setData] = useState<HandoverIntelligenceResult | null>(null);
+export default function HandoverDashboardWidget() {
+  const [data, setData] = useState<HandoverData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
@@ -202,10 +133,10 @@ export function HandoverDashboardWidget() {
   useEffect(() => {
     fetch("/api/handover")
       .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
       })
-      .then(setData)
+      .then((json) => setData(json.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -244,156 +175,36 @@ export function HandoverDashboardWidget() {
             Handover Intelligence
           </h3>
           <p className="text-xs text-gray-500 mt-1">
-            {data.periodStart} to {data.periodEnd} -- CHR 2015 Reg 13/12
+            {data.periodStart} to {data.periodEnd} -- Engine v{data.meta.version}
           </p>
         </div>
-        <RatingBadge rating={data.rating} score={data.overallScore} />
+        <span className={"inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-semibold " + ratingColour(data.rating)}>
+          {ratingLabel(data.rating)} -- {data.overallScore}/100
+        </span>
       </div>
 
-      {/* Key Metrics */}
+      {/* 4 Evaluator Scores */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-        <MetricCard
-          label="Completion Rate"
-          value={data.completeness.completionRate}
-          suffix="%"
-          color={
-            data.completeness.completionRate >= 95
-              ? "text-green-600"
-              : data.completeness.completionRate >= 80
-                ? "text-amber-600"
-                : "text-red-600"
-          }
-        />
-        <MetricCard
-          label="Quality Score"
-          value={data.quality.overallQualityScore}
-          suffix="%"
-          color={
-            data.quality.overallQualityScore >= 90
-              ? "text-green-600"
-              : data.quality.overallQualityScore >= 70
-                ? "text-amber-600"
-                : "text-red-600"
-          }
-        />
-        <MetricCard
-          label="Critical Info Acknowledged"
-          value={data.informationTransfer.criticalAcknowledgedRate}
-          suffix="%"
-          color={
-            data.informationTransfer.criticalAcknowledgedRate >= 100
-              ? "text-green-600"
-              : data.informationTransfer.criticalAcknowledgedRate >= 80
-                ? "text-amber-600"
-                : "text-red-600"
-          }
-        />
-        <MetricCard
-          label="Continuity Rating"
-          value={data.continuity.continuityRating.replace(/_/g, " ")}
-          color={
-            data.continuity.continuityRating === "excellent"
-              ? "text-green-600"
-              : data.continuity.continuityRating === "good"
-                ? "text-blue-600"
-                : data.continuity.continuityRating === "adequate"
-                  ? "text-amber-600"
-                  : "text-red-600"
-          }
-        />
-      </div>
-
-      {/* Status Badges */}
-      <div className="flex flex-wrap gap-2 mb-5">
-        {data.completeness.missed > 0 && (
-          <span className="rounded-full bg-red-100 text-red-700 px-3 py-1 text-xs font-medium border border-red-200">
-            {data.completeness.missed} MISSED HANDOVER
-            {data.completeness.missed !== 1 ? "S" : ""}
-          </span>
-        )}
-        {data.informationTransfer.unacknowledgedCriticalItems.length > 0 && (
-          <span className="rounded-full bg-red-100 text-red-700 px-3 py-1 text-xs font-medium border border-red-200">
-            {data.informationTransfer.unacknowledgedCriticalItems.length}{" "}
-            UNACKNOWLEDGED CRITICAL ITEM
-            {data.informationTransfer.unacknowledgedCriticalItems.length !== 1
-              ? "S"
-              : ""}
-          </span>
-        )}
-        {data.shiftProfiles.some(
-          (p) => p.avgQualityScore < 60 && p.totalHandovers > 0,
-        ) && (
-          <span className="rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-xs font-medium border border-amber-200">
-            LOW QUALITY SHIFTS DETECTED
-          </span>
-        )}
-        {data.completeness.completionRate >= 95 && (
-          <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
-            STRONG COMPLETION RATE
-          </span>
-        )}
-        {data.quality.overallQualityScore >= 90 && (
-          <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
-            HIGH QUALITY HANDOVERS
-          </span>
-        )}
-        {data.completeness.late > 0 && (
-          <span className="rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-xs font-medium border border-amber-200">
-            {data.completeness.late} LATE HANDOVER
-            {data.completeness.late !== 1 ? "S" : ""}
-          </span>
-        )}
-      </div>
-
-      {/* Shift Profiles */}
-      <div className="mb-5">
-        <button
-          onClick={() => toggle("shifts")}
-          className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
-        >
-          <span
-            className={`transform transition-transform ${expandedSection === "shifts" ? "rotate-90" : ""}`}
-          >
-            {">"}
-          </span>
-          Shift Profiles ({data.shiftProfiles.length})
-        </button>
-        {expandedSection === "shifts" && (
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {data.shiftProfiles.map((profile) => (
-              <ShiftCard key={profile.shiftType} profile={profile} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Critical Item Tracking */}
-      {data.informationTransfer.unacknowledgedCriticalItems.length > 0 && (
-        <div className="mb-5">
-          <button
-            onClick={() => toggle("critical")}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            <span
-              className={`transform transition-transform ${expandedSection === "critical" ? "rotate-90" : ""}`}
-            >
-              {">"}
+        {[
+          { label: "Quality", score: data.handoverQuality.score },
+          { label: "Compliance", score: data.handoverCompliance.score },
+          { label: "Policy", score: data.handoverPolicy.score },
+          { label: "Staff Readiness", score: data.staffReadiness.score },
+        ].map((layer) => (
+          <div key={layer.label} className="flex flex-col items-center rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+            <span className={"text-2xl font-bold " + rateTextColour((layer.score / 25) * 100)}>
+              {layer.score}
             </span>
-            Critical Item Tracking (
-            {data.informationTransfer.unacknowledgedCriticalItems.length}{" "}
-            unacknowledged)
-          </button>
-          {expandedSection === "critical" && (
-            <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-4 space-y-1">
-              {data.informationTransfer.unacknowledgedCriticalItems.map(
-                (item) => (
-                  <CriticalItemRow key={item.id} item={item} />
-                ),
-              )}
+            <span className="text-xs text-gray-500 text-center mt-1">{layer.label} /25</span>
+            <div className="w-full h-1.5 rounded-full bg-gray-200 mt-2 overflow-hidden">
+              <div
+                className={"h-full rounded-full " + scoreBarColour(layer.score, 25)}
+                style={{ width: ((layer.score / 25) * 100) + "%" }}
+              />
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
 
       {/* Quality Indicators */}
       <div className="mb-5">
@@ -401,172 +212,216 @@ export function HandoverDashboardWidget() {
           onClick={() => toggle("quality")}
           className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
         >
-          <span
-            className={`transform transition-transform ${expandedSection === "quality" ? "rotate-90" : ""}`}
-          >
-            {">"}
-          </span>
+          <span className={"transform transition-transform " + (expandedSection === "quality" ? "rotate-90" : "")}>{">"}</span>
           Quality Indicators
         </button>
         {expandedSection === "quality" && (
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-3">
             {[
-              {
-                label: "Child Updates Included",
-                value: data.quality.childUpdatesRate,
-              },
-              {
-                label: "Risk Updates Included",
-                value: data.quality.riskUpdatesRate,
-              },
-              {
-                label: "Medication Updates Included",
-                value: data.quality.medicationUpdatesRate,
-              },
-              {
-                label: "Incidents Briefed",
-                value: data.quality.incidentBriefingRate,
-              },
-              {
-                label: "Emotional Presentation Noted",
-                value: data.quality.emotionalPresentationRate,
-              },
-              {
-                label: "Plan Changes Highlighted",
-                value: data.quality.planChangesRate,
-              },
+              { label: "All Children Covered", value: data.handoverQuality.allChildrenCoveredRate },
+              { label: "Medication Status Updated", value: data.handoverQuality.medicationStatusUpdatedRate },
+              { label: "Incidents Communicated", value: data.handoverQuality.incidentsCommunicatedRate },
+              { label: "Tasks Handed Over", value: data.handoverQuality.tasksHandedOverRate },
             ].map((indicator) => (
               <div key={indicator.label}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-700 font-medium">
-                    {indicator.label}
-                  </span>
-                  <span
-                    className={`text-xs font-medium ${indicator.value >= 90 ? "text-green-600" : indicator.value >= 70 ? "text-amber-600" : "text-red-600"}`}
-                  >
-                    {indicator.value}%
-                  </span>
+                  <span className="text-gray-700 font-medium">{indicator.label}</span>
+                  <span className={"text-xs font-medium " + rateTextColour(indicator.value)}>{indicator.value}%</span>
                 </div>
-                <ProgressBar
-                  value={indicator.value}
-                  max={100}
-                  color={
-                    indicator.value >= 90
-                      ? "bg-green-500"
-                      : indicator.value >= 70
-                        ? "bg-amber-500"
-                        : "bg-red-500"
-                  }
-                />
+                <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <div
+                    className={"h-full rounded-full " + scoreBarColour(indicator.value, 100)}
+                    style={{ width: indicator.value + "%" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Compliance Indicators */}
+      <div className="mb-5">
+        <button
+          onClick={() => toggle("compliance")}
+          className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+        >
+          <span className={"transform transition-transform " + (expandedSection === "compliance" ? "rotate-90" : "")}>{">"}</span>
+          Compliance Indicators
+        </button>
+        {expandedSection === "compliance" && (
+          <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-3">
+            {[
+              { label: "Documentation Complete", value: data.handoverCompliance.documentationRate },
+              { label: "Timely Recording", value: data.handoverCompliance.timelyRecordingRate },
+              { label: "All Children Covered", value: data.handoverCompliance.allChildrenCoveredRate },
+            ].map((indicator) => (
+              <div key={indicator.label}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-700 font-medium">{indicator.label}</span>
+                  <span className={"text-xs font-medium " + rateTextColour(indicator.value)}>{indicator.value}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <div
+                    className={"h-full rounded-full " + scoreBarColour(indicator.value, 100)}
+                    style={{ width: indicator.value + "%" }}
+                  />
+                </div>
               </div>
             ))}
             <div className="pt-2 border-t text-sm text-gray-600">
-              Average Duration: {data.quality.avgDurationMinutes} minutes
+              Category Diversity: {data.handoverCompliance.uniqueCategories}/8 categories ({Math.round(data.handoverCompliance.categoryDiversityRatio * 100)}%)
             </div>
           </div>
         )}
       </div>
 
-      {/* Continuity Analysis */}
+      {/* Policy Framework */}
       <div className="mb-5">
         <button
-          onClick={() => toggle("continuity")}
+          onClick={() => toggle("policy")}
           className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
         >
-          <span
-            className={`transform transition-transform ${expandedSection === "continuity" ? "rotate-90" : ""}`}
-          >
-            {">"}
-          </span>
-          Continuity Analysis
+          <span className={"transform transition-transform " + (expandedSection === "policy" ? "rotate-90" : "")}>{">"}</span>
+          Policy Framework ({data.handoverPolicy.score}/25)
         </button>
-        {expandedSection === "continuity" && (
-          <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">Continuity Rating</span>
-              <ContinuityBadge rating={data.continuity.continuityRating} />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">
-                Consistent Staffing Rate
-              </span>
-              <span className="text-sm font-medium text-gray-900">
-                {data.continuity.consistentStaffRate}%
-              </span>
-            </div>
-            <div className="pt-2 border-t">
-              <span className="text-xs font-semibold text-gray-600 mb-2 block">
-                Shift Coverage by Type
-              </span>
-              {Object.entries(data.continuity.shiftCoverageByType)
-                .filter(([, v]) => v > 0)
-                .map(([shift, coverage]) => (
-                  <div key={shift} className="mb-2">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>{getShiftLabel(shift as any)}</span>
-                      <span>{coverage}%</span>
-                    </div>
-                    <ProgressBar
-                      value={coverage}
-                      max={100}
-                      color={
-                        coverage >= 95
-                          ? "bg-green-500"
-                          : coverage >= 80
-                            ? "bg-blue-500"
-                            : "bg-amber-500"
-                      }
-                    />
-                  </div>
-                ))}
-            </div>
+        {expandedSection === "policy" && (
+          <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-2">
+            {[
+              { label: "Handover Policy", value: data.handoverPolicy.handoverPolicy },
+              { label: "Shift Handover Procedure", value: data.handoverPolicy.shiftHandoverProcedure },
+              { label: "Medication Handover Protocol", value: data.handoverPolicy.medicationHandoverProtocol },
+              { label: "Incident Communication Policy", value: data.handoverPolicy.incidentCommunicationPolicy },
+              { label: "Task Tracking Procedure", value: data.handoverPolicy.taskTrackingProcedure },
+              { label: "Handover Record Keeping", value: data.handoverPolicy.handoverRecordKeeping },
+              { label: "Handover Audit Policy", value: data.handoverPolicy.handoverAuditPolicy },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center justify-between py-1">
+                <span className="text-sm text-gray-700">{item.label}</span>
+                <span className={"text-xs font-semibold " + (item.value ? "text-green-600" : "text-red-600")}>
+                  {item.value ? "YES" : "NO"}
+                </span>
+              </div>
+            ))}
           </div>
         )}
       </div>
+
+      {/* Staff Readiness */}
+      <div className="mb-5">
+        <button
+          onClick={() => toggle("staff")}
+          className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+        >
+          <span className={"transform transition-transform " + (expandedSection === "staff" ? "rotate-90" : "")}>{">"}</span>
+          Staff Readiness ({data.staffReadiness.totalStaff} staff)
+        </button>
+        {expandedSection === "staff" && (
+          <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-3">
+            {[
+              { label: "Handover Communication", value: data.staffReadiness.handoverCommunicationRate },
+              { label: "Medication Handover Skills", value: data.staffReadiness.medicationHandoverSkillsRate },
+              { label: "Incident Reporting", value: data.staffReadiness.incidentReportingRate },
+              { label: "Task Prioritisation", value: data.staffReadiness.taskPrioritisationRate },
+              { label: "Child Status Assessment", value: data.staffReadiness.childStatusAssessmentRate },
+              { label: "Handover Documentation", value: data.staffReadiness.handoverDocumentationRate },
+            ].map((skill) => (
+              <div key={skill.label}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-700 font-medium">{skill.label}</span>
+                  <span className={"text-xs font-medium " + rateTextColour(skill.value)}>{skill.value}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <div
+                    className={"h-full rounded-full " + scoreBarColour(skill.value, 100)}
+                    style={{ width: skill.value + "%" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Child Profiles */}
+      {data.childProfiles.length > 0 && (
+        <div className="mb-5">
+          <button
+            onClick={() => toggle("children")}
+            className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
+          >
+            <span className={"transform transition-transform " + (expandedSection === "children" ? "rotate-90" : "")}>{">"}</span>
+            Child Profiles ({data.childProfiles.length})
+          </button>
+          {expandedSection === "children" && (
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {data.childProfiles.map((child) => (
+                <div key={child.childId} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-900">{child.childName}</h4>
+                    <span className={"text-lg font-bold " + rateTextColour(child.handoverScore * 10)}>
+                      {child.handoverScore}/10
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-xs text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Records</span>
+                      <span className="font-medium text-gray-900">{child.totalRecords}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Children Covered</span>
+                      <span className={"font-medium " + rateTextColour(child.allChildrenCoveredRate)}>{child.allChildrenCoveredRate}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Medication Updated</span>
+                      <span className={"font-medium " + rateTextColour(child.medicationStatusUpdatedRate)}>{child.medicationStatusUpdatedRate}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Categories</span>
+                      <span className="font-medium text-gray-900">{child.uniqueCategories}/8</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Strengths / Areas / Actions */}
       <div className="space-y-4 mb-5">
-        {data.actions.length > 0 &&
-          !data.actions[0].includes("No immediate") && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <h4 className="text-sm font-semibold text-red-800 mb-2">
-                Immediate Actions
-              </h4>
-              <ul className="space-y-1">
-                {data.actions.map((action, i) => (
-                  <li key={i} className="text-sm text-red-700">
-                    {action}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+        {data.actions.length > 0 && !data.actions[0].includes("No immediate") && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <h4 className="text-sm font-semibold text-red-800 mb-2">Immediate Actions</h4>
+            <ul className="space-y-1">
+              {data.actions.map((action, i) => (
+                <li key={i} className="text-sm text-red-700">{action}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-          <h4 className="text-sm font-semibold text-green-800 mb-2">
-            Strengths
-          </h4>
-          <ul className="space-y-1">
-            {data.strengths.map((s, i) => (
-              <li key={i} className="text-sm text-green-700">
-                {s}
-              </li>
-            ))}
-          </ul>
-        </div>
+        {data.strengths.length > 0 && (
+          <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+            <h4 className="text-sm font-semibold text-green-800 mb-2">Strengths</h4>
+            <ul className="space-y-1">
+              {data.strengths.map((s, i) => (
+                <li key={i} className="text-sm text-green-700">{s}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <h4 className="text-sm font-semibold text-amber-800 mb-2">
-            Areas for Improvement
-          </h4>
-          <ul className="space-y-1">
-            {data.areasForImprovement.map((a, i) => (
-              <li key={i} className="text-sm text-amber-700">
-                {a}
-              </li>
-            ))}
-          </ul>
-        </div>
+        {data.areasForImprovement.length > 0 && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <h4 className="text-sm font-semibold text-amber-800 mb-2">Areas for Improvement</h4>
+            <ul className="space-y-1">
+              {data.areasForImprovement.map((a, i) => (
+                <li key={i} className="text-sm text-amber-700">{a}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Regulatory Framework */}
@@ -575,20 +430,14 @@ export function HandoverDashboardWidget() {
           onClick={() => toggle("regulatory")}
           className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors"
         >
-          <span
-            className={`transform transition-transform ${expandedSection === "regulatory" ? "rotate-90" : ""}`}
-          >
-            {">"}
-          </span>
-          Regulatory Framework
+          <span className={"transform transition-transform " + (expandedSection === "regulatory" ? "rotate-90" : "")}>{">"}</span>
+          Regulatory Framework ({data.regulatoryLinks.length})
         </button>
         {expandedSection === "regulatory" && (
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4">
             <ul className="space-y-1">
               {data.regulatoryLinks.map((link, i) => (
-                <li key={i} className="text-xs text-gray-600">
-                  {link}
-                </li>
+                <li key={i} className="text-xs text-gray-600">{link}</li>
               ))}
             </ul>
           </div>

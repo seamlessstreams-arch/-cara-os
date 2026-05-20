@@ -1,801 +1,852 @@
-// ==============================================================================
-// Cornerstone -- Handover Intelligence Engine
-//
-// Pure deterministic engine. No AI, no external calls, no side-effects.
-//
-// "Effective communication between shifts is a key indicator of quality care.
-//  Inspectors look for evidence that critical information is reliably transferred
-//  and that continuity of care is maintained across shift changes."
-// -- SCCIF quality of care guidance
-//
-// Regulatory framework:
-//   CHR 2015 Reg 13         -- Leadership and management (effective systems)
-//   CHR 2015 Reg 12         -- Protection of children (information sharing)
-//   SCCIF                   -- Quality of care: communication between shifts
-//   CHR 2015 Reg 5(c)       -- Quality and purpose of care: continuity
-//   Working Together 2023    -- Information sharing to safeguard children
-//
-// Key requirements:
-//   1. Every shift change has a structured handover
-//   2. Critical safeguarding information is transferred and acknowledged
-//   3. Medication updates are communicated at every handover
-//   4. Incident information is briefed to incoming staff
-//   5. Children's emotional presentations are noted and shared
-//   6. Plan changes are highlighted and understood
-//   7. Staff continuity supports relationship-based practice
-//   8. Follow-up actions from handovers are completed
-//   9. Handover records are maintained for audit and inspection
-//  10. Missed handovers are escalated and investigated
-//
-// Scoring breakdown (0-100):
-//   Completeness:            25  -- Handovers completed vs expected
-//   Quality:                 30  -- Content quality indicators
-//   Information transfer:    25  -- Critical info acknowledged & followed up
-//   Continuity:              20  -- Staff overlap and consistency
-// ==============================================================================
+/* ──────────────────────────────────────────────────────────────
+   Handover Intelligence Engine
 
-// -- Types --------------------------------------------------------------------
+   Pure deterministic engine for evaluating how effectively a
+   children's residential home manages shift handovers — ensuring
+   critical information is reliably transferred between staff at
+   every shift change.
 
-export type ShiftType = "morning" | "afternoon" | "evening" | "waking_night" | "sleep_in";
+   Regulatory basis:
+     - CHR 2015 Reg 22 — Records to be kept
+     - CHR 2015 Reg 13 — Leadership and management
+     - NMS 19 — Staffing and supervision
+     - SCCIF — Leadership: communication and information sharing
+     - Children Act 1989 s.22 — Duty of care
+     - Quality Standards 2015 — Standard 7 (effective management)
+     - CHR 2015 Reg 5 — Fitness of employees
 
-export type HandoverStatus = "completed" | "partial" | "missed" | "late";
+   No AI. No external calls. Pure input → output.
+   ────────────────────────────────────────────────────────────── */
 
-export type InformationPriority = "critical" | "important" | "routine";
+// ── Types ──────────────────────────────────────────────────────────────────
 
-export type ContinuityRating = "excellent" | "good" | "adequate" | "poor";
+export type HandoverCategory =
+  | "shift_handover"
+  | "medication_handover"
+  | "incident_handover"
+  | "child_update"
+  | "risk_update"
+  | "appointment_reminder"
+  | "contact_update"
+  | "task_completion";
 
-export type ItemCategory =
-  | "risk"
-  | "medication"
-  | "behaviour"
-  | "emotional"
-  | "contact"
-  | "appointment"
-  | "incident"
-  | "plan_change"
-  | "general";
+export type HandoverOutcome =
+  | "fully_communicated"
+  | "partially_communicated"
+  | "information_gap"
+  | "follow_up_required"
+  | "not_applicable";
 
-// -- Data Models --------------------------------------------------------------
+export type Rating =
+  | "outstanding"
+  | "good"
+  | "requires_improvement"
+  | "inadequate";
 
-export interface HandoverItem {
-  id: string;
-  childId?: string;
-  childName?: string;
-  priority: InformationPriority;
-  category: ItemCategory;
-  summary: string;
-  acknowledged: boolean;
-  followUpRequired: boolean;
-  followUpCompletedAt?: string;
+// ── Label Maps ─────────────────────────────────────────────────────────────
+
+const handoverCategoryLabels: Record<HandoverCategory, string> = {
+  shift_handover: "Shift Handover",
+  medication_handover: "Medication Handover",
+  incident_handover: "Incident Handover",
+  child_update: "Child Update",
+  risk_update: "Risk Update",
+  appointment_reminder: "Appointment Reminder",
+  contact_update: "Contact Update",
+  task_completion: "Task Completion",
+};
+
+const handoverOutcomeLabels: Record<HandoverOutcome, string> = {
+  fully_communicated: "Fully Communicated",
+  partially_communicated: "Partially Communicated",
+  information_gap: "Information Gap",
+  follow_up_required: "Follow-up Required",
+  not_applicable: "Not Applicable",
+};
+
+const ratingLabels: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
+
+export function getHandoverCategoryLabel(category: HandoverCategory): string {
+  return handoverCategoryLabels[category];
 }
+
+export function getHandoverOutcomeLabel(outcome: HandoverOutcome): string {
+  return handoverOutcomeLabels[outcome];
+}
+
+export function getRatingLabel(rating: Rating): string {
+  return ratingLabels[rating];
+}
+
+// ── Core Interfaces ────────────────────────────────────────────────────────
 
 export interface HandoverRecord {
   id: string;
   homeId: string;
-  date: string; // ISO date
-  outgoingShift: ShiftType;
-  incomingShift: ShiftType;
-  outgoingStaffIds: string[];
-  incomingStaffIds: string[];
-  status: HandoverStatus;
-  startedAt?: string; // ISO datetime
-  completedAt?: string;
-  durationMinutes?: number;
-  // Content quality
-  childUpdatesIncluded: boolean;
-  riskUpdatesIncluded: boolean;
-  medicationUpdatesIncluded: boolean;
-  incidentsBriefed: boolean;
-  emotionalPresentationNoted: boolean;
-  planChangesHighlighted: boolean;
-  // Items
-  criticalItems: HandoverItem[];
-  importantItems: HandoverItem[];
-  routineItems: HandoverItem[];
-}
-
-export interface HandoverExpectation {
   date: string;
-  outgoingShift: ShiftType;
-  incomingShift: ShiftType;
+  childId: string;
+  childName: string;
+  category: HandoverCategory;
+  outcome: HandoverOutcome;
+  allChildrenCovered: boolean;
+  medicationStatusUpdated: boolean;
+  incidentsCommunicated: boolean;
+  tasksHandedOver: boolean;
+  documentationComplete: boolean;
+  timelyRecording: boolean;
 }
 
-// -- Result Types -------------------------------------------------------------
-
-export interface CompletenessResult {
-  totalExpected: number;
-  completed: number;
-  partial: number;
-  missed: number;
-  late: number;
-  completionRate: number;
+export interface HandoverPolicy {
+  handoverPolicy: boolean;
+  shiftHandoverProcedure: boolean;
+  medicationHandoverProtocol: boolean;
+  incidentCommunicationPolicy: boolean;
+  taskTrackingProcedure: boolean;
+  handoverRecordKeeping: boolean;
+  handoverAuditPolicy: boolean;
 }
 
-export interface QualityResult {
-  avgDurationMinutes: number;
-  childUpdatesRate: number;
-  riskUpdatesRate: number;
-  medicationUpdatesRate: number;
-  incidentBriefingRate: number;
-  emotionalPresentationRate: number;
-  planChangesRate: number;
-  overallQualityScore: number; // 0-100
+export interface StaffHandoverTraining {
+  staffId: string;
+  handoverCommunication: boolean;
+  medicationHandoverSkills: boolean;
+  incidentReporting: boolean;
+  taskPrioritisation: boolean;
+  childStatusAssessment: boolean;
+  handoverDocumentation: boolean;
 }
 
-export interface InformationTransferResult {
-  totalCriticalItems: number;
-  criticalAcknowledgedRate: number;
-  totalImportantItems: number;
-  importantAcknowledgedRate: number;
-  followUpRequiredCount: number;
-  followUpCompletedRate: number;
-  unacknowledgedCriticalItems: HandoverItem[];
+// ── Result Interfaces ──────────────────────────────────────────────────────
+
+export interface HandoverQualityResult {
+  totalRecords: number;
+  allChildrenCoveredRate: number;
+  medicationStatusUpdatedRate: number;
+  incidentsCommunicatedRate: number;
+  tasksHandedOverRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-export interface ContinuityResult {
-  avgStaffOverlap: number;
-  consistentStaffRate: number;
-  shiftCoverageByType: Record<ShiftType, number>;
-  continuityRating: ContinuityRating;
+export interface HandoverComplianceResult {
+  totalRecords: number;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  allChildrenCoveredRate: number;
+  categoryDiversityRatio: number;
+  uniqueCategories: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-export interface ShiftProfile {
-  shiftType: ShiftType;
-  totalHandovers: number;
-  completionRate: number;
-  avgQualityScore: number;
-  avgDuration: number;
-  criticalItemsMissed: number;
+export interface HandoverPolicyResult {
+  handoverPolicy: boolean;
+  shiftHandoverProcedure: boolean;
+  medicationHandoverProtocol: boolean;
+  incidentCommunicationPolicy: boolean;
+  taskTrackingProcedure: boolean;
+  handoverRecordKeeping: boolean;
+  handoverAuditPolicy: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-export interface HandoverIntelligenceResult {
+export interface StaffHandoverReadinessResult {
+  totalStaff: number;
+  handoverCommunicationRate: number;
+  medicationHandoverSkillsRate: number;
+  incidentReportingRate: number;
+  taskPrioritisationRate: number;
+  childStatusAssessmentRate: number;
+  handoverDocumentationRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+export interface ChildHandoverProfile {
+  childId: string;
+  childName: string;
+  totalRecords: number;
+  allChildrenCoveredRate: number;
+  medicationStatusUpdatedRate: number;
+  uniqueCategories: number;
+  handoverScore: number;
+}
+
+export interface HandoverIntelligence {
   homeId: string;
+  assessedAt: string;
   periodStart: string;
   periodEnd: string;
   overallScore: number;
-  rating: "outstanding" | "good" | "requires_improvement" | "inadequate";
-  completeness: CompletenessResult;
-  quality: QualityResult;
-  informationTransfer: InformationTransferResult;
-  continuity: ContinuityResult;
-  shiftProfiles: ShiftProfile[];
+  rating: Rating;
+  handoverQuality: HandoverQualityResult;
+  handoverCompliance: HandoverComplianceResult;
+  handoverPolicy: HandoverPolicyResult;
+  staffReadiness: StaffHandoverReadinessResult;
+  childProfiles: ChildHandoverProfile[];
   strengths: string[];
   areasForImprovement: string[];
   actions: string[];
   regulatoryLinks: string[];
 }
 
-// -- Constants ----------------------------------------------------------------
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const SHIFT_LABELS: Record<ShiftType, string> = {
-  morning: "Morning",
-  afternoon: "Afternoon",
-  evening: "Evening",
-  waking_night: "Waking Night",
-  sleep_in: "Sleep-in",
-};
-
-const CATEGORY_LABELS: Record<ItemCategory, string> = {
-  risk: "Risk",
-  medication: "Medication",
-  behaviour: "Behaviour",
-  emotional: "Emotional",
-  contact: "Contact",
-  appointment: "Appointment",
-  incident: "Incident",
-  plan_change: "Plan Change",
-  general: "General",
-};
-
-export function getShiftLabel(s: ShiftType): string {
-  return SHIFT_LABELS[s] ?? s.replace(/_/g, " ");
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
 }
 
-export function getItemCategoryLabel(c: ItemCategory): string {
-  return CATEGORY_LABELS[c] ?? c.replace(/_/g, " ");
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
 }
 
-// -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
-function inPeriod(date: string, start: string, end: string): boolean {
-  return date >= start && date <= end;
-}
-
-function filterRecordsByPeriod(
-  records: HandoverRecord[],
-  periodStart: string,
-  periodEnd: string,
-): HandoverRecord[] {
-  return records.filter((r) => inPeriod(r.date, periodStart, periodEnd));
-}
-
-function filterExpectationsByPeriod(
-  expectations: HandoverExpectation[],
-  periodStart: string,
-  periodEnd: string,
-): HandoverExpectation[] {
-  return expectations.filter((e) => inPeriod(e.date, periodStart, periodEnd));
-}
-
-// -- Core Functions -----------------------------------------------------------
-
-export function evaluateHandoverCompleteness(
-  records: HandoverRecord[],
-  expectations: HandoverExpectation[],
-  periodStart: string,
-  periodEnd: string,
-): CompletenessResult {
-  const periodExpectations = filterExpectationsByPeriod(expectations, periodStart, periodEnd);
-  const periodRecords = filterRecordsByPeriod(records, periodStart, periodEnd);
-
-  const totalExpected = periodExpectations.length;
-  const completed = periodRecords.filter((r) => r.status === "completed").length;
-  const partial = periodRecords.filter((r) => r.status === "partial").length;
-  const missed = periodRecords.filter((r) => r.status === "missed").length;
-  const late = periodRecords.filter((r) => r.status === "late").length;
-
-  // completionRate: completed + late count as "done" (late is still done)
-  const doneCount = completed + late;
-  const completionRate = pct(doneCount, totalExpected);
-
-  return {
-    totalExpected,
-    completed,
-    partial,
-    missed,
-    late,
-    completionRate,
-  };
-}
+// ── Evaluator 1: Handover Quality (0-25) ─────────────────────────────────
 
 export function evaluateHandoverQuality(
   records: HandoverRecord[],
-  periodStart: string,
-  periodEnd: string,
-): QualityResult {
-  const periodRecords = filterRecordsByPeriod(records, periodStart, periodEnd);
-  // Only assess quality on completed/late handovers (not missed/partial)
-  const qualityRecords = periodRecords.filter(
-    (r) => r.status === "completed" || r.status === "late",
-  );
-  const count = qualityRecords.length;
+): HandoverQualityResult {
+  const totalRecords = records.length;
 
-  if (count === 0) {
+  if (totalRecords === 0) {
     return {
-      avgDurationMinutes: 0,
-      childUpdatesRate: 0,
-      riskUpdatesRate: 0,
-      medicationUpdatesRate: 0,
-      incidentBriefingRate: 0,
-      emotionalPresentationRate: 0,
-      planChangesRate: 0,
-      overallQualityScore: 0,
+      totalRecords: 0,
+      allChildrenCoveredRate: 0,
+      medicationStatusUpdatedRate: 0,
+      incidentsCommunicatedRate: 0,
+      tasksHandedOverRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No handover records found — handover quality cannot be assessed"],
     };
   }
 
-  const totalDuration = qualityRecords.reduce(
-    (sum, r) => sum + (r.durationMinutes ?? 0),
-    0,
-  );
-  const avgDurationMinutes = Math.round((totalDuration / count) * 10) / 10;
+  const coveredCount = records.filter((r) => r.allChildrenCovered).length;
+  const allChildrenCoveredRate = pct(coveredCount, totalRecords);
 
-  const childUpdatesRate = pct(
-    qualityRecords.filter((r) => r.childUpdatesIncluded).length,
-    count,
-  );
-  const riskUpdatesRate = pct(
-    qualityRecords.filter((r) => r.riskUpdatesIncluded).length,
-    count,
-  );
-  const medicationUpdatesRate = pct(
-    qualityRecords.filter((r) => r.medicationUpdatesIncluded).length,
-    count,
-  );
-  const incidentBriefingRate = pct(
-    qualityRecords.filter((r) => r.incidentsBriefed).length,
-    count,
-  );
-  const emotionalPresentationRate = pct(
-    qualityRecords.filter((r) => r.emotionalPresentationNoted).length,
-    count,
-  );
-  const planChangesRate = pct(
-    qualityRecords.filter((r) => r.planChangesHighlighted).length,
-    count,
-  );
+  const medCount = records.filter((r) => r.medicationStatusUpdated).length;
+  const medicationStatusUpdatedRate = pct(medCount, totalRecords);
 
-  // Overall quality score: average of all 6 indicators
-  const indicators = [
-    childUpdatesRate,
-    riskUpdatesRate,
-    medicationUpdatesRate,
-    incidentBriefingRate,
-    emotionalPresentationRate,
-    planChangesRate,
-  ];
-  const overallQualityScore = Math.round(
-    indicators.reduce((sum, v) => sum + v, 0) / indicators.length,
-  );
+  const incidentCount = records.filter((r) => r.incidentsCommunicated).length;
+  const incidentsCommunicatedRate = pct(incidentCount, totalRecords);
 
-  return {
-    avgDurationMinutes,
-    childUpdatesRate,
-    riskUpdatesRate,
-    medicationUpdatesRate,
-    incidentBriefingRate,
-    emotionalPresentationRate,
-    planChangesRate,
-    overallQualityScore,
-  };
-}
+  const taskCount = records.filter((r) => r.tasksHandedOver).length;
+  const tasksHandedOverRate = pct(taskCount, totalRecords);
 
-export function evaluateInformationTransfer(
-  records: HandoverRecord[],
-  periodStart: string,
-  periodEnd: string,
-): InformationTransferResult {
-  const periodRecords = filterRecordsByPeriod(records, periodStart, periodEnd);
+  // Weights: allChildrenCoveredRate 7 + medicationStatusUpdatedRate 6 + incidentsCommunicatedRate 6 + tasksHandedOverRate 6 = 25
+  let score = 0;
+  score += (allChildrenCoveredRate / 100) * 7;
+  score += (medicationStatusUpdatedRate / 100) * 6;
+  score += (incidentsCommunicatedRate / 100) * 6;
+  score += (tasksHandedOverRate / 100) * 6;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
 
-  const allCritical: HandoverItem[] = [];
-  const allImportant: HandoverItem[] = [];
-  let followUpRequired = 0;
-  let followUpCompleted = 0;
+  const strengths: string[] = [];
+  const concerns: string[] = [];
 
-  for (const r of periodRecords) {
-    allCritical.push(...r.criticalItems);
-    allImportant.push(...r.importantItems);
-
-    const allItems = [...r.criticalItems, ...r.importantItems, ...r.routineItems];
-    for (const item of allItems) {
-      if (item.followUpRequired) {
-        followUpRequired++;
-        if (item.followUpCompletedAt) {
-          followUpCompleted++;
-        }
-      }
-    }
+  if (allChildrenCoveredRate >= 80) {
+    strengths.push("Strong child coverage in handovers: " + allChildrenCoveredRate + "% of handovers cover all children");
+  } else if (allChildrenCoveredRate < 50) {
+    concerns.push("Child coverage rate at " + allChildrenCoveredRate + "% — not all children consistently included in handovers");
   }
 
-  const totalCriticalItems = allCritical.length;
-  const criticalAcknowledged = allCritical.filter((i) => i.acknowledged).length;
-  const criticalAcknowledgedRate = pct(criticalAcknowledged, totalCriticalItems);
+  if (medicationStatusUpdatedRate >= 80) {
+    strengths.push("Excellent medication handover: " + medicationStatusUpdatedRate + "% of handovers include medication updates");
+  } else if (medicationStatusUpdatedRate < 50) {
+    concerns.push("Medication update rate at " + medicationStatusUpdatedRate + "% — medication safety at risk");
+  }
 
-  const totalImportantItems = allImportant.length;
-  const importantAcknowledged = allImportant.filter((i) => i.acknowledged).length;
-  const importantAcknowledgedRate = pct(importantAcknowledged, totalImportantItems);
+  if (incidentsCommunicatedRate >= 80) {
+    strengths.push("Good incident communication: " + incidentsCommunicatedRate + "% of handovers include incident briefing");
+  } else if (incidentsCommunicatedRate < 50) {
+    concerns.push("Incident communication rate at " + incidentsCommunicatedRate + "% — critical information may not transfer between shifts");
+  }
 
-  const followUpCompletedRate = pct(followUpCompleted, followUpRequired);
-
-  const unacknowledgedCriticalItems = allCritical.filter((i) => !i.acknowledged);
+  if (tasksHandedOverRate >= 80) {
+    strengths.push("Strong task handover: " + tasksHandedOverRate + "% of handovers include task transfer");
+  } else if (tasksHandedOverRate < 50) {
+    concerns.push("Task handover rate at " + tasksHandedOverRate + "% — tasks may be dropped between shifts");
+  }
 
   return {
-    totalCriticalItems,
-    criticalAcknowledgedRate,
-    totalImportantItems,
-    importantAcknowledgedRate,
-    followUpRequiredCount: followUpRequired,
-    followUpCompletedRate,
-    unacknowledgedCriticalItems,
+    totalRecords,
+    allChildrenCoveredRate,
+    medicationStatusUpdatedRate,
+    incidentsCommunicatedRate,
+    tasksHandedOverRate,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-export function evaluateContinuityOfCare(
-  records: HandoverRecord[],
-  periodStart: string,
-  periodEnd: string,
-): ContinuityResult {
-  const periodRecords = filterRecordsByPeriod(records, periodStart, periodEnd);
+// ── Evaluator 2: Handover Compliance (0-25) ──────────────────────────────
 
-  if (periodRecords.length === 0) {
+export function evaluateHandoverCompliance(
+  records: HandoverRecord[],
+): HandoverComplianceResult {
+  const totalRecords = records.length;
+
+  if (totalRecords === 0) {
     return {
-      avgStaffOverlap: 0,
-      consistentStaffRate: 0,
-      shiftCoverageByType: {
-        morning: 0,
-        afternoon: 0,
-        evening: 0,
-        waking_night: 0,
-        sleep_in: 0,
-      },
-      continuityRating: "poor",
+      totalRecords: 0,
+      documentationRate: 0,
+      timelyRecordingRate: 0,
+      allChildrenCoveredRate: 0,
+      categoryDiversityRatio: 0,
+      uniqueCategories: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No handover records found — compliance cannot be assessed"],
     };
   }
 
-  // Staff overlap: count how many outgoing staff also appeared in the previous
-  // handover's incoming staff (i.e. they stayed from one shift to handover with next)
-  let totalOverlap = 0;
-  let overlapCount = 0;
-  for (const r of periodRecords) {
-    if (r.outgoingStaffIds.length > 0 && r.incomingStaffIds.length > 0) {
-      const overlap = r.outgoingStaffIds.filter((id) =>
-        r.incomingStaffIds.includes(id),
-      ).length;
-      // We're interested in whether any staff carry over, so overlap > 0 is good
-      totalOverlap += overlap > 0 ? 1 : 0;
-      overlapCount++;
-    }
-  }
-  const avgStaffOverlap = overlapCount > 0
-    ? Math.round((totalOverlap / overlapCount) * 100) / 100
-    : 0;
+  const docCount = records.filter((r) => r.documentationComplete).length;
+  const documentationRate = pct(docCount, totalRecords);
 
-  // Consistent staff rate: how many handovers had at least 2 outgoing staff
-  // (indicating proper staffing levels for a structured handover)
-  const consistentCount = periodRecords.filter(
-    (r) => r.outgoingStaffIds.length >= 2 || r.incomingStaffIds.length >= 2,
-  ).length;
-  const consistentStaffRate = pct(consistentCount, periodRecords.length);
+  const timelyCount = records.filter((r) => r.timelyRecording).length;
+  const timelyRecordingRate = pct(timelyCount, totalRecords);
 
-  // Shift coverage by type
-  const shiftTypes: ShiftType[] = ["morning", "afternoon", "evening", "waking_night", "sleep_in"];
-  const shiftCoverageByType: Record<ShiftType, number> = {
-    morning: 0,
-    afternoon: 0,
-    evening: 0,
-    waking_night: 0,
-    sleep_in: 0,
-  };
-  for (const st of shiftTypes) {
-    const shiftRecords = periodRecords.filter(
-      (r) => r.outgoingShift === st || r.incomingShift === st,
-    );
-    const completedShift = shiftRecords.filter(
-      (r) => r.status === "completed" || r.status === "late",
-    ).length;
-    shiftCoverageByType[st] = pct(completedShift, shiftRecords.length);
+  const coveredCount = records.filter((r) => r.allChildrenCovered).length;
+  const allChildrenCoveredRate = pct(coveredCount, totalRecords);
+
+  const uniqueCategoriesSet = new Set(records.map((r) => r.category));
+  const uniqueCategories = uniqueCategoriesSet.size;
+  const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
+
+  // Weights: documentationRate 8 + timelyRecordingRate 7 + allChildrenCoveredRate 5 + categoryDiversityRatio 5 = 25
+  let score = 0;
+  score += (documentationRate / 100) * 8;
+  score += (timelyRecordingRate / 100) * 7;
+  score += (allChildrenCoveredRate / 100) * 5;
+  score += categoryDiversityRatio * 5;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (documentationRate >= 90) {
+    strengths.push("Excellent documentation: " + documentationRate + "% of handovers fully documented");
+  } else if (documentationRate < 50) {
+    concerns.push("Documentation rate at " + documentationRate + "% — handover records are incomplete");
   }
 
-  // Continuity rating
-  const completedRecords = periodRecords.filter(
-    (r) => r.status === "completed" || r.status === "late",
-  );
-  const completionRate = pct(completedRecords.length, periodRecords.length);
+  if (timelyRecordingRate >= 90) {
+    strengths.push("Timely recording: " + timelyRecordingRate + "% of handovers recorded on time");
+  } else if (timelyRecordingRate < 50) {
+    concerns.push("Timely recording rate at " + timelyRecordingRate + "% — handovers not recorded promptly");
+  }
 
-  let continuityRating: ContinuityRating;
-  if (completionRate >= 95 && consistentStaffRate >= 80) {
-    continuityRating = "excellent";
-  } else if (completionRate >= 85 && consistentStaffRate >= 60) {
-    continuityRating = "good";
-  } else if (completionRate >= 70 && consistentStaffRate >= 40) {
-    continuityRating = "adequate";
-  } else {
-    continuityRating = "poor";
+  if (allChildrenCoveredRate >= 90) {
+    strengths.push("Comprehensive child coverage: " + allChildrenCoveredRate + "% of handovers cover all children");
+  } else if (allChildrenCoveredRate < 50) {
+    concerns.push("Child coverage at " + allChildrenCoveredRate + "% — gaps in information transfer for some children");
+  }
+
+  if (uniqueCategories >= 6) {
+    strengths.push("Comprehensive handover coverage: " + uniqueCategories + " of 8 categories represented");
+  } else if (uniqueCategories <= 2) {
+    concerns.push("Only " + uniqueCategories + " handover category(ies) covered — limited handover scope");
   }
 
   return {
-    avgStaffOverlap,
-    consistentStaffRate,
-    shiftCoverageByType,
-    continuityRating,
+    totalRecords,
+    documentationRate,
+    timelyRecordingRate,
+    allChildrenCoveredRate,
+    categoryDiversityRatio,
+    uniqueCategories,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-export function buildShiftProfiles(
-  records: HandoverRecord[],
-  periodStart: string,
-  periodEnd: string,
-): ShiftProfile[] {
-  const periodRecords = filterRecordsByPeriod(records, periodStart, periodEnd);
-  const shiftTypes: ShiftType[] = ["morning", "afternoon", "evening", "waking_night", "sleep_in"];
+// ── Evaluator 3: Handover Policy (0-25) ──────────────────────────────────
 
-  return shiftTypes
-    .map((shiftType) => {
-      // Records where this shift type was involved (outgoing or incoming)
-      const shiftRecords = periodRecords.filter(
-        (r) => r.outgoingShift === shiftType || r.incomingShift === shiftType,
-      );
-      const totalHandovers = shiftRecords.length;
+export function evaluateHandoverPolicy(
+  policy: HandoverPolicy | null,
+): HandoverPolicyResult {
+  if (policy === null) {
+    return {
+      handoverPolicy: false,
+      shiftHandoverProcedure: false,
+      medicationHandoverProtocol: false,
+      incidentCommunicationPolicy: false,
+      taskTrackingProcedure: false,
+      handoverRecordKeeping: false,
+      handoverAuditPolicy: false,
+      score: 0,
+      strengths: [],
+      concerns: ["No handover policy in place — URGENT: develop comprehensive handover policy immediately"],
+    };
+  }
 
-      if (totalHandovers === 0) {
-        return {
-          shiftType,
-          totalHandovers: 0,
-          completionRate: 0,
-          avgQualityScore: 0,
-          avgDuration: 0,
-          criticalItemsMissed: 0,
-        };
-      }
+  // 7 booleans weighted: 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.handoverPolicy) score += 4;
+  if (policy.shiftHandoverProcedure) score += 4;
+  if (policy.medicationHandoverProtocol) score += 4;
+  if (policy.incidentCommunicationPolicy) score += 4;
+  if (policy.taskTrackingProcedure) score += 3;
+  if (policy.handoverRecordKeeping) score += 3;
+  if (policy.handoverAuditPolicy) score += 3;
 
-      const completedOrLate = shiftRecords.filter(
-        (r) => r.status === "completed" || r.status === "late",
-      );
-      const completionRate = pct(completedOrLate.length, totalHandovers);
+  const strengths: string[] = [];
+  const concerns: string[] = [];
 
-      // Quality score for completed/late handovers
-      let qualitySum = 0;
-      for (const r of completedOrLate) {
-        let indicators = 0;
-        let total = 0;
-        if (r.childUpdatesIncluded) indicators++;
-        total++;
-        if (r.riskUpdatesIncluded) indicators++;
-        total++;
-        if (r.medicationUpdatesIncluded) indicators++;
-        total++;
-        if (r.incidentsBriefed) indicators++;
-        total++;
-        if (r.emotionalPresentationNoted) indicators++;
-        total++;
-        if (r.planChangesHighlighted) indicators++;
-        total++;
-        qualitySum += pct(indicators, total);
-      }
-      const avgQualityScore = completedOrLate.length > 0
-        ? Math.round(qualitySum / completedOrLate.length)
-        : 0;
+  const trueCount = [
+    policy.handoverPolicy,
+    policy.shiftHandoverProcedure,
+    policy.medicationHandoverProtocol,
+    policy.incidentCommunicationPolicy,
+    policy.taskTrackingProcedure,
+    policy.handoverRecordKeeping,
+    policy.handoverAuditPolicy,
+  ].filter(Boolean).length;
 
-      // Average duration
-      const durationsPresent = completedOrLate.filter((r) => r.durationMinutes !== undefined);
-      const avgDuration = durationsPresent.length > 0
-        ? Math.round(
-            (durationsPresent.reduce((sum, r) => sum + (r.durationMinutes ?? 0), 0) /
-              durationsPresent.length) *
-              10,
-          ) / 10
-        : 0;
+  if (trueCount === 7) {
+    strengths.push("Complete handover policy framework in place (7/7 components)");
+  } else if (trueCount >= 5) {
+    strengths.push("Good policy coverage: " + trueCount + "/7 handover policy components in place");
+  }
 
-      // Critical items missed (unacknowledged)
-      let criticalItemsMissed = 0;
-      for (const r of shiftRecords) {
-        criticalItemsMissed += r.criticalItems.filter((i) => !i.acknowledged).length;
-      }
+  if (!policy.handoverPolicy) {
+    concerns.push("No overarching handover policy — staff may lack clear guidance on handover expectations");
+  }
+  if (!policy.shiftHandoverProcedure) {
+    concerns.push("No shift handover procedure — inconsistent handover practice may result");
+  }
+  if (!policy.medicationHandoverProtocol) {
+    concerns.push("No medication handover protocol — medication safety at risk during shift changes");
+  }
+  if (!policy.incidentCommunicationPolicy) {
+    concerns.push("No incident communication policy — critical incidents may not be relayed between shifts");
+  }
+  if (!policy.taskTrackingProcedure) {
+    concerns.push("No task tracking procedure — tasks may be dropped between shifts");
+  }
+  if (!policy.handoverRecordKeeping) {
+    concerns.push("No handover record-keeping procedure — audit trail compromised");
+  }
+  if (!policy.handoverAuditPolicy) {
+    concerns.push("No handover audit policy — quality of handovers cannot be monitored");
+  }
 
-      return {
-        shiftType,
-        totalHandovers,
-        completionRate,
-        avgQualityScore,
-        avgDuration,
-        criticalItemsMissed,
-      };
-    })
-    .filter((p) => p.totalHandovers > 0);
+  return {
+    handoverPolicy: policy.handoverPolicy,
+    shiftHandoverProcedure: policy.shiftHandoverProcedure,
+    medicationHandoverProtocol: policy.medicationHandoverProtocol,
+    incidentCommunicationPolicy: policy.incidentCommunicationPolicy,
+    taskTrackingProcedure: policy.taskTrackingProcedure,
+    handoverRecordKeeping: policy.handoverRecordKeeping,
+    handoverAuditPolicy: policy.handoverAuditPolicy,
+    score,
+    strengths,
+    concerns,
+  };
 }
 
-// -- Main Intelligence Function -----------------------------------------------
+// ── Evaluator 4: Staff Handover Readiness (0-25) ─────────────────────────
+
+export function evaluateStaffHandoverReadiness(
+  training: StaffHandoverTraining[],
+): StaffHandoverReadinessResult {
+  const totalStaff = training.length;
+
+  if (totalStaff === 0) {
+    return {
+      totalStaff: 0,
+      handoverCommunicationRate: 0,
+      medicationHandoverSkillsRate: 0,
+      incidentReportingRate: 0,
+      taskPrioritisationRate: 0,
+      childStatusAssessmentRate: 0,
+      handoverDocumentationRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No staff training records — URGENT: schedule handover training for all staff"],
+    };
+  }
+
+  const commCount = training.filter((t) => t.handoverCommunication).length;
+  const handoverCommunicationRate = pct(commCount, totalStaff);
+
+  const medCount = training.filter((t) => t.medicationHandoverSkills).length;
+  const medicationHandoverSkillsRate = pct(medCount, totalStaff);
+
+  const incidentCount = training.filter((t) => t.incidentReporting).length;
+  const incidentReportingRate = pct(incidentCount, totalStaff);
+
+  const taskCount = training.filter((t) => t.taskPrioritisation).length;
+  const taskPrioritisationRate = pct(taskCount, totalStaff);
+
+  const childCount = training.filter((t) => t.childStatusAssessment).length;
+  const childStatusAssessmentRate = pct(childCount, totalStaff);
+
+  const docCount = training.filter((t) => t.handoverDocumentation).length;
+  const handoverDocumentationRate = pct(docCount, totalStaff);
+
+  // Weights: 6+5+5+4+3+2 = 25
+  let score = 0;
+  score += (handoverCommunicationRate / 100) * 6;
+  score += (medicationHandoverSkillsRate / 100) * 5;
+  score += (incidentReportingRate / 100) * 5;
+  score += (taskPrioritisationRate / 100) * 4;
+  score += (childStatusAssessmentRate / 100) * 3;
+  score += (handoverDocumentationRate / 100) * 2;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (handoverCommunicationRate >= 80) {
+    strengths.push("Strong handover communication skills: " + handoverCommunicationRate + "% of staff");
+  } else if (handoverCommunicationRate < 50) {
+    concerns.push("Handover communication skills at " + handoverCommunicationRate + "% — foundational training needed");
+  }
+
+  if (medicationHandoverSkillsRate >= 80) {
+    strengths.push("Good medication handover skills: " + medicationHandoverSkillsRate + "% of staff competent");
+  } else if (medicationHandoverSkillsRate < 50) {
+    concerns.push("Medication handover skills at " + medicationHandoverSkillsRate + "% — medication safety training required");
+  }
+
+  if (incidentReportingRate >= 80) {
+    strengths.push("Strong incident reporting skills: " + incidentReportingRate + "% of staff");
+  } else if (incidentReportingRate < 50) {
+    concerns.push("Incident reporting skills at " + incidentReportingRate + "% — staff may fail to relay critical incidents");
+  }
+
+  if (taskPrioritisationRate >= 80) {
+    strengths.push("Good task prioritisation skills: " + taskPrioritisationRate + "% of staff");
+  } else if (taskPrioritisationRate < 50) {
+    concerns.push("Task prioritisation skills at " + taskPrioritisationRate + "% — task handover may be incomplete");
+  }
+
+  if (childStatusAssessmentRate >= 80) {
+    strengths.push("Child status assessment skills strong: " + childStatusAssessmentRate + "% of staff");
+  } else if (childStatusAssessmentRate < 50) {
+    concerns.push("Child status assessment skills at " + childStatusAssessmentRate + "% — children's needs may not be fully communicated");
+  }
+
+  if (handoverDocumentationRate >= 80) {
+    strengths.push("Good handover documentation skills: " + handoverDocumentationRate + "% of staff");
+  } else if (handoverDocumentationRate < 50) {
+    concerns.push("Handover documentation skills at " + handoverDocumentationRate + "% — records may be incomplete");
+  }
+
+  return {
+    totalStaff,
+    handoverCommunicationRate,
+    medicationHandoverSkillsRate,
+    incidentReportingRate,
+    taskPrioritisationRate,
+    childStatusAssessmentRate,
+    handoverDocumentationRate,
+    score,
+    strengths,
+    concerns,
+  };
+}
+
+// ── Build Child Handover Profiles ────────────────────────────────────────
+
+export function buildChildHandoverProfiles(
+  records: HandoverRecord[],
+): ChildHandoverProfile[] {
+  if (records.length === 0) return [];
+
+  const childMap = new Map<string, { childId: string; childName: string; records: HandoverRecord[] }>();
+
+  for (const r of records) {
+    if (!childMap.has(r.childId)) {
+      childMap.set(r.childId, { childId: r.childId, childName: r.childName, records: [] });
+    }
+    childMap.get(r.childId)!.records.push(r);
+  }
+
+  return Array.from(childMap.values()).map((child) => {
+    const totalRecords = child.records.length;
+
+    const coveredCount = child.records.filter((r) => r.allChildrenCovered).length;
+    const allChildrenCoveredRate = pct(coveredCount, totalRecords);
+
+    const medCount = child.records.filter((r) => r.medicationStatusUpdated).length;
+    const medicationStatusUpdatedRate = pct(medCount, totalRecords);
+
+    const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
+    const uniqueCategories = uniqueCategoriesSet.size;
+
+    // frequency: >=10 records -> 2, >=5 -> 1, else 0
+    let frequencyScore = 0;
+    if (totalRecords >= 10) frequencyScore = 2;
+    else if (totalRecords >= 5) frequencyScore = 1;
+
+    // rate1 (allChildrenCoveredRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
+    let rate1Score = 0;
+    if (allChildrenCoveredRate >= 80) rate1Score = 3;
+    else if (allChildrenCoveredRate >= 60) rate1Score = 2;
+    else if (allChildrenCoveredRate >= 40) rate1Score = 1;
+
+    // rate2 (medicationStatusUpdatedRate): same thresholds
+    let rate2Score = 0;
+    if (medicationStatusUpdatedRate >= 80) rate2Score = 3;
+    else if (medicationStatusUpdatedRate >= 60) rate2Score = 2;
+    else if (medicationStatusUpdatedRate >= 40) rate2Score = 1;
+
+    // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
+    let diversityBonus = 0;
+    if (uniqueCategories >= 4) diversityBonus = 2;
+    else if (uniqueCategories >= 2) diversityBonus = 1;
+
+    const handoverScore = Math.min(10, frequencyScore + rate1Score + rate2Score + diversityBonus);
+
+    return {
+      childId: child.childId,
+      childName: child.childName,
+      totalRecords,
+      allChildrenCoveredRate,
+      medicationStatusUpdatedRate,
+      uniqueCategories,
+      handoverScore,
+    };
+  });
+}
+
+// ── Orchestrator ──────────────────────────────────────────────────────────
 
 export function generateHandoverIntelligence(
   records: HandoverRecord[],
-  expectations: HandoverExpectation[],
+  policy: HandoverPolicy | null,
+  training: StaffHandoverTraining[],
   homeId: string,
   periodStart: string,
   periodEnd: string,
-): HandoverIntelligenceResult {
-  const completeness = evaluateHandoverCompleteness(records, expectations, periodStart, periodEnd);
-  const quality = evaluateHandoverQuality(records, periodStart, periodEnd);
-  const informationTransfer = evaluateInformationTransfer(records, periodStart, periodEnd);
-  const continuity = evaluateContinuityOfCare(records, periodStart, periodEnd);
-  const shiftProfiles = buildShiftProfiles(records, periodStart, periodEnd);
+): HandoverIntelligence {
+  const assessedAt = new Date().toISOString();
 
-  // -- Scoring ----------------------------------------------------------------
+  // Filter records to period
+  const periodRecords = records.filter(
+    (r) => r.date >= periodStart && r.date <= periodEnd,
+  );
 
-  // 1. Completeness (25 points): based on completionRate
-  let completenessScore = 0;
-  if (completeness.completionRate > 95) completenessScore = 25;
-  else if (completeness.completionRate > 85) completenessScore = 20;
-  else if (completeness.completionRate > 70) completenessScore = 12;
-  else completenessScore = 5;
+  // Evaluate each layer
+  const handoverQuality = evaluateHandoverQuality(periodRecords);
+  const handoverCompliance = evaluateHandoverCompliance(periodRecords);
+  const handoverPolicyResult = evaluateHandoverPolicy(policy);
+  const staffReadiness = evaluateStaffHandoverReadiness(training);
 
-  // 2. Quality (30 points): based on overallQualityScore
-  // Each quality indicator above 90% adds points
-  let qualityScore = 0;
-  const qualityIndicators = [
-    quality.childUpdatesRate,
-    quality.riskUpdatesRate,
-    quality.medicationUpdatesRate,
-    quality.incidentBriefingRate,
-    quality.emotionalPresentationRate,
-    quality.planChangesRate,
-  ];
-  const indicatorsAbove90 = qualityIndicators.filter((v) => v > 90).length;
-  if (quality.overallQualityScore > 90) qualityScore = 30;
-  else if (quality.overallQualityScore > 80) qualityScore = 24;
-  else if (quality.overallQualityScore > 70) qualityScore = 18;
-  else if (quality.overallQualityScore > 50) qualityScore = 10;
-  else qualityScore = 3;
-  // Bonus for individual indicators above 90%
-  qualityScore = Math.min(30, qualityScore + Math.floor(indicatorsAbove90 / 2));
+  // Build child profiles
+  const childProfiles = buildChildHandoverProfiles(periodRecords);
 
-  // 3. Information transfer (25 points): criticalAcknowledgedRate and followUpCompletedRate
-  let transferScore = 0;
-  const periodRecords = records.filter((r) => r.date >= periodStart && r.date <= periodEnd);
-  if (periodRecords.length === 0) {
-    // No records at all = no evidence of information transfer
-    transferScore = 0;
-  } else {
-    const critWeight = 0.6;
-    const followWeight = 0.4;
-    const critComponent = informationTransfer.totalCriticalItems > 0
-      ? informationTransfer.criticalAcknowledgedRate
-      : 100; // No critical items = perfect
-    const followComponent = informationTransfer.followUpRequiredCount > 0
-      ? informationTransfer.followUpCompletedRate
-      : 100;
-    const transferPct = Math.round(critComponent * critWeight + followComponent * followWeight);
-    if (transferPct > 95) transferScore = 25;
-    else if (transferPct > 85) transferScore = 20;
-    else if (transferPct > 70) transferScore = 12;
-    else transferScore = 5;
-  }
-
-  // 4. Continuity (20 points): based on continuityRating and staffOverlap
-  let continuityScore = 0;
-  if (continuity.continuityRating === "excellent") continuityScore = 20;
-  else if (continuity.continuityRating === "good") continuityScore = 15;
-  else if (continuity.continuityRating === "adequate") continuityScore = 8;
-  else continuityScore = 3;
-
+  // Overall score capped at 100
   const overallScore = Math.min(
     100,
-    Math.max(0, completenessScore + qualityScore + transferScore + continuityScore),
+    Math.round(
+      handoverQuality.score +
+      handoverCompliance.score +
+      handoverPolicyResult.score +
+      staffReadiness.score,
+    ),
   );
 
-  const rating: HandoverIntelligenceResult["rating"] =
-    overallScore >= 80
-      ? "outstanding"
-      : overallScore >= 60
-        ? "good"
-        : overallScore >= 40
-          ? "requires_improvement"
-          : "inadequate";
+  const rating = getRating(overallScore);
 
-  // -- Strengths / Areas / Actions --------------------------------------------
-
-  const strengths: string[] = [];
-  const areasForImprovement: string[] = [];
-  const actions: string[] = [];
-
-  // Strengths
-  if (completeness.completionRate >= 95) {
-    strengths.push(
-      `Excellent handover completion rate at ${completeness.completionRate}% -- shifts are reliably handed over`,
-    );
-  }
-  if (quality.overallQualityScore >= 90) {
-    strengths.push(
-      "High quality handovers with comprehensive information sharing across all indicators",
-    );
-  }
-  if (
-    informationTransfer.totalCriticalItems > 0 &&
-    informationTransfer.criticalAcknowledgedRate >= 100
-  ) {
-    strengths.push(
-      "All critical information items acknowledged by incoming staff -- strong safeguarding communication",
-    );
-  }
-  if (
-    informationTransfer.followUpRequiredCount > 0 &&
-    informationTransfer.followUpCompletedRate >= 90
-  ) {
-    strengths.push("Handover follow-up actions are consistently completed");
-  }
-  if (continuity.continuityRating === "excellent") {
-    strengths.push(
-      "Excellent continuity of care -- consistent staffing supports relationship-based practice",
-    );
-  }
-  if (completeness.missed === 0 && completeness.totalExpected > 0) {
-    strengths.push("No missed handovers in the period -- all shift changes were managed");
-  }
-  if (quality.medicationUpdatesRate >= 100) {
-    strengths.push("Medication updates included in every handover -- strong medication safety");
-  }
-  if (strengths.length === 0) {
-    strengths.push(
-      "No significant strengths identified -- handover processes require attention",
-    );
-  }
-
-  // Areas for improvement
-  if (completeness.completionRate < 85) {
-    areasForImprovement.push(
-      `Handover completion rate at ${completeness.completionRate}% -- target 95% or above`,
-    );
-  }
-  if (completeness.missed > 0) {
-    areasForImprovement.push(
-      `${completeness.missed} missed handover${completeness.missed !== 1 ? "s" : ""} in the period -- every shift change must have a structured handover`,
-    );
-  }
-  if (quality.overallQualityScore < 70 && quality.overallQualityScore > 0) {
-    areasForImprovement.push(
-      `Handover quality score at ${quality.overallQualityScore}% -- review handover template and staff practice`,
-    );
-  }
-  if (quality.riskUpdatesRate < 90 && quality.riskUpdatesRate > 0) {
-    areasForImprovement.push(
-      `Risk updates only included in ${quality.riskUpdatesRate}% of handovers -- must be included every time`,
-    );
-  }
-  if (quality.emotionalPresentationRate < 80 && quality.emotionalPresentationRate > 0) {
-    areasForImprovement.push(
-      `Emotional presentations noted in only ${quality.emotionalPresentationRate}% of handovers -- important for trauma-informed care`,
-    );
-  }
-  if (
-    informationTransfer.totalCriticalItems > 0 &&
-    informationTransfer.criticalAcknowledgedRate < 100
-  ) {
-    areasForImprovement.push(
-      `Critical information acknowledged rate at ${informationTransfer.criticalAcknowledgedRate}% -- all critical items must be acknowledged`,
-    );
-  }
-  if (continuity.continuityRating === "poor" || continuity.continuityRating === "adequate") {
-    areasForImprovement.push(
-      "Staff continuity needs improvement -- consider rota adjustments to support relationship-based practice",
-    );
-  }
-  if (areasForImprovement.length === 0) {
-    areasForImprovement.push("No significant areas for improvement identified");
-  }
-
-  // Immediate actions
-  if (informationTransfer.unacknowledgedCriticalItems.length > 0) {
-    actions.push(
-      `URGENT: ${informationTransfer.unacknowledgedCriticalItems.length} unacknowledged critical item${informationTransfer.unacknowledgedCriticalItems.length !== 1 ? "s" : ""} -- review immediately to ensure safeguarding information has been received`,
-    );
-  }
-  if (completeness.missed > 2) {
-    actions.push(
-      `HIGH: ${completeness.missed} missed handovers detected -- investigate root cause and implement corrective measures`,
-    );
-  }
-  if (quality.medicationUpdatesRate < 100 && quality.medicationUpdatesRate > 0) {
-    actions.push(
-      `HIGH: Medication updates missing in ${100 - quality.medicationUpdatesRate}% of handovers -- medication errors risk`,
-    );
-  }
-  if (
-    informationTransfer.followUpRequiredCount > 0 &&
-    informationTransfer.followUpCompletedRate < 70
-  ) {
-    actions.push(
-      `MEDIUM: Only ${informationTransfer.followUpCompletedRate}% of follow-up actions completed -- implement tracking system`,
-    );
-  }
-  const lowQualityShifts = shiftProfiles.filter(
-    (p) => p.avgQualityScore < 60 && p.totalHandovers > 0,
+  // Aggregate strengths
+  const strengths = aggregateStrengths(
+    handoverQuality, handoverCompliance, handoverPolicyResult, staffReadiness, overallScore,
   );
-  if (lowQualityShifts.length > 0) {
-    const shiftNames = lowQualityShifts.map((p) => getShiftLabel(p.shiftType)).join(", ");
-    actions.push(
-      `MEDIUM: Low quality handovers on ${shiftNames} shift${lowQualityShifts.length !== 1 ? "s" : ""} -- targeted improvement needed`,
-    );
-  }
-  if (actions.length === 0) {
-    actions.push(
-      "No immediate actions required -- handover processes are well maintained",
-    );
-  }
 
-  const regulatoryLinks: string[] = [
-    "CHR 2015 Reg 13 -- Leadership and management (effective communication systems)",
-    "CHR 2015 Reg 12 -- Protection of children (information sharing at handovers)",
-    "SCCIF -- Quality of care: effective communication between shifts",
-    "CHR 2015 Reg 5(c) -- Quality and purpose of care: continuity",
-    "Working Together 2023 -- Information sharing to safeguard children",
-  ];
+  // Aggregate areas for improvement
+  const areasForImprovement = aggregateAreasForImprovement(
+    handoverQuality, handoverCompliance, handoverPolicyResult, staffReadiness, overallScore,
+  );
+
+  // Generate actions
+  const actions = generateActions(
+    handoverQuality, handoverCompliance, handoverPolicyResult, staffReadiness, childProfiles,
+  );
+
+  // Regulatory links
+  const regulatoryLinks = generateRegulatoryLinks();
 
   return {
     homeId,
+    assessedAt,
     periodStart,
     periodEnd,
     overallScore,
     rating,
-    completeness,
-    quality,
-    informationTransfer,
-    continuity,
-    shiftProfiles,
+    handoverQuality,
+    handoverCompliance,
+    handoverPolicy: handoverPolicyResult,
+    staffReadiness,
+    childProfiles,
     strengths,
     areasForImprovement,
     actions,
     regulatoryLinks,
   };
+}
+
+// ── Aggregate Strengths ──────────────────────────────────────────────────
+
+function aggregateStrengths(
+  quality: HandoverQualityResult,
+  compliance: HandoverComplianceResult,
+  policy: HandoverPolicyResult,
+  staff: StaffHandoverReadinessResult,
+  overallScore: number,
+): string[] {
+  const strengths: string[] = [];
+
+  if (overallScore >= 80) {
+    strengths.push("Overall handover management rated Outstanding (" + overallScore + "/100)");
+  } else if (overallScore >= 60) {
+    strengths.push("Overall handover management rated Good (" + overallScore + "/100)");
+  }
+
+  if (quality.score >= 20) {
+    strengths.push("Handover quality is strong (score " + quality.score + "/25)");
+  }
+  if (compliance.score >= 20) {
+    strengths.push("Handover compliance is strong (score " + compliance.score + "/25)");
+  }
+  if (policy.score >= 20) {
+    strengths.push("Handover policy framework is robust (score " + policy.score + "/25)");
+  }
+  if (staff.score >= 20) {
+    strengths.push("Staff handover readiness is strong (score " + staff.score + "/25)");
+  }
+
+  strengths.push(...quality.strengths.slice(0, 2));
+  strengths.push(...compliance.strengths.slice(0, 2));
+  strengths.push(...policy.strengths.slice(0, 2));
+  strengths.push(...staff.strengths.slice(0, 2));
+
+  return strengths;
+}
+
+// ── Aggregate Areas for Improvement ──────────────────────────────────────
+
+function aggregateAreasForImprovement(
+  quality: HandoverQualityResult,
+  compliance: HandoverComplianceResult,
+  policy: HandoverPolicyResult,
+  staff: StaffHandoverReadinessResult,
+  overallScore: number,
+): string[] {
+  const areas: string[] = [];
+
+  if (overallScore < 40) {
+    areas.push("Overall handover management rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
+  } else if (overallScore < 60) {
+    areas.push("Overall handover management Requires Improvement (" + overallScore + "/100)");
+  }
+
+  if (quality.score < 15) {
+    areas.push("Handover quality needs improvement (score " + quality.score + "/25)");
+  }
+  if (compliance.score < 15) {
+    areas.push("Handover compliance needs improvement (score " + compliance.score + "/25)");
+  }
+  if (policy.score < 15) {
+    areas.push("Handover policy framework needs improvement (score " + policy.score + "/25)");
+  }
+  if (staff.score < 15) {
+    areas.push("Staff handover readiness needs improvement (score " + staff.score + "/25)");
+  }
+
+  areas.push(...quality.concerns);
+  areas.push(...compliance.concerns);
+  areas.push(...policy.concerns);
+  areas.push(...staff.concerns);
+
+  return areas;
+}
+
+// ── Generate Actions ─────────────────────────────────────────────────────
+
+function generateActions(
+  quality: HandoverQualityResult,
+  compliance: HandoverComplianceResult,
+  policy: HandoverPolicyResult,
+  staff: StaffHandoverReadinessResult,
+  childProfiles: ChildHandoverProfile[],
+): string[] {
+  const actions: string[] = [];
+
+  if (policy.score === 0) {
+    actions.push("URGENT: No handover policy in place — develop and implement comprehensive handover policy immediately");
+  }
+
+  if (staff.totalStaff === 0) {
+    actions.push("URGENT: No staff handover training records — schedule handover training for all staff immediately");
+  }
+
+  if (quality.totalRecords > 0 && quality.allChildrenCoveredRate < 50) {
+    actions.push("HIGH: Child coverage rate at " + quality.allChildrenCoveredRate + "% — ensure all children are included in every handover");
+  }
+
+  if (quality.totalRecords > 0 && quality.medicationStatusUpdatedRate < 50) {
+    actions.push("HIGH: Medication update rate at " + quality.medicationStatusUpdatedRate + "% — medication safety at risk, review handover protocol");
+  }
+
+  if (compliance.totalRecords > 0 && compliance.documentationRate < 50) {
+    actions.push("HIGH: Documentation rate at " + compliance.documentationRate + "% — strengthen handover recording practices");
+  }
+
+  if (compliance.totalRecords > 0 && compliance.timelyRecordingRate < 50) {
+    actions.push("MEDIUM: Timely recording rate at " + compliance.timelyRecordingRate + "% — handovers must be recorded promptly");
+  }
+
+  if (quality.totalRecords > 0 && quality.incidentsCommunicatedRate < 50) {
+    actions.push("MEDIUM: Incident communication rate at " + quality.incidentsCommunicatedRate + "% — embed incident briefing in every handover");
+  }
+
+  if (staff.totalStaff > 0 && staff.handoverCommunicationRate < 50) {
+    actions.push("MEDIUM: Staff communication skills at " + staff.handoverCommunicationRate + "% — schedule refresher training on handover communication");
+  }
+
+  const lowScoreChildren = childProfiles.filter((p) => p.handoverScore <= 3);
+  if (lowScoreChildren.length > 0) {
+    actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low handover scores — review individual handover arrangements");
+  }
+
+  if (actions.length === 0) {
+    actions.push("No immediate actions required. Handover systems operating within expected standards.");
+  }
+
+  return actions;
+}
+
+// ── Regulatory Links ─────────────────────────────────────────────────────
+
+function generateRegulatoryLinks(): string[] {
+  return [
+    "CHR 2015 Reg 22 — Records to be kept",
+    "CHR 2015 Reg 13 — Leadership and management",
+    "NMS 19 — Staffing and supervision",
+    "SCCIF — Leadership: communication and information sharing",
+    "Children Act 1989 s.22 — Duty of care",
+    "Quality Standards 2015 — Standard 7 (effective management)",
+    "CHR 2015 Reg 5 — Fitness of employees",
+  ];
 }

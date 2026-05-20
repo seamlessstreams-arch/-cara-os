@@ -1,1 +1,1 @@
-export { HandoverDashboardWidget } from "./HandoverDashboardWidget";
+export { default as HandoverDashboardWidget } from "./HandoverDashboardWidget";

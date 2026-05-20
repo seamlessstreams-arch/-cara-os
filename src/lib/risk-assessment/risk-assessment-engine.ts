@@ -1,522 +1,415 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Risk Assessment & Management Engine
+// Cornerstone Risk Assessment Intelligence Engine  (v2 — standardised)
 //
-// Deterministic engine for individual child risk profiles, risk categories,
-// control measures, dynamic scoring, review cycles, and escalation triggers.
+// Deterministic engine for evaluating risk assessment quality, compliance,
+// policy frameworks, staff readiness, and per-child risk profiles.
 //
 // Aligned to:
-//   - CHR 2015 Reg 12 — Protection of children
-//   - CHR 2015 Reg 13 — Behaviour management
-//   - CHR 2015 Reg 34 — Significant events notification
-//   - SCCIF — Safety: risk management
+//   - CHR 2015 Reg 34 — Safeguarding (risk assessment)
+//   - CHR 2015 Reg 12 — Health and comfort (risk management)
+//   - SCCIF — Safety: risk assessment and management
+//   - Children Act 1989 s.22 — Duty to safeguard welfare
 //   - Working Together to Safeguard Children 2023
-//   - DfE Risk Assessment Framework for Residential Settings
-//   - NICE CG158 — Antisocial behaviour (management)
+//   - Quality Standards 2015 — Standard 5 (keeping safe)
+//   - DfE Guide to CRH — Risk management expectations
 //
-// Key requirements:
-//   - Individual risk assessments for each child
-//   - Dynamic scoring based on recent incidents and context
-//   - Control measures documented and reviewed
-//   - Regular review cycles (minimum monthly, or post-incident)
-//   - Escalation triggers clearly defined
-//   - Multi-agency information sharing evidenced
-//   - Children involved in their own risk management
-//   - Positive risk-taking recorded where appropriate
-//
-// No AI. No external calls. Pure input → output.
+// No AI. No external calls. Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── Types ──────────────────────────────────────────────────────────────────
+// ── Enums / Literal Unions ────────────────────────────────────────────────
 
-export type RiskCategory =
-  | "self_harm"
-  | "suicide"
-  | "cse"
-  | "cce"
-  | "missing"
-  | "aggression_to_others"
-  | "aggression_to_property"
-  | "substance_misuse"
-  | "radicalisation"
-  | "online_harm"
-  | "bullying_perpetrator"
-  | "bullying_victim"
-  | "fire_setting"
-  | "absconding"
-  | "trafficking"
-  | "gang_affiliation"
-  | "eating_disorder"
-  | "self_neglect";
+export type RiskAssessmentCategory =
+  | "initial_assessment"
+  | "review_assessment"
+  | "dynamic_risk_update"
+  | "positive_risk_taking"
+  | "incident_triggered"
+  | "placement_risk"
+  | "community_risk"
+  | "environmental_risk";
 
-export type RiskLevel = "low" | "medium" | "high" | "very_high";
+export type RiskAssessmentOutcome =
+  | "risk_reduced"
+  | "risk_maintained"
+  | "risk_increased"
+  | "controls_adequate"
+  | "not_applicable";
 
-export type ControlMeasureStatus = "active" | "reviewed" | "discontinued" | "escalated";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-export type ReviewOutcome = "maintained" | "increased" | "decreased" | "new_measures" | "closed";
+// ── Record ────────────────────────────────────────────────────────────────
 
-// ── Core Interfaces ────────────────────────────────────────────────────────
-
-export interface ChildRiskProfile {
+export interface RiskAssessmentRecord {
+  id: string;
+  homeId: string;
+  date: string;
   childId: string;
   childName: string;
-  homeId: string;
-  dateOfBirth: string;
-  riskAssessments: RiskAssessment[];
-  incidents: RiskIncident[];
-  positiveRiskTaking: PositiveRiskEntry[];
-  childInvolvedInPlanning: boolean;
-  multiAgencyMeetingDate?: string;
-  lastOverallReviewDate?: string;
+  category: RiskAssessmentCategory;
+  outcome: RiskAssessmentOutcome;
+  // Quality flags
+  controlMeasuresIdentified: boolean;
+  childViewIncluded: boolean;
+  reviewDateSet: boolean;
+  multiAgencyInput: boolean;
+  // Compliance flags
+  documentationComplete: boolean;
+  timelyRecording: boolean;
 }
 
-export interface RiskAssessment {
-  id: string;
-  category: RiskCategory;
-  currentLevel: RiskLevel;
-  previousLevel?: RiskLevel;
-  dateAssessed: string;
-  nextReviewDate: string;
-  assessedBy: string;
-  triggers: string[];
-  controlMeasures: ControlMeasure[];
-  contextualFactors: string[];
-  protectiveFactors: string[];
-  escalationPlan: string;
-  childAware: boolean;
+// ── Policy (7 booleans) ───────────────────────────────────────────────────
+
+export interface RiskAssessmentPolicy {
+  riskAssessmentPolicy: boolean;
+  dynamicRiskUpdatePolicy: boolean;
+  positiveRiskTakingPolicy: boolean;
+  incidentTriggeredReviewPolicy: boolean;
+  communityRiskPolicy: boolean;
+  environmentalRiskPolicy: boolean;
+  multiAgencyRiskSharingPolicy: boolean;
 }
 
-export interface ControlMeasure {
-  id: string;
-  description: string;
-  status: ControlMeasureStatus;
-  implementedDate: string;
-  lastReviewedDate: string;
-  responsiblePerson: string;
-  effectiveness?: "effective" | "partially_effective" | "ineffective";
+// ── Staff Training (6 skills) ─────────────────────────────────────────────
+
+export interface StaffRiskAssessmentTraining {
+  staffId: string;
+  riskAssessmentSkills: boolean;
+  dynamicRiskManagement: boolean;
+  positiveRiskTaking: boolean;
+  incidentRiskAnalysis: boolean;
+  childViewInRisk: boolean;
+  multiAgencyRiskSharing: boolean;
 }
 
-export interface RiskIncident {
-  id: string;
-  date: string;
-  category: RiskCategory;
-  severity: "low" | "medium" | "high" | "critical";
-  description: string;
-  immediateActionTaken: string;
-  riskReassessed: boolean;
-  notifiedParties: string[];
-  recordedBy: string;
+// ── Result interfaces ─────────────────────────────────────────────────────
+
+export interface RiskAssessmentQualityResult {
+  overallScore: number;
+  totalRecords: number;
+  controlMeasuresIdentifiedRate: number;
+  childViewIncludedRate: number;
+  reviewDateSetRate: number;
+  multiAgencyInputRate: number;
 }
 
-export interface PositiveRiskEntry {
-  id: string;
-  date: string;
-  description: string;
-  riskIdentified: string;
-  mitigationsInPlace: string[];
-  outcome: string;
-  recordedBy: string;
+export interface RiskAssessmentComplianceResult {
+  overallScore: number;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  controlMeasuresIdentifiedRate: number;
+  categoryDiversityRatio: number;
 }
 
-// ── Result Interfaces ──────────────────────────────────────────────────────
+export interface RiskAssessmentPolicyResult {
+  overallScore: number;
+  riskAssessmentPolicy: boolean;
+  dynamicRiskUpdatePolicy: boolean;
+  positiveRiskTakingPolicy: boolean;
+  incidentTriggeredReviewPolicy: boolean;
+  communityRiskPolicy: boolean;
+  environmentalRiskPolicy: boolean;
+  multiAgencyRiskSharingPolicy: boolean;
+}
 
-export interface ChildRiskResult {
+export interface StaffRiskAssessmentReadinessResult {
+  overallScore: number;
+  totalStaff: number;
+  riskAssessmentSkillsRate: number;
+  dynamicRiskManagementRate: number;
+  positiveRiskTakingRate: number;
+  incidentRiskAnalysisRate: number;
+  childViewInRiskRate: number;
+  multiAgencyRiskSharingRate: number;
+}
+
+export interface ChildRiskAssessmentProfile {
   childId: string;
   childName: string;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  // Risk summary
-  overallRiskLevel: RiskLevel;
-  totalAssessments: number;
-  activeHighRisks: RiskCategory[];
-  activeMediumRisks: RiskCategory[];
-  // Reviews
-  assessmentsOverdue: { category: RiskCategory; daysPastDue: number }[];
-  overallReviewOverdue: boolean;
-  // Incidents
-  incidentsLast30Days: number;
-  incidentsLast90Days: number;
-  highSeverityIncidents30Days: number;
-  // Control measures
-  totalControlMeasures: number;
-  activeControlMeasures: number;
-  ineffectiveMeasures: number;
-  // Positive risk
-  positiveRiskEntries: number;
-  // Score
-  riskManagementScore: number;           // 0-100 (how well risk is MANAGED, not how risky)
+  totalRecords: number;
+  controlMeasuresIdentifiedRate: number;
+  childViewIncludedRate: number;
+  categoriesCovered: string[];
+  overallScore: number;
 }
 
-export interface HomeRiskMetrics {
+export interface RiskAssessmentIntelligence {
   homeId: string;
-  childCount: number;
-  overallManagementScore: number;
-  childrenAtHighRisk: number;
-  childrenAtVeryHighRisk: number;
-  totalActiveAssessments: number;
-  overdueReviews: number;
-  totalIncidents30Days: number;
-  totalIncidents90Days: number;
-  highSeverityIncidents30Days: number;
-  incidentsByCategory: { category: RiskCategory; count: number }[];
-  mostPrevalentRisks: RiskCategory[];
-  controlMeasureEffectivenessRate: number;
-  positiveRiskTakingRate: number;        // % children with entries
-  childInvolvementRate: number;
-  multiAgencyEngagementRate: number;
-  childrenWithIssues: { childName: string; issues: string[] }[];
-  complianceIssues: string[];
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  riskAssessmentQuality: RiskAssessmentQualityResult;
+  riskAssessmentCompliance: RiskAssessmentComplianceResult;
+  riskAssessmentPolicy: RiskAssessmentPolicyResult;
+  staffReadiness: StaffRiskAssessmentReadinessResult;
+  childProfiles: ChildRiskAssessmentProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────
 
-const REVIEW_OVERDUE_DAYS = 7;            // days past review date before flagging
-const OVERALL_REVIEW_MAX_DAYS = 30;       // monthly overall review minimum
-const MULTI_AGENCY_MAX_DAYS = 90;         // quarterly multi-agency engagement
-const HIGH_INCIDENT_THRESHOLD = 3;        // 3+ incidents in 30 days triggers warning
-const CRITICAL_INCIDENT_THRESHOLD = 1;    // any critical incident flags immediately
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
 
-const RISK_LEVEL_WEIGHTS: Record<RiskLevel, number> = {
-  low: 1,
-  medium: 2,
-  high: 3,
-  very_high: 4,
-};
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
 
-// ── Core: Evaluate Child Risk Compliance ─────────────────────────────────
+export function getRiskAssessmentCategoryLabel(cat: RiskAssessmentCategory): string {
+  const map: Record<RiskAssessmentCategory, string> = {
+    initial_assessment: "Initial Assessment",
+    review_assessment: "Review Assessment",
+    dynamic_risk_update: "Dynamic Risk Update",
+    positive_risk_taking: "Positive Risk Taking",
+    incident_triggered: "Incident Triggered",
+    placement_risk: "Placement Risk",
+    community_risk: "Community Risk",
+    environmental_risk: "Environmental Risk",
+  };
+  return map[cat] ?? cat;
+}
 
-export function evaluateChildRiskCompliance(
-  profile: ChildRiskProfile,
-  now?: string,
-): ChildRiskResult {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-  const ninetyDaysAgo = currentTime - 90 * 24 * 60 * 60 * 1000;
-  const issues: string[] = [];
-  const warnings: string[] = [];
+export function getRiskAssessmentOutcomeLabel(o: RiskAssessmentOutcome): string {
+  const map: Record<RiskAssessmentOutcome, string> = {
+    risk_reduced: "Risk Reduced",
+    risk_maintained: "Risk Maintained",
+    risk_increased: "Risk Increased",
+    controls_adequate: "Controls Adequate",
+    not_applicable: "Not Applicable",
+  };
+  return map[o] ?? o;
+}
 
-  // ── Risk Level Summary ──────────────────────────────────────────────────
-  const activeHighRisks = profile.riskAssessments
-    .filter(a => a.currentLevel === "high" || a.currentLevel === "very_high")
-    .filter(a => a.currentLevel === "high")
-    .map(a => a.category);
+export function getRatingLabel(r: Rating): string {
+  const map: Record<Rating, string> = {
+    outstanding: "Outstanding",
+    good: "Good",
+    requires_improvement: "Requires Improvement",
+    inadequate: "Inadequate",
+  };
+  return map[r] ?? r;
+}
 
-  const veryHighRisks = profile.riskAssessments
-    .filter(a => a.currentLevel === "very_high")
-    .map(a => a.category);
+// ── Evaluator 1: Quality (0-25) ───────────────────────────────────────────
 
-  const activeMediumRisks = profile.riskAssessments
-    .filter(a => a.currentLevel === "medium")
-    .map(a => a.category);
+export function evaluateRiskAssessmentQuality(records: RiskAssessmentRecord[]): RiskAssessmentQualityResult {
+  const total = records.length;
+  const controlMeasuresIdentifiedRate = pct(records.filter(r => r.controlMeasuresIdentified).length, total);
+  const childViewIncludedRate = pct(records.filter(r => r.childViewIncluded).length, total);
+  const reviewDateSetRate = pct(records.filter(r => r.reviewDateSet).length, total);
+  const multiAgencyInputRate = pct(records.filter(r => r.multiAgencyInput).length, total);
 
-  // Overall risk = highest single risk
-  let overallRiskLevel: RiskLevel = "low";
-  for (const assessment of profile.riskAssessments) {
-    if (RISK_LEVEL_WEIGHTS[assessment.currentLevel] > RISK_LEVEL_WEIGHTS[overallRiskLevel]) {
-      overallRiskLevel = assessment.currentLevel;
-    }
-  }
+  const raw =
+    (controlMeasuresIdentifiedRate / 100) * 7 +
+    (childViewIncludedRate / 100) * 6 +
+    (reviewDateSetRate / 100) * 6 +
+    (multiAgencyInputRate / 100) * 6;
 
-  // ── Review Compliance ───────────────────────────────────────────────────
-  const assessmentsOverdue: { category: RiskCategory; daysPastDue: number }[] = [];
-  for (const assessment of profile.riskAssessments) {
-    const reviewDue = new Date(assessment.nextReviewDate).getTime();
-    const daysOverdue = Math.floor((currentTime - reviewDue) / (24 * 60 * 60 * 1000));
-    if (daysOverdue > REVIEW_OVERDUE_DAYS) {
-      assessmentsOverdue.push({ category: assessment.category, daysPastDue: daysOverdue });
-    }
-  }
+  const overallScore = Math.min(25, Math.round(raw));
 
-  if (assessmentsOverdue.length > 0) {
-    issues.push(`${assessmentsOverdue.length} risk assessment(s) overdue for review`);
-  }
+  return { overallScore, totalRecords: total, controlMeasuresIdentifiedRate, childViewIncludedRate, reviewDateSetRate, multiAgencyInputRate };
+}
 
-  // Overall review
-  let overallReviewOverdue = false;
-  if (profile.lastOverallReviewDate) {
-    const daysSinceOverall = (currentTime - new Date(profile.lastOverallReviewDate).getTime()) / (24 * 60 * 60 * 1000);
-    if (daysSinceOverall > OVERALL_REVIEW_MAX_DAYS) {
-      overallReviewOverdue = true;
-      warnings.push(`Overall risk review overdue (${Math.round(daysSinceOverall)} days since last review)`);
-    }
-  } else if (profile.riskAssessments.length > 0) {
-    overallReviewOverdue = true;
-    issues.push("No overall risk review date recorded");
-  }
+// ── Evaluator 2: Compliance (0-25) ────────────────────────────────────────
 
-  // ── Incidents ───────────────────────────────────────────────────────────
-  const incidentsLast30Days = profile.incidents.filter(
-    i => new Date(i.date).getTime() > thirtyDaysAgo
-  ).length;
+export function evaluateRiskAssessmentCompliance(records: RiskAssessmentRecord[]): RiskAssessmentComplianceResult {
+  const total = records.length;
+  const documentationRate = pct(records.filter(r => r.documentationComplete).length, total);
+  const timelyRecordingRate = pct(records.filter(r => r.timelyRecording).length, total);
+  const controlMeasuresIdentifiedRate = pct(records.filter(r => r.controlMeasuresIdentified).length, total);
 
-  const incidentsLast90Days = profile.incidents.filter(
-    i => new Date(i.date).getTime() > ninetyDaysAgo
-  ).length;
-
-  const highSeverityIncidents30Days = profile.incidents.filter(
-    i => new Date(i.date).getTime() > thirtyDaysAgo &&
-      (i.severity === "high" || i.severity === "critical")
-  ).length;
-
-  if (incidentsLast30Days >= HIGH_INCIDENT_THRESHOLD) {
-    warnings.push(`${incidentsLast30Days} incidents in last 30 days — review risk level`);
-  }
-
-  if (highSeverityIncidents30Days >= CRITICAL_INCIDENT_THRESHOLD) {
-    warnings.push(`${highSeverityIncidents30Days} high/critical incident(s) in 30 days — immediate review needed`);
-  }
-
-  // Check incidents triggered reassessment
-  const unreassessedIncidents = profile.incidents
-    .filter(i => new Date(i.date).getTime() > thirtyDaysAgo && !i.riskReassessed &&
-      (i.severity === "high" || i.severity === "critical"));
-
-  if (unreassessedIncidents.length > 0) {
-    issues.push("High/critical incident(s) without subsequent risk reassessment");
-  }
-
-  // ── Control Measures ────────────────────────────────────────────────────
-  const allMeasures = profile.riskAssessments.flatMap(a => a.controlMeasures);
-  const activeMeasures = allMeasures.filter(m => m.status === "active" || m.status === "reviewed");
-  const ineffectiveMeasures = allMeasures.filter(m => m.effectiveness === "ineffective");
-
-  if (ineffectiveMeasures.length > 0) {
-    warnings.push(`${ineffectiveMeasures.length} control measure(s) marked ineffective — review needed`);
-  }
-
-  // High/very_high risks must have active control measures
-  const highRiskAssessments = profile.riskAssessments.filter(
-    a => a.currentLevel === "high" || a.currentLevel === "very_high"
-  );
-  for (const assessment of highRiskAssessments) {
-    const activeForCategory = assessment.controlMeasures.filter(
-      m => m.status === "active" || m.status === "reviewed"
-    );
-    if (activeForCategory.length === 0) {
-      issues.push(`No active control measures for ${getRiskCategoryLabel(assessment.category)} (${assessment.currentLevel} risk)`);
-    }
-  }
-
-  // ── Child Involvement ───────────────────────────────────────────────────
-  if (!profile.childInvolvedInPlanning) {
-    warnings.push("Child not involved in risk management planning");
-  }
-
-  const assessmentsChildUnaware = profile.riskAssessments.filter(a => !a.childAware);
-  if (assessmentsChildUnaware.length > 0 && profile.riskAssessments.length > 0) {
-    warnings.push(`Child not aware of ${assessmentsChildUnaware.length} risk assessment(s)`);
-  }
-
-  // ── Multi-Agency ────────────────────────────────────────────────────────
-  if (profile.multiAgencyMeetingDate) {
-    const daysSinceMAM = (currentTime - new Date(profile.multiAgencyMeetingDate).getTime()) / (24 * 60 * 60 * 1000);
-    if (daysSinceMAM > MULTI_AGENCY_MAX_DAYS && (overallRiskLevel === "high" || overallRiskLevel === "very_high")) {
-      warnings.push("Multi-agency engagement overdue for high-risk child");
-    }
-  } else if (overallRiskLevel === "high" || overallRiskLevel === "very_high") {
-    issues.push("No multi-agency meeting recorded for high-risk child");
-  }
-
-  // ── No Assessments Check ────────────────────────────────────────────────
-  if (profile.riskAssessments.length === 0) {
-    issues.push("No risk assessments on file — mandatory baseline required");
-  }
-
-  // ── Score (Management Quality) ─────────────────────────────────────────
-  const scoringFactors = [
-    profile.riskAssessments.length > 0 ? 15 : 0,
-    assessmentsOverdue.length === 0 ? 20 : assessmentsOverdue.length === 1 ? 10 : 0,
-    !overallReviewOverdue ? 10 : 0,
-    ineffectiveMeasures.length === 0 ? 10 : 0,
-    unreassessedIncidents.length === 0 ? 15 : 0,
-    profile.childInvolvedInPlanning ? 10 : 0,
-    profile.positiveRiskTaking.length > 0 ? 10 : 0,
-    (highRiskAssessments.length === 0 || highRiskAssessments.every(a =>
-      a.controlMeasures.some(m => m.status === "active" || m.status === "reviewed")
-    )) ? 10 : 0,
+  const ALL_CATEGORIES: RiskAssessmentCategory[] = [
+    "initial_assessment", "review_assessment", "dynamic_risk_update", "positive_risk_taking",
+    "incident_triggered", "placement_risk", "community_risk", "environmental_risk",
   ];
-  const riskManagementScore = scoringFactors.reduce((a, b) => a + b, 0);
+  const usedCategories = new Set(records.map(r => r.category));
+  const categoryDiversityRatio = pct(usedCategories.size, ALL_CATEGORIES.length);
+
+  const raw =
+    (documentationRate / 100) * 8 +
+    (timelyRecordingRate / 100) * 7 +
+    (controlMeasuresIdentifiedRate / 100) * 5 +
+    (categoryDiversityRatio / 100) * 5;
+
+  const overallScore = Math.min(25, Math.round(raw));
+
+  return { overallScore, documentationRate, timelyRecordingRate, controlMeasuresIdentifiedRate, categoryDiversityRatio };
+}
+
+// ── Evaluator 3: Policy (0-25) ────────────────────────────────────────────
+
+export function evaluateRiskAssessmentPolicy(policy: RiskAssessmentPolicy | null): RiskAssessmentPolicyResult {
+  if (!policy) {
+    return {
+      overallScore: 0,
+      riskAssessmentPolicy: false,
+      dynamicRiskUpdatePolicy: false,
+      positiveRiskTakingPolicy: false,
+      incidentTriggeredReviewPolicy: false,
+      communityRiskPolicy: false,
+      environmentalRiskPolicy: false,
+      multiAgencyRiskSharingPolicy: false,
+    };
+  }
+
+  const score =
+    (policy.riskAssessmentPolicy ? 4 : 0) +
+    (policy.dynamicRiskUpdatePolicy ? 4 : 0) +
+    (policy.positiveRiskTakingPolicy ? 4 : 0) +
+    (policy.incidentTriggeredReviewPolicy ? 4 : 0) +
+    (policy.communityRiskPolicy ? 3 : 0) +
+    (policy.environmentalRiskPolicy ? 3 : 0) +
+    (policy.multiAgencyRiskSharingPolicy ? 3 : 0);
 
   return {
-    childId: profile.childId,
-    childName: profile.childName,
-    isCompliant: issues.length === 0,
-    issues,
-    warnings,
-    overallRiskLevel,
-    totalAssessments: profile.riskAssessments.length,
-    activeHighRisks: [...activeHighRisks, ...veryHighRisks],
-    activeMediumRisks,
-    assessmentsOverdue,
-    overallReviewOverdue,
-    incidentsLast30Days,
-    incidentsLast90Days,
-    highSeverityIncidents30Days,
-    totalControlMeasures: allMeasures.length,
-    activeControlMeasures: activeMeasures.length,
-    ineffectiveMeasures: ineffectiveMeasures.length,
-    positiveRiskEntries: profile.positiveRiskTaking.length,
-    riskManagementScore,
+    overallScore: Math.min(25, score),
+    riskAssessmentPolicy: policy.riskAssessmentPolicy,
+    dynamicRiskUpdatePolicy: policy.dynamicRiskUpdatePolicy,
+    positiveRiskTakingPolicy: policy.positiveRiskTakingPolicy,
+    incidentTriggeredReviewPolicy: policy.incidentTriggeredReviewPolicy,
+    communityRiskPolicy: policy.communityRiskPolicy,
+    environmentalRiskPolicy: policy.environmentalRiskPolicy,
+    multiAgencyRiskSharingPolicy: policy.multiAgencyRiskSharingPolicy,
   };
 }
 
-// ── Core: Calculate Home Risk Metrics ────────────────────────────────────
+// ── Evaluator 4: Staff Readiness (0-25) ───────────────────────────────────
 
-export function calculateHomeRiskMetrics(
-  profiles: ChildRiskProfile[],
-  homeId: string,
-  now?: string,
-): HomeRiskMetrics {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-  const ninetyDaysAgo = currentTime - 90 * 24 * 60 * 60 * 1000;
+export function evaluateStaffRiskAssessmentReadiness(staff: StaffRiskAssessmentTraining[]): StaffRiskAssessmentReadinessResult {
+  const total = staff.length;
+  const riskAssessmentSkillsRate = pct(staff.filter(s => s.riskAssessmentSkills).length, total);
+  const dynamicRiskManagementRate = pct(staff.filter(s => s.dynamicRiskManagement).length, total);
+  const positiveRiskTakingRate = pct(staff.filter(s => s.positiveRiskTaking).length, total);
+  const incidentRiskAnalysisRate = pct(staff.filter(s => s.incidentRiskAnalysis).length, total);
+  const childViewInRiskRate = pct(staff.filter(s => s.childViewInRisk).length, total);
+  const multiAgencyRiskSharingRate = pct(staff.filter(s => s.multiAgencyRiskSharing).length, total);
 
-  const homeProfiles = profiles.filter(p => p.homeId === homeId);
-  const results = homeProfiles.map(p => evaluateChildRiskCompliance(p, now));
-  const childCount = homeProfiles.length;
+  const raw =
+    (riskAssessmentSkillsRate / 100) * 6 +
+    (dynamicRiskManagementRate / 100) * 5 +
+    (positiveRiskTakingRate / 100) * 5 +
+    (incidentRiskAnalysisRate / 100) * 4 +
+    (childViewInRiskRate / 100) * 3 +
+    (multiAgencyRiskSharingRate / 100) * 2;
 
-  // Management score
-  const overallManagementScore = results.length > 0
-    ? Math.round(results.reduce((s, r) => s + r.riskManagementScore, 0) / results.length)
-    : 0;
+  const overallScore = Math.min(25, Math.round(raw));
 
-  // Risk levels
-  const childrenAtHighRisk = results.filter(
-    r => r.overallRiskLevel === "high"
-  ).length;
-  const childrenAtVeryHighRisk = results.filter(
-    r => r.overallRiskLevel === "very_high"
-  ).length;
+  return { overallScore, totalStaff: total, riskAssessmentSkillsRate, dynamicRiskManagementRate, positiveRiskTakingRate, incidentRiskAnalysisRate, childViewInRiskRate, multiAgencyRiskSharingRate };
+}
 
-  // Assessments
-  const totalActiveAssessments = results.reduce((s, r) => s + r.totalAssessments, 0);
-  const overdueReviews = results.reduce((s, r) => s + r.assessmentsOverdue.length, 0);
+// ── Child Risk Assessment Profiles (0-10) ─────────────────────────────────
 
-  // Incidents
-  const totalIncidents30Days = results.reduce((s, r) => s + r.incidentsLast30Days, 0);
-  const totalIncidents90Days = results.reduce((s, r) => s + r.incidentsLast90Days, 0);
-  const highSeverityIncidents30Days = results.reduce((s, r) => s + r.highSeverityIncidents30Days, 0);
-
-  // Incidents by category
-  const allIncidents = homeProfiles.flatMap(p => p.incidents)
-    .filter(i => new Date(i.date).getTime() > ninetyDaysAgo);
-  const categoryCounts = new Map<RiskCategory, number>();
-  for (const incident of allIncidents) {
-    categoryCounts.set(incident.category, (categoryCounts.get(incident.category) || 0) + 1);
+export function buildChildRiskAssessmentProfiles(records: RiskAssessmentRecord[]): ChildRiskAssessmentProfile[] {
+  const byChild = new Map<string, RiskAssessmentRecord[]>();
+  for (const r of records) {
+    const arr = byChild.get(r.childId) ?? [];
+    arr.push(r);
+    byChild.set(r.childId, arr);
   }
-  const incidentsByCategory = [...categoryCounts.entries()]
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count);
 
-  // Most prevalent risks
-  const riskCategoryCounts = new Map<RiskCategory, number>();
-  for (const profile of homeProfiles) {
-    for (const assessment of profile.riskAssessments) {
-      if (assessment.currentLevel !== "low") {
-        riskCategoryCounts.set(assessment.category, (riskCategoryCounts.get(assessment.category) || 0) + 1);
-      }
-    }
+  const profiles: ChildRiskAssessmentProfile[] = [];
+
+  for (const [childId, recs] of byChild) {
+    const childName = recs[0].childName;
+    const totalRecords = recs.length;
+    const controlMeasuresIdentifiedRate = pct(recs.filter(r => r.controlMeasuresIdentified).length, totalRecords);
+    const childViewIncludedRate = pct(recs.filter(r => r.childViewIncluded).length, totalRecords);
+    const categoriesCovered = [...new Set(recs.map(r => r.category))];
+
+    let score = 0;
+    if (totalRecords >= 10) score += 2;
+    else if (totalRecords >= 5) score += 1;
+    if (controlMeasuresIdentifiedRate >= 80) score += 3;
+    else if (controlMeasuresIdentifiedRate >= 60) score += 2;
+    else if (controlMeasuresIdentifiedRate >= 40) score += 1;
+    if (childViewIncludedRate >= 80) score += 3;
+    else if (childViewIncludedRate >= 60) score += 2;
+    else if (childViewIncludedRate >= 40) score += 1;
+    if (categoriesCovered.length >= 4) score += 2;
+    else if (categoriesCovered.length >= 2) score += 1;
+
+    profiles.push({ childId, childName, totalRecords, controlMeasuresIdentifiedRate, childViewIncludedRate, categoriesCovered, overallScore: Math.min(10, score) });
   }
-  const mostPrevalentRisks = [...riskCategoryCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([category]) => category);
 
-  // Control measure effectiveness
-  const allMeasures = homeProfiles
-    .flatMap(p => p.riskAssessments)
-    .flatMap(a => a.controlMeasures)
-    .filter(m => m.effectiveness);
-  const effectiveMeasures = allMeasures.filter(m => m.effectiveness === "effective");
-  const controlMeasureEffectivenessRate = allMeasures.length > 0
-    ? Math.round((effectiveMeasures.length / allMeasures.length) * 100)
-    : 100;
+  return profiles.sort((a, b) => b.overallScore - a.overallScore);
+}
 
-  // Positive risk taking
-  const childrenWithPositiveRisk = homeProfiles.filter(p => p.positiveRiskTaking.length > 0).length;
-  const positiveRiskTakingRate = childCount > 0
-    ? Math.round((childrenWithPositiveRisk / childCount) * 100)
-    : 0;
+// ── Orchestrator ──────────────────────────────────────────────────────────
 
-  // Child involvement
-  const childrenInvolved = homeProfiles.filter(p => p.childInvolvedInPlanning).length;
-  const childInvolvementRate = childCount > 0
-    ? Math.round((childrenInvolved / childCount) * 100)
-    : 0;
+export function generateRiskAssessmentIntelligence(input: {
+  homeId: string;
+  periodStart: string;
+  periodEnd: string;
+  records: RiskAssessmentRecord[];
+  policy: RiskAssessmentPolicy | null;
+  staff: StaffRiskAssessmentTraining[];
+}): RiskAssessmentIntelligence {
+  const { homeId, periodStart, periodEnd, records, policy, staff } = input;
 
-  // Multi-agency
-  const withRecentMAM = homeProfiles.filter(p => {
-    if (!p.multiAgencyMeetingDate) return false;
-    return (currentTime - new Date(p.multiAgencyMeetingDate).getTime()) < MULTI_AGENCY_MAX_DAYS * 24 * 60 * 60 * 1000;
-  }).length;
-  const highRiskChildren = homeProfiles.filter(p =>
-    p.riskAssessments.some(a => a.currentLevel === "high" || a.currentLevel === "very_high")
-  ).length;
-  const multiAgencyEngagementRate = highRiskChildren > 0
-    ? Math.round((withRecentMAM / highRiskChildren) * 100)
-    : 100;
+  const riskAssessmentQuality = evaluateRiskAssessmentQuality(records);
+  const riskAssessmentCompliance = evaluateRiskAssessmentCompliance(records);
+  const riskAssessmentPolicy = evaluateRiskAssessmentPolicy(policy);
+  const staffReadiness = evaluateStaffRiskAssessmentReadiness(staff);
+  const childProfiles = buildChildRiskAssessmentProfiles(records);
 
-  // Issues
-  const childrenWithIssues = results
-    .filter(r => r.issues.length > 0)
-    .map(r => ({ childName: r.childName, issues: r.issues }));
+  const overallScore = Math.min(100,
+    riskAssessmentQuality.overallScore +
+    riskAssessmentCompliance.overallScore +
+    riskAssessmentPolicy.overallScore +
+    staffReadiness.overallScore,
+  );
+  const rating = getRating(overallScore);
 
-  const complianceIssues = [...new Set(results.flatMap(r => r.issues))];
+  const strengths: string[] = [];
+  if (riskAssessmentQuality.controlMeasuresIdentifiedRate >= 80) strengths.push("Excellent control measure identification in risk assessments");
+  if (riskAssessmentQuality.childViewIncludedRate >= 80) strengths.push("Children's views consistently included in risk assessments");
+  if (riskAssessmentQuality.multiAgencyInputRate >= 90) strengths.push("Strong multi-agency input in risk assessment processes");
+  if (riskAssessmentQuality.reviewDateSetRate >= 80) strengths.push("Review dates consistently set for all risk assessments");
+  if (riskAssessmentCompliance.documentationRate >= 90) strengths.push("Excellent risk assessment documentation practices");
+  if (riskAssessmentCompliance.categoryDiversityRatio >= 75) strengths.push("Good variety of risk assessment types undertaken");
+  if (riskAssessmentPolicy.overallScore >= 22) strengths.push("Comprehensive risk assessment policies in place");
+  if (staffReadiness.riskAssessmentSkillsRate >= 80) strengths.push("Staff well-trained in risk assessment skills");
+  if (staffReadiness.dynamicRiskManagementRate >= 80) strengths.push("Staff competent in dynamic risk management");
+
+  const areasForImprovement: string[] = [];
+  if (riskAssessmentQuality.controlMeasuresIdentifiedRate < 60) areasForImprovement.push("Control measures not consistently identified in assessments");
+  if (riskAssessmentQuality.childViewIncludedRate < 60) areasForImprovement.push("Children's views not consistently included in risk assessments");
+  if (riskAssessmentQuality.multiAgencyInputRate < 60) areasForImprovement.push("Multi-agency input needs strengthening in risk assessments");
+  if (riskAssessmentCompliance.timelyRecordingRate < 70) areasForImprovement.push("Risk assessment records not completed in a timely manner");
+  if (riskAssessmentCompliance.categoryDiversityRatio < 50) areasForImprovement.push("Limited range of risk assessment types");
+  if (staffReadiness.positiveRiskTakingRate < 60) areasForImprovement.push("Positive risk-taking training needs attention");
+  if (staffReadiness.incidentRiskAnalysisRate < 60) areasForImprovement.push("Incident risk analysis skills need development");
+
+  const actions: string[] = [];
+  if (riskAssessmentQuality.controlMeasuresIdentifiedRate < 40) actions.push("URGENT: Ensure control measures are identified in all risk assessments");
+  if (riskAssessmentQuality.childViewIncludedRate < 40) actions.push("URGENT: Include children's views in every risk assessment");
+  if (riskAssessmentCompliance.documentationRate < 60) actions.push("URGENT: Ensure all risk assessments are properly documented");
+  if (!policy || riskAssessmentPolicy.overallScore < 16) actions.push("Review and update risk assessment policies");
+  if (staffReadiness.overallScore < 15) actions.push("Prioritise staff risk assessment training programme");
+  if (riskAssessmentQuality.reviewDateSetRate < 50) actions.push("Ensure review dates are set for all risk assessments");
+  if (records.length === 0) actions.push("URGENT: No risk assessment records found — establish systematic risk assessment processes immediately");
+
+  const regulatoryLinks = [
+    "CHR 2015 Reg 34 — Safeguarding (risk assessment)",
+    "CHR 2015 Reg 12 — Health and comfort (risk management)",
+    "SCCIF — Safety: risk assessment and management",
+    "Children Act 1989 s.22 — Duty to safeguard welfare",
+    "Working Together to Safeguard Children 2023",
+    "Quality Standards 2015 — Standard 5 (keeping safe)",
+    "DfE Guide to CRH — Risk management expectations",
+  ];
 
   return {
-    homeId,
-    childCount,
-    overallManagementScore,
-    childrenAtHighRisk,
-    childrenAtVeryHighRisk,
-    totalActiveAssessments,
-    overdueReviews,
-    totalIncidents30Days,
-    totalIncidents90Days,
-    highSeverityIncidents30Days,
-    incidentsByCategory,
-    mostPrevalentRisks,
-    controlMeasureEffectivenessRate,
-    positiveRiskTakingRate,
-    childInvolvementRate,
-    multiAgencyEngagementRate,
-    childrenWithIssues,
-    complianceIssues,
+    homeId, periodStart, periodEnd, overallScore, rating,
+    riskAssessmentQuality, riskAssessmentCompliance, riskAssessmentPolicy, staffReadiness,
+    childProfiles, strengths, areasForImprovement, actions, regulatoryLinks,
   };
-}
-
-// ── Label Helpers ────────────────────────────────────────────────────────
-
-export function getRiskCategoryLabel(category: RiskCategory): string {
-  const labels: Record<RiskCategory, string> = {
-    self_harm: "Self-Harm",
-    suicide: "Suicide / Suicidal Ideation",
-    cse: "Child Sexual Exploitation",
-    cce: "Child Criminal Exploitation",
-    missing: "Missing from Care",
-    aggression_to_others: "Aggression to Others",
-    aggression_to_property: "Aggression to Property",
-    substance_misuse: "Substance Misuse",
-    radicalisation: "Radicalisation",
-    online_harm: "Online Harm",
-    bullying_perpetrator: "Bullying (Perpetrator)",
-    bullying_victim: "Bullying (Victim)",
-    fire_setting: "Fire Setting",
-    absconding: "Absconding",
-    trafficking: "Trafficking",
-    gang_affiliation: "Gang Affiliation",
-    eating_disorder: "Eating Disorder",
-    self_neglect: "Self-Neglect",
-  };
-  return labels[category] ?? category;
-}
-
-export function getRiskLevelLabel(level: RiskLevel): string {
-  const labels: Record<RiskLevel, string> = {
-    low: "Low",
-    medium: "Medium",
-    high: "High",
-    very_high: "Very High",
-  };
-  return labels[level] ?? level;
 }

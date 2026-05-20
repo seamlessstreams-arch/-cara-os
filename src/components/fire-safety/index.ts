@@ -1,1 +1,1 @@
-export { FireSafetyDashboardWidget } from "./FireSafetyDashboardWidget";
+export { default as FireSafetyDashboardWidget } from "./FireSafetyDashboardWidget";

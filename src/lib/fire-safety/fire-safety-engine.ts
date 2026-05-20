@@ -1,172 +1,185 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// FIRE SAFETY INTELLIGENCE ENGINE
-//
-// Pure deterministic engine for evaluating fire safety compliance in
-// children's residential care homes, covering fire drills, equipment
-// maintenance, risk assessments, evacuation planning, and staff training.
-//
-// Regulatory basis:
-//   - CHR 2015, Reg 25 — Fire precautions (premises safety, fire drills)
-//   - Regulatory Reform (Fire Safety) Order 2005 — Fire risk assessment,
-//     equipment maintenance, evacuation procedures, staff training
-//   - SCCIF — Social Care Common Inspection Framework (Ofsted)
-//   - Health and Safety at Work Act 1974 — General duty of care
-//
-// No AI. No external calls. Pure input → output.
-// ══════════════════════════════════════════════════════════════════════════════
+/* ──────────────────────────────────────────────────────────────
+   Fire Safety Intelligence Engine
+
+   Pure deterministic engine for evaluating fire safety compliance
+   in children's residential care homes, covering fire drills,
+   equipment checks, risk assessments, evacuation plans, alarm
+   tests, staff training, fire door checks, and emergency lighting.
+
+   Regulatory basis:
+     - Regulatory Reform (Fire Safety) Order 2005
+     - CHR 2015 Reg 25 — Fire precautions
+     - CHR 2015 Reg 44 — Independent person: visits
+     - SCCIF — Safety: fire safety compliance
+     - NMS 10 — Premises and safety
+     - Health and Safety at Work Act 1974 — Fire safety duties
+     - Quality Standards 2015 — Standard 6 (safe premises)
+
+   No AI. No external calls. Pure input -> output.
+   ────────────────────────────────────────────────────────────── */
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type DrillType =
-  | "full_evacuation"
-  | "partial_evacuation"
-  | "night_drill"
-  | "tabletop_exercise";
+export type FireSafetyCategory =
+  | "fire_drill"
+  | "equipment_check"
+  | "risk_assessment"
+  | "evacuation_plan"
+  | "fire_alarm_test"
+  | "staff_training_session"
+  | "fire_door_check"
+  | "emergency_lighting_check";
 
-export type EquipmentType =
-  | "fire_extinguisher"
-  | "smoke_detector"
-  | "fire_blanket"
-  | "emergency_lighting"
-  | "fire_door"
-  | "sprinkler_system"
-  | "alarm_panel"
-  | "call_point";
+export type FireSafetyOutcome =
+  | "fully_compliant"
+  | "minor_issue"
+  | "significant_issue"
+  | "action_required"
+  | "not_applicable";
 
-export type EquipmentStatus =
-  | "operational"
-  | "needs_repair"
-  | "out_of_service"
-  | "due_inspection"
-  | "replaced";
+export type Rating =
+  | "outstanding"
+  | "good"
+  | "requires_improvement"
+  | "inadequate";
 
-export type RiskLevel = "low" | "medium" | "high" | "critical";
+// ── Label Maps ─────────────────────────────────────────────────────────────
+
+const fireSafetyCategoryLabels: Record<FireSafetyCategory, string> = {
+  fire_drill: "Fire Drill",
+  equipment_check: "Equipment Check",
+  risk_assessment: "Risk Assessment",
+  evacuation_plan: "Evacuation Plan",
+  fire_alarm_test: "Fire Alarm Test",
+  staff_training_session: "Staff Training Session",
+  fire_door_check: "Fire Door Check",
+  emergency_lighting_check: "Emergency Lighting Check",
+};
+
+const fireSafetyOutcomeLabels: Record<FireSafetyOutcome, string> = {
+  fully_compliant: "Fully Compliant",
+  minor_issue: "Minor Issue",
+  significant_issue: "Significant Issue",
+  action_required: "Action Required",
+  not_applicable: "Not Applicable",
+};
+
+const ratingLabels: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
+
+export function getFireSafetyCategoryLabel(category: FireSafetyCategory): string {
+  return fireSafetyCategoryLabels[category];
+}
+
+export function getFireSafetyOutcomeLabel(outcome: FireSafetyOutcome): string {
+  return fireSafetyOutcomeLabels[outcome];
+}
+
+export function getRatingLabel(rating: Rating): string {
+  return ratingLabels[rating];
+}
 
 // ── Core Interfaces ────────────────────────────────────────────────────────
 
-export interface FireDrill {
+export interface FireSafetyRecord {
   id: string;
   homeId: string;
   date: string;
-  drillType: DrillType;
-  timeOfDay: "day" | "evening" | "night";
-  childrenPresent: number;
-  childrenEvacuated: number;
-  evacuationTimeSeconds: number;
-  targetTimeSeconds: number;
-  allAccountedFor: boolean;
-  issuesIdentified: string[];
-  staffLed: string;
-  debriefCompleted: boolean;
+  childId: string;
+  childName: string;
+  category: FireSafetyCategory;
+  outcome: FireSafetyOutcome;
+  drillCompletedSuccessfully: boolean;
+  allChildrenAccounted: boolean;
+  evacuationTimeRecorded: boolean;
+  equipmentFunctional: boolean;
+  documentationComplete: boolean;
+  timelyRecording: boolean;
 }
 
-export interface FireEquipment {
-  id: string;
-  homeId: string;
-  equipmentType: EquipmentType;
-  location: string;
-  lastInspectionDate: string;
-  nextInspectionDate: string;
-  status: EquipmentStatus;
-  notes: string;
+export interface FireSafetyPolicy {
+  fireSafetyPolicy: boolean;
+  evacuationProcedure: boolean;
+  fireRiskAssessmentPolicy: boolean;
+  equipmentMaintenancePolicy: boolean;
+  drillFrequencyGuidance: boolean;
+  emergencyLightingPolicy: boolean;
+  fireAlarmTestingPolicy: boolean;
 }
 
-export interface FireRiskAssessment {
-  id: string;
-  homeId: string;
-  assessmentDate: string;
-  assessedBy: string;
-  nextDueDate: string;
-  riskLevel: RiskLevel;
-  findingsCount: number;
-  actionsRequired: number;
-  actionsCompleted: number;
-  sharedWithStaff: boolean;
-}
-
-export interface EvacuationPlan {
-  id: string;
-  homeId: string;
-  lastReviewed: string;
-  assemblyPoint: string;
-  specialConsiderations: string[];
-  peepPlans: number;
-  childrenRequiringPeep: number;
-}
-
-export interface FireSafetyTraining {
+export interface FireSafetyStaffTraining {
   staffId: string;
-  staffName: string;
-  trainingDate: string;
-  expiryDate: string;
-  trainingType: "basic" | "advanced" | "fire_marshal";
-  passed: boolean;
+  fireWardenTraining: boolean;
+  evacuationProcedureKnowledge: boolean;
+  fireExtinguisherUse: boolean;
+  fireRiskAssessment: boolean;
+  alarmSystemKnowledge: boolean;
+  firstAidFireInjury: boolean;
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
-export interface DrillComplianceEvaluation {
-  totalDrills: number;
-  drillsByType: Record<string, number>;
-  monthlyFrequency: number;
-  nightDrillsPerQuarter: number;
-  meetsMonthlyTarget: boolean;
-  meetsNightDrillTarget: boolean;
-  averageEvacuationTimeSeconds: number | null;
-  averageTargetTimeSeconds: number | null;
-  evacuationOnTarget: number;
-  evacuationOverTarget: number;
-  evacuationTargetRate: number;
-  allAccountedForRate: number;
-  debriefRate: number;
-  totalIssues: number;
-  drillScore: number;
+export interface FireSafetyQualityResult {
+  totalRecords: number;
+  drillCompletedSuccessfullyRate: number;
+  allChildrenAccountedRate: number;
+  evacuationTimeRecordedRate: number;
+  equipmentFunctionalRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-export interface EquipmentMaintenanceEvaluation {
-  totalEquipment: number;
-  byType: Record<string, number>;
-  byStatus: Record<string, number>;
-  operationalCount: number;
-  operationalRate: number;
-  needsRepairCount: number;
-  outOfServiceCount: number;
-  dueInspectionCount: number;
-  overdueInspections: number;
-  inspectionComplianceRate: number;
-  criticalIssues: { equipmentId: string; equipmentType: EquipmentType; location: string; status: EquipmentStatus; note: string }[];
-  equipmentScore: number;
+export interface FireSafetyComplianceResult {
+  totalRecords: number;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  allChildrenAccountedRate: number;
+  categoryDiversityRatio: number;
+  uniqueCategories: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-export interface RiskAssessmentEvaluation {
-  totalAssessments: number;
-  currentAssessments: number;
-  overdueAssessments: number;
-  currentRate: number;
-  averageRiskLevel: string;
-  riskLevelCounts: Record<string, number>;
-  totalFindings: number;
-  totalActionsRequired: number;
-  totalActionsCompleted: number;
-  actionCompletionRate: number;
-  sharedWithStaffRate: number;
-  assessmentScore: number;
+export interface FireSafetyPolicyResult {
+  fireSafetyPolicy: boolean;
+  evacuationProcedure: boolean;
+  fireRiskAssessmentPolicy: boolean;
+  equipmentMaintenancePolicy: boolean;
+  drillFrequencyGuidance: boolean;
+  emergencyLightingPolicy: boolean;
+  fireAlarmTestingPolicy: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-export interface TrainingAndPlanningEvaluation {
-  totalStaffTrained: number;
-  currentTraining: number;
-  expiredTraining: number;
-  trainingCurrencyRate: number;
-  byTrainingType: Record<string, number>;
-  passRate: number;
-  hasFireMarshal: boolean;
-  evacuationPlanReviewed: boolean;
-  evacuationPlanAge: number | null;
-  peepCoverage: number;
-  peepCoverageRate: number;
-  specialConsiderationsDocumented: number;
-  trainingScore: number;
+export interface FireSafetyStaffReadinessResult {
+  totalStaff: number;
+  fireWardenTrainingRate: number;
+  evacuationProcedureKnowledgeRate: number;
+  fireExtinguisherUseRate: number;
+  fireRiskAssessmentRate: number;
+  alarmSystemKnowledgeRate: number;
+  firstAidFireInjuryRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+export interface ChildFireSafetyProfile {
+  childId: string;
+  childName: string;
+  totalRecords: number;
+  drillCompletedSuccessfullyRate: number;
+  allChildrenAccountedRate: number;
+  uniqueCategories: number;
+  fireSafetyScore: number;
 }
 
 export interface FireSafetyIntelligence {
@@ -175,11 +188,12 @@ export interface FireSafetyIntelligence {
   periodStart: string;
   periodEnd: string;
   overallScore: number;
-  rating: "outstanding" | "good" | "requires_improvement" | "inadequate";
-  drillCompliance: DrillComplianceEvaluation;
-  equipmentMaintenance: EquipmentMaintenanceEvaluation;
-  riskAssessment: RiskAssessmentEvaluation;
-  trainingAndPlanning: TrainingAndPlanningEvaluation;
+  rating: Rating;
+  quality: FireSafetyQualityResult;
+  compliance: FireSafetyComplianceResult;
+  policy: FireSafetyPolicyResult;
+  staffReadiness: FireSafetyStaffReadinessResult;
+  childProfiles: ChildFireSafetyProfile[];
   strengths: string[];
   areasForImprovement: string[];
   actions: string[];
@@ -188,615 +202,659 @@ export interface FireSafetyIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function daysBetween(dateA: string, dateB: string): number {
-  const a = new Date(dateA);
-  const b = new Date(dateB);
-  return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
 }
 
-function safePercent(numerator: number, denominator: number): number {
-  if (denominator <= 0) return 0;
-  return Math.round((numerator / denominator) * 100);
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
+// ── Evaluator 1: Quality (0-25) ──────────────────────────────────────────
 
-// ── 1. Evaluate Drill Compliance (25 points) ──────────────────────────────
+export function evaluateFireSafetyQuality(
+  records: FireSafetyRecord[],
+): FireSafetyQualityResult {
+  const totalRecords = records.length;
 
-export function evaluateDrillCompliance(
-  drills: FireDrill[],
-  periodStart: string,
-  periodEnd: string,
-): DrillComplianceEvaluation {
-  if (drills.length === 0) {
+  if (totalRecords === 0) {
     return {
-      totalDrills: 0,
-      drillsByType: {},
-      monthlyFrequency: 0,
-      nightDrillsPerQuarter: 0,
-      meetsMonthlyTarget: false,
-      meetsNightDrillTarget: false,
-      averageEvacuationTimeSeconds: null,
-      averageTargetTimeSeconds: null,
-      evacuationOnTarget: 0,
-      evacuationOverTarget: 0,
-      evacuationTargetRate: 0,
-      allAccountedForRate: 0,
-      debriefRate: 0,
-      totalIssues: 0,
-      drillScore: 0,
+      totalRecords: 0,
+      drillCompletedSuccessfullyRate: 0,
+      allChildrenAccountedRate: 0,
+      evacuationTimeRecordedRate: 0,
+      equipmentFunctionalRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No fire safety records — quality cannot be assessed"],
     };
   }
 
-  // Filter to period
-  const periodDrills = drills.filter((d) => d.date >= periodStart && d.date <= periodEnd);
-  const totalDrills = periodDrills.length;
+  const drillCount = records.filter((r) => r.drillCompletedSuccessfully).length;
+  const drillCompletedSuccessfullyRate = pct(drillCount, totalRecords);
 
-  if (totalDrills === 0) {
+  const accountedCount = records.filter((r) => r.allChildrenAccounted).length;
+  const allChildrenAccountedRate = pct(accountedCount, totalRecords);
+
+  const evacTimeCount = records.filter((r) => r.evacuationTimeRecorded).length;
+  const evacuationTimeRecordedRate = pct(evacTimeCount, totalRecords);
+
+  const equipCount = records.filter((r) => r.equipmentFunctional).length;
+  const equipmentFunctionalRate = pct(equipCount, totalRecords);
+
+  // Weights: drillCompletedSuccessfullyRate 7 + allChildrenAccountedRate 6 + evacuationTimeRecordedRate 6 + equipmentFunctionalRate 6 = 25
+  let score = 0;
+  score += (drillCompletedSuccessfullyRate / 100) * 7;
+  score += (allChildrenAccountedRate / 100) * 6;
+  score += (evacuationTimeRecordedRate / 100) * 6;
+  score += (equipmentFunctionalRate / 100) * 6;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (drillCompletedSuccessfullyRate >= 80) {
+    strengths.push("Strong drill completion: " + drillCompletedSuccessfullyRate + "% of drills completed successfully");
+  } else if (drillCompletedSuccessfullyRate < 50) {
+    concerns.push("Drill completion rate at " + drillCompletedSuccessfullyRate + "% — drills not consistently successful");
+  }
+
+  if (allChildrenAccountedRate >= 80) {
+    strengths.push("Excellent child accountability: " + allChildrenAccountedRate + "% of records show all children accounted for");
+  } else if (allChildrenAccountedRate < 50) {
+    concerns.push("Child accountability rate at " + allChildrenAccountedRate + "% — children not consistently accounted for");
+  }
+
+  if (evacuationTimeRecordedRate >= 90) {
+    strengths.push("Thorough evacuation time recording: " + evacuationTimeRecordedRate + "% of records have evacuation times");
+  } else if (evacuationTimeRecordedRate < 60) {
+    concerns.push("Evacuation time recording at " + evacuationTimeRecordedRate + "% — evacuation times not consistently recorded");
+  }
+
+  if (equipmentFunctionalRate >= 80) {
+    strengths.push("Good equipment functionality: " + equipmentFunctionalRate + "% of checks show equipment functional");
+  } else if (equipmentFunctionalRate < 50) {
+    concerns.push("Equipment functionality at " + equipmentFunctionalRate + "% — equipment not consistently functional");
+  }
+
+  return {
+    totalRecords,
+    drillCompletedSuccessfullyRate,
+    allChildrenAccountedRate,
+    evacuationTimeRecordedRate,
+    equipmentFunctionalRate,
+    score,
+    strengths,
+    concerns,
+  };
+}
+
+// ── Evaluator 2: Compliance (0-25) ───────────────────────────────────────
+
+export function evaluateFireSafetyCompliance(
+  records: FireSafetyRecord[],
+): FireSafetyComplianceResult {
+  const totalRecords = records.length;
+
+  if (totalRecords === 0) {
     return {
-      totalDrills: 0,
-      drillsByType: {},
-      monthlyFrequency: 0,
-      nightDrillsPerQuarter: 0,
-      meetsMonthlyTarget: false,
-      meetsNightDrillTarget: false,
-      averageEvacuationTimeSeconds: null,
-      averageTargetTimeSeconds: null,
-      evacuationOnTarget: 0,
-      evacuationOverTarget: 0,
-      evacuationTargetRate: 0,
-      allAccountedForRate: 0,
-      debriefRate: 0,
-      totalIssues: 0,
-      drillScore: 0,
+      totalRecords: 0,
+      documentationRate: 0,
+      timelyRecordingRate: 0,
+      allChildrenAccountedRate: 0,
+      categoryDiversityRatio: 0,
+      uniqueCategories: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No fire safety records — compliance cannot be assessed"],
     };
   }
 
-  // Drills by type
-  const drillsByType: Record<string, number> = {};
-  for (const d of periodDrills) {
-    drillsByType[d.drillType] = (drillsByType[d.drillType] ?? 0) + 1;
+  const docCount = records.filter((r) => r.documentationComplete).length;
+  const documentationRate = pct(docCount, totalRecords);
+
+  const timelyCount = records.filter((r) => r.timelyRecording).length;
+  const timelyRecordingRate = pct(timelyCount, totalRecords);
+
+  const accountedCount = records.filter((r) => r.allChildrenAccounted).length;
+  const allChildrenAccountedRate = pct(accountedCount, totalRecords);
+
+  const uniqueCategoriesSet = new Set(records.map((r) => r.category));
+  const uniqueCategories = uniqueCategoriesSet.size;
+  const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
+
+  // Weights: documentationRate 8 + timelyRecordingRate 7 + allChildrenAccountedRate 5 + categoryDiversityRatio 5 = 25
+  let score = 0;
+  score += (documentationRate / 100) * 8;
+  score += (timelyRecordingRate / 100) * 7;
+  score += (allChildrenAccountedRate / 100) * 5;
+  score += categoryDiversityRatio * 5;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (documentationRate >= 90) {
+    strengths.push("Excellent documentation: " + documentationRate + "% of fire safety records fully documented");
+  } else if (documentationRate < 50) {
+    concerns.push("Documentation rate at " + documentationRate + "% — fire safety records incomplete");
   }
 
-  // Monthly frequency
-  const months = Math.max(1, daysBetween(periodStart, periodEnd) / 30);
-  const monthlyFrequency = Math.round((totalDrills / months) * 10) / 10;
+  if (timelyRecordingRate >= 90) {
+    strengths.push("Timely recording: " + timelyRecordingRate + "% of fire safety activities recorded promptly");
+  } else if (timelyRecordingRate < 50) {
+    concerns.push("Timely recording rate at " + timelyRecordingRate + "% — records not completed promptly");
+  }
 
-  // Night drills per quarter
-  const nightDrills = periodDrills.filter(
-    (d) => d.drillType === "night_drill" || d.timeOfDay === "night",
-  ).length;
-  const quarters = Math.max(1, months / 3);
-  const nightDrillsPerQuarter = Math.round((nightDrills / quarters) * 10) / 10;
+  if (allChildrenAccountedRate >= 90) {
+    strengths.push("Strong child accountability in compliance: " + allChildrenAccountedRate + "% of records show all children accounted for");
+  } else if (allChildrenAccountedRate < 50) {
+    concerns.push("Child accountability in compliance at " + allChildrenAccountedRate + "% — accountability procedures need strengthening");
+  }
 
-  const meetsMonthlyTarget = monthlyFrequency >= 1;
-  const meetsNightDrillTarget = nightDrillsPerQuarter >= 1;
-
-  // Evacuation times
-  const evacuationDrills = periodDrills.filter(
-    (d) => d.evacuationTimeSeconds > 0 && d.targetTimeSeconds > 0,
-  );
-  const avgEvacTime = evacuationDrills.length > 0
-    ? Math.round(
-        evacuationDrills.reduce((sum, d) => sum + d.evacuationTimeSeconds, 0) /
-          evacuationDrills.length,
-      )
-    : null;
-  const avgTargetTime = evacuationDrills.length > 0
-    ? Math.round(
-        evacuationDrills.reduce((sum, d) => sum + d.targetTimeSeconds, 0) /
-          evacuationDrills.length,
-      )
-    : null;
-
-  const onTarget = evacuationDrills.filter(
-    (d) => d.evacuationTimeSeconds <= d.targetTimeSeconds,
-  ).length;
-  const overTarget = evacuationDrills.filter(
-    (d) => d.evacuationTimeSeconds > d.targetTimeSeconds,
-  ).length;
-
-  // All accounted for
-  const allAccountedFor = periodDrills.filter((d) => d.allAccountedFor).length;
-
-  // Debrief rate
-  const debriefed = periodDrills.filter((d) => d.debriefCompleted).length;
-
-  // Total issues
-  const totalIssues = periodDrills.reduce(
-    (sum, d) => sum + d.issuesIdentified.length,
-    0,
-  );
-
-  // Scoring: 25 points
-  // Frequency: 8 points (monthly compliance)
-  const freqScore = meetsMonthlyTarget ? 6 : clamp(Math.round(monthlyFrequency * 6), 0, 6);
-  const nightScore = meetsNightDrillTarget ? 2 : nightDrills > 0 ? 1 : 0;
-
-  // Evacuation performance: 7 points
-  const evacTargetRate = evacuationDrills.length > 0
-    ? safePercent(onTarget, evacuationDrills.length)
-    : 0;
-  const evacScore = evacuationDrills.length > 0
-    ? Math.round((evacTargetRate / 100) * 7)
-    : 0;
-
-  // Accountability: 5 points
-  const accountedRate = safePercent(allAccountedFor, totalDrills);
-  const accountScore = Math.round((accountedRate / 100) * 5);
-
-  // Debrief: 5 points
-  const debriefRate = safePercent(debriefed, totalDrills);
-  const debriefScore = Math.round((debriefRate / 100) * 5);
-
-  const drillScore = clamp(freqScore + nightScore + evacScore + accountScore + debriefScore, 0, 25);
+  if (uniqueCategories >= 6) {
+    strengths.push("Comprehensive fire safety coverage: " + uniqueCategories + " of 8 categories represented");
+  } else if (uniqueCategories <= 2) {
+    concerns.push("Only " + uniqueCategories + " fire safety category(ies) covered — limited scope of fire safety activity");
+  }
 
   return {
-    totalDrills,
-    drillsByType,
-    monthlyFrequency,
-    nightDrillsPerQuarter,
-    meetsMonthlyTarget,
-    meetsNightDrillTarget,
-    averageEvacuationTimeSeconds: avgEvacTime,
-    averageTargetTimeSeconds: avgTargetTime,
-    evacuationOnTarget: onTarget,
-    evacuationOverTarget: overTarget,
-    evacuationTargetRate: evacTargetRate,
-    allAccountedForRate: accountedRate,
-    debriefRate,
-    totalIssues,
-    drillScore,
+    totalRecords,
+    documentationRate,
+    timelyRecordingRate,
+    allChildrenAccountedRate,
+    categoryDiversityRatio,
+    uniqueCategories,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-// ── 2. Evaluate Equipment Maintenance (25 points) ─────────────────────────
+// ── Evaluator 3: Policy (0-25) ───────────────────────────────────────────
 
-export function evaluateEquipmentMaintenance(
-  equipment: FireEquipment[],
-  referenceDate: string,
-): EquipmentMaintenanceEvaluation {
-  if (equipment.length === 0) {
+export function evaluateFireSafetyPolicy(
+  policy: FireSafetyPolicy | null,
+): FireSafetyPolicyResult {
+  if (policy === null) {
     return {
-      totalEquipment: 0,
-      byType: {},
-      byStatus: {},
-      operationalCount: 0,
-      operationalRate: 0,
-      needsRepairCount: 0,
-      outOfServiceCount: 0,
-      dueInspectionCount: 0,
-      overdueInspections: 0,
-      inspectionComplianceRate: 0,
-      criticalIssues: [],
-      equipmentScore: 0,
+      fireSafetyPolicy: false,
+      evacuationProcedure: false,
+      fireRiskAssessmentPolicy: false,
+      equipmentMaintenancePolicy: false,
+      drillFrequencyGuidance: false,
+      emergencyLightingPolicy: false,
+      fireAlarmTestingPolicy: false,
+      score: 0,
+      strengths: [],
+      concerns: ["No fire safety policy in place — URGENT: develop comprehensive fire safety policy immediately"],
     };
   }
 
-  const total = equipment.length;
+  // 7 booleans weighted: 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.fireSafetyPolicy) score += 4;
+  if (policy.evacuationProcedure) score += 4;
+  if (policy.fireRiskAssessmentPolicy) score += 4;
+  if (policy.equipmentMaintenancePolicy) score += 4;
+  if (policy.drillFrequencyGuidance) score += 3;
+  if (policy.emergencyLightingPolicy) score += 3;
+  if (policy.fireAlarmTestingPolicy) score += 3;
 
-  // By type
-  const byType: Record<string, number> = {};
-  for (const e of equipment) {
-    byType[e.equipmentType] = (byType[e.equipmentType] ?? 0) + 1;
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  const trueCount = [
+    policy.fireSafetyPolicy,
+    policy.evacuationProcedure,
+    policy.fireRiskAssessmentPolicy,
+    policy.equipmentMaintenancePolicy,
+    policy.drillFrequencyGuidance,
+    policy.emergencyLightingPolicy,
+    policy.fireAlarmTestingPolicy,
+  ].filter(Boolean).length;
+
+  if (trueCount === 7) {
+    strengths.push("Complete fire safety policy framework in place (7/7 components)");
+  } else if (trueCount >= 5) {
+    strengths.push("Good policy coverage: " + trueCount + "/7 fire safety policy components in place");
   }
 
-  // By status
-  const byStatus: Record<string, number> = {};
-  for (const e of equipment) {
-    byStatus[e.status] = (byStatus[e.status] ?? 0) + 1;
+  if (!policy.fireSafetyPolicy) {
+    concerns.push("No overarching fire safety policy — foundational gap in fire safety governance");
   }
-
-  const operationalCount = equipment.filter((e) => e.status === "operational").length;
-  const needsRepairCount = equipment.filter((e) => e.status === "needs_repair").length;
-  const outOfServiceCount = equipment.filter((e) => e.status === "out_of_service").length;
-  const dueInspectionCount = equipment.filter((e) => e.status === "due_inspection").length;
-
-  // Overdue inspections: nextInspectionDate is before referenceDate
-  const overdueInspections = equipment.filter(
-    (e) => e.nextInspectionDate < referenceDate,
-  ).length;
-
-  // Inspection compliance: equipment NOT overdue
-  const compliant = total - overdueInspections;
-  const inspectionComplianceRate = safePercent(compliant, total);
-
-  // Critical issues: out of service or needs repair
-  const criticalIssues = equipment
-    .filter((e) => e.status === "out_of_service" || e.status === "needs_repair")
-    .map((e) => ({
-      equipmentId: e.id,
-      equipmentType: e.equipmentType,
-      location: e.location,
-      status: e.status,
-      note: e.notes,
-    }));
-
-  // Scoring: 25 points
-  // Operational rate: 10 points
-  const operationalRate = safePercent(operationalCount, total);
-  const opScore = Math.round((operationalRate / 100) * 10);
-
-  // Inspection compliance: 8 points
-  const inspScore = Math.round((inspectionComplianceRate / 100) * 8);
-
-  // Out of service penalty: up to -5 points
-  const oosPenalty = outOfServiceCount > 0 ? Math.min(5, outOfServiceCount * 2) : 0;
-
-  // Needs repair penalty: up to -3 points
-  const repairPenalty = needsRepairCount > 0 ? Math.min(3, needsRepairCount) : 0;
-
-  // Base of 7 points for having equipment documented, minus penalties
-  const baseDocScore = total > 0 ? 7 : 0;
-  const penalizedScore = Math.max(0, baseDocScore - oosPenalty - repairPenalty);
-
-  const equipmentScore = clamp(opScore + inspScore + penalizedScore, 0, 25);
+  if (!policy.evacuationProcedure) {
+    concerns.push("No evacuation procedure documented — staff and children may be at risk during emergencies");
+  }
+  if (!policy.fireRiskAssessmentPolicy) {
+    concerns.push("No fire risk assessment policy — risk assessments may not be carried out consistently");
+  }
+  if (!policy.equipmentMaintenancePolicy) {
+    concerns.push("No equipment maintenance policy — fire safety equipment may not be properly maintained");
+  }
+  if (!policy.drillFrequencyGuidance) {
+    concerns.push("No drill frequency guidance — drills may not be conducted regularly");
+  }
+  if (!policy.emergencyLightingPolicy) {
+    concerns.push("No emergency lighting policy — lighting checks may not be regular");
+  }
+  if (!policy.fireAlarmTestingPolicy) {
+    concerns.push("No fire alarm testing policy — alarms may not be tested at required intervals");
+  }
 
   return {
-    totalEquipment: total,
-    byType,
-    byStatus,
-    operationalCount,
-    operationalRate,
-    needsRepairCount,
-    outOfServiceCount,
-    dueInspectionCount,
-    overdueInspections,
-    inspectionComplianceRate,
-    criticalIssues,
-    equipmentScore,
+    fireSafetyPolicy: policy.fireSafetyPolicy,
+    evacuationProcedure: policy.evacuationProcedure,
+    fireRiskAssessmentPolicy: policy.fireRiskAssessmentPolicy,
+    equipmentMaintenancePolicy: policy.equipmentMaintenancePolicy,
+    drillFrequencyGuidance: policy.drillFrequencyGuidance,
+    emergencyLightingPolicy: policy.emergencyLightingPolicy,
+    fireAlarmTestingPolicy: policy.fireAlarmTestingPolicy,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-// ── 3. Evaluate Risk Assessments (25 points) ──────────────────────────────
+// ── Evaluator 4: Staff Readiness (0-25) ──────────────────────────────────
 
-export function evaluateRiskAssessments(
-  assessments: FireRiskAssessment[],
-  referenceDate: string,
-): RiskAssessmentEvaluation {
-  if (assessments.length === 0) {
+export function evaluateFireSafetyStaffReadiness(
+  training: FireSafetyStaffTraining[],
+): FireSafetyStaffReadinessResult {
+  const totalStaff = training.length;
+
+  if (totalStaff === 0) {
     return {
-      totalAssessments: 0,
-      currentAssessments: 0,
-      overdueAssessments: 0,
-      currentRate: 0,
-      averageRiskLevel: "unknown",
-      riskLevelCounts: {},
-      totalFindings: 0,
-      totalActionsRequired: 0,
-      totalActionsCompleted: 0,
-      actionCompletionRate: 0,
-      sharedWithStaffRate: 0,
-      assessmentScore: 0,
+      totalStaff: 0,
+      fireWardenTrainingRate: 0,
+      evacuationProcedureKnowledgeRate: 0,
+      fireExtinguisherUseRate: 0,
+      fireRiskAssessmentRate: 0,
+      alarmSystemKnowledgeRate: 0,
+      firstAidFireInjuryRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No staff training records — URGENT: schedule fire safety training for all staff"],
     };
   }
 
-  const total = assessments.length;
+  const wardenCount = training.filter((t) => t.fireWardenTraining).length;
+  const fireWardenTrainingRate = pct(wardenCount, totalStaff);
 
-  // Current: nextDueDate is on or after referenceDate
-  const currentAssessments = assessments.filter(
-    (a) => a.nextDueDate >= referenceDate,
-  ).length;
-  const overdueAssessments = total - currentAssessments;
+  const evacCount = training.filter((t) => t.evacuationProcedureKnowledge).length;
+  const evacuationProcedureKnowledgeRate = pct(evacCount, totalStaff);
 
-  // Risk level counts
-  const riskLevelCounts: Record<string, number> = {};
-  for (const a of assessments) {
-    riskLevelCounts[a.riskLevel] = (riskLevelCounts[a.riskLevel] ?? 0) + 1;
+  const extinguisherCount = training.filter((t) => t.fireExtinguisherUse).length;
+  const fireExtinguisherUseRate = pct(extinguisherCount, totalStaff);
+
+  const riskCount = training.filter((t) => t.fireRiskAssessment).length;
+  const fireRiskAssessmentRate = pct(riskCount, totalStaff);
+
+  const alarmCount = training.filter((t) => t.alarmSystemKnowledge).length;
+  const alarmSystemKnowledgeRate = pct(alarmCount, totalStaff);
+
+  const firstAidCount = training.filter((t) => t.firstAidFireInjury).length;
+  const firstAidFireInjuryRate = pct(firstAidCount, totalStaff);
+
+  // Weights: 6+5+5+4+3+2 = 25
+  let score = 0;
+  score += (fireWardenTrainingRate / 100) * 6;
+  score += (evacuationProcedureKnowledgeRate / 100) * 5;
+  score += (fireExtinguisherUseRate / 100) * 5;
+  score += (fireRiskAssessmentRate / 100) * 4;
+  score += (alarmSystemKnowledgeRate / 100) * 3;
+  score += (firstAidFireInjuryRate / 100) * 2;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (fireWardenTrainingRate >= 80) {
+    strengths.push("Strong fire warden training: " + fireWardenTrainingRate + "% of staff trained");
+  } else if (fireWardenTrainingRate < 50) {
+    concerns.push("Fire warden training at " + fireWardenTrainingRate + "% — more staff need fire warden certification");
   }
 
-  // Average risk level (numerical mapping: low=1, medium=2, high=3, critical=4)
-  const riskMap: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
-  const riskSum = assessments.reduce((sum, a) => sum + (riskMap[a.riskLevel] ?? 2), 0);
-  const avgRiskNum = riskSum / total;
-  const averageRiskLevel =
-    avgRiskNum <= 1.5 ? "low" : avgRiskNum <= 2.5 ? "medium" : avgRiskNum <= 3.5 ? "high" : "critical";
+  if (evacuationProcedureKnowledgeRate >= 80) {
+    strengths.push("Good evacuation procedure knowledge: " + evacuationProcedureKnowledgeRate + "% of staff");
+  } else if (evacuationProcedureKnowledgeRate < 50) {
+    concerns.push("Evacuation procedure knowledge at " + evacuationProcedureKnowledgeRate + "% — staff training gap");
+  }
 
-  // Findings and actions
-  const totalFindings = assessments.reduce((sum, a) => sum + a.findingsCount, 0);
-  const totalActionsRequired = assessments.reduce((sum, a) => sum + a.actionsRequired, 0);
-  const totalActionsCompleted = assessments.reduce((sum, a) => sum + a.actionsCompleted, 0);
-  const actionCompletionRate = safePercent(totalActionsCompleted, totalActionsRequired);
+  if (fireExtinguisherUseRate >= 80) {
+    strengths.push("Staff confident with fire extinguishers: " + fireExtinguisherUseRate + "%");
+  } else if (fireExtinguisherUseRate < 50) {
+    concerns.push("Fire extinguisher training at " + fireExtinguisherUseRate + "% — practical training needed");
+  }
 
-  // Shared with staff
-  const sharedWithStaff = assessments.filter((a) => a.sharedWithStaff).length;
-  const sharedWithStaffRate = safePercent(sharedWithStaff, total);
+  if (fireRiskAssessmentRate >= 80) {
+    strengths.push("Good fire risk assessment skills: " + fireRiskAssessmentRate + "% of staff");
+  } else if (fireRiskAssessmentRate < 50) {
+    concerns.push("Fire risk assessment skills at " + fireRiskAssessmentRate + "% — upskilling required");
+  }
 
-  // Scoring: 25 points
-  // Currency: 8 points
-  const currentRate = safePercent(currentAssessments, total);
-  const currencyScore = Math.round((currentRate / 100) * 8);
+  if (alarmSystemKnowledgeRate >= 80) {
+    strengths.push("Strong alarm system knowledge: " + alarmSystemKnowledgeRate + "% of staff");
+  } else if (alarmSystemKnowledgeRate < 50) {
+    concerns.push("Alarm system knowledge at " + alarmSystemKnowledgeRate + "% — staff need familiarisation");
+  }
 
-  // Action completion: 7 points
-  const actionScore = Math.round((actionCompletionRate / 100) * 7);
-
-  // Risk level bonus: lower average risk = better (5 points)
-  const riskScore =
-    averageRiskLevel === "low" ? 5
-      : averageRiskLevel === "medium" ? 3
-        : averageRiskLevel === "high" ? 1
-          : 0;
-
-  // Shared with staff: 5 points
-  const sharedScore = Math.round((sharedWithStaffRate / 100) * 5);
-
-  const assessmentScore = clamp(currencyScore + actionScore + riskScore + sharedScore, 0, 25);
+  if (firstAidFireInjuryRate >= 80) {
+    strengths.push("Good first aid for fire injury skills: " + firstAidFireInjuryRate + "% of staff");
+  } else if (firstAidFireInjuryRate < 50) {
+    concerns.push("First aid for fire injury at " + firstAidFireInjuryRate + "% — training recommended");
+  }
 
   return {
-    totalAssessments: total,
-    currentAssessments,
-    overdueAssessments,
-    currentRate,
-    averageRiskLevel,
-    riskLevelCounts,
-    totalFindings,
-    totalActionsRequired,
-    totalActionsCompleted,
-    actionCompletionRate,
-    sharedWithStaffRate,
-    assessmentScore,
+    totalStaff,
+    fireWardenTrainingRate,
+    evacuationProcedureKnowledgeRate,
+    fireExtinguisherUseRate,
+    fireRiskAssessmentRate,
+    alarmSystemKnowledgeRate,
+    firstAidFireInjuryRate,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-// ── 4. Evaluate Training & Planning (25 points) ──────────────────────────
+// ── Build Child Fire Safety Profiles ─────────────────────────────────────
 
-export function evaluateTrainingAndPlanning(
-  training: FireSafetyTraining[],
-  evacuationPlan: EvacuationPlan | null,
-  referenceDate: string,
-): TrainingAndPlanningEvaluation {
-  // Training evaluation
-  const totalStaffTrained = training.length;
-  const currentTraining = training.filter((t) => t.expiryDate >= referenceDate && t.passed).length;
-  const expiredTraining = training.filter((t) => t.expiryDate < referenceDate).length;
-  const trainingCurrencyRate = safePercent(currentTraining, totalStaffTrained);
+export function buildChildFireSafetyProfiles(
+  records: FireSafetyRecord[],
+): ChildFireSafetyProfile[] {
+  if (records.length === 0) return [];
 
-  const byTrainingType: Record<string, number> = {};
-  for (const t of training) {
-    byTrainingType[t.trainingType] = (byTrainingType[t.trainingType] ?? 0) + 1;
+  const childMap = new Map<string, { childId: string; childName: string; records: FireSafetyRecord[] }>();
+
+  for (const r of records) {
+    if (!childMap.has(r.childId)) {
+      childMap.set(r.childId, { childId: r.childId, childName: r.childName, records: [] });
+    }
+    childMap.get(r.childId)!.records.push(r);
   }
 
-  const passed = training.filter((t) => t.passed).length;
-  const passRate = safePercent(passed, totalStaffTrained);
-  const hasFireMarshal = training.some(
-    (t) => t.trainingType === "fire_marshal" && t.expiryDate >= referenceDate && t.passed,
-  );
+  return Array.from(childMap.values()).map((child) => {
+    const totalRecords = child.records.length;
 
-  // Evacuation plan evaluation
-  const evacuationPlanReviewed = evacuationPlan !== null;
-  let evacuationPlanAge: number | null = null;
-  let peepCoverage = 0;
-  let peepCoverageRate = 0;
-  let specialConsiderationsDocumented = 0;
+    const drillCount = child.records.filter((r) => r.drillCompletedSuccessfully).length;
+    const drillCompletedSuccessfullyRate = pct(drillCount, totalRecords);
 
-  if (evacuationPlan) {
-    evacuationPlanAge = daysBetween(evacuationPlan.lastReviewed, referenceDate);
-    peepCoverage = evacuationPlan.peepPlans;
-    peepCoverageRate = evacuationPlan.childrenRequiringPeep > 0
-      ? safePercent(evacuationPlan.peepPlans, evacuationPlan.childrenRequiringPeep)
-      : 100;
-    specialConsiderationsDocumented = evacuationPlan.specialConsiderations.length;
-  }
+    const accountedCount = child.records.filter((r) => r.allChildrenAccounted).length;
+    const allChildrenAccountedRate = pct(accountedCount, totalRecords);
 
-  // Scoring: 25 points
-  // Training currency: 8 points
-  const currencyScore = Math.round((trainingCurrencyRate / 100) * 8);
+    const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
+    const uniqueCategories = uniqueCategoriesSet.size;
 
-  // Pass rate: 4 points
-  const passScore = Math.round((passRate / 100) * 4);
+    // frequency: >=10 records -> 2, >=5 -> 1, else 0
+    let frequencyScore = 0;
+    if (totalRecords >= 10) frequencyScore = 2;
+    else if (totalRecords >= 5) frequencyScore = 1;
 
-  // Fire marshal: 3 points
-  const marshalScore = hasFireMarshal ? 3 : 0;
+    // rate1 (drillCompletedSuccessfullyRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
+    let rate1Score = 0;
+    if (drillCompletedSuccessfullyRate >= 80) rate1Score = 3;
+    else if (drillCompletedSuccessfullyRate >= 60) rate1Score = 2;
+    else if (drillCompletedSuccessfullyRate >= 40) rate1Score = 1;
 
-  // Evacuation plan: 5 points
-  let evacPlanScore = 0;
-  if (evacuationPlan) {
-    evacPlanScore += 2; // Has plan
-    if (evacuationPlanAge !== null && evacuationPlanAge <= 365) evacPlanScore += 2; // Reviewed within year
-    if (peepCoverageRate >= 100) evacPlanScore += 1; // All PEEPs in place
-  }
+    // rate2 (allChildrenAccountedRate): same thresholds
+    let rate2Score = 0;
+    if (allChildrenAccountedRate >= 80) rate2Score = 3;
+    else if (allChildrenAccountedRate >= 60) rate2Score = 2;
+    else if (allChildrenAccountedRate >= 40) rate2Score = 1;
 
-  // PEEP and special considerations: 5 points
-  const peepScore = evacuationPlan
-    ? Math.round((peepCoverageRate / 100) * 3)
-    : 0;
-  const specConsScore = specialConsiderationsDocumented > 0 ? 2 : 0;
+    // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
+    let diversityBonus = 0;
+    if (uniqueCategories >= 4) diversityBonus = 2;
+    else if (uniqueCategories >= 2) diversityBonus = 1;
 
-  const trainingScore = clamp(currencyScore + passScore + marshalScore + evacPlanScore + peepScore + specConsScore, 0, 25);
+    const fireSafetyScore = Math.min(10, frequencyScore + rate1Score + rate2Score + diversityBonus);
 
-  return {
-    totalStaffTrained,
-    currentTraining,
-    expiredTraining,
-    trainingCurrencyRate,
-    byTrainingType,
-    passRate,
-    hasFireMarshal,
-    evacuationPlanReviewed,
-    evacuationPlanAge,
-    peepCoverage,
-    peepCoverageRate,
-    specialConsiderationsDocumented,
-    trainingScore,
-  };
+    return {
+      childId: child.childId,
+      childName: child.childName,
+      totalRecords,
+      drillCompletedSuccessfullyRate,
+      allChildrenAccountedRate,
+      uniqueCategories,
+      fireSafetyScore,
+    };
+  });
 }
 
-// ── 5. Generate Full Intelligence ─────────────────────────────────────────
+// ── Orchestrator ──────────────────────────────────────────────────────────
 
 export function generateFireSafetyIntelligence(
-  drills: FireDrill[],
-  equipment: FireEquipment[],
-  assessments: FireRiskAssessment[],
-  training: FireSafetyTraining[],
-  evacuationPlan: EvacuationPlan | null,
+  records: FireSafetyRecord[],
+  policy: FireSafetyPolicy | null,
+  training: FireSafetyStaffTraining[],
   homeId: string,
   periodStart: string,
   periodEnd: string,
-  referenceDate: string,
 ): FireSafetyIntelligence {
-  const drillEval = evaluateDrillCompliance(drills, periodStart, periodEnd);
-  const equipEval = evaluateEquipmentMaintenance(equipment, referenceDate);
-  const riskEval = evaluateRiskAssessments(assessments, referenceDate);
-  const trainEval = evaluateTrainingAndPlanning(training, evacuationPlan, referenceDate);
+  const assessedAt = new Date().toISOString();
 
-  // ── Scoring (100 points) ──────────────────────────────────────────────
-  const overallScore = clamp(
-    drillEval.drillScore + equipEval.equipmentScore + riskEval.assessmentScore + trainEval.trainingScore,
-    0,
-    100,
+  // Filter records to period
+  const periodRecords = records.filter(
+    (r) => r.date >= periodStart && r.date <= periodEnd,
   );
 
-  const rating: FireSafetyIntelligence["rating"] =
-    overallScore >= 80
-      ? "outstanding"
-      : overallScore >= 60
-        ? "good"
-        : overallScore >= 40
-          ? "requires_improvement"
-          : "inadequate";
+  // Evaluate each layer
+  const quality = evaluateFireSafetyQuality(periodRecords);
+  const compliance = evaluateFireSafetyCompliance(periodRecords);
+  const policyResult = evaluateFireSafetyPolicy(policy);
+  const staffReadiness = evaluateFireSafetyStaffReadiness(training);
 
-  // ── Strengths ─────────────────────────────────────────────────────────
-  const strengths: string[] = [];
+  // Build child profiles
+  const childProfiles = buildChildFireSafetyProfiles(periodRecords);
 
-  if (drillEval.meetsMonthlyTarget)
-    strengths.push("Fire drills are conducted at least monthly, meeting regulatory expectations");
-  if (drillEval.meetsNightDrillTarget)
-    strengths.push("Night drills are conducted at least quarterly, testing readiness at all hours");
-  if (drillEval.evacuationTargetRate >= 80 && drillEval.totalDrills > 0)
-    strengths.push("Evacuation times consistently within target, demonstrating effective practice");
-  if (drillEval.allAccountedForRate === 100 && drillEval.totalDrills > 0)
-    strengths.push("All children accounted for in every drill — robust accountability procedures");
-  if (drillEval.debriefRate === 100 && drillEval.totalDrills > 0)
-    strengths.push("Debriefs completed after every drill, supporting continuous improvement");
-  if (equipEval.operationalRate >= 90 && equipEval.totalEquipment > 0)
-    strengths.push("Fire safety equipment is well maintained with high operational rate");
-  if (equipEval.outOfServiceCount === 0 && equipEval.totalEquipment > 0)
-    strengths.push("No fire safety equipment is out of service");
-  if (equipEval.inspectionComplianceRate === 100 && equipEval.totalEquipment > 0)
-    strengths.push("All equipment inspections are up to date");
-  if (riskEval.currentRate === 100 && riskEval.totalAssessments > 0)
-    strengths.push("Fire risk assessments are current and within review period");
-  if (riskEval.actionCompletionRate >= 90 && riskEval.totalActionsRequired > 0)
-    strengths.push("Excellent completion rate for actions identified in risk assessments");
-  if (riskEval.sharedWithStaffRate === 100 && riskEval.totalAssessments > 0)
-    strengths.push("All fire risk assessments have been shared with staff");
-  if (trainEval.trainingCurrencyRate >= 90 && trainEval.totalStaffTrained > 0)
-    strengths.push("Staff fire safety training is current and comprehensive");
-  if (trainEval.hasFireMarshal)
-    strengths.push("Designated fire marshal with current training is in place");
-  if (trainEval.peepCoverageRate === 100 && evacuationPlan && evacuationPlan.childrenRequiringPeep > 0)
-    strengths.push("Personal Emergency Evacuation Plans (PEEPs) in place for all children requiring them");
-  if (trainEval.evacuationPlanReviewed && trainEval.evacuationPlanAge !== null && trainEval.evacuationPlanAge <= 180)
-    strengths.push("Evacuation plan has been recently reviewed");
+  // Overall score capped at 100
+  const overallScore = Math.min(
+    100,
+    Math.round(
+      quality.score +
+      compliance.score +
+      policyResult.score +
+      staffReadiness.score,
+    ),
+  );
 
-  // ── Areas for Improvement ─────────────────────────────────────────────
-  const areasForImprovement: string[] = [];
+  const rating = getRating(overallScore);
 
-  if (drillEval.totalDrills === 0)
-    areasForImprovement.push("No fire drills conducted during the review period — this is a serious compliance gap");
-  if (!drillEval.meetsMonthlyTarget && drillEval.totalDrills > 0)
-    areasForImprovement.push("Fire drills are not conducted monthly — frequency must increase to meet requirements");
-  if (!drillEval.meetsNightDrillTarget && drillEval.totalDrills > 0)
-    areasForImprovement.push("Night drills not conducted at required quarterly frequency");
-  if (drillEval.evacuationTargetRate < 80 && drillEval.evacuationOnTarget + drillEval.evacuationOverTarget > 0)
-    areasForImprovement.push("Evacuation times exceed targets in too many drills — practice and route review needed");
-  if (drillEval.allAccountedForRate < 100 && drillEval.totalDrills > 0)
-    areasForImprovement.push("Not all children accounted for in every drill — accountability procedures need strengthening");
-  if (drillEval.debriefRate < 100 && drillEval.totalDrills > 0)
-    areasForImprovement.push("Debriefs not completed after all drills — missed opportunities for learning");
-  if (equipEval.outOfServiceCount > 0)
-    areasForImprovement.push(`${equipEval.outOfServiceCount} fire safety equipment item(s) out of service — immediate action required`);
-  if (equipEval.needsRepairCount > 0)
-    areasForImprovement.push(`${equipEval.needsRepairCount} fire safety equipment item(s) need repair`);
-  if (equipEval.overdueInspections > 0)
-    areasForImprovement.push(`${equipEval.overdueInspections} equipment inspection(s) are overdue`);
-  if (equipEval.operationalRate < 80 && equipEval.totalEquipment > 0)
-    areasForImprovement.push("Equipment operational rate is below acceptable threshold");
-  if (riskEval.overdueAssessments > 0)
-    areasForImprovement.push(`${riskEval.overdueAssessments} fire risk assessment(s) are overdue for review`);
-  if (riskEval.actionCompletionRate < 80 && riskEval.totalActionsRequired > 0)
-    areasForImprovement.push("Actions from fire risk assessments are not being completed promptly");
-  if (riskEval.sharedWithStaffRate < 100 && riskEval.totalAssessments > 0)
-    areasForImprovement.push("Not all fire risk assessments have been shared with staff");
-  if (riskEval.totalAssessments === 0)
-    areasForImprovement.push("No fire risk assessment on record — this is a critical compliance gap");
-  if (trainEval.expiredTraining > 0)
-    areasForImprovement.push(`${trainEval.expiredTraining} staff member(s) have expired fire safety training`);
-  if (trainEval.trainingCurrencyRate < 80 && trainEval.totalStaffTrained > 0)
-    areasForImprovement.push("Staff fire safety training currency is below acceptable levels");
-  if (!trainEval.hasFireMarshal)
-    areasForImprovement.push("No designated fire marshal with current training — required under fire safety legislation");
-  if (!trainEval.evacuationPlanReviewed)
-    areasForImprovement.push("No evacuation plan on record — this must be developed and communicated immediately");
-  if (trainEval.evacuationPlanAge !== null && trainEval.evacuationPlanAge > 365)
-    areasForImprovement.push("Evacuation plan has not been reviewed in the past 12 months");
-  if (trainEval.peepCoverageRate < 100 && evacuationPlan && evacuationPlan.childrenRequiringPeep > 0)
-    areasForImprovement.push("Not all children requiring a Personal Emergency Evacuation Plan (PEEP) have one");
+  // Aggregate strengths
+  const strengths = aggregateStrengths(
+    quality, compliance, policyResult, staffReadiness, overallScore,
+  );
 
-  // ── Actions ───────────────────────────────────────────────────────────
-  const actions: string[] = [];
+  // Aggregate areas for improvement
+  const areasForImprovement = aggregateAreasForImprovement(
+    quality, compliance, policyResult, staffReadiness, overallScore,
+  );
 
-  if (drillEval.totalDrills === 0)
-    actions.push("Conduct a fire drill immediately and establish a monthly schedule");
-  if (!drillEval.meetsMonthlyTarget && drillEval.totalDrills > 0)
-    actions.push("Increase fire drill frequency to at least monthly");
-  if (!drillEval.meetsNightDrillTarget)
-    actions.push("Schedule night drills at least once per quarter");
-  if (drillEval.evacuationTargetRate < 100 && drillEval.totalDrills > 0)
-    actions.push("Review evacuation routes and conduct additional practice for drills exceeding target times");
-  if (drillEval.allAccountedForRate < 100 && drillEval.totalDrills > 0)
-    actions.push("Strengthen roll-call and accountability procedures during evacuations");
-  if (drillEval.debriefRate < 100 && drillEval.totalDrills > 0)
-    actions.push("Ensure debriefs are completed after every fire drill");
-  if (equipEval.outOfServiceCount > 0)
-    actions.push("Arrange urgent repair or replacement of out-of-service fire safety equipment");
-  if (equipEval.needsRepairCount > 0)
-    actions.push("Schedule repairs for fire safety equipment flagged as needing attention");
-  if (equipEval.overdueInspections > 0)
-    actions.push("Complete overdue equipment inspections immediately");
-  if (riskEval.totalAssessments === 0)
-    actions.push("Commission a fire risk assessment for the premises without delay");
-  if (riskEval.overdueAssessments > 0)
-    actions.push("Complete overdue fire risk assessment reviews");
-  if (riskEval.actionCompletionRate < 100 && riskEval.totalActionsRequired > 0)
-    actions.push("Complete outstanding actions from fire risk assessments");
-  if (riskEval.sharedWithStaffRate < 100 && riskEval.totalAssessments > 0)
-    actions.push("Share fire risk assessment findings with all staff");
-  if (trainEval.expiredTraining > 0)
-    actions.push("Arrange refresher fire safety training for staff with expired certifications");
-  if (!trainEval.hasFireMarshal)
-    actions.push("Nominate and train a designated fire marshal");
-  if (!trainEval.evacuationPlanReviewed)
-    actions.push("Develop a written evacuation plan including assembly point and PEEP arrangements");
-  if (trainEval.evacuationPlanAge !== null && trainEval.evacuationPlanAge > 365)
-    actions.push("Review and update the evacuation plan — last review was over 12 months ago");
-  if (trainEval.peepCoverageRate < 100 && evacuationPlan && evacuationPlan.childrenRequiringPeep > 0)
-    actions.push("Develop PEEPs for all children identified as requiring one");
+  // Generate actions
+  const actions = generateActions(
+    quality, compliance, policyResult, staffReadiness, childProfiles,
+  );
 
-  // ── Regulatory Links ──────────────────────────────────────────────────
-  const regulatoryLinks: string[] = [
-    "CHR 2015, Reg 25 — Fire precautions: premises must have appropriate fire safety measures",
-    "Regulatory Reform (Fire Safety) Order 2005 — Fire risk assessment, maintenance of equipment, evacuation procedures, drill requirements, staff training",
-    "SCCIF — Social Care Common Inspection Framework: Ofsted evaluates fire safety as part of leadership and management judgement",
-    "Health and Safety at Work Act 1974 — General duty of care for the safety of staff and children in the home",
-  ];
+  // Regulatory links
+  const regulatoryLinks = generateRegulatoryLinks();
 
   return {
     homeId,
-    assessedAt: referenceDate,
+    assessedAt,
     periodStart,
     periodEnd,
     overallScore,
     rating,
-    drillCompliance: drillEval,
-    equipmentMaintenance: equipEval,
-    riskAssessment: riskEval,
-    trainingAndPlanning: trainEval,
+    quality,
+    compliance,
+    policy: policyResult,
+    staffReadiness,
+    childProfiles,
     strengths,
     areasForImprovement,
     actions,
     regulatoryLinks,
   };
+}
+
+// ── Aggregate Strengths ──────────────────────────────────────────────────
+
+function aggregateStrengths(
+  quality: FireSafetyQualityResult,
+  compliance: FireSafetyComplianceResult,
+  policy: FireSafetyPolicyResult,
+  staff: FireSafetyStaffReadinessResult,
+  overallScore: number,
+): string[] {
+  const strengths: string[] = [];
+
+  if (overallScore >= 80) {
+    strengths.push("Overall fire safety management rated Outstanding (" + overallScore + "/100)");
+  } else if (overallScore >= 60) {
+    strengths.push("Overall fire safety management rated Good (" + overallScore + "/100)");
+  }
+
+  if (quality.score >= 20) {
+    strengths.push("Fire safety quality is strong (score " + quality.score + "/25)");
+  }
+  if (compliance.score >= 20) {
+    strengths.push("Fire safety compliance is strong (score " + compliance.score + "/25)");
+  }
+  if (policy.score >= 20) {
+    strengths.push("Fire safety policy framework is robust (score " + policy.score + "/25)");
+  }
+  if (staff.score >= 20) {
+    strengths.push("Staff fire safety readiness is strong (score " + staff.score + "/25)");
+  }
+
+  strengths.push(...quality.strengths.slice(0, 2));
+  strengths.push(...compliance.strengths.slice(0, 2));
+  strengths.push(...policy.strengths.slice(0, 2));
+  strengths.push(...staff.strengths.slice(0, 2));
+
+  return strengths;
+}
+
+// ── Aggregate Areas for Improvement ──────────────────────────────────────
+
+function aggregateAreasForImprovement(
+  quality: FireSafetyQualityResult,
+  compliance: FireSafetyComplianceResult,
+  policy: FireSafetyPolicyResult,
+  staff: FireSafetyStaffReadinessResult,
+  overallScore: number,
+): string[] {
+  const areas: string[] = [];
+
+  if (overallScore < 40) {
+    areas.push("Overall fire safety management rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
+  } else if (overallScore < 60) {
+    areas.push("Overall fire safety management Requires Improvement (" + overallScore + "/100)");
+  }
+
+  if (quality.score < 15) {
+    areas.push("Fire safety quality needs improvement (score " + quality.score + "/25)");
+  }
+  if (compliance.score < 15) {
+    areas.push("Fire safety compliance needs improvement (score " + compliance.score + "/25)");
+  }
+  if (policy.score < 15) {
+    areas.push("Fire safety policy framework needs improvement (score " + policy.score + "/25)");
+  }
+  if (staff.score < 15) {
+    areas.push("Staff fire safety readiness needs improvement (score " + staff.score + "/25)");
+  }
+
+  areas.push(...quality.concerns);
+  areas.push(...compliance.concerns);
+  areas.push(...policy.concerns);
+  areas.push(...staff.concerns);
+
+  return areas;
+}
+
+// ── Generate Actions ─────────────────────────────────────────────────────
+
+function generateActions(
+  quality: FireSafetyQualityResult,
+  compliance: FireSafetyComplianceResult,
+  policy: FireSafetyPolicyResult,
+  staff: FireSafetyStaffReadinessResult,
+  childProfiles: ChildFireSafetyProfile[],
+): string[] {
+  const actions: string[] = [];
+
+  // URGENT when policy score = 0
+  if (policy.score === 0) {
+    actions.push("URGENT: No fire safety policy in place — develop and implement comprehensive fire safety policy immediately");
+  }
+
+  // URGENT when staff score = 0
+  if (staff.totalStaff === 0) {
+    actions.push("URGENT: No staff fire safety training records — schedule fire safety training for all staff immediately");
+  }
+
+  // Conditional on rates < 50
+  if (quality.totalRecords > 0 && quality.drillCompletedSuccessfullyRate < 50) {
+    actions.push("HIGH: Drill completion rate at " + quality.drillCompletedSuccessfullyRate + "% — review drill procedures and ensure drills are completed successfully");
+  }
+
+  if (quality.totalRecords > 0 && quality.allChildrenAccountedRate < 50) {
+    actions.push("HIGH: Child accountability rate at " + quality.allChildrenAccountedRate + "% — strengthen roll-call and accountability procedures");
+  }
+
+  if (compliance.totalRecords > 0 && compliance.documentationRate < 50) {
+    actions.push("HIGH: Documentation rate at " + compliance.documentationRate + "% — ensure all fire safety activities are fully documented");
+  }
+
+  if (compliance.totalRecords > 0 && compliance.timelyRecordingRate < 50) {
+    actions.push("HIGH: Timely recording rate at " + compliance.timelyRecordingRate + "% — records must be completed promptly after activities");
+  }
+
+  if (quality.totalRecords > 0 && quality.evacuationTimeRecordedRate < 50) {
+    actions.push("MEDIUM: Evacuation time recording at " + quality.evacuationTimeRecordedRate + "% — record evacuation times for all drills");
+  }
+
+  if (quality.totalRecords > 0 && quality.equipmentFunctionalRate < 50) {
+    actions.push("MEDIUM: Equipment functionality at " + quality.equipmentFunctionalRate + "% — arrange urgent equipment inspections and repairs");
+  }
+
+  if (staff.totalStaff > 0 && staff.fireWardenTrainingRate < 50) {
+    actions.push("MEDIUM: Fire warden training at " + staff.fireWardenTrainingRate + "% — schedule fire warden training for more staff");
+  }
+
+  // Children with low scores
+  const lowScoreChildren = childProfiles.filter((p) => p.fireSafetyScore <= 3);
+  if (lowScoreChildren.length > 0) {
+    actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low fire safety scores — review individual fire safety provisions");
+  }
+
+  if (actions.length === 0) {
+    actions.push("No immediate actions required. Fire safety systems operating within expected standards.");
+  }
+
+  return actions;
+}
+
+// ── Regulatory Links ─────────────────────────────────────────────────────
+
+function generateRegulatoryLinks(): string[] {
+  return [
+    "Regulatory Reform (Fire Safety) Order 2005",
+    "CHR 2015 Reg 25 — Fire precautions",
+    "CHR 2015 Reg 44 — Independent person: visits",
+    "SCCIF — Safety: fire safety compliance",
+    "NMS 10 — Premises and safety",
+    "Health and Safety at Work Act 1974 — Fire safety duties",
+    "Quality Standards 2015 — Standard 6 (safe premises)",
+  ];
 }

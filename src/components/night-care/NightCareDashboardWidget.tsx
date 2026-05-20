@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import type { NightCareIntelligence } from "@/lib/night-care";
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
   good: "bg-blue-100 text-blue-800 border-blue-300",
@@ -16,6 +18,8 @@ const ratingLabels: Record<string, string> = {
   requires_improvement: "Requires Improvement",
   inadequate: "Inadequate",
 };
+
+// ── Sub-components ───────────────────────────────────────────────────────────
 
 function ScoreBar({ score, label, maxScore = 100 }: { score: number; label: string; maxScore?: number }) {
   const pct = (score / maxScore) * 100;
@@ -44,23 +48,29 @@ function Section({ title, defaultOpen = false, children }: { title: string; defa
   );
 }
 
-function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
+function Stat({ label, value, suffix }: { label: string; value: string | number; suffix?: string }) {
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-      {ok ? "✓" : "✗"} {label}
-    </span>
+    <div>
+      <span className="text-gray-500 text-sm">{label}:</span>{" "}
+      <span className="font-medium text-sm">{value}{suffix}</span>
+    </div>
   );
 }
 
-export function NightCareDashboardWidget() {
+// ── Main Widget ──────────────────────────────────────────────────────────────
+
+export default function NightCareDashboardWidget() {
   const [data, setData] = useState<NightCareIntelligence | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/night-care")
-      .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
-      .then(setData)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => setData(json.data))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -71,7 +81,11 @@ export function NightCareDashboardWidget() {
         <div className="animate-pulse space-y-4">
           <div className="h-6 bg-gray-200 rounded w-2/3" />
           <div className="h-4 bg-gray-200 rounded w-1/2" />
-          <div className="grid grid-cols-4 gap-4">{[1, 2, 3, 4].map((i) => <div key={i} className="h-20 bg-gray-200 rounded" />)}</div>
+          <div className="grid grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-20 bg-gray-200 rounded" />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -94,11 +108,15 @@ export function NightCareDashboardWidget() {
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Night Care</h3>
-          <p className="text-sm text-gray-500 mt-1">{data.periodStart} to {data.periodEnd}</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {data.periodStart} to {data.periodEnd}
+          </p>
         </div>
         <div className="text-right">
           <div className="text-3xl font-bold text-gray-900">{data.overallScore}</div>
-          <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${ratingColors[data.rating] || ""}`}>
+          <span
+            className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${ratingColors[data.rating] || ""}`}
+          >
             {ratingLabels[data.rating] || data.rating}
           </span>
         </div>
@@ -107,88 +125,112 @@ export function NightCareDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.monitoringQuality.totalChecks}</div>
+          <div className="text-2xl font-bold text-gray-900">{data.quality.totalRecords}</div>
+          <div className="text-xs text-gray-500 mt-1">Night Records</div>
+        </div>
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-gray-900">{data.quality.nightCheckCompletedRate}%</div>
           <div className="text-xs text-gray-500 mt-1">Night Checks</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.monitoringQuality.averageChecksPerChild}</div>
-          <div className="text-xs text-gray-500 mt-1">Avg Checks/Child/Night</div>
+          <div className="text-2xl font-bold text-gray-900">{data.compliance.documentationRate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Documentation</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className={`text-2xl font-bold ${data.incidentManagement.totalIncidents === 0 ? "text-green-600" : "text-amber-600"}`}>
-            {data.incidentManagement.totalIncidents}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">Night Incidents</div>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.staffingAdequacy.adequateStaffingRate}%</div>
-          <div className="text-xs text-gray-500 mt-1">Adequate Staffing</div>
+          <div className="text-2xl font-bold text-gray-900">{data.staffReadiness.totalStaff}</div>
+          <div className="text-xs text-gray-500 mt-1">Trained Staff</div>
         </div>
       </div>
 
       {/* Component Scores */}
       <div className="space-y-2">
-        <ScoreBar score={data.monitoringQuality.overallScore} label="Monitoring Quality" maxScore={25} />
-        <ScoreBar score={data.incidentManagement.overallScore} label="Incident Management" maxScore={25} />
-        <ScoreBar score={data.staffingAdequacy.overallScore} label="Staffing Adequacy" maxScore={25} />
-        <ScoreBar score={data.sleepEnvironment.overallScore} label="Sleep Environment" maxScore={25} />
+        <ScoreBar score={data.quality.overallScore} label="Quality" maxScore={25} />
+        <ScoreBar score={data.compliance.overallScore} label="Compliance" maxScore={25} />
+        <ScoreBar score={data.policy.overallScore} label="Policy" maxScore={25} />
+        <ScoreBar score={data.staffReadiness.overallScore} label="Staff Readiness" maxScore={25} />
       </div>
 
       {/* Sections */}
       <div className="space-y-3">
-        <Section title="Monitoring Quality" defaultOpen>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Total Checks:</span> <span className="font-medium">{data.monitoringQuality.totalChecks}</span></div>
-            <div><span className="text-gray-500">Avg/Child/Night:</span> <span className="font-medium">{data.monitoringQuality.averageChecksPerChild}</span></div>
-            <div><span className="text-gray-500">Door Checks:</span> <span className="font-medium">{data.monitoringQuality.doorOpenCheckRate}%</span></div>
-            <div><span className="text-gray-500">Temp Checks:</span> <span className="font-medium">{data.monitoringQuality.temperatureCheckRate}%</span></div>
-          </div>
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            <StatusBadge ok={data.monitoringQuality.welfareChecksIncluded} label="Welfare Checks" />
-            <StatusBadge ok={data.monitoringQuality.documentationQuality >= 80} label={`Documentation ${data.monitoringQuality.documentationQuality}%`} />
-            <StatusBadge ok={data.monitoringQuality.averageChecksPerChild >= 4} label={`Frequency ${data.monitoringQuality.averageChecksPerChild}/night`} />
+        <Section title="Quality" defaultOpen>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Stat label="Night Checks" value={data.quality.nightCheckCompletedRate} suffix="%" />
+            <Stat label="Sleep Patterns" value={data.quality.sleepPatternRecordedRate} suffix="%" />
+            <Stat label="Incidents Handled" value={data.quality.incidentHandledAppropriatelyRate} suffix="%" />
+            <Stat label="Comfort Checked" value={data.quality.childComfortCheckedRate} suffix="%" />
           </div>
         </Section>
 
-        <Section title="Incident Management">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-            <div><span className="text-gray-500">Total Incidents:</span> <span className="font-medium">{data.incidentManagement.totalIncidents}</span></div>
-            <div><span className="text-gray-500">Managed Effectively:</span> <span className="font-medium">{data.incidentManagement.managedEffectivelyRate}%</span></div>
-            <div><span className="text-gray-500">Support Provided:</span> <span className="font-medium">{data.incidentManagement.supportProvidedRate}%</span></div>
-            <div><span className="text-gray-500">Recorded Timely:</span> <span className="font-medium">{data.incidentManagement.recordedTimelyRate}%</span></div>
-            <div><span className="text-gray-500">De-escalation Used:</span> <span className="font-medium">{data.incidentManagement.deEscalationUsedRate}%</span></div>
-            <div><span className="text-gray-500">Critical Incidents:</span> <span className={`font-medium ${data.incidentManagement.criticalIncidents > 0 ? "text-red-600" : "text-green-600"}`}>{data.incidentManagement.criticalIncidents}</span></div>
+        <Section title="Compliance">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Stat label="Documentation" value={data.compliance.documentationRate} suffix="%" />
+            <Stat label="Timely Recording" value={data.compliance.timelyRecordingRate} suffix="%" />
+            <Stat label="Night Checks" value={data.compliance.nightCheckCompletedRate} suffix="%" />
+            <Stat label="Categories Covered" value={`${data.compliance.uniqueCategories}/8`} />
           </div>
         </Section>
 
-        <Section title="Staffing Adequacy">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-            <div><span className="text-gray-500">Total Nights:</span> <span className="font-medium">{data.staffingAdequacy.totalNights}</span></div>
-            <div><span className="text-gray-500">Adequate Staffing:</span> <span className="font-medium">{data.staffingAdequacy.adequateStaffingRate}%</span></div>
-            <div><span className="text-gray-500">Handover Completed:</span> <span className="font-medium">{data.staffingAdequacy.handoverCompletedRate}%</span></div>
-            <div><span className="text-gray-500">Handover Quality:</span> <span className="font-medium">{data.staffingAdequacy.handoverQualityRate}%</span></div>
-            <div><span className="text-gray-500">Lone Working:</span> <span className={`font-medium ${data.staffingAdequacy.loneWorkingNights > 0 ? "text-red-600" : "text-green-600"}`}>{data.staffingAdequacy.loneWorkingNights} nights</span></div>
-            <div><span className="text-gray-500">Agency-Only:</span> <span className={`font-medium ${data.staffingAdequacy.agencyOnlyNights > 0 ? "text-amber-600" : "text-green-600"}`}>{data.staffingAdequacy.agencyOnlyNights} nights</span></div>
+        <Section title="Policy">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {([
+              ["Night Care Policy", data.policy.nightCarePolicy],
+              ["Sleep Monitoring", data.policy.sleepMonitoringGuidance],
+              ["Incident Procedure", data.policy.nightIncidentProcedure],
+              ["Waking Night", data.policy.wakingNightPolicy],
+              ["Medication Protocol", data.policy.nightMedicationProtocol],
+              ["Bedtime Routine", data.policy.bedtimeRoutineGuidance],
+              ["Handover Procedure", data.policy.nightHandoverProcedure],
+            ] as [string, boolean][]).map(([label, ok]) => (
+              <span
+                key={label}
+                className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}
+              >
+                {ok ? "✓" : "✗"} {label}
+              </span>
+            ))}
           </div>
         </Section>
 
-        <Section title="Sleep Environment">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-            <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.sleepEnvironment.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Temperature OK:</span> <span className="font-medium">{data.sleepEnvironment.temperatureAppropriateRate}%</span></div>
-            <div><span className="text-gray-500">Bedding Clean:</span> <span className="font-medium">{data.sleepEnvironment.beddingCleanRate}%</span></div>
-            <div><span className="text-gray-500">Noise Acceptable:</span> <span className="font-medium">{data.sleepEnvironment.noiseAcceptableRate}%</span></div>
-            <div><span className="text-gray-500">Lighting OK:</span> <span className="font-medium">{data.sleepEnvironment.lightingAppropriateRate}%</span></div>
-            <div><span className="text-gray-500">Safety Checked:</span> <span className="font-medium">{data.sleepEnvironment.safetyCheckedRate}%</span></div>
+        <Section title="Staff Readiness">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
+            <Stat label="Night Care Competency" value={data.staffReadiness.nightCareCompetencyRate} suffix="%" />
+            <Stat label="Sleep Monitoring" value={data.staffReadiness.sleepMonitoringSkillsRate} suffix="%" />
+            <Stat label="Incident Response" value={data.staffReadiness.nightIncidentResponseRate} suffix="%" />
+            <Stat label="Medication Handling" value={data.staffReadiness.nightMedicationHandlingRate} suffix="%" />
+            <Stat label="Comfort Techniques" value={data.staffReadiness.childComfortTechniquesRate} suffix="%" />
           </div>
         </Section>
+
+        {data.childProfiles.length > 0 && (
+          <Section title="Child Profiles">
+            <div className="space-y-2">
+              {data.childProfiles.map((cp) => (
+                <div key={cp.childId} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                  <div>
+                    <span className="font-medium text-sm text-gray-900">{cp.childName}</span>
+                    <span className="text-xs text-gray-500 ml-2">{cp.totalRecords} records</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-gray-600">
+                    <span>Checks: {cp.nightCheckCompletedRate}%</span>
+                    <span>Sleep: {cp.sleepPatternRecordedRate}%</span>
+                    <span>Categories: {cp.uniqueCategories}</span>
+                    <span className="font-semibold text-gray-900">{cp.overallScore}/10</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
 
         <Section title="Strengths, Areas & Actions">
           {data.strengths.length > 0 && (
             <div>
               <h4 className="text-sm font-medium text-green-700 mb-1">Strengths</h4>
               <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-                {data.strengths.map((s, i) => <li key={i}>{s}</li>)}
+                {data.strengths.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
               </ul>
             </div>
           )}
@@ -196,7 +238,9 @@ export function NightCareDashboardWidget() {
             <div>
               <h4 className="text-sm font-medium text-amber-700 mb-1">Areas for Improvement</h4>
               <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-                {data.areasForImprovement.map((a, i) => <li key={i}>{a}</li>)}
+                {data.areasForImprovement.map((a, i) => (
+                  <li key={i}>{a}</li>
+                ))}
               </ul>
             </div>
           )}

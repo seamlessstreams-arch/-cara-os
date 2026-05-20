@@ -1,301 +1,139 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// RiskAssessmentDashboardWidget — Risk Management dashboard card
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
 import { useEffect, useState } from "react";
 
-interface ChildStatus {
-  childId: string;
-  childName: string;
-  overallRiskLevel: string;
-  riskManagementScore: number;
-  isCompliant: boolean;
-  activeHighRisks: string[];
-  incidentsLast30Days: number;
-  assessmentsOverdue: number;
-  issues: string[];
+interface ChildRiskProfile { childId: string; childName: string; totalRecords: number; controlMeasuresIdentifiedRate: number; childViewIncludedRate: number; categoriesCovered: string[]; overallScore: number; }
+
+interface RiskAssessmentData {
+  homeId: string; periodStart: string; periodEnd: string; overallScore: number; rating: string;
+  riskAssessmentQuality: { overallScore: number; totalRecords: number; controlMeasuresIdentifiedRate: number; childViewIncludedRate: number; reviewDateSetRate: number; multiAgencyInputRate: number; };
+  riskAssessmentCompliance: { overallScore: number; documentationRate: number; timelyRecordingRate: number; controlMeasuresIdentifiedRate: number; categoryDiversityRatio: number; };
+  riskAssessmentPolicy: { overallScore: number; riskAssessmentPolicy: boolean; dynamicRiskUpdatePolicy: boolean; positiveRiskTakingPolicy: boolean; incidentTriggeredReviewPolicy: boolean; communityRiskPolicy: boolean; environmentalRiskPolicy: boolean; multiAgencyRiskSharingPolicy: boolean; };
+  staffReadiness: { overallScore: number; totalStaff: number; riskAssessmentSkillsRate: number; dynamicRiskManagementRate: number; positiveRiskTakingRate: number; incidentRiskAnalysisRate: number; childViewInRiskRate: number; multiAgencyRiskSharingRate: number; };
+  childProfiles: ChildRiskProfile[]; strengths: string[]; areasForImprovement: string[]; actions: string[]; regulatoryLinks: string[];
 }
 
-interface RecentIncident {
-  id: string;
-  childName: string;
-  category: string;
-  severity: string;
-  date: string;
-  riskReassessed: boolean;
+function ratingColour(r: string) {
+  if (r === "outstanding") return "text-green-700 bg-green-50 border-green-200";
+  if (r === "good") return "text-blue-700 bg-blue-50 border-blue-200";
+  if (r === "requires_improvement") return "text-amber-700 bg-amber-50 border-amber-200";
+  return "text-red-700 bg-red-50 border-red-200";
+}
+function ratingLabel(r: string) { return r.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()); }
+function boolBadge(v: boolean) { return v ? "text-green-700 bg-green-50 border-green-200" : "text-red-700 bg-red-50 border-red-200"; }
+
+function ScoreBar({ label, score, max = 25 }: { label: string; score: number; max?: number }) {
+  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+  const fill = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
+  return (<div className="mb-3"><div className="flex justify-between text-sm mb-1"><span className="font-medium text-gray-700">{label}</span><span className="text-gray-500">{score}/{max}</span></div><div className="h-2 rounded-full bg-gray-100 overflow-hidden"><div className={`h-full rounded-full ${fill}`} style={{ width: `${pct}%` }} /></div></div>);
 }
 
-interface Metrics {
-  overallManagementScore: number;
-  childrenAtHighRisk: number;
-  childrenAtVeryHighRisk: number;
-  totalActiveAssessments: number;
-  overdueReviews: number;
-  totalIncidents30Days: number;
-  highSeverityIncidents30Days: number;
-  controlMeasureEffectivenessRate: number;
-  positiveRiskTakingRate: number;
-  childInvolvementRate: number;
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (<div className="border border-gray-200 rounded-lg overflow-hidden mb-4"><button onClick={() => setOpen(!open)} className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 flex justify-between items-center"><span className="font-semibold text-gray-800">{title}</span><span className="text-gray-400 text-lg">{open ? "−" : "+"}</span></button>{open && <div className="px-4 py-3">{children}</div>}</div>);
 }
 
-interface DashboardData {
-  metrics: Metrics;
-  children: ChildStatus[];
-  recentIncidents: RecentIncident[];
-  mostPrevalentRisks: string[];
-  complianceIssues: string[];
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (<div className="bg-gray-50 rounded-lg px-3 py-2 text-center"><div className="text-lg font-bold text-gray-800">{value}</div><div className="text-xs text-gray-500">{label}</div></div>);
 }
 
-interface Props {
-  homeId?: string;
-}
-
-const RISK_LEVEL_COLORS: Record<string, string> = {
-  low: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
-  medium: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
-  high: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  very_high: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-};
-
-const SEVERITY_COLORS: Record<string, string> = {
-  low: "text-emerald-600 dark:text-emerald-400",
-  medium: "text-amber-600 dark:text-amber-400",
-  high: "text-orange-600 dark:text-orange-400",
-  critical: "text-red-600 dark:text-red-400",
-};
-
-const CATEGORY_SHORT: Record<string, string> = {
-  self_harm: "Self-Harm",
-  suicide: "Suicide",
-  cse: "CSE",
-  cce: "CCE",
-  missing: "Missing",
-  aggression_to_others: "Aggression",
-  aggression_to_property: "Property",
-  substance_misuse: "Substances",
-  radicalisation: "Radical.",
-  online_harm: "Online",
-  bullying_perpetrator: "Bully (P)",
-  bullying_victim: "Bully (V)",
-  fire_setting: "Fire",
-  absconding: "Abscond",
-  trafficking: "Trafficking",
-  gang_affiliation: "Gangs",
-  eating_disorder: "Eating",
-  self_neglect: "Neglect",
-};
-
-export function RiskAssessmentDashboardWidget({ homeId = "home-oak" }: Props) {
-  const [data, setData] = useState<DashboardData | null>(null);
+export default function RiskAssessmentDashboardWidget() {
+  const [data, setData] = useState<RiskAssessmentData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [homeId]);
+    fetch("/api/risk-assessment")
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then((json) => setData(json.data))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/risk-assessment?homeId=${homeId}&mode=dashboard`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="rounded-lg border border-border bg-card p-6 animate-pulse">
-        <div className="h-4 w-36 bg-muted rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-muted rounded" />
-          <div className="h-3 w-3/4 bg-muted rounded" />
-        </div>
-      </div>
-    );
-  }
-
+  if (loading) return (<div className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse"><div className="h-6 bg-gray-200 rounded w-3/4 mb-4" /><div className="h-4 bg-gray-100 rounded w-1/2 mb-3" /><div className="h-4 bg-gray-100 rounded w-2/3 mb-3" /><div className="h-4 bg-gray-100 rounded w-1/3" /></div>);
+  if (error) return (<div className="rounded-2xl border border-red-200 bg-red-50 p-6"><h2 className="text-lg font-bold text-red-800 mb-2">Risk Assessment</h2><p className="text-red-600 text-sm">Failed to load data: {error}</p></div>);
   if (!data) return null;
 
-  const { metrics, children, recentIncidents, mostPrevalentRisks, complianceIssues } = data;
-
-  const scoreColor = metrics.overallManagementScore >= 80
-    ? "text-emerald-600 dark:text-emerald-400"
-    : metrics.overallManagementScore >= 60
-      ? "text-amber-600 dark:text-amber-400"
-      : "text-red-600 dark:text-red-400";
+  const rc = ratingColour(data.rating);
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-rose-700 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">Risk Management</h3>
-              <p className="text-xs text-muted-foreground">Assessments & safeguarding</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className={`text-lg font-bold ${scoreColor}`}>
-              {metrics.overallManagementScore}%
-            </p>
-            <p className="text-[10px] text-muted-foreground">managed</p>
-          </div>
-        </div>
+    <div className="rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+        <div><h2 className="text-lg font-bold text-gray-900">Risk Assessment</h2><p className="text-sm text-gray-500 mt-0.5">{data.periodStart} — {data.periodEnd}</p></div>
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold ${rc}`}><span className="text-xl font-bold">{data.overallScore}</span><span>/100</span><span className="ml-1">{ratingLabel(data.rating)}</span></div>
       </div>
 
-      {/* Alert row */}
-      {(metrics.childrenAtHighRisk > 0 || metrics.childrenAtVeryHighRisk > 0) && (
-        <div className="px-4 py-2 border-b border-border bg-red-50 dark:bg-red-950/20">
-          <div className="flex items-center gap-2">
-            {metrics.childrenAtVeryHighRisk > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200 font-medium">
-                {metrics.childrenAtVeryHighRisk} Very High
-              </span>
-            )}
-            {metrics.childrenAtHighRisk > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-200 text-orange-800 dark:bg-orange-900 dark:text-orange-200 font-medium">
-                {metrics.childrenAtHighRisk} High
-              </span>
-            )}
-            {metrics.overdueReviews > 0 && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-200 font-medium">
-                {metrics.overdueReviews} Overdue
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Key stats */}
-      <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
-        <div className="p-3 text-center">
-          <p className="text-lg font-bold">{metrics.totalActiveAssessments}</p>
-          <p className="text-[10px] text-muted-foreground">Assessments</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.totalIncidents30Days > 5 ? "text-amber-600 dark:text-amber-400" : ""}`}>
-            {metrics.totalIncidents30Days}
-          </p>
-          <p className="text-[10px] text-muted-foreground">Incidents (30d)</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.controlMeasureEffectivenessRate >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {metrics.controlMeasureEffectivenessRate}%
-          </p>
-          <p className="text-[10px] text-muted-foreground">Measures eff.</p>
-        </div>
+      <div className="mb-6">
+        <ScoreBar label="Assessment Quality" score={data.riskAssessmentQuality.overallScore} />
+        <ScoreBar label="Assessment Compliance" score={data.riskAssessmentCompliance.overallScore} />
+        <ScoreBar label="Policy Framework" score={data.riskAssessmentPolicy.overallScore} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.overallScore} />
       </div>
 
-      {/* Per-child risk levels */}
-      <div className="border-b border-border">
-        <div className="px-4 py-2 bg-muted/30">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Per Child</p>
+      <Section title="Assessment Quality" defaultOpen>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Records" value={data.riskAssessmentQuality.totalRecords} />
+          <Stat label="Control Measures" value={`${data.riskAssessmentQuality.controlMeasuresIdentifiedRate}%`} />
+          <Stat label="Child View" value={`${data.riskAssessmentQuality.childViewIncludedRate}%`} />
+          <Stat label="Review Date Set" value={`${data.riskAssessmentQuality.reviewDateSetRate}%`} />
+          <Stat label="Multi-Agency Input" value={`${data.riskAssessmentQuality.multiAgencyInputRate}%`} />
         </div>
-        <div className="px-4 py-2 space-y-1.5">
-          {children.map(child => (
-            <div key={child.childId} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${RISK_LEVEL_COLORS[child.overallRiskLevel] || ""}`}>
-                  {child.overallRiskLevel.replace("_", " ")}
-                </span>
-                <span className="text-[11px] font-medium">{child.childName}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {child.incidentsLast30Days > 0 && (
-                  <span className="text-[9px] text-muted-foreground">{child.incidentsLast30Days} inc.</span>
-                )}
-                {child.assessmentsOverdue > 0 && (
-                  <span className="text-[9px] text-amber-600 font-medium">Review due</span>
-                )}
-              </div>
-            </div>
+      </Section>
+
+      <Section title="Assessment Compliance">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Documentation" value={`${data.riskAssessmentCompliance.documentationRate}%`} />
+          <Stat label="Timely Recording" value={`${data.riskAssessmentCompliance.timelyRecordingRate}%`} />
+          <Stat label="Control Measures" value={`${data.riskAssessmentCompliance.controlMeasuresIdentifiedRate}%`} />
+          <Stat label="Category Coverage" value={`${data.riskAssessmentCompliance.categoryDiversityRatio}%`} />
+        </div>
+      </Section>
+
+      <Section title="Policy Framework">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {([
+            ["Risk Assessment", data.riskAssessmentPolicy.riskAssessmentPolicy],
+            ["Dynamic Update", data.riskAssessmentPolicy.dynamicRiskUpdatePolicy],
+            ["Positive Risk", data.riskAssessmentPolicy.positiveRiskTakingPolicy],
+            ["Incident Triggered", data.riskAssessmentPolicy.incidentTriggeredReviewPolicy],
+            ["Community Risk", data.riskAssessmentPolicy.communityRiskPolicy],
+            ["Environmental", data.riskAssessmentPolicy.environmentalRiskPolicy],
+            ["Multi-Agency", data.riskAssessmentPolicy.multiAgencyRiskSharingPolicy],
+          ] as [string, boolean][]).map(([label, val]) => (
+            <div key={label} className={`rounded-lg px-3 py-2 text-center border ${boolBadge(val)}`}><div className="text-sm font-semibold">{val ? "Yes" : "No"}</div><div className="text-xs">{label}</div></div>
           ))}
         </div>
-      </div>
+      </Section>
 
-      {/* Recent incidents */}
-      {recentIncidents.length > 0 && (
-        <div className="border-b border-border">
-          <div className="px-4 py-2 bg-muted/30">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Recent Incidents</p>
-          </div>
-          <div className="px-4 py-2 space-y-1">
-            {recentIncidents.slice(0, 4).map(incident => (
-              <div key={incident.id} className="flex items-center justify-between text-[10px]">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground">
-                    {new Date(incident.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                  </span>
-                  <span className="font-medium">{incident.childName}</span>
-                  <span className="text-muted-foreground">{CATEGORY_SHORT[incident.category] || incident.category}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className={`font-medium ${SEVERITY_COLORS[incident.severity] || ""}`}>
-                    {incident.severity}
-                  </span>
-                  {incident.riskReassessed && (
-                    <span className="text-[8px] text-emerald-600">reviewed</span>
-                  )}
-                </div>
+      <Section title="Staff Readiness">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
+          <Stat label="Assessment Skills" value={`${data.staffReadiness.riskAssessmentSkillsRate}%`} />
+          <Stat label="Dynamic Risk" value={`${data.staffReadiness.dynamicRiskManagementRate}%`} />
+          <Stat label="Positive Risk" value={`${data.staffReadiness.positiveRiskTakingRate}%`} />
+          <Stat label="Incident Analysis" value={`${data.staffReadiness.incidentRiskAnalysisRate}%`} />
+          <Stat label="Child View" value={`${data.staffReadiness.childViewInRiskRate}%`} />
+          <Stat label="Multi-Agency" value={`${data.staffReadiness.multiAgencyRiskSharingRate}%`} />
+        </div>
+      </Section>
+
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Risk Profiles">
+          <div className="space-y-3">
+            {data.childProfiles.map((cp) => (
+              <div key={cp.childId} className="border border-gray-100 rounded-lg p-3">
+                <div className="flex justify-between items-start mb-2"><span className="font-semibold text-gray-800">{cp.childName}</span><span className="text-sm font-semibold text-gray-600">{cp.overallScore}/10</span></div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600"><span>Records: {cp.totalRecords}</span><span>Controls: {cp.controlMeasuresIdentifiedRate}%</span><span>Child View: {cp.childViewIncludedRate}%</span></div>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Summary stats */}
-      <div className="px-4 py-2.5 border-b border-border">
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Positive risk-taking</span>
-          <span className={`font-medium ${metrics.positiveRiskTakingRate >= 75 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.positiveRiskTakingRate}%
-          </span>
-        </div>
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Child involvement</span>
-          <span className={`font-medium ${metrics.childInvolvementRate === 100 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.childInvolvementRate}%
-          </span>
-        </div>
-        {mostPrevalentRisks.length > 0 && (
-          <div className="flex justify-between text-[10px]">
-            <span className="text-muted-foreground">Key risks</span>
-            <span className="font-medium text-right">
-              {mostPrevalentRisks.slice(0, 3).map(r => CATEGORY_SHORT[r] || r).join(", ")}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Compliance issues */}
-      {complianceIssues.length > 0 && (
-        <div className="px-4 py-2.5 border-b border-border bg-red-50 dark:bg-red-950/20">
-          <p className="text-[10px] font-medium text-red-700 dark:text-red-400 mb-1">Compliance Issues</p>
-          {complianceIssues.slice(0, 3).map((issue, i) => (
-            <p key={i} className="text-[10px] text-red-600 dark:text-red-400">
-              {issue}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="p-3 text-center">
-        <a href="/risk-assessment" className="text-xs text-primary font-medium hover:underline">
-          View risk assessments →
-        </a>
-      </div>
+      {data.strengths.length > 0 && (<Section title="Strengths"><ul className="space-y-1">{data.strengths.map((s, i) => (<li key={i} className="text-sm text-green-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-green-500" />{s}</li>))}</ul></Section>)}
+      {data.areasForImprovement.length > 0 && (<Section title="Areas for Improvement"><ul className="space-y-1">{data.areasForImprovement.map((a, i) => (<li key={i} className="text-sm text-amber-800 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />{a}</li>))}</ul></Section>)}
+      {data.actions.length > 0 && (<Section title="Actions" defaultOpen><ul className="space-y-1">{data.actions.map((a, i) => (<li key={i} className={`text-sm flex gap-2 ${a.startsWith("URGENT") ? "text-red-800 font-semibold" : "text-gray-700"}`}><span className={`shrink-0 mt-1 h-1.5 w-1.5 rounded-full ${a.startsWith("URGENT") ? "bg-red-500" : "bg-gray-400"}`} />{a}</li>))}</ul></Section>)}
+      <Section title="Regulatory Links"><ul className="space-y-1">{data.regulatoryLinks.map((l, i) => (<li key={i} className="text-sm text-gray-600 flex gap-2"><span className="shrink-0 mt-1 h-1.5 w-1.5 rounded-full bg-gray-400" />{l}</li>))}</ul></Section>
     </div>
   );
 }

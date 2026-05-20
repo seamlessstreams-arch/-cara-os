@@ -1,24 +1,28 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Risk Assessment & Management — Public API
-// ══════════════════════════════════════════════════════════════════════════════
-
 export {
-  evaluateChildRiskCompliance,
-  calculateHomeRiskMetrics,
-  getRiskCategoryLabel,
-  getRiskLevelLabel,
+  generateRiskAssessmentIntelligence,
+  evaluateRiskAssessmentQuality,
+  evaluateRiskAssessmentCompliance,
+  evaluateRiskAssessmentPolicy,
+  evaluateStaffRiskAssessmentReadiness,
+  buildChildRiskAssessmentProfiles,
+  pct,
+  getRating,
+  getRiskAssessmentCategoryLabel,
+  getRiskAssessmentOutcomeLabel,
+  getRatingLabel,
 } from "./risk-assessment-engine";
 
 export type {
-  RiskCategory,
-  RiskLevel,
-  ControlMeasureStatus,
-  ReviewOutcome,
-  ChildRiskProfile,
-  RiskAssessment,
-  ControlMeasure,
-  RiskIncident,
-  PositiveRiskEntry,
-  ChildRiskResult,
-  HomeRiskMetrics,
+  RiskAssessmentCategory,
+  RiskAssessmentOutcome,
+  Rating,
+  RiskAssessmentRecord,
+  RiskAssessmentPolicy,
+  StaffRiskAssessmentTraining,
+  RiskAssessmentQualityResult,
+  RiskAssessmentComplianceResult,
+  RiskAssessmentPolicyResult,
+  StaffRiskAssessmentReadinessResult,
+  ChildRiskAssessmentProfile,
+  RiskAssessmentIntelligence,
 } from "./risk-assessment-engine";

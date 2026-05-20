@@ -3,88 +3,75 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // FIRE SAFETY DASHBOARD WIDGET
 //
-// Displays fire safety intelligence for a children's home:
-// - Overall score with Ofsted-aligned rating
-// - Key metrics: drill compliance, equipment status, risk level, training
-// - Expandable sections for detailed analysis
-// - Critical alerts for out-of-service equipment, overdue inspections
-// - Regulatory framework references
+// Displays the 4-layer fire safety intelligence:
+// - Overall score with rating
+// - Layer scores: quality, compliance, policy, staff readiness
+// - Child fire safety profiles
+// - Strengths, areas for improvement, and actions
+// - Regulatory references
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
 
-// ── Local Type Definitions ────────────────────────────────────────────────
+// ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
-interface DrillComplianceEvaluation {
-  totalDrills: number;
-  drillsByType: Record<string, number>;
-  monthlyFrequency: number;
-  nightDrillsPerQuarter: number;
-  meetsMonthlyTarget: boolean;
-  meetsNightDrillTarget: boolean;
-  averageEvacuationTimeSeconds: number | null;
-  averageTargetTimeSeconds: number | null;
-  evacuationOnTarget: number;
-  evacuationOverTarget: number;
-  evacuationTargetRate: number;
-  allAccountedForRate: number;
-  debriefRate: number;
-  totalIssues: number;
-  drillScore: number;
+interface QualityData {
+  totalRecords: number;
+  drillCompletedSuccessfullyRate: number;
+  allChildrenAccountedRate: number;
+  evacuationTimeRecordedRate: number;
+  equipmentFunctionalRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-interface CriticalIssue {
-  equipmentId: string;
-  equipmentType: string;
-  location: string;
-  status: string;
-  note: string;
+interface ComplianceData {
+  totalRecords: number;
+  documentationRate: number;
+  timelyRecordingRate: number;
+  allChildrenAccountedRate: number;
+  categoryDiversityRatio: number;
+  uniqueCategories: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-interface EquipmentMaintenanceEvaluation {
-  totalEquipment: number;
-  byType: Record<string, number>;
-  byStatus: Record<string, number>;
-  operationalCount: number;
-  operationalRate: number;
-  needsRepairCount: number;
-  outOfServiceCount: number;
-  dueInspectionCount: number;
-  overdueInspections: number;
-  inspectionComplianceRate: number;
-  criticalIssues: CriticalIssue[];
-  equipmentScore: number;
+interface PolicyData {
+  fireSafetyPolicy: boolean;
+  evacuationProcedure: boolean;
+  fireRiskAssessmentPolicy: boolean;
+  equipmentMaintenancePolicy: boolean;
+  drillFrequencyGuidance: boolean;
+  emergencyLightingPolicy: boolean;
+  fireAlarmTestingPolicy: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-interface RiskAssessmentEvaluation {
-  totalAssessments: number;
-  currentAssessments: number;
-  overdueAssessments: number;
-  currentRate: number;
-  averageRiskLevel: string;
-  riskLevelCounts: Record<string, number>;
-  totalFindings: number;
-  totalActionsRequired: number;
-  totalActionsCompleted: number;
-  actionCompletionRate: number;
-  sharedWithStaffRate: number;
-  assessmentScore: number;
+interface StaffReadinessData {
+  totalStaff: number;
+  fireWardenTrainingRate: number;
+  evacuationProcedureKnowledgeRate: number;
+  fireExtinguisherUseRate: number;
+  fireRiskAssessmentRate: number;
+  alarmSystemKnowledgeRate: number;
+  firstAidFireInjuryRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-interface TrainingAndPlanningEvaluation {
-  totalStaffTrained: number;
-  currentTraining: number;
-  expiredTraining: number;
-  trainingCurrencyRate: number;
-  byTrainingType: Record<string, number>;
-  passRate: number;
-  hasFireMarshal: boolean;
-  evacuationPlanReviewed: boolean;
-  evacuationPlanAge: number | null;
-  peepCoverage: number;
-  peepCoverageRate: number;
-  specialConsiderationsDocumented: number;
-  trainingScore: number;
+interface ChildProfileData {
+  childId: string;
+  childName: string;
+  totalRecords: number;
+  drillCompletedSuccessfullyRate: number;
+  allChildrenAccountedRate: number;
+  uniqueCategories: number;
+  fireSafetyScore: number;
 }
 
 interface FireSafetyData {
@@ -94,14 +81,16 @@ interface FireSafetyData {
   periodEnd: string;
   overallScore: number;
   rating: string;
-  drillCompliance: DrillComplianceEvaluation;
-  equipmentMaintenance: EquipmentMaintenanceEvaluation;
-  riskAssessment: RiskAssessmentEvaluation;
-  trainingAndPlanning: TrainingAndPlanningEvaluation;
+  quality: QualityData;
+  compliance: ComplianceData;
+  policy: PolicyData;
+  staffReadiness: StaffReadinessData;
+  childProfiles: ChildProfileData[];
   strengths: string[];
   areasForImprovement: string[];
   actions: string[];
   regulatoryLinks: string[];
+  meta: { generatedAt: string; engine: string; version: string };
 }
 
 // ── Rating Badge ──────────────────────────────────────────────────────────
@@ -130,20 +119,25 @@ function RatingBadge({ score, rating }: { score: number; rating: string }) {
   );
 }
 
-// ── Metric Card ───────────────────────────────────────────────────────────
+// ── Score Bar ─────────────────────────────────────────────────────────────
 
-function MetricCard({ label, value, suffix }: { label: string; value: number | string; suffix?: string }) {
-  const numValue = typeof value === "number" ? value : parseInt(value, 10);
+function ScoreBar({ label, score, max }: { label: string; score: number; max: number }) {
+  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
   const color =
-    numValue >= 80 ? "text-green-700 bg-green-50"
-      : numValue >= 60 ? "text-blue-700 bg-blue-50"
-        : numValue >= 40 ? "text-orange-700 bg-orange-50"
-          : "text-red-700 bg-red-50";
+    pct >= 80 ? "bg-green-500"
+      : pct >= 60 ? "bg-blue-500"
+        : pct >= 40 ? "bg-orange-500"
+          : "bg-red-500";
 
   return (
-    <div className={`rounded-lg p-3 text-center ${color}`}>
-      <div className="text-2xl font-bold">{value}{suffix}</div>
-      <div className="text-xs font-medium mt-0.5">{label}</div>
+    <div>
+      <div className="flex justify-between text-xs mb-0.5">
+        <span className="text-gray-600">{label}</span>
+        <span className="font-medium text-gray-900">{score}/{max}</span>
+      </div>
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }
@@ -185,9 +179,22 @@ function StatRow({ label, value }: { label: string; value: string | number }) {
   );
 }
 
+// ── Policy Check ──────────────────────────────────────────────────────────
+
+function PolicyCheck({ label, value }: { label: string; value: boolean }) {
+  return (
+    <div className="flex justify-between items-center text-sm py-1 border-b border-gray-50 last:border-0">
+      <span className="text-gray-600">{label}</span>
+      <span className={value ? "text-green-700 font-medium" : "text-red-600 font-medium"}>
+        {value ? "Yes" : "No"}
+      </span>
+    </div>
+  );
+}
+
 // ── Main Widget ───────────────────────────────────────────────────────────
 
-export function FireSafetyDashboardWidget() {
+export default function FireSafetyDashboardWidget() {
   const [data, setData] = useState<FireSafetyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -242,47 +249,22 @@ export function FireSafetyDashboardWidget() {
             Fire Safety Intelligence
           </h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            {data.periodStart} to {data.periodEnd} | {data.drillCompliance.totalDrills} drills | {data.equipmentMaintenance.totalEquipment} equipment items
+            {data.periodStart} to {data.periodEnd} | {data.quality.totalRecords} records | v{data.meta?.version ?? "2.0.0"}
           </p>
         </div>
         <RatingBadge score={data.overallScore} rating={data.rating} />
       </div>
 
-      {/* Key Metrics Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <MetricCard label="Drill Compliance" value={data.drillCompliance.drillScore} suffix="/25" />
-        <MetricCard label="Equipment Status" value={data.equipmentMaintenance.operationalRate} suffix="%" />
-        <MetricCard
-          label="Risk Assessment"
-          value={data.riskAssessment.totalAssessments > 0 ? data.riskAssessment.currentRate : 0}
-          suffix="%"
-        />
-        <MetricCard label="Training Currency" value={data.trainingAndPlanning.trainingCurrencyRate} suffix="%" />
+      {/* 4-Layer Score Bars */}
+      <div className="space-y-2 mb-4">
+        <ScoreBar label="Quality" score={data.quality.score} max={25} />
+        <ScoreBar label="Compliance" score={data.compliance.score} max={25} />
+        <ScoreBar label="Policy" score={data.policy.score} max={25} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.score} max={25} />
       </div>
 
-      {/* Critical Equipment Alerts */}
-      {data.equipmentMaintenance.criticalIssues.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-          <h4 className="text-sm font-semibold text-red-800 mb-1">Equipment Alerts</h4>
-          {data.equipmentMaintenance.criticalIssues.slice(0, 3).map((issue) => (
-            <div key={issue.equipmentId} className="text-xs text-red-700">
-              {issue.equipmentType.replace(/_/g, " ")} ({issue.location}) — {issue.status.replace(/_/g, " ")}{issue.note ? `: ${issue.note}` : ""}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Overdue Inspections Alert */}
-      {data.equipmentMaintenance.overdueInspections > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-          <h4 className="text-sm font-semibold text-amber-800">
-            {data.equipmentMaintenance.overdueInspections} equipment inspection(s) overdue
-          </h4>
-        </div>
-      )}
-
       {/* Priority Actions */}
-      {data.actions.length > 0 && (
+      {data.actions.length > 0 && data.actions[0] !== "No immediate actions required. Fire safety systems operating within expected standards." && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
           <h4 className="text-sm font-semibold text-red-800 mb-2">Priority Actions</h4>
           <ul className="space-y-1">
@@ -296,6 +278,28 @@ export function FireSafetyDashboardWidget() {
         </div>
       )}
 
+      {/* Child Profiles Summary */}
+      {data.childProfiles.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-sm font-semibold text-gray-800 mb-2">Child Fire Safety Profiles</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {data.childProfiles.map((child) => {
+              const color =
+                child.fireSafetyScore >= 8 ? "border-green-200 bg-green-50"
+                  : child.fireSafetyScore >= 5 ? "border-blue-200 bg-blue-50"
+                    : "border-orange-200 bg-orange-50";
+              return (
+                <div key={child.childId} className={`rounded-lg border p-2 text-center ${color}`}>
+                  <div className="text-sm font-medium text-gray-900">{child.childName}</div>
+                  <div className="text-lg font-bold text-gray-800">{child.fireSafetyScore}/10</div>
+                  <div className="text-xs text-gray-500">{child.totalRecords} records</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Expandable Details */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -306,93 +310,47 @@ export function FireSafetyDashboardWidget() {
 
       {expanded && (
         <div className="mt-4 space-y-3">
-          {/* Drill Compliance */}
-          <Section title="Drill Compliance" defaultOpen>
-            <StatRow label="Total drills" value={data.drillCompliance.totalDrills} />
-            <StatRow label="Monthly frequency" value={data.drillCompliance.monthlyFrequency} />
-            <StatRow label="Meets monthly target" value={data.drillCompliance.meetsMonthlyTarget ? "Yes" : "No"} />
-            <StatRow label="Night drills/quarter" value={data.drillCompliance.nightDrillsPerQuarter} />
-            <StatRow label="Meets night drill target" value={data.drillCompliance.meetsNightDrillTarget ? "Yes" : "No"} />
-            <StatRow
-              label="Avg evacuation time"
-              value={data.drillCompliance.averageEvacuationTimeSeconds != null
-                ? `${data.drillCompliance.averageEvacuationTimeSeconds}s`
-                : "N/A"}
-            />
-            <StatRow label="On-target evacuations" value={`${data.drillCompliance.evacuationTargetRate}%`} />
-            <StatRow label="All accounted for" value={`${data.drillCompliance.allAccountedForRate}%`} />
-            <StatRow label="Debrief rate" value={`${data.drillCompliance.debriefRate}%`} />
-            <StatRow label="Issues identified" value={data.drillCompliance.totalIssues} />
-            <StatRow label="Score" value={`${data.drillCompliance.drillScore}/25`} />
-            {Object.keys(data.drillCompliance.drillsByType).length > 0 && (
-              <div className="text-xs text-gray-500 mt-1">
-                {Object.entries(data.drillCompliance.drillsByType).map(([type, count]) =>
-                  `${type.replace(/_/g, " ")}: ${count}`,
-                ).join(" | ")}
-              </div>
-            )}
+          {/* Quality */}
+          <Section title="Quality Evaluation" defaultOpen>
+            <StatRow label="Total records" value={data.quality.totalRecords} />
+            <StatRow label="Drill completion rate" value={`${data.quality.drillCompletedSuccessfullyRate}%`} />
+            <StatRow label="Children accounted rate" value={`${data.quality.allChildrenAccountedRate}%`} />
+            <StatRow label="Evacuation time recorded" value={`${data.quality.evacuationTimeRecordedRate}%`} />
+            <StatRow label="Equipment functional" value={`${data.quality.equipmentFunctionalRate}%`} />
+            <StatRow label="Score" value={`${data.quality.score}/25`} />
           </Section>
 
-          {/* Equipment Maintenance */}
-          <Section title="Equipment Maintenance">
-            <StatRow label="Total equipment" value={data.equipmentMaintenance.totalEquipment} />
-            <StatRow label="Operational" value={data.equipmentMaintenance.operationalCount} />
-            <StatRow label="Operational rate" value={`${data.equipmentMaintenance.operationalRate}%`} />
-            <StatRow label="Needs repair" value={data.equipmentMaintenance.needsRepairCount} />
-            <StatRow label="Out of service" value={data.equipmentMaintenance.outOfServiceCount} />
-            <StatRow label="Due inspection" value={data.equipmentMaintenance.dueInspectionCount} />
-            <StatRow label="Overdue inspections" value={data.equipmentMaintenance.overdueInspections} />
-            <StatRow label="Inspection compliance" value={`${data.equipmentMaintenance.inspectionComplianceRate}%`} />
-            <StatRow label="Score" value={`${data.equipmentMaintenance.equipmentScore}/25`} />
-            {Object.keys(data.equipmentMaintenance.byType).length > 0 && (
-              <div className="text-xs text-gray-500 mt-1">
-                {Object.entries(data.equipmentMaintenance.byType).map(([type, count]) =>
-                  `${type.replace(/_/g, " ")}: ${count}`,
-                ).join(" | ")}
-              </div>
-            )}
+          {/* Compliance */}
+          <Section title="Compliance Evaluation">
+            <StatRow label="Documentation rate" value={`${data.compliance.documentationRate}%`} />
+            <StatRow label="Timely recording rate" value={`${data.compliance.timelyRecordingRate}%`} />
+            <StatRow label="Children accounted rate" value={`${data.compliance.allChildrenAccountedRate}%`} />
+            <StatRow label="Category diversity" value={`${data.compliance.uniqueCategories}/8`} />
+            <StatRow label="Score" value={`${data.compliance.score}/25`} />
           </Section>
 
-          {/* Risk Assessment */}
-          <Section title="Risk Assessment">
-            <StatRow label="Total assessments" value={data.riskAssessment.totalAssessments} />
-            <StatRow label="Current" value={data.riskAssessment.currentAssessments} />
-            <StatRow label="Overdue" value={data.riskAssessment.overdueAssessments} />
-            <StatRow label="Current rate" value={`${data.riskAssessment.currentRate}%`} />
-            <StatRow label="Average risk level" value={data.riskAssessment.averageRiskLevel} />
-            <StatRow label="Total findings" value={data.riskAssessment.totalFindings} />
-            <StatRow label="Actions required" value={data.riskAssessment.totalActionsRequired} />
-            <StatRow label="Actions completed" value={data.riskAssessment.totalActionsCompleted} />
-            <StatRow label="Action completion rate" value={`${data.riskAssessment.actionCompletionRate}%`} />
-            <StatRow label="Shared with staff" value={`${data.riskAssessment.sharedWithStaffRate}%`} />
-            <StatRow label="Score" value={`${data.riskAssessment.assessmentScore}/25`} />
+          {/* Policy */}
+          <Section title="Policy Framework">
+            <PolicyCheck label="Fire safety policy" value={data.policy.fireSafetyPolicy} />
+            <PolicyCheck label="Evacuation procedure" value={data.policy.evacuationProcedure} />
+            <PolicyCheck label="Fire risk assessment policy" value={data.policy.fireRiskAssessmentPolicy} />
+            <PolicyCheck label="Equipment maintenance policy" value={data.policy.equipmentMaintenancePolicy} />
+            <PolicyCheck label="Drill frequency guidance" value={data.policy.drillFrequencyGuidance} />
+            <PolicyCheck label="Emergency lighting policy" value={data.policy.emergencyLightingPolicy} />
+            <PolicyCheck label="Fire alarm testing policy" value={data.policy.fireAlarmTestingPolicy} />
+            <StatRow label="Score" value={`${data.policy.score}/25`} />
           </Section>
 
-          {/* Training & Planning */}
-          <Section title="Training & Evacuation Planning">
-            <StatRow label="Staff trained" value={data.trainingAndPlanning.totalStaffTrained} />
-            <StatRow label="Current training" value={data.trainingAndPlanning.currentTraining} />
-            <StatRow label="Expired training" value={data.trainingAndPlanning.expiredTraining} />
-            <StatRow label="Training currency" value={`${data.trainingAndPlanning.trainingCurrencyRate}%`} />
-            <StatRow label="Pass rate" value={`${data.trainingAndPlanning.passRate}%`} />
-            <StatRow label="Fire marshal in place" value={data.trainingAndPlanning.hasFireMarshal ? "Yes" : "No"} />
-            <StatRow label="Evacuation plan reviewed" value={data.trainingAndPlanning.evacuationPlanReviewed ? "Yes" : "No"} />
-            <StatRow
-              label="Evacuation plan age"
-              value={data.trainingAndPlanning.evacuationPlanAge != null
-                ? `${data.trainingAndPlanning.evacuationPlanAge} days`
-                : "N/A"}
-            />
-            <StatRow label="PEEP coverage" value={`${data.trainingAndPlanning.peepCoverageRate}%`} />
-            <StatRow label="Special considerations" value={data.trainingAndPlanning.specialConsiderationsDocumented} />
-            <StatRow label="Score" value={`${data.trainingAndPlanning.trainingScore}/25`} />
-            {Object.keys(data.trainingAndPlanning.byTrainingType).length > 0 && (
-              <div className="text-xs text-gray-500 mt-1">
-                {Object.entries(data.trainingAndPlanning.byTrainingType).map(([type, count]) =>
-                  `${type.replace(/_/g, " ")}: ${count}`,
-                ).join(" | ")}
-              </div>
-            )}
+          {/* Staff Readiness */}
+          <Section title="Staff Fire Safety Readiness">
+            <StatRow label="Total staff" value={data.staffReadiness.totalStaff} />
+            <StatRow label="Fire warden training" value={`${data.staffReadiness.fireWardenTrainingRate}%`} />
+            <StatRow label="Evacuation procedure knowledge" value={`${data.staffReadiness.evacuationProcedureKnowledgeRate}%`} />
+            <StatRow label="Fire extinguisher use" value={`${data.staffReadiness.fireExtinguisherUseRate}%`} />
+            <StatRow label="Fire risk assessment" value={`${data.staffReadiness.fireRiskAssessmentRate}%`} />
+            <StatRow label="Alarm system knowledge" value={`${data.staffReadiness.alarmSystemKnowledgeRate}%`} />
+            <StatRow label="First aid fire injury" value={`${data.staffReadiness.firstAidFireInjuryRate}%`} />
+            <StatRow label="Score" value={`${data.staffReadiness.score}/25`} />
           </Section>
 
           {/* Strengths / Areas / Actions */}
